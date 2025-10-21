@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { ContextHandler, restApiHandler } from "@self-learning/api";
+import { ContextHandler, restApiHandler, UserFromSession } from "@self-learning/api";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import { createRequest, createResponse } from "node-mocks-http";
@@ -8,10 +7,10 @@ import { EventEmitter } from "events";
 type CallArgs = {
 	method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 	path: string; // e.g. "/say-hello/James"
-	query?: Record<string, any>; // ?greeting=Hello
+	query?: Record<string, unknown>;
 	body?: unknown;
 	headers?: Record<string, string>;
-	user?: any; // your UserFromSession
+	user?: UserFromSession;
 };
 
 /**
@@ -51,7 +50,7 @@ export async function callOpenApi({
 	if (method !== "GET" && body !== undefined) {
 		// node-mocks-http will expose as req.body
 		// createOpenApiNextHandler reads it via Next parser
-		(req as any).body = body;
+		req.body = body;
 	}
 
 	// If your context needs the session user via createContext({ req, res })
