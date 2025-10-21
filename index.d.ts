@@ -4,7 +4,7 @@ import NextAuth from "next-auth";
 declare global {
 	namespace NodeJS {
 		interface ProcessEnv {
-			NODE_ENV: "development" | "production";
+			readonly NODE_ENV: "development" | "production" | "test";
 			NEXT_PUBLIC_IS_DEMO_INSTANCE: string | undefined;
 			NEXT_PUBLIC_BASE_PATH: string | undefined;
 			NEXT_TRAILING_SLASH: Boolean | undefined;
@@ -21,8 +21,8 @@ declare global {
 			KEYCLOAK_ISSUER_URL: string;
 			KEYCLOAK_CLIENT_ID: string;
 			KEYCLOAK_PROVIDER_NAME: string | undefined;
-			NEXTAUTH_URL: string;
-			NEXTAUTH_SECRET: string;
+			NEXTAUTH_URL?: string;
+			NEXTAUTH_SECRET?: string;
 			APP_VERSION: string | undefined;
 		}
 	}
