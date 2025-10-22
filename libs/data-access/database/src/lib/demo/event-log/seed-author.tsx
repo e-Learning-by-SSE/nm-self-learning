@@ -3,10 +3,9 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export async function assignDumbledoreAsAuthor() {
-	console.log("\x1b[94m%s\x1b[0m", "Assigning Dumbledore as author for magical-test-course...");
+	console.log("\x1b[94m%s\x1b[0m", "Assigning Dumbledore as author for all test courses...");
 
 	try {
-		// Find Dumbledore's author profile
 		const dumbledore = await prisma.author.findFirst({
 			where: { slug: "albus-dumbledore" }
 		});
@@ -16,15 +15,12 @@ export async function assignDumbledoreAsAuthor() {
 			return;
 		}
 
-		// Find the magical course
-		const course = await prisma.course.findUnique({
-			where: { courseId: "magical-test-course" }
-		});
-
-		if (!course) {
-			console.error("Course 'magical-test-course' not found.");
-			return;
-		}
+		const courseIds = [
+			"magical-test-course",
+			"advanced-potion-brewing",
+			"defense-against-dark-arts",
+			"history-of-magic"
+		];
 
 		// Connect Dumbledore as author to the course
 		await prisma.course.update({
@@ -36,7 +32,7 @@ export async function assignDumbledoreAsAuthor() {
 			}
 		});
 
-		console.log("🪄 Dumbledore successfully assigned as author to 'magical-test-course'.");
+		console.log("🪄 Dumbledore successfully assigned as author to all test courses.");
 	} catch (error) {
 		console.error("Error assigning Dumbledore as author:", error);
 	} finally {
