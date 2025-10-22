@@ -33,10 +33,12 @@ export default function LearningAnalyticsPage() {
 	const role = session?.user?.role; // "USER" for student, "ADMIN" for creator
 
 	// --- Erik’s KPI additions (keep for later use) ---
-  // Total Time of the User spent Learning in Seconds
+	// Total Time of the User spent Learning in Seconds
 	// const { data: totalData, isLoading: isLoadingTotal } = trpc.metrics.getUserTotalLearningTime.useQuery();
 	// Daily Time of the User spent Learning in Seconds
 	// const { data: dailyData, isLoading: isLoadingDaily } = trpc.metrics.getUserDailyLearningTime.useQuery();
+	// Hourly Time of the User spent Learning in Seconds
+	// const { data: hourlyData, isLoading: isLoadingHourly } = trpc.metrics.getUserHourlyLearningTime.useQuery();
 	// Daily Quiz Stats of the User
 	// const { data: quizData, isLoading: isLoadingQuiz } = trpc.metrics.getUserDailyQuizStats.useQuery();
 	// Total Time of the User spent Learning by Course in Seconds
