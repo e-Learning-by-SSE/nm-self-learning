@@ -22,15 +22,16 @@ export async function assignDumbledoreAsAuthor() {
 			"history-of-magic"
 		];
 
-		// Connect Dumbledore as author to the course
-		await prisma.course.update({
-			where: { courseId: "magical-test-course" },
-			data: {
-				authors: {
-					connect: { id: dumbledore.id }
+		for (const courseId of courseIds) {
+			await prisma.course.update({
+				where: { courseId },
+				data: {
+					authors: {
+						connect: { id: dumbledore.id }
+					}
 				}
-			}
-		});
+			});
+		}
 
 		console.log("🪄 Dumbledore successfully assigned as author to all test courses.");
 	} catch (error) {
