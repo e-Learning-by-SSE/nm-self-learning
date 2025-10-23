@@ -10,7 +10,13 @@ import {
 import { Divider, LoadingCircleCorner, Tooltip } from "@self-learning/ui/common";
 import { IdSet, isTruthy } from "@self-learning/util/common";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Controller, ControllerRenderProps, FormProvider, useForm } from "react-hook-form";
+import {
+	Controller,
+	ControllerRenderProps,
+	FormProvider,
+	Resolver,
+	useForm
+} from "react-hook-form";
 import { LearningDiaryPageDetail, Strategy } from "../access-learning-diary";
 import {
 	LearningGoalInputTile,
@@ -22,6 +28,7 @@ import { DiaryLearnedContent } from "./page-details";
 import { PersonalTechniqueRatingTile } from "./technique-rating";
 import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
 import { convertLearningGoal } from "../util/types";
+import z from "zod";
 
 function convertToLearningDiaryPageSafe(pageDetails: LearningDiaryPageDetail | undefined | null) {
 	if (!pageDetails) {
@@ -69,8 +76,10 @@ function usePageForm({
 		return convertToLearningDiaryPageSafe(pageDetails);
 	}, [pageDetails]);
 
-	const form = useForm<LearningDiaryPageOutput>({
-		resolver: zodResolver(learningDiaryPageSchema),
+	type FormData = z.infer<typeof learningDiaryPageSchema>;
+	const form = useForm<FormData>({
+		// By default zodResolver marks fields with defaults as optional, but z.infer enforces them as required. Therefore we need to cast them.
+		resolver: zodResolver(learningDiaryPageSchema) as unknown as Resolver<FormData>,
 		values
 	});
 

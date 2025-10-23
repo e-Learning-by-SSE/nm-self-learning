@@ -15,6 +15,7 @@ import { LabeledField, Upload } from "@self-learning/ui/forms";
 import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { useState } from "react";
 import { FormProvider, useForm, useFormContext, useWatch } from "react-hook-form";
+import z from "zod";
 
 export function EditUserDialog({
 	username,
@@ -57,12 +58,13 @@ function UserForm({
 	onClose: OnDialogCloseFn<User>;
 }) {
 	const { mutateAsync: updateUser } = trpc.admin.updateUser.useMutation();
+	type FormData = z.infer<typeof userSchema>;
 	const form = useForm({
 		resolver: zodResolver(userSchema),
 		defaultValues: initialUser
 	});
 
-	function onSubmit(user: User) {
+	function onSubmit(user: FormData) {
 		updateUser({ username, user })
 			.then(res => {
 				showToast({
