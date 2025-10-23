@@ -8,15 +8,15 @@ import { ChevronDownIcon, XMarkIcon } from "@heroicons/react/24/outline";
 export function GeneralHeatmap() {
 	const [open, setOpen] = useState(false);
 	const [selected, setSelected] = useState<string | null>(null);
-	const options = ["Hours", "Units", "Accuracy"];
+	const options = ["Zeit", "Alle Aufgaben", "Richtige Aufgaben"];
 
 	return (
 		<>
 			<div className="w-full max-w-3xl rounded-lg border border-light-border bg-white shadow-sm hover:shadow-md transition-shadow p-6">
 				<div className="flex items-center justify-between mb-4 relative">
-					<h2 className="text-xl font-semibold text-gray-800">Study Heatmaps</h2>
+					<h2 className="text-xl font-semibold text-gray-800">Lern-Heatmaps</h2>
 
-					{/* ✅ Dropdown */}
+					{/* Dropdown */}
 					<div className="relative z-40" onClick={e => e.stopPropagation()}>
 						<DropdownMenu
 							title="Select Heatmap Type"
@@ -34,7 +34,7 @@ export function GeneralHeatmap() {
 									</div>
 								) : (
 									<div className="flex items-center justify-between w-44 border border-gray-300 rounded-md px-4 py-2 text-gray-700 font-medium bg-white">
-										<span className="truncate">Choose...</span>
+										<span className="truncate">Wähle...</span>
 										<ChevronDownIcon className="h-4 w-4 ml-2 text-gray-500" />
 									</div>
 								)
@@ -68,7 +68,7 @@ export function GeneralHeatmap() {
 					onClick={() => setOpen(true)}
 					className="rounded-lg border border-gray-200 bg-gray-50 h-60 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:border-emerald-500 transition-colors cursor-pointer"
 				>
-					Click to open detailed heatmaps
+					Hier klicken, um detaillierte Heatmaps zu öffnen
 				</div>
 			</div>
 
