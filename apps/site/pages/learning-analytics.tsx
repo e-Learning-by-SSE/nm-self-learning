@@ -1,17 +1,17 @@
-// apps/site/pages/learning-analytics.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
+import { useSession } from "next-auth/react";
+import type { Chart as ChartJS, Tick } from "chart.js";
 
 type ModuleItem = { label: string; rate: number };
 type CourseItem = { label: string; avg: number };
 type DashboardData = {
 	teacherName: string;
-	studentsCount: number;
+	studentsCount?: number;
 	courses: CourseItem[];
-	modules?: ModuleItem[]; // fallback, falls kein modulesByCourse geliefert wird
-	// Optional: modul-Details pro Kurs (empfohlen für den Pfeilwechsel)
-	modulesByCourse?: Record<string, ModuleItem[]>;
+	modules?: ModuleItem[];
+	modulesByCourse?: Record<string, ModuleItem[]>; // Kurs → Module
 };
 
 type BarPoint = { label: string; value: number };
@@ -19,6 +19,44 @@ type BarPoint = { label: string; value: number };
 const pct = (n: number) => `${Math.round(n)}%`;
 const mean = (arr: number[]) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0);
 
+const toPct = (v: unknown): number => {
+	const n = Number(v ?? 0);
+	if (!Number.isFinite(n)) return 0;
+	return n <= 1 ? Math.round(n * 100) : Math.round(n);
+};
+
+type CourseApi = {
+	courseLabel?: string;
+	courseName?: string;
+	courseSlug?: string;
+	title?: string;
+	name?: string;
+	average?: number;
+	avg?: number;
+	completionRate?: number;
+	percentage?: number;
+	rate?: number;
+};
+
+type SubjectApi = {
+	courseLabel?: string;
+	courseName?: string;
+	courseSlug?: string;
+	courseTitle?: string;
+	subjectLabel?: string;
+	subjectName?: string;
+	subject?: string;
+	moduleName?: string;
+	title?: string;
+	average?: number;
+	avg?: number;
+	completionRate?: number;
+	completedRate?: number;
+	percentage?: number;
+	rate?: number;
+};
+
+// ---------- visuals ----------
 const colorGreen = "#7fb89b";
 const colorYellow = "#eae282";
 const colorRed = "#e57368";
@@ -40,52 +78,69 @@ function ChartCard({
 	onRightArrowClick?: () => void;
 }) {
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
-	const chartRef = useRef<any>(null);
+	const chartRef = useRef<ChartJS | null>(null);
 
 	useEffect(() => {
-		let Chart: any;
+		let isMounted = true;
+
 		(async () => {
-			const mod = await import("chart.js/auto");
-			Chart = mod.default;
+			try {
+				const { default: Chart } = await import("chart.js/auto");
 
-			const labels = data.map(d => d.label);
-			const values = data.map(d => d.value);
-			const colors = values.map(v =>
-				v >= 70 ? colorGreen : v >= 40 ? colorYellow : colorRed
-			);
+				const labels = data.map(d => d.label);
+				const values = data.map(d => d.value);
+				const colors = values.map(v =>
+					v >= 70 ? colorGreen : v >= 40 ? colorYellow : colorRed
+				);
 
-			chartRef.current?.destroy?.();
-			chartRef.current = new Chart(canvasRef.current!, {
-				type: "bar",
-				data: {
-					labels,
-					datasets: [
-						{
-							data: values,
-							backgroundColor: colors.length ? colors : undefined,
-							borderRadius: 8,
-							maxBarThickness: 48
+				chartRef.current?.destroy();
+				if (!isMounted || !canvasRef.current) return;
+
+				chartRef.current = new Chart(canvasRef.current, {
+					type: "bar",
+					data: {
+						labels,
+						datasets: [
+							{
+								data: values,
+								backgroundColor: colors.length ? colors : undefined,
+								borderRadius: 8,
+								maxBarThickness: 48
+							}
+						]
+					},
+					options: {
+						responsive: true,
+						maintainAspectRatio: false,
+						plugins: { legend: { display: false } },
+						scales: {
+							y: {
+								beginAtZero: true,
+								max,
+								ticks: {
+									// Signatur passend zu Chart.js-Typen
+									callback: (
+										value: string | number,
+										_index: number,
+										_ticks: Tick[]
+									) => `${value}%`,
+									color: colorAxis
+								},
+								grid: { color: "#e5e7eb" }
+							},
+							x: { ticks: { color: colorAxis }, grid: { display: false } }
 						}
-					]
-				},
-				options: {
-					responsive: true,
-					maintainAspectRatio: false,
-					plugins: { legend: { display: false } },
-					scales: {
-						y: {
-							beginAtZero: true,
-							max,
-							ticks: { callback: (v: number) => v + "%", color: colorAxis },
-							grid: { color: "#e5e7eb" }
-						},
-						x: { ticks: { color: colorAxis }, grid: { display: false } }
 					}
-				}
-			});
+				});
+			} catch (err) {
+				console.error("Chart.js Chunk konnte nicht geladen werden:", err);
+			}
 		})();
 
-		return () => chartRef.current?.destroy?.();
+		return () => {
+			isMounted = false;
+			chartRef.current?.destroy();
+		};
 	}, [data, max]);
 
 	const isEmpty = !data || data.length === 0;
@@ -102,7 +157,6 @@ function ChartCard({
 						aria-label="Next course"
 						title="Next course"
 					>
-						{/* Pfeil nach rechts */}
 						<svg
 							viewBox="0 0 24 24"
 							className="w-4 h-4 text-neutral-700"
@@ -149,9 +203,12 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 	const courseLabels = (data?.courses ?? []).map(c => c.label);
 	const activeCourseLabel = courseLabels[courseIndex] ?? "";
 
-	// Module-Bars: wenn modulesByCourse vorhanden, Kurs-spezifische Module laden
-	const currentModules: ModuleItem[] =
-		(activeCourseLabel && data?.modulesByCourse?.[activeCourseLabel]) || data?.modules || [];
+	let currentModules: ModuleItem[] = [];
+	if (activeCourseLabel && data?.modulesByCourse?.[activeCourseLabel]) {
+		currentModules = data.modulesByCourse[activeCourseLabel]!;
+	} else if (data?.modules) {
+		currentModules = data.modules;
+	}
 
 	const moduleBars: BarPoint[] = currentModules.map(m => ({ label: m.label, value: m.rate }));
 	const courseBars: BarPoint[] = (data?.courses ?? []).map(c => ({
@@ -293,8 +350,8 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 										The course <b>{computed.bestCourse.label}</b> performs
 										significantly above average with{" "}
 										<b>{pct(computed.bestCourse.avg)}</b> (
-										{computed.deltaBest! >= 0 ? "+" : ""}
-										{computed.deltaBest} pp).
+										{(computed.deltaBest ?? 0) >= 0 ? "+" : ""}
+										{computed.deltaBest ?? 0} pp).
 									</>
 								) : (
 									"—"
@@ -318,7 +375,7 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 									<>
 										{computed.worstCourse.label} reaches only{" "}
 										<b>{pct(computed.worstCourse.avg)}</b>, which is{" "}
-										{computed.deltaWorst} pp below the average, indicating
+										{computed.deltaWorst ?? 0} pp below the average, indicating
 										difficulties.
 									</>
 								) : (
@@ -335,74 +392,99 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 
 export const getServerSideProps = withTranslations(["common"]);
 
-// ---------- Datenanbindung (Dummy-Daten entfernt) ----------
-const AUTHOR_NAME = "Lars"; // TODO: aus Session/Profil beziehen
-
+//Daten
 export default function LearningAnalyticsPage() {
-	// WICHTIG: Die Procedures erwarten einen String, nicht { authorName: string }
+	const { data: session, status } = useSession();
+
+	const authorName = (session?.user?.name ?? "").trim();
+
 	const {
 		data: coursesApi,
 		isLoading: loadingCourses,
 		error: coursesError
-	} = trpc.metrics.getUserAverageCompletionRateByAuthorByCourse.useQuery(AUTHOR_NAME);
+	} = trpc.metrics.getUserAverageCompletionRateByAuthorByCourse.useQuery(authorName, {
+		enabled: !!authorName
+	});
 
 	const {
 		data: authorApi,
 		isLoading: loadingAuthor,
 		error: authorError
-	} = trpc.metrics.getUserAverageCompletionRateByAuthor.useQuery(AUTHOR_NAME);
+	} = trpc.metrics.getUserAverageCompletionRateByAuthor.useQuery(authorName, {
+		enabled: !!authorName
+	});
 
 	const {
 		data: subjectsApi,
 		isLoading: loadingSubjects,
 		error: subjectsError
-	} = trpc.metrics.getUserAverageCompletionRateByAuthorBySubject.useQuery(AUTHOR_NAME);
+	} = trpc.metrics.getUserAverageCompletionRateByAuthorBySubject.useQuery(authorName, {
+		enabled: !!authorName
+	});
 
-	// Helper: 0..1 oder 0..100 → 0..100
-	const toPct = (v: any) => {
-		const n = Number(v ?? 0);
-		if (!isFinite(n)) return 0;
-		return n <= 1 ? Math.round(n * 100) : Math.round(n);
-	};
-
-	// Rechtes Chart: Kurse
-	const courses: CourseItem[] = (coursesApi ?? [])
-		.map((c: any) => ({
-			label: c.courseLabel ?? c.courseName ?? c.courseSlug ?? "—",
-			avg: toPct(c.average ?? c.avg ?? c.completionRate)
+	const coursesApiArr = (Array.isArray(coursesApi) ? coursesApi : []) as CourseApi[];
+	const courses: CourseItem[] = coursesApiArr
+		.map(c => ({
+			label: c.courseLabel ?? c.courseName ?? c.courseSlug ?? c.title ?? c.name ?? "—",
+			avg: toPct(c.average ?? c.avg ?? c.completionRate ?? c.percentage ?? c.rate)
 		}))
-		.filter(c => !!c.label && isFinite(c.avg));
+		.filter(c => !!c.label && Number.isFinite(c.avg));
 
-	// Linkes Chart: Subject = Modul
-	// Falls Kursinfo im Payload: gruppieren → modulesByCourse; sonst flache Moduleliste
+	const subjectsApiArr = (Array.isArray(subjectsApi) ? subjectsApi : []) as SubjectApi[];
 	let modulesByCourse: Record<string, ModuleItem[]> | undefined;
 	let modules: ModuleItem[] | undefined;
 
-	if (Array.isArray(subjectsApi) && subjectsApi.length) {
-		const hasCourseInfo = subjectsApi.some(
-			(s: any) => s.courseLabel || s.courseName || s.courseSlug
+	if (subjectsApiArr.length) {
+		const hasCourseInfo = subjectsApiArr.some(
+			s => s.courseLabel || s.courseName || s.courseSlug || s.courseTitle
 		);
 
 		if (hasCourseInfo) {
-			modulesByCourse = subjectsApi.reduce((acc: Record<string, ModuleItem[]>, s: any) => {
-				const course = s.courseLabel ?? s.courseName ?? s.courseSlug ?? "—";
-				const subjectLabel = s.subjectLabel ?? s.subjectName ?? s.subject ?? "Module";
-				const rate = toPct(s.average ?? s.avg ?? s.completionRate ?? s.completedRate);
-				if (!acc[course]) acc[course] = [];
-				acc[course].push({ label: subjectLabel, rate });
+			modulesByCourse = subjectsApiArr.reduce((acc: Record<string, ModuleItem[]>, s) => {
+				const course =
+					s.courseLabel ?? s.courseName ?? s.courseSlug ?? s.courseTitle ?? "—";
+				const subjectLabel =
+					s.subjectLabel ??
+					s.subjectName ??
+					s.subject ??
+					s.moduleName ??
+					s.title ??
+					"Module";
+				const rate = toPct(
+					s.average ??
+						s.avg ??
+						s.completionRate ??
+						s.completedRate ??
+						s.percentage ??
+						s.rate
+				);
+				(acc[course] ??= []).push({ label: subjectLabel, rate });
 				return acc;
 			}, {});
 		} else {
-			modules = subjectsApi.map((s: any) => ({
-				label: s.subjectLabel ?? s.subjectName ?? s.subject ?? "Module",
-				rate: toPct(s.average ?? s.avg ?? s.completionRate ?? s.completedRate)
+			modules = subjectsApiArr.map(s => ({
+				label:
+					s.subjectLabel ??
+					s.subjectName ??
+					s.subject ??
+					s.moduleName ??
+					s.title ??
+					"Module",
+				rate: toPct(
+					s.average ??
+						s.avg ??
+						s.completionRate ??
+						s.completedRate ??
+						s.percentage ??
+						s.rate
+				)
 			}));
 		}
 	}
 
-	// Meta
-	const teacherName: string = authorApi?.teacherName ?? AUTHOR_NAME;
-	const studentsCount: number = authorApi?.studentsCount ?? (undefined as any);
+	// Meta: sichtbarer Name im Dashboard
+	const teacherName = (session?.user?.name && session.user.name.trim()) || "—";
+	const studentsCount: number | undefined = (authorApi as any)?.studentsCount ?? undefined;
 
 	const dashboardData: DashboardData | undefined = courses.length
 		? {
@@ -415,6 +497,24 @@ export default function LearningAnalyticsPage() {
 		: undefined;
 
 	// UI-States
+	if (status === "loading" || (!authorName && status !== "unauthenticated")) {
+		return (
+			<div className="bg-neutral-50 min-h-screen">
+				<div className="max-w-7xl mx-auto p-6 md:p-8 text-neutral-600">Lade Session …</div>
+			</div>
+		);
+	}
+
+	if (!authorName) {
+		return (
+			<div className="bg-neutral-50 min-h-screen">
+				<div className="max-w-7xl mx-auto p-6 md:p-8 text-neutral-600">
+					Kein eingeloggter User gefunden – bitte anmelden.
+				</div>
+			</div>
+		);
+	}
+
 	if (loadingCourses || loadingAuthor || loadingSubjects) {
 		return (
 			<div className="bg-neutral-50 min-h-screen">
