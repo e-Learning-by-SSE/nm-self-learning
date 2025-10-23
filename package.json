@@ -96,7 +96,7 @@
 		"@babel/preset-react": "^7.27.1",
 		"@babel/preset-typescript": "7.27.1",
 		"@cypress/webpack-dev-server": "^4.1.1",
-		"@faker-js/faker": "^8.4.1",
+		"@faker-js/faker": "^10.1.0",
 		"@nx/cypress": "21.6.5",
 		"@nx/esbuild": "21.6.5",
 		"@nx/eslint": "^21.6.5",
