@@ -2,7 +2,7 @@
 view TotalLearningTime {
   id                        String  @unique
   username                  String
-  totalTimeSeconds          Float   // Total time in seconds
+  totalTimeSeconds          Float
 }
 
 /// Daily learning time per user 
@@ -10,7 +10,15 @@ view DailyLearningTime {
   id                        String  @unique
   username                  String
   day                       DateTime
-  totalTimeSeconds          Float   // Time spent learning that day
+  totalTimeSeconds          Float 
+}
+
+/// Hourly learning time per user
+view HourlyLearningTime {
+  id                        String  @unique
+  username                  String
+  hour                      DateTime
+  totalTimeSeconds          Float
 }
 
 /// Daily quiz statistics per user 
@@ -90,3 +98,4 @@ view CoursesCompletedBySubject {
   total_completed_courses Int
   completed_courses       String?
 }
+

@@ -20,6 +20,16 @@ export async function getUserDailyLearningTime(userId: string) {
 }
 
 /**
+ * Fetch hourly learning time data for a user, ordered by hour ascending.
+ */
+export async function getUserHourlyLearningTime(userId: string) {
+	return database.hourlyLearningTime.findMany({
+		where: { id: userId },
+		orderBy: { hour: "asc" }
+	});
+}
+
+/**
  * Fetch daily quiz statistics for a user, ordered by day ascending.
  */
 export async function getUserDailyQuizStats(userId: string) {
