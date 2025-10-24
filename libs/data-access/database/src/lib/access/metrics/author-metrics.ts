@@ -35,3 +35,32 @@ export async function getAuthorMetric_DailyAverageLessonCompletionRateByCourse(u
 		where: { authorId: userId }
 	});
 }
+
+/**
+ * Fetch average course completion rate by author and by course for a user.
+ */
+export async function getUserAverageCompletionRateByAuthorByCourse(userId: string) {
+	return database.averageCompletionRateByAuthorByCourse.findMany({
+		where: { id: userId },
+		orderBy: { courseId: "asc" }
+	});
+}
+
+/**
+ * Fetch average course completion rate aggregated by author for a user.
+ */
+export async function getUserAverageCompletionRateByAuthor(userId: string) {
+	return database.averageCompletionRateByAuthor.findUnique({
+		where: { id: userId }
+	});
+}
+
+/**
+ * Fetch average completion rate per author and subject for a user.
+ */
+export async function getUserAverageCompletionRateByAuthorBySubject(userId: string) {
+	return database.averageCompletionRateByAuthorBySubject.findMany({
+		where: { id: userId },
+		orderBy: { subjectTitle: "asc" }
+	});
+}

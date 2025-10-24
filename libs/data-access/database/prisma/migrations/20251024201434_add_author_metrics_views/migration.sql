@@ -1,4 +1,83 @@
 --- Average Completion Rate
+CREATE OR REPLACE VIEW "AuthorMetric_AverageCompletionRate" AS
+WITH course_completion AS (
+    SELECT
+        a.username AS author_username,
+        u.id,
+        c."courseId",
+        COUNT(e.username) AS total_enrollments,
+        SUM(CASE WHEN e."status" = 'COMPLETED' OR e."completedAt" IS NOT NULL THEN 1 ELSE 0 END) AS completed_enrollments,
+        CASE
+            WHEN COUNT(e.username) = 0 THEN 0
+            ELSE ROUND(
+                (SUM(CASE WHEN e."status" = 'COMPLETED' OR e."completedAt" IS NOT NULL THEN 1 ELSE 0 END)::decimal
+                 / COUNT(e.username)) * 100, 2
+            )
+        END AS course_completion_rate_percent
+    FROM "_AuthorToCourse" ac
+    JOIN "Author" a ON a.id = ac."A"
+    JOIN "Course" c ON c."courseId" = ac."B"
+    JOIN "User" u ON u."name" = a."username"
+    LEFT JOIN "Enrollment" e ON e."courseId" = c."courseId"
+    GROUP BY a.username, u.id, c."courseId"
+)
+SELECT
+    id AS "authorId",
+    author_username AS "authorUsername",
+    ROUND(AVG(course_completion_rate_percent), 2) AS "averageCompletionPercent"
+FROM course_completion
+GROUP BY author_username, id
+ORDER BY author_username;
+
+-- Average Subject Completion Rate
+CREATE OR REPLACE VIEW "AuthorMetric_AverageSubjectCompletionRate" AS
+SELECT
+    u.id AS "authorId",
+    a.username AS "authorUsername",
+    s."subjectId",
+    s.title AS "subjectTitle",
+    COUNT(e."username") AS "totalEnrollments",
+    SUM(CASE WHEN e."status" = 'COMPLETED' OR e."completedAt" IS NOT NULL THEN 1 ELSE 0 END) AS "completedEnrollments",
+    ROUND(
+        COALESCE(
+            (SUM(CASE WHEN e."status" = 'COMPLETED' OR e."completedAt" IS NOT NULL THEN 1 ELSE 0 END)::decimal
+             / NULLIF(COUNT(e."username"), 0)) * 100,
+            0
+        ),
+    2) AS "averageCompletionRate"
+FROM "_AuthorToCourse" ac
+JOIN "Author" a ON a.id = ac."A"
+JOIN "Course" c ON c."courseId" = ac."B"
+JOIN "User" u ON u."name" = a."username"
+JOIN "Subject" s ON s."subjectId" = c."subjectId"
+LEFT JOIN "Enrollment" e ON e."courseId" = c."courseId"
+GROUP BY u.id, a.username, s."subjectId", s.title
+ORDER BY a.username, s.title;
+
+--- Average Course Completion Rate
+CREATE OR REPLACE VIEW "AuthorMetric_AverageCourseCompletionRate" AS
+SELECT
+    u.id AS "authorId",
+    a.username AS "authorUsername",
+    c."courseId",
+    COALESCE(c.title, 'N/A') AS "courseTitle",
+    COUNT(e.username) AS "totalEnrollments",
+    SUM(CASE WHEN e."status" = 'COMPLETED' OR e."completedAt" IS NOT NULL THEN 1 ELSE 0 END) AS "completedEnrollments",
+    COALESCE(
+        ROUND(
+            (SUM(CASE WHEN e."status" = 'COMPLETED' OR e."completedAt" IS NOT NULL THEN 1 ELSE 0 END)::decimal
+             / NULLIF(COUNT(e.username), 0)) * 100,
+        2),
+        0
+    ) AS "averageCompletionRate"
+FROM "_AuthorToCourse" ac
+JOIN "Author" a ON a.id = ac."A"
+JOIN "Course" c ON c."courseId" = ac."B"
+JOIN "User" u ON u."name" = a."username"
+LEFT JOIN "Enrollment" e ON e."courseId" = c."courseId"
+GROUP BY a.username, u.id, c."courseId", c.title;
+
+--- Average Lesson Completion Rate
 CREATE OR REPLACE VIEW "AuthorMetric_AverageLessonCompletionRate" AS
 WITH user_progress AS (
     SELECT
@@ -40,7 +119,7 @@ HAVING
     COUNT(DISTINCT up."username") > 7
     AND COUNT(DISTINCT CASE WHEN up."completedLessons" = up."totalLessons" THEN up."username" END) > 7;
 
---- Daily Average Completion Rate 
+--- Daily Average Lesson Completion Rate 
 CREATE OR REPLACE VIEW "AuthorMetric_DailyAverageLessonCompletionRate" AS
 WITH user_progress AS (
     SELECT
@@ -94,7 +173,7 @@ HAVING
 ORDER BY u.name, DATE(us.started_at);
 
 
---- Average Completion Rate of a Course
+--- Average Lesson Completion Rate of a Course
 CREATE OR REPLACE VIEW "AuthorMetric_AverageLessonCompletionRateByCourse" AS
 WITH user_course_progress AS (
     SELECT
@@ -144,7 +223,7 @@ WHERE
     AND COALESCE(cc."usersFinished", 0) > 7
 ORDER BY u.name, c.title;
 
---- Daily Average Completion Rate of a Course
+--- Daily Average Lesson Completion Rate of a Course
 CREATE OR REPLACE VIEW "AuthorMetric_DailyAverageLessonCompletionRateByCourse" AS
 WITH user_progress AS (
     SELECT

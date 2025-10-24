@@ -41,36 +41,6 @@ view TotalLearningTimeByCourse {
   totalTimeSeconds          Float
 }
 
-/// Average completion rate per author per course 
-view AverageCompletionRateByAuthorByCourse {
-  id                        String  @unique
-  authorUsername            String
-  courseId                  String
-  courseTitle               String
-  totalEnrollments          Int
-  completedEnrollments      Int
-  completionRatePercent     Float
-}
-
-/// Average completion rate per author (across all courses) 
-view AverageCompletionRateByAuthor {
-  id                        String  @unique
-  authorUsername            String
-  averageCompletionPercent  Float
-}
-
-/// Average completion rate per author per subject 
-view AverageCompletionRateByAuthorBySubject {
-  id                        String  @unique
-  authorUsername            String
-  subjectId                 String
-  subjectTitle              String
-  totalCourses              Int
-  totalEnrollments          Int?
-  completedEnrollments      Int?
-  completionRatePercent     Float?
-}
-
 /// Daily learning time per course per user 
 view DailyLearningTimeByCourse {
   id                        String  @unique

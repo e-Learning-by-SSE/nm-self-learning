@@ -186,70 +186,6 @@ JOIN "User" u ON u.name = sd."username"
 LEFT JOIN "Course" c ON c."courseId" = sd."courseId"
 GROUP BY u.id, sd."username", sd."courseId", c.title;
 
--- Create KPI View for Average Completion Rate by Author
-CREATE OR REPLACE VIEW "AverageCompletionRateByAuthor" AS
-WITH course_completion AS (
-    SELECT
-        a.username AS author_username,
-        u.id AS id,
-        c."courseId",
-        COUNT(e.username) AS total_enrollments,
-        SUM(CASE WHEN e."status" = 'COMPLETED' OR e."completedAt" IS NOT NULL THEN 1 ELSE 0 END) AS completed_enrollments,
-        CASE
-            WHEN COUNT(e.username) = 0 THEN 0
-            ELSE ROUND(
-                (SUM(CASE WHEN e."status" = 'COMPLETED' OR e."completedAt" IS NOT NULL THEN 1 ELSE 0 END)::decimal
-                 / COUNT(e.username)) * 100, 2
-            )
-        END AS course_completion_rate_percent
-    FROM "_AuthorToCourse" ac
-    JOIN "Author" a ON a.id = ac."A"
-    JOIN "Course" c ON c."courseId" = ac."B"
-    JOIN "User" u ON u."name" = a."username"
-    LEFT JOIN "Enrollment" e ON e."courseId" = c."courseId"
-    GROUP BY a.username, u.id, c."courseId"
-)
-SELECT
-    id AS "id",
-    author_username AS "authorUsername",
-    ROUND(AVG(course_completion_rate_percent), 2) AS "averageCompletionPercent"
-FROM course_completion
-GROUP BY author_username, id
-ORDER BY author_username;
-
--- Create KPI View for Average Completion Rate by Author by Subject
-CREATE OR REPLACE VIEW "AverageCompletionRateByAuthorBySubject" AS
-SELECT
-    u.id AS "id",
-    a.username AS "authorUsername",
-    s."subjectId",
-    s.title AS "subjectTitle",
-
-    COUNT(DISTINCT c."courseId") AS "totalCourses",
-    
-    COUNT(e."username") AS "totalEnrollments",
-
-    SUM(CASE WHEN e."status" = 'COMPLETED' OR e."completedAt" IS NOT NULL THEN 1 ELSE 0 END) AS "completedEnrollments",
-
-    -- Completion rate across author’s courses in this subject
-    ROUND(
-        COALESCE(
-            (SUM(CASE WHEN e."status" = 'COMPLETED' OR e."completedAt" IS NOT NULL THEN 1 ELSE 0 END)::decimal
-             / NULLIF(COUNT(e."username"), 0)) * 100,
-            0
-        ),
-    2) AS "completionRatePercent"
-
-FROM "_AuthorToCourse" ac
-JOIN "Author" a ON a.id = ac."A"
-JOIN "Course" c ON c."courseId" = ac."B"
-JOIN "User" u ON u."name" = a."username"
-JOIN "Subject" s ON s."subjectId" = c."subjectId"
-LEFT JOIN "Enrollment" e ON e."courseId" = c."courseId"
-
-GROUP BY u.id, a.username, s."subjectId", s.title
-ORDER BY a.username, s.title;
-
 -- Create KPI View for Daily Learning Time by Course
 CREATE OR REPLACE VIEW "DailyLearningTimeByCourse" AS
 WITH sessionized AS (
@@ -357,26 +293,3 @@ WHERE e."completedAt" IS NOT NULL
    OR e."status" = 'COMPLETED'
 GROUP BY u.id, u.name, s."subjectId", s."title"
 ORDER BY u."name", s."title";
-
---- Create KPI View for Average Completion Rate by Author by Course
-CREATE OR REPLACE VIEW "AverageCompletionRateByAuthorByCourse" AS
-SELECT
-    u.id AS "id",
-    a.username AS "authorUsername",
-    c."courseId",
-    COALESCE(c.title, 'N/A') AS "courseTitle",
-    COUNT(e.username) AS "totalEnrollments",
-    SUM(CASE WHEN e."status" = 'COMPLETED' OR e."completedAt" IS NOT NULL THEN 1 ELSE 0 END) AS "completedEnrollments",
-    COALESCE(
-        ROUND(
-            (SUM(CASE WHEN e."status" = 'COMPLETED' OR e."completedAt" IS NOT NULL THEN 1 ELSE 0 END)::decimal
-             / NULLIF(COUNT(e.username), 0)) * 100,
-        2),
-        0
-    ) AS "completionRatePercent"
-FROM "_AuthorToCourse" ac
-JOIN "Author" a ON a.id = ac."A"
-JOIN "Course" c ON c."courseId" = ac."B"
-JOIN "User" u ON u."name" = a."username"
-LEFT JOIN "Enrollment" e ON e."courseId" = c."courseId"
-GROUP BY a.username, u.id, c."courseId", c.title;
