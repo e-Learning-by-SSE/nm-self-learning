@@ -394,148 +394,36 @@ export const getServerSideProps = withTranslations(["common"]);
 
 //Daten
 export default function LearningAnalyticsPage() {
-	const { data: session, status } = useSession();
+	const { data: session } = useSession();
+	const role = session?.user?.role; // "USER" for student, "ADMIN" for creator
 
-	const authorName = (session?.user?.name ?? "").trim();
+	// --- Erik’s KPI additions (keep for later use) ---
+	// Total Time of the User spent Learning in Seconds
+	// const { data: totalData, isLoading: isLoadingTotal } = trpc.metrics.getUserTotalLearningTime.useQuery();
+	// Daily Time of the User spent Learning in Seconds
+	// const { data: dailyData, isLoading: isLoadingDaily } = trpc.metrics.getUserDailyLearningTime.useQuery();
+	// Daily Quiz Stats of the User
+	// const { data: quizData, isLoading: isLoadingQuiz } = trpc.metrics.getUserDailyQuizStats.useQuery();
+	// Total Time of the User spent Learning by Course in Seconds
+	// const { data: courseData, isLoading: isLoadingCourse } = trpc.metrics.getUserTotalLearningTimeByCourse.useQuery();
+	// Average Course Completion Rate by Author by Course
+	// const { data: authorByCourseData, isLoading: isLoadingAuthorByCourse } = trpc.metrics.getUserAverageCompletionRateByAuthorByCourse.useQuery();
+	// Average Course Completion Rate by Author
+	// const { data: authorData, isLoading: isLoadingAuthor } = trpc.metrics.getUserAverageCompletionRateByAuthor.useQuery();
+	// Average Completion Rate by Author by Subject
+	// const { data: authorBySubjectData, isLoading: isLoadingAuthorBySubject } = trpc.metrics.getUserAverageCompletionRateByAuthorBySubject.useQuery();
+	// Daily Learning Time by Course
+	// const { data: dailyByCourseData, isLoading: isLoadingDailyByCourse } = trpc.metrics.getUserDailyLearningTimeByCourse.useQuery();
+	// Learning Streak
+	// const { data: learningStreakData, isLoading: isLoadingLearningStreak } = trpc.metrics.getUserLearningStreak.useQuery();
+	// Courses Completed by Subject
+	// const { data: coursesCompletedBySubjectData, isLoading: isLoadingCoursesCompletedBySubject } = trpc.metrics.getUserCoursesCompletedBySubject.useQuery();
 
-	const {
-		data: coursesApi,
-		isLoading: loadingCourses,
-		error: coursesError
-	} = trpc.metrics.getUserAverageCompletionRateByAuthorByCourse.useQuery(authorName, {
-		enabled: !!authorName
-	});
-
-	const {
-		data: authorApi,
-		isLoading: loadingAuthor,
-		error: authorError
-	} = trpc.metrics.getUserAverageCompletionRateByAuthor.useQuery(authorName, {
-		enabled: !!authorName
-	});
-
-	const {
-		data: subjectsApi,
-		isLoading: loadingSubjects,
-		error: subjectsError
-	} = trpc.metrics.getUserAverageCompletionRateByAuthorBySubject.useQuery(authorName, {
-		enabled: !!authorName
-	});
-
-	const coursesApiArr = (Array.isArray(coursesApi) ? coursesApi : []) as CourseApi[];
-	const courses: CourseItem[] = coursesApiArr
-		.map(c => ({
-			label: c.courseLabel ?? c.courseName ?? c.courseSlug ?? c.title ?? c.name ?? "—",
-			avg: toPct(c.average ?? c.avg ?? c.completionRate ?? c.percentage ?? c.rate)
-		}))
-		.filter(c => !!c.label && Number.isFinite(c.avg));
-
-	const subjectsApiArr = (Array.isArray(subjectsApi) ? subjectsApi : []) as SubjectApi[];
-	let modulesByCourse: Record<string, ModuleItem[]> | undefined;
-	let modules: ModuleItem[] | undefined;
-
-	if (subjectsApiArr.length) {
-		const hasCourseInfo = subjectsApiArr.some(
-			s => s.courseLabel || s.courseName || s.courseSlug || s.courseTitle
-		);
-
-		if (hasCourseInfo) {
-			modulesByCourse = subjectsApiArr.reduce((acc: Record<string, ModuleItem[]>, s) => {
-				const course =
-					s.courseLabel ?? s.courseName ?? s.courseSlug ?? s.courseTitle ?? "—";
-				const subjectLabel =
-					s.subjectLabel ??
-					s.subjectName ??
-					s.subject ??
-					s.moduleName ??
-					s.title ??
-					"Module";
-				const rate = toPct(
-					s.average ??
-						s.avg ??
-						s.completionRate ??
-						s.completedRate ??
-						s.percentage ??
-						s.rate
-				);
-				(acc[course] ??= []).push({ label: subjectLabel, rate });
-				return acc;
-			}, {});
-		} else {
-			modules = subjectsApiArr.map(s => ({
-				label:
-					s.subjectLabel ??
-					s.subjectName ??
-					s.subject ??
-					s.moduleName ??
-					s.title ??
-					"Module",
-				rate: toPct(
-					s.average ??
-						s.avg ??
-						s.completionRate ??
-						s.completedRate ??
-						s.percentage ??
-						s.rate
-				)
-			}));
-		}
+	if (!role) {
+		return <p className="p-6">Loading...</p>;
 	}
 
-	// Meta: sichtbarer Name im Dashboard
-	const teacherName = (session?.user?.name && session.user.name.trim()) || "—";
-	const studentsCount: number | undefined = (authorApi as any)?.studentsCount ?? undefined;
-
-	const dashboardData: DashboardData | undefined = courses.length
-		? {
-				teacherName,
-				studentsCount,
-				courses,
-				...(modulesByCourse ? { modulesByCourse } : {}),
-				...(modules ? { modules } : {})
-			}
-		: undefined;
-
-	// UI-States
-	if (status === "loading" || (!authorName && status !== "unauthenticated")) {
-		return (
-			<div className="bg-neutral-50 min-h-screen">
-				<div className="max-w-7xl mx-auto p-6 md:p-8 text-neutral-600">Lade Session …</div>
-			</div>
-		);
-	}
-
-	if (!authorName) {
-		return (
-			<div className="bg-neutral-50 min-h-screen">
-				<div className="max-w-7xl mx-auto p-6 md:p-8 text-neutral-600">
-					Kein eingeloggter User gefunden – bitte anmelden.
-				</div>
-			</div>
-		);
-	}
-
-	if (loadingCourses || loadingAuthor || loadingSubjects) {
-		return (
-			<div className="bg-neutral-50 min-h-screen">
-				<div className="max-w-7xl mx-auto p-6 md:p-8 text-neutral-600">Lädt Daten …</div>
-			</div>
-		);
-	}
-
-	if (coursesError || authorError || subjectsError) {
-		return (
-			<div className="bg-neutral-50 min-h-screen">
-				<div className="max-w-7xl mx-auto p-6 md:p-8 text-red-600">
-					Fehler beim Laden der Analytics:
-					<pre className="mt-2 text-sm text-red-800 bg-red-50 p-3 rounded-lg overflow-auto">
-						{String(coursesError ?? authorError ?? subjectsError)}
-					</pre>
-				</div>
-			</div>
-		);
-	}
-
+	// --- Role-based rendering ---
 	return (
 		<div className="bg-neutral-50 min-h-screen">
 			<AnalyticsDashboard data={dashboardData} />

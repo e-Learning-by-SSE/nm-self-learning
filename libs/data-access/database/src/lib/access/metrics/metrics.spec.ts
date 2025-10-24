@@ -9,7 +9,8 @@ import {
 	getUserAverageCompletionRateByAuthorBySubject,
 	getUserDailyLearningTimeByCourse,
 	getUserLearningStreak,
-	getUserCoursesCompletedBySubject
+	getUserCoursesCompletedBySubject,
+	getUserHourlyLearningTime
 } from "./metrics";
 
 jest.mock("../../prisma", () => ({
@@ -54,6 +55,19 @@ describe("KPI Database Access Functions", () => {
 		expect(database.dailyLearningTime.findMany).toHaveBeenCalledWith({
 			where: { id: userId },
 			orderBy: { day: "asc" }
+		});
+		expect(result).toEqual(mockResult);
+	});
+
+	it("getUserHourlyLearningTime orders by hour ascending", async () => {
+		const mockResult = [{ hour: "2025-10-01T10:00:00Z", time: 15 }];
+		(database.hourlyLearningTime.findMany as jest.Mock).mockResolvedValue(mockResult);
+
+		const result = await getUserHourlyLearningTime(userId);
+
+		expect(database.hourlyLearningTime.findMany).toHaveBeenCalledWith({
+			where: { id: userId },
+			orderBy: { hour: "asc" }
 		});
 		expect(result).toEqual(mockResult);
 	});

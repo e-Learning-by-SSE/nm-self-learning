@@ -11,6 +11,7 @@ import { seedSkillbasedModelling } from "./skill-based-modelling";
 import { seedQuizAttemptEventLog } from "./event-log/seed-quiz-attempt";
 import { seedQuizAnswerEventLog } from "./event-log/seed-quiz-answer";
 import { seedEventLogForWizardryCourse } from "./event-log/seed-event-log-with-course";
+import { assignDumbledoreAsAuthor } from "./event-log/seed-author";
 
 const prisma = new PrismaClient();
 
@@ -40,4 +41,6 @@ export async function seedDemos(): Promise<void> {
 	await seedQuizAnswerEventLog();
 
 	await seedEventLogForWizardryCourse();
+
+	await assignDumbledoreAsAuthor();
 }
