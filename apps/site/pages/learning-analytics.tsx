@@ -4,19 +4,29 @@ import { trpc } from "@self-learning/api-client";
 import { useSession } from "next-auth/react";
 import type { Chart as ChartJS, Tick } from "chart.js";
 
+// --------------------------------------
+// Hilfsfunktionen & generische Typen
+// --------------------------------------
+
 type ModuleItem = { label: string; rate: number };
 type CourseItem = { label: string; avg: number };
+
 type DashboardData = {
 	teacherName: string;
 	studentsCount?: number;
 	courses: CourseItem[];
 	modules?: ModuleItem[];
-	modulesByCourse?: Record<string, ModuleItem[]>; // Kurs → Module
+	modulesByCourse?: Record<string, ModuleItem[]>; // Kurs → Subjects/Module
+	overallAverageCompletionPct?: number; // <- NEU für die Overview-Box
 };
 
 type BarPoint = { label: string; value: number };
 
-const pct = (n: number) => `${Math.round(n)}%`;
+const pct = (n: number | undefined) => {
+	if (n === undefined || n === null || !Number.isFinite(n)) return "—";
+	return `${Math.round(n)}%`;
+};
+
 const mean = (arr: number[]) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0);
 
 const toPct = (v: unknown): number => {
@@ -25,12 +35,22 @@ const toPct = (v: unknown): number => {
 	return n <= 1 ? Math.round(n * 100) : Math.round(n);
 };
 
+// --------------------------------------
+// Rohdaten-Typen aus den Queries
+// --------------------------------------
+
+// Für das rechte Diagramm (Kurs-Completion)
 type CourseApi = {
 	courseLabel?: string;
 	courseName?: string;
 	courseSlug?: string;
+	courseTitle?: string; // aus DB Screenshot
 	title?: string;
 	name?: string;
+
+	totalEnrollments?: number; // aus DB Screenshot
+	completedEnrollments?: number; // aus DB Screenshot
+
 	average?: number;
 	avg?: number;
 	completionRate?: number;
@@ -38,16 +58,22 @@ type CourseApi = {
 	rate?: number;
 };
 
-type SubjectApi = {
+// Für das linke Diagramm (Subjects/Module pro Kurs)
+type CourseSubjectCompletionApi = {
 	courseLabel?: string;
 	courseName?: string;
 	courseSlug?: string;
 	courseTitle?: string;
+
 	subjectLabel?: string;
 	subjectName?: string;
 	subject?: string;
 	moduleName?: string;
 	title?: string;
+
+	totalEnrollments?: number;
+	completedEnrollments?: number;
+
 	average?: number;
 	avg?: number;
 	completionRate?: number;
@@ -56,11 +82,18 @@ type SubjectApi = {
 	rate?: number;
 };
 
-// ---------- visuals ----------
+// --------------------------------------
+// Farben (Charts)
+// --------------------------------------
+
 const colorGreen = "#7fb89b";
 const colorYellow = "#eae282";
 const colorRed = "#e57368";
 const colorAxis = "#525252";
+
+// --------------------------------------
+// ChartCard-Komponente (Balkendiagramm)
+// --------------------------------------
 
 function ChartCard({
 	title,
@@ -89,10 +122,12 @@ function ChartCard({
 
 				const labels = data.map(d => d.label);
 				const values = data.map(d => d.value);
+
 				const colors = values.map(v =>
 					v >= 70 ? colorGreen : v >= 40 ? colorYellow : colorRed
 				);
 
+				// altes Chart zerstören, dann neu aufbauen
 				chartRef.current?.destroy();
 				if (!isMounted || !canvasRef.current) return;
 
@@ -103,7 +138,7 @@ function ChartCard({
 						datasets: [
 							{
 								data: values,
-								backgroundColor: colors.length ? colors : undefined,
+								backgroundColor: colors,
 								borderRadius: 8,
 								maxBarThickness: 48
 							}
@@ -118,22 +153,20 @@ function ChartCard({
 								beginAtZero: true,
 								max,
 								ticks: {
-									// Signatur passend zu Chart.js-Typen
-									callback: (
-										value: string | number,
-										_index: number,
-										_ticks: Tick[]
-									) => `${value}%`,
+									callback: (value: string | number) => `${value}%`,
 									color: colorAxis
 								},
 								grid: { color: "#e5e7eb" }
 							},
-							x: { ticks: { color: colorAxis }, grid: { display: false } }
+							x: {
+								ticks: { color: colorAxis },
+								grid: { display: false }
+							}
 						}
 					}
 				});
 			} catch (err) {
-				console.error("Chart.js Chunk konnte nicht geladen werden:", err);
+				console.error("Chart.js konnte nicht geladen werden:", err);
 			}
 		})();
 
@@ -149,6 +182,7 @@ function ChartCard({
 		<div className={`bg-white rounded-2xl shadow-sm ring-1 ring-black/5 ${className}`}>
 			<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center justify-between">
 				<h2 className="text-lg font-semibold">{title}</h2>
+
 				{rightArrow && (
 					<button
 						type="button"
@@ -186,23 +220,18 @@ function ChartCard({
 	);
 }
 
-type Computed = {
-	avgCompletion?: number;
-	highest?: ModuleItem;
-	lowest?: ModuleItem;
-	avgCourse?: number;
-	bestCourse?: CourseItem;
-	worstCourse?: CourseItem;
-	deltaBest?: number;
-	deltaWorst?: number;
-};
+// --------------------------------------
+// Dashboard-Komponente (Charts + Boxen)
+// --------------------------------------
 
 function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 	const [courseIndex, setCourseIndex] = useState(0);
 
+	// Liste aller Kurse (für Pfeil-Navigation links)
 	const courseLabels = (data?.courses ?? []).map(c => c.label);
 	const activeCourseLabel = courseLabels[courseIndex] ?? "";
 
+	// Subjects/Module für den aktuell aktiven Kurs
 	let currentModules: ModuleItem[] = [];
 	if (activeCourseLabel && data?.modulesByCourse?.[activeCourseLabel]) {
 		currentModules = data.modulesByCourse[activeCourseLabel]!;
@@ -210,47 +239,32 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 		currentModules = data.modules;
 	}
 
-	const moduleBars: BarPoint[] = currentModules.map(m => ({ label: m.label, value: m.rate }));
+	// Linkes Chart (Completion pro Subject)
+	const moduleBars: BarPoint[] = currentModules.map(m => ({
+		label: m.label,
+		value: m.rate
+	}));
+
+	// Rechtes Chart (Average Completion pro Kurs)
 	const courseBars: BarPoint[] = (data?.courses ?? []).map(c => ({
 		label: c.label,
 		value: c.avg
 	}));
 
-	const computed: Computed = useMemo(() => {
-		if (!data) return {};
-		const allModules = currentModules;
-		const avgCompletion = mean(allModules.map(m => m.rate));
-		const highest = allModules.length
-			? allModules.reduce((p, c) => (c.rate > p.rate ? c : p))
-			: (undefined as unknown as ModuleItem);
-		const lowest = allModules.length
-			? allModules.reduce((p, c) => (c.rate < p.rate ? c : p))
-			: (undefined as unknown as ModuleItem);
+	// Kennzahlen für Analysis-Box
+	const avgCompletionSubjects = mean(currentModules.map(m => m.rate));
 
-		const avgCourse = mean((data.courses ?? []).map(c => c.avg));
-		const bestCourse = (data.courses ?? []).reduce(
-			(p, c) => (c.avg > p.avg ? c : p),
-			(data.courses ?? [])[0]
-		);
-		const worstCourse = (data.courses ?? []).reduce(
-			(p, c) => (c.avg < p.avg ? c : p),
-			(data.courses ?? [])[0]
-		);
-		const deltaBest = bestCourse && avgCourse ? Math.round(bestCourse.avg - avgCourse) : 0;
-		const deltaWorst = worstCourse && avgCourse ? Math.round(avgCourse - worstCourse.avg) : 0;
+	const highest = currentModules.reduce(
+		(p, c) => (c.rate > p.rate ? c : p),
+		currentModules[0] ?? { label: "", rate: 0 }
+	);
 
-		return {
-			avgCompletion,
-			highest,
-			lowest,
-			avgCourse,
-			bestCourse,
-			worstCourse,
-			deltaBest,
-			deltaWorst
-		};
-	}, [data, currentModules]);
+	const lowest = currentModules.reduce(
+		(p, c) => (c.rate < p.rate ? c : p),
+		currentModules[0] ?? { label: "", rate: 0 }
+	);
 
+	// Pfeilnavigation zwischen Kursen
 	const goNextCourse = () => {
 		if (!courseLabels.length) return;
 		setCourseIndex(i => (i + 1) % courseLabels.length);
@@ -281,7 +295,7 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 
 			{/* Info-Boxen */}
 			<section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-				{/* Analysis */}
+				{/* Analysis (links unten) */}
 				<div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5">
 					<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center gap-2">
 						<svg
@@ -302,29 +316,23 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 					<div className="p-5">
 						<ul className="space-y-2 text-sm leading-6">
 							<li>
-								• Average Completion Rate:{" "}
-								{computed.avgCompletion !== undefined
-									? pct(computed.avgCompletion)
-									: "—"}
+								• Average Completion Rate (Subjects in active course):{" "}
+								{pct(avgCompletionSubjects)}
 							</li>
 							<li>• Number of Students: {data?.studentsCount ?? "—"}</li>
 							<li>
 								• Highest Completion Rate (Top-Module):{" "}
-								{computed.highest
-									? `${computed.highest.label} – ${pct(computed.highest.rate)}`
-									: "—"}
+								{highest.label ? `${highest.label} – ${pct(highest.rate)}` : "—"}
 							</li>
 							<li>
 								• Lowest Completion Rate (Low-Module):{" "}
-								{computed.lowest
-									? `${computed.lowest.label} – ${pct(computed.lowest.rate)}`
-									: "—"}
+								{lowest.label ? `${lowest.label} – ${pct(lowest.rate)}` : "—"}
 							</li>
 						</ul>
 					</div>
 				</div>
 
-				{/* Overview */}
+				{/* Overview (rechts unten) */}
 				<div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5">
 					<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center gap-2">
 						<svg
@@ -345,42 +353,8 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 					<div className="p-5">
 						<ul className="space-y-3 text-sm leading-6">
 							<li>
-								{computed.bestCourse ? (
-									<>
-										The course <b>{computed.bestCourse.label}</b> performs
-										significantly above average with{" "}
-										<b>{pct(computed.bestCourse.avg)}</b> (
-										{(computed.deltaBest ?? 0) >= 0 ? "+" : ""}
-										{computed.deltaBest ?? 0} pp).
-									</>
-								) : (
-									"—"
-								)}
-							</li>
-							<li>
-								{computed.avgCourse !== undefined && data?.courses?.length ? (
-									<>
-										{data.courses[0]?.label ?? "—"} (
-										{data.courses[0] ? pct(data.courses[0].avg) : "—"}) and{" "}
-										{data.courses[3]?.label ?? "—"} (
-										{data.courses[3] ? pct(data.courses[3].avg) : "—"}) are
-										close to the average ({pct(computed.avgCourse)}).
-									</>
-								) : (
-									"—"
-								)}
-							</li>
-							<li>
-								{computed.worstCourse ? (
-									<>
-										{computed.worstCourse.label} reaches only{" "}
-										<b>{pct(computed.worstCourse.avg)}</b>, which is{" "}
-										{computed.deltaWorst ?? 0} pp below the average, indicating
-										difficulties.
-									</>
-								) : (
-									"—"
-								)}
+								Average Completion Rate:{" "}
+								<b>{pct(data?.overallAverageCompletionPct)}</b>
 							</li>
 						</ul>
 					</div>
@@ -390,40 +364,224 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 	);
 }
 
+// --------------------------------------
+// i18n (SSR Wrapper)
+// --------------------------------------
+
 export const getServerSideProps = withTranslations(["common"]);
 
-//Daten
+// --------------------------------------
+// Hauptseite
+// --------------------------------------
+
 export default function LearningAnalyticsPage() {
-	const { data: session } = useSession();
-	const role = session?.user?.role; // "USER" for student, "ADMIN" for creator
+	const { data: session, status } = useSession();
 
-	// --- Erik’s KPI additions (keep for later use) ---
-	// Total Time of the User spent Learning in Seconds
-	// const { data: totalData, isLoading: isLoadingTotal } = trpc.metrics.getUserTotalLearningTime.useQuery();
-	// Daily Time of the User spent Learning in Seconds
-	// const { data: dailyData, isLoading: isLoadingDaily } = trpc.metrics.getUserDailyLearningTime.useQuery();
-	// Daily Quiz Stats of the User
-	// const { data: quizData, isLoading: isLoadingQuiz } = trpc.metrics.getUserDailyQuizStats.useQuery();
-	// Total Time of the User spent Learning by Course in Seconds
-	// const { data: courseData, isLoading: isLoadingCourse } = trpc.metrics.getUserTotalLearningTimeByCourse.useQuery();
-	// Average Course Completion Rate by Author by Course
-	// const { data: authorByCourseData, isLoading: isLoadingAuthorByCourse } = trpc.metrics.getUserAverageCompletionRateByAuthorByCourse.useQuery();
-	// Average Course Completion Rate by Author
-	// const { data: authorData, isLoading: isLoadingAuthor } = trpc.metrics.getUserAverageCompletionRateByAuthor.useQuery();
-	// Average Completion Rate by Author by Subject
-	// const { data: authorBySubjectData, isLoading: isLoadingAuthorBySubject } = trpc.metrics.getUserAverageCompletionRateByAuthorBySubject.useQuery();
-	// Daily Learning Time by Course
-	// const { data: dailyByCourseData, isLoading: isLoadingDailyByCourse } = trpc.metrics.getUserDailyLearningTimeByCourse.useQuery();
-	// Learning Streak
-	// const { data: learningStreakData, isLoading: isLoadingLearningStreak } = trpc.metrics.getUserLearningStreak.useQuery();
-	// Courses Completed by Subject
-	// const { data: coursesCompletedBySubjectData, isLoading: isLoadingCoursesCompletedBySubject } = trpc.metrics.getUserCoursesCompletedBySubject.useQuery();
+	// Name des eingeloggten Users → wird an die Queries übergeben
+	const authorName = (session?.user?.name ?? "").trim();
 
-	if (!role) {
-		return <p className="p-6">Loading...</p>;
+	// 1. Rechtes Chart: durchschnittliche Completion pro Kurs
+	const {
+		data: coursesApi,
+		isLoading: loadingCourses,
+		error: coursesError
+	} = trpc.metrics.getUserAverageCompletionRateByAuthorByCourse.useQuery(authorName, {
+		enabled: !!authorName
+	});
+
+	// 2. Author-Daten (z. B. Students Count + overall averageCompletionP)
+	const {
+		data: authorApi,
+		isLoading: loadingAuthor,
+		error: authorError
+	} = trpc.metrics.getUserAverageCompletionRateByAuthor.useQuery(authorName, {
+		enabled: !!authorName
+	});
+
+	// 3. Linkes Chart: Completion pro Subject innerhalb jedes Kurses
+	const {
+		data: courseSubjectApi,
+		isLoading: loadingCourseSubjects,
+		error: courseSubjectError
+	} = trpc.metrics.getUserCoursesCompletedBySubject.useQuery(authorName, {
+		enabled: !!authorName
+	});
+
+	// ------------------------------
+	// Kurse (rechtes Diagramm)
+	// ------------------------------
+
+	const coursesApiArr = (Array.isArray(coursesApi) ? coursesApi : []) as CourseApi[];
+
+	const courses: CourseItem[] = coursesApiArr
+		.map(c => {
+			// Kursname bestimmen
+			const label =
+				c.courseLabel ??
+				c.courseName ??
+				c.courseSlug ??
+				c.courseTitle ??
+				c.title ??
+				c.name ??
+				"—";
+
+			// zuerst schauen, ob eine fertige Rate existiert
+			let completionRaw = c.average ?? c.avg ?? c.completionRate ?? c.percentage ?? c.rate;
+
+			// wenn nicht, aus completed/total berechnen
+			if (
+				(completionRaw === undefined || completionRaw === null) &&
+				c.totalEnrollments !== undefined &&
+				c.completedEnrollments !== undefined
+			) {
+				if (c.totalEnrollments > 0) {
+					completionRaw = (c.completedEnrollments / c.totalEnrollments) * 100;
+				} else {
+					completionRaw = 0;
+				}
+			}
+
+			const avg = toPct(completionRaw);
+
+			return {
+				label,
+				avg
+			};
+		})
+		.filter(c => !!c.label && Number.isFinite(c.avg));
+
+	// ------------------------------
+	// Subjects / Module pro Kurs (linkes Diagramm)
+	// ------------------------------
+
+	const courseSubjectArr = (
+		Array.isArray(courseSubjectApi) ? courseSubjectApi : []
+	) as CourseSubjectCompletionApi[];
+
+	const modulesByCourse: Record<string, ModuleItem[]> = {};
+
+	courseSubjectArr.forEach(row => {
+		const courseName =
+			row.courseLabel ?? row.courseName ?? row.courseSlug ?? row.courseTitle ?? "—";
+
+		const subjectName =
+			row.subjectLabel ??
+			row.subjectName ??
+			row.subject ??
+			row.moduleName ??
+			row.title ??
+			"Module";
+
+		// fertige Rate?
+		let subjectCompletionRaw =
+			row.average ??
+			row.avg ??
+			row.completionRate ??
+			row.completedRate ??
+			row.percentage ??
+			row.rate;
+
+		// falls nicht vorhanden → berechnen
+		if (
+			(subjectCompletionRaw === undefined || subjectCompletionRaw === null) &&
+			row.totalEnrollments !== undefined &&
+			row.completedEnrollments !== undefined
+		) {
+			if (row.totalEnrollments > 0) {
+				subjectCompletionRaw = (row.completedEnrollments / row.totalEnrollments) * 100;
+			} else {
+				subjectCompletionRaw = 0;
+			}
+		}
+
+		const rate = toPct(subjectCompletionRaw);
+
+		(modulesByCourse[courseName] ??= []).push({
+			label: subjectName,
+			rate
+		});
+	});
+
+	// ------------------------------
+	// Overall Average Completion Rate (Overview Box)
+	// Screenshot zeigt: authorApi.averageCompletionP = 37.50
+	// Wir runden sie über toPct() in ein Prozentformat.
+	// ------------------------------
+
+	const overallAverageCompletionPct = toPct(
+		(authorApi as any)?.averageCompletionP ??
+			(authorApi as any)?.averageCompletion ??
+			(authorApi as any)?.avg ??
+			(authorApi as any)?.completionRate ??
+			(authorApi as any)?.percentage ??
+			(authorApi as any)?.rate
+	);
+
+	// ------------------------------
+	// DashboardData zusammenbauen
+	// ------------------------------
+
+	const teacherName = authorName || "—";
+	const studentsCount: number | undefined = (authorApi as any)?.studentsCount;
+
+	const dashboardData: DashboardData | undefined = courses.length
+		? {
+				teacherName,
+				studentsCount,
+				courses,
+				modulesByCourse,
+				overallAverageCompletionPct
+			}
+		: undefined;
+
+	// ------------------------------
+	// Lade-/Fehlerzustände
+	// ------------------------------
+
+	// Session lädt noch oder wir kennen den Namen noch nicht sicher
+	if (status === "loading" || (!authorName && status !== "unauthenticated")) {
+		return (
+			<div className="bg-neutral-50 min-h-screen">
+				<div className="max-w-7xl mx-auto p-6 md:p-8 text-neutral-600">Lade Session …</div>
+			</div>
+		);
 	}
 
-	// --- Role-based rendering ---
+	// Kein User → Hinweis
+	if (!authorName) {
+		return (
+			<div className="bg-neutral-50 min-h-screen">
+				<div className="max-w-7xl mx-auto p-6 md:p-8 text-neutral-600">
+					Kein eingeloggter User gefunden – bitte anmelden.
+				</div>
+			</div>
+		);
+	}
+
+	// Daten werden geladen
+	if (loadingCourses || loadingAuthor || loadingCourseSubjects) {
+		return (
+			<div className="bg-neutral-50 min-h-screen">
+				<div className="max-w-7xl mx-auto p-6 md:p-8 text-neutral-600">Lädt Daten …</div>
+			</div>
+		);
+	}
+
+	// Fehler
+	if (coursesError || authorError || courseSubjectError) {
+		return (
+			<div className="bg-neutral-50 min-h-screen">
+				<div className="max-w-7xl mx-auto p-6 md:p-8 text-red-600">
+					Fehler beim Laden der Analytics:
+					<pre className="mt-2 text-sm text-red-800 bg-red-50 p-3 rounded-lg overflow-auto">
+						{String(coursesError ?? authorError ?? courseSubjectError)}
+					</pre>
+				</div>
+			</div>
+		);
+	}
+
+	// Erfolgsfall
 	return (
 		<div className="bg-neutral-50 min-h-screen">
 			<AnalyticsDashboard data={dashboardData} />
