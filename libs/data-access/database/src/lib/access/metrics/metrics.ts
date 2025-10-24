@@ -106,30 +106,40 @@ export async function getUserCoursesCompletedBySubject(userId: string) {
 	});
 }
 
+// --------------- Author Metrics ---------------
+
 /**
- * Fetch total average lesson completion rate by course and by author for a user.
+ * Fetch average lesson completion rate by author for a user.
  */
-export async function getTotalAverageLessonCompletionRateByCourseByAuthor(userId: string) {
-	return database.totalAverageLessonCompletionRateByCourseByAuthor.findMany({
-		where: { id: userId },
-		orderBy: { courseId: "asc" }
+export async function getAuthorMetric_AverageCompletionRate(userId: string) {
+	return database.authorMetric_AverageCompletionRate.findMany({
+		where: { authorId: userId }
 	});
 }
 
 /**
- * Fetch total average lesson completion rate by author for a user.
+ * Fetch daily average lesson completion rate by author for a user.
  */
-export async function getTotalAverageLessonCompletionRateByAuthor(userId: string) {
-	return database.totalAverageLessonCompletionRateByAuthor.findMany({
-		where: { id: userId }
+export async function getAuthorMetric_DailyAverageCompletionRate(userId: string) {
+	return database.authorMetric_DailyAverageCompletionRate.findMany({
+		where: { authorId: userId }
 	});
 }
 
 /**
- * Fetch total average lesson completion rate by author for a user.
+ * Fetch average lesson completion rate by author and by course for a user.
  */
-export async function getDailyAverageLessonCompletionRateByAuthor(userId: string) {
-	return database.dailyAverageLessonCompletionRateByAuthor.findMany({
-		where: { id: userId }
+export async function getAuthorMetric_AverageCompletionRateByCourse(userId: string) {
+	return database.authorMetric_AverageCompletionRateByCourse.findMany({
+		where: { authorId: userId }
+	});
+}
+
+/**
+ * Fetch daily average lesson completion rate by author and by course for a user.
+ */
+export async function getAuthorMetric_DailyAverageCompletionRateByCourse(userId: string) {
+	return database.authorMetric_DailyAverageCompletionRateByCourse.findMany({
+		where: { authorId: userId }
 	});
 }

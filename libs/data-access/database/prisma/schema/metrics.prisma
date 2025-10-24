@@ -99,32 +99,42 @@ view CoursesCompletedBySubject {
   completed_courses       String?
 }
 
-view TotalAverageLessonCompletionRateByCourseByAuthor {
-  id                        String  @unique
+/// --- Metrics Views for Authors ---
+
+view AuthorMetric_AverageCompletionRate {
+  authorId                  String  @unique
   authorName                String
-  courseId                  String
-  courseTitle               String
-  totalLessons              Float
-  completedLessons          Float
+  usersStarted              Int
+  usersFinished             Int
   averageCompletionRate     Float
 }
 
-view TotalAverageLessonCompletionRateByAuthor {
-  id                        String  @unique
+view AuthorMetric_DailyAverageCompletionRate {
+  authorId                  String  @unique
   authorName                String
-  totalCourses              Float
-  totalLessons              Float
-  completedLessons          Float
+  day                       DateTime
+  usersStarted              Int
+  usersFinished             Int
   averageCompletionRate     Float
 }
 
-view DailyAverageLessonCompletionRateByAuthor {
-  id                        String  @unique
+view AuthorMetric_AverageCompletionRateByCourse {
+  authorId                  String  @unique
   authorName                String
   courseId                  String
   courseTitle               String
-  date                      DateTime
-  totalLessons              Float
-  completedLessons          Float
+  usersStarted              Int
+  usersFinished             Int
+  averageCompletionRate     Float
+}
+
+view AuthorMetric_DailyAverageCompletionRateByCourse {
+  authorId                  String  @unique
+  authorName                String
+  courseId                  String
+  courseTitle               String
+  day                       DateTime
+  usersStarted              Int
+  usersFinished             Int
   averageCompletionRate     Float
 }

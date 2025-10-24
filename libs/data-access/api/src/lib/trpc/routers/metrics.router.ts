@@ -12,9 +12,10 @@ import {
 	getUserLearningStreak,
 	getUserCoursesCompletedBySubject,
 	getUserHourlyLearningTime,
-	getDailyAverageLessonCompletionRateByAuthor,
-	getTotalAverageLessonCompletionRateByAuthor,
-	getTotalAverageLessonCompletionRateByCourseByAuthor
+	getAuthorMetric_AverageCompletionRate,
+	getAuthorMetric_DailyAverageCompletionRate,
+	getAuthorMetric_AverageCompletionRateByCourse,
+	getAuthorMetric_DailyAverageCompletionRateByCourse
 } from "@self-learning/database";
 
 /**
@@ -44,13 +45,14 @@ export const MetricsRouter = t.router({
 	getUserLearningStreak: metricsQuery(getUserLearningStreak),
 	getUserCoursesCompletedBySubject: metricsQuery(getUserCoursesCompletedBySubject),
 	getUserHourlyLearningTime: metricsQuery(getUserHourlyLearningTime),
-	getTotalAverageLessonCompletionRateByCourseByAuthor: metricsQuery(
-		getTotalAverageLessonCompletionRateByCourseByAuthor
+	getAuthorMetric_AverageCompletionRate: metricsQuery(getAuthorMetric_AverageCompletionRate),
+	getAuthorMetric_DailyAverageCompletionRate: metricsQuery(
+		getAuthorMetric_DailyAverageCompletionRate
 	),
-	getTotalAverageLessonCompletionRateByAuthor: metricsQuery(
-		getTotalAverageLessonCompletionRateByAuthor
+	getAuthorMetric_AverageCompletionRateByCourse: metricsQuery(
+		getAuthorMetric_AverageCompletionRateByCourse
 	),
-	getDailyAverageLessonCompletionRateByAuthor: metricsQuery(
-		getDailyAverageLessonCompletionRateByAuthor
+	getAuthorMetric_DailyAverageCompletionRateByCourse: metricsQuery(
+		getAuthorMetric_DailyAverageCompletionRateByCourse
 	)
 });
