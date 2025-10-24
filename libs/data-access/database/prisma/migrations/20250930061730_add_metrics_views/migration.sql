@@ -382,6 +382,7 @@ GROUP BY u.id, u.name, s."subjectId", s."title"
 ORDER BY u."name", s."title";
 
 --- Create KPI View for Total Average Completion Rate of Total Lessons by Course of Authors
+--- TODO: Fix Bug in this View (Lessons are not being counted when there was not 1 completed lesson)
 CREATE OR REPLACE VIEW "TotalAverageLessonCompletionRateByCourseByAuthor" AS
 SELECT
     u.id,
@@ -409,6 +410,7 @@ LEFT JOIN "Lesson" l ON l."lessonId" = cl."lessonId"
 GROUP BY u.id, u.name, a.id, a.username, c."courseId", c."title";
 
 --- Create KPI View for Total Average Completion Rate of Total Lessons of Authors
+--- TODO: Fix Bug in this View (Lessons are not being counted when there was not 1 completed lesson)
 CREATE OR REPLACE VIEW "TotalAverageLessonCompletionRateByAuthor" AS
 SELECT
     u.id,
@@ -436,6 +438,7 @@ GROUP BY u.id, u.name, a.id, a.username, c."courseId", c."title";
 
 
 --- Create KPI View for Daily Average Completion Rate of Total Lessons by Course of Authors
+--- TODO: Fix Bug in this View (Lessons are not being counted when there was not 1 completed lesson)
 CREATE OR REPLACE VIEW "DailyAverageLessonCompletionRateByAuthor" AS
 SELECT
     u.id,
