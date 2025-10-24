@@ -10,10 +10,7 @@ import {
 	getUserDailyLearningTimeByCourse,
 	getUserLearningStreak,
 	getUserCoursesCompletedBySubject,
-	getUserHourlyLearningTime,
-	getTotalAverageLessonCompletionRateByCourseByAuthor,
-	getTotalAverageLessonCompletionRateByAuthor,
-	getDailyAverageLessonCompletionRateByAuthor
+	getUserHourlyLearningTime
 } from "./metrics";
 
 jest.mock("../../prisma", () => ({
@@ -28,10 +25,7 @@ jest.mock("../../prisma", () => ({
 		dailyLearningTimeByCourse: { findMany: jest.fn() },
 		learningStreak: { findUnique: jest.fn() },
 		coursesCompletedBySubject: { findMany: jest.fn() },
-		hourlyLearningTime: { findMany: jest.fn() },
-		totalAverageLessonCompletionRateByCourseByAuthor: { findMany: jest.fn() },
-		totalAverageLessonCompletionRateByAuthor: { findMany: jest.fn() },
-		dailyAverageLessonCompletionRateByAuthor: { findMany: jest.fn() }
+		hourlyLearningTime: { findMany: jest.fn() }
 	}
 }));
 
@@ -185,49 +179,5 @@ describe("KPI Database Access Functions", () => {
 			where: { id: userId }
 		});
 		expect(result).toEqual(mockResult);
-	});
-
-	it("getTotalAverageLessonCompletionRateByCourseByAuthor orders by courseId ascending", async () => {
-		const mockResult = [{ courseId: "C4", averageCompletionRate: 90 }];
-		(
-			database.totalAverageLessonCompletionRateByCourseByAuthor.findMany as jest.Mock
-		).mockResolvedValue(mockResult);
-
-		const result = await getTotalAverageLessonCompletionRateByCourseByAuthor(userId);
-
-		expect(
-			database.totalAverageLessonCompletionRateByCourseByAuthor.findMany
-		).toHaveBeenCalledWith({
-			where: { id: userId },
-			orderBy: { courseId: "asc" }
-		});
-		expect(result).toEqual(mockResult);
-	});
-
-	it("getTotalAverageLessonCompletionRateByAuthor queries correctly", async () => {
-		const mockResult = [{ authorId: "A1", averageCompletionRate: 85 }];
-		(database.totalAverageLessonCompletionRateByAuthor.findMany as jest.Mock).mockResolvedValue(
-			mockResult
-		);
-
-		const result = await getTotalAverageLessonCompletionRateByAuthor(userId);
-
-		expect(database.totalAverageLessonCompletionRateByAuthor.findMany).toHaveBeenCalledWith({
-			where: { id: userId }
-		});
-		expect(result).toEqual(mockResult);
-	});
-
-	it("getDailyAverageLessonCompletionRateByAuthor handles empty results", async () => {
-		(database.dailyAverageLessonCompletionRateByAuthor.findMany as jest.Mock).mockResolvedValue(
-			[]
-		);
-
-		const result = await getDailyAverageLessonCompletionRateByAuthor(userId);
-
-		expect(database.dailyAverageLessonCompletionRateByAuthor.findMany).toHaveBeenCalledWith({
-			where: { id: userId }
-		});
-		expect(result).toEqual([]);
 	});
 });

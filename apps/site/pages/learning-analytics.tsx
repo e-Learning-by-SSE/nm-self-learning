@@ -57,13 +57,13 @@ export default function LearningAnalyticsPage() {
 	// const { data: coursesCompletedBySubjectData, isLoading: isLoadingCoursesCompletedBySubject } = trpc.metrics.getUserCoursesCompletedBySubject.useQuery();
 	// --------------------Author Metrics--------------------
 	// Average Completion Rate
-	// const { data: authorMetricAverageCompletionRateData, isLoading: isLoadingAuthorMetricAverageCompletionRate } = trpc.metrics.getAuthorMetric_AverageCompletionRate.useQuery();
+	// const { data: authorMetricAverageCompletionRateData, isLoading: isLoadingAuthorMetricAverageCompletionRate } = trpc.metrics.getAuthorMetric_AverageLessonCompletionRate.useQuery();
 	// Daily Average Completion Rate
-	// const { data: authorMetricDailyAverageCompletionRateData, isLoading: isLoadingAuthorMetricDailyAverageCompletionRate } = trpc.metrics.getAuthorMetric_DailyAverageCompletionRate.useQuery();
+	// const { data: authorMetricDailyAverageCompletionRateData, isLoading: isLoadingAuthorMetricDailyAverageCompletionRate } = trpc.metrics.getAuthorMetric_DailyAverageLessonCompletionRate.useQuery();
 	// Average Completion Rate by Course
-	// const { data: authorMetricAverageCompletionRateByCourseData, isLoading: isLoadingAuthorMetricAverageCompletionRateByCourse } = trpc.metrics.getAuthorMetric_AverageCompletionRateByCourse.useQuery();
+	// const { data: authorMetricAverageCompletionRateByCourseData, isLoading: isLoadingAuthorMetricAverageCompletionRateByCourse } = trpc.metrics.getAuthorMetric_AverageLessonCompletionRateByCourse.useQuery();
 	// Daily Average Completion Rate by Course
-	// const { data: authorMetricDailyAverageCompletionRateByCourseData, isLoading: isLoadingAuthorMetricDailyAverageCompletionRateByCourse } = trpc.metrics.getAuthorMetric_DailyAverageCompletionRateByCourse.useQuery();
+	// const { data: authorMetricDailyAverageCompletionRateByCourseData, isLoading: isLoadingAuthorMetricDailyAverageCompletionRateByCourse } = trpc.metrics.getAuthorMetric_DailyAverageLessonCompletionRateByCourse.useQuery();
 
 	if (!role) {
 		return <p className="p-6">Loading...</p>;
