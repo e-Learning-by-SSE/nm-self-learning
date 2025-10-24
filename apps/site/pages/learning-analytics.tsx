@@ -43,27 +43,28 @@ export default function LearningAnalyticsPage() {
 	// const { data: quizData, isLoading: isLoadingQuiz } = trpc.metrics.getUserDailyQuizStats.useQuery();
 	// Total Time of the User spent Learning by Course in Seconds
 	// const { data: courseData, isLoading: isLoadingCourse } = trpc.metrics.getUserTotalLearningTimeByCourse.useQuery();
-	// Average Course Completion Rate by Author by Course
-	// const { data: authorByCourseData, isLoading: isLoadingAuthorByCourse } = trpc.metrics.getUserAverageCompletionRateByAuthorByCourse.useQuery();
-	// Average Course Completion Rate by Author
-	// const { data: authorData, isLoading: isLoadingAuthor } = trpc.metrics.getUserAverageCompletionRateByAuthor.useQuery();
-	// Average Completion Rate by Author by Subject
-	// const { data: authorBySubjectData, isLoading: isLoadingAuthorBySubject } = trpc.metrics.getUserAverageCompletionRateByAuthorBySubject.useQuery();
 	// Daily Learning Time by Course
 	// const { data: dailyByCourseData, isLoading: isLoadingDailyByCourse } = trpc.metrics.getUserDailyLearningTimeByCourse.useQuery();
 	// Learning Streak
 	// const { data: learningStreakData, isLoading: isLoadingLearningStreak } = trpc.metrics.getUserLearningStreak.useQuery();
 	// Courses Completed by Subject
 	// const { data: coursesCompletedBySubjectData, isLoading: isLoadingCoursesCompletedBySubject } = trpc.metrics.getUserCoursesCompletedBySubject.useQuery();
+
 	// --------------------Author Metrics--------------------
 	// Average Completion Rate
-	// const { data: authorMetricAverageCompletionRateData, isLoading: isLoadingAuthorMetricAverageCompletionRate } = trpc.metrics.getAuthorMetric_AverageLessonCompletionRate.useQuery();
+	// const { data: authorMetricAverageCompletionRateData, isLoading: isLoadingAuthorMetricAverageCompletionRate } = trpc.metrics.getAuthorMetric_AverageCompletionRate.useQuery();
+	// Average Subject Completion Rate
+	// const { data: authorMetricAverageSubjectCompletionRateData, isLoading: isLoadingAuthorMetricAverageSubjectCompletionRate } = trpc.metrics.getAuthorMetric_AverageSubjectCompletionRate.useQuery();
+	// Average Course Completion Rate
+	// const { data: authorMetricAverageCourseCompletionRateData, isLoading: isLoadingAuthorMetricAverageCourseCompletionRate } = trpc.metrics.getAuthorMetric_AverageCourseCompletionRate.useQuery();
+	// Average Lesson Completion Rate
+	// const { data: authorMetricAverageLessonCompletionRateData, isLoading: isLoadingAuthorMetricAverageLessonCompletionRate } = trpc.metrics.getAuthorMetric_AverageLessonCompletionRate.useQuery();
 	// Daily Average Completion Rate
-	// const { data: authorMetricDailyAverageCompletionRateData, isLoading: isLoadingAuthorMetricDailyAverageCompletionRate } = trpc.metrics.getAuthorMetric_DailyAverageLessonCompletionRate.useQuery();
+	// const { data: authorMetricDailyAverageLessonCompletionRateData, isLoading: isLoadingAuthorMetricDailyAverageCompletionRate } = trpc.metrics.getAuthorMetric_DailyAverageLessonCompletionRate.useQuery();
 	// Average Completion Rate by Course
-	// const { data: authorMetricAverageCompletionRateByCourseData, isLoading: isLoadingAuthorMetricAverageCompletionRateByCourse } = trpc.metrics.getAuthorMetric_AverageLessonCompletionRateByCourse.useQuery();
-	// Daily Average Completion Rate by Course
-	// const { data: authorMetricDailyAverageCompletionRateByCourseData, isLoading: isLoadingAuthorMetricDailyAverageCompletionRateByCourse } = trpc.metrics.getAuthorMetric_DailyAverageLessonCompletionRateByCourse.useQuery();
+	// const { data: authorMetricAverageLessonCompletionRateByCourseData, isLoading: isLoadingAuthorMetricAverageCompletionRateByCourse } = trpc.metrics.getAuthorMetric_AverageLessonCompletionRateByCourse.useQuery();
+	// Daily Average Lesson Completion Rate by Course
+	// const { data: authorMetricDailyAverageLessonCompletionRateByCourseData, isLoading: isLoadingAuthorMetricDailyAverageCompletionRateByCourse } = trpc.metrics.getAuthorMetric_DailyAverageLessonCompletionRateByCourse.useQuery();
 
 	if (!role) {
 		return <p className="p-6">Loading...</p>;
