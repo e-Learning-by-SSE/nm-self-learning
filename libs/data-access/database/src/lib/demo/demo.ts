@@ -8,12 +8,12 @@ import { generateLearningDiaryDemoData } from "./learningDiary/learningDiary";
 import { seedJavaDemo } from "./seed-java-demo";
 import { seedReactDemo } from "./seed-react-demo";
 import { seedSkillbasedModelling } from "./skill-based-modelling";
-import { seedQuizAttemptEventLog } from "./event-log/seed-quiz-attempt";
-import { seedQuizAnswerEventLog } from "./event-log/seed-quiz-answer";
-import { seedEventLogForWizardryCourse } from "./event-log/seed-event-log-with-course";
-import { assignDumbledoreAsAuthor } from "./event-log/seed-author";
+import { seedQuizAttemptEventLog } from "./metrics/seed-quiz-attempt";
+import { seedQuizAnswerEventLog } from "./metrics/seed-quiz-answer";
+import { seedEventLogForWizardryCourse } from "./metrics/seed-event-log-with-course";
+import { assignDumbledoreAsAuthor } from "./metrics/seed-author";
 import { create } from "domain";
-import { createLessonsForWizardry } from "./event-log/seed-lessons";
+import { createLessonsForWizardry } from "./metrics/seed-lessons";
 
 const prisma = new PrismaClient();
 
