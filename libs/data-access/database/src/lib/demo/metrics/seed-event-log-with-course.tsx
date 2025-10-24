@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import eventLogsDataRaw from "./data/eventLogsData.json";
 
 const prisma = new PrismaClient();
 
@@ -70,175 +71,13 @@ export async function seedEventLogForWizardryCourse() {
 		// 📜 Create example event logs
 		const now = new Date();
 
-		const eventLogsData = [
-			// --- Day 4 (today) ---
-			{
-				username: "potter",
-				resourceId: "video-1",
-				courseId: course.courseId,
-				type: "LESSON_VIDEO_START",
-				createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 2), // 2h ago
-				payload: {}
-			},
-			{
-				username: "potter",
-				resourceId: "video-1",
-				courseId: course.courseId,
-				type: "LESSON_VIDEO_END",
-				createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 1 + 1000 * 60 * 5), // 1h55 ago
-				payload: {}
-			},
-			{
-				username: "potter",
-				resourceId: "quiz-1",
-				courseId: course.courseId,
-				type: "QUIZ_STARTED",
-				createdAt: new Date(now.getTime() - 1000 * 60 * 30), // 30 min ago
-				payload: {}
-			},
-			{
-				username: "potter",
-				resourceId: "quiz-1",
-				courseId: course.courseId,
-				type: "QUIZ_COMPLETED",
-				createdAt: new Date(now.getTime() - 1000 * 60 * 25), // 25 min ago
-				payload: {}
-			},
-			{
-				username: "potter",
-				resourceId: "lesson-end",
-				courseId: course.courseId,
-				type: "LESSON_COMPLETED",
-				createdAt: new Date(now.getTime() - 1000 * 60 * 5), // 5 min ago
-				payload: {}
-			},
-
-			// --- Day 3 (yesterday) ---
-			{
-				username: "potter",
-				resourceId: "video-2",
-				courseId: course.courseId,
-				type: "LESSON_VIDEO_START",
-				createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 1 - 1000 * 60 * 90), // 1d 1.5h ago
-				payload: {}
-			},
-			{
-				username: "potter",
-				resourceId: "video-2",
-				courseId: course.courseId,
-				type: "LESSON_VIDEO_END",
-				createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 1 - 1000 * 60 * 60), // 1d 1h ago
-				payload: {}
-			},
-			{
-				username: "potter",
-				resourceId: "quiz-2",
-				courseId: course.courseId,
-				type: "QUIZ_STARTED",
-				createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 1 - 1000 * 60 * 20), // 1d 20m ago
-				payload: {}
-			},
-			{
-				username: "potter",
-				resourceId: "quiz-2",
-				courseId: course.courseId,
-				type: "QUIZ_COMPLETED",
-				createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 1 - 1000 * 60 * 10), // 1d 10m ago
-				payload: {}
-			},
-			{
-				username: "potter",
-				resourceId: "lesson-end-2",
-				courseId: course.courseId,
-				type: "LESSON_COMPLETED",
-				createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 1 - 1000 * 60 * 5), // 1d 5m ago
-				payload: {}
-			},
-
-			// --- Day 2 ---
-			{
-				username: "potter",
-				resourceId: "video-3",
-				courseId: course.courseId,
-				type: "LESSON_VIDEO_START",
-				createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 2 - 1000 * 60 * 90),
-				payload: {}
-			},
-			{
-				username: "potter",
-				resourceId: "video-3",
-				courseId: course.courseId,
-				type: "LESSON_VIDEO_END",
-				createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 2 - 1000 * 60 * 60),
-				payload: {}
-			},
-			{
-				username: "potter",
-				resourceId: "quiz-3",
-				courseId: course.courseId,
-				type: "QUIZ_STARTED",
-				createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 2 - 1000 * 60 * 20),
-				payload: {}
-			},
-			{
-				username: "potter",
-				resourceId: "quiz-3",
-				courseId: course.courseId,
-				type: "QUIZ_COMPLETED",
-				createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 2 - 1000 * 60 * 10),
-				payload: {}
-			},
-			{
-				username: "potter",
-				resourceId: "lesson-end-3",
-				courseId: course.courseId,
-				type: "LESSON_COMPLETED",
-				createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 2 - 1000 * 60 * 5),
-				payload: {}
-			},
-
-			// --- Day 1 ---
-			{
-				username: "potter",
-				resourceId: "video-4",
-				courseId: course.courseId,
-				type: "LESSON_VIDEO_START",
-				createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 3 - 1000 * 60 * 90),
-				payload: {}
-			},
-			{
-				username: "potter",
-				resourceId: "video-4",
-				courseId: course.courseId,
-				type: "LESSON_VIDEO_END",
-				createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 3 - 1000 * 60 * 60),
-				payload: {}
-			},
-			{
-				username: "potter",
-				resourceId: "quiz-4",
-				courseId: course.courseId,
-				type: "QUIZ_STARTED",
-				createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 3 - 1000 * 60 * 20),
-				payload: {}
-			},
-			{
-				username: "potter",
-				resourceId: "quiz-4",
-				courseId: course.courseId,
-				type: "QUIZ_COMPLETED",
-				createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 3 - 1000 * 60 * 10),
-				payload: {}
-			},
-			{
-				username: "potter",
-				resourceId: "lesson-end-4",
-				courseId: course.courseId,
-				type: "LESSON_COMPLETED",
-				createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 3 - 1000 * 60 * 5),
-				payload: {}
-			}
-		];
+		const eventLogsData = eventLogsDataRaw.map(e => {
+			const { timeOffsetMs, ...rest } = e; // exclude timeOffsetMs
+			return {
+				...rest,
+				createdAt: new Date(now.getTime() + timeOffsetMs)
+			};
+		});
 
 		await prisma.eventLog.createMany({
 			data: eventLogsData,

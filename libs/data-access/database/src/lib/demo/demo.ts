@@ -11,7 +11,7 @@ import { seedSkillbasedModelling } from "./skill-based-modelling";
 import { seedQuizAttemptEventLog } from "./metrics/seed-quiz-attempt";
 import { seedQuizAnswerEventLog } from "./metrics/seed-quiz-answer";
 import { seedEventLogForWizardryCourse } from "./metrics/seed-event-log-with-course";
-import { assignDumbledoreAsAuthor } from "./metrics/seed-author";
+import { assignDumbledoreAsAuthor } from "./metrics/seed-author-course-relation";
 import { create } from "domain";
 import { createLessonsForWizardry } from "./metrics/seed-lessons";
 
