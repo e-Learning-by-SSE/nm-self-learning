@@ -380,3 +380,91 @@ WHERE e."completedAt" IS NOT NULL
    OR e."status" = 'COMPLETED'
 GROUP BY u.id, u.name, s."subjectId", s."title"
 ORDER BY u."name", s."title";
+
+--- Create KPI View for Total Average Completion Rate of Total Lessons by Course of Authors
+CREATE OR REPLACE VIEW "TotalAverageLessonCompletionRateByCourseByAuthor" AS
+SELECT
+    u.id,
+    u.name AS "authorName",
+    c."courseId",
+    c."title" AS "courseTitle",
+    COUNT(DISTINCT l."lessonId") AS "totalLessons",
+    COUNT(DISTINCT cl."completedLessonId") AS "completedLessons",
+    ROUND(
+        COALESCE(
+            (
+                COUNT(DISTINCT cl."completedLessonId")::decimal
+                / NULLIF(COUNT(DISTINCT l."lessonId"), 0)
+            ) * 100,
+            0
+        ),
+        2
+    ) AS "averageCompletionRate"
+FROM "User" u
+JOIN "Author" a ON a.username = u.name
+JOIN "_AuthorToCourse" ac ON ac."A" = a.id
+JOIN "Course" c ON c."courseId" = ac."B"
+LEFT JOIN "CompletedLesson" cl ON cl."courseId" = c."courseId"
+LEFT JOIN "Lesson" l ON l."lessonId" = cl."lessonId"
+GROUP BY u.id, u.name, a.id, a.username, c."courseId", c."title";
+
+--- Create KPI View for Total Average Completion Rate of Total Lessons of Authors
+CREATE OR REPLACE VIEW "TotalAverageLessonCompletionRateByAuthor" AS
+SELECT
+    u.id,
+    u.name AS "authorName",
+    COUNT(DISTINCT c."courseId") AS "totalCourses",
+    COUNT(DISTINCT l."lessonId") AS "totalLessons",
+    COUNT(DISTINCT cl."completedLessonId") AS "completedLessons",
+    ROUND(
+        COALESCE(
+            (
+                COUNT(DISTINCT cl."completedLessonId")::decimal
+                / NULLIF(COUNT(DISTINCT l."lessonId"), 0)
+            ) * 100,
+            0
+        ),
+        2
+    ) AS "averageCompletionRate"
+FROM "User" u
+JOIN "Author" a ON a.username = u.name
+LEFT JOIN "_AuthorToCourse" ac ON ac."A" = a.id
+LEFT JOIN "Course" c ON c."courseId" = ac."B"
+LEFT JOIN "CompletedLesson" cl ON cl."courseId" = c."courseId"
+LEFT JOIN "Lesson" l ON l."lessonId" = cl."lessonId"
+GROUP BY u.id, u.name, a.id, a.username, c."courseId", c."title";
+
+
+--- Create KPI View for Daily Average Completion Rate of Total Lessons by Course of Authors
+CREATE OR REPLACE VIEW "DailyAverageLessonCompletionRateByAuthor" AS
+SELECT
+    u.id,
+    u.name AS "authorName",
+    c."courseId",
+    c."title" AS "courseTitle",
+    DATE(cl."createdAt") AS "date",
+    COUNT(DISTINCT l."lessonId") AS "totalLessons",
+    COUNT(DISTINCT cl."completedLessonId") AS "completedLessons",
+    ROUND(
+        COALESCE(
+            (
+                COUNT(DISTINCT cl."completedLessonId")::decimal
+                / NULLIF(COUNT(DISTINCT l."lessonId"), 0)
+            ) * 100,
+            0
+        ),
+        2
+    ) AS "averageCompletionRate"
+FROM "User" u
+JOIN "Author" a ON a.username = u.name
+JOIN "_AuthorToCourse" ac ON ac."A" = a.id
+JOIN "Course" c ON c."courseId" = ac."B"
+LEFT JOIN "CompletedLesson" cl ON cl."courseId" = c."courseId"
+LEFT JOIN "Lesson" l ON l."lessonId" = cl."lessonId"
+WHERE cl."createdAt" IS NOT NULL
+GROUP BY
+    u.id, u.name,
+    a.id, a.username,
+    c."courseId", c."title",
+    DATE(cl."createdAt")
+ORDER BY u.name, a.username, c."title", DATE(cl."createdAt");
