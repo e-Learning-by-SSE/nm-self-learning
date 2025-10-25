@@ -59,12 +59,8 @@ export default function LearningAnalyticsPage() {
 	// const { data: authorMetricAverageCourseCompletionRateData, isLoading: isLoadingAuthorMetricAverageCourseCompletionRate } = trpc.metrics.getAuthorMetric_AverageCourseCompletionRate.useQuery();
 	// Average Lesson Completion Rate
 	// const { data: authorMetricAverageLessonCompletionRateData, isLoading: isLoadingAuthorMetricAverageLessonCompletionRate } = trpc.metrics.getAuthorMetric_AverageLessonCompletionRate.useQuery();
-	// Daily Average Completion Rate
-	// const { data: authorMetricDailyAverageLessonCompletionRateData, isLoading: isLoadingAuthorMetricDailyAverageCompletionRate } = trpc.metrics.getAuthorMetric_DailyAverageLessonCompletionRate.useQuery();
 	// Average Completion Rate by Course
 	// const { data: authorMetricAverageLessonCompletionRateByCourseData, isLoading: isLoadingAuthorMetricAverageCompletionRateByCourse } = trpc.metrics.getAuthorMetric_AverageLessonCompletionRateByCourse.useQuery();
-	// Daily Average Lesson Completion Rate by Course
-	// const { data: authorMetricDailyAverageLessonCompletionRateByCourseData, isLoading: isLoadingAuthorMetricDailyAverageCompletionRateByCourse } = trpc.metrics.getAuthorMetric_DailyAverageLessonCompletionRateByCourse.useQuery();
 
 	if (!role) {
 		return <p className="p-6">Loading...</p>;

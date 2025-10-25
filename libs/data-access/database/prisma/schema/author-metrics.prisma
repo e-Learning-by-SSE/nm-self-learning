@@ -28,15 +28,8 @@ view AuthorMetric_AverageCourseCompletionRate {
 view AuthorMetric_AverageLessonCompletionRate {
   authorId                  String  @unique
   authorName                String
-  usersStarted              Int
-  usersFinished             Int
-  averageCompletionRate     Float
-}
-
-view AuthorMetric_DailyAverageLessonCompletionRate {
-  authorId                  String  @unique
-  authorName                String
-  day                       DateTime
+  lessonId                  String
+  lessonTitle               String
   usersStarted              Int
   usersFinished             Int
   averageCompletionRate     Float
@@ -47,18 +40,8 @@ view AuthorMetric_AverageLessonCompletionRateByCourse {
   authorName                String
   courseId                  String
   courseTitle               String
-  usersStarted              Int
-  usersFinished             Int
-  averageCompletionRate     Float
-}
-
-view AuthorMetric_DailyAverageLessonCompletionRateByCourse {
-  authorId                  String  @unique
-  authorName                String
-  courseId                  String
-  courseTitle               String
-  day                       DateTime
-  usersStarted              Int
-  usersFinished             Int
-  averageCompletionRate     Float
+  numLessons                Int
+  totalUsersStarted         Int
+  totalUsersFinished        Int
+  averageCourseCompletionRate Float
 }

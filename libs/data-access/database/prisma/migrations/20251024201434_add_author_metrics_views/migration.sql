@@ -77,206 +77,151 @@ JOIN "User" u ON u."name" = a."username"
 LEFT JOIN "Enrollment" e ON e."courseId" = c."courseId"
 GROUP BY a.username, u.id, c."courseId", c.title;
 
---- Average Lesson Completion Rate
+--- Average Lesson Completion Rate by Course
 CREATE OR REPLACE VIEW "AuthorMetric_AverageLessonCompletionRate" AS
---- 1. Amount of Lessons that where started and also finished (Counter + 1 if a User started and finished a Lesson)
-WITH Total_Amount AS (
-    SELECT
-        l."lessonId",
-        COUNT(DISTINCT sl."username") AS "usersStarted",
-        COUNT(DISTINCT cl."username") AS "usersFinished"
-    FROM "Lesson" l
-    LEFT JOIN "StartedLesson" sl ON sl."lessonId" = l."lessonId"
-    LEFT JOIN "CompletedLesson" cl ON cl."lessonId" = l."lessonId"
-    GROUP BY l."lessonId"
-    HAVING COUNT(DISTINCT sl."username") > 7
-    AND COUNT(DISTINCT cl."username") > 7
+-- 1. Amount of Lessons that where started
+WITH Started AS (
+  SELECT
+    "courseId",
+    "lessonId",
+    COUNT(DISTINCT "username") AS "usersStarted"
+  FROM "StartedLesson"
+  GROUP BY "courseId", "lessonId"
 ),
---- 2. Calculate Average Completion Rate
-Completion_Rate AS (
+-- 2. Amount of Lessons that where finished
+Finished AS (
+  SELECT
+    "courseId",
+    "lessonId",
+    COUNT(DISTINCT "username") AS "usersFinished"
+  FROM "CompletedLesson"
+  GROUP BY "courseId", "lessonId"
+),
+-- 3. Combine the both
+Total_Amount AS (
     SELECT
-        ta."lessonId",
-        ta."usersStarted",
-        ta."usersFinished",
-        ROUND(
-            COALESCE(
-                (ta."usersFinished"::decimal / NULLIF(ta."usersStarted", 0)) * 100,
-                0
-            ),
-        2) AS "averageCompletionRate"
-    FROM Total_Amount ta
+        COALESCE(s."courseId", f."courseId") AS "courseId",
+        COALESCE(s."lessonId", f."lessonId") AS "lessonId",
+        COALESCE(s."usersStarted", 0) AS "usersStarted",
+        COALESCE(f."usersFinished", 0) AS "usersFinished"
+    FROM Started s
+    FULL JOIN Finished f
+        ON s."lessonId" = f."lessonId" AND s."courseId" = f."courseId"
+     WHERE COALESCE(s."usersStarted", 0) >= 7
+        AND COALESCE(f."usersFinished", 0) >= 7
+),
+-- 4. Compute completion rate
+Completion_Rate AS (
+  SELECT
+    ta."courseId",
+    ta."lessonId",
+    ta."usersStarted",
+    ta."usersFinished",
+    ROUND(
+      COALESCE(
+        (ta."usersFinished"::decimal / NULLIF(ta."usersStarted", 0)) * 100,
+        0
+      ),
+    2) AS "averageCompletionRate"
+  FROM Total_Amount ta
 )
---- 3. Link Lessons to Authors
+-- 5. Link Lessons to Author
 SELECT
-    u.id AS "authorId",
-    u.name AS "authorName",
-    cr."lessonId",
-    cr."usersStarted",
-    cr."usersFinished",
-    cr."averageCompletionRate"
+  u.id AS "authorId",
+  u.name AS "authorName",
+  cr."lessonId",
+  l.title AS "lessonTitle",
+  cr."usersStarted",
+  cr."usersFinished",
+  cr."averageCompletionRate"
 FROM Completion_Rate cr
-JOIN "StartedLesson" l ON l."lessonId" = cr."lessonId"
-JOIN "Course" c ON c."courseId" = l."courseId"
-JOIN "_AuthorToCourse" ac ON ac."B" = c."courseId"
+JOIN "Course" c ON c."courseId" = cr."courseId"
+JOIN "Lesson" l ON l."lessonId" = cr."lessonId"
+JOIN (
+  SELECT DISTINCT "A", "B"
+  FROM "_AuthorToCourse"
+) ac ON ac."B" = c."courseId"
 JOIN "Author" a ON a.id = ac."A"
 JOIN "User" u ON u.name = a."username"
 ORDER BY u.name, cr."lessonId";
 
---- Daily Average Lesson Completion Rate 
-CREATE OR REPLACE VIEW "AuthorMetric_DailyAverageLessonCompletionRate" AS
-WITH user_progress AS (
-    SELECT
-        sl."username",
-        sl."courseId",
-        MIN(sl."createdAt") AS started_at,
-        MAX(cl."createdAt") AS last_completed_at,
-        COUNT(DISTINCT cl."lessonId") AS completedLessons,
-        COUNT(DISTINCT l."lessonId") AS totalLessons
-    FROM "Lesson" l
-    LEFT JOIN "StartedLesson" sl ON sl."lessonId" = l."lessonId"
-    LEFT JOIN "CompletedLesson" cl 
-        ON cl."lessonId" = l."lessonId" 
-       AND cl."username" = sl."username"
-    WHERE sl."username" IS NOT NULL
-    GROUP BY sl."username", sl."courseId"
-),
-user_status AS (
-    SELECT
-        "username",
-        "courseId",
-        started_at,
-        last_completed_at,
-        CASE WHEN totalLessons > 0 AND completedLessons = totalLessons THEN TRUE ELSE FALSE END AS finished
-    FROM user_progress
-    WHERE started_at IS NOT NULL
-)
-SELECT
-    u.id AS "authorId",
-    u.name AS "authorName",
-    DATE(us.started_at) AS "day",
-    COUNT(DISTINCT us."username") AS "usersStarted",
-    COUNT(DISTINCT CASE WHEN us.finished THEN us."username" END) AS "usersFinished",
-    ROUND(
-        COALESCE(
-            (COUNT(DISTINCT CASE WHEN us.finished THEN us."username" END)::decimal
-             / NULLIF(COUNT(DISTINCT us."username"), 0)) * 100,
-            0
-        ),
-        2
-    ) AS "averageCompletionRate"
-FROM user_status us
-JOIN "Course" c ON c."courseId" = us."courseId"
-JOIN "_AuthorToCourse" ac ON ac."B" = c."courseId"
-JOIN "Author" a ON a.id = ac."A"
-JOIN "User" u ON u.name = a."username"
-GROUP BY u.id, u.name, DATE(us.started_at)
-HAVING
-    COUNT(DISTINCT us."username") > 7
-    AND COUNT(DISTINCT CASE WHEN us.finished THEN us."username" END) > 7
-ORDER BY u.name, DATE(us.started_at);
-
-
---- Average Lesson Completion Rate of a Course
+--------- Average Lesson Completion Rate of a Course ---------
 CREATE OR REPLACE VIEW "AuthorMetric_AverageLessonCompletionRateByCourse" AS
-WITH user_course_progress AS (
-    SELECT
-        sl."courseId",
-        sl."username",
-        COUNT(DISTINCT cl."lessonId") AS "completedLessons",
-        COUNT(DISTINCT l."lessonId") AS "totalLessons"
-    FROM "Lesson" l
-    LEFT JOIN "StartedLesson" sl ON sl."lessonId" = l."lessonId"
-    LEFT JOIN "CompletedLesson" cl 
-        ON cl."lessonId" = l."lessonId" 
-       AND cl."username" = sl."username"
-    WHERE sl."username" IS NOT NULL
-    GROUP BY sl."courseId", sl."username"
+-- 1. Amount of Lessons that where started
+WITH Started AS (
+  SELECT
+    "courseId",
+    "lessonId",
+    COUNT(DISTINCT "username") AS "usersStarted"
+  FROM "StartedLesson"
+  GROUP BY "courseId", "lessonId"
 ),
-course_completion AS (
-    SELECT
-        "courseId",
-        COUNT(DISTINCT "username") AS "usersStarted",
-        COUNT(DISTINCT CASE 
-            WHEN "completedLessons" = "totalLessons" THEN "username"
-        END) AS "usersFinished"
-    FROM user_course_progress
-    GROUP BY "courseId"
-)
-SELECT
-    u.id AS "authorId",
-    u.name AS "authorName",
-    c."courseId",
-    c."title" AS "courseTitle",
-    COALESCE(cc."usersStarted", 0) AS "usersStarted",
-    COALESCE(cc."usersFinished", 0) AS "usersFinished",
-    ROUND(
-        COALESCE(
-            (cc."usersFinished"::decimal / NULLIF(cc."usersStarted", 0)) * 100,
-            0
-        ),
-        2
-    ) AS "averageCompletionRate"
-FROM "User" u
-JOIN "Author" a ON a.username = u.name
-JOIN "_AuthorToCourse" ac ON ac."A" = a.id
-JOIN "Course" c ON c."courseId" = ac."B"
-LEFT JOIN course_completion cc ON cc."courseId" = c."courseId"
-WHERE
-    COALESCE(cc."usersStarted", 0) > 7
-    AND COALESCE(cc."usersFinished", 0) > 7
-ORDER BY u.name, c.title;
-
---- Daily Average Lesson Completion Rate of a Course
-CREATE OR REPLACE VIEW "AuthorMetric_DailyAverageLessonCompletionRateByCourse" AS
-WITH user_progress AS (
-    SELECT
-        sl."username",
-        sl."courseId",
-        MIN(sl."createdAt") AS started_at,
-        MAX(cl."createdAt") AS last_completed_at,
-        COUNT(DISTINCT cl."lessonId") AS completedLessons,
-        COUNT(DISTINCT l."lessonId") AS totalLessons
-    FROM "Lesson" l
-    LEFT JOIN "StartedLesson" sl ON sl."lessonId" = l."lessonId"
-    LEFT JOIN "CompletedLesson" cl 
-        ON cl."lessonId" = l."lessonId"
-       AND cl."username" = sl."username"
-    WHERE sl."username" IS NOT NULL
-    GROUP BY sl."username", sl."courseId"
+-- 2. Amount of Lessons that where finished
+Finished AS (
+  SELECT
+    "courseId",
+    "lessonId",
+    COUNT(DISTINCT "username") AS "usersFinished"
+  FROM "CompletedLesson"
+  GROUP BY "courseId", "lessonId"
 ),
-user_status AS (
-    SELECT
-        "username",
-        "courseId",
-        started_at,
-        last_completed_at,
-        CASE WHEN totalLessons > 0 AND completedLessons = totalLessons THEN TRUE ELSE FALSE END AS finished
-    FROM user_progress
-    WHERE started_at IS NOT NULL
-)
-SELECT
-    u.id AS "authorId",
-    u.name AS "authorName",
-    c."courseId",
-    c.title AS "courseTitle",
-    DATE(us.started_at) AS "day",
-    COUNT(DISTINCT us."username") AS "usersStarted",
-    COUNT(DISTINCT CASE WHEN us.finished THEN us."username" END) AS "usersFinished",
+-- 3. Combine both
+Total_Amount AS (
+  SELECT
+    COALESCE(s."courseId", f."courseId") AS "courseId",
+    COALESCE(s."lessonId", f."lessonId") AS "lessonId",
+    COALESCE(s."usersStarted", 0) AS "usersStarted",
+    COALESCE(f."usersFinished", 0) AS "usersFinished"
+  FROM Started s
+  FULL JOIN Finished f
+    ON s."lessonId" = f."lessonId" AND s."courseId" = f."courseId"
+),
+-- 4. Compute lesson-level completion rate
+Completion_Rate AS (
+  SELECT
+    ta."courseId",
+    ta."lessonId",
+    ta."usersStarted",
+    ta."usersFinished",
     ROUND(
-        COALESCE(
-            (COUNT(DISTINCT CASE WHEN us.finished THEN us."username" END)::decimal
-             / NULLIF(COUNT(DISTINCT us."username"), 0)) * 100,
-            0
-        ),
-        2
-    ) AS "averageCompletionRate"
-FROM user_status us
-JOIN "Course" c ON c."courseId" = us."courseId"
-JOIN "_AuthorToCourse" ac ON ac."B" = c."courseId"
+      COALESCE(
+        (ta."usersFinished"::decimal / NULLIF(ta."usersStarted", 0)) * 100,
+        0
+      ),
+    2) AS "averageCompletionRate"
+  FROM Total_Amount ta
+),
+-- 5. Aggregate to course-level
+Course_Aggregate AS (
+  SELECT
+    "courseId",
+    COUNT(DISTINCT "lessonId") AS "numLessons",
+    SUM("usersStarted") AS "totalUsersStarted",
+    SUM("usersFinished") AS "totalUsersFinished",
+    ROUND(AVG("averageCompletionRate"), 2) AS "averageCourseCompletionRate"
+  FROM Completion_Rate
+  GROUP BY "courseId"
+   HAVING 
+    SUM("usersStarted") >= 7
+    AND SUM("usersFinished") >= 7
+)
+-- 6. Link Courses to Authors
+SELECT
+  u.id AS "authorId",
+  u.name AS "authorName",
+  c."courseId",
+  c."title" AS "courseTitle",
+  ca."numLessons",
+  ca."totalUsersStarted",
+  ca."totalUsersFinished",
+  ca."averageCourseCompletionRate"
+FROM Course_Aggregate ca
+JOIN "Course" c ON c."courseId" = ca."courseId"
+JOIN (
+  SELECT DISTINCT "A", "B"
+  FROM "_AuthorToCourse"
+) ac ON ac."B" = c."courseId"
 JOIN "Author" a ON a.id = ac."A"
 JOIN "User" u ON u.name = a."username"
-GROUP BY u.id, u.name, c."courseId", c.title, DATE(us.started_at)
-HAVING
-    COUNT(DISTINCT us."username") > 7
-    AND COUNT(DISTINCT CASE WHEN us.finished THEN us."username" END) > 7
-ORDER BY u."name", c.title, "day";
+ORDER BY u.name, c."title";
+
