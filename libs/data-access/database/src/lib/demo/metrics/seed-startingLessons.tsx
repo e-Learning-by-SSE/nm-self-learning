@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import lessonsRaw from "./data/lesson.json";
+import usersRaw from "./data/user.json";
 
 const prisma = new PrismaClient();
 
@@ -23,6 +24,16 @@ export async function createStartingLessons() {
 				courseId: "magical-test-course"
 			}))
 		);
+
+		usersRaw.forEach(user => {
+			lessonsRaw.forEach(lesson => {
+				lessonsData.push({
+					lessonId: lesson.lessonId,
+					username: user.name,
+					courseId: "magical-test-course"
+				});
+			});
+		});
 
 		await prisma.startedLesson.createMany({ data: lessonsData });
 

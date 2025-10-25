@@ -17,6 +17,7 @@ import { createLessons } from "./metrics/seed-lessons";
 import { createCompletedLessons } from "./metrics/seed-completedLessons";
 import { createStartingLessons } from "./metrics/seed-startingLessons";
 import { createUsers } from "./metrics/seed-users";
+import { createStudents } from "./metrics/seed-students";
 
 const prisma = new PrismaClient();
 
@@ -48,6 +49,8 @@ export async function seedDemos(): Promise<void> {
 	await seedEventLogForWizardryCourse();
 
 	await createUsers();
+
+	await createStudents();
 
 	await assignDumbledoreAsAuthor();
 

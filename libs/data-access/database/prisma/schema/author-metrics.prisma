@@ -41,7 +41,7 @@ view AuthorMetric_AverageLessonCompletionRateByCourse {
   courseId                  String
   courseTitle               String
   numLessons                Int
-  totalUsersStarted         Int
-  totalUsersFinished        Int
+  totalLessonsStarted       Int
+  totalLessonsFinished      Int
   averageCourseCompletionRate Float
 }

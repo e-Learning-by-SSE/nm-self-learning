@@ -196,8 +196,8 @@ Course_Aggregate AS (
   SELECT
     "courseId",
     COUNT(DISTINCT "lessonId") AS "numLessons",
-    SUM("usersStarted") AS "totalUsersStarted",
-    SUM("usersFinished") AS "totalUsersFinished",
+    SUM("usersStarted") AS "totalLessonsStarted",
+    SUM("usersFinished") AS "totalLessonsFinished",
     ROUND(AVG("averageCompletionRate"), 2) AS "averageCourseCompletionRate"
   FROM Completion_Rate
   GROUP BY "courseId"
@@ -212,8 +212,8 @@ SELECT
   c."courseId",
   c."title" AS "courseTitle",
   ca."numLessons",
-  ca."totalUsersStarted",
-  ca."totalUsersFinished",
+  ca."totalLessonsStarted",
+  ca."totalLessonsFinished",
   ca."averageCourseCompletionRate"
 FROM Course_Aggregate ca
 JOIN "Course" c ON c."courseId" = ca."courseId"
@@ -223,5 +223,5 @@ JOIN (
 ) ac ON ac."B" = c."courseId"
 JOIN "Author" a ON a.id = ac."A"
 JOIN "User" u ON u.name = a."username"
-ORDER BY u.name, c."title";
+ORDER BY u."name", c."title";
 

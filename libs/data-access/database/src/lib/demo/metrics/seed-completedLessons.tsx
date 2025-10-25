@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import lessonsRaw from "./data/lesson.json";
+import usersRaw from "./data/user.json";
 
 const prisma = new PrismaClient();
 
@@ -24,10 +25,20 @@ export async function createCompletedLessons() {
 			}))
 		);
 
-		// Cut the last 5 lessons for weasley to simulate incomplete progress
-		lessonsData.splice(-5, 5);
+		usersRaw.forEach(user => {
+			lessonsRaw.forEach(lesson => {
+				lessonsData.push({
+					lessonId: lesson.lessonId,
+					username: user.name,
+					courseId: "magical-test-course"
+				});
+			});
+		});
 
-		await prisma.completedLesson.createMany({ data: lessonsData });
+		// Randomly delete some completed lessons to simulate incompletion
+		const filteredLessonsData = lessonsData.filter(() => Math.random() > 0.2); // 80% chance to keep
+
+		await prisma.completedLesson.createMany({ data: filteredLessonsData });
 
 		console.log("Completed lessons successfully created.");
 	} catch (error) {
