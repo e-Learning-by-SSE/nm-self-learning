@@ -9,7 +9,6 @@ view AuthorMetric_AverageSubjectCompletionRate {
   authorUsername            String
   subjectId                 String
   subjectTitle              String
-  totalCourses              Int
   totalEnrollments          Int?
   completedEnrollments      Int?
   averageCompletionRate     Float?

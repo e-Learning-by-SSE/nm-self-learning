@@ -24,7 +24,7 @@ WITH course_completion AS (
 SELECT
     id AS "authorId",
     author_username AS "authorUsername",
-    ROUND(AVG(course_completion_rate_percent), 2) AS "averageCompletionPercent"
+    ROUND(AVG(course_completion_rate_percent), 2) AS "averageCompletionRate"
 FROM course_completion
 GROUP BY author_username, id
 ORDER BY author_username;
