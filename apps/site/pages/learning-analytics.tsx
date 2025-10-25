@@ -43,24 +43,24 @@ export default function LearningAnalyticsPage() {
 	// const { data: quizData, isLoading: isLoadingQuiz } = trpc.metrics.getUserDailyQuizStats.useQuery();
 	// Total Time of the User spent Learning by Course in Seconds
 	// const { data: courseData, isLoading: isLoadingCourse } = trpc.metrics.getUserTotalLearningTimeByCourse.useQuery();
-	// Average Course Completion Rate by Author by Course
-	// const { data: authorByCourseData, isLoading: isLoadingAuthorByCourse } = trpc.metrics.getUserAverageCompletionRateByAuthorByCourse.useQuery();
-	// Average Course Completion Rate by Author
-	// const { data: authorData, isLoading: isLoadingAuthor } = trpc.metrics.getUserAverageCompletionRateByAuthor.useQuery();
-	// Average Completion Rate by Author by Subject
-	// const { data: authorBySubjectData, isLoading: isLoadingAuthorBySubject } = trpc.metrics.getUserAverageCompletionRateByAuthorBySubject.useQuery();
 	// Daily Learning Time by Course
 	// const { data: dailyByCourseData, isLoading: isLoadingDailyByCourse } = trpc.metrics.getUserDailyLearningTimeByCourse.useQuery();
 	// Learning Streak
 	// const { data: learningStreakData, isLoading: isLoadingLearningStreak } = trpc.metrics.getUserLearningStreak.useQuery();
 	// Courses Completed by Subject
 	// const { data: coursesCompletedBySubjectData, isLoading: isLoadingCoursesCompletedBySubject } = trpc.metrics.getUserCoursesCompletedBySubject.useQuery();
-	// Total Average Lesson Completion Rate by Course by Author
-	// const { data: totalAverageByCourseData, isLoading: isLoadingTotalAverageByCourse } = trpc.metrics.getTotalAverageLessonCompletionRateByCourseByAuthor.useQuery();
-	// Total Average Lesson Completion Rate by Author
-	// const { data: totalAverageByAuthorData, isLoading: isLoadingTotalAverageByAuthor } = trpc.metrics.getTotalAverageLessonCompletionRateByAuthor.useQuery();
-	// Daily Average Lesson Completion Rate by Author
-	// const { data: dailyAverageByAuthorData, isLoading: isLoadingDailyAverageByAuthor } = trpc.metrics.getDailyAverageLessonCompletionRateByAuthor.useQuery();
+
+	// --------------------Author Metrics--------------------
+	// Average Completion Rate
+	// const { data: authorMetricAverageCompletionRateData, isLoading: isLoadingAuthorMetricAverageCompletionRate } = trpc.metrics.getAuthorMetric_AverageCompletionRate.useQuery();
+	// Average Subject Completion Rate
+	// const { data: authorMetricAverageSubjectCompletionRateData, isLoading: isLoadingAuthorMetricAverageSubjectCompletionRate } = trpc.metrics.getAuthorMetric_AverageSubjectCompletionRate.useQuery();
+	// Average Course Completion Rate
+	// const { data: authorMetricAverageCourseCompletionRateData, isLoading: isLoadingAuthorMetricAverageCourseCompletionRate } = trpc.metrics.getAuthorMetric_AverageCourseCompletionRate.useQuery();
+	// Average Lesson Completion Rate
+	// const { data: authorMetricAverageLessonCompletionRateData, isLoading: isLoadingAuthorMetricAverageLessonCompletionRate } = trpc.metrics.getAuthorMetric_AverageLessonCompletionRate.useQuery();
+	// Average Completion Rate by Course
+	// const { data: authorMetricAverageLessonCompletionRateByCourseData, isLoading: isLoadingAuthorMetricAverageCompletionRateByCourse } = trpc.metrics.getAuthorMetric_AverageLessonCompletionRateByCourse.useQuery();
 
 	if (!role) {
 		return <p className="p-6">Loading...</p>;

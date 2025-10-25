@@ -5,16 +5,15 @@ import {
 	getUserDailyLearningTime,
 	getUserDailyQuizStats,
 	getUserTotalLearningTimeByCourse,
-	getUserAverageCompletionRateByAuthorByCourse,
-	getUserAverageCompletionRateByAuthor,
-	getUserAverageCompletionRateByAuthorBySubject,
 	getUserDailyLearningTimeByCourse,
 	getUserLearningStreak,
 	getUserCoursesCompletedBySubject,
 	getUserHourlyLearningTime,
-	getDailyAverageLessonCompletionRateByAuthor,
-	getTotalAverageLessonCompletionRateByAuthor,
-	getTotalAverageLessonCompletionRateByCourseByAuthor
+	getAuthorMetric_AverageCompletionRate,
+	getAuthorMetric_AverageSubjectCompletionRate,
+	getAuthorMetric_AverageCourseCompletionRate,
+	getAuthorMetric_AverageLessonCompletionRate,
+	getAuthorMetric_AverageLessonCompletionRateByCourse
 } from "@self-learning/database";
 
 /**
@@ -33,24 +32,21 @@ export const MetricsRouter = t.router({
 	getUserDailyLearningTime: metricsQuery(getUserDailyLearningTime),
 	getUserDailyQuizStats: metricsQuery(getUserDailyQuizStats),
 	getUserTotalLearningTimeByCourse: metricsQuery(getUserTotalLearningTimeByCourse),
-	getUserAverageCompletionRateByAuthorByCourse: metricsQuery(
-		getUserAverageCompletionRateByAuthorByCourse
-	),
-	getUserAverageCompletionRateByAuthor: metricsQuery(getUserAverageCompletionRateByAuthor),
-	getUserAverageCompletionRateByAuthorBySubject: metricsQuery(
-		getUserAverageCompletionRateByAuthorBySubject
-	),
 	getUserDailyLearningTimeByCourse: metricsQuery(getUserDailyLearningTimeByCourse),
 	getUserLearningStreak: metricsQuery(getUserLearningStreak),
 	getUserCoursesCompletedBySubject: metricsQuery(getUserCoursesCompletedBySubject),
 	getUserHourlyLearningTime: metricsQuery(getUserHourlyLearningTime),
-	getTotalAverageLessonCompletionRateByCourseByAuthor: metricsQuery(
-		getTotalAverageLessonCompletionRateByCourseByAuthor
+	getAuthorMetric_AverageCompletionRate: metricsQuery(getAuthorMetric_AverageCompletionRate),
+	getAuthorMetric_AverageSubjectCompletionRate: metricsQuery(
+		getAuthorMetric_AverageSubjectCompletionRate
 	),
-	getTotalAverageLessonCompletionRateByAuthor: metricsQuery(
-		getTotalAverageLessonCompletionRateByAuthor
+	getAuthorMetric_AverageCourseCompletionRate: metricsQuery(
+		getAuthorMetric_AverageCourseCompletionRate
 	),
-	getDailyAverageLessonCompletionRateByAuthor: metricsQuery(
-		getDailyAverageLessonCompletionRateByAuthor
+	getAuthorMetric_AverageLessonCompletionRate: metricsQuery(
+		getAuthorMetric_AverageLessonCompletionRate
+	),
+	getAuthorMetric_AverageLessonCompletionRateByCourse: metricsQuery(
+		getAuthorMetric_AverageLessonCompletionRateByCourse
 	)
 });

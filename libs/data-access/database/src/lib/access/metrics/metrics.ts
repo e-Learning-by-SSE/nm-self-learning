@@ -50,35 +50,6 @@ export async function getUserTotalLearningTimeByCourse(userId: string) {
 }
 
 /**
- * Fetch average course completion rate by author and by course for a user.
- */
-export async function getUserAverageCompletionRateByAuthorByCourse(userId: string) {
-	return database.averageCompletionRateByAuthorByCourse.findMany({
-		where: { id: userId },
-		orderBy: { courseId: "asc" }
-	});
-}
-
-/**
- * Fetch average course completion rate aggregated by author for a user.
- */
-export async function getUserAverageCompletionRateByAuthor(userId: string) {
-	return database.averageCompletionRateByAuthor.findUnique({
-		where: { id: userId }
-	});
-}
-
-/**
- * Fetch average completion rate per author and subject for a user.
- */
-export async function getUserAverageCompletionRateByAuthorBySubject(userId: string) {
-	return database.averageCompletionRateByAuthorBySubject.findMany({
-		where: { id: userId },
-		orderBy: { subjectTitle: "asc" }
-	});
-}
-
-/**
  * Fetch daily learning time per course for a user, ordered by day ascending.
  */
 export async function getUserDailyLearningTimeByCourse(userId: string) {
@@ -102,34 +73,6 @@ export async function getUserLearningStreak(userId: string) {
  */
 export async function getUserCoursesCompletedBySubject(userId: string) {
 	return database.coursesCompletedBySubject.findMany({
-		where: { id: userId }
-	});
-}
-
-/**
- * Fetch total average lesson completion rate by course and by author for a user.
- */
-export async function getTotalAverageLessonCompletionRateByCourseByAuthor(userId: string) {
-	return database.totalAverageLessonCompletionRateByCourseByAuthor.findMany({
-		where: { id: userId },
-		orderBy: { courseId: "asc" }
-	});
-}
-
-/**
- * Fetch total average lesson completion rate by author for a user.
- */
-export async function getTotalAverageLessonCompletionRateByAuthor(userId: string) {
-	return database.totalAverageLessonCompletionRateByAuthor.findMany({
-		where: { id: userId }
-	});
-}
-
-/**
- * Fetch total average lesson completion rate by author for a user.
- */
-export async function getDailyAverageLessonCompletionRateByAuthor(userId: string) {
-	return database.dailyAverageLessonCompletionRateByAuthor.findMany({
 		where: { id: userId }
 	});
 }

@@ -8,12 +8,19 @@ import { generateLearningDiaryDemoData } from "./learningDiary/learningDiary";
 import { seedJavaDemo } from "./seed-java-demo";
 import { seedReactDemo } from "./seed-react-demo";
 import { seedSkillbasedModelling } from "./skill-based-modelling";
-import { seedQuizAttemptEventLog } from "./event-log/seed-quiz-attempt";
-import { seedQuizAnswerEventLog } from "./event-log/seed-quiz-answer";
-import { seedEventLogForWizardryCourse } from "./event-log/seed-event-log-with-course";
-import { assignDumbledoreAsAuthor } from "./event-log/seed-author";
+import { seedQuizAttemptEventLog } from "./metrics/seed-quiz-attempt";
+import { seedQuizAnswerEventLog } from "./metrics/seed-quiz-answer";
+import { createEventLog } from "./metrics/seed-event-log";
+import { assignDumbledoreAsAuthor } from "./metrics/seed-author-course-relation";
 import { create } from "domain";
-import { createLessonsForWizardry } from "./event-log/seed-lessons";
+import { createLessons } from "./metrics/seed-lessons";
+import { createCompletedLessons } from "./metrics/seed-completedLessons";
+import { createStartingLessons } from "./metrics/seed-startingLessons";
+import { createUsers } from "./metrics/seed-users";
+import { createStudents } from "./metrics/seed-students";
+import { createEnrollments } from "./metrics/seed-enrollments";
+import { createCourses } from "./metrics/seed-courses";
+import { createSubjects } from "./metrics/seed-subject";
 
 const prisma = new PrismaClient();
 
@@ -42,9 +49,25 @@ export async function seedDemos(): Promise<void> {
 
 	await seedQuizAnswerEventLog();
 
-	await seedEventLogForWizardryCourse();
+	// Seed event log data for the "Fundamentals of Wizardry" course
+
+	await createEventLog();
+
+	await createSubjects();
+
+	await createCourses();
 
 	await assignDumbledoreAsAuthor();
 
-	await createLessonsForWizardry();
+	await createUsers();
+
+	await createStudents();
+
+	await createEnrollments();
+
+	await createLessons();
+
+	await createCompletedLessons();
+
+	await createStartingLessons();
 }
