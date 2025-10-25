@@ -10,7 +10,7 @@ import { seedReactDemo } from "./seed-react-demo";
 import { seedSkillbasedModelling } from "./skill-based-modelling";
 import { seedQuizAttemptEventLog } from "./metrics/seed-quiz-attempt";
 import { seedQuizAnswerEventLog } from "./metrics/seed-quiz-answer";
-import { seedEventLogForWizardryCourse } from "./metrics/seed-event-log-with-course";
+import { createEventLog } from "./metrics/seed-event-log";
 import { assignDumbledoreAsAuthor } from "./metrics/seed-author-course-relation";
 import { create } from "domain";
 import { createLessons } from "./metrics/seed-lessons";
@@ -19,6 +19,8 @@ import { createStartingLessons } from "./metrics/seed-startingLessons";
 import { createUsers } from "./metrics/seed-users";
 import { createStudents } from "./metrics/seed-students";
 import { createEnrollments } from "./metrics/seed-enrollments";
+import { createCourses } from "./metrics/seed-courses";
+import { createSubjects } from "./metrics/seed-subject";
 
 const prisma = new PrismaClient();
 
@@ -47,15 +49,21 @@ export async function seedDemos(): Promise<void> {
 
 	await seedQuizAnswerEventLog();
 
-	await seedEventLogForWizardryCourse();
+	// Seed event log data for the "Fundamentals of Wizardry" course
+
+	await createEventLog();
+
+	await createSubjects();
+
+	await createCourses();
+
+	await assignDumbledoreAsAuthor();
 
 	await createUsers();
 
 	await createStudents();
 
 	await createEnrollments();
-
-	await assignDumbledoreAsAuthor();
 
 	await createLessons();
 
