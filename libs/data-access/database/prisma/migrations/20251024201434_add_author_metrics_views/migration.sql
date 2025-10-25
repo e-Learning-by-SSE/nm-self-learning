@@ -276,4 +276,4 @@ GROUP BY u.id, u.name, c."courseId", c.title, DATE(us.started_at)
 HAVING
     COUNT(DISTINCT us."username") > 7
     AND COUNT(DISTINCT CASE WHEN us.finished THEN us."username" END) > 7
-ORDER BY u.name, c.title, "day";
+ORDER BY u."name", c.title, "day";

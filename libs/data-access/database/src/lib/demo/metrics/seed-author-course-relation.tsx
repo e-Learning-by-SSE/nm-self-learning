@@ -26,7 +26,7 @@ export async function assignDumbledoreAsAuthor() {
 			data: { authors: { connect: { id: dumbledore.id } } }
 		});
 
-		console.log("🪄 Dumbledore successfully assigned as author to 'magical-test-course'.");
+		console.log("Dumbledore successfully assigned as author to 'magical-test-course'.");
 	} catch (error) {
 		console.error(
 			"Error assigning Dumbledore as author:",
