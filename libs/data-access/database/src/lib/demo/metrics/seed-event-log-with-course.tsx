@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import eventLogsDataRaw from "./data/eventLogsData.json";
+import eventLogsRaw from "./data/eventLogs.json";
 
 const prisma = new PrismaClient();
 
@@ -71,7 +71,7 @@ export async function seedEventLogForWizardryCourse() {
 		// 📜 Create example event logs
 		const now = new Date();
 
-		const eventLogsData = eventLogsDataRaw.map(e => {
+		const eventLogsData = eventLogsRaw.map(e => {
 			const { timeOffsetMs, ...rest } = e; // exclude timeOffsetMs
 			return {
 				...rest,
