@@ -9,6 +9,42 @@ export async function createEnrollments() {
 			data: {
 				courseId: "magical-test-course",
 				username: "potter",
+				status: EnrollmentStatus.ACTIVE,
+				progress: 78
+			}
+		});
+
+		await prisma.enrollment.create({
+			data: {
+				courseId: "advanced-magical-theory",
+				username: "potter",
+				status: EnrollmentStatus.COMPLETED,
+				progress: 100
+			}
+		});
+
+		await prisma.enrollment.create({
+			data: {
+				courseId: "magical-creatures",
+				username: "potter",
+				status: EnrollmentStatus.COMPLETED,
+				progress: 100
+			}
+		});
+
+		await prisma.enrollment.create({
+			data: {
+				courseId: "potions-and-elixirs",
+				username: "potter",
+				status: EnrollmentStatus.COMPLETED,
+				progress: 100
+			}
+		});
+
+		await prisma.enrollment.create({
+			data: {
+				courseId: "defense-against-the-dark-arts",
+				username: "potter",
 				status: EnrollmentStatus.COMPLETED,
 				progress: 100
 			}

@@ -240,16 +240,18 @@ SELECT
     u.name AS "username",
     s."subjectId",
     s."title" AS "subjectTitle",
-    COUNT(DISTINCT e."courseId") AS "completedCoursesCount",
-    STRING_AGG(DISTINCT c."title", ', ' ORDER BY c."title") AS "completedCourses"
+    --- Active/Enrolled Courses
+    COUNT(DISTINCT CASE WHEN e."status" = 'ACTIVE' THEN e."courseId" END) AS "ActiveCoursesCount",
+    STRING_AGG(DISTINCT CASE WHEN e."status" = 'ACTIVE' THEN c."title" END, ', ') AS "activeCourses",
+    --- Completed Courses
+    COUNT(DISTINCT CASE WHEN e."status" = 'COMPLETED' THEN e."courseId" END) AS "completedCoursesCount",
+    STRING_AGG(DISTINCT CASE WHEN e."status" = 'COMPLETED' THEN c."title" END, ', ') AS "completedCourses"
 FROM "Enrollment" e
 JOIN "Course" c ON c."courseId" = e."courseId"
 JOIN "Subject" s ON s."subjectId" = c."subjectId"
 JOIN "User" u ON u.name = e."username"
-WHERE e."completedAt" IS NOT NULL
-   OR e."status" = 'COMPLETED'
 GROUP BY u.id, u.name, s."subjectId", s."title"
-ORDER BY u."name", s."title";
+ORDER BY u.name, s."title";
 
 -- Student Learning Streak
 CREATE OR REPLACE VIEW "StudentMetric_LearningStreak" AS
@@ -355,6 +357,6 @@ GROUP BY
     l."lessonId",
     l."title",
     DATE_TRUNC('hour', qans."createdAt")
-ORDER BY u.name, c.title, l.title, "hour";
+ORDER BY u."name", c.title, l.title, "hour";
 
 
