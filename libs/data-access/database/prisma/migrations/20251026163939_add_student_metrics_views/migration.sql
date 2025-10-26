@@ -1,5 +1,5 @@
--- Create KPI View for Total Learning Time
-CREATE OR REPLACE VIEW "TotalLearningTime" AS
+-- Student Learning Time
+CREATE OR REPLACE VIEW "StudentMetric_LearningTime" AS
 WITH sessionized AS (
     SELECT
         e.id,
@@ -31,16 +31,15 @@ session_durations AS (
     GROUP BY username, session_id
 )
 SELECT
-    u.id AS "id",
+    u.id AS "userId",
     u.name AS "username",
-    SUM(session_duration_seconds) AS "totalTimeSeconds"
+    SUM(session_duration_seconds) AS "timeSeconds"
 FROM session_durations sd
 JOIN "User" u ON u.name = sd.username
 GROUP BY u.id;
 
-
---- Create KPI View for Daily Learning Time
-CREATE OR REPLACE VIEW "DailyLearningTime" AS
+--- Student Daily Learning Time
+CREATE OR REPLACE VIEW "StudentMetric_DailyLearningTime" AS
 WITH sessionized AS (
     SELECT
         e.id,
@@ -72,16 +71,16 @@ session_durations AS (
     GROUP BY username, session_id
 )
 SELECT
-    u.id AS "id",
+    u.id AS "userId",
     u.name AS "username",
     DATE_TRUNC('day', session_start) AS "day",
-    SUM(session_duration_seconds) AS "totalTimeSeconds"
+    SUM(session_duration_seconds) AS "timeSeconds"
 FROM session_durations sd
 JOIN "User" u ON u.name = sd.username
 GROUP BY u.id, day;
 
---- Create KPI View for Hourly Learning Time
-CREATE OR REPLACE VIEW "HourlyLearningTime" AS
+--- Student Hourly Learning Time
+CREATE OR REPLACE VIEW "StudentMetric_HourlyLearningTime" AS
 WITH sessionized AS (
     SELECT
         e.id,
@@ -113,34 +112,16 @@ session_durations AS (
     GROUP BY username, session_id
 )
 SELECT
-    u.id AS "id",
+    u.id AS "userId",
     u.name AS "username",
     DATE_TRUNC('hour', session_start) AS "hour",
-    SUM(session_duration_seconds) AS "totalTimeSeconds"
+    SUM(session_duration_seconds) AS "timeSeconds"
 FROM session_durations sd
 JOIN "User" u ON u.name = sd.username
 GROUP BY u.id, "hour";
 
---- Create KPI View for Daily Quiz Stats
-CREATE VIEW "DailyQuizStats" AS
-SELECT
-    u.id AS "id",
-    qa.username AS "username",
-    DATE(qa."createdAt") AS "day",
-    COUNT(qans."answerId") AS "totalAnswers",
-    SUM(CASE WHEN qans."isCorrect" THEN 1 ELSE 0 END) AS "correctAnswers",
-    SUM(CASE WHEN NOT qans."isCorrect" THEN 1 ELSE 0 END) AS "incorrectAnswers",
-    ROUND(
-      (SUM(CASE WHEN qans."isCorrect" THEN 1 ELSE 0 END)::decimal / NULLIF(COUNT(qans."answerId"), 0)) * 100,
-      2
-    ) AS "accuracyPercent"
-FROM "QuizAttempt" qa
-JOIN "QuizAnswer" qans ON qa."attemptId" = qans."quizAttemptId"
-JOIN "User" u ON u.name = qa.username
-GROUP BY u.id, qa.username, day;
-
---- Create KPI View for Total Learning Time by Course
-CREATE VIEW "TotalLearningTimeByCourse" AS
+--- Student Learning Time by Course
+CREATE VIEW "StudentMetric_LearningTimeByCourse" AS
 WITH sessionized AS (
     SELECT
         id,
@@ -176,18 +157,18 @@ session_durations AS (
     GROUP BY username, "courseId", session_id
 )
 SELECT
-    u.id AS "id",
+    u.id AS "userId",
     sd.username AS "username",
     sd."courseId",
     COALESCE(c.title, 'N/A') AS "courseTitle",
-    SUM(session_duration_seconds) AS "totalTimeSeconds"
+    SUM(session_duration_seconds) AS "timeSeconds"
 FROM session_durations sd
 JOIN "User" u ON u.name = sd."username"
 LEFT JOIN "Course" c ON c."courseId" = sd."courseId"
 GROUP BY u.id, sd."username", sd."courseId", c.title;
 
--- Create KPI View for Daily Learning Time by Course
-CREATE OR REPLACE VIEW "DailyLearningTimeByCourse" AS
+-- Student Daily Learning Time by Course
+CREATE OR REPLACE VIEW "StudentMetric_DailyLearningTimeByCourse" AS
 WITH sessionized AS (
     SELECT
         id,
@@ -223,20 +204,38 @@ session_durations AS (
     GROUP BY username, "courseId", session_id
 )
 SELECT
-    u.id AS "id",
+    u.id AS "userId",
     sd.username AS "username",
     sd."courseId",
     COALESCE(c.title, 'N/A') AS "courseTitle",
     DATE_TRUNC('day', session_start) AS "day",
-    SUM(session_duration_seconds) AS "totalTimeSeconds"
+    SUM(session_duration_seconds) AS "timeSeconds"
 FROM session_durations sd
 JOIN "User" u ON u.name = sd.username
 LEFT JOIN "Course" c ON c."courseId" = sd."courseId"
 GROUP BY u.id, sd.username, sd."courseId", c.title, DATE_TRUNC('day', session_start)
 ORDER BY sd.username, c.title, day;
 
--- Create KPI View for Learning Streaks
-CREATE OR REPLACE VIEW "LearningStreak" AS
+-- Student Courses Completed by Subject
+CREATE OR REPLACE VIEW "StudentMetric_CoursesCompletedBySubject" AS
+SELECT
+    u.id AS "userId",
+    u.name AS "username",
+    s."subjectId",
+    s."title" AS "subjectTitle",
+    COUNT(DISTINCT e."courseId") AS "completedCoursesCount",
+    STRING_AGG(DISTINCT c."title", ', ' ORDER BY c."title") AS "completedCourses"
+FROM "Enrollment" e
+JOIN "Course" c ON c."courseId" = e."courseId"
+JOIN "Subject" s ON s."subjectId" = c."subjectId"
+JOIN "User" u ON u.name = e."username"
+WHERE e."completedAt" IS NOT NULL
+   OR e."status" = 'COMPLETED'
+GROUP BY u.id, u.name, s."subjectId", s."title"
+ORDER BY u."name", s."title";
+
+-- Student Learning Streak
+CREATE OR REPLACE VIEW "StudentMetric_LearningStreak" AS
 WITH user_days AS (
     SELECT
         username,
@@ -261,7 +260,7 @@ streak_lengths AS (
     GROUP BY username, streak_group
 )
 SELECT
-    u.id AS "id",
+    u.id AS "userId",
     u.name AS "username",
     COALESCE(MAX(sl.streak_length), 0) AS "longestStreakDays",
     COALESCE((
@@ -276,26 +275,7 @@ LEFT JOIN streak_lengths sl ON sl.username = u.name
 GROUP BY u.id, u.name
 ORDER BY "longestStreakDays" DESC;
 
--- Create KPI View for Courses Completed Per Subject
-CREATE OR REPLACE VIEW "CoursesCompletedBySubject" AS
-SELECT
-    u.id AS id,
-    u.name AS username,
-    s."subjectId",
-    s."title" AS subject_title,
-    COUNT(DISTINCT e."courseId") AS total_completed_courses,
-    STRING_AGG(DISTINCT c."title", ', ' ORDER BY c."title") AS completed_courses
-FROM "Enrollment" e
-JOIN "Course" c ON c."courseId" = e."courseId"
-JOIN "Subject" s ON s."subjectId" = c."subjectId"
-JOIN "User" u ON u.name = e."username"
-WHERE e."completedAt" IS NOT NULL
-   OR e."status" = 'COMPLETED'
-GROUP BY u.id, u.name, s."subjectId", s."title"
-ORDER BY u."name", s."title";
-
----  Total Course Quiz Answers
-
+-- Student Average Quiz Answers
 CREATE OR REPLACE VIEW "StudentMetric_AverageQuizAnswers" AS
 SELECT
     u.id AS "userId",
@@ -323,7 +303,7 @@ JOIN "StartedLesson" sl ON sl."lessonId" = l."lessonId" AND sl.username = s.user
 JOIN "Course" c ON c."courseId" = sl."courseId"
 GROUP BY u.id, u."name", c."courseId", c."title", l."lessonId", l."title";
 
---- Total Course Quiz Answers per hour
+--- Student Hourly Average Quiz Answers
 CREATE OR REPLACE VIEW "StudentMetric_HourlyAverageQuizAnswers" AS
 SELECT
     u.id AS "userId",
