@@ -197,6 +197,7 @@ model QuizAttempt {
 
 model QuizAnswer {
     answerId      Int         @id @default(autoincrement())
+    createdAt     DateTime    @default(now())
     quizAttemptId String
     questionId    String
     answer        Json

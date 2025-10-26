@@ -293,3 +293,71 @@ WHERE e."completedAt" IS NOT NULL
    OR e."status" = 'COMPLETED'
 GROUP BY u.id, u.name, s."subjectId", s."title"
 ORDER BY u."name", s."title";
+
+---  Total Course Quiz Answers
+
+CREATE OR REPLACE VIEW "StudentMetric_AverageQuizAnswers" AS
+SELECT
+    u.id AS "userId",
+    u.name AS "username",
+    c."courseId",
+    c."title" AS "courseTitle",
+    l."lessonId",
+    l."title" AS "lessonTitle",
+    -- Wrong Answers
+    COUNT(CASE WHEN qans."isCorrect" = FALSE THEN 1 END) AS "totalWrongAnswers",
+    -- Correct Answers
+    COUNT(CASE WHEN qans."isCorrect" = TRUE THEN 1 END) AS "totalCorrectAnswers",
+    -- Calculate Average
+    ROUND(
+      (COUNT(CASE WHEN qans."isCorrect" = TRUE THEN 1 END)::decimal /
+       NULLIF(COUNT(qans."answerId"), 0)) * 100,
+      2
+    ) AS "averageAccuracyRate"
+FROM "User" u
+JOIN "Student" s ON s."userId" = u.id
+JOIN "QuizAttempt" qa ON qa.username = s.username
+JOIN "QuizAnswer" qans ON qans."quizAttemptId" = qa."attemptId"
+JOIN "Lesson" l ON l."lessonId" = qa."lessonId"
+JOIN "StartedLesson" sl ON sl."lessonId" = l."lessonId" AND sl.username = s.username
+JOIN "Course" c ON c."courseId" = sl."courseId"
+GROUP BY u.id, u."name", c."courseId", c."title", l."lessonId", l."title";
+
+--- Total Course Quiz Answers per hour
+CREATE OR REPLACE VIEW "StudentMetric_HourlyAverageQuizAnswers" AS
+SELECT
+    u.id AS "userId",
+    u.name AS "username",
+    c."courseId",
+    c."title" AS "courseTitle",
+    l."lessonId",
+    l."title" AS "lessonTitle",
+    DATE_TRUNC('hour', qans."createdAt") AS "hour",
+    -- Wrong Answers
+    COUNT(CASE WHEN qans."isCorrect" = FALSE THEN 1 END) AS "totalWrongAnswers",
+    -- Correct Answers
+    COUNT(CASE WHEN qans."isCorrect" = TRUE THEN 1 END) AS "totalCorrectAnswers",
+    -- Calculate Average
+    ROUND(
+      (COUNT(CASE WHEN qans."isCorrect" = TRUE THEN 1 END)::decimal /
+       NULLIF(COUNT(qans."answerId"), 0)) * 100,
+      2
+    ) AS "averageAccuracyRate"
+FROM "User" u
+JOIN "Student" s ON s."userId" = u.id
+JOIN "QuizAttempt" qa ON qa.username = s.username
+JOIN "QuizAnswer" qans ON qans."quizAttemptId" = qa."attemptId"
+JOIN "Lesson" l ON l."lessonId" = qa."lessonId"
+JOIN "StartedLesson" sl ON sl."lessonId" = l."lessonId" AND sl.username = s.username
+JOIN "Course" c ON c."courseId" = sl."courseId"
+GROUP BY
+    u.id,
+    u.name,
+    c."courseId",
+    c."title",
+    l."lessonId",
+    l."title",
+    DATE_TRUNC('hour', qans."createdAt")
+ORDER BY u.name, c.title, l.title, "hour";
+
+
