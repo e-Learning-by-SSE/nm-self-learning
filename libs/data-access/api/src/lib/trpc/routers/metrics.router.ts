@@ -9,6 +9,8 @@ import {
 	getUserLearningStreak,
 	getUserCoursesCompletedBySubject,
 	getUserHourlyLearningTime,
+	getStudentMetric_AverageQuizAnswers,
+	getStudentMetric_HourlyAverageQuizAnswers,
 	getAuthorMetric_AverageCompletionRate,
 	getAuthorMetric_AverageSubjectCompletionRate,
 	getAuthorMetric_AverageCourseCompletionRate,
@@ -36,6 +38,10 @@ export const MetricsRouter = t.router({
 	getUserLearningStreak: metricsQuery(getUserLearningStreak),
 	getUserCoursesCompletedBySubject: metricsQuery(getUserCoursesCompletedBySubject),
 	getUserHourlyLearningTime: metricsQuery(getUserHourlyLearningTime),
+	getStudentMetric_AverageQuizAnswers: metricsQuery(getStudentMetric_AverageQuizAnswers),
+	getStudentMetric_HourlyAverageQuizAnswers: metricsQuery(
+		getStudentMetric_HourlyAverageQuizAnswers
+	),
 	getAuthorMetric_AverageCompletionRate: metricsQuery(getAuthorMetric_AverageCompletionRate),
 	getAuthorMetric_AverageSubjectCompletionRate: metricsQuery(
 		getAuthorMetric_AverageSubjectCompletionRate

@@ -49,6 +49,11 @@ export default function LearningAnalyticsPage() {
 	// const { data: learningStreakData, isLoading: isLoadingLearningStreak } = trpc.metrics.getUserLearningStreak.useQuery();
 	// Courses Completed by Subject
 	// const { data: coursesCompletedBySubjectData, isLoading: isLoadingCoursesCompletedBySubject } = trpc.metrics.getUserCoursesCompletedBySubject.useQuery();
+	// --------------------Student Metrics--------------------
+	// Average Quiz Answers
+	// const { data: studentMetricAverageQuizAnswersData, isLoading: isLoadingStudentMetricAverageQuizAnswers } = trpc.metrics.getStudentMetric_AverageQuizAnswers.useQuery();
+	// Hourly Average Quiz Answers
+	// const { data: studentMetricHourlyAverageQuizAnswersData, isLoading: isLoadingStudentMetricHourlyAverageQuizAnswers } = trpc.metrics.getStudentMetric_HourlyAverageQuizAnswers.useQuery();
 
 	// --------------------Author Metrics--------------------
 	// Average Completion Rate

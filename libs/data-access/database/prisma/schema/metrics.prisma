@@ -68,3 +68,28 @@ view CoursesCompletedBySubject {
   total_completed_courses Int
   completed_courses       String?
 }
+
+view StudentMetric_AverageQuizAnswers {
+  userId               String  @unique
+  username             String
+  courseId             String
+  courseTitle          String
+  lessonId             String
+  lessonTitle          String
+  wrongAnswers         Int
+  correctAnswers       Int
+  averageAccuracyRate  Float
+}
+
+view StudentMetric_HourlyAverageQuizAnswers {
+  userId               String  @unique
+  username             String
+  courseId             String
+  courseTitle          String
+  lessonId             String
+  lessonTitle          String
+  hour                 DateTime
+  wrongAnswers         Int
+  correctAnswers       Int
+  averageAccuracyRate  Float
+}

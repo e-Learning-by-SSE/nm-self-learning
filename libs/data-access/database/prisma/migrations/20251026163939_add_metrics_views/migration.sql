@@ -305,9 +305,9 @@ SELECT
     l."lessonId",
     l."title" AS "lessonTitle",
     -- Wrong Answers
-    COUNT(CASE WHEN qans."isCorrect" = FALSE THEN 1 END) AS "totalWrongAnswers",
+    COUNT(CASE WHEN qans."isCorrect" = FALSE THEN 1 END) AS "wrongAnswers",
     -- Correct Answers
-    COUNT(CASE WHEN qans."isCorrect" = TRUE THEN 1 END) AS "totalCorrectAnswers",
+    COUNT(CASE WHEN qans."isCorrect" = TRUE THEN 1 END) AS "correctAnswers",
     -- Calculate Average
     ROUND(
       (COUNT(CASE WHEN qans."isCorrect" = TRUE THEN 1 END)::decimal /
@@ -334,9 +334,9 @@ SELECT
     l."title" AS "lessonTitle",
     DATE_TRUNC('hour', qans."createdAt") AS "hour",
     -- Wrong Answers
-    COUNT(CASE WHEN qans."isCorrect" = FALSE THEN 1 END) AS "totalWrongAnswers",
+    COUNT(CASE WHEN qans."isCorrect" = FALSE THEN 1 END) AS "wrongAnswers",
     -- Correct Answers
-    COUNT(CASE WHEN qans."isCorrect" = TRUE THEN 1 END) AS "totalCorrectAnswers",
+    COUNT(CASE WHEN qans."isCorrect" = TRUE THEN 1 END) AS "correctAnswers",
     -- Calculate Average
     ROUND(
       (COUNT(CASE WHEN qans."isCorrect" = TRUE THEN 1 END)::decimal /

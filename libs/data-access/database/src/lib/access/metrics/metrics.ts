@@ -76,3 +76,21 @@ export async function getUserCoursesCompletedBySubject(userId: string) {
 		where: { id: userId }
 	});
 }
+
+/**
+ * Fetch average quiz answers metrics for a student.
+ */
+export async function getStudentMetric_AverageQuizAnswers(userId: string) {
+	return database.studentMetric_AverageQuizAnswers.findMany({
+		where: { userId: userId }
+	});
+}
+
+/**
+ * Fetch hourly average quiz answers metrics for a student.
+ */
+export async function getStudentMetric_HourlyAverageQuizAnswers(userId: string) {
+	return database.studentMetric_HourlyAverageQuizAnswers.findMany({
+		where: { userId: userId }
+	});
+}
