@@ -30,7 +30,6 @@ session_durations AS (
     FROM session_ids
     GROUP BY username, session_id
 )
--- timeSeconds of 0 is filtered out since it indicates no activity
 SELECT
     u.id AS "userId",
     u.name AS "username",
@@ -80,13 +79,13 @@ SELECT
     SUM(session_duration_seconds) AS "timeSeconds"
 FROM session_durations sd
 JOIN "User" u ON u.name = sd.username
-GROUP BY u.id, day;
+GROUP BY u.id, day
 HAVING SUM(session_duration_seconds) > 0;
 
 --- Student Hourly Learning Time
 CREATE OR REPLACE VIEW "StudentMetric_HourlyLearningTime" AS
 WITH sessionized AS (
-    SELECT
+      SELECT
         e.id,
         e.username,
         e."createdAt",
@@ -98,32 +97,43 @@ WITH sessionized AS (
     FROM "EventLog" e
 ),
 session_ids AS (
-    SELECT
-        id,
-        username,
-        "createdAt",
-        SUM(is_new_session) OVER (PARTITION BY username ORDER BY "createdAt") AS session_id
-    FROM sessionized
+  SELECT
+    id, username, "createdAt",
+    SUM(is_new_session) OVER (PARTITION BY username ORDER BY "createdAt") AS session_id
+  FROM sessionized
 ),
 session_durations AS (
-    SELECT
-        username,
-        session_id,
-        MIN("createdAt") AS session_start,
-        MAX("createdAt") AS session_end,
-        EXTRACT(EPOCH FROM (MAX("createdAt") - MIN("createdAt"))) AS session_duration_seconds
-    FROM session_ids
-    GROUP BY username, session_id
+  SELECT
+    username,
+    session_id,
+    MIN("createdAt") AS session_start,
+    MAX("createdAt") AS session_end
+  FROM session_ids
+  GROUP BY username, session_id
+),
+expanded AS (
+  SELECT
+    sd.username,
+    gs AS hour_start,
+    LEAST(sd.session_end, gs + INTERVAL '1 hour') - GREATEST(sd.session_start, gs) AS overlap
+  FROM session_durations sd
+  JOIN generate_series(
+    DATE_TRUNC('hour', session_start),
+    DATE_TRUNC('hour', session_end),
+    INTERVAL '1 hour'
+  ) AS gs ON gs < sd.session_end
 )
 SELECT
-    u.id AS "userId",
-    u.name AS "username",
-    DATE_TRUNC('hour', session_start) AS "hour",
-    SUM(session_duration_seconds) AS "timeSeconds"
-FROM session_durations sd
-JOIN "User" u ON u.name = sd.username
-GROUP BY u.id, "hour";
-HAVING SUM(session_duration_seconds) > 0;
+  u.id AS "userId",
+  u.name AS "username",
+  DATE_TRUNC('hour', hour_start) AS "hour",
+  SUM(EXTRACT(EPOCH FROM overlap)) AS "timeSeconds"
+FROM expanded
+JOIN "User" u ON u.name = expanded.username
+WHERE overlap > INTERVAL '0 second'
+GROUP BY u.id, "hour"
+HAVING SUM(EXTRACT(EPOCH FROM overlap)) > 0
+ORDER BY u.id, "hour";
 
 --- Student Learning Time by Course
 CREATE VIEW "StudentMetric_LearningTimeByCourse" AS
@@ -170,7 +180,7 @@ SELECT
 FROM session_durations sd
 JOIN "User" u ON u.name = sd."username"
 LEFT JOIN "Course" c ON c."courseId" = sd."courseId"
-GROUP BY u.id, sd."username", sd."courseId", c.title;
+GROUP BY u.id, sd."username", sd."courseId", c.title
 HAVING SUM(session_duration_seconds) > 0;
 
 -- Student Daily Learning Time by Course
@@ -220,8 +230,8 @@ FROM session_durations sd
 JOIN "User" u ON u.name = sd.username
 LEFT JOIN "Course" c ON c."courseId" = sd."courseId"
 GROUP BY u.id, sd.username, sd."courseId", c.title, DATE_TRUNC('day', session_start)
-ORDER BY sd.username, c.title, day;
-HAVING SUM(session_duration_seconds) > 0;
+HAVING SUM(session_duration_seconds) > 0
+ORDER BY sd.username, c.title, "day";
 
 -- Student Courses Completed by Subject
 CREATE OR REPLACE VIEW "StudentMetric_CoursesCompletedBySubject" AS

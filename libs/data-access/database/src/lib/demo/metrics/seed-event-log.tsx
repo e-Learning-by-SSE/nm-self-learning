@@ -29,6 +29,20 @@ export async function createEventLog() {
 			);
 		}
 
+		// Add specific logs for edge cases (Overlapping Hours)
+		eventLogs.push(
+			{
+				createdAt: new Date(new Date().setHours(8, 45, 0, 0)),
+				username: "luna",
+				type: "EVENT_TYPE_SAMPLE"
+			},
+			{
+				createdAt: new Date(new Date().setHours(9, 5, 0, 0)),
+				username: "luna",
+				type: "EVENT_TYPE_SAMPLE"
+			}
+		);
+
 		await prisma.eventLog.createMany({ data: eventLogs });
 
 		console.log(" - %s\x1b[32m ✔\x1b[0m", "Event Logs");
