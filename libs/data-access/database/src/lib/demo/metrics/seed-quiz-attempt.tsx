@@ -4,8 +4,6 @@ import lessonsRaw from "./data/lesson.json";
 const prisma = new PrismaClient();
 
 export async function createQuizAttempts() {
-	console.log("\x1b[94m%s\x1b[0m", "Seeding Quiz Attempt Event Log...");
-
 	try {
 		const quizAttempts = [];
 
@@ -38,7 +36,7 @@ export async function createQuizAttempts() {
 
 		await prisma.quizAttempt.createMany({ data: quizAttempts });
 
-		console.log("Quiz attempts for Potter created successfully.");
+		console.log(" - %s\x1b[32m ✔\x1b[0m", "Quiz Attempts");
 
 		return quizAttempts;
 	} catch (error) {

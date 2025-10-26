@@ -5,8 +5,6 @@ import usersRaw from "./data/user.json";
 const prisma = new PrismaClient();
 
 export async function createStartingLessons() {
-	console.log("\x1b[94m%s\x1b[0m", "Creating starting lessons...");
-
 	try {
 		const lessonsData = lessonsRaw.map(lessonsRaw => {
 			const { lessonId } = lessonsRaw;
@@ -37,7 +35,7 @@ export async function createStartingLessons() {
 
 		await prisma.startedLesson.createMany({ data: lessonsData });
 
-		console.log("Started lessons successfully created.");
+		console.log(" - %s\x1b[32m ✔\x1b[0m", "Started Lessons");
 	} catch (error) {
 		console.error("Error creating started lessons:", error);
 	} finally {

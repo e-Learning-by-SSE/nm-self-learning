@@ -3,8 +3,6 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export async function createQuizAnswers(quizAttempts: any[]) {
-	console.log("\x1b[94m%s\x1b[0m", "Seeding Quiz Answer Event Log...");
-
 	try {
 		// InitialDate today - 2 weeks ago
 		const initialDate = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
@@ -39,7 +37,7 @@ export async function createQuizAnswers(quizAttempts: any[]) {
 
 		await prisma.quizAnswer.createMany({ data: quizAnswers });
 
-		console.log("Quiz answers for Potter created successfully.");
+		console.log(" - %s\x1b[32m ✔\x1b[0m", "Quiz Answers");
 	} catch (error) {
 		console.error("Error seeding quiz answer event log:", error);
 	} finally {

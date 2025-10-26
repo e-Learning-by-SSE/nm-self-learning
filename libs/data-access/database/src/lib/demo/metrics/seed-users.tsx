@@ -4,12 +4,10 @@ import usersRaw from "./data/user.json";
 const prisma = new PrismaClient();
 
 export async function createUsers() {
-	console.log("\x1b[94m%s\x1b[0m", "Creating users...");
-
 	try {
 		await prisma.user.createMany({ data: usersRaw });
 
-		console.log("Users successfully created.");
+		console.log(" - %s\x1b[32m ✔\x1b[0m", "Users");
 	} catch (error) {
 		console.error("Error creating users:", error);
 	} finally {

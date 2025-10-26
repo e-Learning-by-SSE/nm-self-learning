@@ -4,8 +4,6 @@ import usersRaw from "./data/user.json";
 const prisma = new PrismaClient();
 
 export async function createEnrollments() {
-	console.log("\x1b[94m%s\x1b[0m", "Creating enrollments...");
-
 	try {
 		await prisma.enrollment.create({
 			data: {
@@ -35,7 +33,7 @@ export async function createEnrollments() {
 
 		await prisma.enrollment.createMany({ data: enrollmentData });
 
-		console.log("Enrollments successfully created.");
+		console.log(" - %s\x1b[32m ✔\x1b[0m", "Enrollments");
 	} catch (error) {
 		console.error("Error creating enrollments:", error);
 	} finally {

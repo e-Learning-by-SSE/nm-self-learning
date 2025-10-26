@@ -3,8 +3,6 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export async function createSubjects() {
-	console.log("\x1b[94m%s\x1b[0m", "Creating subjects...");
-
 	try {
 		await prisma.subject.create({
 			data: {
@@ -19,7 +17,7 @@ export async function createSubjects() {
 			}
 		});
 
-		console.log("Subjects successfully created.");
+		console.log(" - %s\x1b[32m ✔\x1b[0m", "Subjects");
 	} catch (error) {
 		console.error("Error creating subjects:", error);
 	} finally {

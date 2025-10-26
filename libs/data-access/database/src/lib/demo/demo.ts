@@ -11,7 +11,7 @@ import { seedSkillbasedModelling } from "./skill-based-modelling";
 import { createQuizAttempts } from "./metrics/seed-quiz-attempt";
 import { createQuizAnswers } from "./metrics/seed-quiz-answer";
 import { createEventLog } from "./metrics/seed-event-log";
-import { assignDumbledoreAsAuthor } from "./metrics/seed-author-course-relation";
+import { createAuthorCourseRelation } from "./metrics/seed-author-course-relation";
 import { create } from "domain";
 import { createLessons } from "./metrics/seed-lessons";
 import { createCompletedLessons } from "./metrics/seed-completedLessons";
@@ -45,7 +45,8 @@ export async function seedDemos(): Promise<void> {
 
 	await seedSkillbasedModelling();
 
-	// Seed event log data for the "Fundamentals of Wizardry" course
+	// Blue Metric Data:
+	console.log("\x1b[94m%s\x1b[0m", "Metric Data:");
 
 	await createEventLog();
 
@@ -53,7 +54,7 @@ export async function seedDemos(): Promise<void> {
 
 	await createCourses();
 
-	await assignDumbledoreAsAuthor();
+	await createAuthorCourseRelation();
 
 	await createUsers();
 
