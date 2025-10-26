@@ -355,6 +355,6 @@ GROUP BY
     l."lessonId",
     l."title",
     DATE_TRUNC('hour', qans."createdAt")
-ORDER BY u."name", c.title, l.title, "hour";
+ORDER BY u.name, c.title, l.title, "hour";
 
 

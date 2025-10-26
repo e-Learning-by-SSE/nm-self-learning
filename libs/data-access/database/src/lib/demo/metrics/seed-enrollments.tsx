@@ -59,6 +59,29 @@ export async function createEnrollments() {
 			}
 		});
 
+		// Enroll in non-wizardry courses
+		const nonWizardCourseIds = (
+			await prisma.course.findMany({
+				where: {
+					slug: {
+						in: ["objectorientierte-programmierung-mit-java", "bewusstsein", "analysis"]
+					}
+				},
+				select: { courseId: true }
+			})
+		).map(c => c.courseId);
+
+		for (const courseId of nonWizardCourseIds) {
+			await prisma.enrollment.create({
+				data: {
+					courseId,
+					username: "potter",
+					status: EnrollmentStatus.ACTIVE,
+					progress: Math.floor(Math.random() * 99) // Random progress up to 99%
+				}
+			});
+		}
+
 		const enrollmentData = usersRaw.map(userRaw => {
 			return {
 				courseId: "magical-test-course",

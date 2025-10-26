@@ -67,8 +67,6 @@ export async function createEventLog() {
 			})
 		).map(c => c.courseId);
 
-		console.log("Non-Wizard Courses Found:", nonWizardCourseIds);
-
 		for (let i = 0; i < 10; i++) {
 			const date = new Date(initialDate.getTime() + Math.random() * 1000 * 60 * 60 * 24 * 84); // Random date for the next 12 weeks
 			date.setHours(Math.floor(Math.random() * 6) + 12, 0, 0, 0); // Set hours between 12 pm and 6 pm
