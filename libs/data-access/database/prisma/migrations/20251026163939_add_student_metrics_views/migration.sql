@@ -30,13 +30,16 @@ session_durations AS (
     FROM session_ids
     GROUP BY username, session_id
 )
+-- timeSeconds of 0 is filtered out since it indicates no activity
 SELECT
     u.id AS "userId",
     u.name AS "username",
     SUM(session_duration_seconds) AS "timeSeconds"
 FROM session_durations sd
 JOIN "User" u ON u.name = sd.username
-GROUP BY u.id;
+GROUP BY u.id
+HAVING SUM(session_duration_seconds) > 0;
+
 
 --- Student Daily Learning Time
 CREATE OR REPLACE VIEW "StudentMetric_DailyLearningTime" AS
@@ -78,6 +81,7 @@ SELECT
 FROM session_durations sd
 JOIN "User" u ON u.name = sd.username
 GROUP BY u.id, day;
+HAVING SUM(session_duration_seconds) > 0;
 
 --- Student Hourly Learning Time
 CREATE OR REPLACE VIEW "StudentMetric_HourlyLearningTime" AS
@@ -119,6 +123,7 @@ SELECT
 FROM session_durations sd
 JOIN "User" u ON u.name = sd.username
 GROUP BY u.id, "hour";
+HAVING SUM(session_duration_seconds) > 0;
 
 --- Student Learning Time by Course
 CREATE VIEW "StudentMetric_LearningTimeByCourse" AS
@@ -166,6 +171,7 @@ FROM session_durations sd
 JOIN "User" u ON u.name = sd."username"
 LEFT JOIN "Course" c ON c."courseId" = sd."courseId"
 GROUP BY u.id, sd."username", sd."courseId", c.title;
+HAVING SUM(session_duration_seconds) > 0;
 
 -- Student Daily Learning Time by Course
 CREATE OR REPLACE VIEW "StudentMetric_DailyLearningTimeByCourse" AS
@@ -215,6 +221,7 @@ JOIN "User" u ON u.name = sd.username
 LEFT JOIN "Course" c ON c."courseId" = sd."courseId"
 GROUP BY u.id, sd.username, sd."courseId", c.title, DATE_TRUNC('day', session_start)
 ORDER BY sd.username, c.title, day;
+HAVING SUM(session_duration_seconds) > 0;
 
 -- Student Courses Completed by Subject
 CREATE OR REPLACE VIEW "StudentMetric_CoursesCompletedBySubject" AS
