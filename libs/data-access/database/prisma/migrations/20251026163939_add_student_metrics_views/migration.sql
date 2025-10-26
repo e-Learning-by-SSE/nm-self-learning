@@ -179,8 +179,8 @@ SELECT
 FROM session_durations sd
 JOIN "User" u ON u.name = sd."username"
 LEFT JOIN "Course" c ON c."courseId" = sd."courseId"
-HAVING SUM(session_duration_seconds) > 0
-GROUP BY u.id, sd."username", sd."courseId", c.title;
+GROUP BY u.id, sd."username", sd."courseId", c.title
+HAVING SUM(session_duration_seconds) > 0;
 
 -- Student Daily Learning Time by Course
 CREATE OR REPLACE VIEW "StudentMetric_DailyLearningTimeByCourse" AS
