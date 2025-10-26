@@ -149,7 +149,6 @@ WITH sessionized AS (
             THEN 1 ELSE 0
         END AS is_new_session
     FROM "EventLog"
-    WHERE "courseId" IS NOT NULL
 ),
 session_ids AS (
     SELECT
@@ -180,8 +179,8 @@ SELECT
 FROM session_durations sd
 JOIN "User" u ON u.name = sd."username"
 LEFT JOIN "Course" c ON c."courseId" = sd."courseId"
-GROUP BY u.id, sd."username", sd."courseId", c.title
-HAVING SUM(session_duration_seconds) > 0;
+HAVING SUM(session_duration_seconds) > 0
+GROUP BY u.id, sd."username", sd."courseId", c.title;
 
 -- Student Daily Learning Time by Course
 CREATE OR REPLACE VIEW "StudentMetric_DailyLearningTimeByCourse" AS
@@ -197,7 +196,6 @@ WITH sessionized AS (
             THEN 1 ELSE 0
         END AS is_new_session
     FROM "EventLog"
-    WHERE "courseId" IS NOT NULL
 ),
 session_ids AS (
     SELECT

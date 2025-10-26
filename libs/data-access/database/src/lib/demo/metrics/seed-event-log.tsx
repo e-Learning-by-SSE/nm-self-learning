@@ -4,6 +4,14 @@ const prisma = new PrismaClient();
 
 export async function createEventLog() {
 	try {
+		const courseIds = [
+			"magical-test-course",
+			"advanced-magical-theory",
+			"magical-creatures",
+			"potions-and-elixirs",
+			"defense-against-the-dark-arts"
+		];
+
 		// InitialDate today - 6 weeks ago
 		const initialDate = new Date(Date.now() - 6 * 7 * 24 * 60 * 60 * 1000);
 		const eventLogs = [];
@@ -14,6 +22,7 @@ export async function createEventLog() {
 
 			const dailyDate = new Date(date);
 			const numLogs = Math.floor(Math.random() * 9) + 3; // create between 3 and 11 event logs per day
+			const currentCourse = courseIds[Math.floor(Math.random() * courseIds.length)];
 			eventLogs.push(
 				...Array.from({ length: numLogs }).map(() => {
 					// Every log is between 5 and 30 minutes later
@@ -23,7 +32,8 @@ export async function createEventLog() {
 					return {
 						createdAt: new Date(dailyDate.getTime()),
 						username: "potter",
-						type: "EVENT_TYPE_SAMPLE"
+						type: "EVENT_TYPE_SAMPLE",
+						courseId: currentCourse
 					};
 				})
 			);
