@@ -5,8 +5,6 @@ import usersRaw from "./data/user.json";
 const prisma = new PrismaClient();
 
 export async function createCompletedLessons() {
-	console.log("\x1b[94m%s\x1b[0m", "Creating completed lessons...");
-
 	try {
 		const lessonsData = lessonsRaw.map(lessonsRaw => {
 			const { lessonId } = lessonsRaw;
@@ -40,7 +38,7 @@ export async function createCompletedLessons() {
 
 		await prisma.completedLesson.createMany({ data: filteredLessonsData });
 
-		console.log("Completed lessons successfully created.");
+		console.log(" - %s\x1b[32m ✔\x1b[0m", "Completed Lessons");
 	} catch (error) {
 		console.error("Error creating completed lessons:", error);
 	} finally {

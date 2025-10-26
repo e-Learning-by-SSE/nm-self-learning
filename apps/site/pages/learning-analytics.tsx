@@ -32,23 +32,25 @@ export default function LearningAnalyticsPage() {
 	const { data: session } = useSession();
 	const role = session?.user?.role; // "USER" for student, "ADMIN" for creator
 
-	// --- Erik’s KPI additions (keep for later use) ---
-	// Total Time of the User spent Learning in Seconds
-	// const { data: totalData, isLoading: isLoadingTotal } = trpc.metrics.getUserTotalLearningTime.useQuery();
-	// Daily Time of the User spent Learning in Seconds
-	// const { data: dailyData, isLoading: isLoadingDaily } = trpc.metrics.getUserDailyLearningTime.useQuery();
-	// Hourly Time of the User spent Learning in Seconds
-	// const { data: hourlyData, isLoading: isLoadingHourly } = trpc.metrics.getUserHourlyLearningTime.useQuery();
-	// Daily Quiz Stats of the User
-	// const { data: quizData, isLoading: isLoadingQuiz } = trpc.metrics.getUserDailyQuizStats.useQuery();
-	// Total Time of the User spent Learning by Course in Seconds
-	// const { data: courseData, isLoading: isLoadingCourse } = trpc.metrics.getUserTotalLearningTimeByCourse.useQuery();
+	// --------------------Student Metrics--------------------
+	// Learning Time
+	// const { data: studentMetricLearningTimeData, isLoading: isLoadingStudentMetricLearningTime } = trpc.metrics.getStudentMetric_LearningTime.useQuery();
+	// Daily Learning Time
+	// const { data: studentMetricDailyLearningTimeData, isLoading: isLoadingStudentMetricDailyLearningTime } = trpc.metrics.getStudentMetric_DailyLearningTime.useQuery();
+	// Hourly Learning Time
+	// const { data: studentMetricHourlyLearningTimeData, isLoading: isLoadingStudentMetricHourlyLearningTime } = trpc.metrics.getStudentMetric_HourlyLearningTime.useQuery();
+	// Learning Time by Course
+	// const { data: studentMetricLearningTimeByCourseData, isLoading: isLoadingStudentMetricLearningTimeByCourse } = trpc.metrics.getStudentMetric_LearningTimeByCourse.useQuery();
 	// Daily Learning Time by Course
-	// const { data: dailyByCourseData, isLoading: isLoadingDailyByCourse } = trpc.metrics.getUserDailyLearningTimeByCourse.useQuery();
-	// Learning Streak
-	// const { data: learningStreakData, isLoading: isLoadingLearningStreak } = trpc.metrics.getUserLearningStreak.useQuery();
+	// const { data: studentMetricDailyLearningTimeByCourseData, isLoading: isLoadingStudentMetricDailyLearningTimeByCourse } = trpc.metrics.getStudentMetric_DailyLearningTimeByCourse.useQuery();
 	// Courses Completed by Subject
-	// const { data: coursesCompletedBySubjectData, isLoading: isLoadingCoursesCompletedBySubject } = trpc.metrics.getUserCoursesCompletedBySubject.useQuery();
+	// const { data: studentMetricCoursesCompletedBySubjectData, isLoading: isLoadingStudentMetricCoursesCompletedBySubject } = trpc.metrics.getStudentMetric_CoursesCompletedBySubject.useQuery();
+	// Learning Streak
+	// const { data: studentMetricLearningStreakData, isLoading: isLoadingStudentMetricLearningStreak } = trpc.metrics.getStudentMetric_LearningStreak.useQuery();
+	// Average Quiz Answers
+	// const { data: studentMetricAverageQuizAnswersData, isLoading: isLoadingStudentMetricAverageQuizAnswers } = trpc.metrics.getStudentMetric_AverageQuizAnswers.useQuery();
+	// Hourly Average Quiz Answers
+	// const { data: studentMetricHourlyAverageQuizAnswersData, isLoading: isLoadingStudentMetricHourlyAverageQuizAnswers } = trpc.metrics.getStudentMetric_HourlyAverageQuizAnswers.useQuery();
 
 	// --------------------Author Metrics--------------------
 	// Average Completion Rate

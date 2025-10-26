@@ -3,8 +3,6 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export async function createCourses() {
-	console.log("\x1b[94m%s\x1b[0m", "Creating courses...");
-
 	try {
 		await prisma.course.create({
 			data: {
@@ -66,7 +64,22 @@ export async function createCourses() {
 			}
 		});
 
-		console.log("Courses successfully created.");
+		await prisma.course.create({
+			data: {
+				courseId: "defense-against-the-dark-arts",
+				slug: "defense-against-the-dark-arts",
+				title: "Defense Against the Dark Arts",
+				subtitle: "Protecting Yourself from Dark Magic",
+				description:
+					"This essential course covers various defensive spells, counter-curses, and strategies to protect oneself from dark magic and creatures. Students will learn both theoretical knowledge and practical skills to defend against magical threats.",
+				imgUrl: null,
+				content: [],
+				meta: {},
+				subjectId: "wizardry"
+			}
+		});
+
+		console.log(" - %s\x1b[32m ✔\x1b[0m", "Courses");
 	} catch (error) {
 		console.error("Error creating courses:", error);
 	} finally {
