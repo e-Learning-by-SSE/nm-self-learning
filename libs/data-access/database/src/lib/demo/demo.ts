@@ -8,10 +8,19 @@ import { generateLearningDiaryDemoData } from "./learningDiary/learningDiary";
 import { seedJavaDemo } from "./seed-java-demo";
 import { seedReactDemo } from "./seed-react-demo";
 import { seedSkillbasedModelling } from "./skill-based-modelling";
-import { seedQuizAttemptEventLog } from "./event-log/seed-quiz-attempt";
-import { seedQuizAnswerEventLog } from "./event-log/seed-quiz-answer";
-import { seedEventLogForWizardryCourse } from "./event-log/seed-event-log-with-course";
-import { assignDumbledoreAsAuthor } from "./event-log/seed-author";
+import { createQuizAttempts } from "./metrics/seed-quiz-attempt";
+import { createQuizAnswers } from "./metrics/seed-quiz-answer";
+import { createEventLog } from "./metrics/seed-event-log";
+import { createAuthorCourseRelation } from "./metrics/seed-author-course-relation";
+import { create } from "domain";
+import { createLessons } from "./metrics/seed-lessons";
+import { createCompletedLessons } from "./metrics/seed-completedLessons";
+import { createStartingLessons } from "./metrics/seed-startingLessons";
+import { createUsers } from "./metrics/seed-users";
+import { createStudents } from "./metrics/seed-students";
+import { createEnrollments } from "./metrics/seed-enrollments";
+import { createCourses } from "./metrics/seed-courses";
+import { createSubjects } from "./metrics/seed-subject";
 
 const prisma = new PrismaClient();
 
@@ -36,11 +45,30 @@ export async function seedDemos(): Promise<void> {
 
 	await seedSkillbasedModelling();
 
-	await seedQuizAttemptEventLog();
+	// Blue Metric Data:
+	console.log("\x1b[94m%s\x1b[0m", "Metric Data:");
 
-	await seedQuizAnswerEventLog();
+	await createEventLog();
 
-	await seedEventLogForWizardryCourse();
+	await createSubjects();
 
-	await assignDumbledoreAsAuthor();
+	await createCourses();
+
+	await createAuthorCourseRelation();
+
+	await createUsers();
+
+	await createStudents();
+
+	await createEnrollments();
+
+	await createLessons();
+
+	await createCompletedLessons();
+
+	await createStartingLessons();
+
+	const quizAttempts = await createQuizAttempts();
+
+	await createQuizAnswers(quizAttempts);
 }

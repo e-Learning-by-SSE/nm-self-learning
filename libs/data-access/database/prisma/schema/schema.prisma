@@ -12,6 +12,7 @@ datasource db {
 model Student {
     userId                      String                        @unique
     username                    String                        @id
+    startedLessons              StartedLesson[]
     completedLessons            CompletedLesson[]
     enrollments                 Enrollment[]
     customLearningLocations     LearningLocation[]
@@ -102,6 +103,7 @@ model Course {
     createdAt            DateTime             @default(now())
     updatedAt            DateTime             @updatedAt
     subjectId            String?
+    starts               StartedLesson[]
     completions          CompletedLesson[]
     subject              Subject?             @relation(fields: [subjectId], references: [subjectId])
     enrollments          Enrollment[]
@@ -141,6 +143,7 @@ model Lesson {
     meta                  Json
     createdAt             DateTime                      @default(now())
     updatedAt             DateTime                      @updatedAt
+    starts                StartedLesson[]
     completions           CompletedLesson[]
     quizAttempts          QuizAttempt[]
     authors               Author[]                      @relation("AuthorToLesson")
@@ -166,6 +169,19 @@ model CompletedLesson {
     @@index([username, lessonId])
 }
 
+model StartedLesson {
+    startedLessonId Int      @id @default(autoincrement())
+    courseId        String?
+    lessonId        String
+    username        String
+    createdAt       DateTime @default(now())
+    course          Course?  @relation(fields: [courseId], references: [courseId])
+    lesson          Lesson   @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
+    user            Student  @relation(fields: [username], references: [username], onDelete: Cascade)
+
+    @@index([username, lessonId])
+}
+
 model QuizAttempt {
     attemptId  String       @id @default(uuid())
     createdAt  DateTime     @default(now())
@@ -181,6 +197,7 @@ model QuizAttempt {
 
 model QuizAnswer {
     answerId      Int         @id @default(autoincrement())
+    createdAt     DateTime    @default(now())
     quizAttemptId String
     questionId    String
     answer        Json
