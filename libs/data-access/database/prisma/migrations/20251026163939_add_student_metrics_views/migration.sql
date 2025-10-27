@@ -149,6 +149,7 @@ WITH sessionized AS (
             THEN 1 ELSE 0
         END AS is_new_session
     FROM "EventLog"
+    WHERE "courseId" IS NOT NULL
 ),
 session_ids AS (
     SELECT
@@ -196,6 +197,7 @@ WITH sessionized AS (
             THEN 1 ELSE 0
         END AS is_new_session
     FROM "EventLog"
+    WHERE "courseId" IS NOT NULL
 ),
 session_ids AS (
     SELECT
