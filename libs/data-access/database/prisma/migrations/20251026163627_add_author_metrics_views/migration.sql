@@ -129,6 +129,8 @@ Completion_Rate AS (
 SELECT
   u.id AS "authorId",
   u.name AS "authorUsername",
+  cr."courseId",
+  c.title AS "courseTitle",
   cr."lessonId",
   l.title AS "lessonTitle",
   cr."usersStarted",
