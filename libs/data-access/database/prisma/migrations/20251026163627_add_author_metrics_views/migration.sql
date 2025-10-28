@@ -128,7 +128,7 @@ Completion_Rate AS (
 -- 5. Link Lessons to Author
 SELECT
   u.id AS "authorId",
-  u.name AS "authorName",
+  u.name AS "authorUsername",
   cr."lessonId",
   l.title AS "lessonTitle",
   cr."usersStarted",
@@ -208,7 +208,7 @@ Course_Aggregate AS (
 -- 6. Link Courses to Authors
 SELECT
   u.id AS "authorId",
-  u.name AS "authorName",
+  u.name AS "authorUsername",
   c."courseId",
   c."title" AS "courseTitle",
   ca."numLessons",
