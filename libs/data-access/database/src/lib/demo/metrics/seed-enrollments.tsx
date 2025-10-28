@@ -1,15 +1,17 @@
 import { EnrollmentStatus, PrismaClient } from "@prisma/client";
-import usersRaw from "./data/user.json";
 
 const prisma = new PrismaClient();
 
-export async function createEnrollments(courseIds: string[]) {
+export async function createEnrollments(
+	courseIds: string[],
+	userData: { id: string; name: string }[]
+) {
 	try {
 		const enrollmentData = [];
 
 		// Enroll Users in Wizardry Courses
 		for (const courseId of courseIds) {
-			usersRaw.map(async user => {
+			userData.map(async user => {
 				// 40 % chance to be COMPLETED, 60 % chance to be ACTIVE
 				const status =
 					Math.random() < 0.4 ? EnrollmentStatus.COMPLETED : EnrollmentStatus.ACTIVE;

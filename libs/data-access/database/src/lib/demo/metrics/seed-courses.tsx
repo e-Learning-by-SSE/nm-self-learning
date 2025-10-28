@@ -80,4 +80,5 @@ export async function createCourses() {
 	} finally {
 		await prisma.$disconnect();
 	}
+	return [];
 }

@@ -1,11 +1,10 @@
 import { PrismaClient } from "@prisma/client";
-import usersRaw from "./data/user.json";
 
 const prisma = new PrismaClient();
 
-export async function createStudents() {
+export async function createStudents(userData: { id: string; name: string }[]) {
 	try {
-		const studentsData = usersRaw.map(user => {
+		const studentsData = userData.map(user => {
 			return {
 				userId: user.id,
 				username: user.name

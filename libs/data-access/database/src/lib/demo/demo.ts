@@ -54,13 +54,13 @@ export async function seedDemos(): Promise<void> {
 
 	const courseIds = await createCourses();
 
-	await createAuthorCourseRelation(courseIds ?? []);
+	await createAuthorCourseRelation(courseIds);
 
-	await createUsers();
+	const userData = await createUsers();
 
-	await createStudents();
+	await createStudents(userData);
 
-	await createEnrollments(courseIds ?? []);
+	await createEnrollments(courseIds, userData);
 
 	await createLessons();
 
