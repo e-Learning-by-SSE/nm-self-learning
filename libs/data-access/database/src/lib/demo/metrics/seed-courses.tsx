@@ -4,8 +4,8 @@ const prisma = new PrismaClient();
 
 export async function createCourses() {
 	try {
-		await prisma.course.create({
-			data: {
+		const courseData = [
+			{
 				courseId: "magical-test-course",
 				slug: "fundamentals-of-wizardry",
 				title: "Fundamentals of Wizardry",
@@ -16,11 +16,8 @@ export async function createCourses() {
 				content: [],
 				meta: {},
 				subjectId: "wizardry"
-			}
-		});
-
-		await prisma.course.create({
-			data: {
+			},
+			{
 				courseId: "advanced-magical-theory",
 				slug: "advanced-magical-theory",
 				title: "Advanced Magical Theory",
@@ -31,11 +28,8 @@ export async function createCourses() {
 				content: [],
 				meta: {},
 				subjectId: "wizardry"
-			}
-		});
-
-		await prisma.course.create({
-			data: {
+			},
+			{
 				courseId: "magical-creatures",
 				slug: "magical-creatures",
 				title: "Magical Creatures",
@@ -46,11 +40,8 @@ export async function createCourses() {
 				content: [],
 				meta: {},
 				subjectId: "wizardry"
-			}
-		});
-
-		await prisma.course.create({
-			data: {
+			},
+			{
 				courseId: "potions-and-elixirs",
 				slug: "potions-and-elixirs",
 				title: "Potions and Elixirs",
@@ -61,11 +52,8 @@ export async function createCourses() {
 				content: [],
 				meta: {},
 				subjectId: "wizardry"
-			}
-		});
-
-		await prisma.course.create({
-			data: {
+			},
+			{
 				courseId: "defense-against-the-dark-arts",
 				slug: "defense-against-the-dark-arts",
 				title: "Defense Against the Dark Arts",
@@ -77,9 +65,16 @@ export async function createCourses() {
 				meta: {},
 				subjectId: "wizardry"
 			}
+		];
+
+		await prisma.course.createMany({
+			data: courseData
 		});
 
 		console.log(" - %s\x1b[32m ✔\x1b[0m", "Courses");
+
+		// Return array of courseIds or empty array if courseData is empty
+		return Array.from(courseData, course => course.courseId);
 	} catch (error) {
 		console.error("Error creating courses:", error);
 	} finally {

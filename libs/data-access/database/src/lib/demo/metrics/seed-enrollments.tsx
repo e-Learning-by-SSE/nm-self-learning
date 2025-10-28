@@ -3,61 +3,29 @@ import usersRaw from "./data/user.json";
 
 const prisma = new PrismaClient();
 
-export async function createEnrollments() {
+export async function createEnrollments(courseIds: string[]) {
 	try {
-		await prisma.enrollment.create({
-			data: {
-				courseId: "magical-test-course",
-				username: "potter",
-				status: EnrollmentStatus.ACTIVE,
-				progress: 78
-			}
-		});
+		const enrollmentData = [];
 
-		await prisma.enrollment.create({
-			data: {
-				courseId: "advanced-magical-theory",
-				username: "potter",
-				status: EnrollmentStatus.COMPLETED,
-				progress: 100
-			}
-		});
+		// Enroll Users in Wizardry Courses
+		for (const courseId of courseIds) {
+			usersRaw.map(async user => {
+				// 40 % chance to be COMPLETED, 60 % chance to be ACTIVE
+				const status =
+					Math.random() < 0.4 ? EnrollmentStatus.COMPLETED : EnrollmentStatus.ACTIVE;
 
-		await prisma.enrollment.create({
-			data: {
-				courseId: "magical-creatures",
-				username: "potter",
-				status: EnrollmentStatus.COMPLETED,
-				progress: 100
-			}
-		});
+				const progress =
+					status === EnrollmentStatus.COMPLETED ? 100 : Math.floor(Math.random() * 99); // Random progress up to 99% if ACTIVE
 
-		await prisma.enrollment.create({
-			data: {
-				courseId: "potions-and-elixirs",
-				username: "potter",
-				status: EnrollmentStatus.COMPLETED,
-				progress: 100
-			}
-		});
-
-		await prisma.enrollment.create({
-			data: {
-				courseId: "defense-against-the-dark-arts",
-				username: "potter",
-				status: EnrollmentStatus.COMPLETED,
-				progress: 100
-			}
-		});
-
-		await prisma.enrollment.create({
-			data: {
-				courseId: "magical-test-course",
-				username: "weasley",
-				status: EnrollmentStatus.COMPLETED,
-				progress: 100
-			}
-		});
+				// magical-creatures always 100% to have atleast one COMPLETED enrollment
+				enrollmentData.push({
+					courseId,
+					username: user.name,
+					status,
+					progress
+				});
+			});
+		}
 
 		// Enroll in non-wizardry courses
 		const nonWizardCourseIds = (
@@ -72,23 +40,13 @@ export async function createEnrollments() {
 		).map(c => c.courseId);
 
 		for (const courseId of nonWizardCourseIds) {
-			await prisma.enrollment.create({
-				data: {
-					courseId,
-					username: "potter",
-					status: EnrollmentStatus.ACTIVE,
-					progress: Math.floor(Math.random() * 99) // Random progress up to 99%
-				}
+			await enrollmentData.push({
+				courseId,
+				username: "potter",
+				status: EnrollmentStatus.ACTIVE,
+				progress: Math.floor(Math.random() * 99) // Random progress up to 99%
 			});
 		}
-
-		const enrollmentData = usersRaw.map(userRaw => {
-			return {
-				courseId: "magical-test-course",
-				username: userRaw.name,
-				status: EnrollmentStatus.ACTIVE
-			};
-		});
 
 		await prisma.enrollment.createMany({ data: enrollmentData });
 
