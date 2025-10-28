@@ -64,10 +64,9 @@ export async function createUsers() {
 
 		await prisma.user.createMany({ data: userData });
 
-		// prevent undefined return
-		return userData;
-
 		console.log(" - %s\x1b[32m ✔\x1b[0m", "Users");
+
+		return userData;
 	} catch (error) {
 		console.error("Error creating users:", error);
 	} finally {

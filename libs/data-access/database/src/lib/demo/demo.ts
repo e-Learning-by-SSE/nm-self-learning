@@ -64,9 +64,9 @@ export async function seedDemos(): Promise<void> {
 
 	await createLessons();
 
-	await createCompletedLessons();
+	await createCompletedLessons(userData);
 
-	await createStartingLessons();
+	await createStartingLessons(userData);
 
 	const quizAttempts = await createQuizAttempts();
 

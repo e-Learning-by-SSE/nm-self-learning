@@ -29,7 +29,22 @@ export async function createEnrollments(
 			});
 		}
 
-		// Enroll in non-wizardry courses
+		// Enroll "potter" in the courses (30% chance for Completed, 70% Active)
+		for (const courseId of courseIds) {
+			const status =
+				Math.random() < 0.3 ? EnrollmentStatus.COMPLETED : EnrollmentStatus.ACTIVE;
+			const progress =
+				status === EnrollmentStatus.COMPLETED ? 100 : Math.floor(Math.random() * 99);
+
+			enrollmentData.push({
+				courseId,
+				username: "potter",
+				status,
+				progress
+			});
+		}
+
+		// Enroll "potter" in non-wizardry courses
 		const nonWizardCourseIds = (
 			await prisma.course.findMany({
 				where: {
