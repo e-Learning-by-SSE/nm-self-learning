@@ -1,0 +1,52 @@
+[
+    {
+        "id": "user-1",
+        "name": "luna",
+        "displayName": "Luna Lovegood"
+    },
+    {
+        "id": "user-2",
+        "name": "hermione",
+        "displayName": "Hermione Granger"
+    },
+    {
+        "id": "user-3",
+        "name": "draco",
+        "displayName": "Draco Malfoy"
+    },
+    {
+        "id": "user-4",
+        "name": "severus",
+        "displayName": "Severus Snape"
+    },
+    {
+        "id": "user-5",
+        "name": "sirius",
+        "displayName": "Sirius Black"
+    },
+    {
+        "id": "user-6",
+        "name": "remus",
+        "displayName": "Remus Lupin"
+    },
+    {
+        "id": "user-7",
+        "name": "neville",
+        "displayName": "Neville Longbottom"
+    },
+    {
+        "id": "user-8",
+        "name": "ginny",
+        "displayName": "Ginny Weasley"
+    },
+    {
+        "id": "user-9",
+        "name": "fred",
+        "displayName": "Fred Weasley"
+    },
+    {
+        "id": "user-10",
+        "name": "george",
+        "displayName": "George Weasley"
+    }
+]

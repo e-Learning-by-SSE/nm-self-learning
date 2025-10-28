@@ -7,8 +7,16 @@ import {
 	PlayIcon
 } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
-import { CourseCompletion, extractLessonIds, LessonMeta } from "@self-learning/types";
+import { useLessonOutlineContext } from "@self-learning/lesson";
+import {
+	CourseCompletion,
+	extractLessonIds,
+	getContentTypeDisplayName,
+	LessonContentType,
+	LessonMeta
+} from "@self-learning/types";
 import { Divider, ProgressBar, useTimeout } from "@self-learning/ui/common";
+import { NavigableContentOutline } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -201,26 +209,66 @@ function Lesson({
 	href: string;
 	isActive: boolean;
 }) {
+	const outline = useLessonOutlineContext();
 	return (
-		<Link
-			href={href}
-			className={`relative flex items-center overflow-hidden rounded-lg py-1 px-4 hover:bg-gray-200 ${
-				isActive ? "bg-gray-200 font-medium text-black" : "text-light"
-			}`}
-		>
-			<span
-				style={{ width: lesson.isCompleted ? "2px" : "1px" }}
-				className={`absolute h-full ${
-					lesson.isCompleted ? "bg-emerald-500" : "bg-gray-300"
+		<>
+			<Link
+				href={href}
+				className={`relative flex items-center overflow-hidden rounded-lg py-1 px-4 hover:bg-gray-200 ${
+					isActive ? "bg-gray-200 font-medium text-black" : "text-light"
 				}`}
-			></span>
-			<span
-				className="overflow-hidden text-ellipsis whitespace-nowrap pl-4 text-sm"
-				data-testid="lessonTitle"
 			>
-				{lesson.title}
-			</span>
-		</Link>
+				<span
+					style={{ width: lesson.isCompleted ? "2px" : "1px" }}
+					className={`absolute h-full ${
+						lesson.isCompleted ? "bg-emerald-500" : "bg-gray-300"
+					}`}
+				></span>
+				<span
+					className="overflow-hidden text-ellipsis whitespace-nowrap pl-4 text-sm"
+					data-testid="lessonTitle"
+				>
+					{lesson.title}
+				</span>
+			</Link>
+			{isActive && outline && (
+				<div className="ml-8 mt-1">
+					<NavigableContentOutline
+						content={outline.content}
+						swapContent={outline.swapContent}
+						activeIndex={outline.activeIndex}
+						setTargetIndex={outline.setTargetIndex}
+						RenderContent={ContentTabItem}
+					/>
+				</div>
+			)}
+		</>
+	);
+}
+
+function ContentTabItem({
+	item,
+	select,
+	active
+}: {
+	item?: LessonContentType;
+	select?: () => void;
+	active?: boolean;
+}) {
+	return (
+		<>
+			{item && (
+				<div className="flex gap-2 mb-2 text-nowrap flex-nowrap items-center text-sm">
+					<span
+						className={`w-full ${active ? "text-secondary" : "text-light"}`}
+						onClick={select}
+					>
+						{getContentTypeDisplayName(item.type)}
+					</span>
+				</div>
+			)}
+			{!item && "Kein Inhalt"}
+		</>
 	);
 }
 
@@ -257,7 +305,6 @@ function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) 
 
 export function useLessonNavigation({ lesson, content, course }: PlaylistProps) {
 	const router = useRouter();
-
 	const currentChapter = useMemo(() => {
 		for (const chapter of content) {
 			for (const les of chapter.content) {
@@ -327,7 +374,6 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 						{router.pathname.endsWith("quiz") ? "Zum Lerninhalt" : "Zur Lernkontrolle"}
 					</Link>
 				)}
-
 				<span className="flex gap-2">
 					<button
 						onClick={() => navigateToPreviousLesson()}

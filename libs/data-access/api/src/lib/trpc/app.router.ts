@@ -20,7 +20,7 @@ import { storageRouter } from "./routers/storage.router";
 import { subjectRouter } from "./routers/subject.router";
 import { llmConfigRouter } from "./routers/llm-config.router";
 import { userEventRouter } from "./routers/event-log.router";
-import { KPIRouter } from "./routers/kpi.router";
+import { MetricsRouter } from "./routers/metrics.router";
 
 export const appRouter = t.router({
 	admin: adminRouter,
@@ -42,7 +42,7 @@ export const appRouter = t.router({
 	skill: skillRouter,
 	events: userEventRouter,
 	llmConfig: llmConfigRouter,
-	KPIRouter: KPIRouter
+	metrics: MetricsRouter
 });
 
 // export type definition of API
