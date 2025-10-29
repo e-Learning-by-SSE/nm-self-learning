@@ -321,7 +321,7 @@ export default function StudyTimeHeatmap({
 				// Aggregation from hourly learning time
 				const end = addDays(start, 7);
 				const weekHours = (Array.isArray(hourlyLearning) ? hourlyLearning : []).filter(
-					(h: any) => {
+					(h) => {
 						const d = parseUTC(h.hour);
 						return d >= start && d < end;
 					}
