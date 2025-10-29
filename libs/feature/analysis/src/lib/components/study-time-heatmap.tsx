@@ -133,7 +133,7 @@ function aggregateQuizByDay(hourlyQuiz: HourlyQuiz[], metric: Metric): Map<strin
 	const map = new Map<string, number>();
 	for (const q of hourlyQuiz) {
 		const d = parseUTC(q.hour);
-		const key = normalizeDate(d)!;
+		const key = normalizeDate(d) ?? "";
 		const val =
 			metric === "units"
 				? (q.wrongAnswers ?? 0) + (q.correctAnswers ?? 0)
