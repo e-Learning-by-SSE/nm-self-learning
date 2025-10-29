@@ -17,7 +17,6 @@ export default defineConfig({
 		specPattern: "src/e2e/**/*.cy.{js,jsx,ts,tsx}",
 		supportFile: "src/support/e2e.ts",
 		scrollBehavior: "center",
-		experimentalSessionAndOrigin: true,
 		/**
 		 * TODO(@nx/cypress): In Cypress v12,the testIsolation option is turned on by default.
 		 * This can cause tests to start breaking where not indended.
