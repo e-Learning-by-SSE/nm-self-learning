@@ -188,11 +188,10 @@ function AuthorDashboardPage({ author }: Props) {
 								subtitle="Autor der folgenden Kurse:"
 							/>
 
-							<Link href="/teaching/courses/create">
-								<IconButton
-									text="Kurs erstellen"
-									icon={<PlusIcon className="icon h-5" />}
-								/>
+							<Link href="/teaching/courses/create" className="mt-4">
+								<button className="btn btn-primary" type="button">
+									<span>Kurs erstellen</span>
+								</button>
 							</Link>
 						</div>
 
@@ -274,11 +273,10 @@ function AuthorDashboardPage({ author }: Props) {
 								subtitle="Autor der folgenden Lerneinheiten:"
 							/>
 
-							<Link href="/teaching/lessons/create">
-								<IconButton
-									text="Lerneinheit erstellen"
-									icon={<PlusIcon className="icon h-5" />}
-								/>
+							<Link href="/teaching/lessons/create" className="mt-4">
+								<button className="btn btn-primary" type="button">
+									<span>Lerneinheit erstellen</span>
+								</button>
 							</Link>
 						</div>
 
@@ -292,11 +290,10 @@ function AuthorDashboardPage({ author }: Props) {
 								title="Meine Skillkarten"
 								subtitle="Autor der folgenden Skillkarten:"
 							/>
-							<Link href="/skills/repository/create">
-								<IconButton
-									icon={<PlusIcon className="icon h-5" />}
-									text="Skillkarte erstellen"
-								/>
+							<Link href="/skills/repository/create" className="mt-4">
+								<button className="btn btn-primary" type="button">
+									<span>Skillkarte erstellen</span>
+								</button>
 							</Link>
 						</div>
 						<SkillRepositoryOverview />

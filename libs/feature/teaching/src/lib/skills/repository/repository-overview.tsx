@@ -5,7 +5,8 @@ import {
 	LoadingBox,
 	Table,
 	TableDataColumn,
-	TableHeaderColumn
+	TableHeaderColumn,
+	IconOnlyButton
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { AuthorGuard, useRequiredSession } from "@self-learning/ui/layouts";
@@ -131,14 +132,12 @@ function RepositoryDeleteOption({ repositoryId }: { repositoryId: string }) {
 
 	return (
 		<>
-			<button
-				className="rounded bg-red-500 font-medium text-white hover:bg-red-600"
+			<IconOnlyButton
+				icon={<TrashIcon className="h-5 w-5" />}
+				variant="danger"
 				onClick={() => setShowConfirmation(true)}
-			>
-				<div className="ml-4">
-					<TrashIcon className="icon " />
-				</div>
-			</button>
+				title={"Repository löschen"}
+			/>
 			{showConfirmation && (
 				<Dialog title={"Löschen"} onClose={handleCancel}>
 					Möchten Sie dieses Repository wirklich löschen?

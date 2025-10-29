@@ -27,6 +27,7 @@ export function LabeledFieldSelectSkillsView({
 				<IconButton
 					text="Hinzufügen"
 					icon={<PlusIcon className="h-5 w-5" />}
+					variant="secondary"
 					onClick={() => setSelectSkillModal(true)}
 					title={"Hinzufügen"}
 					data-testid="BenoetigteSkills-add"
@@ -142,7 +143,13 @@ function InlineRemoveButton({
 				>
 					{label}
 				</button>
-				<IconOnlyButton onClick={onRemove} title={"Skill entfernen"} icon={<XMarkIcon className="h-5 w-5" />} variant="x-mark" className="p-2 mr-2" />
+				<IconOnlyButton
+					onClick={onRemove}
+					title={"Skill entfernen"}
+					icon={<XMarkIcon className="h-5 w-5" />}
+					variant="x-mark"
+					className="p-2 mr-2"
+				/>
 			</div>
 		</div>
 	);

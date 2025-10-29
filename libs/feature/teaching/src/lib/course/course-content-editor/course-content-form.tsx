@@ -111,7 +111,6 @@ export function CourseContentForm() {
 				className="btn-primary mt-4"
 				onClick={() => setOpenNewChapterDialog(true)}
 			>
-				<PlusIcon className="mr-2 h-5" />
 				<span>Kapitel erstellen</span>
 			</button>
 
@@ -176,7 +175,12 @@ function LessonNode({
 						Lernkontrolle
 					</span>
 				)}
-				<IconOnlyButton onClick={onRemove} icon={<XMarkIcon className="h-5 w-5" />} variant="x-mark" title="Entfernen" />
+				<IconOnlyButton
+					onClick={onRemove}
+					icon={<XMarkIcon className="h-5 w-5" />}
+					variant="x-mark"
+					title="Entfernen"
+				/>
 			</div>
 		</span>
 	);
