@@ -90,7 +90,6 @@ function normalizeMetric(m: string): Metric {
 	return "hours";
 }
 
-
 /** ---------- COLOR SCALE (ADAPTIVE ONLY FOR TIME/Day) ---------- */
 const colorForValue = (v: number, period: Period, metric: Metric) => {
 	if (v <= 0) return COLORS[0];
@@ -200,7 +199,7 @@ export default function StudyTimeHeatmap({
 
 	const dailyLearning = dailyLearningQuery.data ?? null; // for "Zeit"/time (Monat/Jahr)
 	const hourlyLearning = hourlyLearningQuery.data ?? null; // for "Zeit"/time (Day/Week)
-	const hourlyQuiz = (hourlyQuizQuery.data ?? null); // for "Erledigte Aufgaben" & "Richtige Aufgaben"/Units/Accuracy
+	const hourlyQuiz = hourlyQuizQuery.data ?? null; // for "Erledigte Aufgaben" & "Richtige Aufgaben"/Units/Accuracy
 
 	// visibility
 	const hasNoData = useMemo(() => {
@@ -225,7 +224,7 @@ export default function StudyTimeHeatmap({
 		if (internalMetric === "hours") {
 			// from DailyLearningTime (seconds → hours)
 			if (dailyLearning) {
-                for (const entry of dailyLearning) {
+				for (const entry of dailyLearning) {
 					const iso = normalizeDate(entry.day);
 					if (!iso) continue;
 					const value = (entry.timeSeconds ?? 0) / 3600;
@@ -251,8 +250,8 @@ export default function StudyTimeHeatmap({
 				// Hours of learning time
 				hoursForDay = Array.isArray(hourlyLearning)
 					? hourlyLearning
-							.filter((h) => normalizeDate(h.hour) === isoToday)
-							.map((h) => {
+							.filter(h => normalizeDate(h.hour) === isoToday)
+							.map(h => {
 								const d = parseUTC(h.hour);
 								const local = new Date(h.hour);
 								console.log(
@@ -321,7 +320,7 @@ export default function StudyTimeHeatmap({
 				// Aggregation from hourly learning time
 				const end = addDays(start, 7);
 				const weekHours = (Array.isArray(hourlyLearning) ? hourlyLearning : []).filter(
-					(h) => {
+					h => {
 						const d = parseUTC(h.hour);
 						return d >= start && d < end;
 					}
@@ -449,8 +448,7 @@ export default function StudyTimeHeatmap({
 			const cols = (config as any).cols.length;
 			const data = [];
 			for (let r = 0; r < rows; r++)
-				for (let c = 0; c < cols; c++)
-					data.push({ x: c, y: r, v: (config).values[r][c] });
+				for (let c = 0; c < cols; c++) data.push({ x: c, y: r, v: config.values[r][c] });
 
 			const gapX =
 				period === "year" ? 22 : period === "month" ? 10 : period === "week" ? 10 : 8;
@@ -469,7 +467,7 @@ export default function StudyTimeHeatmap({
 					for (const el of elements) {
 						const { x, y } = el.tooltipPosition();
 						const raw = el.$context.raw as { x: number; y: number; v: number };
-						const label = (config).cellLabel(raw.y, raw.x);
+						const label = config.cellLabel(raw.y, raw.x);
 						if (!label) continue;
 						const bg =
 							raw.v === -1
@@ -574,8 +572,7 @@ export default function StudyTimeHeatmap({
 													: `${activityLabel}, du hast ${correct} Aufgaben richtig gelöst.`;
 										}
 									} else if (period === "week") {
-
-									/** ---------- WEEK ---------- */
+										/** ---------- WEEK ---------- */
 										const tag = [
 											"Montag",
 											"Dienstag",
@@ -611,8 +608,7 @@ export default function StudyTimeHeatmap({
 											text = `${activityLabel} am ${tag}. ${tageszeit} hast du ${v} Aufgaben richtig gelöst.`;
 										}
 									} else if (period === "month") {
-
-									/** ---------- MONTH ---------- */
+										/** ---------- MONTH ---------- */
 										let activityLabel = "";
 										if (v <= 0) activityLabel = "Keine Aktivität";
 										else if (v <= 2) activityLabel = "Sehr geringe Aktivität";
@@ -621,10 +617,7 @@ export default function StudyTimeHeatmap({
 										else if (v <= 8) activityLabel = "Hohe Aktivität";
 										else activityLabel = "Sehr hohe Aktivität";
 
-										const dayLabel = (config).cellLabel(
-											ctx.raw.y,
-											ctx.raw.x
-										);
+										const dayLabel = config.cellLabel(ctx.raw.y, ctx.raw.x);
 										if (!dayLabel) return activityLabel;
 
 										const monthName = currentDate.toLocaleString("de-DE", {
@@ -647,8 +640,7 @@ export default function StudyTimeHeatmap({
 											text = `${activityLabel}, am ${dayLabel}. ${monthName} hast du ${correct} Aufgaben korrekt gelöst.`;
 										}
 									} else if (period === "year") {
-
-									/** ---------- YEAR ---------- */
+										/** ---------- YEAR ---------- */
 										let activityLabel = "";
 										if (v <= 0) activityLabel = "Keine Aktivität";
 										else if (v <= 20) activityLabel = "Sehr geringe Aktivität";
@@ -657,10 +649,7 @@ export default function StudyTimeHeatmap({
 										else if (v <= 80) activityLabel = "Hohe Aktivität";
 										else activityLabel = "Sehr hohe Aktivität";
 
-										const monthLabel = (config).cellLabel(
-											ctx.raw.y,
-											ctx.raw.x
-										);
+										const monthLabel = config.cellLabel(ctx.raw.y, ctx.raw.x);
 										if (!monthLabel) return activityLabel;
 
 										const germanMonths: Record<string, string> = {
@@ -696,8 +685,7 @@ export default function StudyTimeHeatmap({
 											text = `Im ${monthName} hattest du eine ${activityLabel}. Du hast ${correct} Aufgaben richtig gelöst.`;
 										}
 									} else {
-
-									/** ---------- WEEK (fallback) ---------- */
+										/** ---------- WEEK (fallback) ---------- */
 										if (v <= 2) text = "Sehr geringe Aktivität";
 										else if (v <= 4) text = "Geringe Aktivität";
 										else if (v <= 6) text = "Mittlere Aktivität";
@@ -744,7 +732,7 @@ export default function StudyTimeHeatmap({
 								callback: (tickValue: string | number) => {
 									const v = Number(tickValue);
 									return period === "week" || period === "month"
-										? ((config).xLabels[v] ?? "")
+										? (config.xLabels[v] ?? "")
 										: "";
 								}
 							}
