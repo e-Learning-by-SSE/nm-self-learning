@@ -90,15 +90,6 @@ function normalizeMetric(m: string): Metric {
 	return "hours";
 }
 
-/** ---------- COLOR SCALE (ABSOLUTE THRESHOLDS) ---------- */
-const colorFor = (v: number) => {
-	if (v === 0) return COLORS[0];
-	if (v <= 2) return COLORS[1];
-	if (v <= 4) return COLORS[2];
-	if (v <= 6) return COLORS[3];
-	if (v <= 8) return COLORS[4];
-	return COLORS[5];
-};
 
 /** ---------- COLOR SCALE (ADAPTIVE ONLY FOR TIME/Day) ---------- */
 const colorForValue = (v: number, period: Period, metric: Metric) => {
