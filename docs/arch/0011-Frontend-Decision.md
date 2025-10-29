@@ -120,5 +120,3 @@ Alternatives
   * Slightly more setup effort compared to a dedicated heatmap plugin.
   
   
-* **Summary:**  
-We replaced the outdated Chart.HeatMap plugin with chartjs-chart-matrix to maintain compatibility with Chart.js v4+, ensure long-term maintainability, and preserve a consistent visualization ecosystem across the application.
