@@ -251,8 +251,8 @@ export default function StudyTimeHeatmap({
 				// Hours of learning time
 				hoursForDay = Array.isArray(hourlyLearning)
 					? hourlyLearning
-							.filter((h: any) => normalizeDate(h.hour) === isoToday)
-							.map((h: any) => {
+							.filter((h) => normalizeDate(h.hour) === isoToday)
+							.map((h) => {
 								const d = parseUTC(h.hour);
 								const local = new Date(h.hour);
 								console.log(
