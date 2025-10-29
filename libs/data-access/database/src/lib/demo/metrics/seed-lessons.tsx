@@ -5,12 +5,14 @@ const prisma = new PrismaClient();
 
 export async function createLessons() {
 	try {
-		const lessonsData = lessonsRaw.map(lesson => {
-			const { ...rest } = lesson;
-			return {
-				...rest,
-				lessonType: LessonType[LessonType.TRADITIONAL]
-			};
+		const lessonsData = lessonsRaw.flatMap(course => {
+			return course.content.map(lesson => {
+				const { ...rest } = lesson;
+				return {
+					...rest,
+					lessonType: LessonType[LessonType.TRADITIONAL]
+				};
+			});
 		});
 
 		await prisma.lesson.createMany({ data: lessonsData });

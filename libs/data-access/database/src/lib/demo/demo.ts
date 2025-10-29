@@ -52,21 +52,21 @@ export async function seedDemos(): Promise<void> {
 
 	await createSubjects();
 
-	await createCourses();
+	const courseIds = await createCourses();
 
-	await createAuthorCourseRelation();
+	await createAuthorCourseRelation(courseIds);
 
-	await createUsers();
+	const userData = await createUsers();
 
-	await createStudents();
+	await createStudents(userData);
 
-	await createEnrollments();
+	await createEnrollments(courseIds, userData);
 
 	await createLessons();
 
-	await createCompletedLessons();
+	await createCompletedLessons(userData);
 
-	await createStartingLessons();
+	await createStartingLessons(userData);
 
 	const quizAttempts = await createQuizAttempts();
 

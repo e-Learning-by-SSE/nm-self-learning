@@ -1,132 +1,67 @@
 [
   {
-    "lessonId": "lesson-1",
-    "slug": "introduction-to-wizardry",
-    "title": "Introduction to Wizardry",
-    "subtitle": "Getting started with magic",
-    "description": "An introductory lesson on the basics of wizardry.",
-    "imgUrl": "",
-    "content": {},
-    "quiz": {},
-    "meta": {},
-    "licenseId": null,
-    "selfRegulatedQuestion": null
+    "courseId": "magical-test-course",
+    "content": [
+      { "lessonId": "lesson-1", "slug": "history-of-magic", "title": "The History of Magic", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-2", "slug": "principles-of-wizardry", "title": "Core Principles of Wizardry", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-3", "slug": "understanding-mana", "title": "Understanding Mana and Energy Flow", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-4", "slug": "spellcasting-basics", "title": "Basics of Spellcasting", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-5", "slug": "wand-usage", "title": "Proper Wand Usage and Handling", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-6", "slug": "magical-safety", "title": "Magical Safety and Ethics", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-7", "slug": "beginner-spells", "title": "Casting Your First Spells", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null }
+    ]
   },
   {
-    "lessonId": "lesson-2",
-    "slug": "basic-spells",
-    "title": "Basic Spells",
-    "subtitle": "Learn your first spells",
-    "description": "A lesson on casting basic spells for beginners.",
-    "imgUrl": "",
-    "content": {},
-    "quiz": {},
-    "meta": {},
-    "licenseId": null,
-    "selfRegulatedQuestion": null
+    "courseId": "advanced-magical-theory",
+    "content": [
+      { "lessonId": "lesson-8", "slug": "arcane-structures", "title": "Arcane Structures and Patterns", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-9", "slug": "magical-fields", "title": "Interaction of Magical Fields", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-10", "slug": "ritual-magic", "title": "Theories of Ritual Magic", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-11", "slug": "quantum-magic", "title": "Quantum Magic and Dimensional Theory", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-12", "slug": "advanced-spell-matrix", "title": "Constructing Advanced Spell Matrices", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-13", "slug": "magical-resonance", "title": "Magical Resonance and Feedback Loops", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-14", "slug": "metamagic", "title": "Introduction to Metamagic", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-15", "slug": "applied-theory", "title": "Applied Magical Theory and Case Studies", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null }
+    ]
   },
   {
-    "lessonId": "lesson-3",
-    "slug": "wand-choosing",
-    "title": "Choosing Your Wand",
-    "subtitle": "Find the perfect wand for you",
-    "description": "A guide to selecting the right wand for your magical journey.",
-    "imgUrl": "",
-    "content": {},
-    "quiz": {},
-    "meta": {},
-    "licenseId": null,
-    "selfRegulatedQuestion": null
+    "courseId": "magical-creatures",
+    "content": [
+      { "lessonId": "lesson-16", "slug": "introduction-to-magical-creatures", "title": "Introduction to Magical Creatures", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-17", "slug": "beasts-vs-beings", "title": "Beasts vs. Beings: Classification of Magical Life", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-18", "slug": "dragons", "title": "Dragons and Their Habitats", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-19", "slug": "unicorns", "title": "Unicorns and Other Benevolent Creatures", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-20", "slug": "dark-creatures", "title": "Dark Creatures: Defense and Containment", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-21", "slug": "care-of-magical-creatures", "title": "Care and Handling of Magical Creatures", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-22", "slug": "magical-ecosystems", "title": "Magical Ecosystems and Conservation", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-23", "slug": "field-study", "title": "Field Study: Observing Magical Creatures Safely", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null }
+    ]
   },
   {
-    "lessonId": "lesson-4",
-    "slug": "defense-against-the-dark-arts",
-    "title": "Defense Against the Dark Arts",
-    "subtitle": "Protect yourself from dark magic",
-    "description": "Learn techniques to defend against dark magic and creatures.",
-    "imgUrl": "",
-    "content": {},
-    "quiz": {},
-    "meta": {},
-    "licenseId": null,
-    "selfRegulatedQuestion": null
+    "courseId": "potions-and-elixirs",
+    "content": [
+      { "lessonId": "lesson-24", "slug": "potion-basics", "title": "Basics of Potion Brewing", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-25", "slug": "ingredients", "title": "Magical Ingredients and Their Properties", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-26", "slug": "equipment", "title": "Tools and Equipment of the Potion Brewer", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-27", "slug": "brewing-techniques", "title": "Brewing Techniques and Temperatures", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-28", "slug": "healing-potions", "title": "Healing Potions and Antidotes", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-29", "slug": "transformation-elixirs", "title": "Transformation Elixirs and Risks", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-30", "slug": "stabilization", "title": "Potion Stabilization and Storage", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-31", "slug": "final-lab", "title": "Final Lab: Brewing a Multi-Effect Potion", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null }
+    ]
   },
   {
-    "lessonId": "lesson-5",
-    "slug": "magical-creatures",
-    "title": "Magical Creatures",
-    "subtitle": "An introduction to magical beings",
-    "description": "Discover various magical creatures and their characteristics.",
-    "imgUrl": "",
-    "content": {},
-    "quiz": {},
-    "meta": {},
-    "licenseId": null,
-    "selfRegulatedQuestion": null
-  },
-  {
-    "lessonId": "lesson-6",
-    "slug": "advanced-spellcasting",
-    "title": "Advanced Spellcasting",
-    "subtitle": "Take your magic to the next level",
-    "description": "A lesson on advanced spellcasting techniques for aspiring wizards.",
-    "imgUrl": "",
-    "content": {},
-    "quiz": {},
-    "meta": {},
-    "licenseId": null,
-    "selfRegulatedQuestion": null
-  },
-  {
-    "lessonId": "lesson-7",
-    "slug": "potions-basics",
-    "title": "Potions Basics",
-    "subtitle": "Brew your first potions",
-    "description": "An introductory lesson on potion-making for beginners.",
-    "imgUrl": "",
-    "content": {},
-    "quiz": {},
-    "meta": {},
-    "licenseId": null,
-    "selfRegulatedQuestion": null
-  },
-  {
-    "lessonId": "lesson-8",
-    "slug": "history-of-magic",
-    "title": "History of Magic",
-    "subtitle": "Explore the magical past",
-    "description": "A lesson on the rich history and evolution of magic.",
-    "imgUrl": "",
-    "content": {},
-    "quiz": {},
-    "meta": {},
-    "licenseId": null,
-    "selfRegulatedQuestion": null
-  },
-  {
-    "lessonId": "lesson-9",
-    "slug": "magical-ethics",
-    "title": "Magical Ethics",
-    "subtitle": "Understanding the moral use of magic",
-    "description": "A lesson on the ethical considerations in the practice of magic.",
-    "imgUrl": "",
-    "content": {},
-    "quiz": {},
-    "meta": {},
-    "licenseId": null,
-    "selfRegulatedQuestion": null
-  },
-  {
-    "lessonId": "lesson-10",
-    "slug": "final-assessment",
-    "title": "Final Assessment",
-    "subtitle": "Test your magical knowledge",
-    "description": "A comprehensive assessment to evaluate your understanding of the course material.",
-    "imgUrl": "",
-    "content": {},
-    "quiz": {},
-    "meta": {},
-    "licenseId": null,
-    "selfRegulatedQuestion": null
+    "courseId": "defense-against-the-dark-arts",
+    "content": [
+      { "lessonId": "lesson-32", "slug": "intro-defense", "title": "Introduction to Dark Magic and Defense", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-33", "slug": "protective-charms", "title": "Protective Charms and Barriers", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-34", "slug": "counterspells", "title": "Counterspells and Deflection Techniques", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-35", "slug": "dark-creatures-defense", "title": "Defending Against Dark Creatures", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-36", "slug": "curse-recognition", "title": "Recognizing and Breaking Curses", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-37", "slug": "mental-fortitude", "title": "Mental Fortitude and Magical Focus", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-38", "slug": "dueling", "title": "Defensive Dueling and Practical Combat", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-39", "slug": "advanced-defense", "title": "Advanced Defense Scenarios and Teamwork", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null },
+      { "lessonId": "lesson-40", "slug": "final-exam", "title": "Final Defense Simulation", "content": {}, "quiz": {}, "meta": {}, "licenseId": null, "selfRegulatedQuestion": null }
+    ]
   }
 ]
