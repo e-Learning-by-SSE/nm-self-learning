@@ -450,7 +450,7 @@ export default function StudyTimeHeatmap({
 			const data = [];
 			for (let r = 0; r < rows; r++)
 				for (let c = 0; c < cols; c++)
-					data.push({ x: c, y: r, v: (config as any).values[r][c] });
+					data.push({ x: c, y: r, v: (config).values[r][c] });
 
 			const gapX =
 				period === "year" ? 22 : period === "month" ? 10 : period === "week" ? 10 : 8;
