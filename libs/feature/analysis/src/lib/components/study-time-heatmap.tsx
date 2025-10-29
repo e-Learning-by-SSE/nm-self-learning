@@ -744,7 +744,7 @@ export default function StudyTimeHeatmap({
 								callback: (tickValue: string | number) => {
 									const v = Number(tickValue);
 									return period === "week" || period === "month"
-										? ((config as any).xLabels[v] ?? "")
+										? ((config).xLabels[v] ?? "")
 										: "";
 								}
 							}
