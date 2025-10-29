@@ -16,6 +16,7 @@ import {
 	getAuthorMetric_AverageLessonCompletionRate,
 	getAuthorMetric_AverageLessonCompletionRateByCourse
 } from "@self-learning/database";
+import { database } from "@self-learning/database";
 
 /**
  * Helper to create Metrics query endpoints that accept an optional userId
@@ -43,6 +44,7 @@ export const MetricsRouter = t.router({
 	getStudentMetric_HourlyAverageQuizAnswers: metricsQuery(
 		getStudentMetric_HourlyAverageQuizAnswers
 	),
+
 	getAuthorMetric_AverageCompletionRate: metricsQuery(getAuthorMetric_AverageCompletionRate),
 	getAuthorMetric_AverageSubjectCompletionRate: metricsQuery(
 		getAuthorMetric_AverageSubjectCompletionRate
@@ -55,5 +57,24 @@ export const MetricsRouter = t.router({
 	),
 	getAuthorMetric_AverageLessonCompletionRateByCourse: metricsQuery(
 		getAuthorMetric_AverageLessonCompletionRateByCourse
-	)
+	),
+
+	getUserDailyLearningTimeByCourse: metricsQuery(getStudentMetric_DailyLearningTimeByCourse),
+	getUserLearningStreak: metricsQuery(getStudentMetric_LearningStreak),
+	getUserCoursesCompletedBySubject: metricsQuery(getStudentMetric_CoursesCompletedBySubject),
+	getUserHourlyLearningTime: metricsQuery(getStudentMetric_HourlyLearningTime),
+
+	getSubjects: authProcedure.query(async () => {
+		return await database.subject.findMany({
+			orderBy: { title: "asc" },
+			include: {
+				courses: {
+					select: {
+						courseId: true,
+						title: true
+					}
+				}
+			}
+		});
+	})
 });
