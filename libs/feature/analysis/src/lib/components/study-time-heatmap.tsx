@@ -275,8 +275,8 @@ export default function StudyTimeHeatmap({
 				if (Array.isArray(hourlyQuiz)) {
 					for (const h of hourlyQuiz as HourlyQuiz[]) {
 						if (normalizeDate(h.hour) !== isoToday) continue;
-						const d = parseUTC(h.hour as any);
-						const local = new Date(h.hour as any);
+						const d = parseUTC(h.hour);
+						const local = new Date(h.hour);
 						console.log(
 							"🧭 QUIZ RAW:",
 							h.hour,
