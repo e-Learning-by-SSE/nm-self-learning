@@ -9,16 +9,19 @@ export async function createQuizAttempts() {
 
 		// Create between 5 and 10 Quiz attempts for user "Potter" for every lesson in the lessons data
 
-		lessonsRaw.forEach(({ lessonId }) => {
-			for (let i = 0; i < Math.floor(Math.random() * 6) + 5; i++) {
-				quizAttempts.push({
-					attemptId: `${lessonId}_potter_${i + 1}`,
-					state: "COMPLETED",
-					username: "potter",
-					lessonId
-				});
-			}
-		});
+		lessonsRaw
+			.map(course => course.content)
+			.flat()
+			.forEach(({ lessonId }) => {
+				for (let i = 0; i < Math.floor(Math.random() * 6) + 5; i++) {
+					quizAttempts.push({
+						attemptId: `${lessonId}_potter_${i + 1}`,
+						state: "COMPLETED",
+						username: "potter",
+						lessonId
+					});
+				}
+			});
 
 		quizAttempts.push({
 			attemptId: "lesson-1_potter_inprogress_1",

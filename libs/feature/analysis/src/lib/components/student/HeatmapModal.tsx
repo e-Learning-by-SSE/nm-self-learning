@@ -27,7 +27,7 @@ export function HeatmapModal({ selectedMetric, onClose }: HeatmapModalProps) {
 			<div className="fixed inset-0 bg-black/30 backdrop-blur-sm" aria-hidden="true" />
 
 			{/* Centered modal panel */}
-			<div className="fixed inset-0 flex items-center justify-center p-4">
+			<div id="HeatmapModal" className="fixed inset-0 flex items-center justify-center p-4">
 				<Dialog.Panel className="w-full max-w-5xl rounded-2xl bg-white p-8 shadow-xl relative">
 					{/* Header */}
 					<div className="flex items-center justify-between mb-4">
@@ -52,9 +52,12 @@ export function HeatmapModal({ selectedMetric, onClose }: HeatmapModalProps) {
 											: "border border-gray-300 bg-white text-gray-700"
 									}`}
 								>
-									<span className="truncate">{selected || "Auswählen..."}</span>
+									<span id="HeatmapTypeButton" className="truncate">
+										{selected || "Auswählen..."}
+									</span>
 									{selected ? (
 										<XMarkIcon
+											id="HeatmapTypeButtonClose"
 											className="h-4 w-4 ml-2 cursor-pointer text-white hover:text-gray-200"
 											onClick={e => {
 												e.stopPropagation();
@@ -69,6 +72,7 @@ export function HeatmapModal({ selectedMetric, onClose }: HeatmapModalProps) {
 						>
 							{options.map((option, i) => (
 								<span
+									id="HeatmapTypeOption"
 									key={option}
 									onClick={() => setSelected(option)}
 									className={`cursor-pointer block px-4 py-2 w-44 text-left transition-colors ${
@@ -109,6 +113,7 @@ export function HeatmapModal({ selectedMetric, onClose }: HeatmapModalProps) {
 					{/* Footer Close Button */}
 					<div className="mt-8 flex justify-end">
 						<button
+							id="HeatmapModalCloseButton"
 							type="button"
 							onClick={onClose}
 							className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50"

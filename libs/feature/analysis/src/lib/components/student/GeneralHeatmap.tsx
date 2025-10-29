@@ -216,7 +216,10 @@ export function GeneralHeatmap() {
 	};
 
 	return (
-		<div className="relative w-full rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col justify-between">
+		<div
+			id="StudyHeatmapsCard"
+			className="relative w-full rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col justify-between"
+		>
 			{/* Header */}
 			<div className="flex flex-col sm:flex-row items-center justify-between mb-3">
 				<h2 className="text-lg sm:text-xl font-semibold text-gray-800 text-center sm:text-left">

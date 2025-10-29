@@ -26,7 +26,9 @@ view AuthorMetric_AverageCourseCompletionRate {
 
 view AuthorMetric_AverageLessonCompletionRate {
   authorId                  String  @unique
-  authorName                String
+  authorUsername            String
+  courseId                  String
+  courseTitle               String
   lessonId                  String
   lessonTitle               String
   usersStarted              Int
@@ -36,7 +38,7 @@ view AuthorMetric_AverageLessonCompletionRate {
 
 view AuthorMetric_AverageLessonCompletionRateByCourse {
   authorId                  String  @unique
-  authorName                String
+  authorUsername                String
   courseId                  String
   courseTitle               String
   numLessons                Int
