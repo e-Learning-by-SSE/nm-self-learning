@@ -444,8 +444,8 @@ export default function StudyTimeHeatmap({
 			if (!ctx) return;
 			if ((ctx as any)._chartInstance) (ctx as any)._chartInstance.destroy();
 
-			const rows = (config as any).rows.length;
-			const cols = (config as any).cols.length;
+			const rows = config.rows.length;
+			const cols = config.cols.length;
 			const data = [];
 			for (let r = 0; r < rows; r++)
 				for (let c = 0; c < cols; c++) data.push({ x: c, y: r, v: config.values[r][c] });
@@ -496,8 +496,8 @@ export default function StudyTimeHeatmap({
 									? "rgba(0,0,0,0.7)"
 									: colorForValue(c.raw.v, period, internalMetric),
 							borderRadius: 6,
-							width: (c: any) => (c.chart.chartArea?.width ?? 0) / cols - gapX,
-							height: (c: any) => (c.chart.chartArea?.height ?? 0) / rows - gapY
+							width: c => (c.chart.chartArea?.width ?? 0) / cols - gapX,
+							height: c => (c.chart.chartArea?.height ?? 0) / rows - gapY
 						}
 					]
 				},
@@ -749,7 +749,7 @@ export default function StudyTimeHeatmap({
 								font: { size: 11 },
 								callback: (tickValue: string | number) => {
 									const v = Number(tickValue);
-									if (period === "week") return (config as any).yLabels[v] ?? "";
+									if (period === "week") return config.yLabels[v] ?? "";
 									return "";
 								}
 							}
