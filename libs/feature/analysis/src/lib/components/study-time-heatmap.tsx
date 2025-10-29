@@ -719,7 +719,7 @@ export default function StudyTimeHeatmap({
 										}
 									}
 									if (current.trim() !== "") lines.push(current.trim());
-									return lines; // Chart.js zeigt jede Zeile separat
+									return lines; // Chart.js will display each line separately
 								}
 							}
 						}
