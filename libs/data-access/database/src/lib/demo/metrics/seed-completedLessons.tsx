@@ -1,42 +1,51 @@
 import { PrismaClient } from "@prisma/client";
 import lessonsRaw from "./data/lesson.json";
-import usersRaw from "./data/user.json";
 
 const prisma = new PrismaClient();
 
-export async function createCompletedLessons() {
+export async function createCompletedLessons(userData: { id: string; name: string }[]) {
 	try {
-		const lessonsData = lessonsRaw.map(lessonsRaw => {
-			const { lessonId } = lessonsRaw;
-			return {
-				lessonId,
-				username: "potter",
-				courseId: "magical-test-course"
-			};
-		});
+		const completedLessonsData = [];
 
-		lessonsData.push(
-			...lessonsRaw.map(({ lessonId }) => ({
-				lessonId,
-				username: "weasley",
-				courseId: "magical-test-course"
-			}))
+		// Generate completed lessons for each user in userData
+		completedLessonsData.push(
+			...userData.flatMap(user =>
+				lessonsRaw.flatMap(course =>
+					course.content.flatMap(
+						lesson =>
+							Math.random() < 0.8
+								? [
+										{
+											lessonId: lesson.lessonId,
+											username: user.name,
+											courseId: course.courseId
+										}
+									]
+								: [] // return an empty array instead of null
+					)
+				)
+			)
 		);
 
-		usersRaw.forEach(user => {
-			lessonsRaw.forEach(lesson => {
-				lessonsData.push({
-					lessonId: lesson.lessonId,
-					username: user.name,
-					courseId: "magical-test-course"
-				});
-			});
-		});
+		// Enroll "potter" to have completed lessons in all courses
+		completedLessonsData.push(
+			...lessonsRaw.flatMap(course =>
+				course.content.flatMap(
+					lesson =>
+						Math.random() < 0.8
+							? [
+									{
+										lessonId: lesson.lessonId,
+										username: "potter",
+										courseId: course.courseId
+									}
+								]
+							: [] // return an empty array instead of null
+				)
+			)
+		);
 
-		// Randomly delete some completed lessons to simulate incompletion
-		const filteredLessonsData = lessonsData.filter(() => Math.random() > 0.2); // 80% chance to keep
-
-		await prisma.completedLesson.createMany({ data: filteredLessonsData });
+		await prisma.completedLesson.createMany({ data: completedLessonsData });
 
 		console.log(" - %s\x1b[32m ✔\x1b[0m", "Completed Lessons");
 	} catch (error) {

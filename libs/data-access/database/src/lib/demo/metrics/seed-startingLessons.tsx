@@ -1,39 +1,39 @@
 import { PrismaClient } from "@prisma/client";
 import lessonsRaw from "./data/lesson.json";
-import usersRaw from "./data/user.json";
 
 const prisma = new PrismaClient();
 
-export async function createStartingLessons() {
+export async function createStartingLessons(userData: { id: string; name: string }[]) {
 	try {
-		const lessonsData = lessonsRaw.map(lessonsRaw => {
-			const { lessonId } = lessonsRaw;
-			return {
-				lessonId,
-				username: "potter",
-				courseId: "magical-test-course"
-			};
-		});
+		const startedLessonsData = [];
 
-		lessonsData.push(
-			...lessonsRaw.map(({ lessonId }) => ({
-				lessonId,
-				username: "weasley",
-				courseId: "magical-test-course"
-			}))
+		// Generate started lessons for each user in userData
+		startedLessonsData.push(
+			...userData.flatMap(user =>
+				lessonsRaw.flatMap(course =>
+					course.content.flatMap(lesson => ({
+						lessonId: lesson.lessonId,
+						username: user.name,
+						courseId: course.courseId
+					}))
+				)
+			)
 		);
 
-		usersRaw.forEach(user => {
-			lessonsRaw.forEach(lesson => {
-				lessonsData.push({
+		// Enroll "potter" to have started lessons in all courses
+		startedLessonsData.push(
+			...lessonsRaw.flatMap(course =>
+				course.content.flatMap(lesson => ({
 					lessonId: lesson.lessonId,
-					username: user.name,
-					courseId: "magical-test-course"
-				});
-			});
-		});
+					username: "potter",
+					courseId: course.courseId
+				}))
+			)
+		);
 
-		await prisma.startedLesson.createMany({ data: lessonsData });
+		await prisma.startedLesson.createMany({
+			data: startedLessonsData
+		});
 
 		console.log(" - %s\x1b[32m ✔\x1b[0m", "Started Lessons");
 	} catch (error) {
