@@ -225,10 +225,10 @@ export default function StudyTimeHeatmap({
 		if (internalMetric === "hours") {
 			// from DailyLearningTime (seconds → hours)
 			if (dailyLearning) {
-				for (const entry of dailyLearning as any[]) {
-					const iso = normalizeDate(entry.day ?? entry.date);
+                for (const entry of dailyLearning) {
+					const iso = normalizeDate(entry.day);
 					if (!iso) continue;
-					const value = (entry.timeSeconds ?? entry.seconds ?? 0) / 3600;
+					const value = (entry.timeSeconds ?? 0) / 3600;
 					dailyMap.set(iso, value);
 				}
 			}
