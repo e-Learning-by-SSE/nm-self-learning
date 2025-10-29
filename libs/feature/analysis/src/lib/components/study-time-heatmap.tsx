@@ -657,7 +657,7 @@ export default function StudyTimeHeatmap({
 										else if (v <= 80) activityLabel = "Hohe Aktivität";
 										else activityLabel = "Sehr hohe Aktivität";
 
-										const monthLabel = (config as any).cellLabel(
+										const monthLabel = (config).cellLabel(
 											ctx.raw.y,
 											ctx.raw.x
 										);
