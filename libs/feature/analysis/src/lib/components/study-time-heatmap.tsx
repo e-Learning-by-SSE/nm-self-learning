@@ -200,7 +200,7 @@ export default function StudyTimeHeatmap({
 
 	const dailyLearning = dailyLearningQuery.data ?? null; // for "Zeit"/time (Monat/Jahr)
 	const hourlyLearning = hourlyLearningQuery.data ?? null; // for "Zeit"/time (Day/Week)
-	const hourlyQuiz = (hourlyQuizQuery.data ?? null) as any[] | null; // for "Erledigte Aufgaben" & "Richtige Aufgaben"/Units/Accuracy
+	const hourlyQuiz = (hourlyQuizQuery.data ?? null); // for "Erledigte Aufgaben" & "Richtige Aufgaben"/Units/Accuracy
 
 	// visibility
 	const hasNoData = useMemo(() => {
