@@ -705,7 +705,7 @@ export default function StudyTimeHeatmap({
 										else text = "Sehr hohe Aktivität";
 									}
 
-									// 🔹 Text-Wrapping für kleine Bildschirme
+									// Text wrapping for long tooltips
 									const maxLineLength = window.innerWidth < 600 ? 35 : 45;
 									const words = text.split(" ");
 									const lines: string[] = [];
