@@ -438,7 +438,7 @@ export default function StudyTimeHeatmap({
 			const ChartModule = await import("chart.js/auto");
 			const { Chart } = ChartModule;
 			const MatrixModule = await import("chartjs-chart-matrix");
-			const { MatrixController, MatrixElement } = MatrixModule as any;
+			const { MatrixController, MatrixElement } = MatrixModule;
 			Chart.register(MatrixController, MatrixElement);
 
 			const ctx = canvasRef.current;
