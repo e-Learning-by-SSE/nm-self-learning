@@ -35,7 +35,7 @@ export const startOfISOWeek = (d: Date) => {
 };
 
 /** ---------- DATE NORMALIZER ---------- */
-function normalizeDate(dateInput: any): string | null {
+function normalizeDate(dateInput: string | Date): string | null {
 	if (!dateInput) return null;
 	if (typeof dateInput === "string" && /^\d{4}-\d{2}-\d{2}/.test(dateInput)) {
 		return dateInput.slice(0, 10);
