@@ -12,7 +12,10 @@ export function GeneralHeatmap() {
 
 	return (
 		<>
-			<div className="w-full max-w-3xl rounded-lg border border-light-border bg-white shadow-sm hover:shadow-md transition-shadow p-6">
+			<div
+				id="StudyHeatmapsCard"
+				className="w-full max-w-3xl rounded-lg border border-light-border bg-white shadow-sm hover:shadow-md transition-shadow p-6"
+			>
 				<div className="flex items-center justify-between mb-4 relative">
 					<h2 className="text-xl font-semibold text-gray-800">Lern-Heatmaps</h2>
 
