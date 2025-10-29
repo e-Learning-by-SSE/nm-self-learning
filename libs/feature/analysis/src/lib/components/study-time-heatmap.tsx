@@ -153,7 +153,7 @@ function aggregateQuizByWeekBuckets(
 	const end = addDays(startOfWeek, 7);
 
 	for (const q of hourlyQuiz) {
-		const dh = parseUTC(q.hour as any);
+		const dh = parseUTC(q.hour);
 		if (dh < startOfWeek || dh >= end) continue;
 
 		const dayIndex = Math.floor((dh.getTime() - startOfWeek.getTime()) / (1000 * 60 * 60 * 24));
