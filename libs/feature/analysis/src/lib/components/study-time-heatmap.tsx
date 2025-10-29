@@ -469,7 +469,7 @@ export default function StudyTimeHeatmap({
 					for (const el of elements) {
 						const { x, y } = el.tooltipPosition();
 						const raw = el.$context.raw as { x: number; y: number; v: number };
-						const label = (config as any).cellLabel(raw.y, raw.x);
+						const label = (config).cellLabel(raw.y, raw.x);
 						if (!label) continue;
 						const bg =
 							raw.v === -1
