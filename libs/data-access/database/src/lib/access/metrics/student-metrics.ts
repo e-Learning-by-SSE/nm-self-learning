@@ -1,3 +1,4 @@
+import exp from "constants";
 import { database } from "../../prisma";
 
 /**
@@ -78,5 +79,22 @@ export async function getStudentMetric_AverageQuizAnswers(userId: string) {
 export async function getStudentMetric_HourlyAverageQuizAnswers(userId: string) {
 	return database.studentMetric_HourlyAverageQuizAnswers.findMany({
 		where: { userId: userId }
+	});
+}
+
+/**
+ * Fetch all subjects with their courses.
+ */
+export async function getSubjects() {
+	return database.subject.findMany({
+		orderBy: { title: "asc" },
+		include: {
+			courses: {
+				select: {
+					courseId: true,
+					title: true
+				}
+			}
+		}
 	});
 }
