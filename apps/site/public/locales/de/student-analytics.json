@@ -7,10 +7,11 @@
   "showMore": "Mehr Feedbacks anzeigen",
   "close": "Schließen",
 
-  "timeAllocationTitle": "Zeitaufteilung der Kurse",
+  "timeAllocationTitle": "Zeitverteilung der Kurse",
   "totalLearningTime": "Gesamte Lernzeit",
   "hours": "Stunden",
   "minutes": "Minuten",
+  "and": "und",
 
   "learningHeatmapTitle": "Lern-Heatmap",
   "loading": "Lade Daten...",

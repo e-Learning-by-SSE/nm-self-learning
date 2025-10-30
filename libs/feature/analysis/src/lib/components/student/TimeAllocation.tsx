@@ -131,7 +131,7 @@ export function TimeAllocation() {
 			<div className="mt-5 text-sm text-gray-700 border-t pt-3 sm:text-left text-center">
 				<b>{t("totalLearningTime")}:</b>{" "}
 				{totalHours > 0
-					? `${totalHours} ${t("hours")}${totalMinutes > 0 ? ` ${totalMinutes} ${t("minutes")}` : ""}`
+					? `${totalHours} ${t("hours")}${totalMinutes > 0 ? ` ${t("and")} ${totalMinutes} ${t("minutes")}` : ""}`
 					: `${totalMinutes} ${t("minutes")}`}
 			</div>
 		</div>
