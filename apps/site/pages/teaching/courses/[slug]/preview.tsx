@@ -2,7 +2,7 @@ import { SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { useEditorTabs } from "@self-learning/ui/course";
+import { CoursePreview, useEditorTabs } from "@self-learning/ui/course";
 import { AuthorGuard } from "libs/ui/layouts/src/lib/guards";
 import { database } from "@self-learning/database";
 import {
@@ -13,34 +13,96 @@ import {
 	getPath,
 	isCompositeGuard,
 	LearningUnit,
-	Path,
 	Skill,
 	SkillExpression,
 	Variable
 } from "@e-learning-by-sse/nm-skill-lib";
 import { withTranslations } from "@self-learning/api";
 import { GetServerSidePropsContext } from "next";
+import { DynCourseModel } from "@self-learning/teaching";
+import { LessonType } from "@prisma/client";
+import { CourseChapter, CourseContent, extractLessonIds, LessonInfo } from "@self-learning/types";
+import * as ToC from "@self-learning/ui/course";
 
-interface SerializedSkill {
-	id: string;
-	children: string[];
+// TODO: this is a duplication of function that are in course/[slug]/index
+function mapToTocContent(
+	content: CourseContent,
+	lessonIdMap: Map<string, LessonInfo>
+): ToC.Content {
+	let lessonNr = 1;
+
+	return content.map(chapter => ({
+		title: chapter.title,
+		description: chapter.description,
+		content: chapter.content.map(({ lessonId }) => {
+			const lesson: ToC.Content[0]["content"][0] = lessonIdMap.has(lessonId)
+				? {
+						...(lessonIdMap.get(lessonId) as LessonInfo),
+						lessonNr: lessonNr++
+					}
+				: {
+						lessonId: "removed",
+						slug: "removed",
+						meta: { hasQuiz: false, mediaTypes: {} },
+						title: "Removed",
+						lessonType: LessonType.TRADITIONAL,
+						lessonNr: -1
+					};
+
+			return lesson;
+		})
+	}));
 }
 
-interface SerializedExpression {
-	type: string;
+export async function mapCourseContent(content: CourseContent): Promise<ToC.Content> {
+	const lessonIds = extractLessonIds(content);
+
+	const lessons = await database.lesson.findMany({
+		where: { lessonId: { in: lessonIds } },
+		select: {
+			lessonId: true,
+			slug: true,
+			title: true,
+			meta: true
+		}
+	});
+
+	const map = new Map<string, LessonInfo>();
+
+	for (const lesson of lessons) {
+		map.set(lesson.lessonId, lesson as LessonInfo);
+	}
+
+	return mapToTocContent(content, map);
 }
 
-interface SerializedLearningUnit {
-	id: string;
-	requires: SerializedExpression | null;
-	provides: SerializedSkill[];
-	suggestedSkills: { weight: number; skill: SerializedSkill }[];
+type Summary = {
+	/** Total number of lessons in this course. */
+	lessons: number;
+	/** Total number of chapters in this course. Includes subchapters (tbd). */
+	chapters: number;
+	/** Duration in seconds of video material. */
+	duration: number;
+};
+
+function createCourseSummary(content: ToC.Content): Summary {
+	const chapters = content.length;
+	let lessons = 0;
+	let duration = 0;
+
+	for (const chapter of content) {
+		for (const lesson of chapter.content) {
+			lessons++;
+			duration +=
+				lesson.meta?.mediaTypes.video?.duration ??
+				lesson.meta?.mediaTypes.article?.estimatedDuration ??
+				0;
+		}
+	}
+
+	return { lessons, chapters, duration };
 }
-interface SerializedPath {
-	cost: number;
-	origin: SerializedLearningUnit | null;
-	path: SerializedPath[];
-}
+// ------------------------------------------------------------------------
 
 export const getServerSideProps = withTranslations(
 	["common"],
@@ -50,7 +112,12 @@ export const getServerSideProps = withTranslations(
 		const course = await database.dynCourse.findUniqueOrThrow({
 			where: { slug },
 			select: {
+				title: true,
+				authors: true,
+				subtitle: true,
 				slug: true,
+				description: true,
+				imgUrl: true,
 				teachingGoals: {
 					select: {
 						id: true,
@@ -120,48 +187,48 @@ export const getServerSideProps = withTranslations(
 			costOptions: DefaultCostParameter
 		});
 
-		const serializeExpression = (expr: unknown): SerializedExpression | null => {
-			if (!expr) return null;
-			const typeName =
-				(expr as { constructor?: { name?: string } }).constructor?.name ?? "Unknown";
-			return { type: typeName };
-		};
+		let content: ToC.Content = [];
+		let summary = {};
 
-		const serializeSkill = (skill: Skill): SerializedSkill => ({
-			id: skill.id,
-			children: skill.children ?? []
-		});
-
-		const serializeLearningUnit = (lu: LearningUnit): SerializedLearningUnit => ({
-			id: lu.id,
-			requires: serializeExpression(lu.requires),
-			provides: lu.provides.map(serializeSkill),
-			suggestedSkills: lu.suggestedSkills.map(s => ({
-				weight: s.weight,
-				skill: serializeSkill(s.skill)
-			}))
-		});
-
-		const serializePath = (p: Path<LU>): SerializedPath => ({
-			cost: p.cost,
-			origin: p.origin ? serializeLearningUnit(p.origin) : null,
-			path: p.path.map(serializePath)
-		});
+		if (path) {
+			const courseChapter = [
+				{
+					title: "Generated Course Content",
+					description:
+						"AI-generated learning path based on your current knowledge and learning goals.",
+					content: path.path.map(unit => ({
+						lessonId: unit.origin?.id ?? ""
+					}))
+				} as CourseChapter
+			];
+			const courseContent = courseChapter;
+			content = await mapCourseContent(courseContent);
+			summary = createCourseSummary(content);
+		}
 
 		return {
 			props: {
-				path: path ? serializePath(path) : []
+				course: course,
+				content: content,
+				summary: summary
 			}
 		};
 	}
 );
 
-export default function CoursePreviewPage({ path }: { path: SerializedPath[] }) {
+export default function CoursePreviewPage({
+	course,
+	content,
+	summary
+}: {
+	course: DynCourseModel;
+	content: ToC.Content;
+	summary: Summary;
+}) {
 	const router = useRouter();
 	const params = useParams();
 	const slug = params?.slug as string;
 	const [selectedIndex, setSelectedIndex] = useState(3);
-	console.log("path", path);
 
 	const tabs = useEditorTabs();
 
@@ -172,6 +239,7 @@ export default function CoursePreviewPage({ path }: { path: SerializedPath[] }) 
 			router.push(`/teaching/courses/${slug}/${tab.path}`);
 		}
 	}
+
 	return (
 		<AuthorGuard>
 			<div className="m-3">
@@ -185,15 +253,7 @@ export default function CoursePreviewPage({ path }: { path: SerializedPath[] }) 
 						</Tab>
 					))}
 				</Tabs>
-				<div className="w-full h-[100px] flex items-center justify-center">
-					<div className="font-mono whitespace-pre text-sm pt-5">
-						{`  ^__^
- (oo)\\_______
-(__)\\       )\\/\\
-    ||----- |
-    ||     ||`}
-					</div>
-				</div>
+				<CoursePreview course={course} content={content} summary={summary} />
 			</div>
 		</AuthorGuard>
 	);

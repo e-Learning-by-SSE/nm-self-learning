@@ -1,4 +1,4 @@
-import { authorsRelationSchema, skillFormSchema } from "@self-learning/types";
+import { authorSchema, authorsRelationSchema, skillFormSchema } from "@self-learning/types";
 import { z } from "zod";
 
 export const dynCourseFormSchema = z.object({
@@ -15,3 +15,18 @@ export const dynCourseFormSchema = z.object({
 });
 
 export type DynCourseFormModel = z.infer<typeof dynCourseFormSchema>;
+
+export const dynCourseSchema = z.object({
+	courseId: z.string().nullable(),
+	subjectId: z.string().nullable(),
+	slug: z.string().min(3),
+	title: z.string().min(3),
+	subtitle: z.string().min(3),
+	description: z.string().nullable(),
+	imgUrl: z.string().nullable(),
+	teachingGoals: z.array(skillFormSchema),
+	requirements: z.array(skillFormSchema),
+	authors: z.array(authorSchema) // authorsRelationSchema
+});
+
+export type DynCourseModel = z.infer<typeof dynCourseSchema>;
