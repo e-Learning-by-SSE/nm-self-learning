@@ -1,33 +1,33 @@
 {
   "defaultName": "Learner",
-  "pageTitle": "Welcome back, {{name}}! Check your learning progress",
+  "pageTitle": "Welcome back, {{name}}! Check out your learning progress",
 
-  "feedbackTitle": "Personalized Feedbacks",
+  "feedbackTitle": "Personalized Feedback",
   "noData": "No data available",
-  "showMore": "Show more feedbacks",
+  "showMore": "Show more feedback",
   "close": "Close",
 
-  "timeAllocationTitle": "Course Time Distribution",
+  "timeAllocationTitle": "Time Allocation by Course",
   "totalLearningTime": "Total Learning Time",
-  "hours": "hours",
-  "minutes": "minutes",
+  "hours": "Hours",
+  "minutes": "Minutes",
   "and": "and",
 
   "learningHeatmapTitle": "Learning Heatmap",
   "loading": "Loading data...",
-  "day": "day",
-  "days": "days",
-  "hour": "hour",
+  "day": "Day",
+  "days": "Days",
+  "hour": "Hour",
 
   "learningPathTitle": "My Learning Path",
   "loadingPath": "Loading your learning path...",
   "noSubjects": "No subjects available.",
-  "previousSubject": "Previous subject",
-  "nextSubject": "Next subject",
+  "previousSubject": "Previous Subject",
+  "nextSubject": "Next Subject",
   "subject": "Subject",
   "of": "of",
-  "coursesCompleted": "courses completed",
-  "continueLearning": "Continue learning",
+  "coursesCompleted": "Courses completed",
+  "continueLearning": "Continue Learning",
 
   "activity": "Activity",
   "noActivity": "No activity",
@@ -42,8 +42,11 @@
   "month": "Month",
   "year": "Year",
   "morning": "Morning",
-  "afternoon": "Afternoon",
   "evening": "Evening",
+
+  "Früh": "Early",
+  "Tag": "Day",
+  "Spät": "Late",
 
   "mon": "Mon",
   "tue": "Tue",
@@ -61,12 +64,24 @@
   "satFull": "Saturday",
   "sunFull": "Sunday",
 
+  "janFull": "January",
+  "febFull": "February",
+  "marFull": "March",
+  "aprFull": "April",
+  "mayFull": "May",
+  "junFull": "June",
+  "julFull": "July",
+  "augFull": "August",
+  "sepFull": "September",
+  "octFull": "October",
+  "novFull": "November",
+  "decFull": "December",
+
   "timeMetric": "Time",
   "completedTasks": "Completed Tasks",
-  "correctTasks": "Correct Answers",
+  "correctTasks": "Correct Tasks",
 
-
-  "selectHeatmapType": "Select heatmap type",
+  "selectHeatmapType": "Select Heatmap Type",
   "selectOption": "Select...",
   "selectHeatmapPrompt": "Please select a metric to display your heatmap.",
   "openDetailedHeatmaps": "Switch to detailed learning heatmaps",
@@ -86,16 +101,16 @@
   },
 
   "recommendations": {
-    "streak": "You have a learning streak of {{count}} {{dayLabel}} – keep it up!",
-    "avgTime": "You study an average of {{hours}} hours and {{minutes}} minutes per day – great consistency!",
-    "morning": "You are most focused in the morning – perfect for productive learning.",
+    "streak": "You're on a {{count}} {{dayLabel}} learning streak – keep it up!",
+    "avgTime": "You learn an average of {{hours}} hours and {{minutes}} minutes per day – great consistency!",
+    "morning": "You are particularly focused and learn most effectively in the morning.",
     "afternoon": "You show the most learning activity in the afternoon – a productive time!",
-    "evening": "You learn most effectively in the evening – perfect for quiet study time.",
+    "evening": "You concentrate and learn the most in the evening – ideal for quiet study phases.",
     "activeDay": "Your most active learning day is {{day}}.",
-    "quizTotal": "You've answered {{count}} quiz questions – excellent engagement!",
-    "quizAccuracy": "Your quiz accuracy is {{percent}}% – great job!",
-    "quizTimeAccuracy": "Your quiz performance is best in the {{slot}} – excellent focus during this time!",
-    "trendUp": "Your learning time increased compared to last week – keep going!",
-    "trendDown": "Your learning time slightly decreased compared to last week – stay consistent!"
+    "quizTotal": "You have answered a total of {{count}} quiz questions – great participation!",
+    "quizAccuracy": "Your quiz accuracy is {{percent}}% – keep it up!",
+    "quizTimeAccuracy": "Your quiz performance is best in the {{slot}} – great concentration during this time!",
+    "trendUp": "Your learning time has increased compared to last week – keep going!",
+    "trendDown": "Your learning time has slightly decreased compared to last week – stay on track!"
   }
 }

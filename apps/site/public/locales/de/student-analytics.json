@@ -16,7 +16,7 @@
   "learningHeatmapTitle": "Lern-Heatmap",
   "loading": "Lade Daten...",
   "day": "Tag",
-  "days": "Tage",           
+  "days": "Tage",
   "hour": "Stunde",
 
   "learningPathTitle": "Mein Lernpfad",
@@ -31,8 +31,8 @@
 
   "activity": "Aktivität",
   "noActivity": "Keine Aktivität",
-  "veryLow": "Sehr niedrig",
-  "low": "Niedrig",
+  "veryLow": "Sehr gering",
+  "low": "Gering",
   "medium": "Mittel",
   "high": "Hoch",
   "veryHigh": "Sehr hoch",
@@ -43,6 +43,11 @@
   "year": "Jahr",
   "morning": "Morgen",
   "evening": "Abend",
+
+  "Früh": "Früh",
+  "Tag": "Tag",
+  "Spät": "Spät",
+
   "mon": "Mo",
   "tue": "Di",
   "wed": "Mi",
@@ -59,6 +64,19 @@
   "satFull": "Samstag",
   "sunFull": "Sonntag",
 
+  "janFull": "Januar",
+  "febFull": "Februar",
+  "marFull": "März",
+  "aprFull": "April",
+  "mayFull": "Mai",
+  "junFull": "Juni",
+  "julFull": "Juli",
+  "augFull": "August",
+  "sepFull": "September",
+  "octFull": "Oktober",
+  "novFull": "November",
+  "decFull": "Dezember",
+
   "timeMetric": "Zeit",
   "completedTasks": "Erledigte Aufgaben",
   "correctTasks": "Richtige Aufgaben",
@@ -67,7 +85,6 @@
   "selectOption": "Auswählen...",
   "selectHeatmapPrompt": "Bitte wähle eine Metrik aus, um deine Heatmap anzuzeigen.",
   "openDetailedHeatmaps": "Zu den detaillierten Lern-Heatmaps wechseln",
-
 
   "tooltip": {
     "noActivityTime": "Keine Lernaktivität am {{label}} aufgezeichnet.",

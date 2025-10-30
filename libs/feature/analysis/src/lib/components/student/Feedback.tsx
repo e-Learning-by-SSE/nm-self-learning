@@ -11,7 +11,8 @@ import {
 	LightBulbIcon,
 	CheckCircleIcon,
 	MoonIcon,
-	ChartBarIcon
+	ChartBarIcon,
+	XMarkIcon // Import the XMarkIcon
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "next-i18next";
 
@@ -206,23 +207,23 @@ export function Feedback() {
 	// Render section with modal for 'show more' functionality
 	return (
 		<div className="w-full rounded-lg border border-gray-200 bg-white shadow-sm p-6 flex flex-col gap-4 hover:shadow-md transition-shadow max-sm:p-4">
-			<h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-2 text-center sm:text-left">
+			{/* Changed: Standardized title to text-xl */}
+			<h2 className="text-xl font-semibold text-gray-800 mb-2 text-center sm:text-left">
 				{t("feedbackTitle")}
 			</h2>
 
 			{shortList.length === 0 ? (
-				<p className="text-gray-400 text-center text-sm sm:text-base">{t("noData")}</p>
+				<p className="text-gray-400 text-center text-sm">{t("noData")}</p>
 			) : (
 				<ul className="space-y-3 sm:space-y-2">
 					{shortList.map((r, i) => (
 						<li
 							key={i}
-							className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 text-gray-700 text-sm sm:text-base"
+							// Changed: Standardized list text to text-sm
+							className="flex items-start gap-2 sm:gap-3 text-gray-700 text-sm"
 						>
-							<div className="flex items-center gap-2">
-								{r.icon}
-								<span className="leading-snug">{r.text}</span>
-							</div>
+							{r.icon}
+							<span className="leading-snug">{r.text}</span>
 						</li>
 					))}
 				</ul>
@@ -231,7 +232,7 @@ export function Feedback() {
 			{recommendations.length > 4 && (
 				<button
 					onClick={() => setOpen(true)}
-					className="text-emerald-600 text-sm sm:text-base font-medium hover:text-emerald-800 self-center mt-2 flex items-center gap-1"
+					className="text-emerald-600 text-sm font-medium hover:text-emerald-800 self-center mt-2 flex items-center gap-1"
 				>
 					{t("showMore")}
 					<span className="ml-1">→</span>
@@ -247,32 +248,36 @@ export function Feedback() {
 					/>
 					<div className="fixed inset-0 flex items-center justify-center p-4">
 						<Dialog.Panel className="w-full max-w-3xl rounded-2xl bg-white p-6 sm:p-8 shadow-xl relative">
-							<h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 text-center sm:text-left">
-								{t("feedbackTitle")}
-							</h2>
+							{/* Changed: Added flex container for title and close button */}
+							<div className="flex justify-between items-center mb-4">
+								{/* Changed: Standardized modal title to text-xl */}
+								<h2 className="text-xl font-semibold text-gray-800 text-center sm:text-left">
+									{t("feedbackTitle")}
+								</h2>
+								{/* Added: XMarkIcon button per UI-UX guidelines */}
+								<button
+									onClick={() => setOpen(false)}
+									className="rounded-md p-2 text-gray-600 hover:bg-gray-100"
+									aria-label={t("close") || "Close"}
+								>
+									<XMarkIcon className="h-6 w-6" />
+								</button>
+							</div>
 
 							<ul className="space-y-3 sm:space-y-2">
 								{recommendations.map((r, i) => (
 									<li
 										key={i}
-										className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 text-gray-700 text-sm sm:text-base"
+										// Changed: Standardized list text to text-sm
+										className="flex items-start gap-2 sm:gap-3 text-gray-700 text-sm"
 									>
-										<div className="flex items-center gap-2">
-											{r.icon}
-											<span className="leading-snug">{r.text}</span>
-										</div>
+										{r.icon}
+										<span className="leading-snug">{r.text}</span>
 									</li>
 								))}
 							</ul>
 
-							<div className="mt-6 sm:mt-8 flex justify-end">
-								<button
-									onClick={() => setOpen(false)}
-									className="border border-gray-300 rounded-md px-4 py-2 text-gray-700 hover:bg-gray-50"
-								>
-									{t("close")}
-								</button>
-							</div>
+							{/* Removed: Footer with "close" button */}
 						</Dialog.Panel>
 					</div>
 				</Dialog>

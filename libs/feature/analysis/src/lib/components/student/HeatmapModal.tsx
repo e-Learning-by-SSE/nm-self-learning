@@ -34,6 +34,14 @@ export function HeatmapModal({ selectedMetric, onClose }: HeatmapModalProps) {
 						<h2 className="text-xl font-semibold text-gray-800">
 							Studien-Heatmaps – {selected || "Auswählen..."}
 						</h2>
+						{/* Added XMarkIcon button as per UI-UX guidelines */}
+						<button
+							onClick={onClose}
+							className="rounded-md p-2 text-gray-600 hover:bg-gray-100"
+							aria-label="Schließen"
+						>
+							<XMarkIcon className="h-6 w-6" />
+						</button>
 					</div>
 
 					{/* Dropdown for selecting heatmap type */}
@@ -110,17 +118,18 @@ export function HeatmapModal({ selectedMetric, onClose }: HeatmapModalProps) {
 						))}
 					</div>
 
-					{/* Footer Close Button */}
-					<div className="mt-8 flex justify-end">
-						<button
-							id="HeatmapModalCloseButton"
-							type="button"
-							onClick={onClose}
-							className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50"
-						>
-							Schließen
-						</button>
-					</div>
+					{/* Footer Close Button - REMOVED per UI-UX guidelines */}
+					{/* <div className="mt-8 flex justify-end">
+                        <button
+                            id="HeatmapModalCloseButton"
+                            type="button"
+                            onClick={onClose}
+                            className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50"
+                        >
+                            Schließen
+                        </button>
+                    </div>
+                    */}
 				</Dialog.Panel>
 			</div>
 		</Dialog>

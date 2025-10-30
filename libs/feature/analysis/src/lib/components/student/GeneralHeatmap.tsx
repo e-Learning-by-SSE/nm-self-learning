@@ -1,9 +1,7 @@
-"use client";
-
 import React, { useMemo, useState } from "react";
 import { trpc } from "@self-learning/api-client";
 import { DropdownMenu } from "@self-learning/ui/common";
-import { ChevronDownIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { HeatmapModal } from "./HeatmapModal";
 import { useTranslation } from "next-i18next";
 
@@ -39,6 +37,7 @@ const normalizeDate = (dateInput: any) => {
 	).padStart(2, "0")}`;
 };
 
+// This function now uses the correct color scales for all periods
 function getColor(value: number, metric: string, period: "day" | "week" | "month" | "year") {
 	if (value <= 0) return COLORS.none;
 
@@ -47,7 +46,7 @@ function getColor(value: number, metric: string, period: "day" | "week" | "month
 		if (value <= 40) return COLORS.low;
 		if (value <= 60) return COLORS.medium;
 		if (value <= 80) return COLORS.high;
-		return COLORS.vhigh;
+		return COLORS.vhigh; // > 80
 	}
 
 	if (period === "day" && metric === "timeMetric") {
@@ -55,21 +54,24 @@ function getColor(value: number, metric: string, period: "day" | "week" | "month
 		if (value < 0.5) return COLORS.low;
 		if (value < 0.75) return COLORS.medium;
 		if (value < 1) return COLORS.high;
-		return COLORS.vhigh;
+		return COLORS.vhigh; // >= 1
 	}
 
+	// This block correctly handles Day (Tasks), Week, and Month
 	if (value <= 2) return COLORS.vlow;
 	if (value <= 4) return COLORS.low;
 	if (value <= 6) return COLORS.medium;
 	if (value <= 8) return COLORS.high;
-	return COLORS.vhigh;
+	return COLORS.vhigh; // > 8
 }
 
+// This function now takes 'period' as an argument to determine the correct activity scale for tooltips
 function getTooltipText(
 	value: number,
 	label: string,
 	metric: string,
-	t: (key: string, opts?: any) => string
+	t: (key: string, opts?: any) => string,
+	period: "day" | "week" | "month" | "year"
 ) {
 	if (value <= 0) {
 		if (metric === "timeMetric") return t("tooltip.noActivityTime", { label });
@@ -78,11 +80,28 @@ function getTooltipText(
 	}
 
 	let activityKey = "";
-	if (value <= 2) activityKey = "tooltip.activityVeryLow";
-	else if (value <= 4) activityKey = "tooltip.activityLow";
-	else if (value <= 6) activityKey = "tooltip.activityMedium";
-	else if (value <= 8) activityKey = "tooltip.activityHigh";
-	else activityKey = "tooltip.activityVeryHigh";
+
+	// Use the correct activity scale based on the period and metric
+	if (period === "year") {
+		if (value <= 20) activityKey = "tooltip.activityVeryLow";
+		else if (value <= 40) activityKey = "tooltip.activityLow";
+		else if (value <= 60) activityKey = "tooltip.activityMedium";
+		else if (value <= 80) activityKey = "tooltip.activityHigh";
+		else activityKey = "tooltip.activityVeryHigh"; // > 80
+	} else if (period === "day" && metric === "timeMetric") {
+		if (value < 0.25) activityKey = "tooltip.activityVeryLow";
+		else if (value < 0.5) activityKey = "tooltip.activityLow";
+		else if (value < 0.75) activityKey = "tooltip.activityMedium";
+		else if (value < 1) activityKey = "tooltip.activityHigh";
+		else activityKey = "tooltip.activityVeryHigh"; // >= 1
+	} else {
+		// This covers Day (Tasks), Week, and Month
+		if (value <= 2) activityKey = "tooltip.activityVeryLow";
+		else if (value <= 4) activityKey = "tooltip.activityLow";
+		else if (value <= 6) activityKey = "tooltip.activityMedium";
+		else if (value <= 8) activityKey = "tooltip.activityHigh";
+		else activityKey = "tooltip.activityVeryHigh"; // > 8
+	}
 
 	if (metric === "timeMetric") {
 		const minutes = Math.round(value * 60);
@@ -117,11 +136,31 @@ function getTooltipText(
 }
 
 export function GeneralHeatmap() {
-	const { t } = useTranslation("student-analytics");
+	// Get i18n object to access the current language
+	const { t, i18n } = useTranslation("student-analytics");
 
-	const [selected, setSelected] = useState<
-		"timeMetric" | "completedTasks" | "correctTasks" | null
-	>("timeMetric");
+	// Helper function to format date as DD.MM. (or MM/DD for en)
+	// Moved inside component to access i18n.language
+	const formatShortDate = (d: Date) => {
+		return d.toLocaleString(i18n.language, {
+			day: "2-digit",
+			month: "2-digit"
+		});
+	};
+
+	// Helper function to create week range labels
+	// Moved inside component to access formatShortDate
+	const formatWeekRange = (startDate: Date) => {
+		const endDate = addDays(startDate, 6);
+		return `${formatShortDate(startDate)} – ${formatShortDate(endDate)}`;
+	};
+
+	// State for current date, used to add context to the title
+	const [currentDate] = useState(new Date());
+
+	const [selected, setSelected] = useState<"timeMetric" | "completedTasks" | "correctTasks">(
+		"timeMetric"
+	);
 
 	const [hover, setHover] = useState<{ x: number; y: number; text: string } | null>(null);
 	const [showModal, setShowModal] = useState(false);
@@ -138,8 +177,8 @@ export function GeneralHeatmap() {
 	const groupedData = useMemo(() => {
 		if (!dailyLearning && !hourlyQuiz) return null;
 
-		const metric = selected ?? "timeMetric";
-		const now = new Date();
+		const metric = selected;
+		const now = currentDate; // Use the state-held date for consistency
 		const nowMonth = now.getMonth();
 		const nowYear = now.getFullYear();
 
@@ -180,19 +219,29 @@ export function GeneralHeatmap() {
 			week[i] = dailyMap.get(iso ?? "") ?? 0;
 		}
 
+		// Logic for month data is updated to only include weeks in the current month
+		const monthData = {
+			values: [] as number[],
+			labels: [] as string[]
+		};
 		const first = new Date(nowYear, nowMonth, 1);
-		const startMonth = startOfISOWeek(first);
-		const month = Array(6).fill(0);
-		let cursor = new Date(startMonth);
+		let cursor = startOfISOWeek(first);
 
 		for (let w = 0; w < 6; w++) {
+			// Stop if the cursor week is no longer in the current month
+			if (cursor.getMonth() !== nowMonth && cursor > first) {
+				break;
+			}
+
 			let sum = 0;
+			const weekStartDate = new Date(cursor);
 			for (let d = 0; d < 7; d++) {
 				const iso = normalizeDate(cursor);
 				if (cursor.getMonth() === nowMonth) sum += dailyMap.get(iso ?? "") ?? 0;
 				cursor = addDays(cursor, 1);
 			}
-			month[w] = sum;
+			monthData.values.push(sum);
+			monthData.labels.push(formatWeekRange(weekStartDate)); // Use date range for label
 		}
 
 		const year = Array(12).fill(0);
@@ -201,8 +250,8 @@ export function GeneralHeatmap() {
 			if (d.getFullYear() === nowYear) year[d.getMonth()] += val;
 		}
 
-		return { day, week, month, year };
-	}, [dailyLearning, hourlyQuiz, selected, t]);
+		return { day, week, month: monthData, year };
+	}, [dailyLearning, hourlyQuiz, selected, currentDate, i18n.language]); // Add i18n.language to dependency array
 
 	const renderRow = (
 		label: string,
@@ -216,13 +265,9 @@ export function GeneralHeatmap() {
 			</span>
 			<div className="flex gap-1.5 flex-wrap justify-start">
 				{values.map((v, i) => {
-					const color = getColor(v, selected ?? "timeMetric", period);
-					const text = getTooltipText(
-						v,
-						labels?.[i] ?? label,
-						selected ?? "timeMetric",
-						t
-					);
+					const color = getColor(v, selected, period);
+					// Pass the period to getTooltipText for correct activity scale
+					const text = getTooltipText(v, labels?.[i] ?? label, selected, t, period);
 					return (
 						<div
 							key={i}
@@ -250,39 +295,37 @@ export function GeneralHeatmap() {
 			className="relative w-full rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col justify-between"
 		>
 			{/* Header */}
-			<div className="flex flex-col sm:flex-row items-center justify-between mb-3">
-				<h2 className="text-lg sm:text-xl font-semibold text-gray-800 text-center sm:text-left">
-					{t("learningHeatmapTitle")}
-				</h2>
+			<div className="flex flex-col sm:flex-row items-start justify-between mb-3">
+				<div>
+					<h2 className="text-lg sm:text-xl font-semibold text-gray-800 text-center sm:text-left">
+						{t("learningHeatmapTitle")}
+					</h2>
+					{/* Use i18n.language for locale-aware date formatting */}
+					<p className="text-sm text-gray-500 text-center sm:text-left">
+						{currentDate.toLocaleString(i18n.language, {
+							month: "long",
+							year: "numeric"
+						})}
+					</p>
+				</div>
 				<div
-					className="relative z-40 w-full sm:w-auto flex justify-center sm:justify-end"
+					className="relative z-40 w-full sm:w-auto flex justify-center sm:justify-end pt-2 sm:pt-0"
 					onClick={e => e.stopPropagation()}
 				>
+					{/* Dropdown logic is copied from teammate's component */}
 					<DropdownMenu
-						key={selected ?? "default"}
+						key={selected}
 						title={t("selectHeatmapType")}
 						button={
-							<div
-								className={`flex items-center justify-between w-48 sm:w-56 rounded-md px-3 py-1.5 sm:px-4 sm:py-2 font-semibold transition-colors ${
-									selected
-										? "bg-emerald-500 text-white"
-										: "border border-gray-300 bg-white text-gray-700"
-								}`}
-							>
-								<span className="truncate">
-									{selected ? t(selected) : t("selectOption")}
-								</span>
-								{selected ? (
-									<XMarkIcon
-										className="h-4 w-4 ml-2 cursor-pointer hover:text-gray-200"
-										onClick={e => {
-											e.stopPropagation();
-											setSelected(null);
-										}}
-									/>
-								) : (
-									<ChevronDownIcon className="h-4 w-4 ml-2 text-gray-500" />
-								)}
+							<div className="flex items-center justify-between w-48 sm:w-56 rounded-md px-3 py-1.5 sm:px-4 sm:py-2 font-semibold transition-colors bg-emerald-500 text-white">
+								<span className="truncate">{t(selected)}</span>
+								<XMarkIcon
+									className="h-4 w-4 ml-2 cursor-pointer hover:text-gray-200"
+									onClick={e => {
+										e.stopPropagation();
+										setSelected("timeMetric");
+									}}
+								/>
 							</div>
 						}
 					>
@@ -317,41 +360,43 @@ export function GeneralHeatmap() {
 				{groupedData ? (
 					<>
 						<div className="flex flex-col justify-between gap-4">
+							{/* Use clearer labels for "Today" row */}
 							{renderRow(t("today"), groupedData.day, "day", [
-								t("morning"),
-								t("day"),
-								t("evening")
+								t("Früh"), // Needs "Früh": "Früh" in JSON
+								t("Tag"), // Needs "Tag": "Tag" in JSON
+								t("Spät") // Needs "Spät": "Spät" in JSON
 							])}
+							{/* Use full day names for "Week" row tooltips */}
 							{renderRow(t("week"), groupedData.week, "week", [
-								t("mon"),
-								t("tue"),
-								t("wed"),
-								t("thu"),
-								t("fri"),
-								t("sat"),
-								t("sun")
+								t("monFull"),
+								t("tueFull"),
+								t("wedFull"),
+								t("thuFull"),
+								t("friFull"),
+								t("satFull"),
+								t("sunFull")
 							])}
-							{renderRow(t("month"), groupedData.month, "month", [
-								"W1",
-								"W2",
-								"W3",
-								"W4",
-								"W5",
-								"W6"
-							])}
+							{/* Use dynamic date ranges for "Month" row labels */}
+							{renderRow(
+								t("month"),
+								groupedData.month.values,
+								"month",
+								groupedData.month.labels
+							)}
+							{/* Use full month names for "Year" row tooltips */}
 							{renderRow(t("year"), groupedData.year, "year", [
-								t("jan"),
-								t("feb"),
-								t("mar"),
-								t("apr"),
-								t("may"),
-								t("jun"),
-								t("jul"),
-								t("aug"),
-								t("sep"),
-								t("oct"),
-								t("nov"),
-								t("dec")
+								t("janFull"), // Needs "janFull": "Januar" in JSON
+								t("febFull"), // Needs "febFull": "Februar" in JSON
+								t("marFull"), // ...
+								t("aprFull"),
+								t("mayFull"),
+								t("junFull"),
+								t("julFull"),
+								t("augFull"),
+								t("sepFull"),
+								t("octFull"),
+								t("novFull"),
+								t("decFull") // Needs "decFull": "Dezember" in JSON
 							])}
 						</div>
 
@@ -374,6 +419,7 @@ export function GeneralHeatmap() {
 			<div className="flex flex-wrap gap-2 items-center mt-3 justify-center sm:justify-start">
 				<span className="text-sm font-semibold text-gray-700 mr-2">{t("activity")}:</span>
 				{Object.entries(COLORS).map(([key, color]) => {
+					// The labelMap now uses the t() function for translations
 					const labelMap: Record<string, string> = {
 						none: t("noActivity"),
 						vlow: t("veryLow"),
@@ -408,10 +454,7 @@ export function GeneralHeatmap() {
 			)}
 
 			{showModal && (
-				<HeatmapModal
-					selectedMetric={t(selected ?? "timeMetric")}
-					onClose={() => setShowModal(false)}
-				/>
+				<HeatmapModal selectedMetric={t(selected)} onClose={() => setShowModal(false)} />
 			)}
 		</div>
 	);
