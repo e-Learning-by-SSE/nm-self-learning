@@ -8,7 +8,8 @@ import {
 	Table,
 	TableDataColumn,
 	TableHeaderColumn,
-	Tabs
+	Tabs,
+	SectionHeader
 } from "@self-learning/ui/common";
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
 import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
@@ -133,31 +134,47 @@ function TabContent({
 	setSearchQuery: (v: string) => void;
 }) {
 	return (
-		<div className="flex h-full flex-col">
-			<div className="flex items-center justify-between border-b border-gray-300 pb-2">
-				<div className="flex">
-					<Tabs selectedIndex={selectedTab} onChange={setSelectedTab}>
-						<Tab>In Bearbeitung</Tab>
-						<Tab>Abgeschlossen</Tab>
-					</Tabs>
+		<>
+			<div className="flex justify-between gap-4">
+				<SectionHeader
+					title="Kursübersicht"
+					subtitle="Übersicht über deine Kurse und Fortschritte"
+				/>
+				<div className="mt-4">
+					<Link href="/subjects">
+						<button className="btn btn-primary" type="button">
+							<span>Kurse durchstöbern</span>
+						</button>
+					</Link>
 				</div>
 			</div>
-			<div className="py-2">
-				<UniversalSearchBar
-					searchQuery={searchQuery}
-					setSearchQuery={setSearchQuery}
-					placeHolder={"Kurse durchsuchen..."}
-				/>
-			</div>
 
-			<div className="flex-1 overflow-y-auto">
-				{enrollments && enrollments.length > 0 ? (
-					<SortedTable enrollments={enrollments} />
-				) : (
-					<p className="py-4 text-center">{notFoundMessage}</p>
-				)}
+			<div className="py-2">
+				<div className="flex items-center justify-between border-b border-gray-300 pb-2">
+					<div className="flex">
+						<Tabs selectedIndex={selectedTab} onChange={setSelectedTab}>
+							<Tab>In Bearbeitung</Tab>
+							<Tab>Abgeschlossen</Tab>
+						</Tabs>
+					</div>
+				</div>
+				<div className="py-2">
+					<UniversalSearchBar
+						searchQuery={searchQuery}
+						setSearchQuery={setSearchQuery}
+						placeHolder={"Kurse durchsuchen..."}
+					/>
+				</div>
+				{/* TODO: is the overflow and flex necessary? Appears too wide atm */}
+				<div className="flex-1 overflow-y-auto">
+					{enrollments && enrollments.length > 0 ? (
+						<SortedTable enrollments={enrollments} />
+					) : (
+						<p className="py-4 text-center">{notFoundMessage}</p>
+					)}
+				</div>
 			</div>
-		</div>
+		</>
 	);
 }
 

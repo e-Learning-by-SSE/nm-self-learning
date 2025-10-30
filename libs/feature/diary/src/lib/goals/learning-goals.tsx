@@ -13,7 +13,8 @@ import {
 	showToast,
 	SimpleDialog,
 	Tab,
-	Tabs
+	Tabs,
+	SectionHeader
 } from "@self-learning/ui/common";
 import { IdSet } from "@self-learning/util/common";
 import { useEffect, useState, useCallback } from "react";
@@ -91,10 +92,21 @@ export function LearningGoals({
 
 	return (
 		<>
-			<div className="flex items-center justify-end gap-4">
-				<button className="btn-primary" onClick={() => setOpenAddDialog(true)}>
-					<span>Lernziel erstellen</span>
-				</button>
+			<div className="flex justify-between gap-4">
+				<SectionHeader
+					title="Meine Lernziele"
+					subtitle="Auflistung der erstellen Lernziele:"
+				/>
+
+				<div className="mt-4">
+					<button
+						className="btn btn-primary"
+						type="button"
+						onClick={() => setOpenAddDialog(true)}
+					>
+						<span>Lernziel erstellen</span>
+					</button>
+				</div>
 			</div>
 
 			<div className="py-2 ">
