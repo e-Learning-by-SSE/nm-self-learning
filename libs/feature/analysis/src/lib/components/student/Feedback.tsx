@@ -12,7 +12,7 @@ import {
 	CheckCircleIcon,
 	MoonIcon,
 	ChartBarIcon,
-	XMarkIcon // Import the XMarkIcon
+	XMarkIcon
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "next-i18next";
 
@@ -207,8 +207,8 @@ export function Feedback() {
 	// Render section with modal for 'show more' functionality
 	return (
 		<div className="w-full rounded-lg border border-gray-200 bg-white shadow-sm p-6 flex flex-col gap-4 hover:shadow-md transition-shadow max-sm:p-4">
-			{/* Changed: Standardized title to text-xl */}
-			<h2 className="text-xl font-semibold text-gray-800 mb-2 text-center sm:text-left">
+			{/* Changed: Removed wrapper div, applied margin directly to H2 */}
+			<h2 className="text-xl font-semibold text-gray-800 text-left mb-4">
 				{t("feedbackTitle")}
 			</h2>
 
@@ -250,8 +250,8 @@ export function Feedback() {
 						<Dialog.Panel className="w-full max-w-3xl rounded-2xl bg-white p-6 sm:p-8 shadow-xl relative">
 							{/* Changed: Added flex container for title and close button */}
 							<div className="flex justify-between items-center mb-4">
-								{/* Changed: Standardized modal title to text-xl */}
-								<h2 className="text-xl font-semibold text-gray-800 text-center sm:text-left">
+								{/* Changed: Removed text-center sm:text-left for consistent alignment */}
+								<h2 className="text-xl font-semibold text-gray-800 text-left">
 									{t("feedbackTitle")}
 								</h2>
 								{/* Added: XMarkIcon button per UI-UX guidelines */}

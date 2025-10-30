@@ -52,6 +52,7 @@ export function MyLearningPath() {
 	const handleContinue = () => {
 		const subjectSlug = subject.slug || subject.subjectId;
 		if (subjectSlug) {
+			// Note: This is hardcoded, consider using environment variables for the base URL
 			window.location.href = `http://localhost:4200/subjects/${subjectSlug}`;
 		}
 	};
@@ -60,7 +61,8 @@ export function MyLearningPath() {
 		<div className="w-full rounded-lg border border-light-border bg-white shadow-sm hover:shadow-md transition-shadow p-4 sm:p-6 flex flex-col">
 			{/* Header: section title and subject navigation controls */}
 			<div className="flex flex-col sm:flex-row items-center justify-between mb-4 gap-3 sm:gap-0">
-				<h2 className="text-lg sm:text-xl font-semibold text-gray-800 text-center sm:text-left">
+				{/* Changed: Standardized font size and alignment */}
+				<h2 className="text-xl font-semibold text-gray-800 text-left">
 					{t("learningPathTitle")}
 				</h2>
 				<div className="flex items-center gap-2">
