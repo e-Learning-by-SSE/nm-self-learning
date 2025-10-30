@@ -454,7 +454,8 @@ export function GeneralHeatmap() {
 			)}
 
 			{showModal && (
-				<HeatmapModal selectedMetric={t(selected)} onClose={() => setShowModal(false)} />
+				//<HeatmapModal selectedMetric={t(selected)} onClose={() => setShowModal(false)} />
+				<HeatmapModal onClose={() => setShowModal(false)} />
 			)}
 		</div>
 	);
