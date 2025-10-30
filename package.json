@@ -85,7 +85,7 @@
 		"remark-math": "^6.0.0",
 		"sharp": "^0.34.4",
 		"superjson": "^2.2.3",
-		"swagger-ui-react": "^5.29.5",
+		"swagger-ui-react": "^5.30.0",
 		"trpc-to-openapi": "3.1.0",
 		"ts-node": "^10.9.2",
 		"tslib": "^2.8.1",
