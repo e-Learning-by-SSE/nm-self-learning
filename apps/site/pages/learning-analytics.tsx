@@ -21,7 +21,7 @@ We keep it commented to preserve the idea for later expansion.
  // etc.
 */
 
-export const getServerSideProps = withTranslations(["common"]);
+export const getServerSideProps = withTranslations(["common", "student-analytics"]);
 
 /*
 ----------------------------------------------------------

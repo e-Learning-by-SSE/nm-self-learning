@@ -64,7 +64,7 @@ export function HeatmapModal({ onClose }: { onClose: () => void }) {
 			{/* Background overlay */}
 			<div className="fixed inset-0 bg-black/30 backdrop-blur-sm" aria-hidden="true" />
 
-			{/* Centered modal */}
+			{/* Centered modal panel */}
 			<div id="HeatmapModal" className="fixed inset-0 flex items-center justify-center p-4">
 				<Dialog.Panel className="w-full max-w-6xl rounded-2xl bg-white p-4 sm:p-8 shadow-xl relative overflow-y-auto max-h-[90vh]">
 					{/* Header */}
@@ -360,7 +360,7 @@ export function HeatmapModal({ onClose }: { onClose: () => void }) {
 						</div>
 					</div>
 
-					{/* Footer */}
+					{/*  Footer Close Button 
 					<div className="mt-8 flex justify-end">
 						<button
 							id="HeatmapModalCloseButton"
@@ -368,9 +368,10 @@ export function HeatmapModal({ onClose }: { onClose: () => void }) {
 							onClick={onClose}
 							className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50"
 						>
-							Schließen
+							Close
 						</button>
 					</div>
+					*/}
 				</Dialog.Panel>
 			</div>
 		</Dialog>
