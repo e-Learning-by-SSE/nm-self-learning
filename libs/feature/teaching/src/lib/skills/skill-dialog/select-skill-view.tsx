@@ -1,6 +1,6 @@
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { SkillFormModel } from "@self-learning/types";
-import { IconButton, IconOnlyButton } from "@self-learning/ui/common";
+import { IconTextButton, IconOnlyButton } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { useState } from "react";
 import { SelectSkillDialog } from "./select-skill-dialog";
@@ -24,7 +24,7 @@ export function LabeledFieldSelectSkillsView({
 		<LabeledField
 			label={label}
 			button={
-				<IconButton
+				<IconTextButton
 					text="Hinzufügen"
 					icon={<PlusIcon className="h-5 w-5" />}
 					variant="secondary"
@@ -62,9 +62,10 @@ export function SelectSkillsView({
 
 	return (
 		<>
-			<IconButton
+			<IconTextButton
 				text="Hinzufügen"
 				icon={<PlusIcon className="h-5 w-5" />}
+				variant="secondary"
 				onClick={() => setSelectSkillModal(true)}
 				title={"Hinzufügen"}
 				data-testid="BenoetigteSkills-add"

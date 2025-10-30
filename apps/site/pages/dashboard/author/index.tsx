@@ -6,7 +6,8 @@ import { database } from "@self-learning/database";
 import { SkillRepositoryOverview } from "@self-learning/teaching";
 import {
 	Divider,
-	IconButton,
+	IconOnlyButton,
+	IconTextButton,
 	ImageChip,
 	ImageOrPlaceholder,
 	LoadingBox,
@@ -232,21 +233,21 @@ function AuthorDashboardPage({ author }: Props) {
 											<div className="flex flex-wrap justify-end gap-4">
 												<Link
 													href={`/teaching/courses/edit/${course.courseId}`}
-													className="btn-stroked h-fit w-fit"
 												>
-													<PencilIcon className="icon" />
-													<span>Bearbeiten</span>
+													<IconTextButton
+														icon={<PencilIcon className="h-5 w-5" />}
+														text={"Bearbeiten"}
+														variant="stroked"
+														title="Kurs bearbeiten"
+													/>
 												</Link>
-												<div className="flex space-x-2">
-													<button
-														className="btn-stroked w-full text-right"
-														type="button"
-														onClick={() => setViewExportDialog(true)}
-													>
-														<ArrowDownTrayIcon className="w-5 h-5 icon" />
-														{"Export"}
-													</button>
-												</div>
+												<IconTextButton
+													icon={<ArrowDownTrayIcon className="h-5 w-5" />}
+													text={"Export"}
+													variant="stroked"
+													title="Kurs exportieren"
+													onClick={() => setViewExportDialog(true)}
+												/>
 												<CourseDeleteOption slug={course.slug} />
 											</div>
 										</div>
@@ -344,14 +345,11 @@ function CourseDeleteOption({ slug }: { slug: string }) {
 
 	return (
 		<>
-			<button
-				className="rounded bg-red-500 font-medium text-white hover:bg-red-600"
+			<IconOnlyButton
+				icon={<TrashIcon className="h-5 w-5" />}
+				variant="danger"
 				onClick={() => setShowConfirmation(true)}
-			>
-				<div className="ml-4">
-					<TrashIcon className="icon " />
-				</div>
-			</button>
+			/>
 			{showConfirmation && (
 				<CourseDeletionDialog
 					onCancel={handleCancel}
@@ -428,11 +426,14 @@ function LessonTaskbar({ lessonId }: { lessonId: string }) {
 	return (
 		<div className="flex flex-wrap justify-end gap-4">
 			<Link href={`/teaching/lessons/edit/${lessonId}`}>
-				<button type="button" className="btn-stroked w-fit self-end">
-					<PencilIcon className="icon" />
-					<span>Bearbeiten</span>
-				</button>
+				<IconTextButton
+					icon={<PencilIcon className="h-5 w-5" />}
+					text={"Bearbeiten"}
+					variant="stroked"
+					title="Lerneinheit bearbeiten"
+				/>
 			</Link>
+
 			<LessonDeleteOption lessonId={lessonId} />
 		</div>
 	);

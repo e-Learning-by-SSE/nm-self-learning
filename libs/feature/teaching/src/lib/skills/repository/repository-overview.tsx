@@ -6,7 +6,8 @@ import {
 	Table,
 	TableDataColumn,
 	TableHeaderColumn,
-	IconOnlyButton
+	IconOnlyButton,
+	IconTextButton
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { AuthorGuard, useRequiredSession } from "@self-learning/ui/layouts";
@@ -100,13 +101,12 @@ function RepositoryTaskbar({ repositoryId }: { repositoryId: string }) {
 	return (
 		<div className="flex flex-row justify-end gap-4">
 			<Link href={`/skills/repository/${repositoryId}`}>
-				<button
-					type="button"
-					className="lg:flex rounded-lg lg:border lg:place-content-center lg:items-center border-gray-200 bg-white lg:w-fit lg:self-end p-2 lg:px-8 lg:py-2"
-				>
-					<PencilIcon className="icon" />
-					<span className="hidden lg:inline">Bearbeiten</span>
-				</button>
+				<IconTextButton
+					icon={<PencilIcon className="h-5 w-5" />}
+					text={"Bearbeiten"}
+					variant="stroked"
+					title="Repository bearbeiten"
+				/>
 			</Link>
 			<RepositoryDeleteOption repositoryId={repositoryId} />
 		</div>

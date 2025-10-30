@@ -5,7 +5,7 @@ import {
 	ButtonVariant,
 	Dialog,
 	DialogActions,
-	IconButton,
+	IconTextButton,
 	OnDialogCloseFn
 } from "@self-learning/ui/common";
 import ReactMarkdown from "react-markdown";
@@ -49,7 +49,7 @@ export function MarkdownField({
 					<h3 className={`text-${header.sz}`}>{header.text}</h3>
 					<div className="flex w-full justify-end bottom-0 right-0">
 						{!inline && (
-							<IconButton
+							<IconTextButton
 								icon={<PencilIcon className="h-5 w-5" />}
 								variant={header.btn_variant || "stroked"}
 								text="Bearbeiten"
@@ -95,9 +95,9 @@ export function MarkdownField({
 
 			{!inline && !header && (
 				<div className="flex justify-end bottom-0 right-0 py-2">
-					<IconButton
+					<IconTextButton
 						icon={<PencilIcon className="h-5 w-5" />}
-						variant="tertiary"
+						variant="stroked"
 						text="Bearbeiten"
 						onClick={() => setOpenEditor(true)}
 						title="Beschreibung bearbeiten"

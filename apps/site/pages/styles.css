@@ -105,7 +105,7 @@ video {
 .btn-danger,
 .btn-tertiary,
 .btn-stroked {
-	@apply flex place-content-center items-center rounded-lg gap-2 px-8 py-2 text-sm font-semibold transition-colors disabled:bg-opacity-25;
+	@apply flex place-content-center items-center rounded-lg gap-2 px-4 py-2 text-sm font-semibold transition-colors disabled:bg-opacity-25 hover:bg-gray-50;
 }
 
 /* Primary button: green background, white text */
@@ -145,7 +145,16 @@ video {
 
 /* Icon-only buttons (no border when only icon is shown) */
 .btn-icon-only {
-	@apply border-0 p-2;
+	@apply inline-flex border-0 p-2;
+}
+
+/* Icon button variants for minimal UI controls */
+.btn-hover-icon {
+	@apply hover:text-secondary px-2 py-0;
+}
+
+.btn-hover-bg {
+	@apply rounded p-1 hover:bg-gray-300 text-gray-500 border-0;
 }
 
 .icon {

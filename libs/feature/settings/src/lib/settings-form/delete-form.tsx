@@ -46,7 +46,7 @@ export function DeleteMeForm() {
 				{t("Be Careful! This changes cannot be undone.")}
 			</p>
 
-			<div className="mt-6 flex flex-col gap-4">
+			<div className="mt-6 flex gap-4">
 				<button
 					onClick={() => setOpenStudentDeleteInfoDialog(true)}
 					className="btn btn-danger w-full max-w-52"
