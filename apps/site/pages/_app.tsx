@@ -42,8 +42,10 @@ export default withTRPC<AppRouter>({
 })(appWithTranslation(CustomApp, nextI18NextConfig));
 
 function CustomApp({ Component, pageProps }: AppProps) {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const Layout = (Component as any).getLayout
-		? (Component as any).getLayout(Component, pageProps)
+		? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+			(Component as any).getLayout(Component, pageProps)
 		: null;
 
 	const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
