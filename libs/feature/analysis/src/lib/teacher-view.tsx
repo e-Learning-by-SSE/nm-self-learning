@@ -4,67 +4,59 @@ import { trpc } from "@self-learning/api-client";
 import { useSession } from "next-auth/react";
 import type { Chart as ChartJS } from "chart.js";
 
-/* -------------------------
-   Types for dashboard view
-------------------------- */
-type ModuleItem = { label: string; rate: number };
-type CourseItem = { label: string; avg: number };
-
-type DashboardData = {
-	teacherName: string;
-	studentsCount?: number;
-	courses: CourseItem[];
-	modules?: ModuleItem[];
-	modulesByCourse?: Record<string, ModuleItem[]>;
-	overallAverageCompletionPct?: number;
-};
-
-// shape from AverageCompletionRateByAuthorByCourse
-type CourseRow = {
-	id: string;
-	courseId: string;
-	courseTitle: string;
-	authorUsername: string;
-	totalEnrollments: number;
-	completedEnrollments: number;
-	completionRatePercent: number;
-};
-
-/* -------------------------
-   Helpers
-------------------------- */
 const pct = (n?: number) =>
-	n === undefined || n === null || !Number.isFinite(n) ? "—" : `${Math.round(n)}%`;
+	n === undefined || n === null || !Number.isFinite(n) ? "—" : `${Number(n).toFixed(1)}%`;
 
-const mean = (arr: number[]) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0);
-
-const toPct = (v: unknown) => {
+const toPctNumber = (v: unknown) => {
 	const n = Number(v ?? 0);
 	if (!Number.isFinite(n)) return 0;
-	return n <= 1 ? Math.round(n * 100) : Math.round(n);
+	return Number(n);
 };
 
-// chart colors
 const colorGreen = "#7fb89b";
 const colorYellow = "#eae282";
 const colorRed = "#e57368";
 const colorAxis = "#525252";
 
-/* -------------------------
-   ChartCard component (mit horizontaler Option)
-------------------------- */
+type LessonItem = {
+	label: string; // lessonTitle
+	rate: number; // averageCompletionRate (%)
+};
+
+type CourseItem = {
+	courseId: string;
+	label: string; // courseTitle
+	rate: number; // averageCompletionRate für den Kurs
+	enrollments: number; // totalEnrollments
+};
+
+type PerCourseStats = {
+	avgCourseRate?: number;
+	numberOfStudents?: number;
+	highestLessonName?: string;
+	highestLessonRate?: number;
+	lowestLessonName?: string;
+	lowestLessonRate?: number;
+};
+
+type DashboardData = {
+	teacherName: string;
+	courses: CourseItem[];
+	lessonsByCourse: Record<string, LessonItem[]>;
+	perCourseStats: Record<string, PerCourseStats>;
+	overallAverageCompletionPct?: number;
+};
+
+/* ChartCard */
+
 function ChartCard({
 	title,
 	data = [],
-	rightArrow,
-	onRightArrowClick,
-	horizontal = false
+	extraAction
 }: {
 	title: string;
 	data?: { label: string; value: number }[];
-	rightArrow?: boolean;
-	onRightArrowClick?: () => void;
-	horizontal?: boolean;
+	extraAction?: React.ReactNode;
 }) {
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	const chartRef = useRef<ChartJS | null>(null);
@@ -94,65 +86,41 @@ function ChartCard({
 							data: values,
 							backgroundColor: colors,
 							borderRadius: 8,
-							maxBarThickness: horizontal ? 36 : 48
+							maxBarThickness: 36
 						}
 					]
 				},
 				options: {
-					indexAxis: horizontal ? "y" : "x",
+					indexAxis: "y",
 					responsive: true,
 					maintainAspectRatio: false,
 					plugins: {
 						legend: { display: false },
 						tooltip: {
 							callbacks: {
-								label: ctx =>
-									`${ctx.parsed[horizontal ? "x" : "y"]?.toFixed?.(1) ?? 0}%`
+								label: ctx => `${ctx.parsed["x"]?.toFixed?.(1) ?? 0}%`
 							}
 						}
 					},
 					scales: {
-						x: horizontal
-							? {
-									beginAtZero: true,
-									max: 100,
-									ticks: {
-										callback: v => `${v}%`,
-										color: colorAxis,
-										font: { size: 11 }
-									},
-									grid: { color: "#e5e7eb" }
-								}
-							: {
-									beginAtZero: true,
-									max: 100,
-									ticks: {
-										callback: v => `${v}%`,
-										color: colorAxis,
-										font: { size: 11 },
-										maxRotation: 0,
-										minRotation: 0
-									},
-									grid: { color: "#e5e7eb" }
-								},
-						y: horizontal
-							? {
-									ticks: {
-										color: colorAxis,
-										font: { size: 11 },
-										autoSkip: false
-									},
-									grid: { display: false }
-								}
-							: {
-									ticks: {
-										color: colorAxis,
-										font: { size: 11 },
-										maxRotation: 0,
-										minRotation: 0
-									},
-									grid: { display: false }
-								}
+						x: {
+							beginAtZero: true,
+							max: 100,
+							ticks: {
+								callback: v => `${v}%`,
+								color: colorAxis,
+								font: { size: 11 }
+							},
+							grid: { color: "#e5e7eb" }
+						},
+						y: {
+							ticks: {
+								color: colorAxis,
+								font: { size: 11 },
+								autoSkip: false
+							},
+							grid: { display: false }
+						}
 					}
 				}
 			});
@@ -162,38 +130,18 @@ function ChartCard({
 			mounted = false;
 			chartRef.current?.destroy();
 		};
-	}, [data, horizontal]);
+	}, [data]);
 
 	const empty = !data.length;
 
 	return (
 		<div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5">
-			<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center justify-between">
+			<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-start justify-between">
 				<h2 className="text-lg font-semibold">{title}</h2>
-
-				{rightArrow && (
-					<button
-						onClick={onRightArrowClick}
-						className="inline-flex items-center justify-center h-8 w-8 rounded-full hover:bg-neutral-100"
-					>
-						<svg
-							viewBox="0 0 24 24"
-							className="w-4 h-4"
-							stroke="currentColor"
-							fill="none"
-						>
-							<path
-								d="M9 18l6-6-6-6"
-								strokeWidth="2"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							/>
-						</svg>
-					</button>
-				)}
+				{extraAction ? <div>{extraAction}</div> : null}
 			</div>
 
-			<div className="relative p-5" style={{ height: horizontal ? 380 : 360 }}>
+			<div className="relative p-5" style={{ height: 380 }}>
 				<canvas ref={canvasRef} />
 				{empty && (
 					<div className="absolute inset-0 flex items-center justify-center text-neutral-500 text-sm">
@@ -205,37 +153,31 @@ function ChartCard({
 	);
 }
 
-/* -------------------------
-   Dashboard layout
-------------------------- */
+/*Dashboard Layout*/
+
 function AnalyticsDashboard({ data }: { data?: DashboardData }) {
-	const [courseIndex, setCourseIndex] = useState(0);
+	const [coursePos, setCoursePos] = useState(0);
 
-	const courseLabels = (data?.courses ?? []).map(c => c.label);
-	const activeCourseLabel = courseLabels[courseIndex] ?? "";
+	const courses = data?.courses ?? [];
+	const activeCourse = courses[coursePos];
 
-	const currentModules =
-		(activeCourseLabel && data?.modulesByCourse?.[activeCourseLabel]) || data?.modules || [];
+	const activeCourseId = activeCourse?.courseId ?? "";
+	const activeLessons = (data?.lessonsByCourse?.[activeCourseId] ?? []) as LessonItem[];
+	const stats = (data?.perCourseStats?.[activeCourseId] ?? {}) as PerCourseStats;
 
-	const moduleBars = currentModules.map(m => ({ label: m.label, value: m.rate }));
-	const courseBars = (data?.courses ?? []).map(c => ({
-		label: c.label,
-		value: c.avg
+	const lessonBars = activeLessons.map(lesson => ({
+		label: lesson.label,
+		value: lesson.rate
 	}));
 
-	const avgCompletionSubjects = mean(currentModules.map(m => m.rate));
-	const highest = currentModules.reduce(
-		(p, c) => (c.rate > p.rate ? c : p),
-		currentModules[0] ?? { label: "", rate: 0 }
-	);
-	const lowest = currentModules.reduce(
-		(p, c) => (c.rate < p.rate ? c : p),
-		currentModules[0] ?? { label: "", rate: 0 }
-	);
+	const courseBars = courses.map(c => ({
+		label: c.label,
+		value: c.rate
+	}));
 
 	const goNextCourse = () => {
-		if (!courseLabels.length) return;
-		setCourseIndex(i => (i + 1) % courseLabels.length);
+		if (!courses.length) return;
+		setCoursePos(i => (i + 1) % courses.length);
 	};
 
 	return (
@@ -246,57 +188,70 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 			</h1>
 
 			<section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-				{/* Linkes Chart: Modulraten pro Kurs */}
+				{/* Linkes Chart */}
 				<ChartCard
 					title={
-						courseLabels.length
-							? `Completion Rate – ${activeCourseLabel}`
-							: `Completion Rate`
+						activeCourse
+							? `Completion Rate – ${activeCourse.label}`
+							: "Completion Rate – Lessons"
 					}
-					data={moduleBars}
-					rightArrow={courseLabels.length > 1}
-					onRightArrowClick={goNextCourse}
-					horizontal={false}
+					data={lessonBars}
+					extraAction={
+						courses.length > 1 && (
+							<button
+								onClick={goNextCourse}
+								className="text-neutral-600 text-lg hover:text-neutral-800 transition"
+								aria-label="Nächster Kurs"
+								title="Nächster Kurs"
+							>
+								→
+							</button>
+						)
+					}
 				/>
 
-				{/* Rechtes Chart: Kurse horizontal */}
-				<ChartCard
-					title="Average Completion Rate – Courses"
-					data={courseBars}
-					horizontal={true}
-				/>
+				{/* Rechtes Chart */}
+				<ChartCard title="Average Completion Rate – Courses" data={courseBars} />
 			</section>
 
 			<section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-				{/* Analysis */}
+				{/* Analysis Box */}
 				<div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5">
 					<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center gap-2">
 						<h3 className="text-lg font-semibold">Analysis</h3>
 					</div>
 					<div className="p-5 text-sm leading-6 space-y-2">
-						<div>
-							• Average Completion Rate (Subjects in active course):{" "}
-							{pct(avgCompletionSubjects)}
-						</div>
-						<div>• Number of Students: {data?.studentsCount ?? "—"}</div>
-						<div>
-							• Highest Completion Rate:{" "}
-							{highest.label ? `${highest.label} – ${pct(highest.rate)}` : "—"}
-						</div>
-						<div>
-							• Lowest Completion Rate:{" "}
-							{lowest.label ? `${lowest.label} – ${pct(lowest.rate)}` : "—"}
-						</div>
+						<p>
+							<b>Average Lesson Completion:</b> {pct(stats.avgCourseRate)}
+						</p>
+						<p>
+							<b>Number of Students:</b> {stats.numberOfStudents ?? "—"}
+						</p>
+						<p>
+							<b>Highest Completion:</b>{" "}
+							{stats.highestLessonName
+								? `${stats.highestLessonName} – ${pct(stats.highestLessonRate)}`
+								: "—"}
+						</p>
+						<p>
+							<b>Lowest Completion:</b>{" "}
+							{stats.lowestLessonName
+								? `${stats.lowestLessonName} – ${pct(stats.lowestLessonRate)}`
+								: "—"}
+						</p>
 					</div>
 				</div>
 
-				{/* Overview */}
+				{/* Overview Box */}
 				<div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5">
 					<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center gap-2">
 						<h3 className="text-lg font-semibold">Overview</h3>
 					</div>
-					<div className="p-5 text-sm leading-6">
-						Average Completion Rate: <b>{pct(data?.overallAverageCompletionPct)}</b>
+					<div className="p-5 text-sm leading-6 space-y-2">
+						<p>
+							<b>Average Completion Rate Overall:</b>{" "}
+							{pct(data?.overallAverageCompletionPct)}
+						</p>
 					</div>
 				</div>
 			</section>
@@ -304,89 +259,105 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 	);
 }
 
-/* -------------------------
-   SSR wrapper
-------------------------- */
 export const getServerSideProps = withTranslations(["common"]);
 
-/* -------------------------
-   Page component
-------------------------- */
 export default function LearningAnalyticsPage() {
 	const { data: session, status } = useSession();
+	const { data: avgCourse } =
+		trpc.metrics.getAuthorMetric_AverageCourseCompletionRate.useQuery(undefined);
 
-	const { data: coursesApi } =
-		trpc.metrics.getUserAverageCompletionRateByAuthorByCourse.useQuery(undefined);
-	const { data: authorApi } =
-		trpc.metrics.getUserAverageCompletionRateByAuthor.useQuery(undefined);
-	const { data: courseSubjectApi } =
-		trpc.metrics.getUserCoursesCompletedBySubject.useQuery(undefined);
+	const { data: avgLessonRows } =
+		trpc.metrics.getAuthorMetric_AverageLessonCompletionRate.useQuery(undefined);
 
 	if (status === "loading") {
 		return <div className="p-10 text-neutral-600">Lade Session …</div>;
 	}
 
-	/* ---- Kursdaten aufbereiten ---- */
-	const coursesRows: CourseRow[] = Array.isArray(coursesApi) ? (coursesApi as any[]) : [];
+	const coursesRaw: any[] = Array.isArray(avgCourse) ? avgCourse : [];
 
-	const courses: CourseItem[] = coursesRows
-		.map(row => ({
-			label: row.courseTitle ?? "—",
-			avg: toPct(row.completionRatePercent)
-		}))
-		.filter(c => !!c.label && Number.isFinite(c.avg));
+	const courses: CourseItem[] = coursesRaw.map(row => ({
+		courseId: row.courseId ?? row.coursed ?? row.courseID ?? "—",
+		label: row.courseTitle ?? row.courseName ?? "—",
+		rate: toPctNumber(row.averageCompletionRate),
+		enrollments: Number(row.totalEnrollments ?? 0)
+	}));
 
-	/* ---- Module/Subjects ---- */
-	const subjArr = Array.isArray(courseSubjectApi) ? (courseSubjectApi as any[]) : [];
+	/*Lessons / Kursstats*/
 
-	const modulesByCourse: Record<string, ModuleItem[]> = {};
-	subjArr.forEach(row => {
-		const courseName =
-			row.courseLabel ?? row.courseName ?? row.courseSlug ?? row.courseTitle ?? "—";
+	const lessonsRaw: any[] = Array.isArray(avgLessonRows) ? avgLessonRows : [];
 
-		const subjectName =
-			row.subjectLabel ??
-			row.subjectName ??
-			row.subject ??
-			row.moduleName ??
-			row.title ??
-			"Module";
+	const lessonsByCourse: Record<string, LessonItem[]> = {};
+	const perCourseHiLo: Record<string, { max?: LessonItem; min?: LessonItem }> = {};
+	const perCourseAgg: Record<
+		string,
+		{ sum: number; count: number; students?: number; avgCourseCompletionFromRow?: number }
+	> = {};
 
-		let subjectCompletionRaw =
-			row.completionRatePercent ??
-			row.average ??
-			row.avg ??
-			row.completionRate ??
-			row.completedRate ??
-			row.percentage ??
-			row.rate;
+	for (const row of lessonsRaw) {
+		const cId: string = (row.courseId ?? row.coursed ?? "—").toString().trim();
+		const lessonName: string = row.lessonTitle ?? row.lessonId ?? "Lesson";
+		const lessonRate: number = toPctNumber(row.averageCompletionRate);
 
-		if (
-			subjectCompletionRaw == null &&
-			row.totalEnrollments != null &&
-			row.completedEnrollments != null
-		) {
-			subjectCompletionRaw =
-				row.totalEnrollments > 0
-					? (row.completedEnrollments / row.totalEnrollments) * 100
-					: 0;
+		(lessonsByCourse[cId] ??= []).push({
+			label: lessonName,
+			rate: lessonRate
+		});
+
+		const current = perCourseHiLo[cId] ?? {};
+		if (!current.max || lessonRate > current.max.rate) {
+			current.max = { label: lessonName, rate: lessonRate };
 		}
+		if (!current.min || lessonRate < current.min.rate) {
+			current.min = { label: lessonName, rate: lessonRate };
+		}
+		perCourseHiLo[cId] = current;
 
-		const rate = toPct(subjectCompletionRaw);
-		(modulesByCourse[courseName] ??= []).push({ label: subjectName, rate });
-	});
-
-	/* ---- Overview ---- */
-	let totalAll = 0;
-	let completedAll = 0;
-	for (const row of coursesRows) {
-		totalAll += Number(row.totalEnrollments ?? 0);
-		completedAll += Number(row.completedEnrollments ?? 0);
+		const agg = perCourseAgg[cId] ?? { sum: 0, count: 0 };
+		agg.sum += lessonRate;
+		agg.count += 1;
+		if (row.usersStarted !== undefined) {
+			agg.students = Number(row.usersStarted);
+		}
+		perCourseAgg[cId] = agg;
 	}
-	const weightedPct = totalAll === 0 ? 0 : (completedAll / totalAll) * 100;
-	const overallAverageCompletionPct = toPct(weightedPct);
 
-	const studentsCount = totalAll;
+	const perCourseStats: Record<string, PerCourseStats> = {};
+
+	for (const cId of Object.keys(perCourseAgg)) {
+		const agg = perCourseAgg[cId];
+		const fallbackAvg = agg.count > 0 ? agg.sum / agg.count : undefined;
+
+		perCourseStats[cId] = {
+			avgCourseRate: fallbackAvg,
+			numberOfStudents: agg.students
+		};
+	}
+
+	for (const cId of Object.keys(perCourseHiLo)) {
+		const hiLo = perCourseHiLo[cId];
+		perCourseStats[cId] = {
+			...(perCourseStats[cId] ?? {}),
+			highestLessonName: hiLo.max?.label,
+			highestLessonRate: hiLo.max?.rate,
+			lowestLessonName: hiLo.min?.label,
+			lowestLessonRate: hiLo.min?.rate
+		};
+	}
+
+	/*Overview Calculation*/
+
+	let overallAverageCompletionPct: number | undefined = undefined;
+
+	if (courses.length > 0) {
+		const usable = courses.filter(c => Number.isFinite(c.rate) && c.rate > 0);
+		if (usable.length > 0) {
+			const sum = usable.reduce((acc, c) => acc + c.rate, 0);
+			overallAverageCompletionPct = sum / usable.length;
+		} else {
+			overallAverageCompletionPct = 0;
+		}
+	}
+
 	const teacherNameGuess =
 		((session?.user as any)?.name as string) ||
 		((session?.user as any)?.username as string) ||
@@ -396,14 +367,13 @@ export default function LearningAnalyticsPage() {
 	const dashboardData: DashboardData | undefined = courses.length
 		? {
 				teacherName: teacherNameGuess,
-				studentsCount,
 				courses,
-				modulesByCourse,
+				lessonsByCourse,
+				perCourseStats,
 				overallAverageCompletionPct
 			}
 		: undefined;
 
-	/* ---- Render ---- */
 	return (
 		<div className="bg-neutral-50 min-h-screen relative">
 			<AnalyticsDashboard data={dashboardData} />
