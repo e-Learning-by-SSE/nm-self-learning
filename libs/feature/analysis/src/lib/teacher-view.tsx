@@ -4,6 +4,8 @@ import { trpc } from "@self-learning/api-client";
 import { useSession } from "next-auth/react";
 import type { Chart as ChartJS } from "chart.js";
 
+/* Hilfsfunktionen für Prozentwerte */
+
 const pct = (n?: number) =>
 	n === undefined || n === null || !Number.isFinite(n) ? "—" : `${Number(n).toFixed(1)}%`;
 
@@ -13,21 +15,25 @@ const toPctNumber = (v: unknown) => {
 	return Number(n);
 };
 
+/* Farben für Diagramme */
+
 const colorGreen = "#7fb89b";
 const colorYellow = "#eae282";
 const colorRed = "#e57368";
 const colorAxis = "#525252";
 
+/* Datentypen */
+
 type LessonItem = {
-	label: string; // lessonTitle
-	rate: number; // averageCompletionRate (%)
+	label: string; // Titel der Lektion
+	rate: number; // durchschnittliche Abschlussrate (%)
 };
 
 type CourseItem = {
 	courseId: string;
-	label: string; // courseTitle
-	rate: number; // averageCompletionRate für den Kurs
-	enrollments: number; // totalEnrollments
+	label: string; // Kurstitel
+	rate: number; // durchschnittliche Abschlussrate für den Kurs
+	enrollments: number; // Anzahl der Einschreibungen
 };
 
 type PerCourseStats = {
@@ -47,7 +53,7 @@ type DashboardData = {
 	overallAverageCompletionPct?: number;
 };
 
-/* ChartCard */
+/* ---------- Diagrammkarte ---------- */
 
 function ChartCard({
 	title,
@@ -145,7 +151,7 @@ function ChartCard({
 				<canvas ref={canvasRef} />
 				{empty && (
 					<div className="absolute inset-0 flex items-center justify-center text-neutral-500 text-sm">
-						No data yet
+						Noch keine Daten verfügbar
 					</div>
 				)}
 			</div>
@@ -153,7 +159,7 @@ function ChartCard({
 	);
 }
 
-/*Dashboard Layout*/
+/* ---------- Dashboard-Layout ---------- */
 
 function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 	const [coursePos, setCoursePos] = useState(0);
@@ -188,12 +194,12 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 			</h1>
 
 			<section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-				{/* Linkes Chart */}
+				{/* Linkes Diagramm */}
 				<ChartCard
 					title={
 						activeCourse
-							? `Completion Rate – ${activeCourse.label}`
-							: "Completion Rate – Lessons"
+							? `Abschlussrate – ${activeCourse.label}`
+							: "Abschlussrate – Lektionen"
 					}
 					data={lessonBars}
 					extraAction={
@@ -210,31 +216,31 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 					}
 				/>
 
-				{/* Rechtes Chart */}
-				<ChartCard title="Average Completion Rate – Courses" data={courseBars} />
+				{/* Rechtes Diagramm */}
+				<ChartCard title="Durchschnittliche Abschlussrate – Kurse" data={courseBars} />
 			</section>
 
 			<section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-				{/* Analysis Box */}
+				{/* Analyse-Box */}
 				<div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5">
 					<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center gap-2">
-						<h3 className="text-lg font-semibold">Analysis</h3>
+						<h3 className="text-lg font-semibold">Analyse</h3>
 					</div>
 					<div className="p-5 text-sm leading-6 space-y-2">
 						<p>
-							<b>Average Lesson Completion:</b> {pct(stats.avgCourseRate)}
+							<b>Durchschnittlicher Lektionenabschluss:</b> {pct(stats.avgCourseRate)}
 						</p>
 						<p>
-							<b>Number of Students:</b> {stats.numberOfStudents ?? "—"}
+							<b>Anzahl der Studierenden:</b> {stats.numberOfStudents ?? "—"}
 						</p>
 						<p>
-							<b>Highest Completion:</b>{" "}
+							<b>Höchster Abschluss:</b>{" "}
 							{stats.highestLessonName
 								? `${stats.highestLessonName} – ${pct(stats.highestLessonRate)}`
 								: "—"}
 						</p>
 						<p>
-							<b>Lowest Completion:</b>{" "}
+							<b>Niedrigster Abschluss:</b>{" "}
 							{stats.lowestLessonName
 								? `${stats.lowestLessonName} – ${pct(stats.lowestLessonRate)}`
 								: "—"}
@@ -242,14 +248,14 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 					</div>
 				</div>
 
-				{/* Overview Box */}
+				{/* Übersicht-Box */}
 				<div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5">
 					<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center gap-2">
-						<h3 className="text-lg font-semibold">Overview</h3>
+						<h3 className="text-lg font-semibold">Übersicht</h3>
 					</div>
 					<div className="p-5 text-sm leading-6 space-y-2">
 						<p>
-							<b>Average Completion Rate Overall:</b>{" "}
+							<b>Durchschnittliche Abschlussrate (insgesamt):</b>{" "}
 							{pct(data?.overallAverageCompletionPct)}
 						</p>
 					</div>
@@ -270,7 +276,7 @@ export default function LearningAnalyticsPage() {
 		trpc.metrics.getAuthorMetric_AverageLessonCompletionRate.useQuery(undefined);
 
 	if (status === "loading") {
-		return <div className="p-10 text-neutral-600">Lade Session …</div>;
+		return <div className="p-10 text-neutral-600">Lade Sitzung …</div>;
 	}
 
 	const coursesRaw: any[] = Array.isArray(avgCourse) ? avgCourse : [];
@@ -282,7 +288,7 @@ export default function LearningAnalyticsPage() {
 		enrollments: Number(row.totalEnrollments ?? 0)
 	}));
 
-	/*Lessons / Kursstats*/
+	/* Lektionen / Kursstatistiken */
 
 	const lessonsRaw: any[] = Array.isArray(avgLessonRows) ? avgLessonRows : [];
 
@@ -295,7 +301,7 @@ export default function LearningAnalyticsPage() {
 
 	for (const row of lessonsRaw) {
 		const cId: string = (row.courseId ?? row.coursed ?? "—").toString().trim();
-		const lessonName: string = row.lessonTitle ?? row.lessonId ?? "Lesson";
+		const lessonName: string = row.lessonTitle ?? row.lessonId ?? "Lektion";
 		const lessonRate: number = toPctNumber(row.averageCompletionRate);
 
 		(lessonsByCourse[cId] ??= []).push({
@@ -344,7 +350,7 @@ export default function LearningAnalyticsPage() {
 		};
 	}
 
-	/*Overview Calculation*/
+	/* Gesamtübersicht */
 
 	let overallAverageCompletionPct: number | undefined = undefined;
 
