@@ -3,6 +3,7 @@ import { dirname } from "path";
 import { fileURLToPath } from "url";
 import js from "@eslint/js";
 import nxEslintPlugin from "@nx/eslint-plugin";
+import pluginCypress from "eslint-plugin-cypress";
 
 const compat = new FlatCompat({
 	baseDirectory: dirname(fileURLToPath(import.meta.url)),
@@ -47,8 +48,8 @@ export default [
 						caughtErrorsIgnorePattern: "^_"
 					}
 				],
-				"@typescript-eslint/no-extra-semi": "error",
-				"@typescript-eslint/no-extra-semi": "off"
+				"no-extra-semi": "error",
+				"@typescript-eslint/no-unused-expressions": ["error", { allowShortCircuit: true }]
 			}
 		})),
 	...compat
@@ -60,10 +61,29 @@ export default [
 			files: ["**/*.js", "**/*.jsx", "**/*.cjs", "**/*.mjs"],
 			rules: {
 				...config.rules,
-				"@typescript-eslint/no-extra-semi": "error",
-				"@typescript-eslint/no-extra-semi": "off"
+				"no-extra-semi": "error"
 			}
 		})),
+	// 5) Cypress E2E — flat-safe manual block (avoids legacy preset entirely)
+	{
+		files: ["apps/site-e2e/**/*.{cy,spec}.{ts,tsx,js,jsx}"],
+		plugins: { cypress: pluginCypress },
+		languageOptions: {
+			globals: {
+				cy: true,
+				Cypress: true,
+				expect: true,
+				assert: true
+			}
+		},
+		rules: {
+			// add what you need from the recommended set:
+			"cypress/no-async-tests": "error",
+			"cypress/no-force": "warn",
+			"cypress/assertion-before-screenshot": "warn"
+			// ...add more cypress/* rules your team wants
+		}
+	},
 	{
 		ignores: ["apps/site/.next"]
 	}
