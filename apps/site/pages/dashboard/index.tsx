@@ -1,5 +1,5 @@
 import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
-import { getAuthenticatedUser, withTranslations } from "@self-learning/api";
+import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import {

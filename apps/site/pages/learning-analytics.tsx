@@ -6,8 +6,6 @@ import type { Chart as ChartJS } from "chart.js";
 
 /* ---------- Helpers ---------- */
 
-// Prozent hübsch anzeigen
-// Wenn du lieber ganze Zahlen willst (8 statt 8.3), mach toFixed(0).
 const pct = (n?: number) =>
 	n === undefined || n === null || !Number.isFinite(n) ? "—" : `${Number(n).toFixed(1)}%`;
 
@@ -24,18 +22,21 @@ const colorAxis = "#525252";
 
 /* ---------- Types ---------- */
 
-type LessonItem = { label: string; rate: number };
+type LessonItem = {
+	label: string; // lessonTitle
+	rate: number; // averageCompletionRate (%)
+};
 
 type CourseItem = {
 	courseId: string;
 	label: string; // courseTitle
-	rate: number; // averageCompletionRate (%)
+	rate: number; // averageCompletionRate für den Kurs
 	enrollments: number; // totalEnrollments
 };
 
 type PerCourseStats = {
-	avgCourseRate?: number; // aus der Aggregation je Kurs
-	numberOfStudents?: number; // totalLessonsStarted oder totalEnrollments
+	avgCourseRate?: number; // averageCourseCompletion / Fallback
+	numberOfStudents?: number;
 	highestLessonName?: string;
 	highestLessonRate?: number;
 	lowestLessonName?: string;
@@ -44,13 +45,13 @@ type PerCourseStats = {
 
 type DashboardData = {
 	teacherName: string;
-	courses: CourseItem[]; // für rechtes Chart + Kurswechsel
-	lessonsByCourse: Record<string, LessonItem[]>; // courseId -> Lessons
-	perCourseStats: Record<string, PerCourseStats>; // courseId -> Analysis Box
-	overallAverageCompletionPct?: number; // Overall (Overview Box)
+	courses: CourseItem[];
+	lessonsByCourse: Record<string, LessonItem[]>;
+	perCourseStats: Record<string, PerCourseStats>;
+	overallAverageCompletionPct?: number;
 };
 
-/* ---------- ChartCard (immer horizontal) ---------- */
+/* ---------- ChartCard ---------- */
 
 function ChartCard({
 	title,
@@ -166,16 +167,14 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 
 	const activeCourseId = activeCourse?.courseId ?? "";
 	const activeLessons = (data?.lessonsByCourse?.[activeCourseId] ?? []) as LessonItem[];
-
 	const stats = (data?.perCourseStats?.[activeCourseId] ?? {}) as PerCourseStats;
 
-	// Chart-Daten für Lessons (linkes Chart)
+	// Chart-Daten
 	const lessonBars = activeLessons.map(lesson => ({
 		label: lesson.label,
 		value: lesson.rate
 	}));
 
-	// Chart-Daten für Kurse (rechtes Chart)
 	const courseBars = courses.map(c => ({
 		label: c.label,
 		value: c.rate
@@ -186,6 +185,10 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 		setCoursePos(i => (i + 1) % courses.length);
 	};
 
+	// Hier zusätzlich lesbarere Debug-Infos ausgeben
+	const lessonsKeys = data ? Object.keys(data.lessonsByCourse ?? {}) : [];
+	const statsKeys = data ? Object.keys(data.perCourseStats ?? {}) : [];
+
 	return (
 		<div className="max-w-7xl mx-auto p-6 md:p-8">
 			<h1 className="text-3xl font-bold mb-6">
@@ -194,7 +197,7 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 			</h1>
 
 			<section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-				{/* Linkes Chart: Completion Rates je Lesson für den aktuell ausgewählten Kurs */}
+				{/* Linkes Chart */}
 				<ChartCard
 					title={
 						activeCourse
@@ -206,20 +209,22 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 						courses.length > 1 && (
 							<button
 								onClick={goNextCourse}
-								className="text-xs text-neutral-600 bg-white/80 rounded-lg border border-neutral-300 px-2 py-1 hover:bg-neutral-100"
+								className="text-neutral-600 text-lg hover:text-neutral-800 transition"
+								aria-label="Next course"
+								title="Next course"
 							>
-								Nächster Kurs →
+								→
 							</button>
 						)
 					}
 				/>
 
-				{/* Rechtes Chart: Average Completion Rate nach Kurs */}
+				{/* Rechtes Chart */}
 				<ChartCard title="Average Completion Rate – Courses" data={courseBars} />
 			</section>
 
 			<section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-				{/* Analysis Box (links unten) */}
+				{/* Analysis Box */}
 				<div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5">
 					<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center gap-2">
 						<h3 className="text-lg font-semibold">Analysis</h3>
@@ -242,7 +247,7 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 					</div>
 				</div>
 
-				{/* Overview Box (rechts unten, global) */}
+				{/* Overview Box */}
 				<div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5">
 					<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center gap-2">
 						<h3 className="text-lg font-semibold">Overview</h3>
@@ -253,11 +258,28 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 					</div>
 				</div>
 			</section>
+
+			{/* DEBUG PANEL */}
+			<div className="mt-10 text-xs text-neutral-700 font-mono bg-neutral-100 border border-neutral-300 rounded-lg p-4 whitespace-pre-wrap">
+				<div>DEBUG</div>
+				<div>activeCourseId: {activeCourseId || "(none)"}</div>
+				<div>
+					activeLessons.length:{" "}
+					{Array.isArray(activeLessons) ? activeLessons.length : "—"}
+				</div>
+				<div>
+					stats.avgCourseRate:{" "}
+					{stats.avgCourseRate !== undefined ? pct(stats.avgCourseRate) : "—"}
+				</div>
+				<div>lessonsByCourse keys: {lessonsKeys.join(", ") || "(none)"}</div>
+				<div>perCourseStats keys: {statsKeys.join(", ") || "(none)"}</div>
+			</div>
 		</div>
 	);
 }
 
 /* ---------- SSR Wrapper ---------- */
+
 export const getServerSideProps = withTranslations(["common"]);
 
 /* ---------- Page Component (Data Wiring) ---------- */
@@ -265,61 +287,67 @@ export const getServerSideProps = withTranslations(["common"]);
 export default function LearningAnalyticsPage() {
 	const { data: session, status } = useSession();
 
-	// 1. Overall pro Author (Overview unten rechts)
+	// Queries
 	const { data: avgAuthor } =
 		trpc.metrics.getAuthorMetric_AverageCompletionRate.useQuery(undefined);
 
-	// 2. Kurse (rechtes Chart + Basis für Kurswechsel)
 	const { data: avgCourse } =
 		trpc.metrics.getAuthorMetric_AverageCourseCompletionRate.useQuery(undefined);
 
-	// 3. Lessons/Topics je Kurs (linkes Chart + High/Low)
-	//    WICHTIG: Diese View muss courseId + courseTitle + lessonTitle + averageCompletionRate liefern,
-	//    sonst können wir nicht pro Kurs filtern.
-	const { data: avgLessonByCourse } =
-		trpc.metrics.getAuthorMetric_AverageLessonCompletionRateByCourse.useQuery(undefined);
-
-	// 4. Pro-Kurs-Aggregation (Analysis Box: avgCourseRate, numberOfStudents)
-	//    Falls das dieselbe Query ist wie (3), kannst du eine davon weglassen.
-	const { data: avgLessonByCourseAgg } =
-		trpc.metrics.getAuthorMetric_AverageLessonCompletionRateByCourse.useQuery(undefined);
+	const { data: avgLessonRows } =
+		trpc.metrics.getAuthorMetric_AverageLessonCompletionRate.useQuery(undefined);
 
 	if (status === "loading") {
 		return <div className="p-10 text-neutral-600">Lade Session …</div>;
 	}
 
-	/* --- 2. Kurse vorbereiten (rechtes Diagramm) --- */
+	/* --- Kurse (rechtes Diagramm) --- */
 
 	const coursesRaw: any[] = Array.isArray(avgCourse) ? avgCourse : [];
 
 	const courses: CourseItem[] = coursesRaw.map(row => ({
 		courseId: row.courseId ?? row.coursed ?? row.courseID ?? "—",
 		label: row.courseTitle ?? row.courseName ?? "—",
-		rate: toPctNumber(row.averageCompletionRate), // <- deine echte Spalte
+		rate: toPctNumber(row.averageCompletionRate),
 		enrollments: Number(row.totalEnrollments ?? 0)
 	}));
 
-	/* --- 3. Lessons nach Kurs vorbereiten (linkes Diagramm + High/Low) --- */
+	/* --- Lessons / Kursstats (linkes Diagramm + Analysis Box) --- */
 
-	const lessonsRaw: any[] = Array.isArray(avgLessonByCourse) ? avgLessonByCourse : [];
+	const lessonsRaw: any[] = Array.isArray(avgLessonRows) ? avgLessonRows : [];
 
-	// courseId -> array of lessons
 	const lessonsByCourse: Record<string, LessonItem[]> = {};
-	// courseId -> track high/low
 	const perCourseHiLo: Record<string, { max?: LessonItem; min?: LessonItem }> = {};
 
+	const perCourseAgg: Record<
+		string,
+		{
+			sum: number;
+			count: number;
+			students?: number;
+			avgCourseCompletionFromRow?: number;
+		}
+	> = {};
+
+	// LOG: Was kommt überhaupt aus avgLessonRows?
+	console.log("[Page] avgLessonRows raw query:", avgLessonRows);
+
 	for (const row of lessonsRaw) {
-		// Wichtig: Backend muss courseId mitliefern
-		const cId = row.courseId ?? row.coursed ?? "—";
+		// LOG: einzelne Row zeigen
+		console.log("[Page] lesson row:", row);
 
-		const lessonName = row.lessonTitle ?? row.lessonId ?? "Lesson";
-		const lessonRate = toPctNumber(row.averageCompletionRate);
+		const cId: string = (row.courseId ?? row.coursed ?? "—").toString().trim();
 
+		const lessonName: string = row.lessonTitle ?? row.lessonId ?? "Lesson";
+		const lessonRate: number = toPctNumber(row.averageCompletionRate);
+
+		// 1. Lessons sammeln
 		(lessonsByCourse[cId] ??= []).push({
 			label: lessonName,
 			rate: lessonRate
 		});
 
+		// 2. High/Low tracken
 		const current = perCourseHiLo[cId] ?? {};
 		if (!current.max || lessonRate > current.max.rate) {
 			current.max = { label: lessonName, rate: lessonRate };
@@ -328,31 +356,40 @@ export default function LearningAnalyticsPage() {
 			current.min = { label: lessonName, rate: lessonRate };
 		}
 		perCourseHiLo[cId] = current;
+
+		// 3. Aggregation
+		const agg = perCourseAgg[cId] ?? { sum: 0, count: 0 };
+
+		agg.sum += lessonRate;
+		agg.count += 1;
+
+		if (row.usersStarted !== undefined) {
+			agg.students = Number(row.usersStarted);
+		}
+
+		if (row.averageCourseCompletion !== undefined) {
+			agg.avgCourseCompletionFromRow = toPctNumber(row.averageCourseCompletion);
+		}
+
+		perCourseAgg[cId] = agg;
 	}
-
-	/* --- 4. Per-Kurs-Aggregate vorbereiten (Analysis Box) --- */
-
-	const aggRows: any[] = Array.isArray(avgLessonByCourseAgg) ? avgLessonByCourseAgg : [];
 
 	const perCourseStats: Record<string, PerCourseStats> = {};
 
-	for (const row of aggRows) {
-		const cId = row.courseId ?? row.coursed ?? "—";
+	for (const cId of Object.keys(perCourseAgg)) {
+		const agg = perCourseAgg[cId];
+
+		const fallbackAvg = agg.count > 0 ? agg.sum / agg.count : undefined;
 
 		perCourseStats[cId] = {
-			avgCourseRate: toPctNumber(
-				// z. B. "averageCourseCompletionRate" oder "averageCompletionRate"
-				row.averageCourseCompletionRate ?? row.averageCompletionRate ?? row.avg
-			),
-			numberOfStudents: Number(
-				// du meintest: "Number of Students" = totalLessonsStarted,
-				// falls das nicht da ist -> totalEnrollments
-				row.totalLessonsStarted ?? row.totalEnrollments ?? 0
-			)
+			avgCourseRate:
+				agg.avgCourseCompletionFromRow !== undefined
+					? agg.avgCourseCompletionFromRow
+					: fallbackAvg,
+			numberOfStudents: agg.students
 		};
 	}
 
-	// merge High / Low Lesson Completion je Kurs rein
 	for (const cId of Object.keys(perCourseHiLo)) {
 		const hiLo = perCourseHiLo[cId];
 		perCourseStats[cId] = {
@@ -364,12 +401,17 @@ export default function LearningAnalyticsPage() {
 		};
 	}
 
-	/* --- 1. Overview (Overall Completion Rate) --- */
+	// LOG: Was haben wir nach dem Mapping wirklich gebaut?
+	console.log("[Page] lessonsByCourse keys:", Object.keys(lessonsByCourse));
+	console.log("[Page] lessonsByCourse:", lessonsByCourse);
+	console.log("[Page] perCourseStats keys:", Object.keys(perCourseStats));
+	console.log("[Page] perCourseStats:", perCourseStats);
+
+	/* --- Overview (unten rechts) --- */
 
 	let overallAverageCompletionPct: number | undefined = undefined;
 
 	if (Array.isArray(avgAuthor) && avgAuthor.length > 0) {
-		// wir matchen ausschließlich über authorUsername
 		const sessionUsername =
 			((session?.user as any)?.username as string) ||
 			((session?.user as any)?.name as string) ||
@@ -378,19 +420,14 @@ export default function LearningAnalyticsPage() {
 
 		let match = avgAuthor.find((row: any) => row.authorUsername === sessionUsername);
 
-		// Fallback: falls dein Session-Username nicht exakt so heißt
 		if (!match) {
 			match = avgAuthor[0];
 		}
 
 		if (match) {
-			// Spalte in deiner Tabelle:
-			// averageCompletionRate
 			overallAverageCompletionPct = toPctNumber(match.averageCompletionRate);
 		}
 	}
-
-	/* --- teacherName aus Session für Begrüßung --- */
 
 	const teacherNameGuess =
 		((session?.user as any)?.name as string) ||
@@ -398,7 +435,14 @@ export default function LearningAnalyticsPage() {
 		((session?.user as any)?.email as string) ||
 		"—";
 
-	/* --- DashboardData zusammenbauen --- */
+	// LOG: Kurse + erster Kurs + erste Lessons
+	if (courses.length > 0) {
+		const firstId = courses[0].courseId;
+		console.log("[Page] courses after mapping:", courses);
+		console.log("[Page] first courseId from courses:", firstId);
+		console.log("[Page] lessonsByCourse[firstId]:", lessonsByCourse[firstId]);
+		console.log("[Page] perCourseStats[firstId]:", perCourseStats[firstId]);
+	}
 
 	const dashboardData: DashboardData | undefined = courses.length
 		? {
@@ -409,8 +453,6 @@ export default function LearningAnalyticsPage() {
 				overallAverageCompletionPct
 			}
 		: undefined;
-
-	/* --- Render --- */
 
 	return (
 		<div className="bg-neutral-50 min-h-screen relative">
