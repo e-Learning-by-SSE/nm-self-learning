@@ -60,8 +60,8 @@
   "sunFull": "Sonntag",
 
   "timeMetric": "Zeit",
-  "completedTasks": "Abgeschlossene Aufgaben",
-  "correctTasks": "Richtige Antworten",
+  "completedTasks": "Erledigte Aufgaben",
+  "correctTasks": "Richtige Aufgaben",
 
   "selectHeatmapType": "Heatmap-Typ auswählen",
   "selectOption": "Auswählen...",
