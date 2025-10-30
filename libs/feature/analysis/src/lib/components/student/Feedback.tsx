@@ -13,31 +13,43 @@ import {
 	MoonIcon,
 	ChartBarIcon
 } from "@heroicons/react/24/outline";
-
-const weekdays = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+import { useTranslation } from "next-i18next";
 
 export function Feedback() {
+	const { t } = useTranslation("student-analytics");
 	const [open, setOpen] = useState(false);
 
-	// --- Fetch all learning and quiz-related data from backend ---
+	// Fetch all learning and quiz-related data
 	const { data: hourlyLearning } = trpc.metrics.getStudentMetric_HourlyLearningTime.useQuery();
 	const { data: dailyLearning } = trpc.metrics.getStudentMetric_DailyLearningTime.useQuery();
 	const { data: hourlyQuiz } = trpc.metrics.getStudentMetric_HourlyAverageQuizAnswers.useQuery();
 	const { data: streakData } = trpc.metrics.getStudentMetric_LearningStreak.useQuery();
 
+	// Full weekday names from translations
+	const weekdays = [
+		t("sunFull"),
+		t("monFull"),
+		t("tueFull"),
+		t("wedFull"),
+		t("thuFull"),
+		t("friFull"),
+		t("satFull")
+	];
+
 	const recommendations = useMemo(() => {
 		const recs: { icon: JSX.Element; text: string }[] = [];
 
-		// 1️⃣ Learning streak
+		// Learning streak (handles singular/plural)
 		const streak = streakData?.currentStreakDays ?? 0;
 		if (streak > 0) {
+			const dayLabel = streak < 2 ? t("day") : t("days");
 			recs.push({
 				icon: <FireIcon className="h-5 w-5 text-orange-500 flex-shrink-0" />,
-				text: `Du hast eine Lernserie von ${streak} Tagen – bleib dran!`
+				text: t("recommendations.streak", { count: streak, dayLabel })
 			});
 		}
 
-		// 2️⃣ Average daily learning time (hours + minutes)
+		// Average daily learning time
 		if (dailyLearning && dailyLearning.length > 0) {
 			const avgSeconds =
 				dailyLearning.reduce((a: number, b: any) => a + (b.timeSeconds ?? 0), 0) /
@@ -45,18 +57,13 @@ export function Feedback() {
 			const hours = Math.floor(avgSeconds / 3600);
 			const minutes = Math.round((avgSeconds % 3600) / 60);
 
-			let timeStr = "";
-			if (hours > 0 && minutes > 0) timeStr = `${hours} Stunden und ${minutes} Minuten`;
-			else if (hours > 0) timeStr = `${hours} Stunden`;
-			else timeStr = `${minutes} Minuten`;
-
 			recs.push({
 				icon: <ClockIcon className="h-5 w-5 text-gray-600 flex-shrink-0" />,
-				text: `Du lernst durchschnittlich ${timeStr} pro Tag – tolle Beständigkeit!`
+				text: t("recommendations.avgTime", { hours, minutes })
 			});
 		}
 
-		// 3️⃣ Preferred learning time
+		// Preferred learning time (morning / afternoon / evening)
 		if (hourlyLearning && hourlyLearning.length > 0) {
 			let morning = 0,
 				afternoon = 0,
@@ -70,27 +77,27 @@ export function Feedback() {
 			}
 
 			const max = Math.max(morning, afternoon, evening);
-			let slot = "";
 			let icon: JSX.Element;
+			let timeKey = "";
 
 			if (max === morning) {
-				slot = "am Morgen";
 				icon = <SunIcon className="h-5 w-5 text-yellow-500 flex-shrink-0" />;
+				timeKey = "morning";
 			} else if (max === afternoon) {
-				slot = "am Nachmittag";
 				icon = <SunIcon className="h-5 w-5 text-amber-400 flex-shrink-0" />;
+				timeKey = "afternoon";
 			} else {
-				slot = "am Abend";
 				icon = <MoonIcon className="h-5 w-5 text-indigo-500 flex-shrink-0" />;
+				timeKey = "evening";
 			}
 
 			recs.push({
 				icon,
-				text: `Du lernst ${slot} am effektivsten – super Fokus!`
+				text: t(`recommendations.${timeKey}`)
 			});
 		}
 
-		// 4️⃣ Most active day
+		// Most active day (uses full weekday names)
 		if (dailyLearning && dailyLearning.length > 0) {
 			const totals: Record<string, number> = {};
 			for (const d of dailyLearning) {
@@ -102,12 +109,12 @@ export function Feedback() {
 			if (mostActive) {
 				recs.push({
 					icon: <CalendarDaysIcon className="h-5 w-5 text-emerald-600 flex-shrink-0" />,
-					text: `Dein aktivster Lerntag ist der ${mostActive}.`
+					text: t("recommendations.activeDay", { day: mostActive })
 				});
 			}
 		}
 
-		// 5️⃣ Total quiz questions answered
+		// Total quiz questions answered
 		if (hourlyQuiz && hourlyQuiz.length > 0) {
 			const total = hourlyQuiz.reduce(
 				(a: number, b: any) => a + ((b.correctAnswers ?? 0) + (b.wrongAnswers ?? 0)),
@@ -116,12 +123,12 @@ export function Feedback() {
 			if (total > 0) {
 				recs.push({
 					icon: <LightBulbIcon className="h-5 w-5 text-pink-500 flex-shrink-0" />,
-					text: `Du hast insgesamt ${total} Quizfragen beantwortet – großartige Beteiligung!`
+					text: t("recommendations.quizTotal", { count: total })
 				});
 			}
 		}
 
-		// 6️⃣ Overall quiz accuracy
+		// Quiz accuracy
 		if (hourlyQuiz && hourlyQuiz.length > 0) {
 			const totalCorrect = hourlyQuiz.reduce(
 				(a: number, b: any) => a + (b.correctAnswers ?? 0),
@@ -135,12 +142,12 @@ export function Feedback() {
 				const acc = Math.round((totalCorrect / totalAll) * 100);
 				recs.push({
 					icon: <CheckCircleIcon className="h-5 w-5 text-green-600 flex-shrink-0" />,
-					text: `Deine Quizgenauigkeit liegt bei ${acc}% – weiter so!`
+					text: t("recommendations.quizAccuracy", { percent: acc })
 				});
 			}
 		}
 
-		// 7️⃣ Quiz accuracy by time of day
+		// Quiz accuracy by time of day
 		if (hourlyQuiz && hourlyQuiz.length > 0) {
 			const accForSlot = (filterFn: (h: number) => boolean) => {
 				const arr = hourlyQuiz.filter(q => filterFn(new Date(q.hour).getHours()));
@@ -160,23 +167,23 @@ export function Feedback() {
 			let icon: JSX.Element;
 
 			if (morning >= afternoon && morning >= evening) {
-				bestSlot = "am Morgen";
+				bestSlot = "morning";
 				icon = <SunIcon className="h-5 w-5 text-yellow-500 flex-shrink-0" />;
 			} else if (afternoon >= morning && afternoon >= evening) {
-				bestSlot = "am Nachmittag";
+				bestSlot = "afternoon";
 				icon = <SunIcon className="h-5 w-5 text-amber-400 flex-shrink-0" />;
 			} else {
-				bestSlot = "am Abend";
+				bestSlot = "evening";
 				icon = <MoonIcon className="h-5 w-5 text-indigo-500 flex-shrink-0" />;
 			}
 
 			recs.push({
 				icon,
-				text: `Deine Quizleistung ist ${bestSlot} am höchsten – konzentriertes Arbeiten zahlt sich aus.`
+				text: t("recommendations.quizTimeAccuracy", { slot: t(bestSlot) })
 			});
 		}
 
-		// 8️⃣ Weekly trend
+		// Weekly trend
 		if (dailyLearning && dailyLearning.length > 14) {
 			const sorted = [...dailyLearning].sort(
 				(a: any, b: any) => new Date(a.day).getTime() - new Date(b.day).getTime()
@@ -187,29 +194,24 @@ export function Feedback() {
 			const diff = sum(last7) - sum(prev7);
 			recs.push({
 				icon: <ChartBarIcon className="h-5 w-5 text-blue-500 flex-shrink-0" />,
-				text:
-					diff > 0
-						? "Deine Lernzeit ist im Vergleich zur letzten Woche gestiegen – weiter so!"
-						: "Deine Lernzeit ist im Vergleich zur letzten Woche leicht gesunken – bleib dran!"
+				text: diff > 0 ? t("recommendations.trendUp") : t("recommendations.trendDown")
 			});
 		}
 
 		return recs;
-	}, [hourlyLearning, dailyLearning, hourlyQuiz, streakData]);
+	}, [hourlyLearning, dailyLearning, hourlyQuiz, streakData, t, weekdays]);
 
 	const shortList = recommendations.slice(0, 4);
 
-	// --- Render section with modal for 'show more' functionality ---
+	// Render section with modal for 'show more' functionality
 	return (
 		<div className="w-full rounded-lg border border-gray-200 bg-white shadow-sm p-6 flex flex-col gap-4 hover:shadow-md transition-shadow max-sm:p-4">
 			<h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-2 text-center sm:text-left">
-				Personalisierte Feedbacks
+				{t("feedbackTitle")}
 			</h2>
 
 			{shortList.length === 0 ? (
-				<p className="text-gray-400 text-center text-sm sm:text-base">
-					Keine Daten verfügbar
-				</p>
+				<p className="text-gray-400 text-center text-sm sm:text-base">{t("noData")}</p>
 			) : (
 				<ul className="space-y-3 sm:space-y-2">
 					{shortList.map((r, i) => (
@@ -231,7 +233,7 @@ export function Feedback() {
 					onClick={() => setOpen(true)}
 					className="text-emerald-600 text-sm sm:text-base font-medium hover:text-emerald-800 self-center mt-2 flex items-center gap-1"
 				>
-					Mehr Feedbacks anzeigen
+					{t("showMore")}
 					<span className="ml-1">→</span>
 				</button>
 			)}
@@ -246,7 +248,7 @@ export function Feedback() {
 					<div className="fixed inset-0 flex items-center justify-center p-4">
 						<Dialog.Panel className="w-full max-w-3xl rounded-2xl bg-white p-6 sm:p-8 shadow-xl relative">
 							<h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 text-center sm:text-left">
-								Personalisierte Feedbacks
+								{t("feedbackTitle")}
 							</h2>
 
 							<ul className="space-y-3 sm:space-y-2">
@@ -268,7 +270,7 @@ export function Feedback() {
 									onClick={() => setOpen(false)}
 									className="border border-gray-300 rounded-md px-4 py-2 text-gray-700 hover:bg-gray-50"
 								>
-									Schließen
+									{t("close")}
 								</button>
 							</div>
 						</Dialog.Panel>

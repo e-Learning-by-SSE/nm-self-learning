@@ -47,6 +47,7 @@
 	"Open User Menu": "Open User Menu",
 	"Profile": "Profile",
 	"Settings": "Settings",
+	"LearningAnalytics": "Learning Analytics",
 	"Author Dashboard": "$t(common:Author) Dashboard",
 	"Admin Dashboard": "$t(common:Admin) Dashboard",
 	"Logout": "Logout",
@@ -62,5 +63,7 @@
     "Email": "EMail",
     "Name": "Name",
     "Information Updated": "Information Updated",
-    "Settings Could not be Saved!": "Settings Could not be Saved!"
+    "Settings Could not be Saved!": "Settings Could not be Saved!",
+	"subjects": "Subjects"
+
 }

@@ -5,6 +5,7 @@ import { trpc } from "@self-learning/api-client";
 import { DropdownMenu } from "@self-learning/ui/common";
 import { ChevronDownIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { HeatmapModal } from "./HeatmapModal";
+import { useTranslation } from "next-i18next";
 
 const COLORS = {
 	none: "#D9D9D9",
@@ -49,7 +50,7 @@ function getColor(value: number, metric: string, period: "day" | "week" | "month
 		return COLORS.vhigh;
 	}
 
-	if (period === "day" && metric === "Zeit") {
+	if (period === "day" && metric === "timeMetric") {
 		if (value < 0.25) return COLORS.vlow;
 		if (value < 0.5) return COLORS.low;
 		if (value < 0.75) return COLORS.medium;
@@ -64,46 +65,72 @@ function getColor(value: number, metric: string, period: "day" | "week" | "month
 	return COLORS.vhigh;
 }
 
-function getTooltipText(value: number, label: string, metric: string) {
+function getTooltipText(
+	value: number,
+	label: string,
+	metric: string,
+	t: (key: string, opts?: any) => string
+) {
 	if (value <= 0) {
-		if (metric === "Zeit") return `${label}: Keine Aktivität`;
-		if (metric === "Abgeschlossene Aufgaben") return `${label}: Keine Aufgaben erledigt`;
-		return `${label}: Keine richtigen Antworten`;
+		if (metric === "timeMetric") return t("tooltip.noActivityTime", { label });
+		if (metric === "completedTasks") return t("tooltip.noCompletedTasks", { label });
+		return t("tooltip.noCorrectTasks", { label });
 	}
 
-	let activity = "";
-	if (value <= 2) activity = "Sehr geringe Aktivität";
-	else if (value <= 4) activity = "Geringe Aktivität";
-	else if (value <= 6) activity = "Mittlere Aktivität";
-	else if (value <= 8) activity = "Hohe Aktivität";
-	else activity = "Sehr hohe Aktivität";
+	let activityKey = "";
+	if (value <= 2) activityKey = "tooltip.activityVeryLow";
+	else if (value <= 4) activityKey = "tooltip.activityLow";
+	else if (value <= 6) activityKey = "tooltip.activityMedium";
+	else if (value <= 8) activityKey = "tooltip.activityHigh";
+	else activityKey = "tooltip.activityVeryHigh";
 
-	if (metric === "Zeit") {
+	if (metric === "timeMetric") {
 		const minutes = Math.round(value * 60);
 		const hours = Math.floor(value);
-		const timeStr = hours > 0 ? `${hours} Std. ${minutes % 60} Min.` : `${minutes} Min.`;
-		return `${label}: ${activity}. Du hast ${timeStr} gelernt.`;
+		return t("tooltip.timeActivity", {
+			label,
+			activity: t(activityKey),
+			hours,
+			minutes: minutes % 60
+		});
 	}
 
-	if (metric === "Abgeschlossene Aufgaben") {
+	if (metric === "completedTasks") {
 		const tasks = Math.round(value);
-		return `${label}: ${activity}. Du hast ${tasks} Aufgaben erledigt.`;
+		return t("tooltip.completedTasksActivity", {
+			label,
+			activity: t(activityKey),
+			tasks
+		});
 	}
 
-	if (metric === "Richtige Aufgaben") {
+	if (metric === "correctTasks") {
 		const correct = Math.round(value);
-		return `${label}: ${activity}. Du hast ${correct} Aufgaben richtig gelöst.`;
+		return t("tooltip.correctTasksActivity", {
+			label,
+			activity: t(activityKey),
+			correct
+		});
 	}
 
-	return `${label}: ${activity}`;
+	return `${label}: ${t(activityKey)}`;
 }
 
 export function GeneralHeatmap() {
-	const [selected, setSelected] = useState<string | null>("Zeit");
+	const { t } = useTranslation("student-analytics");
+
+	const [selected, setSelected] = useState<
+		"timeMetric" | "completedTasks" | "correctTasks" | null
+	>("timeMetric");
+
 	const [hover, setHover] = useState<{ x: number; y: number; text: string } | null>(null);
 	const [showModal, setShowModal] = useState(false);
 
-	const options = ["Zeit", "Abgeschlossene Aufgaben", "Richtige Aufgaben"];
+	const options: ("timeMetric" | "completedTasks" | "correctTasks")[] = [
+		"timeMetric",
+		"completedTasks",
+		"correctTasks"
+	];
 
 	const { data: dailyLearning } = trpc.metrics.getStudentMetric_DailyLearningTime.useQuery();
 	const { data: hourlyQuiz } = trpc.metrics.getStudentMetric_HourlyAverageQuizAnswers.useQuery();
@@ -111,14 +138,14 @@ export function GeneralHeatmap() {
 	const groupedData = useMemo(() => {
 		if (!dailyLearning && !hourlyQuiz) return null;
 
-		const metric = selected ?? "Zeit";
+		const metric = selected ?? "timeMetric";
 		const now = new Date();
 		const nowMonth = now.getMonth();
 		const nowYear = now.getFullYear();
 
 		const dailyMap = new Map<string, number>();
 
-		if (metric === "Zeit" && dailyLearning) {
+		if (metric === "timeMetric" && dailyLearning) {
 			for (const e of dailyLearning as any[]) {
 				const iso = normalizeDate(e.day ?? (e as any).date);
 				if (!iso) continue;
@@ -135,7 +162,7 @@ export function GeneralHeatmap() {
 				const iso = normalizeDate(e.hour);
 				if (!iso) continue;
 				const val =
-					metric === "Abgeschlossene Aufgaben"
+					metric === "completedTasks"
 						? (e.correctAnswers ?? 0) + (e.wrongAnswers ?? 0)
 						: (e.correctAnswers ?? 0);
 				dailyMap.set(iso, (dailyMap.get(iso) ?? 0) + val);
@@ -175,45 +202,47 @@ export function GeneralHeatmap() {
 		}
 
 		return { day, week, month, year };
-	}, [dailyLearning, hourlyQuiz, selected]);
+	}, [dailyLearning, hourlyQuiz, selected, t]);
 
 	const renderRow = (
 		label: string,
 		values: number[],
 		period: "day" | "week" | "month" | "year",
 		labels?: string[]
-	) => {
-		const metric = selected ?? "Zeit";
-		return (
-			<div key={label} className="grid grid-cols-[70px_1fr] items-center gap-3">
-				<span className="text-sm font-medium text-gray-700 text-center sm:text-left">
-					{label}
-				</span>
-				<div className="flex gap-1.5 flex-wrap justify-start">
-					{values.map((v, i) => {
-						const color = getColor(v, metric, period);
-						const text = getTooltipText(v, labels?.[i] ?? label, metric);
-						return (
-							<div
-								key={i}
-								onMouseEnter={e => {
-									const rect = e.currentTarget.getBoundingClientRect();
-									setHover({
-										x: rect.left + rect.width / 2,
-										y: rect.top - 8,
-										text
-									});
-								}}
-								onMouseLeave={() => setHover(null)}
-								className="w-5 h-5 rounded-sm border border-gray-300 cursor-pointer hover:scale-110 transition-transform"
-								style={{ backgroundColor: color }}
-							/>
-						);
-					})}
-				</div>
+	) => (
+		<div key={label} className="grid grid-cols-[70px_1fr] items-center gap-3">
+			<span className="text-sm font-medium text-gray-700 text-center sm:text-left">
+				{label}
+			</span>
+			<div className="flex gap-1.5 flex-wrap justify-start">
+				{values.map((v, i) => {
+					const color = getColor(v, selected ?? "timeMetric", period);
+					const text = getTooltipText(
+						v,
+						labels?.[i] ?? label,
+						selected ?? "timeMetric",
+						t
+					);
+					return (
+						<div
+							key={i}
+							onMouseEnter={e => {
+								const rect = e.currentTarget.getBoundingClientRect();
+								setHover({
+									x: rect.left + rect.width / 2,
+									y: rect.top - 8,
+									text
+								});
+							}}
+							onMouseLeave={() => setHover(null)}
+							className="w-5 h-5 rounded-sm border border-gray-300 cursor-pointer hover:scale-110 transition-transform"
+							style={{ backgroundColor: color }}
+						/>
+					);
+				})}
 			</div>
-		);
-	};
+		</div>
+	);
 
 	return (
 		<div
@@ -223,7 +252,7 @@ export function GeneralHeatmap() {
 			{/* Header */}
 			<div className="flex flex-col sm:flex-row items-center justify-between mb-3">
 				<h2 className="text-lg sm:text-xl font-semibold text-gray-800 text-center sm:text-left">
-					Lern-Heatmaps
+					{t("learningHeatmapTitle")}
 				</h2>
 				<div
 					className="relative z-40 w-full sm:w-auto flex justify-center sm:justify-end"
@@ -231,7 +260,7 @@ export function GeneralHeatmap() {
 				>
 					<DropdownMenu
 						key={selected ?? "default"}
-						title="Heatmap-Typ auswählen"
+						title={t("selectHeatmapType")}
 						button={
 							<div
 								className={`flex items-center justify-between w-48 sm:w-56 rounded-md px-3 py-1.5 sm:px-4 sm:py-2 font-semibold transition-colors ${
@@ -240,7 +269,9 @@ export function GeneralHeatmap() {
 										: "border border-gray-300 bg-white text-gray-700"
 								}`}
 							>
-								<span className="truncate">{selected || "Auswählen..."}</span>
+								<span className="truncate">
+									{selected ? t(selected) : t("selectOption")}
+								</span>
 								{selected ? (
 									<XMarkIcon
 										className="h-4 w-4 ml-2 cursor-pointer hover:text-gray-200"
@@ -274,7 +305,7 @@ export function GeneralHeatmap() {
 											: ""
 								}`}
 							>
-								{option}
+								{t(option)}
 							</span>
 						))}
 					</DropdownMenu>
@@ -285,19 +316,22 @@ export function GeneralHeatmap() {
 			<div className="rounded-lg border border-emerald-300 bg-gray-50 px-6 py-5 flex flex-col justify-between">
 				{groupedData ? (
 					<>
-						{/* evenly spaced rows */}
 						<div className="flex flex-col justify-between gap-4">
-							{renderRow("Heute", groupedData.day, "day", ["Morgen", "Tag", "Abend"])}
-							{renderRow("Woche", groupedData.week, "week", [
-								"Mo",
-								"Di",
-								"Mi",
-								"Do",
-								"Fr",
-								"Sa",
-								"So"
+							{renderRow(t("today"), groupedData.day, "day", [
+								t("morning"),
+								t("day"),
+								t("evening")
 							])}
-							{renderRow("Monat", groupedData.month, "month", [
+							{renderRow(t("week"), groupedData.week, "week", [
+								t("mon"),
+								t("tue"),
+								t("wed"),
+								t("thu"),
+								t("fri"),
+								t("sat"),
+								t("sun")
+							])}
+							{renderRow(t("month"), groupedData.month, "month", [
 								"W1",
 								"W2",
 								"W3",
@@ -305,50 +339,48 @@ export function GeneralHeatmap() {
 								"W5",
 								"W6"
 							])}
-							{renderRow("Jahr", groupedData.year, "year", [
-								"Jan",
-								"Feb",
-								"Mrz",
-								"Apr",
-								"Mai",
-								"Jun",
-								"Jul",
-								"Aug",
-								"Sep",
-								"Okt",
-								"Nov",
-								"Dez"
+							{renderRow(t("year"), groupedData.year, "year", [
+								t("jan"),
+								t("feb"),
+								t("mar"),
+								t("apr"),
+								t("may"),
+								t("jun"),
+								t("jul"),
+								t("aug"),
+								t("sep"),
+								t("oct"),
+								t("nov"),
+								t("dec")
 							])}
 						</div>
 
-						{/* perfectly balanced link placement */}
 						<p
 							onClick={() => setShowModal(true)}
 							className="text-sm text-center text-emerald-600 cursor-pointer hover:underline mt-4"
 						>
-							Zu den detaillierten Lern-Heatmaps wechseln →
+							{t("openDetailedHeatmaps")}
+							<span className="text-emerald-600 text-base"> →</span>
 						</p>
 					</>
 				) : (
 					<p className="text-gray-400 text-center py-2 text-sm sm:text-base">
-						Wähle einen Heatmap-Typ aus, um Daten anzuzeigen
+						{t("selectHeatmapPrompt")}
 					</p>
 				)}
 			</div>
 
 			{/* Legend */}
 			<div className="flex flex-wrap gap-2 items-center mt-3 justify-center sm:justify-start">
-				<span className="text-sm font-semibold text-gray-700 mr-2">
-					Aktivitäts-Legende:
-				</span>
+				<span className="text-sm font-semibold text-gray-700 mr-2">{t("activity")}:</span>
 				{Object.entries(COLORS).map(([key, color]) => {
 					const labelMap: Record<string, string> = {
-						none: "Keine Aktivität",
-						vlow: "Sehr gering",
-						low: "Gering",
-						medium: "Mittel",
-						high: "Hoch",
-						vhigh: "Sehr hoch"
+						none: t("noActivity"),
+						vlow: t("veryLow"),
+						low: t("low"),
+						medium: t("medium"),
+						high: t("high"),
+						vhigh: t("veryHigh")
 					};
 					return (
 						<div key={key} className="flex items-center gap-1">
@@ -377,7 +409,7 @@ export function GeneralHeatmap() {
 
 			{showModal && (
 				<HeatmapModal
-					selectedMetric={selected ?? "Zeit"}
+					selectedMetric={t(selected ?? "timeMetric")}
 					onClose={() => setShowModal(false)}
 				/>
 			)}

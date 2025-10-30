@@ -1,0 +1,98 @@
+{
+  "defaultName": "Lerner",
+  "pageTitle": "Willkommen zurück, {{name}}! Schau dir deinen Lernfortschritt an",
+
+  "feedbackTitle": "Personalisierte Feedbacks",
+  "noData": "Keine Daten verfügbar",
+  "showMore": "Mehr Feedbacks anzeigen",
+  "close": "Schließen",
+
+  "timeAllocationTitle": "Zeitaufteilung der Kurse",
+  "totalLearningTime": "Gesamte Lernzeit",
+  "hours": "Stunden",
+  "minutes": "Minuten",
+
+  "learningHeatmapTitle": "Lern-Heatmap",
+  "loading": "Lade Daten...",
+  "day": "Tag",
+  "days": "Tage",           
+  "hour": "Stunde",
+
+  "learningPathTitle": "Mein Lernpfad",
+  "loadingPath": "Dein Lernpfad wird geladen...",
+  "noSubjects": "Keine Fächer verfügbar.",
+  "previousSubject": "Vorheriges Fach",
+  "nextSubject": "Nächstes Fach",
+  "subject": "Fach",
+  "of": "von",
+  "coursesCompleted": "Kurse abgeschlossen",
+  "continueLearning": "Weiterlernen",
+
+  "activity": "Aktivität",
+  "noActivity": "Keine Aktivität",
+  "veryLow": "Sehr niedrig",
+  "low": "Niedrig",
+  "medium": "Mittel",
+  "high": "Hoch",
+  "veryHigh": "Sehr hoch",
+
+  "today": "Heute",
+  "week": "Woche",
+  "month": "Monat",
+  "year": "Jahr",
+  "morning": "Morgen",
+  "evening": "Abend",
+  "mon": "Mo",
+  "tue": "Di",
+  "wed": "Mi",
+  "thu": "Do",
+  "fri": "Fr",
+  "sat": "Sa",
+  "sun": "So",
+
+  "monFull": "Montag",
+  "tueFull": "Dienstag",
+  "wedFull": "Mittwoch",
+  "thuFull": "Donnerstag",
+  "friFull": "Freitag",
+  "satFull": "Samstag",
+  "sunFull": "Sonntag",
+
+  "timeMetric": "Zeit",
+  "completedTasks": "Abgeschlossene Aufgaben",
+  "correctTasks": "Richtige Antworten",
+
+  "selectHeatmapType": "Heatmap-Typ auswählen",
+  "selectOption": "Auswählen...",
+  "selectHeatmapPrompt": "Bitte wähle eine Metrik aus, um deine Heatmap anzuzeigen.",
+  "openDetailedHeatmaps": "Zu den detaillierten Lern-Heatmaps wechseln",
+
+
+  "tooltip": {
+    "noActivityTime": "Keine Lernaktivität am {{label}} aufgezeichnet.",
+    "noCompletedTasks": "Keine Aufgaben am {{label}} abgeschlossen.",
+    "noCorrectTasks": "Keine richtigen Antworten am {{label}}.",
+    "activityVeryLow": "sehr geringe Aktivität",
+    "activityLow": "geringe Aktivität",
+    "activityMedium": "mittlere Aktivität",
+    "activityHigh": "hohe Aktivität",
+    "activityVeryHigh": "sehr hohe Aktivität",
+    "timeActivity": "{{label}}: {{activity}} — {{hours}} Std {{minutes}} Min",
+    "completedTasksActivity": "{{label}}: {{activity}} — {{tasks}} Aufgaben abgeschlossen",
+    "correctTasksActivity": "{{label}}: {{activity}} — {{correct}} richtige Antworten"
+  },
+
+  "recommendations": {
+    "streak": "Du hast eine Lernserie von {{count}} {{dayLabel}} – bleib dran!",
+    "avgTime": "Du lernst durchschnittlich {{hours}} Stunden und {{minutes}} Minuten pro Tag – tolle Beständigkeit!",
+    "morning": "Du bist am Morgen besonders fokussiert und lernst am effektivsten.",
+    "afternoon": "Du zeigst die meiste Lernaktivität am Nachmittag – eine produktive Zeit!",
+    "evening": "Du konzentrierst dich und lernst am meisten am Abend – ideal für ruhige Lernphasen.",
+    "activeDay": "Dein aktivster Lerntag ist {{day}}.",
+    "quizTotal": "Du hast insgesamt {{count}} Quizfragen beantwortet – großartige Beteiligung!",
+    "quizAccuracy": "Deine Quizgenauigkeit liegt bei {{percent}}% – weiter so!",
+    "quizTimeAccuracy": "Deine Quizleistung ist am besten am {{slot}} – großartige Konzentration in dieser Zeit!",
+    "trendUp": "Deine Lernzeit ist im Vergleich zur letzten Woche gestiegen – weiter so!",
+    "trendDown": "Deine Lernzeit ist im Vergleich zur letzten Woche leicht gesunken – bleib dran!"
+  }
+}

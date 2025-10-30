@@ -4,10 +4,12 @@ import { trpc } from "@self-learning/api-client";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, ChartOptions } from "chart.js";
 import { useMemo } from "react";
+import { useTranslation } from "next-i18next";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 export function TimeAllocation() {
+	const { t } = useTranslation("student-analytics");
 	const { data, isLoading } = trpc.metrics.getStudentMetric_LearningTimeByCourse.useQuery();
 
 	const courses = (data ?? []).filter(
@@ -45,7 +47,7 @@ export function TimeAllocation() {
 	const chartData = useMemo(() => {
 		if (courses.length === 0 || totalSeconds === 0) {
 			return {
-				labels: ["Keine Daten"],
+				labels: [t("noData")],
 				datasets: [{ data: [1], backgroundColor: ["#E5E7EB"] }]
 			};
 		}
@@ -58,7 +60,7 @@ export function TimeAllocation() {
 			labels,
 			datasets: [
 				{
-					label: "Zeitaufwand (%)",
+					label: t("timeAllocationTitle"),
 					data: values,
 					backgroundColor: colors,
 					borderColor: "#fff",
@@ -66,7 +68,7 @@ export function TimeAllocation() {
 				}
 			]
 		};
-	}, [courses, totalSeconds]);
+	}, [courses, totalSeconds, t]);
 
 	const options: ChartOptions<"pie"> = {
 		animation: { duration: 1200, easing: "easeOutQuart" },
@@ -99,7 +101,7 @@ export function TimeAllocation() {
 	if (isLoading) {
 		return (
 			<div className="w-full h-full rounded-lg border border-light-border bg-white shadow-sm p-6 text-center text-gray-500">
-				Zeitaufteilung wird geladen...
+				{t("loading")}
 			</div>
 		);
 	}
@@ -107,7 +109,7 @@ export function TimeAllocation() {
 	if (courses.length === 0) {
 		return (
 			<div className="w-full h-full rounded-lg border border-light-border bg-white shadow-sm p-6 text-center text-gray-500">
-				Keine Lerndaten gefunden.
+				{t("noData")}
 			</div>
 		);
 	}
@@ -115,7 +117,7 @@ export function TimeAllocation() {
 	return (
 		<div className="w-full h-full rounded-lg border border-light-border bg-white shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col text-center sm:text-left">
 			<h2 className="text-xl font-semibold text-gray-800 mb-4 sm:text-left text-center">
-				Zeitaufteilung der Kurse
+				{t("timeAllocationTitle")}
 			</h2>
 
 			{/* Chart container – slightly larger (≈10%) */}
@@ -127,10 +129,10 @@ export function TimeAllocation() {
 			</div>
 
 			<div className="mt-5 text-sm text-gray-700 border-t pt-3 sm:text-left text-center">
-				<b>Gesamtzeit:</b>{" "}
+				<b>{t("totalLearningTime")}:</b>{" "}
 				{totalHours > 0
-					? `${totalHours} Stunden${totalMinutes > 0 ? ` ${totalMinutes} Minuten` : ""}`
-					: `${totalMinutes} Minuten`}
+					? `${totalHours} ${t("hours")}${totalMinutes > 0 ? ` ${totalMinutes} ${t("minutes")}` : ""}`
+					: `${totalMinutes} ${t("minutes")}`}
 			</div>
 		</div>
 	);

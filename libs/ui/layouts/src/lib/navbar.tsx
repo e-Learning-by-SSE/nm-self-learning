@@ -23,6 +23,7 @@ import { useTranslation } from "next-i18next";
 
 export function Navbar() {
 	const session = useSession();
+	const { t } = useTranslation("common");
 	const user = session.data?.user;
 
 	return (
@@ -106,7 +107,7 @@ export function Navbar() {
 								href="subjects"
 								className="block rounded-md px-3 py-2 text-base font-medium hover:text-gray-500"
 							>
-								Fachgebiete
+								{t("subjects")}
 							</DisclosureButton>
 						</div>
 					</DisclosurePanel>
@@ -117,13 +118,14 @@ export function Navbar() {
 }
 
 function NavbarNavigationLink() {
-	const [navigation, setNavigation] = useState([{ name: "Fachgebiete", href: "/subjects" }]);
+	const { t } = useTranslation("common");
+	const [navigation, setNavigation] = useState([{ name: t("subjects"), href: "/subjects" }]);
 	const router = useRouter();
 
 	const setNavigationLink = useCallback(
 		(query: ParsedUrlQuery) => {
 			let newNavigation: { name: string; href: string }[] = [];
-			newNavigation.push({ name: "Fachgebiete", href: "/subjects" });
+			newNavigation.push({ name: t("subjects"), href: "/subjects" });
 
 			if (query.subjectSlug) {
 				newNavigation.push({
@@ -231,7 +233,7 @@ export function NavbarDropdownMenu({
 				className={`flex w-full items-center gap-2 rounded-md px-3 py-3`}
 			>
 				<AcademicCapIcon className="h-5" />
-				<span>Lernanalyse</span>
+				<span>{t("LearningAnalytics")}</span>
 			</Link>
 
 			{isAuthor && (

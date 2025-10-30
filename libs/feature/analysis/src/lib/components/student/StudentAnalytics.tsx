@@ -3,16 +3,20 @@ import { GeneralHeatmap } from "./GeneralHeatmap";
 import { MyLearningPath } from "./MyLearningPath";
 import { TimeAllocation } from "./TimeAllocation";
 import { Feedback } from "./Feedback";
+import { useTranslation } from "next-i18next";
 
 export default function StudentAnalytics() {
 	const { data: session } = useSession();
-	const name = session?.user?.name || "Lerner";
+	const { t } = useTranslation("student-analytics");
+
+	// Default name fallback from translation
+	const name = session?.user?.name || t("defaultName");
 
 	return (
 		<div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
 			{/* Responsive heading */}
 			<h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 text-center sm:text-left mt-6 mb-8 leading-snug">
-				Willkommen zurück, {name}! Schau dir deinen Lernfortschritt an
+				{t("pageTitle", { name })}
 			</h1>
 
 			{/* Grid layout for components (this remains unchanged) */}

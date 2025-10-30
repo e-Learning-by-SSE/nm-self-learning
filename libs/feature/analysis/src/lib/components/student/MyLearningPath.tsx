@@ -3,8 +3,11 @@
 import { useState } from "react";
 import { trpc } from "@self-learning/api-client";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { useTranslation } from "next-i18next";
 
 export function MyLearningPath() {
+	const { t } = useTranslation("student-analytics");
+
 	// Fetch learning subjects and completion stats for the authenticated student
 	const { data: subjects, isLoading: loadingSubjects } = trpc.metrics.getSubjects.useQuery();
 	const { data: completed, isLoading: loadingCompleted } =
@@ -16,7 +19,7 @@ export function MyLearningPath() {
 	if (loadingSubjects || loadingCompleted) {
 		return (
 			<div className="w-full rounded-lg border border-light-border bg-white shadow-sm p-4 sm:p-6 text-center text-gray-500 text-sm sm:text-base">
-				Dein Lernpfad wird geladen...
+				{t("loadingPath")}
 			</div>
 		);
 	}
@@ -25,7 +28,7 @@ export function MyLearningPath() {
 	if (!subjects || subjects.length === 0) {
 		return (
 			<div className="w-full rounded-lg border border-light-border bg-white shadow-sm p-4 sm:p-6 text-center text-gray-500 text-sm sm:text-base">
-				Keine Fächer verfügbar.
+				{t("noSubjects")}
 			</div>
 		);
 	}
@@ -58,20 +61,20 @@ export function MyLearningPath() {
 			{/* Header: section title and subject navigation controls */}
 			<div className="flex flex-col sm:flex-row items-center justify-between mb-4 gap-3 sm:gap-0">
 				<h2 className="text-lg sm:text-xl font-semibold text-gray-800 text-center sm:text-left">
-					Mein Lernpfad
+					{t("learningPathTitle")}
 				</h2>
 				<div className="flex items-center gap-2">
 					<button
 						onClick={handlePrev}
 						className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition"
-						aria-label="Vorheriges Fach"
+						aria-label={t("previousSubject")}
 					>
 						<ChevronLeftIcon className="h-5 w-5 text-gray-600" />
 					</button>
 					<button
 						onClick={handleNext}
 						className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition"
-						aria-label="Nächstes Fach"
+						aria-label={t("nextSubject")}
 					>
 						<ChevronRightIcon className="h-5 w-5 text-gray-600" />
 					</button>
@@ -81,7 +84,8 @@ export function MyLearningPath() {
 			{/* Displays the current subject with its progress overview */}
 			<div className="flex-grow">
 				<p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 text-center sm:text-left">
-					Fach: <span className="font-medium text-gray-800">{subject.title}</span>
+					{t("subject")}:{" "}
+					<span className="font-medium text-gray-800">{subject.title}</span>
 				</p>
 
 				<div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 w-full">
@@ -97,7 +101,7 @@ export function MyLearningPath() {
 				</div>
 
 				<p className="text-xs text-gray-500 mt-2 text-center sm:text-left">
-					{completedCourses} von {totalCourses} Kursen abgeschlossen
+					{completedCourses} {t("of")} {totalCourses} {t("coursesCompleted")}
 				</p>
 			</div>
 
@@ -107,7 +111,7 @@ export function MyLearningPath() {
 					onClick={handleContinue}
 					className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs sm:text-sm font-medium px-4 sm:px-5 py-2 rounded-md shadow-sm transition focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
 				>
-					Weiterlernen
+					{t("continueLearning")}
 				</button>
 			</div>
 		</div>
