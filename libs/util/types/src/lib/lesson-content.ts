@@ -3,7 +3,14 @@ import { z } from "zod";
 export const videoSchema = z.object({
 	type: z.literal("video"),
 	value: z.object({
-		url: z.string()
+		url: z.string(),
+		subtitle: z
+			.object({
+				src: z.string(),
+				label: z.string(),
+				srcLang: z.string()
+			})
+			.optional()
 	}),
 	meta: z.object({
 		duration: z.number()

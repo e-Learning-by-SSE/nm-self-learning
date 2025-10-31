@@ -1,5 +1,6 @@
 import { database } from "@self-learning/database";
 import { authProcedure, t } from "../trpc";
+import jwt from "jsonwebtoken";
 import { editUserSettingsSchema } from "@self-learning/types";
 import { randomUUID } from "crypto";
 
@@ -120,6 +121,33 @@ export const meRouter = t.router({
 				data: updateData
 			});
 		});
+	}),
+	getJWTToken: authProcedure.query(async ({ ctx }) => {
+		const user = await database.user.findUnique({
+			where: { name: ctx.user.name },
+			select: {
+				name: true,
+				role: true
+			}
+		});
+
+		if (!user) {
+			throw new Error("User not found");
+		}
+
+		const sharedPrivateKey = process.env["NEXTAUTH_SECRET"] ?? "default";
+
+		const token = jwt.sign(
+			{
+				name: user.name,
+				role: user.role
+			},
+			sharedPrivateKey,
+			{
+				expiresIn: "1d"
+			}
+		);
+		return token;
 	}),
 	registrationStatus: authProcedure.query(async ({ ctx }) => {
 		return await database.user.findUnique({

@@ -8,7 +8,7 @@ import {
 import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
-import { getCourse, useLessonContext, useLessonOutlineContext } from "@self-learning/lesson";
+import { getCourse, ShowTranskript, useLessonContext, useLessonOutlineContext } from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
 	Article,
@@ -69,6 +69,7 @@ function ContentDisplayItem({
 	course: LessonProps["course"];
 	addMediaDisplay: (idx: number) => void;
 }) {
+
 	if (!c || index === undefined) {
 		return <ContentInfo text="Diese Lerneinheit hat keinen Inhalt." />;
 	}
@@ -84,12 +85,14 @@ function ContentDisplayItem({
 		case "video":
 			if (!c.value.url) return <ContentInfo error text="Fehlende Video-URL." />;
 			return (
-				<div className="aspect-video w-full xl:max-h-[75vh]">
+				<div className="flex flex-col gap-4 aspect-video w-full xl:max-h-[75vh]">
 					<VideoPlayer
 						parentLessonId={lesson.lessonId}
 						url={c.value.url}
 						courseId={course?.courseId}
+						subtitle={c.value.subtitle}
 					/>
+					<ShowTranskript webVTTtranscript={c.value.subtitle?.src} />
 				</div>
 			);
 		case "pdf":
@@ -577,6 +580,7 @@ export function LicenseLabel({
 
 function Authors({ authors }: { authors: LessonProps["lesson"]["authors"] }) {
 	return (
+		// eslint-disable-next-line react/jsx-no-useless-fragment
 		<>
 			{authors.length > 0 && (
 				<div className="mt-4">

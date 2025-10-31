@@ -1,7 +1,7 @@
 "use client";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
-import { EllipsisVerticalIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { StarIcon } from "@heroicons/react/24/outline";
+import { CloudArrowUpIcon, EllipsisVerticalIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { AppRouter } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import {
@@ -18,9 +18,13 @@ import {
 import { formatDateAgo } from "@self-learning/util/common";
 import { TRPCClientError } from "@trpc/client";
 import { inferRouterOutputs } from "@trpc/server";
-import { ReactElement, useId, useMemo, useState } from "react";
+import { ReactElement, useEffect, useId, useMemo, useState } from "react";
 import { SearchField } from "./searchfield";
 import { UploadProgressDialog } from "./upload-progress-dialog";
+import { CenteredContainer } from "@self-learning/ui/layouts";
+import io, { Socket } from "socket.io-client";
+import { Subtitle, SubtitleSrc, subtitleSrcSchema } from "@self-learning/types";
+import { ConvertTranscriptionToSubtitle } from "@self-learning/ui/lesson";
 import { useTranslation } from "next-i18next";
 
 const MediaType = {
@@ -172,6 +176,230 @@ export function Upload({
 			/>
 			{preview}
 		</div>
+	);
+}
+
+export function ModifySubtile({
+	subtitle,
+	onChange,
+	onClick
+}: {
+	subtitle: Subtitle;
+	onClick: (seconds: number) => void;
+	onChange: (subtitle: Subtitle) => void;
+}) {
+	const parseVTT = (vtt: string) => {
+		const lines = vtt.split("\n\n").filter(line => line.trim() !== "");
+		let metadata = "";
+		if (lines[0].startsWith("WEBVTT")) {
+			metadata = lines.shift() || "";
+		} else {
+			throw new Error("Invalid VTT format");
+		}
+		const subtitleLines = lines.map(line => {
+			const [timestamp, ...text] = line.split("\n");
+			return { timestamp, text: text.join(" ") };
+		});
+
+		return { metadata, subtitles: subtitleLines };
+	};
+
+	const [subtitles, setSubtitles] = useState(parseVTT(subtitle.src));
+
+	const handleTextChange = (index: number, newText: string) => {
+		const updatedSubtitles = [...subtitles.subtitles];
+		updatedSubtitles[index].text = newText;
+		setSubtitles({
+			...subtitles,
+			subtitles: updatedSubtitles
+		});
+
+		const updatedSubtitleContent = updatedSubtitles
+			.map(({ timestamp, text }) => `${timestamp}\n${text}`)
+			.join("\n\n");
+		const updatetSubtitleVTT = `${subtitles.metadata}\n\n${updatedSubtitleContent}`;
+		onChange({
+			...subtitle,
+			src: updatetSubtitleVTT
+		});
+	};
+
+	const onClickTimeStamp = (timestamp: string) => {
+		const [hours, minutes, seconds] = timestamp.split(":").map(parseFloat);
+		const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+		onClick(totalSeconds);
+	};
+
+	return (
+		<div>
+			<ul>
+				{subtitles.subtitles.map((subtitle, index) => (
+					<li key={index} className="flex items-center mb-2 p-2">
+						<span
+							className="w-1/4 text-right pr-4 hover:text-secondary hover:cursor-pointer"
+							onClick={() => {
+								onClickTimeStamp(subtitle.timestamp);
+							}}
+						>
+							{subtitle.timestamp}
+						</span>
+
+						<textarea
+							className="w-3/4 p-2 border border-gray-300 rounded"
+							value={subtitle.text}
+							onChange={e => handleTextChange(index, e.target.value)}
+						/>
+					</li>
+				))}
+			</ul>
+		</div>
+	);
+}
+
+export function GenerateSubtile({
+	video_url,
+	lessonId,
+	onTranscribitionCompleted
+}: {
+	video_url: string;
+	lessonId: string;
+	onTranscribitionCompleted: (subtitle: Subtitle) => void;
+}) {
+	const [showDialog, setShowDialog] = useState(false);
+
+	return (
+		<>
+			{showDialog && (
+				<GenerateSubtileDialog
+					video_url={video_url}
+					lessonId={lessonId}
+					onClose={async transcription => {
+						setShowDialog(false);
+						if (!transcription) return;
+						try {
+							const subtitle = {
+								src: await ConvertTranscriptionToSubtitle(transcription),
+								label: "Deutsch",
+								srcLang: transcription?.language
+							};
+							onTranscribitionCompleted(subtitle);
+						} catch (error) {
+							showToast({
+								type: "error",
+								title: "Fehler beim Erstellen des Untertitels",
+								subtitle: "Fehler beim Erstellen des Untertitels"
+							});
+						}
+					}}
+				/>
+			)}
+			<button
+				className="btn-primary"
+				type="button"
+				onClick={() => {
+					setShowDialog(true);
+				}}
+			>
+				<StarIcon className="h-5" />
+				Generate Subtitle
+			</button>
+		</>
+	);
+}
+
+function GenerateSubtileDialog({
+	video_url,
+	lessonId,
+	onClose
+}: {
+	video_url: string;
+	lessonId: string;
+	onClose: OnDialogCloseFn<SubtitleSrc>;
+}) {
+	const [progress, setProgress] = useState<string>("Initializing...");
+	const [transcription, setTranscription] = useState<string | null>(null);
+	const [socket, setSocket] = useState<Socket | null>(null);
+	const [isSocketConnected, setIsSocketConnected] = useState(false);
+	const { data: sessionToken, isLoading } = trpc.me.getJWTToken.useQuery();
+
+
+	useEffect(() => {
+		const socket = io(process.env["TRANSCRIPTION_SERVICE_URL"] ?? "http://localhost:5000");
+		setSocket(socket);
+
+		socket.emit("transcribe", {
+			video_url,
+			realtime: true,
+			lessonId: lessonId,
+			bearer_token: sessionToken
+		});
+
+		socket.on("connect", () => {
+            setIsSocketConnected(true);
+        });
+
+		socket.on("progress", (data: { message: string }) => {
+			setProgress(data.message);
+		});
+
+		socket.on("complete", (data: { transcription: string }) => {
+			setTranscription(data.transcription);
+			setProgress("Transkription übermittelt");
+		});
+
+		socket.on("error", (data: { message: string }) => {
+			setProgress(`Error: ${data.message}`);
+		});
+
+		return () => {
+			socket.disconnect();
+		};
+	}, [lessonId, sessionToken, video_url]);
+
+	return (
+		<CenteredContainer>
+			<Dialog
+				style={{ height: "35vh", width: "30vw", overflow: "auto" }}
+				title={"Generate Subtitle"}
+				onClose={onClose}
+			>
+				<CenteredContainer>
+					<div>
+						<p>{progress}</p>
+						{!transcription && (
+							<div className="h-5 w-5 mt-5 justify-center animate-spin rounded-full border-b-2 border-black" />
+						)}
+						{transcription && (
+							<div>
+								<h3>Transkription ist abgeschlossen</h3>
+							</div>
+						)}
+					</div>
+				</CenteredContainer>
+
+				<div className="mt-auto">
+					<DialogActions onClose={onClose}>
+						<button
+							disabled={!isSocketConnected && !transcription}
+							className="btn-primary"
+							onClick={() => {
+								if (transcription) {
+									if (socket) socket.disconnect();
+									onClose(subtitleSrcSchema.parse(transcription));
+								} else {
+									if (socket) {
+										socket.disconnect();
+									}
+									onClose();
+								}
+							}}
+						>
+							{transcription ? "Speichern" : "Im Hintergrund laufen lassen"}
+						</button>
+					</DialogActions>
+				</div>
+			</Dialog>
+		</CenteredContainer>
 	);
 }
 
