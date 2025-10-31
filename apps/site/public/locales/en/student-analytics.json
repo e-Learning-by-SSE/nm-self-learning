@@ -4,24 +4,35 @@
   "locale": "en-US",
   "hourAbbr": "h",
   "minAbbr": "m",
-
   "feedbackTitle": "Personalized Feedback",
   "noData": "No data available",
   "showMore": "Show more feedback",
   "close": "Close",
-
   "timeAllocationTitle": "Course Time Allocation",
   "totalLearningTime": "Total Learning Time",
   "hours": "hours",
   "minutes": "minutes",
   "and": "and",
-
   "learningHeatmapTitle": "Learning Heatmap",
   "loading": "Loading data...",
   "day": "Day",
   "days": "Days",
   "hour": "Hour",
-
+  "loadingDashboard": "Loading Dashboard…",
+  "loadingSession": "Loading Session…",
+  "welcomeBackTitle": "Welcome back, {{name}}!",
+  "nextCourse": "Next Course",
+  "noDataAvailable": "No data available yet",
+  "lessonCompletionRateTitleActive": "Completion Rate – {{courseLabel}}",
+  "lessonCompletionRateTitleGeneric": "Completion Rate – Lessons",
+  "courseCompletionRateTitle": "Average Completion Rate – Courses",
+  "analysisTitle": "Analysis",
+  "avgLessonCompletion": "Average Lesson Completion",
+  "numberOfStudents": "Number of Students",
+  "highestCompletion": "Highest Completion",
+  "lowestCompletion": "Lowest Completion",
+  "overviewTitle": "Overview",
+  "overallAvgCompletion": "Overall Average Completion Rate",
   "learningPathTitle": "My Learning Path",
   "loadingPath": "Loading your learning path...",
   "noSubjects": "No subjects available.",
@@ -31,7 +42,6 @@
   "of": "of",
   "coursesCompleted": "Courses completed",
   "continueLearning": "Continue Learning",
-
   "activity": "Activity",
   "noActivity": "No Activity",
   "veryLow": "Very Low",
@@ -39,7 +49,6 @@
   "medium": "Medium",
   "high": "High",
   "veryHigh": "Very High",
-
   "today": "Today",
   "week": "Week",
   "month": "Month",
@@ -47,11 +56,9 @@
   "morning": "Morning",
   "afternoon": "Afternoon",
   "evening": "Evening",
-
   "Früh": "Morning",
   "Tag": "Afternoon",
   "Spät": "Evening",
-
   "mon": "Mon",
   "tue": "Tue",
   "wed": "Wed",
@@ -59,7 +66,6 @@
   "fri": "Fri",
   "sat": "Sat",
   "sun": "Sun",
-
   "monFull": "Monday",
   "tueFull": "Tuesday",
   "wedFull": "Wednesday",
@@ -67,7 +73,6 @@
   "friFull": "Friday",
   "satFull": "Saturday",
   "sunFull": "Sunday",
-
   "jan": "Jan",
   "feb": "Feb",
   "mar": "Mar",
@@ -80,7 +85,6 @@
   "oct": "Oct",
   "nov": "Nov",
   "dec": "Dec",
-
   "janFull": "January",
   "febFull": "February",
   "marFull": "March",
@@ -93,16 +97,13 @@
   "octFull": "October",
   "novFull": "November",
   "decFull": "December",
-
   "timeMetric": "Time",
   "completedTasks": "Completed Tasks",
   "correctTasks": "Correct Tasks",
-
   "selectHeatmapType": "Select Heatmap Type",
   "selectOption": "Select...",
   "selectHeatmapPrompt": "Please select a metric to display your heatmap.",
   "openDetailedHeatmaps": "Switch to detailed learning heatmaps",
-
   "tooltip": {
     "noActivityTime": "No learning activity.",
     "noCompletedTasks": "No tasks completed.",
@@ -144,7 +145,6 @@
       }
     }
   },
-
   "recommendations": {
     "streak": "You're on a {{count}} {{dayLabel}} learning streak – keep it up!",
     "avgTime": "You're averaging {{hours}} hours and {{minutes}} minutes of learning per day – great consistency!",
@@ -158,7 +158,6 @@
     "trendUp": "Your learning time has increased compared to last week – keep going!",
     "trendDown": "Your learning time has slightly decreased compared to last week – you can do it!"
   },
-
   "heatmapModal": {
     "title": "Learning Heatmaps",
     "loading": "Loading heatmap...",
@@ -196,4 +195,3 @@
     }
   }
 }
-

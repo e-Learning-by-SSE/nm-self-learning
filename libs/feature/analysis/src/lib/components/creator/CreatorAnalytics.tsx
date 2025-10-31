@@ -1,9 +1,10 @@
+"use client";
+
 import { useEffect, useRef, useState } from "react";
 import { trpc } from "@self-learning/api-client";
 import { useSession } from "next-auth/react";
 import type { Chart as ChartJS } from "chart.js";
-
-/* ---------- kleine Helper ---------- */
+import { useTranslation } from "next-i18next";
 
 const pct = (n?: number) =>
 	n === undefined || n === null || !Number.isFinite(n) ? "—" : `${Number(n).toFixed(1)}%`;
@@ -18,8 +19,6 @@ const colorGreen = "#7fb89b";
 const colorYellow = "#eae282";
 const colorRed = "#e57368";
 const colorAxis = "#525252";
-
-/* ---------- Typen ---------- */
 
 type LessonItem = {
 	label: string;
@@ -50,8 +49,6 @@ type DashboardData = {
 	overallAverageCompletionPct?: number;
 };
 
-/* ---------- Chart Card ---------- */
-
 function ChartCard({
 	title,
 	data = [],
@@ -61,6 +58,7 @@ function ChartCard({
 	data?: { label: string; value: number }[];
 	extraAction?: React.ReactNode;
 }) {
+	const { t } = useTranslation("student-analytics");
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	const chartRef = useRef<ChartJS | null>(null);
 
@@ -148,7 +146,7 @@ function ChartCard({
 				<canvas ref={canvasRef} />
 				{empty && (
 					<div className="absolute inset-0 flex items-center justify-center text-neutral-500 text-sm">
-						Noch keine Daten verfügbar
+						{t("noDataAvailable")}
 					</div>
 				)}
 			</div>
@@ -159,6 +157,7 @@ function ChartCard({
 /* ---------- Dashboard ---------- */
 
 function AnalyticsDashboard({ data }: { data?: DashboardData }) {
+	const { t } = useTranslation("student-analytics");
 	const [coursePos, setCoursePos] = useState(0);
 
 	const courses = data?.courses ?? [];
@@ -183,28 +182,27 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 		setCoursePos(i => (i + 1) % courses.length);
 	};
 
+	const lessonChartTitle = activeCourse
+		? t("lessonCompletionRateTitleActive", { courseLabel: activeCourse.label })
+		: t("lessonCompletionRateTitleGeneric");
+
 	return (
 		<div className="max-w-7xl mx-auto p-6 md:p-8">
 			<h1 className="text-3xl font-bold mb-6">
-				Willkommen zurück,{" "}
-				<span className="text-neutral-700">{data?.teacherName ?? "—"}</span>!
+				{t("welcomeBackTitle", { name: data?.teacherName ?? "—" })}
 			</h1>
 
 			<section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
 				<ChartCard
-					title={
-						activeCourse
-							? `Abschlussrate – ${activeCourse.label}`
-							: "Abschlussrate – Lektionen"
-					}
+					title={lessonChartTitle}
 					data={lessonBars}
 					extraAction={
 						courses.length > 1 && (
 							<button
 								onClick={goNextCourse}
 								className="text-neutral-600 text-lg hover:text-neutral-800 transition"
-								aria-label="Nächster Kurs"
-								title="Nächster Kurs"
+								aria-label={t("nextCourse")}
+								title={t("nextCourse")}
 							>
 								→
 							</button>
@@ -212,29 +210,29 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 					}
 				/>
 
-				<ChartCard title="Durchschnittliche Abschlussrate – Kurse" data={courseBars} />
+				<ChartCard title={t("courseCompletionRateTitle")} data={courseBars} />
 			</section>
 
 			<section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 				<div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5">
 					<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center gap-2">
-						<h3 className="text-lg font-semibold">Analyse</h3>
+						<h3 className="text-lg font-semibold">{t("analysisTitle")}</h3>
 					</div>
 					<div className="p-5 text-sm leading-6 space-y-2">
 						<p>
-							<b>Durchschnittlicher Lektionenabschluss:</b> {pct(stats.avgCourseRate)}
+							<b>{t("avgLessonCompletion")}</b>: {pct(stats.avgCourseRate)}
 						</p>
 						<p>
-							<b>Anzahl der Studierenden:</b> {stats.numberOfStudents ?? "—"}
+							<b>{t("numberOfStudents")}</b>: {stats.numberOfStudents ?? "—"}
 						</p>
 						<p>
-							<b>Höchster Abschluss:</b>{" "}
+							<b>{t("highestCompletion")}</b>:{" "}
 							{stats.highestLessonName
 								? `${stats.highestLessonName} – ${pct(stats.highestLessonRate)}`
 								: "—"}
 						</p>
 						<p>
-							<b>Niedrigster Abschluss:</b>{" "}
+							<b>{t("lowestCompletion")}</b>:{" "}
 							{stats.lowestLessonName
 								? `${stats.lowestLessonName} – ${pct(stats.lowestLessonRate)}`
 								: "—"}
@@ -244,11 +242,11 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 
 				<div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5">
 					<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center gap-2">
-						<h3 className="text-lg font-semibold">Übersicht</h3>
+						<h3 className="text-lg font-semibold">{t("overviewTitle")}</h3>
 					</div>
 					<div className="p-5 text-sm leading-6 space-y-2">
 						<p>
-							<b>Durchschnittliche Abschlussrate (insgesamt):</b>{" "}
+							<b>{t("overallAvgCompletion")}</b>:{" "}
 							{pct(data?.overallAverageCompletionPct)}
 						</p>
 					</div>
@@ -258,35 +256,25 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 	);
 }
 
-/* ---------- Page ---------- */
-
-// ⚠️ KEIN withTranslations hier, das hat bei dir gecrasht
-// export const getServerSideProps = withTranslations(["common"]);
-// Wenn du unbedingt SSR brauchst, kannst du das hier nehmen:
-// export async function getServerSideProps() {
-// 	return { props: {} };
-// }
-
 export default function LearningAnalyticsPage() {
+	const { t } = useTranslation("student-analytics");
 	const { data: session, status } = useSession();
 	const { data: avgCourse } =
 		trpc.metrics.getAuthorMetric_AverageCourseCompletionRate.useQuery(undefined);
 	const { data: avgLessonRows } =
 		trpc.metrics.getAuthorMetric_AverageLessonCompletionRate.useQuery(undefined);
 
-	// 👇 gegen Hydration: wir rendern das Dashboard wirklich erst im Browser
 	const [isClient, setIsClient] = useState(false);
 	useEffect(() => {
 		setIsClient(true);
 	}, []);
 
 	if (!isClient) {
-		// das sieht der Server + der Browser beim allerersten Paint
-		return <div className="p-10 text-neutral-600">Lade Dashboard …</div>;
+		return <div className="p-10 text-neutral-600">{t("loadingDashboard")}</div>;
 	}
 
 	if (status === "loading") {
-		return <div className="p-10 text-neutral-600">Lade Sitzung …</div>;
+		return <div className="p-10 text-neutral-600">{t("loadingSession")}</div>;
 	}
 
 	const coursesRaw: any[] = Array.isArray(avgCourse) ? avgCourse : [];
@@ -374,7 +362,7 @@ export default function LearningAnalyticsPage() {
 		((session?.user as any)?.name as string) ||
 		((session?.user as any)?.username as string) ||
 		((session?.user as any)?.email as string) ||
-		"—";
+		t("defaultName");
 
 	const dashboardData: DashboardData | undefined = courses.length
 		? {
