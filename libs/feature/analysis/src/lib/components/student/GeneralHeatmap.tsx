@@ -303,8 +303,7 @@ export function GeneralHeatmap() {
 					{/* Use i18n.language for locale-aware date formatting */}
 					<p className="text-sm text-gray-500 text-center sm:text-left">
 						{currentDate.toLocaleString(i18n.language, {
-							month: "long",
-							year: "numeric"
+							dateStyle: "long"
 						})}
 					</p>
 				</div>
@@ -403,7 +402,7 @@ export function GeneralHeatmap() {
 						<p
 							onClick={() => setShowModal(true)}
 							id="open-detailed-heatmaps"
-							className="text-sm text-center text-emerald-600 cursor-pointer hover:underline mt-4"
+							className="text-sm text-center text-emerald-600 cursor-pointer mt-4"
 						>
 							{t("openDetailedHeatmaps")}
 							<span className="text-emerald-600 text-base"> →</span>

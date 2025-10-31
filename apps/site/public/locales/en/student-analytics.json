@@ -1,24 +1,38 @@
 {
   "defaultName": "Learner",
   "pageTitle": "Welcome back, {{name}}! Check out your learning progress",
-
+  "locale": "en-US",
+  "hourAbbr": " h",
+  "minAbbr": "m.",
   "feedbackTitle": "Personalized Feedback",
   "noData": "No data available",
   "showMore": "Show more feedback",
   "close": "Close",
-
-  "timeAllocationTitle": "Time Allocation by Course",
+  "timeAllocationTitle": "Course Time Allocation",
   "totalLearningTime": "Total Learning Time",
-  "hours": "Hours",
-  "minutes": "Minutes",
+  "hours": "hours",
+  "minutes": "minutes",
   "and": "and",
-
   "learningHeatmapTitle": "Learning Heatmap",
   "loading": "Loading data...",
   "day": "Day",
   "days": "Days",
   "hour": "Hour",
-
+  "loadingDashboard": "Loading Dashboard…",
+  "loadingSession": "Loading Session…",
+  "welcomeBackTitle": "Welcome back, {{name}}!",
+  "nextCourse": "Next Course",
+  "noDataAvailable": "No data available yet",
+  "lessonCompletionRateTitleActive": "Completion Rate – {{courseLabel}}",
+  "lessonCompletionRateTitleGeneric": "Completion Rate – Lessons",
+  "courseCompletionRateTitle": "Average Completion Rate – Courses",
+  "analysisTitle": "Analysis",
+  "avgLessonCompletion": "Average Lesson Completion",
+  "numberOfStudents": "Number of Students",
+  "highestCompletion": "Highest Completion",
+  "lowestCompletion": "Lowest Completion",
+  "overviewTitle": "Overview",
+  "overallAvgCompletion": "Overall Average Completion Rate",
   "learningPathTitle": "My Learning Path",
   "loadingPath": "Loading your learning path...",
   "noSubjects": "No subjects available.",
@@ -28,26 +42,23 @@
   "of": "of",
   "coursesCompleted": "Courses completed",
   "continueLearning": "Continue Learning",
-
   "activity": "Activity",
-  "noActivity": "No activity",
-  "veryLow": "Very low",
+  "noActivity": "No Activity",
+  "veryLow": "Very Low",
   "low": "Low",
   "medium": "Medium",
   "high": "High",
-  "veryHigh": "Very high",
-
+  "veryHigh": "Very High",
   "today": "Today",
   "week": "Week",
   "month": "Month",
   "year": "Year",
   "morning": "Morning",
+  "afternoon": "Afternoon",
   "evening": "Evening",
-
-  "Früh": "Early",
-  "Tag": "Day",
-  "Spät": "Late",
-
+  "Früh": "Morning",
+  "Tag": "Afternoon",
+  "Spät": "Evening",
   "mon": "Mon",
   "tue": "Tue",
   "wed": "Wed",
@@ -55,7 +66,6 @@
   "fri": "Fri",
   "sat": "Sat",
   "sun": "Sun",
-
   "monFull": "Monday",
   "tueFull": "Tuesday",
   "wedFull": "Wednesday",
@@ -63,7 +73,18 @@
   "friFull": "Friday",
   "satFull": "Saturday",
   "sunFull": "Sunday",
-
+  "jan": "Jan",
+  "feb": "Feb",
+  "mar": "Mar",
+  "apr": "Apr",
+  "may": "May",
+  "jun": "Jun",
+  "jul": "Jul",
+  "aug": "Aug",
+  "sep": "Sep",
+  "oct": "Oct",
+  "nov": "Nov",
+  "dec": "Dec",
   "janFull": "January",
   "febFull": "February",
   "marFull": "March",
@@ -76,41 +97,101 @@
   "octFull": "October",
   "novFull": "November",
   "decFull": "December",
-
   "timeMetric": "Time",
   "completedTasks": "Completed Tasks",
   "correctTasks": "Correct Tasks",
-
   "selectHeatmapType": "Select Heatmap Type",
   "selectOption": "Select...",
   "selectHeatmapPrompt": "Please select a metric to display your heatmap.",
   "openDetailedHeatmaps": "Switch to detailed learning heatmaps",
-
   "tooltip": {
-    "noActivityTime": "No learning activity recorded on {{label}}.",
-    "noCompletedTasks": "No tasks completed on {{label}}.",
-    "noCorrectTasks": "No correct answers on {{label}}.",
-    "activityVeryLow": "very low activity",
-    "activityLow": "low activity",
-    "activityMedium": "medium activity",
-    "activityHigh": "high activity",
-    "activityVeryHigh": "very high activity",
-    "timeActivity": "{{label}}: {{activity}} — {{hours}}h {{minutes}}m",
-    "completedTasksActivity": "{{label}}: {{activity}} — {{tasks}} tasks completed",
-    "correctTasksActivity": "{{label}}: {{activity}} — {{correct}} correct answers"
+    "noActivityTime": "No learning activity.",
+    "noCompletedTasks": "No tasks completed.",
+    "noCorrectTasks": "No correct answers.",
+    "activityVeryLow": "Very low activity",
+    "activityLow": "Low activity",
+    "activityMedium": "Medium activity",
+    "activityHigh": "High activity",
+    "activityVeryHigh": "Very high activity",
+    "timeActivity": "{{label}}: {{activity}} - {{hours}}h {{minutes}}m",
+    "completedTasksActivity": "{{label}}: {{activity}} - {{tasks}} tasks completed",
+    "correctTasksActivity": "{{label}}: {{activity}} - {{correct}} correct answers",
+    "heatmap": {
+      "outOfBounds": "Outside the current month",
+      "noActivityTime": "No activity",
+      "noCompletedTasks": "No tasks completed",
+      "noCorrectTasks": "No correct answers.",
+      "day": {
+        "time": "{{activityLabel}}, you learned for {{minutes}} minutes.",
+        "completed_one": "{{activityLabel}}, you completed 1 task.",
+        "completed_other": "{{activityLabel}}, you completed {{count}} tasks.",
+        "correct_one": "{{activityLabel}}, you answered 1 task correctly.",
+        "correct_other": "{{activityLabel}}, you answered {{count}} tasks correctly."
+      },
+      "week": {
+        "time": "{{activityLabel}} on {{day}}. {{timeSlot}} you learned for {{timeStr}}.",
+        "completed": "{{activityLabel}} on {{day}}. {{timeSlot}} you completed {{count}} tasks.",
+        "correct": "{{activityLabel}} on {{day}}. {{timeSlot}} you answered {{count}} tasks correctly."
+      },
+      "month": {
+        "time": "{{activityLabel}}, on {{dayLabel}}. {{monthName}} you learned for {{timeStr}}.",
+        "completed": "{{activityLabel}}, on {{dayLabel}}. {{monthName}} you completed {{tasks}} tasks.",
+        "correct": "{{activityLabel}}, on {{dayLabel}}. {{monthName}} you answered {{correct}} tasks correctly."
+      },
+      "year": {
+        "time": "In {{monthName}} you had {{activityLabel}}. You learned for {{timeStr}}.",
+        "completed": "In {{monthName}} you had {{activityLabel}}. You completed {{tasks}} tasks.",
+        "correct": "In {{monthName}} you had {{activityLabel}}. You answered {{correct}} tasks correctly."
+      }
+    }
   },
-
   "recommendations": {
     "streak": "You're on a {{count}} {{dayLabel}} learning streak – keep it up!",
-    "avgTime": "You learn an average of {{hours}} hours and {{minutes}} minutes per day – great consistency!",
-    "morning": "You are particularly focused and learn most effectively in the morning.",
+    "avgTime": "You're averaging {{hours}} hours and {{minutes}} minutes of learning per day – great consistency!",
+    "morning": "You're most focused and effective at learning in the morning.",
     "afternoon": "You show the most learning activity in the afternoon – a productive time!",
-    "evening": "You concentrate and learn the most in the evening – ideal for quiet study phases.",
+    "evening": "You concentrate and learn most in the evening – perfect for quiet study sessions.",
     "activeDay": "Your most active learning day is {{day}}.",
-    "quizTotal": "You have answered a total of {{count}} quiz questions – great participation!",
-    "quizAccuracy": "Your quiz accuracy is {{percent}}% – keep it up!",
+    "quizTotal": "You've answered a total of {{count}} quiz questions – great participation!",
+    "quizAccuracy": "Your quiz accuracy is at {{percent}}% – keep up the good work!",
     "quizTimeAccuracy": "Your quiz performance is best in the {{slot}} – great concentration during this time!",
     "trendUp": "Your learning time has increased compared to last week – keep going!",
-    "trendDown": "Your learning time has slightly decreased compared to last week – stay on track!"
+    "trendDown": "Your learning time has slightly decreased compared to last week – you can do it!"
+  },
+  "heatmapModal": {
+    "title": "Learning Heatmaps",
+    "loading": "Loading heatmap...",
+    "intro": {
+      "hey": "<strong>Hey {{name}}!</strong> Keep an eye on your learning progress with your personal <strong>Learning HeatMaps</strong>. 🔥",
+      "description": "They show you <strong>when and how intensively you have learned</strong> – whether by <strong>day</strong>, <strong>week</strong>, <strong>month</strong>, or for the <strong>whole year</strong>.",
+      "metricTime": "⏱️ <strong>Time:</strong> How many minutes or hours you have actively learned.",
+      "metricCompleted": "✅ <strong>Completed Tasks:</strong> How many tasks you have finished.",
+      "metricCorrect": "🎯 <strong>Correct Tasks:</strong> How often you found the right solution.",
+      "proTip": "💡 <strong>Pro-Tip:</strong> Hover over a cell to see <strong>how much you accomplished that day.</strong>"
+    },
+    "legendTitle": "Activity Legend:",
+    "selectMetricTitle": "Select Metric",
+    "dayView": {
+      "title": "Day View",
+      "tooltip": "Shows your learning activity per hour for the selected day."
+    },
+    "weekView": {
+      "title": "Week View",
+      "tooltip": "Shows how active you were on each weekday at different times of the day.",
+      "prev": "Previous Week",
+      "next": "Next Week"
+    },
+    "monthView": {
+      "title": "Month View",
+      "tooltip": "Shows your activity per day in the selected month.",
+      "prev": "Previous Month",
+      "next": "Next Month"
+    },
+    "yearView": {
+      "title": "Year View",
+      "tooltip": "Shows your total learning activity per month for the year.",
+      "prev": "Previous Year",
+      "next": "Next Year"
+    }
   }
 }
