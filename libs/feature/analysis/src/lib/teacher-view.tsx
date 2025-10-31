@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { withTranslations } from "@self-learning/api";
+// import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { useSession } from "next-auth/react";
 import type { Chart as ChartJS } from "chart.js";
@@ -255,7 +255,7 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 	);
 }
 
-export const getServerSideProps = withTranslations(["common"]);
+// export const getServerSideProps = withTranslations(["common"]);
 
 export default function LearningAnalyticsPage() {
 	const { data: session, status } = useSession();
