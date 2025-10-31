@@ -80,3 +80,20 @@ export async function getStudentMetric_HourlyAverageQuizAnswers(userId: string) 
 		where: { userId: userId }
 	});
 }
+
+/**
+ * Fetch all subjects with their courses.
+ */
+export async function getSubjects() {
+	return database.subject.findMany({
+		orderBy: { title: "asc" },
+		include: {
+			courses: {
+				select: {
+					courseId: true,
+					title: true
+				}
+			}
+		}
+	});
+}
