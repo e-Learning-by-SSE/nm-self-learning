@@ -592,13 +592,11 @@ export default function StudyTimeHeatmap({
 
 										const hours = Math.floor(v);
 										const minutes = Math.round((v - hours) * 60);
+
+										// Fixed spacing for timeStr: "H abbr M abbr"
 										const timeStr =
 											hours > 0
-												? `${hours}${t("hourAbbr")} ${
-														minutes > 0
-															? minutes + `${t("minAbbr")}`
-															: ""
-													}`.trim()
+												? `${hours}${t("hourAbbr")} ${minutes > 0 ? `${minutes}${t("minAbbr")}` : ""}`.trim()
 												: `${minutes}${t("minAbbr")}`;
 
 										if (internalMetric === "hours") {
@@ -635,14 +633,13 @@ export default function StudyTimeHeatmap({
 										if (internalMetric === "hours") {
 											const hours = Math.floor(v);
 											const minutes = Math.round((v - hours) * 60);
+
+											// Fixed spacing for timeStr: "H abbr M abbr"
 											const timeStr =
 												hours > 0
-													? `${hours}${t("hourAbbr")} ${
-															minutes > 0
-																? minutes + `${t("minAbbr")}`
-																: ""
-														}`.trim()
+													? `${hours}${t("hourAbbr")} ${minutes > 0 ? `${minutes}${t("minAbbr")}` : ""}`.trim()
 													: `${minutes}${t("minAbbr")}`;
+
 											text = t("tooltip.heatmap.month.time", {
 												activityLabel,
 												dayLabel,
@@ -678,14 +675,13 @@ export default function StudyTimeHeatmap({
 										if (internalMetric === "hours") {
 											const hours = Math.floor(v);
 											const minutes = Math.round((v - hours) * 60);
+
+											// Fixed spacing for timeStr: "H abbr M abbr"
 											const timeStr =
 												hours > 0
-													? `${hours}${t("hourAbbr")} ${
-															minutes > 0
-																? minutes + `${t("minAbbr")}`
-																: ""
-														}`.trim()
+													? `${hours}${t("hourAbbr")} ${minutes > 0 ? `${minutes}${t("minAbbr")}` : ""}`.trim()
 													: `${minutes}${t("minAbbr")}`;
+
 											text = t("tooltip.heatmap.year.time", {
 												monthName,
 												activityLabel,
