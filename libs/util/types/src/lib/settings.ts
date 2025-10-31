@@ -4,7 +4,7 @@ import * as z from "zod";
 export const editFeatureSettingsSchema = z
 	.object({
 		learningStatistics: z.boolean().default(true),
-		// experimental: z.boolean().default(false), // Uncomment if you want to let the user change this setting via the default setting page
+		experimental: z.boolean().default(false), // Uncomment if you want to let the user change this setting via the default setting page
 		learningDiary: z.boolean().default(false)
 	})
 	.partial();

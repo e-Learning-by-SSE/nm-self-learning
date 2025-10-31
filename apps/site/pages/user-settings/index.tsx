@@ -2,16 +2,18 @@ import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import {
 	DeleteMeForm,
+	EXPERIMENT_END_DATE,
 	ExperimentShortInfo,
 	FeatureSettingsForm,
 	getExperimentStatus,
 	getUserWithSettings,
+	isExperimentActive,
 	NotificationSettingsForm,
 	PersonalSettingsForm,
 	I18N_NAMESPACE as NS_SETTINGS
 } from "@self-learning/profile";
 import { ResolvedValue } from "@self-learning/types";
-import { showToast } from "@self-learning/ui/common";
+import { showToast, Toggle } from "@self-learning/ui/common";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { useLoginRedirect, withAuth } from "@self-learning/util/auth";
 import { isTruthy } from "@self-learning/util/common";
@@ -55,10 +57,11 @@ export default function SettingsPage(props: PageProps) {
 	const { mutateAsync: updateNotificationSettings } =
 		trpc.notification.upsertNotificationSetting.useMutation();
 
-	const { data } = useRequiredSession();	const { t: t_common } = useTranslation("common");
+	const { data } = useRequiredSession(); const { t: t_common } = useTranslation("common");
 	const { t } = useTranslation("pages-settings");
 
 	const router = useRouter();
+	const { data: session } = useRequiredSession();
 
 	const { loginRedirect } = useLoginRedirect();
 
@@ -205,12 +208,34 @@ export default function SettingsPage(props: PageProps) {
 				)}
 			</SettingSection>
 			<SettingSection title="Studienteilnahme">
-				{props.experimentStatus && <ExperimentShortInfo {...props.experimentStatus} />}
+				{props.experimentStatus?.isParticipating && (
+					<ExperimentShortInfo {...props.experimentStatus} />
+				)}
+
+				{!props.experimentStatus?.isParticipating &&
+					isExperimentActive() && (
+						<ExperimentShortInfo {...props.experimentStatus} />
+					)}
 			</SettingSection>
+			{session?.user.role === "ADMIN" &&
+				<SettingSection title={t("Developer Options")}>
+					<Toggle
+						value={props.experimentStatus?.isParticipating ?? false}
+						onChange={(newValue) => {
+							/* TODO */
+							console.log(`attempt to set experiment status to ${newValue} but not implemented yet`)
+						}}
+						label="Experimentteilnahme mit Beta-Features (Gamification)"
+						disabled={isExperimentActive()} // avoid interference with ongoing experiments
+					/>
+				</SettingSection>
+
+			}
+
 			<SettingSection title={t("Critical Area")}>
 				<DeleteMeForm />
 			</SettingSection>
-		</CenteredSection>
+		</CenteredSection >
 	);
 }
 
