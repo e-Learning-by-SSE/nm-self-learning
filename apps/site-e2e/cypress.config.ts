@@ -11,13 +11,12 @@ export default defineConfig({
 		screenshotsFolder: "../../dist/cypress/apps/site-e2e/screenshots",
 		chromeWebSecurity: false,
 		baseUrl: "http://localhost:4200",
-		defaultCommandTimeout: 2000,
+		defaultCommandTimeout: 10000,
 		viewportHeight: 1080,
 		viewportWidth: 1600,
 		specPattern: "src/e2e/**/*.cy.{js,jsx,ts,tsx}",
 		supportFile: "src/support/e2e.ts",
 		scrollBehavior: "center",
-		experimentalSessionAndOrigin: true,
 		/**
 		 * TODO(@nx/cypress): In Cypress v12,the testIsolation option is turned on by default.
 		 * This can cause tests to start breaking where not indended.

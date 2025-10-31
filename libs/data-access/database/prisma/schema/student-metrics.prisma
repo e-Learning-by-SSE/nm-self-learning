@@ -1,0 +1,77 @@
+view StudentMetric_LearningTime {
+  userId                        String  @unique
+  username                      String
+  timeSeconds                   Float
+}
+ 
+view StudentMetric_DailyLearningTime {
+  userId                        String  @unique
+  username                      String
+  day                           DateTime
+  timeSeconds                   Float
+}
+
+view StudentMetric_HourlyLearningTime {
+  userId                        String  @unique
+  username                      String
+  hour                          DateTime
+  timeSeconds                   Float
+}
+
+view StudentMetric_LearningTimeByCourse {
+  userId                        String  @unique
+  username                      String
+  courseId                      String
+  courseTitle                   String
+  timeSeconds                   Float
+}
+
+view StudentMetric_DailyLearningTimeByCourse {
+  userId                        String  @unique
+  username                      String
+  courseId                      String
+  courseTitle                   String?
+  day                           DateTime
+  timeSeconds                   Float
+}
+
+view StudentMetric_CoursesCompletedBySubject {
+  userId                      String    @unique
+  username                    String
+  subjectId                   String
+  subjectTitle                String
+  completedCoursesCount       Int
+  completedCourses            String?
+}
+
+view StudentMetric_LearningStreak {
+  userId                      String  @unique
+  username                    String
+  longestStreakDays           Int
+  currentStreakDays           Int
+}
+
+view StudentMetric_AverageQuizAnswers {
+  userId               String  @unique
+  username             String
+  courseId             String
+  courseTitle          String
+  lessonId             String
+  lessonTitle          String
+  wrongAnswers         Int
+  correctAnswers       Int
+  averageAccuracyRate  Float
+}
+
+view StudentMetric_HourlyAverageQuizAnswers {
+  userId               String  @unique
+  username             String
+  courseId             String
+  courseTitle          String
+  lessonId             String
+  lessonTitle          String
+  hour                 DateTime
+  wrongAnswers         Int
+  correctAnswers       Int
+  averageAccuracyRate  Float
+}
