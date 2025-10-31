@@ -4,8 +4,6 @@ import { trpc } from "@self-learning/api-client";
 import { useSession } from "next-auth/react";
 import type { Chart as ChartJS } from "chart.js";
 
-/* Hilfsfunktionen für Prozentwerte */
-
 const pct = (n?: number) =>
 	n === undefined || n === null || !Number.isFinite(n) ? "—" : `${Number(n).toFixed(1)}%`;
 
@@ -15,8 +13,6 @@ const toPctNumber = (v: unknown) => {
 	return Number(n);
 };
 
-/* Farben für Diagramme */
-
 const colorGreen = "#7fb89b";
 const colorYellow = "#eae282";
 const colorRed = "#e57368";
@@ -25,15 +21,15 @@ const colorAxis = "#525252";
 /* Datentypen */
 
 type LessonItem = {
-	label: string; // Titel der Lektion
-	rate: number; // durchschnittliche Abschlussrate (%)
+	label: string;
+	rate: number;
 };
 
 type CourseItem = {
 	courseId: string;
-	label: string; // Kurstitel
-	rate: number; // durchschnittliche Abschlussrate für den Kurs
-	enrollments: number; // Anzahl der Einschreibungen
+	label: string;
+	rate: number;
+	enrollments: number;
 };
 
 type PerCourseStats = {
@@ -52,8 +48,6 @@ type DashboardData = {
 	perCourseStats: Record<string, PerCourseStats>;
 	overallAverageCompletionPct?: number;
 };
-
-/* ---------- Diagrammkarte ---------- */
 
 function ChartCard({
 	title,
@@ -159,7 +153,7 @@ function ChartCard({
 	);
 }
 
-/* ---------- Dashboard-Layout ---------- */
+/*Dashboard-Layout*/
 
 function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 	const [coursePos, setCoursePos] = useState(0);
@@ -194,7 +188,6 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 			</h1>
 
 			<section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-				{/* Linkes Diagramm */}
 				<ChartCard
 					title={
 						activeCourse
@@ -216,12 +209,10 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 					}
 				/>
 
-				{/* Rechtes Diagramm */}
 				<ChartCard title="Durchschnittliche Abschlussrate – Kurse" data={courseBars} />
 			</section>
 
 			<section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-				{/* Analyse-Box */}
 				<div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5">
 					<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center gap-2">
 						<h3 className="text-lg font-semibold">Analyse</h3>
@@ -248,7 +239,6 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 					</div>
 				</div>
 
-				{/* Übersicht-Box */}
 				<div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5">
 					<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center gap-2">
 						<h3 className="text-lg font-semibold">Übersicht</h3>
