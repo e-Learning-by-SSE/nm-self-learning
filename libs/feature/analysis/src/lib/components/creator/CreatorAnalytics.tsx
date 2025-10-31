@@ -286,7 +286,7 @@ export const getServerSideProps = withTranslations(["common"]);
 
 /* ---------- Page Component (Data Wiring) ---------- */
 
-export default function LearningAnalyticsPage() {
+export default function CreatorAnalytics() {
 	const { data: session, status } = useSession();
 
 	// Queries
