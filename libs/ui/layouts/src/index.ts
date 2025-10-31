@@ -12,3 +12,5 @@ export * from "./lib/search-bar";
 export * from "./lib/redirect-to-login";
 export * from "./lib/navigable-content/navigable";
 export * from "./lib/mobile-sidebar-navigation";
+
+export const I18N_NAMESPACE = ["platform-config"];
