@@ -95,7 +95,7 @@ export function LessonEditor({
 
 	function onCancel() {
 		if (window.confirm("Änderungen verwerfen?")) {
-			router.push("/dashboard/author");
+			router.back();
 		}
 	}
 
