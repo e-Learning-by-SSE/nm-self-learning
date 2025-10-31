@@ -142,7 +142,10 @@ function ChartCard({
 
 	return (
 		<div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5">
-			<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-start justify-between">
+			<div
+				id="CourseCompletionRate"
+				className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-start justify-between"
+			>
 				<h2 className="text-lg font-semibold">{title}</h2>
 				{extraAction ? <div>{extraAction}</div> : null}
 			</div>
@@ -193,7 +196,7 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 
 	return (
 		<div className="max-w-7xl mx-auto p-6 md:p-8">
-			<h1 className="text-3xl font-bold mb-6">
+			<h1 id="author-analytics-title" className="text-3xl font-bold mb-6">
 				Willkommen zurück,{" "}
 				<span className="text-neutral-700">{data?.teacherName ?? "—"}</span>!
 			</h1>
@@ -229,7 +232,9 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 				{/* Analysis Box */}
 				<div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5">
 					<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center gap-2">
-						<h3 className="text-lg font-semibold">Analysis</h3>
+						<h3 id="AnalysisCard" className="text-lg font-semibold">
+							Analysis
+						</h3>
 					</div>
 					<div className="p-5 text-sm leading-6 space-y-2">
 						<div>• Average Lesson Completion: {pct(stats.avgCourseRate)}</div>
@@ -252,7 +257,9 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 				{/* Overview Box */}
 				<div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5">
 					<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center gap-2">
-						<h3 className="text-lg font-semibold">Overview</h3>
+						<h3 id="OverviewCard" className="text-lg font-semibold">
+							Overview
+						</h3>
 					</div>
 					<div className="p-5 text-sm leading-6">
 						Average Completion Rate Overall:{" "}
