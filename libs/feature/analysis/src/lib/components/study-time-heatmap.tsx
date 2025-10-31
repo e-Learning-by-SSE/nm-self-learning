@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useRef } from "react";
 import { trpc } from "@self-learning/api-client";
+import { useTranslation } from "next-i18next";
 
 /** ---------- TYPES ---------- */
 export type Period = "day" | "week" | "month" | "year";
@@ -84,9 +85,17 @@ function parseUTC(dateString: string | Date): Date {
 /** ---------- METRIC NORMALIZER ---------- */
 function normalizeMetric(m: string): Metric {
 	const s = (m || "").toLowerCase();
-	if (s === "zeit" || s === "hours") return "hours";
-	if (s === "alle aufgaben" || s === "units") return "units";
-	if (s === "richtige aufgaben" || s === "accuracy") return "accuracy";
+	// Handles keys from dropdown (timeMetric) and German/English labels
+	if (s === "zeit" || s === "time" || s === "hours" || s === "timemetric") return "hours";
+	if (s === "alle aufgaben" || s === "completed tasks" || s === "units" || s === "completedtasks")
+		return "units";
+	if (
+		s === "richtige aufgaben" ||
+		s === "correct tasks" ||
+		s === "accuracy" ||
+		s === "correcttasks"
+	)
+		return "accuracy";
 	return "hours";
 }
 
@@ -186,6 +195,7 @@ export default function StudyTimeHeatmap({
 	selection: Date;
 	heightPx?: number;
 }) {
+	const { t } = useTranslation("student-analytics");
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 
 	// Queries separated by source
@@ -205,11 +215,11 @@ export default function StudyTimeHeatmap({
 	const hasNoData = useMemo(() => {
 		if (internalMetric === "hours") {
 			if (period === "day" || period === "week")
-				return !hourlyLearning || hourlyLearning.length === 0;
+				return !hourlyLearning || (hourlyLearning as any[]).length === 0;
 			return !dailyLearning || (Array.isArray(dailyLearning) && dailyLearning.length === 0);
 		} else {
 			// "Erledigte Aufgaben" & "Richtige Aufgaben"/Units/Accuracy always come from hourlyQuiz (for aggregation)
-			return !hourlyQuiz || hourlyQuiz.length === 0;
+			return !hourlyQuiz || (hourlyQuiz as any[]).length === 0;
 		}
 	}, [period, internalMetric, dailyLearning, hourlyLearning, hourlyQuiz]);
 
@@ -224,7 +234,7 @@ export default function StudyTimeHeatmap({
 		if (internalMetric === "hours") {
 			// from DailyLearningTime (seconds → hours)
 			if (dailyLearning) {
-				for (const entry of dailyLearning) {
+				for (const entry of dailyLearning as any[]) {
 					const iso = normalizeDate(entry.day);
 					if (!iso) continue;
 					const value = (entry.timeSeconds ?? 0) / 3600;
@@ -249,19 +259,10 @@ export default function StudyTimeHeatmap({
 			if (internalMetric === "hours") {
 				// Hours of learning time
 				hoursForDay = Array.isArray(hourlyLearning)
-					? hourlyLearning
+					? (hourlyLearning as any[])
 							.filter(h => normalizeDate(h.hour) === isoToday)
 							.map(h => {
 								const d = parseUTC(h.hour);
-								const local = new Date(h.hour);
-								console.log(
-									"🧭 RAW:",
-									h.hour,
-									"| Parsed (UTC):",
-									d.toISOString(),
-									"| Local:",
-									local.toISOString()
-								);
 								return {
 									hour: d.getUTCHours(),
 									value: (h.timeSeconds ?? 0) / 3600
@@ -275,15 +276,6 @@ export default function StudyTimeHeatmap({
 					for (const h of hourlyQuiz as HourlyQuiz[]) {
 						if (normalizeDate(h.hour) !== isoToday) continue;
 						const d = parseUTC(h.hour);
-						const local = new Date(h.hour);
-						console.log(
-							"🧭 QUIZ RAW:",
-							h.hour,
-							"| Parsed (UTC):",
-							d.toISOString(),
-							"| Local:",
-							local.toISOString()
-						);
 						const hour = d.getUTCHours();
 						const val =
 							internalMetric === "units"
@@ -310,8 +302,8 @@ export default function StudyTimeHeatmap({
 
 		/** ---- WEEK ---- */
 		if (period === "week") {
-			const rows = ["Früh", "Tag", "Spät"];
-			const cols = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+			const rows = [t("Früh"), t("Tag"), t("Spät")];
+			const cols = [t("mon"), t("tue"), t("wed"), t("thu"), t("fri"), t("sat"), t("sun")];
 			const start = startOfISOWeek(sel);
 
 			let values: number[][] = rows.map(() => cols.map(() => 0));
@@ -319,12 +311,12 @@ export default function StudyTimeHeatmap({
 			if (internalMetric === "hours") {
 				// Aggregation from hourly learning time
 				const end = addDays(start, 7);
-				const weekHours = (Array.isArray(hourlyLearning) ? hourlyLearning : []).filter(
-					h => {
-						const d = parseUTC(h.hour);
-						return d >= start && d < end;
-					}
-				);
+				const weekHours = (
+					Array.isArray(hourlyLearning) ? (hourlyLearning as any[]) : []
+				).filter(h => {
+					const d = parseUTC(h.hour);
+					return d >= start && d < end;
+				});
 
 				for (const h of weekHours) {
 					const d = parseUTC(h.hour);
@@ -355,7 +347,7 @@ export default function StudyTimeHeatmap({
 		if (period === "month") {
 			const firstOfMonth = new Date(nowYear, nowMonth, 1);
 			const start = startOfISOWeek(firstOfMonth);
-			const cols = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+			const cols = [t("mon"), t("tue"), t("wed"), t("thu"), t("fri"), t("sat"), t("sun")];
 			const values: number[][] = [];
 			const labels: string[][] = [];
 
@@ -386,19 +378,20 @@ export default function StudyTimeHeatmap({
 		}
 
 		/** ---- YEAR ---- */
+		// Use short month keys for cell labels
 		const months = [
-			"Jan",
-			"Feb",
-			"Mrz",
-			"Apr",
-			"Mai",
-			"Jun",
-			"Jul",
-			"Aug",
-			"Sep",
-			"Okt",
-			"Nov",
-			"Dez"
+			t("jan"),
+			t("feb"),
+			t("mar"),
+			t("apr"),
+			t("may"),
+			t("jun"),
+			t("jul"),
+			t("aug"),
+			t("sep"),
+			t("oct"),
+			t("nov"),
+			t("dec")
 		];
 		const rows = ["", "", ""];
 		const cols = ["", "", "", ""];
@@ -425,8 +418,15 @@ export default function StudyTimeHeatmap({
 			labels.push(rowLabs);
 		}
 
-		return { rows, cols, values, xLabels: [], yLabels: [], cellLabel: (r, c) => labels[r][c] };
-	}, [period, selection, dailyLearning, hourlyLearning, hourlyQuiz, internalMetric]);
+		return {
+			rows,
+			cols,
+			values,
+			xLabels: [],
+			yLabels: [],
+			cellLabel: (r: number, c: number) => labels[r][c]
+		};
+	}, [period, selection, dailyLearning, hourlyLearning, hourlyQuiz, internalMetric, t]);
 
 	/** ---------- CHART RENDERING ---------- */
 	useEffect(() => {
@@ -517,110 +517,118 @@ export default function StudyTimeHeatmap({
 								title: () => "",
 								label: (ctx: any) => {
 									const v: number = ctx.raw.v;
-									if (v === -1) return "Außerhalb des aktuellen Monats";
+									if (v === -1) return t("tooltip.heatmap.outOfBounds");
 									if (v === 0) {
-										if (internalMetric === "hours") return "Keine Aktivität";
+										if (internalMetric === "hours")
+											return t("tooltip.heatmap.noActivityTime");
 										if (internalMetric === "units")
-											return "Keine Aufgaben erledigt";
+											return t("tooltip.heatmap.noCompletedTasks");
 										if (internalMetric === "accuracy")
-											return "Keine richtigen Antworten";
+											return t("tooltip.heatmap.noCorrectTasks");
 									}
 
 									const currentDate = new Date(selection);
 
 									let text = "";
 
+									// Determine activity label
+									let activityKey = "";
+									if (period === "year") {
+										if (v <= 20) activityKey = "tooltip.activityVeryLow";
+										else if (v <= 40) activityKey = "tooltip.activityLow";
+										else if (v <= 60) activityKey = "tooltip.activityMedium";
+										else if (v <= 80) activityKey = "tooltip.activityHigh";
+										else activityKey = "tooltip.activityVeryHigh";
+									} else if (period === "day" && internalMetric === "hours") {
+										if (v < 0.25) activityKey = "tooltip.activityVeryLow";
+										else if (v < 0.5) activityKey = "tooltip.activityLow";
+										else if (v < 0.75) activityKey = "tooltip.activityMedium";
+										else if (v < 1) activityKey = "tooltip.activityHigh";
+										else activityKey = "tooltip.activityVeryHigh";
+									} else {
+										if (v <= 2) activityKey = "tooltip.activityVeryLow";
+										else if (v <= 4) activityKey = "tooltip.activityLow";
+										else if (v <= 6) activityKey = "tooltip.activityMedium";
+										else if (v <= 8) activityKey = "tooltip.activityHigh";
+										else activityKey = "tooltip.activityVeryHigh";
+									}
+									const activityLabel = t(activityKey);
+
 									/** ---------- DAY ---------- */
 									if (period === "day") {
 										if (internalMetric === "hours") {
 											const minutes = Math.round(v * 60);
-											let activityLabel = "";
-											if (v <= 0) activityLabel = "Keine Aktivität";
-											else if (v < 0.25)
-												activityLabel = "Sehr geringe Aktivität";
-											else if (v < 0.5) activityLabel = "Geringe Aktivität";
-											else if (v < 0.75) activityLabel = "Mittlere Aktivität";
-											else if (v < 1) activityLabel = "Hohe Aktivität";
-											else activityLabel = "Sehr hohe Aktivität";
-											text =
-												v <= 0
-													? activityLabel
-													: `${activityLabel}, du hast ${minutes} Minuten gelernt.`;
+											text = t("tooltip.heatmap.day.time", {
+												activityLabel,
+												minutes
+											});
 										} else if (internalMetric === "units") {
 											const tasks = Math.round(v);
-											let activityLabel = "";
-											if (v <= 2) activityLabel = "Sehr geringe Aktivität";
-											else if (v <= 4) activityLabel = "Geringe Aktivität";
-											else if (v <= 6) activityLabel = "Mittlere Aktivität";
-											else if (v <= 8) activityLabel = "Hohe Aktivität";
-											else activityLabel = "Sehr hohe Aktivität";
-											text =
-												tasks === 1
-													? `${activityLabel}, du hast 1 Aufgabe erledigt.`
-													: `${activityLabel}, du hast ${tasks} Aufgaben erledigt.`;
+											text = t("tooltip.heatmap.day.completed", {
+												activityLabel,
+												count: tasks
+											});
 										} else {
 											const correct = Math.round(v);
-											let activityLabel = "";
-											if (v <= 2) activityLabel = "Sehr geringe Aktivität";
-											else if (v <= 4) activityLabel = "Geringe Aktivität";
-											else if (v <= 6) activityLabel = "Mittlere Aktivität";
-											else if (v <= 8) activityLabel = "Hohe Aktivität";
-											else activityLabel = "Sehr hohe Aktivität";
-											text =
-												correct === 1
-													? `${activityLabel}, du hast 1 Aufgabe richtig gelöst.`
-													: `${activityLabel}, du hast ${correct} Aufgaben richtig gelöst.`;
+											text = t("tooltip.heatmap.day.correct", {
+												activityLabel,
+												count: correct
+											});
 										}
 									} else if (period === "week") {
 										/** ---------- WEEK ---------- */
-										const tag = [
-											"Montag",
-											"Dienstag",
-											"Mittwoch",
-											"Donnerstag",
-											"Freitag",
-											"Samstag",
-											"Sonntag"
+										const day = [
+											t("monFull"),
+											t("tueFull"),
+											t("wedFull"),
+											t("thuFull"),
+											t("friFull"),
+											t("satFull"),
+											t("sunFull")
 										][ctx.raw.x];
-										const tageszeit = ["Am Vormittag", "Tagsüber", "Am Abend"][
+										const timeSlot = [t("Früh"), t("Tag"), t("Spät")][
 											ctx.raw.y
 										];
-
-										let activityLabel = "";
-										if (v <= 2) activityLabel = "Sehr geringe Aktivität";
-										else if (v <= 4) activityLabel = "Geringe Aktivität";
-										else if (v <= 6) activityLabel = "Mittlere Aktivität";
-										else if (v <= 8) activityLabel = "Hohe Aktivität";
-										else activityLabel = "Sehr hohe Aktivität";
 
 										const hours = Math.floor(v);
 										const minutes = Math.round((v - hours) * 60);
 										const timeStr =
 											hours > 0
-												? `${hours} Std. ${minutes > 0 ? minutes + " Min." : ""}`.trim()
-												: `${minutes} Min.`;
+												? `${hours}${t("hourAbbr")} ${
+														minutes > 0
+															? minutes + `${t("minAbbr")}`
+															: ""
+													}`.trim()
+												: `${minutes}${t("minAbbr")}`;
 
 										if (internalMetric === "hours") {
-											text = `${activityLabel} am ${tag}. ${tageszeit} hast du ${timeStr} gelernt.`;
+											text = t("tooltip.heatmap.week.time", {
+												activityLabel,
+												day,
+												timeSlot,
+												timeStr
+											});
 										} else if (internalMetric === "units") {
-											text = `${activityLabel} am ${tag}. ${tageszeit} hast du ${v} Aufgaben erledigt.`;
+											text = t("tooltip.heatmap.week.completed", {
+												activityLabel,
+												day,
+												timeSlot,
+												count: v
+											});
 										} else {
-											text = `${activityLabel} am ${tag}. ${tageszeit} hast du ${v} Aufgaben richtig gelöst.`;
+											text = t("tooltip.heatmap.week.correct", {
+												activityLabel,
+												day,
+												timeSlot,
+												count: v
+											});
 										}
 									} else if (period === "month") {
 										/** ---------- MONTH ---------- */
-										let activityLabel = "";
-										if (v <= 0) activityLabel = "Keine Aktivität";
-										else if (v <= 2) activityLabel = "Sehr geringe Aktivität";
-										else if (v <= 4) activityLabel = "Geringe Aktivität";
-										else if (v <= 6) activityLabel = "Mittlere Aktivität";
-										else if (v <= 8) activityLabel = "Hohe Aktivität";
-										else activityLabel = "Sehr hohe Aktivität";
-
 										const dayLabel = config.cellLabel(ctx.raw.y, ctx.raw.x);
 										if (!dayLabel) return activityLabel;
 
-										const monthName = currentDate.toLocaleString("de-DE", {
+										const monthName = currentDate.toLocaleString(t("locale"), {
 											month: "long"
 										});
 
@@ -629,68 +637,75 @@ export default function StudyTimeHeatmap({
 											const minutes = Math.round((v - hours) * 60);
 											const timeStr =
 												hours > 0
-													? `${hours} Std. ${minutes > 0 ? minutes + " Min." : ""}`.trim()
-													: `${minutes} Min.`;
-											text = `${activityLabel}, am ${dayLabel}. ${monthName} hast du ${timeStr} gelernt.`;
+													? `${hours}${t("hourAbbr")} ${
+															minutes > 0
+																? minutes + `${t("minAbbr")}`
+																: ""
+														}`.trim()
+													: `${minutes}${t("minAbbr")}`;
+											text = t("tooltip.heatmap.month.time", {
+												activityLabel,
+												dayLabel,
+												monthName,
+												timeStr
+											});
 										} else if (internalMetric === "units") {
 											const tasks = Math.round(v);
-											text = `${activityLabel}, am ${dayLabel}. ${monthName} hast du ${tasks} Aufgaben erledigt.`;
+											text = t("tooltip.heatmap.month.completed", {
+												activityLabel,
+												dayLabel,
+												monthName,
+												tasks
+											});
 										} else if (internalMetric === "accuracy") {
 											const correct = Math.round(v);
-											text = `${activityLabel}, am ${dayLabel}. ${monthName} hast du ${correct} Aufgaben korrekt gelöst.`;
+											text = t("tooltip.heatmap.month.correct", {
+												activityLabel,
+												dayLabel,
+												monthName,
+												correct
+											});
 										}
 									} else if (period === "year") {
 										/** ---------- YEAR ---------- */
-										let activityLabel = "";
-										if (v <= 0) activityLabel = "Keine Aktivität";
-										else if (v <= 20) activityLabel = "Sehr geringe Aktivität";
-										else if (v <= 40) activityLabel = "Geringe Aktivität";
-										else if (v <= 60) activityLabel = "Mittlere Aktivität";
-										else if (v <= 80) activityLabel = "Hohe Aktivität";
-										else activityLabel = "Sehr hohe Aktivität";
-
-										const monthLabel = config.cellLabel(ctx.raw.y, ctx.raw.x);
+										const monthLabel = config.cellLabel(ctx.raw.y, ctx.raw.x); // "Jan", "Feb", ...
 										if (!monthLabel) return activityLabel;
 
-										const germanMonths: Record<string, string> = {
-											Jan: "Januar",
-											Feb: "Februar",
-											Mrz: "März",
-											Apr: "April",
-											Mai: "Mai",
-											Jun: "Juni",
-											Jul: "Juli",
-											Aug: "August",
-											Sep: "September",
-											Okt: "Oktober",
-											Nov: "November",
-											Dez: "Dezember"
-										};
-
-										const monthName = germanMonths[monthLabel] ?? monthLabel;
+										// Map short month label (Jan, Feb) to full month key (janFull, febFull)
+										const monthKey = monthLabel.toLowerCase() + "Full"; // "janFull", "febFull", ...
+										const monthName = t(monthKey, monthLabel); // Fallback to label if key missing
 
 										if (internalMetric === "hours") {
 											const hours = Math.floor(v);
 											const minutes = Math.round((v - hours) * 60);
 											const timeStr =
 												hours > 0
-													? `${hours} Std. ${minutes > 0 ? minutes + " Min." : ""}`.trim()
-													: `${minutes} Min.`;
-											text = `Im ${monthName} hattest du eine ${activityLabel}. Du hast ${timeStr} gelernt.`;
+													? `${hours}${t("hourAbbr")} ${
+															minutes > 0
+																? minutes + `${t("minAbbr")}`
+																: ""
+														}`.trim()
+													: `${minutes}${t("minAbbr")}`;
+											text = t("tooltip.heatmap.year.time", {
+												monthName,
+												activityLabel,
+												timeStr
+											});
 										} else if (internalMetric === "units") {
 											const tasks = Math.round(v);
-											text = `Im ${monthName} hattest du eine ${activityLabel}. Du hast ${tasks} Aufgaben erledigt.`;
+											text = t("tooltip.heatmap.year.completed", {
+												monthName,
+												activityLabel,
+												tasks
+											});
 										} else if (internalMetric === "accuracy") {
 											const correct = Math.round(v);
-											text = `Im ${monthName} hattest du eine ${activityLabel}. Du hast ${correct} Aufgaben richtig gelöst.`;
+											text = t("tooltip.heatmap.year.correct", {
+												monthName,
+												activityLabel,
+												correct
+											});
 										}
-									} else {
-										/** ---------- WEEK (fallback) ---------- */
-										if (v <= 2) text = "Sehr geringe Aktivität";
-										else if (v <= 4) text = "Geringe Aktivität";
-										else if (v <= 6) text = "Mittlere Aktivität";
-										else if (v <= 8) text = "Hohe Aktivität";
-										else text = "Sehr hohe Aktivität";
 									}
 
 									// Text wrapping for long tooltips
@@ -771,15 +786,15 @@ export default function StudyTimeHeatmap({
 			}
 			if (chartInstance) chartInstance.destroy();
 		};
-	}, [config, period, hasNoData, internalMetric]);
+	}, [config, period, hasNoData, internalMetric, t]);
 
 	return (
 		<div className="w-full" style={{ height: `${heightPx}px` }}>
 			{isLoading ? (
-				<p className="text-center text-gray-400">Lade Heatmap...</p>
+				<p className="text-center text-gray-400">{t("heatmapModal.loading")}</p>
 			) : hasNoData ? (
 				<div className="w-full h-full flex items-center justify-center">
-					<p className="text-gray-400">Keine Daten verfügbar</p>
+					<p className="text-gray-400">{t("noData")}</p>
 				</div>
 			) : (
 				<canvas ref={canvasRef} />

@@ -87,6 +87,11 @@ export function TimeAllocation() {
 			},
 			tooltip: {
 				callbacks: {
+					title: function () {
+						return "";
+					},
+
+					// Creates a custom label that combines subject and percentage
 					label: function (context) {
 						const label = context.label || "";
 						const value = context.parsed || 0;

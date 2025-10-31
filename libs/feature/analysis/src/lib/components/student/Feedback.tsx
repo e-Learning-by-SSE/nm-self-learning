@@ -233,13 +233,13 @@ export function Feedback() {
 			)}
 
 			{recommendations.length > 4 && (
-				<button
+				<p
 					onClick={() => setOpen(true)}
-					className="text-emerald-600 text-sm font-medium hover:text-emerald-800 self-center mt-2 flex items-center gap-1"
+					className="text-sm text-center text-emerald-600 cursor-pointer mt-4"
 				>
 					{t("showMore")}
-					<span className="ml-1">→</span>
-				</button>
+					<span className="text-emerald-600 text-base"> →</span>
+				</p>
 			)}
 
 			{/* Modal */}

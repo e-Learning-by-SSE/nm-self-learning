@@ -1,6 +1,9 @@
 {
   "defaultName": "Lerner",
   "pageTitle": "Willkommen zurück, {{name}}! Schau dir deinen Lernfortschritt an",
+  "locale": "de-DE",
+  "hourAbbr": "Std.",
+  "minAbbr": "Min.",
 
   "feedbackTitle": "Personalisierte Feedbacks",
   "noData": "Keine Daten verfügbar",
@@ -42,6 +45,7 @@
   "month": "Monat",
   "year": "Jahr",
   "morning": "Morgen",
+  "afternoon": "Nachmittag",
   "evening": "Abend",
 
   "Früh": "Früh",
@@ -63,6 +67,19 @@
   "friFull": "Freitag",
   "satFull": "Samstag",
   "sunFull": "Sonntag",
+
+  "jan": "Jan",
+  "feb": "Feb",
+  "mar": "Mrz",
+  "apr": "Apr",
+  "may": "Mai",
+  "jun": "Jun",
+  "jul": "Jul",
+  "aug": "Aug",
+  "sep": "Sep",
+  "oct": "Okt",
+  "nov": "Nov",
+  "dec": "Dez",
 
   "janFull": "Januar",
   "febFull": "Februar",
@@ -87,17 +104,45 @@
   "openDetailedHeatmaps": "Zu den detaillierten Lern-Heatmaps wechseln",
 
   "tooltip": {
-    "noActivityTime": "Keine Lernaktivität am {{label}} aufgezeichnet.",
-    "noCompletedTasks": "Keine Aufgaben am {{label}} abgeschlossen.",
-    "noCorrectTasks": "Keine richtigen Antworten am {{label}}.",
-    "activityVeryLow": "sehr geringe Aktivität",
-    "activityLow": "geringe Aktivität",
-    "activityMedium": "mittlere Aktivität",
-    "activityHigh": "hohe Aktivität",
-    "activityVeryHigh": "sehr hohe Aktivität",
-    "timeActivity": "{{label}}: {{activity}} — {{hours}} Std {{minutes}} Min",
-    "completedTasksActivity": "{{label}}: {{activity}} — {{tasks}} Aufgaben abgeschlossen",
-    "correctTasksActivity": "{{label}}: {{activity}} — {{correct}} richtige Antworten"
+    "noActivityTime": "Keine Lernaktivität.",
+    "noCompletedTasks": "Keine Aufgaben abgeschlossen.",
+    "noCorrectTasks": "Keine richtigen Antworten.",
+    "activityVeryLow": "Sehr geringe Aktivität",
+    "activityLow": "Geringe Aktivität",
+    "activityMedium": "Mittlere Aktivität",
+    "activityHigh": "Hohe Aktivität",
+    "activityVeryHigh": "Sehr hohe Aktivität",
+    "timeActivity": "{{label}}: {{activity}} - {{hours}} Std. {{minutes}} Min.",
+    "completedTasksActivity": "{{label}}: {{activity}} - {{tasks}} Aufgaben abgeschlossen",
+    "correctTasksActivity": "{{label}}: {{activity}} - {{correct}} richtige Antworten",
+    "heatmap": {
+      "outOfBounds": "Außerhalb des aktuellen Monats",
+      "noActivityTime": "Keine Aktivität",
+      "noCompletedTasks": "Keine Aufgaben erledigt",
+      "noCorrectTasks": "Keine richtigen Antworten",
+      "day": {
+        "time": "{{activityLabel}}, du hast {{minutes}} Minuten gelernt.",
+        "completed_one": "{{activityLabel}}, du hast 1 Aufgabe erledigt.",
+        "completed_other": "{{activityLabel}}, du hast {{count}} Aufgaben erledigt.",
+        "correct_one": "{{activityLabel}}, du hast 1 Aufgabe richtig gelöst.",
+        "correct_other": "{{activityLabel}}, du hast {{count}} Aufgaben richtig gelöst."
+      },
+      "week": {
+        "time": "{{activityLabel}} am {{day}}. {{timeSlot}} hast du {{timeStr}} gelernt.",
+        "completed": "{{activityLabel}} am {{day}}. {{timeSlot}} hast du {{count}} Aufgaben erledigt.",
+        "correct": "{{activityLabel}} am {{day}}. {{timeSlot}} hast du {{count}} Aufgaben richtig gelöst."
+      },
+      "month": {
+        "time": "{{activityLabel}}, am {{dayLabel}}. {{monthName}} hast du {{timeStr}} gelernt.",
+        "completed": "{{activityLabel}}, am {{dayLabel}}. {{monthName}} hast du {{tasks}} Aufgaben erledigt.",
+        "correct": "{{activityLabel}}, am {{dayLabel}}. {{monthName}} hast du {{correct}} Aufgaben korrekt gelöst."
+      },
+      "year": {
+        "time": "Im {{monthName}} hattest du eine {{activityLabel}}. Du hast {{timeStr}} gelernt.",
+        "completed": "Im {{monthName}} hattest du eine {{activityLabel}}. Du hast {{tasks}} Aufgaben erledigt.",
+        "correct": "Im {{monthName}} hattest du eine {{activityLabel}}. Du hast {{correct}} Aufgaben richtig gelöst."
+      }
+    }
   },
 
   "recommendations": {
@@ -112,5 +157,43 @@
     "quizTimeAccuracy": "Deine Quizleistung ist am besten am {{slot}} – großartige Konzentration in dieser Zeit!",
     "trendUp": "Deine Lernzeit ist im Vergleich zur letzten Woche gestiegen – weiter so!",
     "trendDown": "Deine Lernzeit ist im Vergleich zur letzten Woche leicht gesunken – bleib dran!"
+  },
+
+  "heatmapModal": {
+    "title": "Lern-Heatmaps",
+    "loading": "Lade Heatmap...",
+    "intro": {
+      "hey": "<strong>Hey {{name}}!</strong> Behalte deinen Lernfortschritt mit deinen persönlichen <strong>Lern-HeatMaps</strong> im Blick. 🔥",
+      "description": "Sie zeigen dir, <strong>wann und wie intensiv du gelernt hast</strong> – ob pro <strong>Tag</strong>, <strong>Woche</strong>, <strong>Monat</strong> oder im <strong>ganzen Jahr</strong>.",
+      "metricTime": "⏱️ <strong>Zeit:</strong> Wie viele Minuten oder Stunden du aktiv gelernt hast.",
+      "metricCompleted": "✅ <strong>Erledigte Aufgaben:</strong> Wie viele Aufgaben du abgeschlossen hast.",
+      "metricCorrect": "🎯 <strong>Richtige Aufgaben:</strong> Wie oft du die richtige Lösung gefunden hast.",
+      "proTip": "💡 <strong>Pro-Tipp:</strong> Fahre mit der Maus über ein Feld, um zu sehen, <strong>wie viel du an diesem Tag geschafft hast.</strong>"
+    },
+    "legendTitle": "Aktivitäts-Legende:",
+    "selectMetricTitle": "Metrik wählen",
+    "dayView": {
+      "title": "Tagesansicht",
+      "tooltip": "Zeigt deine Lernaktivität pro Stunde des ausgewählten Tages."
+    },
+    "weekView": {
+      "title": "Wochenansicht",
+      "tooltip": "Zeigt, wie aktiv du an jedem Wochentag in verschiedenen Tageszeiten warst.",
+      "prev": "Vorherige Woche",
+      "next": "Nächste Woche"
+    },
+    "monthView": {
+      "title": "Monatsansicht",
+      "tooltip": "Zeigt deine Aktivität pro Tag im gewählten Monat.",
+      "prev": "Vorheriger Monat",
+      "next": "Nächster Monat"
+    },
+    "yearView": {
+      "title": "Jahresansicht",
+      "tooltip": "Zeigt deine gesamte Lernaktivität pro Monat im Jahr.",
+      "prev": "Vorheriges Jahr",
+      "next": "Nächstes Jahr"
+    }
   }
 }
+
