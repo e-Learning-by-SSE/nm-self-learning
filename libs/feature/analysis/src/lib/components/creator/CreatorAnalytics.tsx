@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
-import { withTranslations } from "@self-learning/api";
+// import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import type { Chart as ChartJS } from "chart.js";
 
@@ -261,7 +261,7 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 				</div>
 			</section>
 
-			{/* DEBUG PANEL */}
+			{/* DEBUG PANEL 
 			<div className="mt-10 text-xs text-neutral-700 font-mono bg-neutral-100 border border-neutral-300 rounded-lg p-4 whitespace-pre-wrap">
 				<div>DEBUG</div>
 				<div>activeCourseId: {activeCourseId || "(none)"}</div>
@@ -276,13 +276,14 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 				<div>lessonsByCourse keys: {lessonsKeys.join(", ") || "(none)"}</div>
 				<div>perCourseStats keys: {statsKeys.join(", ") || "(none)"}</div>
 			</div>
+			*/}
 		</div>
 	);
 }
 
 /* ---------- SSR Wrapper ---------- */
 
-export const getServerSideProps = withTranslations(["common"]);
+// export const getServerSideProps = withTranslations(["common"]);
 
 /* ---------- Page Component (Data Wiring) ---------- */
 
