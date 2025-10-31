@@ -1,5 +1,5 @@
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
-import React, { useRef } from "react";
+import { useRef } from "react";
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
 import ReactMarkdown from "react-markdown";
 import { rehypePlugins, remarkPlugins } from "./markdown";
@@ -69,13 +69,14 @@ export function MarkdownListboxMenu({
 				{({ open }) => (
 					<div className={"flex flex-row justify-between gap-1"}>
 						<div className={"justify-start"}>
-							<ReactMarkdown
-								remarkPlugins={remarkPlugins}
-								rehypePlugins={rehypePlugins}
-								className="prose prose-sm max-w-none"
-							>
-								{displayValue === "" ? "Select an option" : displayValue}
-							</ReactMarkdown>
+							<div className="prose prose-sm max-w-none">
+								<ReactMarkdown
+									remarkPlugins={remarkPlugins}
+									rehypePlugins={rehypePlugins}
+								>
+									{displayValue === "" ? "Select an option" : displayValue}
+								</ReactMarkdown>
+							</div>
 						</div>
 						{open ? (
 							<ChevronUpIcon className="h-5 w-5 justify-end" aria-hidden="true" />
@@ -120,9 +121,7 @@ export function MarkdownListboxMenu({
 										/>
 									)}
 
-									<ReactMarkdown
-										remarkPlugins={remarkPlugins}
-										rehypePlugins={rehypePlugins}
+									<div
 										className={`prose prose-sm max-w-none ml-2 cursor-default ${
 											customFocusStyle
 												? customFocusStyle(focus)
@@ -131,8 +130,13 @@ export function MarkdownListboxMenu({
 													: ""
 										}`}
 									>
-										{option}
-									</ReactMarkdown>
+										<ReactMarkdown
+											remarkPlugins={remarkPlugins}
+											rehypePlugins={rehypePlugins}
+										>
+											{option}
+										</ReactMarkdown>
+									</div>
 								</div>
 							)}
 						</ListboxOption>
