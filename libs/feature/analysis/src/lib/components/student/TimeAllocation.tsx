@@ -115,7 +115,10 @@ export function TimeAllocation() {
 	}
 
 	return (
-		<div className="w-full h-full rounded-lg border border-light-border bg-white shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col text-center sm:text-left">
+		<div
+			id="TimeAllocationChart"
+			className="w-full h-full rounded-lg border border-light-border bg-white shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col text-center sm:text-left"
+		>
 			<h2 className="text-xl font-semibold text-gray-800 mb-4 sm:text-left text-center">
 				{t("timeAllocationTitle")}
 			</h2>

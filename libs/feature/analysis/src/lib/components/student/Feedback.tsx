@@ -206,7 +206,10 @@ export function Feedback() {
 
 	// Render section with modal for 'show more' functionality
 	return (
-		<div className="w-full rounded-lg border border-gray-200 bg-white shadow-sm p-6 flex flex-col gap-4 hover:shadow-md transition-shadow max-sm:p-4">
+		<div
+			id="PersonalizedFeedbackCard"
+			className="w-full rounded-lg border border-gray-200 bg-white shadow-sm p-6 flex flex-col gap-4 hover:shadow-md transition-shadow max-sm:p-4"
+		>
 			{/* Changed: Removed wrapper div, applied margin directly to H2 */}
 			<h2 className="text-xl font-semibold text-gray-800 text-left mb-4">
 				{t("feedbackTitle")}

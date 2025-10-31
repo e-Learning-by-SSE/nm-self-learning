@@ -18,7 +18,10 @@ export function MyLearningPath() {
 	// Early return while subject or completion data is still loading
 	if (loadingSubjects || loadingCompleted) {
 		return (
-			<div className="w-full rounded-lg border border-light-border bg-white shadow-sm p-4 sm:p-6 text-center text-gray-500 text-sm sm:text-base">
+			<div
+				id="MyLearningPathCard"
+				className="w-full rounded-lg border border-light-border bg-white shadow-sm p-4 sm:p-6 text-center text-gray-500 text-sm sm:text-base"
+			>
 				{t("loadingPath")}
 			</div>
 		);
@@ -27,7 +30,10 @@ export function MyLearningPath() {
 	// Handle case when no subjects exist for the current user
 	if (!subjects || subjects.length === 0) {
 		return (
-			<div className="w-full rounded-lg border border-light-border bg-white shadow-sm p-4 sm:p-6 text-center text-gray-500 text-sm sm:text-base">
+			<div
+				id="MyLearningPathCard"
+				className="w-full rounded-lg border border-light-border bg-white shadow-sm p-4 sm:p-6 text-center text-gray-500 text-sm sm:text-base"
+			>
 				{t("noSubjects")}
 			</div>
 		);
