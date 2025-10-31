@@ -66,7 +66,10 @@ export function HeatmapModal({ onClose }: { onClose: () => void }) {
 
 			{/* Centered modal panel */}
 			<div id="HeatmapModal" className="fixed inset-0 flex items-center justify-center p-4">
-				<Dialog.Panel className="w-full max-w-6xl rounded-2xl bg-white p-4 sm:p-8 shadow-xl relative overflow-y-auto max-h-[90vh]">
+				<Dialog.Panel
+					id="HeatmapModalPanel"
+					className="w-full max-w-6xl rounded-2xl bg-white p-4 sm:p-8 shadow-xl relative overflow-y-auto max-h-[90vh]"
+				>
 					{/* Header */}
 					<div className="flex items-center justify-between mb-6">
 						<h2 className="text-xl font-semibold text-gray-800">Lern-Heatmaps</h2>
@@ -179,7 +182,10 @@ export function HeatmapModal({ onClose }: { onClose: () => void }) {
 					{/* Heatmaps Grid */}
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-8 w-full overflow-x-auto">
 						{/* --- Day --- */}
-						<div className="rounded-xl border border-gray-200 bg-gray-50 p-4 shadow-sm min-w-[320px]">
+						<div
+							id="DayHeatmap"
+							className="rounded-xl border border-gray-200 bg-gray-50 p-4 shadow-sm min-w-[320px]"
+						>
 							<div className="flex flex-wrap items-center justify-between mb-3 gap-2">
 								<div className="flex items-center gap-2">
 									<h3 className="text-lg font-semibold text-gray-700">
@@ -208,7 +214,10 @@ export function HeatmapModal({ onClose }: { onClose: () => void }) {
 						</div>
 
 						{/* --- Week --- */}
-						<div className="rounded-xl border border-gray-200 bg-gray-50 p-4 shadow-sm min-w-[320px]">
+						<div
+							id="WeekHeatmap"
+							className="rounded-xl border border-gray-200 bg-gray-50 p-4 shadow-sm min-w-[320px]"
+						>
 							<div className="flex flex-wrap items-center justify-between mb-3 gap-2">
 								<div className="flex items-center gap-2">
 									<h3 className="text-lg font-semibold text-gray-700">
@@ -254,7 +263,10 @@ export function HeatmapModal({ onClose }: { onClose: () => void }) {
 						</div>
 
 						{/* --- Month --- */}
-						<div className="rounded-xl border border-gray-200 bg-gray-50 p-4 shadow-sm min-w-[320px]">
+						<div
+							id="MonthHeatmap"
+							className="rounded-xl border border-gray-200 bg-gray-50 p-4 shadow-sm min-w-[320px]"
+						>
 							<div className="flex flex-wrap items-center justify-between mb-3 gap-2">
 								<div className="flex items-center gap-2">
 									<h3 className="text-lg font-semibold text-gray-700">
@@ -302,7 +314,10 @@ export function HeatmapModal({ onClose }: { onClose: () => void }) {
 						</div>
 
 						{/* --- Year --- */}
-						<div className="rounded-xl border border-gray-200 bg-gray-50 p-4 shadow-sm min-w-[320px]">
+						<div
+							id="YearHeatmap"
+							className="rounded-xl border border-gray-200 bg-gray-50 p-4 shadow-sm min-w-[320px]"
+						>
 							<div className="flex flex-wrap items-center justify-between mb-3 gap-2">
 								<div className="flex items-center gap-2">
 									<h3 className="text-lg font-semibold text-gray-700">

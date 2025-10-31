@@ -402,6 +402,7 @@ export function GeneralHeatmap() {
 
 						<p
 							onClick={() => setShowModal(true)}
+							id="open-detailed-heatmaps"
 							className="text-sm text-center text-emerald-600 cursor-pointer hover:underline mt-4"
 						>
 							{t("openDetailedHeatmaps")}

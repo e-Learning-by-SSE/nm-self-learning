@@ -15,7 +15,10 @@ export default function StudentAnalytics() {
 	return (
 		<div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
 			{/* Responsive heading */}
-			<h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 text-center sm:text-left mt-6 mb-8 leading-snug">
+			<h1
+				id="student-analytics-title"
+				className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 text-center sm:text-left mt-6 mb-8 leading-snug"
+			>
 				{t("pageTitle", { name })}
 			</h1>
 
