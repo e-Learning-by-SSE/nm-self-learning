@@ -9,6 +9,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { withTranslations } from "@self-learning/api";
 import { LessonDeleteOption } from "@self-learning/ui/lesson";
+import { keepPreviousData } from "@tanstack/react-query";
 
 export default function LessonManagementPage() {
 	const router = useRouter();
@@ -18,7 +19,7 @@ export default function LessonManagementPage() {
 		{ title: titleFilter as string, page: Number(page) },
 		{
 			staleTime: 10_000,
-			keepPreviousData: true
+			placeholderData: keepPreviousData
 		}
 	);
 

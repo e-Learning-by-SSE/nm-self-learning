@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { withTranslations } from "@self-learning/api";
+import { keepPreviousData } from "@tanstack/react-query";
 
 export default function CoursesPage() {
 	const router = useRouter();
@@ -22,7 +23,7 @@ export default function CoursesPage() {
 		{ title: titleFilter as string, page: Number(page) },
 		{
 			staleTime: 10_000,
-			keepPreviousData: true
+			placeholderData: keepPreviousData
 		}
 	);
 

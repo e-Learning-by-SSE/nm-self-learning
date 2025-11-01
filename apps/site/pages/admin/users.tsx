@@ -12,6 +12,7 @@ import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";
 import { EditUserDialog } from "@self-learning/admin";
 import { withTranslations } from "@self-learning/api";
+import { keepPreviousData } from "@tanstack/react-query";
 
 export default function UsersPage() {
 	useRequiredSession();
@@ -26,7 +27,7 @@ export default function UsersPage() {
 		},
 		{
 			staleTime: 10_000,
-			keepPreviousData: true
+			placeholderData: keepPreviousData
 		}
 	);
 

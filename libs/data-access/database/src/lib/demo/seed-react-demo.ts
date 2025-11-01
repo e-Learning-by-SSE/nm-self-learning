@@ -348,7 +348,7 @@ const reactLessons = [
 
 export const reactCourses: Prisma.CourseCreateManyInput[] = [
 	{
-		courseId: faker.random.alphaNumeric(8),
+		courseId: faker.string.alphanumeric(8),
 		title: "The Beginner's Guide to React",
 		slug: "the-beginners-guide-to-react",
 		subtitle: faker.lorem.paragraph(2),
