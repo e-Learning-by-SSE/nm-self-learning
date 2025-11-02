@@ -199,7 +199,7 @@ export const lessonRouter = t.router({
 			}
 		}),
 
-	getLessonData: authProcedure
+	findOneBySlug: authProcedure
 		.meta({
 			openapi: {
 				enabled: true,
