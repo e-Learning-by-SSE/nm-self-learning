@@ -101,7 +101,6 @@ describe("useFirstLoginDialog", () => {
 			"settings_firstLoginDialog_lastRendered"
 		);
 		expect(updatedTime).not.toBeNull();
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		expect(updatedTime!.getTime()).toBeGreaterThan(twoDaysAgo.getTime());
 	});
 });

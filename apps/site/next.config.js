@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const { withNx } = require("@nx/next");
 const { withPlausibleProxy } = require("next-plausible");
 const { i18n } = require("./next-i18next.config.js");

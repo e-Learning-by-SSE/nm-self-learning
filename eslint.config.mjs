@@ -5,7 +5,7 @@ import pluginCypress from "eslint-plugin-cypress";
 
 export default [
 	{
-		ignores: ["**/dist", "node_modules/**", "apps/site/.next/**"]
+		ignores: ["**/dist", "node_modules/**", "apps/site/.next/**", "apps/site/jest.config.ts"]
 	},
 	// Base JS rules
 	js.configs.recommended,
@@ -41,10 +41,18 @@ export default [
 				}
 			],
 			"no-extra-semi": "error",
+			"@typescript-eslint/no-non-null-assertion": "error",
 			"@typescript-eslint/no-unused-expressions": ["error", { allowShortCircuit: true }],
 
 			// Nx rule (what the @nx preset mainly adds)
 			"@nx/enforce-module-boundaries": "off"
+		}
+	},
+	// Override for test files
+	{
+		files: ["**/*.spec.ts", "**/*.test.ts", "**/*.spec.tsx", "**/*.test.tsx"],
+		rules: {
+			"@typescript-eslint/no-non-null-assertion": "off"
 		}
 	},
 
