@@ -1,0 +1,22 @@
+{
+    "Profile Saved": "Profile Saved",
+    "Error creating profile": "Error creating profile",
+    "An unknown error occurred": "An unknown error occurred",
+    "Available models have been fetched successfully.": "Available models have been fetched successfully.",
+    "Delete Profile Failed": "Delete Profile Failed",
+    "New Profile": "New Profile",
+    "Saved Profiles": "Saved Profiles",
+    "No saved profiles found": "No saved profiles found",
+    "AI Tutor Profile": "AI Tutor Profile",
+    "Profile Name": "Profile Name",
+    "Author": "Author",
+    "Profile Picture": "Profile Picture",
+    "Model": "Model",
+    "System Prompt": "System Prompt",
+    "System context...": "System context...",
+    "Description about tutor profile...": "Description about tutor profile...",
+    "Update Profile": "Update Profile",
+    "Create Profile": "Create Profile",
+    "Deleting...": "Deleting...",
+    "Delete Profile": "Delete Profile"
+}
