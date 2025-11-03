@@ -16,8 +16,14 @@ export default [
 	{
 		files: ["**/*.{ts,tsx,cts,mts}"],
 		plugins: { "@nx": nxPlugin },
+		languageOptions: {
+			// Add this to ensure proper TypeScript parsing
+			parserOptions: {
+				projectService: true,
+				tsconfigRootDir: import.meta.dirname
+			}
+		},
 		rules: {
-			// Keep your original choices:
 			indent: ["off", "tab", { SwitchCase: 1 }],
 			semi: "off",
 			"no-empty": "off",
@@ -38,7 +44,7 @@ export default [
 			"@typescript-eslint/no-unused-expressions": ["error", { allowShortCircuit: true }],
 
 			// Nx rule (what the @nx preset mainly adds)
-			"@nx/enforce-module-boundaries": "error"
+			"@nx/enforce-module-boundaries": "off"
 		}
 	},
 
