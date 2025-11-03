@@ -55,14 +55,14 @@ export default [
 			"@typescript-eslint/no-non-null-assertion": "off"
 		}
 	},
-    // Disable linting for all *.config.ts files
-  {
-    files: ['**/*.config.ts'],
-    rules: {
-      // Turn off *everything*
-    },
-    ignores: true, // <- not valid
-  }
+    // Disable linting for all *.config.ts and data migration files
+    {
+        files: ['**/*.config.ts', 'libs/data-access/database/prisma/migrations/**/data-migration.ts'],
+        rules: {
+        // Turn off *everything*
+        },
+        ignores: true, // <- not valid
+    }
 
 	// Cypress E2E
 	{
