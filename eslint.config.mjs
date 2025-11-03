@@ -75,6 +75,14 @@ export default [
 			}
 		})),
 
+	// Exception for test files
+	{
+		files: ["**/*.spec.ts", "**/*.test.ts", "**/*.spec.tsx", "**/*.test.tsx"],
+		rules: {
+			"@typescript-eslint/no-non-null-assertion": "off"
+		}
+	},
+
 	// Cypress E2E
 	{
 		files: ["apps/site-e2e/**/*.{cy,spec}.{ts,tsx,js,jsx}"],
