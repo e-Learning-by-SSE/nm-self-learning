@@ -133,6 +133,11 @@ video {
 	@apply border border-gray-200 bg-white px-8 py-2 text-sm font-medium disabled:opacity-25;
 }
 
+/* Show more / Show less button: Blue border, blue text, white background  */
+.btn-show-more {
+	@apply mt-4 border border-blue-500 text-blue-500 bg-white rounded hover:bg-blue-50;
+}
+
 /* X Mark Button: Text Gray, Hover Gray  */
 .btn-x-mark {
 	@apply rounded-full text-gray-400 hover:bg-gray-50 hover:text-red-500 p-1;
