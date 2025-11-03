@@ -6,7 +6,8 @@ import {
 	SortIndicator,
 	TableDataColumn,
 	TableHeaderColumn,
-	TableVisibilityDropdown
+	TableVisibilityDropdown,
+	SectionHeader
 } from "@self-learning/ui/common";
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
 import { formatTimeIntervalToString } from "@self-learning/util/common";
@@ -67,23 +68,31 @@ export default function LearningDiaryOverview({
 	const [searchQuarry, setSearchQuarry] = useState<string>("");
 
 	return (
-		<div className="flex w-full justify-center">
-			<div className="w-3/5">
-				<div className="py-2">
-					<UniversalSearchBar
-						searchQuery={searchQuarry}
-						setSearchQuery={setSearchQuarry}
-						placeHolder={"Lerntagebucheinträge durchsuchen..."}
+		<>
+			<div className="flex h-screen justify-center overflow-hidden">
+				<div className="h-full w-full p-2 lg:w-4/5 lg:p-8">
+					<SectionHeader
+						title="Lerntagebucheinträge"
+						subtitle="Übersicht über deine Lerntagebucheinträge"
 					/>
-				</div>
-				<div className="py-2">
-					<SortedTable
-						learningDiaryEntries={learningDiaryEntries}
-						searchQuarry={searchQuarry}
-					/>
+					<div className="py-2">
+						<div className="py-2">
+							<UniversalSearchBar
+								searchQuery={searchQuarry}
+								setSearchQuery={setSearchQuarry}
+								placeHolder={"Lerntagebucheinträge durchsuchen..."}
+							/>
+						</div>
+						<div className="py-2">
+							<SortedTable
+								learningDiaryEntries={learningDiaryEntries}
+								searchQuarry={searchQuarry}
+							/>
+						</div>
+					</div>
 				</div>
 			</div>
-		</div>
+		</>
 	);
 }
 
@@ -273,6 +282,7 @@ function SortedTable({
 														learningDiaryEntry.pageCount}
 
 													{key === "course" && (
+														//TODO: should the course title actually be centered?
 														<div>
 															<span className="flex items-center justify-center text-gray-800 hover:text-secondary">
 																<span className="truncate">
