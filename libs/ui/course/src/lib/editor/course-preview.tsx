@@ -6,6 +6,8 @@ import { formatSeconds } from "@self-learning/util/common";
 import Image from "next/image";
 import Link from "next/link";
 import { DynCourseModel } from "@self-learning/teaching";
+import { Summary } from "@self-learning/types";
+import { useTranslation } from "next-i18next";
 
 export function CoursePreview({
 	course,
@@ -22,13 +24,6 @@ export function CoursePreview({
 		</CenteredSection>
 	);
 }
-
-// TODO: it is duplicated
-type Summary = {
-	lessons: number;
-	chapters: number;
-	duration: number;
-};
 
 function Course({
 	course,
@@ -110,19 +105,16 @@ function Course({
 }
 
 function TableOfContents({ content, course }: { content: ToC.Content; course: DynCourseModel }) {
-	const completion = useCourseCompletion(course.slug);
+	const { t } = useTranslation("common");
 	const hasContent = content.length > 0;
-	// TODO: add english version
+
 	if (!hasContent) {
 		return (
 			<div className="flex flex-col gap-4 p-8 rounded-lg bg-gray-100">
 				<h3 className="heading flex gap-4 text-2xl">
-					<span className="text-secondary">Kein Kurspfad verfügbar</span>
+					<span className="text-secondary">{t("noCoursePathTitle")}</span>
 				</h3>
-				<span className="mt-4 text-light">
-					Die Generierung des Kurspfades war nicht möglich. Bitte passen Sie den
-					Kursinhalt oder die Lernziele an und versuchen Sie es erneut.
-				</span>
+				<span className="mt-4 text-light">{t("noCoursePathDescription")}</span>
 			</div>
 		);
 	}
@@ -149,7 +141,6 @@ function TableOfContents({ content, course }: { content: ToC.Content; course: Dy
 									key={lesson.lessonId}
 									href={`/courses/${course.slug}/${lesson.slug}`}
 									lesson={lesson}
-									isCompleted={!!completion?.completedLessons[lesson.lessonId]}
 								/>
 							))}
 						</ul>
@@ -160,15 +151,7 @@ function TableOfContents({ content, course }: { content: ToC.Content; course: Dy
 	);
 }
 
-function Lesson({
-	lesson,
-	href,
-	isCompleted
-}: {
-	lesson: ToC.Content[0]["content"][0];
-	href: string;
-	isCompleted: boolean;
-}) {
+function Lesson({ lesson, href }: { lesson: ToC.Content[0]["content"][0]; href: string }) {
 	const { isAuthenticated } = useAuthentication();
 
 	if (!isAuthenticated) {
@@ -178,12 +161,11 @@ function Lesson({
 			</div>
 		);
 	}
+
 	return (
 		<Link
 			href={href}
-			className={`flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm ${
-				isCompleted ? "border-emerald-500" : "border-gray-300"
-			}`}
+			className={`flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm "border-gray-300"`}
 		>
 			<LessonEntry lesson={lesson} />
 		</Link>
