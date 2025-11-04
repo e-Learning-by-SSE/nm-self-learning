@@ -14,7 +14,7 @@ export function DiaryLayout(
 	pageProps: DiaryProps
 ) {
 	return (
-		<div className="flex flex-col">
+		<div className="flex flex-col bg-gray-50">
 			<div className="mx-auto flex w-full flex-col gap-8 px-4 sm:flex-col-reverse xl:grid xl:grid-cols-[400px_1fr]">
 				<div className="hidden xl:block">
 					<div className="w-full">

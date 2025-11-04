@@ -137,7 +137,7 @@ function BaseLessonLayout({
 		<LessonOutlineContext.Provider value={contextValue}>
 			<div className="xl:hidden">
 				{course && lesson && <MobilePlaylistArea course={course} lesson={lesson} />}
-				<div className="p-5 pt-8 bg-gray-100 pb-16">
+				<div className="p-5 pt-8 bg-gray-50 pb-16">
 					<div className="w-full">{children}</div>
 				</div>
 			</div>
@@ -146,7 +146,7 @@ function BaseLessonLayout({
 					<title>{title}</title>
 				</Head>
 
-				<div className="flex flex-col bg-gray-100">
+				<div className="flex flex-col bg-gray-50">
 					<div className="mx-auto flex w-full max-w-[1920px] flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
 						{playlistArea}
 						<div className="w-full pt-8 pb-8">{children}</div>

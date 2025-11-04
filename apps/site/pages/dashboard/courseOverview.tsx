@@ -83,7 +83,7 @@ export default function CourseOverview({ enrollments }: CourseOverviewProps) {
 	}, [searchQuery, enrollments]);
 
 	return (
-		<div className="flex h-screen justify-center overflow-hidden">
+		<div className="flex h-screen justify-center overflow-hidden bg-gray-50">
 			<div className="h-full w-full p-2 lg:w-4/5 lg:p-8">
 				{selectedTab === 0 && (
 					<TabContent

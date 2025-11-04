@@ -69,7 +69,7 @@ export default function LearningDiaryOverview({
 
 	return (
 		<>
-			<div className="flex h-screen justify-center overflow-hidden">
+			<div className="flex h-screen justify-center overflow-hidden bg-gray-50">
 				<div className="h-full w-full p-2 lg:w-4/5 lg:p-8">
 					<SectionHeader
 						title="Lerntagebucheinträge"
