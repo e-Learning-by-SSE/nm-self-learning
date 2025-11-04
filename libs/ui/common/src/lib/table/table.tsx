@@ -56,7 +56,7 @@ export function TableHeaderColumn({
 }) {
 	return (
 		<th
-			className="border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
+			className="border-y border-light-border py-4 px-4 text-start text-sm font-semibold"
 			onClick={onClick}
 		>
 			{children}
@@ -71,5 +71,5 @@ export function TableDataColumn({
 	children?: React.ReactNode;
 	className?: string;
 }) {
-	return <td className={className ?? "py-2 px-8 text-sm"}>{children}</td>;
+	return <td className={className ?? "py-2 px-4 text-sm"}>{children}</td>;
 }
