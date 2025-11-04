@@ -1,5 +1,4 @@
 import js from "@eslint/js";
-import tseslint from "typescript-eslint";
 import nxEslintPlugin from "@nx/eslint-plugin";
 import pluginCypress from "eslint-plugin-cypress";
 import { FlatCompat } from "@eslint/eslintrc";
