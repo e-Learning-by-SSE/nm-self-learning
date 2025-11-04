@@ -67,13 +67,19 @@ export function DiarySidebarMobile({
 	const currentPageIndex = pages.findIndex(page => page.id === selectedPageId);
 
 	return (
-			<MobileSidebarNavigation
-				next={updateToNextId}
-				prev={updateToPreviousId}
-				hasNext={currentPageIndex < pages.length - 1}
-				hasPrev={currentPageIndex > 0}
-				content={(onSelect) => <SidebarContentMobile pages={pages} selectedPageId={selectedPageId} onSelect={onSelect} />}
-			/>
+		<MobileSidebarNavigation
+			next={updateToNextId}
+			prev={updateToPreviousId}
+			hasNext={currentPageIndex < pages.length - 1}
+			hasPrev={currentPageIndex > 0}
+			content={onSelect => (
+				<SidebarContentMobile
+					pages={pages}
+					selectedPageId={selectedPageId}
+					onSelect={onSelect}
+				/>
+			)}
+		/>
 	);
 }
 
@@ -90,20 +96,18 @@ function SidebarContentMobile({
 	const categorizedPages = categorizePagesIntoGroups(pages);
 	const myElementRef = useRef<HTMLLIElement>(null);
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            myElementRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-        }, 300); 
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			myElementRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+		}, 300);
 
-        return () => clearTimeout(timer);
-    }, []);
-
+		return () => clearTimeout(timer);
+	}, []);
 
 	const onSelectPage = (pageId: string) => {
 		changePage(pageId);
 		onSelect();
-	}
-
+	};
 
 	return (
 		<>
@@ -118,16 +122,28 @@ function SidebarContentMobile({
 							<div className="absolute top-0 left-0 h-full border-l-2 border-gray-300"></div>
 							<ul className="pl-4">
 								{pages.map(page => (
-										<li className={`mb-1 rounded hover:bg-gray-100 ${selectedPageId === page.id ? "bg-gray-100" : ""}`} ref={selectedPageId === page.id ? myElementRef : null} key={page.id}>
-										<Link href={"/learning-diary/page/" + page.id} onClick={() => onSelectPage(page.id)}>
-											<div className="flex items-center justify-between p-2 rounded break-words whitespace-normal">
+									<li
+										className={`mb-1 rounded hover:bg-gray-100 ${selectedPageId === page.id ? "bg-gray-100" : ""}`}
+										ref={selectedPageId === page.id ? myElementRef : null}
+										key={page.id}
+									>
+										<Link
+											href={"/learning-diary/page/" + page.id}
+											onClick={() => onSelectPage(page.id)}
+											className="block"
+										>
+											<div className="flex items-center justify-between py-2 px-1 rounded break-words whitespace-normal">
 												<span className="flex-grow">{`${pages.indexOf(page) + 1}: ${page.course.title}`}</span>
 												<span className="ml-4">
-													<LearningDiaryEntryStatusBadge {...page} className="top-2" />
+													<LearningDiaryEntryStatusBadge
+														{...page}
+														className="top-2"
+													/>
 												</span>
 											</div>
 											<span className="block p-1 rounded overflow-hidden text-ellipsis whitespace-nowrap text-sm text-light">
-												Begonnen am: {formatDateStringFull(page.createdAt)}
+												Angefangen am:{" "}
+												{formatDateStringFull(page.createdAt)}
 											</span>
 										</Link>
 									</li>
