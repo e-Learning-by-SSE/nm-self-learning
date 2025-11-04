@@ -190,11 +190,7 @@ export function Sidebar({ pages, selectedPageId }: { pages: PagesMeta; selectedP
         w-full border-t border-r-gray-200
         xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4"
 		>
-			<StatusBadgeInfo
-				header="Lerntagebuch Seiten"
-				className="mb-2"
-				headerStyles="font-bold text-2xl"
-			/>
+			<StatusBadgeInfo header="Einträge" className="mb-2" headerStyles="font-bold text-2xl" />
 
 			<div className="max-h-full overflow-y-auto">
 				{Object.entries(categorizedPages).map(([label, pages]) => {
@@ -219,14 +215,14 @@ function SideBarContent({
 	return (
 		<li className={`mb-1 rounded hover:bg-gray-100 ${selected ? "bg-gray-100" : ""}`}>
 			<Link href={"/learning-diary/page/" + page.id} onClick={() => changePage(page.id)}>
-				<div className="flex items-center justify-between p-2 rounded break-words whitespace-normal">
-					<span className="flex-grow">{`${index}: ${page.course.title}`}</span>
-					<span className="ml-4">
+				<div className="flex items-center justify-between pt-2 pl-1 rounded break-words whitespace-normal">
+					<span className="flex-grow mr-1">{`${index}. ${page.course.title}`}</span>
+					<span className="ml-4 mr-1">
 						<LearningDiaryEntryStatusBadge {...page} className="top-2" />
 					</span>
 				</div>
 				<span className="block p-1 rounded overflow-hidden text-ellipsis whitespace-nowrap text-sm text-light">
-					Begonnen am: {formatDateStringFull(page.createdAt)}
+					Angefangen am: {formatDateStringFull(page.createdAt)}
 				</span>
 			</Link>
 		</li>
