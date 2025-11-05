@@ -64,7 +64,7 @@ export function DropdownMenu({
 							style={{
 								minWidth: buttonRef.current?.offsetWidth || "auto"
 							}}
-							className={`absolute z-10 bg-white shadow-lg max-h-64 overflow-auto text-sm ${dropdownPosition === "top" ? "rounded-t" : "rounded-b"}`}
+							className={`absolute z-10 bg-white shadow-lg max-h-64 overflow-auto text-sm rounded`}
 						>
 							{childrenArray.map((element, i) => (
 								<MenuItem key={i}>

@@ -73,15 +73,15 @@ export function MultipleChoiceOption({
 	let className = "bg-white";
 
 	if (showResult) {
-		className = isUserAnswerCorrect
-			? "bg-emerald-50 border-emerald-500"
-			: "bg-red-50 border-red-500";
+		className = isUserAnswerCorrect ? "bg-emerald-50 border-emerald-500" : "bg-red-50";
 	}
+
+	const justifiedLayout = justified ? "border-b border-light-border rounded-t-lg" : "rounded-lg";
 
 	return (
 		<div className="rounded-lg border border-light-border bg-white">
 			<button
-				className={`flex gap-8 rounded-lg border border-light-border bg-white px-8 py-2 text-start focus:outline-secondary ${className}`}
+				className={`w-full flex gap-8 px-8 py-2 text-start focus:outline-secondary ${className} ${justifiedLayout}`}
 				onClick={onToggle}
 				disabled={disabled}
 				data-testid="MultipleChoiceOption"

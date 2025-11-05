@@ -1,5 +1,5 @@
 import { PDF } from "@self-learning/types";
-import { SectionCard, SectionCardHeader } from "@self-learning/ui/common";
+import { SectionCard } from "@self-learning/ui/common";
 import { LabeledField, Upload } from "@self-learning/ui/forms";
 import { PdfViewer } from "@self-learning/ui/lesson";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
@@ -16,10 +16,7 @@ export function PdfInput({ index }: { index: number }) {
 
 	return (
 		<SectionCard>
-			<SectionCardHeader
-				title="PDF"
-				subtitle="Verlinke eine PDF-Datei oder lade eine Datei hoch."
-			/>
+			<h3 className="text-xl mb-2">PDF</h3>
 
 			<div className="flex flex-col gap-8">
 				<div className="flex flex-col gap-4">
