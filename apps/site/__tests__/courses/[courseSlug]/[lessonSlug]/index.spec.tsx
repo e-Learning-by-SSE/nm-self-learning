@@ -1,7 +1,7 @@
 import { getServerSideProps } from "../../../../pages/courses/[courseSlug]/[lessonSlug]";
 import { database } from "@self-learning/database";
 import { getServerSession } from "next-auth";
-import { createMockContext, MockRequest } from "../../../context-utils";
+import { createMockContext } from "../../../context-utils";
 
 import { compileMarkdown } from "@self-learning/markdown";
 import { createCourseMock, createLessonMock } from "@self-learning/util/testing";
@@ -32,7 +32,6 @@ describe("getServerSideProps", () => {
 	describe("Authorization", () => {
 		// For the test required properties of Lesson
 		const lessonMock = createLessonMock({
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			lessonId: mockCtx.params!.lessonId as string,
 			authors: ["Author1", "Author2"]
 		});

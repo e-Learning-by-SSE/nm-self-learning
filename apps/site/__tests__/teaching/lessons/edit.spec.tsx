@@ -24,7 +24,6 @@ describe("getServerSideProps", () => {
 
 	describe("Authorization", () => {
 		const lessonMock = createLessonMock({
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			lessonId: mockCtx.params!.lessonId as string,
 			authors: ["Author1", "Author2"]
 		});

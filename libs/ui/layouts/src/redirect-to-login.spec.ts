@@ -1,27 +1,16 @@
 import { testExportGetRelativeBasePath } from "./lib/redirect-to-login";
+import jestConfig from "../jest.config";
 
 describe("basePathTests", () => {
 	const OLD_ENV = process.env;
-	let originalLocation: Location;
-	const expectedOrigin = "https://example.com";
+	const expectedOrigin = jestConfig.testEnvironmentOptions.url;
 
 	beforeAll(() => {
-		originalLocation = window.location;
-		Object.defineProperty(window, "location", {
-			value: {
-				...originalLocation,
-				origin: expectedOrigin
-			}
-		});
-		jest.resetModules(); // it clears the cache
 		process.env = { ...OLD_ENV }; // Make a copy
 	});
 
 	afterAll(() => {
 		process.env = OLD_ENV; // Restore old environment
-		Object.defineProperty(window, "location", {
-			value: originalLocation
-		});
 	});
 
 	test("Base path defined -> is added to window.location.origin base path", () => {

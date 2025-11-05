@@ -1,6 +1,7 @@
 import { createTRPCNext } from "@trpc/next";
 import { AppRouter } from "@self-learning/api";
 import superjson from "superjson";
+import { httpBatchLink } from "@trpc/client";
 
 function getBaseUrl() {
 	if (typeof window !== "undefined")
@@ -13,7 +14,8 @@ function getBaseUrl() {
 
 export const trpc = createTRPCNext<AppRouter>({
 	// https://trpc.io/docs/useContext#invalidate-full-cache-on-every-mutation
-	unstable_overrides: {
+	transformer: superjson,
+	overrides: {
 		useMutation: {
 			/**
 			 * This function is called whenever a `.useMutation` succeeds
@@ -33,9 +35,13 @@ export const trpc = createTRPCNext<AppRouter>({
 	},
 	config() {
 		return {
-			links: [],
+			links: [
+				httpBatchLink({
+					url: `${getBaseUrl()}/api/trpc`,
+					transformer: superjson
+				})
+			],
 			url: `${getBaseUrl()}/api/trpc`,
-			transformer: superjson,
 			queryClientConfig: {
 				defaultOptions: {
 					queries: {
