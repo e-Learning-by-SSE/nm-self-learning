@@ -7,7 +7,7 @@ declare global {
 			readonly NODE_ENV: "development" | "production" | "test";
 			NEXT_PUBLIC_IS_DEMO_INSTANCE: string | undefined;
 			NEXT_PUBLIC_BASE_PATH: string | undefined;
-			NEXT_TRAILING_SLASH: Boolean | undefined;
+			NEXT_TRAILING_SLASH: boolean | undefined;
 			NEXT_PUBLIC_MATOMO_ULR: string | undefined;
 			NEXT_PUBLIC_MATOMO_SITE_ID: string | undefined;
 			DATABASE_URL: string;
