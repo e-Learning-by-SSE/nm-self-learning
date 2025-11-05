@@ -209,7 +209,7 @@ export function QuizGradeDialog({
 				</div>
 
 				{/* Action buttons - wie in deiner Zeichnung */}
-				<DialogActions abortLabel="Schließen" onClose={onClose}>
+				<DialogActions abortLabel="Close" onClose={onClose}>
 					{grade !== "PERFECT" && (
 						<button onClick={reload} className="btn-stroked">
 							Erneut versuchen

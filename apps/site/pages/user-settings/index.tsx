@@ -57,7 +57,8 @@ export default function SettingsPage(props: PageProps) {
 	const { mutateAsync: updateNotificationSettings } =
 		trpc.notification.upsertNotificationSetting.useMutation();
 
-	const { data } = useRequiredSession(); const { t: t_common } = useTranslation("common");
+	const { data } = useRequiredSession();
+	const { t: t_common } = useTranslation("common");
 	const { t } = useTranslation("pages-settings");
 
 	const router = useRouter();
@@ -212,30 +213,30 @@ export default function SettingsPage(props: PageProps) {
 					<ExperimentShortInfo {...props.experimentStatus} />
 				)}
 
-				{!props.experimentStatus?.isParticipating &&
-					isExperimentActive() && (
-						<ExperimentShortInfo {...props.experimentStatus} />
-					)}
+				{!props.experimentStatus?.isParticipating && isExperimentActive() && (
+					<ExperimentShortInfo {...props.experimentStatus} />
+				)}
 			</SettingSection>
-			{session?.user.role === "ADMIN" &&
+			{session?.user.role === "ADMIN" && (
 				<SettingSection title={t("Developer Options")}>
 					<Toggle
 						value={props.experimentStatus?.isParticipating ?? false}
-						onChange={(newValue) => {
+						onChange={newValue => {
 							/* TODO */
-							console.log(`attempt to set experiment status to ${newValue} but not implemented yet`)
+							console.log(
+								`attempt to set experiment status to ${newValue} but not implemented yet`
+							);
 						}}
 						label="Experimentteilnahme mit Beta-Features (Gamification)"
 						disabled={isExperimentActive()} // avoid interference with ongoing experiments
 					/>
 				</SettingSection>
-
-			}
+			)}
 
 			<SettingSection title={t("Critical Area")}>
 				<DeleteMeForm />
 			</SettingSection>
-		</CenteredSection >
+		</CenteredSection>
 	);
 }
 

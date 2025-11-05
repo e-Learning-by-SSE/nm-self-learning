@@ -19,7 +19,17 @@ const ch_Begriffslernen = {
 				createVideo(
 					"https://staging.sse.uni-hildesheim.de:9006/upload/didactics_of_mathematics/01_raeumliche%20Orientierung.mp4",
 					354
-				)
+				),
+				createArticle({
+					mdContent:
+						"# Markdown Text\n\nSome markdown information here about Räumliche Orientierung",
+					estimatedDuration: 30
+				}),
+				createArticle({
+					mdContent:
+						"# Another Markdown Text\n\nSome markdown information here about Räumliche Orientierung",
+					estimatedDuration: 30
+				})
 			],
 			questions: [
 				createMultipleChoice({

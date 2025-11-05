@@ -10,10 +10,10 @@ import {
 } from "@self-learning/ui/lesson";
 import { NextComponentType, NextPageContext } from "next";
 import type { ParsedUrlQuery } from "querystring";
-import { useMemo } from "react";
 import { getCourse, LessonData } from "../lesson-data-access";
 import { BaseLessonLayout } from "./base-layout";
 import { getSspStandaloneLessonLayout } from "./standalone-lesson-layout";
+import { useMemo } from "react";
 import { MobileSidebarNavigation } from "@self-learning/ui/layouts";
 import Head from "next/head";
 
@@ -50,10 +50,10 @@ export function LessonLayout(
 	if (!pageProps.course) {
 		throw new Error("LessonLayout expects course");
 	}
-	const playlistArea = pageProps.course ? <PlaylistArea {...pageProps} /> : null;
 
+	const playlistArea = pageProps.course ? <PlaylistArea {...pageProps} /> : null;
 	return (
-		<BaseLessonLayout title={pageProps.lesson.title} playlistArea={playlistArea}>
+		<BaseLessonLayout title={pageProps.lesson.title} playlistArea={playlistArea} {...pageProps}>
 			<Component {...pageProps} />
 		</BaseLessonLayout>
 	);
@@ -147,6 +147,7 @@ function MobilePlaylistArea(pageProps: LessonLayoutProps) {
 
 	return (
 		<>
+			{/*does this duplicates the title since BaseLessonLayout has it already?*/}
 			<Head>
 				<title>{pageProps.lesson.title}</title>
 			</Head>

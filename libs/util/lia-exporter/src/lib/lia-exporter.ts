@@ -19,7 +19,8 @@ import {
 	findContentType,
 	LessonContentMediaType,
 	getContentTypeDisplayName,
-	LessonContentType
+	LessonContentType,
+	CONTENT_TYPES
 } from "@self-learning/types";
 import { convertQuizzes } from "./question-utils";
 import JSZip from "jszip";
@@ -296,8 +297,7 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 
 				json.sections.push(addLessonOverviewPage(lesson, lessonIndent));
 
-				const mediaType = ["video", "article", "pdf"];
-				mediaType.forEach(type => {
+				CONTENT_TYPES.forEach(type => {
 					const contentBlock = findContentType(
 						type as LessonContentMediaType,
 						lesson.content as LessonContent

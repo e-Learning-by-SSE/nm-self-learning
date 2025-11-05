@@ -10,4 +10,5 @@ export * from "./lib/sidebar/sidebar-dashboard-layout";
 export * from "./lib/topic-header/topic-header";
 export * from "./lib/guards";
 export * from "./lib/search-bar";
+export * from "./lib/navigable-content/navigable";
 export * from "./lib/mobile-sidebar-navigation";

@@ -1,6 +1,9 @@
-import { ResolvedValue } from "@self-learning/types";
+import { LessonContent, ResolvedValue } from "@self-learning/types";
 import Head from "next/head";
 import { getCourse, LessonData } from "../lesson-data-access";
+import { LessonOutlineContext } from "../lesson-outline-context";
+import { useNavigableContent } from "@self-learning/ui/layouts";
+import { useState } from "react";
 
 export type BaseLessonLayoutProps = {
 	title: string;
@@ -10,9 +13,18 @@ export type BaseLessonLayoutProps = {
 	lesson?: LessonData;
 };
 
-export function BaseLessonLayout({ title, playlistArea, children }: BaseLessonLayoutProps) {
+export function BaseLessonLayout({ lesson, title, playlistArea, children }: BaseLessonLayoutProps) {
+	const lessonContent = (lesson?.content || []) as LessonContent;
+	const [targetIndex, setTargetIndex] = useState<number | undefined>(undefined);
+	const ctx = useNavigableContent(lessonContent, false, false);
+
+	const contextValue = {
+		...ctx,
+		targetIndex,
+		setTargetIndex
+	};
 	return (
-		<>
+		<LessonOutlineContext.Provider value={contextValue}>
 			<Head>
 				<title>{title}</title>
 			</Head>
@@ -23,6 +35,6 @@ export function BaseLessonLayout({ title, playlistArea, children }: BaseLessonLa
 					<div className="w-full pt-8 pb-16">{children}</div>
 				</div>
 			</div>
-		</>
+		</LessonOutlineContext.Provider>
 	);
 }

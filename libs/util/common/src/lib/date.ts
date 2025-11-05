@@ -13,6 +13,7 @@ export const DISPLAY_TIMEZONE = "Europe/Berlin";
  * formatSeconds(3600); // "01:00:00"
  */
 export function formatSeconds(seconds: number): string {
+	if (Number.isNaN(seconds) || seconds < 0) return "";
 	const hours = Math.floor(seconds / 3600);
 	const minutes = Math.floor((seconds % 3600) / 60);
 	const secondsLeft = seconds % 60;

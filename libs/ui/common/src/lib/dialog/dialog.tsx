@@ -1,4 +1,11 @@
-import { DialogBackdrop, Dialog as HeadlessDialog, DialogPanel as HeadlessDialogPanel, DialogTitle as HeadlessDialogTitle, Transition, TransitionChild } from "@headlessui/react";
+import {
+	DialogBackdrop,
+	Dialog as HeadlessDialog,
+	DialogPanel as HeadlessDialogPanel,
+	DialogTitle as HeadlessDialogTitle,
+	Transition,
+	TransitionChild
+} from "@headlessui/react";
 import { useTranslation } from "next-i18next";
 import { CSSProperties, Fragment, ReactNode } from "react";
 import { EaseInTransitionChild } from "../transitions/ease-in-child";
@@ -97,8 +104,9 @@ export function Dialog<TResult>({
 					<DialogPanelTransition>
 						<div className="absolute flex min-h-full items-center place-self-center">
 							<HeadlessDialogPanel
-								className={`relative mx-auto flex h-fit flex-col overflow-hidden rounded-lg bg-white p-8 ${className ?? ""
-									}`}
+								className={`relative mx-auto flex h-fit flex-col overflow-hidden rounded-lg bg-white p-8 ${
+									className ?? ""
+								}`}
 								style={style ?? DEFAULT_DIALOG_STYLE_SIZE}
 								data-testid="Dialog"
 							>
@@ -145,15 +153,15 @@ export function GameifyDialog({
 	// Default responsive classes that can be overridden
 	const responsiveClasses = responsive
 		? {
-			container: "p-4 sm:p-6",
-			panel: "p-4 sm:p-6 md:p-8",
-			title: "mb-4 sm:mb-6 md:mb-8 text-xl sm:text-2xl"
-		}
+				container: "p-4 sm:p-6",
+				panel: "p-4 sm:p-6 md:p-8",
+				title: "mb-4 sm:mb-6 md:mb-8 text-xl sm:text-2xl"
+			}
 		: {
-			container: "p-4",
-			panel: "p-8",
-			title: "mb-8 text-2xl"
-		};
+				container: "p-4",
+				panel: "p-8",
+				title: "mb-8 text-2xl"
+			};
 	return (
 		<Transition appear show={open} as={Fragment}>
 			<HeadlessDialog as="div" className="relative z-50" onClose={() => onClose?.(undefined)}>
@@ -228,8 +236,9 @@ export function DialogWithReactNodeTitle<TResult>({
 				<div className="absolute flex min-h-full items-center place-self-center">
 					{/* The actual dialog panel  */}
 					<HeadlessDialogPanel
-						className={`relative mx-auto flex h-fit flex-col overflow-hidden rounded-lg bg-white p-8 ${className ?? ""
-							}`}
+						className={`relative mx-auto flex h-fit flex-col overflow-hidden rounded-lg bg-white p-8 ${
+							className ?? ""
+						}`}
 						style={style ?? { minWidth: 624, maxHeight: "80vh" }}
 						data-testid="Dialog"
 					>
@@ -243,7 +252,7 @@ export function DialogWithReactNodeTitle<TResult>({
 }
 
 export function DialogActions({
-	abortLabel = "Abbrechen",
+	abortLabel = "Cancel",
 	onClose,
 	children
 }: {
@@ -263,9 +272,9 @@ export function DialogActions({
 				onClick={() => onClose(undefined)}
 				data-testid="dialog-cancel-button"
 			>
-				<span className={"text-gray-600"}>{t("Cancel")}</span>
+				<span className={"text-gray-600"}>{t(abortLabel)}</span>
 			</button>
 			{children}
-		</div >
+		</div>
 	);
 }
