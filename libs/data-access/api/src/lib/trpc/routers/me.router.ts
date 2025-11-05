@@ -14,12 +14,26 @@ import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 import { Session } from "next-auth";
 import { Prisma, PrismaClient } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
+
+function isAdmin(user: Session["user"]) {
+	return user.role === "ADMIN";
+}
 
 async function updateUserFeatures(
 	user: Session["user"],
 	input: EditFeatureSettings,
 	client: PrismaClient | Prisma.TransactionClient = database
 ) {
+
+	console.log("user", user)
+	if (input.experimental != null && !isAdmin(user)) {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message: "Admin permission for experimental change is necessary"
+		})
+	}
+
 	const isFeatureLearningDiaryChanged = user?.featureFlags?.learningDiary !== input.learningDiary;
 	const isUserDefined = user !== undefined;
 	const shouldLogEvent = isUserDefined && isFeatureLearningDiaryChanged;

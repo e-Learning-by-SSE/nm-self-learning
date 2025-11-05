@@ -220,13 +220,8 @@ export default function SettingsPage(props: PageProps) {
 			{session?.user.role === "ADMIN" && (
 				<SettingSection title={t("Developer Options")}>
 					<Toggle
-						value={props.experimentStatus?.isParticipating ?? false}
-						onChange={newValue => {
-							/* TODO */
-							console.log(
-								`attempt to set experiment status to ${newValue} but not implemented yet`
-							);
-						}}
+						value={props.settings.featureFlags.experimental}
+						onChange={newValue => onFeatureChange({ experimental: newValue })}
 						label="Experimentteilnahme mit Beta-Features (Gamification)"
 						disabled={isExperimentActive()} // avoid interference with ongoing experiments
 					/>

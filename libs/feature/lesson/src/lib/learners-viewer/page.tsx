@@ -1,42 +1,4 @@
-import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
-import { LessonLayoutProps } from "./course-lesson-layout";
-import { StandaloneLessonLayoutProps } from "./standalone-lesson-layout";
-import { LessonCourseData, LessonData } from "../lesson-data-access";
-import { Session } from "next-auth";
-import {
-	Article,
-	CourseContent,
-	getContentTypeDisplayName,
-	LessonContent,
-	LessonContentType,
-	LessonMeta
-} from "@self-learning/types";
-import { useLessonOutlineContext } from "../lesson-outline-context";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/router";
-import { usePathname, useSearchParams } from "next/navigation";
-import { LessonType } from "@prisma/client";
-import {
-	MarkdownContainer,
-	NavigableContentViewer,
-	useNavigableContent,
-	useRequiredSession
-} from "@self-learning/ui/layouts";
-import { ChapterName } from "../chapter-name";
-import {
-	SmallGradeBadge,
-	useCourseCompletion,
-	useMarkAsCompleted
-} from "@self-learning/completion";
-import {
-	AuthorsList,
-	LicenseChip,
-	SectionCard,
-	showToast,
-	Tab,
-	Tabs
-} from "@self-learning/ui/common";
-import { MDXRemote } from "next-mdx-remote";
+import { Button } from "@headlessui/react";
 import {
 	CheckCircleIcon,
 	ChevronDoubleLeftIcon,
@@ -45,17 +7,55 @@ import {
 	PencilIcon,
 	PlayIcon
 } from "@heroicons/react/24/solid";
-import Link from "next/link";
-import { useAttemptSubmission } from "libs/feature/quiz/src/lib/quiz-submit-attempt";
-import { useEventLog } from "@self-learning/util/eventlog";
-import { loadLessonSessionSafe } from "../learning-time/time-tracker";
-import { useSession } from "next-auth/react";
+import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
-import { createLessonPropsFrom } from "./create-lesson-props";
+import {
+	SmallGradeBadge,
+	useCourseCompletion,
+	useMarkAsCompleted
+} from "@self-learning/completion";
 import { database } from "@self-learning/database";
+import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
+import {
+	Article,
+	CourseContent,
+	getContentTypeDisplayName,
+	LessonContent,
+	LessonContentType,
+	LessonMeta
+} from "@self-learning/types";
+import {
+	AuthorsList,
+	LicenseChip,
+	SectionCard,
+	showToast,
+	Tab,
+	Tabs
+} from "@self-learning/ui/common";
+import {
+	MarkdownContainer,
+	NavigableContentViewer,
+	useNavigableContent,
+	useRequiredSession
+} from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
-import { Button } from "@headlessui/react";
+import { useEventLog } from "@self-learning/util/eventlog";
+import { useAttemptSubmission } from "libs/feature/quiz/src/lib/quiz-submit-attempt";
+import { Session } from "next-auth";
+import { useSession } from "next-auth/react";
+import { MDXRemote } from "next-mdx-remote";
+import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useRouter } from "next/router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ChapterName } from "../chapter-name";
+import { loadLessonSessionSafe } from "../learning-time/time-tracker";
 import { useLessonSession } from "../learning-time/use-lesson-time-tracking";
+import { LessonCourseData, LessonData } from "../lesson-data-access";
+import { useLessonOutlineContext } from "../lesson-outline-context";
+import { LessonLayoutProps } from "./course-lesson-layout";
+import { createLessonPropsFrom } from "./create-lesson-props";
+import { StandaloneLessonLayoutProps } from "./standalone-lesson-layout";
 
 export type LessonLearnersViewProps = {
 	lesson: LessonData & { performanceScore?: number | null };
