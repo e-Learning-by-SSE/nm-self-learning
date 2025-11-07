@@ -1,13 +1,22 @@
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
-import { CourseContent, LessonMeta, ResolvedValue } from "@self-learning/types";
-import { Playlist, PlaylistContent, PlaylistLesson } from "@self-learning/ui/lesson";
+import { CourseContent, LessonContent, LessonMeta, ResolvedValue } from "@self-learning/types";
+import {
+	Playlist,
+	PlaylistContent,
+	PlaylistLesson,
+	MobilePlayList
+} from "@self-learning/ui/lesson";
 import { NextComponentType, NextPageContext } from "next";
 import Head from "next/head";
 import type { ParsedUrlQuery } from "querystring";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { LessonData, getLesson } from "./lesson-data-access";
+import { LessonOutlineContext } from "./lesson-outline-context";
+import { useNavigableContent } from "@self-learning/ui/layouts";
+import { MobileSidebarNavigation } from "@self-learning/ui/layouts";
+import { useLessonNavigation } from "@self-learning/ui/lesson";
 
 export type LessonLayoutProps = {
 	lesson: LessonData;
@@ -22,6 +31,8 @@ type BaseLessonLayoutProps = {
 	title: string;
 	playlistArea: React.ReactNode;
 	children: React.ReactNode;
+	course?: ResolvedValue<typeof getCourse>;
+	lesson?: LessonData;
 };
 
 type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta };
@@ -120,20 +131,44 @@ function mapToPlaylistContent(
 	return playlistContent;
 }
 
-function BaseLessonLayout({ title, playlistArea, children }: BaseLessonLayoutProps) {
-	return (
-		<>
-			<Head>
-				<title>{title}</title>
-			</Head>
+function BaseLessonLayout({
+	title,
+	playlistArea,
+	children,
+	course,
+	lesson
+}: BaseLessonLayoutProps) {
+	const lessonContent = (lesson?.content || []) as LessonContent;
+	const [targetIndex, setTargetIndex] = useState<number | undefined>(undefined);
+	const ctx = useNavigableContent(lessonContent, false, false);
 
-			<div className="flex flex-col bg-gray-100">
-				<div className="mx-auto flex w-full max-w-[1920px] flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
-					{playlistArea}
-					<div className="w-full pt-8 pb-16">{children}</div>
+	const contextValue = {
+		...ctx,
+		targetIndex,
+		setTargetIndex
+	};
+
+	return (
+		<LessonOutlineContext.Provider value={contextValue}>
+			<div className="xl:hidden">
+				{course && lesson && <MobilePlaylistArea course={course} lesson={lesson} />}
+				<div className="p-5 pt-8 bg-gray-100 pb-16">
+					<div className="w-full">{children}</div>
 				</div>
 			</div>
-		</>
+			<div className="hidden xl:block">
+				<Head>
+					<title>{title}</title>
+				</Head>
+
+				<div className="flex flex-col bg-gray-100">
+					<div className="mx-auto flex w-full max-w-[1920px] flex-col-reverse gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
+						{playlistArea}
+						<div className="w-full pt-8 pb-8">{children}</div>
+					</div>
+				</div>
+			</div>
+		</LessonOutlineContext.Provider>
 	);
 }
 
@@ -147,7 +182,7 @@ export function LessonLayout(
 	const playlistArea = pageProps.course ? <PlaylistArea {...pageProps} /> : null;
 
 	return (
-		<BaseLessonLayout title={pageProps.lesson.title} playlistArea={playlistArea}>
+		<BaseLessonLayout title={pageProps.lesson.title} playlistArea={playlistArea} {...pageProps}>
 			<Component {...pageProps} />
 		</BaseLessonLayout>
 	);
@@ -160,7 +195,11 @@ export function StandaloneLessonLayout(
 	const playlistArea = <StandaloneLessonPlaylistArea {...pageProps} />;
 
 	return (
-		<BaseLessonLayout title={pageProps.lesson.title} playlistArea={playlistArea}>
+		<BaseLessonLayout
+			title={pageProps.lesson.title}
+			playlistArea={playlistArea}
+			lesson={pageProps.lesson}
+		>
 			<Component {...pageProps} />
 		</BaseLessonLayout>
 	);
@@ -175,7 +214,7 @@ function PlaylistArea({ course, lesson }: LessonLayoutProps) {
 	);
 
 	return (
-		<aside className="playlist-scroll sticky top-[61px] w-full overflow-auto border-t border-r-gray-200 pb-8 xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4">
+		<aside className="playlist-scroll sticky top-[61px] w-full overflow-auto border-t border-r-gray-200 rounded-lg xl:rounded-none pb-8 xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4">
 			{content ? (
 				<Playlist
 					content={playlistContent}
@@ -197,5 +236,44 @@ function StandaloneLessonPlaylistArea({ lesson }: StandaloneLessonLayoutProps) {
 		<aside className="playlist-scroll sticky top-[61px] w-full overflow-auto border-t border-r-gray-200 pb-8 xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4">
 			{/** to be implemented */}
 		</aside>
+	);
+}
+
+function MobilePlaylistArea(pageProps: LessonLayoutProps) {
+	const { data: content } = trpc.course.getContent.useQuery({ slug: pageProps.course.slug });
+	const playlistContent = useMemo(
+		() => (!content ? [] : mapToPlaylistContent(content.content, content.lessonMap)),
+		[content]
+	);
+	const { navigateToNextLesson, navigateToPreviousLesson, previous, next } = useLessonNavigation({
+		content: playlistContent,
+		lesson: { ...pageProps.lesson, meta: pageProps.lesson.meta as LessonMeta },
+		course: pageProps.course
+	});
+
+	return (
+		<>
+			<Head>
+				<title>{pageProps.lesson.title}</title>
+			</Head>
+			<MobileSidebarNavigation
+				next={() => {
+					navigateToNextLesson();
+				}}
+				prev={() => {
+					navigateToPreviousLesson();
+				}}
+				hasNext={!!next}
+				hasPrev={!!previous}
+				content={onSelect => (
+					<MobilePlayList
+						{...pageProps}
+						lesson={{ ...pageProps.lesson, meta: pageProps.lesson.meta as LessonMeta }}
+						content={playlistContent}
+						onSelect={onSelect}
+					/>
+				)}
+			/>
+		</>
 	);
 }

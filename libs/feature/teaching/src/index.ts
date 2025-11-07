@@ -20,3 +20,4 @@ export * from "./lib/skills/skill-overview";
 export * from "./lib/skills/folder-editor/index";
 export * from "./lib/course/kee/module-view-context";
 export * from "./lib/course/course-export/course-export-dialog";
+export const I18N_NAMESPACE = ["common", "feature-teaching"];

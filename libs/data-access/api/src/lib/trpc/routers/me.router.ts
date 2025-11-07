@@ -1,6 +1,5 @@
 import { database } from "@self-learning/database";
 import { authProcedure, t } from "../trpc";
-import { findLessons } from "./lesson.router";
 import { editUserSettingsSchema } from "@self-learning/types";
 import { randomUUID } from "crypto";
 
@@ -28,15 +27,19 @@ export const meRouter = t.router({
 		});
 	}),
 	delete: authProcedure.mutation(async ({ ctx }) => {
-		const result = await database.$transaction(async prisma => {
-			const user = await prisma.user.findUnique({
-				where: { name: ctx.user.name }
+		return await database.$transaction(async tx => {
+			const user = await tx.user.findUnique({
+				where: { name: ctx.user.name },
+				include: {
+					author: true
+				}
 			});
 
 			if (!user) {
 				return false;
 			}
-
+			/*
+<<<<<<< HEAD
 			const lessons = await findLessons({ authorName: ctx.user.name });
 			const lessonsIds = lessons.lessons.map(lesson => lesson.lessonId);
 
@@ -81,17 +84,54 @@ export const meRouter = t.router({
 							}
 						}
 					},
+=======
+*/
+			const anonymousUsername = "anonymous-" + randomUUID();
+
+			await tx.user.create({
+				data: {
+					name: anonymousUsername,
+					displayName: "Deleted User",
+					role: "USER"
 				}
 			});
 
-			await prisma.user.delete({
+			if (user.author) {
+				await tx.author.update({
+					where: {
+						username: user.name
+					},
+					data: {
+						username: anonymousUsername,
+						slug: anonymousUsername
+					}
+				});
+			}
+
+			await tx.skillRepository.updateMany({
+				where: {
+					ownerName: user.name
+				},
+				data: {
+					ownerName: anonymousUsername
+				}
+			});
+
+			await tx.eventLog.updateMany({
+				where: {
+					username: user.name
+				},
+				data: {
+					username: anonymousUsername
+				}
+			});
+
+			await tx.user.delete({
 				where: { name: ctx.user.name }
 			});
 
 			return true;
 		});
-
-		return result;
 	}),
 	updateSettings: authProcedure.input(editUserSettingsSchema).mutation(async ({ ctx, input }) => {
 		await database.$transaction(async tx => {

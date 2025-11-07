@@ -1,4 +1,5 @@
 export * from "./lib/lesson-layout";
+export * from "./lib/lesson-outline-context";
 export * from "./lib/use-lesson-context";
 export * from "./lib/lesson-data-access";
 export * from "./lib/lesson-viewer-page";

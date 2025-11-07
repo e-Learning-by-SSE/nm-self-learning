@@ -764,6 +764,124 @@ export const courseRouter = t.router({
 					}
 				}
 			});
+		}),
+
+	getProgress: authorProcedure
+		.meta({
+			openapi: {
+				enabled: true,
+				method: "GET",
+				path: "/courses/{slug}/progress",
+				tags: ["Courses"],
+				protect: true,
+				summary: "Get course progress for a list of students (teachers/admins only)"
+			}
+		})
+		.input(
+			z.object({
+				slug: z.string().describe("Unique slug of the course"),
+				usernames: z
+					.string()
+					.optional()
+					.describe(
+						"Comma separated list of student usernames to get progress for, e.g. 'user1,user2'"
+					)
+			})
+		)
+		.output(
+			z.array(
+				z.object({
+					username: z.string(),
+					progress: z.number().min(0).max(100).nullable()
+				})
+			)
+		)
+		.query(async ({ input, ctx }) => {
+			const usernames = input.usernames
+				? input.usernames
+						.split(",")
+						.map(u => u.trim())
+						.filter(Boolean)
+				: [];
+
+			// check if course exists (404 if not)
+			const course = await database.course.findUnique({
+				where: { slug: input.slug },
+				select: { courseId: true, content: true }
+			});
+
+			if (!course) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: `Course not found for slug: ${input.slug}`
+				});
+			}
+
+			// check if user is authorized (403 if not)
+			const userIsAuthor = await database.course.findFirst({
+				where: {
+					slug: input.slug,
+					authors: { some: { username: ctx.user.name } }
+				},
+				select: { courseId: true }
+			});
+
+			if (!userIsAuthor) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "You are not an author of this course."
+				});
+			}
+
+			const content = (course.content ?? []) as CourseContent;
+			const lessonIds = extractLessonIds(content);
+			const totalLessons = lessonIds.length;
+
+			if (totalLessons === 0) {
+				return usernames.map(username => ({
+					username,
+					progress: null
+				}));
+			}
+
+			// Find enrolled students from input usernames in this course
+			const enrollments = await database.enrollment.findMany({
+				where: {
+					courseId: course.courseId,
+					username: { in: usernames }
+				},
+				select: {
+					username: true
+				}
+			});
+
+			if (enrollments.length === 0) {
+				return [];
+			}
+
+			// Count completed lessons per student
+			const completedLessons = await database.completedLesson.groupBy({
+				by: ["username"],
+				where: {
+					courseId: course.courseId,
+					lessonId: { in: lessonIds },
+					username: { in: enrollments.map(e => e.username) }
+				},
+				_count: {
+					lessonId: true
+				}
+			});
+
+			return enrollments.map(enrollment => {
+				const completedCount =
+					completedLessons.find(c => c.username === enrollment.username)?._count
+						.lessonId ?? 0;
+				const progressPercent = Math.round((completedCount / totalLessons) * 100);
+				return {
+					username: enrollment.username,
+					progress: progressPercent
+				};
+			});
 		})
 });
 

@@ -16,7 +16,7 @@ import {
 	Toggle
 } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import { MarketingSvg, OverviewSvg, ProgressSvg, TargetSvg } from "@self-learning/ui/static";
+import { MarketingSvg, OverviewSvg, TargetSvg } from "@self-learning/ui/static";
 import {
 	formatDateAgo,
 	formatDateStringShort,
@@ -273,7 +273,7 @@ function DashboardPage(props: Props) {
 	return (
 		<div className="bg-gray-50">
 			<CenteredSection>
-				<div className="grid grid-cols-1 gap-8 pt-10 lg:grid-cols-[2fr_1fr]">
+				<div className="grid grid-cols-1 gap-8 lg:pt-10 lg:grid-cols-[2fr_1fr]">
 					<section className="flex items-center">
 						<ImageOrPlaceholder
 							src={props.student.user.image ?? undefined}

@@ -1,5 +1,7 @@
 import { ButtonHTMLAttributes, DetailedHTMLProps, PropsWithChildren } from "react";
 
+export type ButtonVariant = "primary" | "secondary" | "danger" | "tertiary" | "x-mark" | "stroked";
+
 /**
  * Enhanced Icon Button with responsive text
  * Text disappears on small viewports, only icon remains visible
@@ -18,7 +20,7 @@ export function IconButton({
 }: DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
 	icon: React.ReactNode;
 	text: string;
-	variant?: "primary" | "secondary" | "danger" | "tertiary" | "x-mark";
+	variant?: ButtonVariant;
 	hideTextOnMobile?: boolean;
 }) {
 	const baseClasses = "btn btn-with-icon";
@@ -44,7 +46,7 @@ export function IconOnlyButton({
 	...props
 }: DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
 	icon: React.ReactNode;
-	variant?: "primary" | "secondary" | "danger" | "tertiary" | "x-mark";
+	variant?: ButtonVariant;
 }) {
 	const baseClasses = "btn btn-icon-only";
 	const variantClass = `btn-${variant}`;

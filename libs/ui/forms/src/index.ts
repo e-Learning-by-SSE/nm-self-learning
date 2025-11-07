@@ -7,3 +7,4 @@ export * from "./lib/upload";
 export * as Form from "./lib/form-container";
 export * from "./lib/json-editor-dialog";
 export * from "./lib/labeled-checkbox";
+export const I18N_NAMESPACE = ["common"];
