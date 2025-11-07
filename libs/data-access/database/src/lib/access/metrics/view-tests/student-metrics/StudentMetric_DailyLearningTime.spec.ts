@@ -1,13 +1,21 @@
 import { PrismaClient, User } from "@prisma/client";
 const prisma = new PrismaClient();
 
-import { createUsers, deleteUsers } from "../helper";
+import { createUsers, deleteUsers, getDemoDatabaseAvailability } from "../helper";
 
 let users: User[];
 
 // TEST SHOULD ONLY RUN IF DATABASE IS AVAILABLE
+const isDatabaseAvailable = getDemoDatabaseAvailability();
 
 beforeAll(async () => {
+	if (!isDatabaseAvailable) {
+		console.warn(
+			"Skipping database tests: DATABASE_URL or demo instance flag not set correctly."
+		);
+		return;
+	}
+
 	users = await createUsers(["user_daily_learning_time"]);
 
 	await prisma.eventLog.createMany({
@@ -27,6 +35,8 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+	if (!isDatabaseAvailable) return;
+
 	// Clean up created data in reverse order
 	await prisma.eventLog.deleteMany({
 		where: {
@@ -39,7 +49,7 @@ afterAll(async () => {
 	await prisma.$disconnect();
 });
 
-test("should return learning time for student", async () => {
+(isDatabaseAvailable ? test : test.skip)("should return learning time for student", async () => {
 	const result = await prisma.studentMetric_DailyLearningTime.findUnique({
 		where: { userId: users[0].id }
 	});

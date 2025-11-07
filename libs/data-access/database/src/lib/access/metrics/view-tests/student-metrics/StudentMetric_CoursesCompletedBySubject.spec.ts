@@ -7,7 +7,8 @@ import {
 	createEnrollments,
 	deleteEnrollments,
 	createUsers,
-	deleteUsers
+	deleteUsers,
+	getDemoDatabaseAvailability
 } from "../helper";
 
 let users: User[];
@@ -16,8 +17,16 @@ let course: Course;
 let subject: Subject;
 
 // TEST SHOULD ONLY RUN IF DATABASE IS AVAILABLE
+const isDatabaseAvailable = getDemoDatabaseAvailability();
 
 beforeAll(async () => {
+	if (!isDatabaseAvailable) {
+		console.warn(
+			"Skipping database tests: DATABASE_URL or demo instance flag not set correctly."
+		);
+		return;
+	}
+
 	users = await createUsers(["student_avg_courses_completed_by_subject"]);
 
 	students = await createStudents([users[0]]);
@@ -56,6 +65,8 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+	if (!isDatabaseAvailable) return;
+
 	// Clean up created data in reverse order
 	await deleteEnrollments([course]);
 
@@ -74,18 +85,21 @@ afterAll(async () => {
 	await prisma.$disconnect();
 });
 
-test("should calculate 100% average courses completed by subject for student", async () => {
-	const result = await prisma.studentMetric_CoursesCompletedBySubject.findUnique({
-		where: { userId: users[0].id }
-	});
+(isDatabaseAvailable ? test : test.skip)(
+	"should calculate 100% average courses completed by subject for student",
+	async () => {
+		const result = await prisma.studentMetric_CoursesCompletedBySubject.findUnique({
+			where: { userId: users[0].id }
+		});
 
-	console.log("Average Courses Completed by Subject Result:", result);
+		console.log("Average Courses Completed by Subject Result:", result);
 
-	expect(result).not.toBeNull();
-	expect(result?.userId).toBe(users[0].id);
-	expect(result?.username).toBe(users[0].name);
-	expect(result?.subjectId).toBe(subject.subjectId);
-	expect(result?.subjectTitle).toBe(subject.title);
-	expect(result?.completedCoursesCount).toBe(1);
-	expect(result?.completedCourses).toEqual(course.title);
-});
+		expect(result).not.toBeNull();
+		expect(result?.userId).toBe(users[0].id);
+		expect(result?.username).toBe(users[0].name);
+		expect(result?.subjectId).toBe(subject.subjectId);
+		expect(result?.subjectTitle).toBe(subject.title);
+		expect(result?.completedCoursesCount).toBe(1);
+		expect(result?.completedCourses).toEqual(course.title);
+	}
+);

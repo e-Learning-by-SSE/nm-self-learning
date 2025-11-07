@@ -23,7 +23,8 @@ import {
 	createStartedLesson,
 	deleteStartedLesson,
 	createCompletedLesson,
-	deleteCompletedLesson
+	deleteCompletedLesson,
+	getDemoDatabaseAvailability
 } from "../helper";
 
 let users: User[];
@@ -33,8 +34,16 @@ let course: Course;
 let lessons: Lesson[];
 
 // TEST SHOULD ONLY RUN IF DATABASE IS AVAILABLE
+const isDatabaseAvailable = getDemoDatabaseAvailability();
 
 beforeAll(async () => {
+	if (!isDatabaseAvailable) {
+		console.warn(
+			"Skipping database tests: DATABASE_URL or demo instance flag not set correctly."
+		);
+		return;
+	}
+
 	users = await createUsers([
 		"author_avg_lesson_completion",
 		"student_avg_lesson_completion-1",
@@ -127,6 +136,8 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+	if (!isDatabaseAvailable) return;
+
 	// Clean up created data in reverse order
 	await deleteCompletedLesson(lessons[0]);
 
@@ -149,21 +160,24 @@ afterAll(async () => {
 	await prisma.$disconnect();
 });
 
-test("should calculate 100% average lesson completion rate for author", async () => {
-	const result = await prisma.authorMetric_AverageLessonCompletionRate.findUnique({
-		where: { authorId: users[0].id }
-	});
+(isDatabaseAvailable ? test : test.skip)(
+	"should calculate 100% average lesson completion rate for author",
+	async () => {
+		const result = await prisma.authorMetric_AverageLessonCompletionRate.findUnique({
+			where: { authorId: users[0].id }
+		});
 
-	console.log("Average Lesson Completion Rate Result:", result);
+		console.log("Average Lesson Completion Rate Result:", result);
 
-	expect(result).not.toBeNull();
-	expect(result?.authorId).toBe(users[0].id);
-	expect(result?.authorUsername).toBe(users[0].name);
-	expect(result?.courseId).toBe(course.courseId);
-	expect(result?.courseTitle).toBe(course.title);
-	expect(result?.lessonId).toBe(lessons[0].lessonId);
-	expect(result?.lessonTitle).toBe(lessons[0].title);
-	expect(result?.usersStarted).toBe(8);
-	expect(result?.usersFinished).toBe(8);
-	expect(result?.averageCompletionRate).toBe(100);
-});
+		expect(result).not.toBeNull();
+		expect(result?.authorId).toBe(users[0].id);
+		expect(result?.authorUsername).toBe(users[0].name);
+		expect(result?.courseId).toBe(course.courseId);
+		expect(result?.courseTitle).toBe(course.title);
+		expect(result?.lessonId).toBe(lessons[0].lessonId);
+		expect(result?.lessonTitle).toBe(lessons[0].title);
+		expect(result?.usersStarted).toBe(8);
+		expect(result?.usersFinished).toBe(8);
+		expect(result?.averageCompletionRate).toBe(100);
+	}
+);

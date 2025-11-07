@@ -21,7 +21,8 @@ import {
 	createStartedLesson,
 	deleteStartedLesson,
 	createCompletedLesson,
-	deleteCompletedLesson
+	deleteCompletedLesson,
+	getDemoDatabaseAvailability
 } from "../helper";
 
 let users: User[];
@@ -32,8 +33,16 @@ let quizAttempt: QuizAttempt;
 const dateNow = new Date();
 
 // TEST SHOULD ONLY RUN IF DATABASE IS AVAILABLE
+const isDatabaseAvailable = getDemoDatabaseAvailability();
 
 beforeAll(async () => {
+	if (!isDatabaseAvailable) {
+		console.warn(
+			"Skipping database tests: DATABASE_URL or demo instance flag not set correctly."
+		);
+		return;
+	}
+
 	users = await createUsers(["student_avg_lesson_completion"]);
 
 	students = await createStudents([users[0]]);
@@ -84,6 +93,8 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+	if (!isDatabaseAvailable) return;
+
 	// Clean up created data in reverse order
 	await prisma.quizAnswer.deleteMany({
 		where: { quizAttemptId: quizAttempt.attemptId }
@@ -112,25 +123,33 @@ afterAll(async () => {
 	await prisma.$disconnect();
 });
 
-test("should calculate 100% average lesson completion rate for author", async () => {
-	const result = await prisma.studentMetric_HourlyAverageQuizAnswers.findUnique({
-		where: { userId: users[0].id }
-	});
+(isDatabaseAvailable ? test : test.skip)(
+	"should calculate 100% average lesson completion rate for author",
+	async () => {
+		const result = await prisma.studentMetric_HourlyAverageQuizAnswers.findUnique({
+			where: { userId: users[0].id }
+		});
 
-	console.log("Average Lesson Completion Rate Result:", result);
+		console.log("Average Lesson Completion Rate Result:", result);
 
-	expect(result).not.toBeNull();
-	expect(result?.userId).toBe(users[0].id);
-	expect(result?.username).toBe(users[0].name);
-	expect(result?.courseId).toBe(course.courseId);
-	expect(result?.courseTitle).toBe(course.title);
-	expect(result?.lessonId).toBe(lessons[0].lessonId);
-	expect(result?.lessonTitle).toBe(lessons[0].title);
+		expect(result).not.toBeNull();
+		expect(result?.userId).toBe(users[0].id);
+		expect(result?.username).toBe(users[0].name);
+		expect(result?.courseId).toBe(course.courseId);
+		expect(result?.courseTitle).toBe(course.title);
+		expect(result?.lessonId).toBe(lessons[0].lessonId);
+		expect(result?.lessonTitle).toBe(lessons[0].title);
 
-	expect(result?.hour).toEqual(
-		new Date(dateNow.getFullYear(), dateNow.getMonth(), dateNow.getDate(), dateNow.getHours())
-	);
-	expect(result?.wrongAnswers).toBe(0);
-	expect(result?.correctAnswers).toBe(1);
-	expect(result?.averageAccuracyRate).toBe(100);
-});
+		expect(result?.hour).toEqual(
+			new Date(
+				dateNow.getFullYear(),
+				dateNow.getMonth(),
+				dateNow.getDate(),
+				dateNow.getHours()
+			)
+		);
+		expect(result?.wrongAnswers).toBe(0);
+		expect(result?.correctAnswers).toBe(1);
+		expect(result?.averageAccuracyRate).toBe(100);
+	}
+);

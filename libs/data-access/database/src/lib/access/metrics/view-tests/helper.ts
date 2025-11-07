@@ -4,6 +4,14 @@ import { EnrollmentStatus } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+export function getDemoDatabaseAvailability() {
+	const DATABASE_URL_EXPECTED = "postgresql://username:password@dev-db:5432/SelfLearningDb";
+	return (
+		process.env.DATABASE_URL === DATABASE_URL_EXPECTED &&
+		process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE === "true"
+	);
+}
+
 export async function createUsers(usernames: string[]) {
 	const users: User[] = [];
 

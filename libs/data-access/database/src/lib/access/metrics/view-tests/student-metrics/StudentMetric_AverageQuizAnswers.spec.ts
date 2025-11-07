@@ -21,7 +21,8 @@ import {
 	createStartedLesson,
 	deleteStartedLesson,
 	createCompletedLesson,
-	deleteCompletedLesson
+	deleteCompletedLesson,
+	getDemoDatabaseAvailability
 } from "../helper";
 
 let users: User[];
@@ -30,11 +31,17 @@ let course: Course;
 let lessons: Lesson[];
 let quizAttempt: QuizAttempt;
 
-// Check if the database is available before running tests
-
 // TEST SHOULD ONLY RUN IF DATABASE IS AVAILABLE
+const isDatabaseAvailable = getDemoDatabaseAvailability();
 
 beforeAll(async () => {
+	if (!isDatabaseAvailable) {
+		console.warn(
+			"Skipping database tests: DATABASE_URL or demo instance flag not set correctly."
+		);
+		return;
+	}
+
 	users = await createUsers(["student_avg_quiz_answers"]);
 
 	students = await createStudents([users[0]]);
@@ -84,6 +91,8 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+	if (!isDatabaseAvailable) return;
+
 	// Clean up created data in reverse order
 	await prisma.quizAnswer.deleteMany({
 		where: { quizAttemptId: quizAttempt.attemptId }
@@ -112,21 +121,24 @@ afterAll(async () => {
 	await prisma.$disconnect();
 });
 
-test("should calculate 100% average quiz answers for student", async () => {
-	const result = await prisma.studentMetric_AverageQuizAnswers.findUnique({
-		where: { userId: users[0].id }
-	});
+(isDatabaseAvailable ? test : test.skip)(
+	"should calculate 100% average quiz answers for student",
+	async () => {
+		const result = await prisma.studentMetric_AverageQuizAnswers.findUnique({
+			where: { userId: users[0].id }
+		});
 
-	console.log("Average Quiz Answers Result:", result);
+		console.log("Average Quiz Answers Result:", result);
 
-	expect(result).not.toBeNull();
-	expect(result?.userId).toBe(users[0].id);
-	expect(result?.username).toBe(users[0].name);
-	expect(result?.courseId).toBe(course.courseId);
-	expect(result?.courseTitle).toBe(course.title);
-	expect(result?.lessonId).toBe(lessons[0].lessonId);
-	expect(result?.lessonTitle).toBe(lessons[0].title);
-	expect(result?.wrongAnswers).toBe(0);
-	expect(result?.correctAnswers).toBe(1);
-	expect(result?.averageAccuracyRate).toBe(100);
-});
+		expect(result).not.toBeNull();
+		expect(result?.userId).toBe(users[0].id);
+		expect(result?.username).toBe(users[0].name);
+		expect(result?.courseId).toBe(course.courseId);
+		expect(result?.courseTitle).toBe(course.title);
+		expect(result?.lessonId).toBe(lessons[0].lessonId);
+		expect(result?.lessonTitle).toBe(lessons[0].title);
+		expect(result?.wrongAnswers).toBe(0);
+		expect(result?.correctAnswers).toBe(1);
+		expect(result?.averageAccuracyRate).toBe(100);
+	}
+);
