@@ -35,6 +35,8 @@ function Course({
 	content: ToC.Content;
 }) {
 	const hasContent = content.length > 0;
+	const hasTeachingGoal = course.teachingGoals.length > 0;
+
 	let mappedAuthors: AuthorProps[] = [];
 
 	if (course) {
@@ -44,6 +46,7 @@ function Course({
 			imgUrl: a.imgUrl ?? null
 		}));
 	}
+
 	return (
 		<section className="flex flex-col gap-16">
 			<div className="flex flex-wrap-reverse gap-12 md:flex-nowrap">
@@ -76,7 +79,7 @@ function Course({
 								alt=""
 							></Image>
 						)}
-						{hasContent && (
+						{hasContent && hasTeachingGoal && (
 							<ul className="absolute bottom-0 grid w-full grid-cols-3 divide-x divide-secondary rounded-b-lg border border-light-border border-t-transparent bg-white bg-opacity-80 p-2 text-center">
 								<li className="flex flex-col">
 									<span className="font-semibold text-secondary">
@@ -99,24 +102,32 @@ function Course({
 					</div>
 				</div>
 			</div>
-			<TableOfContents content={content} course={course} />
+			{hasTeachingGoal ? (
+				<TableOfContents content={content} course={course} />
+			) : (
+				<Warning title="noTeachingGoalTitle" description="noTeachingGoalDescription" />
+			)}
 		</section>
 	);
 }
 
-function TableOfContents({ content, course }: { content: ToC.Content; course: DynCourseModel }) {
+function Warning({ title, description }: { title: string; description: string }) {
 	const { t } = useTranslation("common");
+	return (
+		<div className="flex flex-col gap-4 p-8 rounded-lg bg-gray-100">
+			<h3 className="heading flex gap-4 text-2xl">
+				<span className="text-secondary">{t(title)}</span>
+			</h3>
+			<span className="mt-4 text-light">{t(description)}</span>
+		</div>
+	);
+}
+
+function TableOfContents({ content, course }: { content: ToC.Content; course: DynCourseModel }) {
 	const hasContent = content.length > 0;
 
 	if (!hasContent) {
-		return (
-			<div className="flex flex-col gap-4 p-8 rounded-lg bg-gray-100">
-				<h3 className="heading flex gap-4 text-2xl">
-					<span className="text-secondary">{t("noCoursePathTitle")}</span>
-				</h3>
-				<span className="mt-4 text-light">{t("noCoursePathDescription")}</span>
-			</div>
-		);
+		return <Warning title="noCoursePathTitle" description="noCoursePathDescription" />;
 	}
 
 	return (

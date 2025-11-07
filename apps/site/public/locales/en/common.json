@@ -13,5 +13,7 @@
   	"KeeTabModules": "3. Modules",
   	"KeeTabPreview": "4. Preview",
 	"noCoursePathTitle": "No course path available",
-	"noCoursePathDescription": "The course path could not be generated. Please adjust the course content or learning objectives and try again."
+	"noCoursePathDescription": "The course path could not be generated. Please adjust the course content or learning objectives and try again.",
+	"noTeachingGoalTitle": "This course has no learning goal",
+	"noTeachingGoalDescription": "Your course doesn’t have any teaching goals yet. Without them, it’s not possible to generate a course path. Please define the learning objectives and try again."
 }

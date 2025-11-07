@@ -1,4 +1,4 @@
-import { SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
+import { Alert, SectionHeader, Tab, Tabs } from "@self-learning/ui/common";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -29,26 +29,40 @@ export const getServerSideProps = withTranslations(
 	async (ctx: GetServerSidePropsContext) => {
 		const slug = ctx.params?.slug as string;
 
-		const course = await database.dynCourse.findUniqueOrThrow({
-			where: { slug },
-			select: {
-				title: true,
-				authors: true,
-				subtitle: true,
-				slug: true,
-				description: true,
-				imgUrl: true,
-				teachingGoals: {
-					select: {
-						id: true,
-						name: true,
-						description: true,
-						authorId: true,
-						children: { select: { id: true } }
+		let course = null;
+		let content: ToC.Content = [];
+		let summary = {};
+
+		try {
+			course = await database.dynCourse.findUniqueOrThrow({
+				where: { slug },
+				select: {
+					title: true,
+					authors: true,
+					subtitle: true,
+					slug: true,
+					description: true,
+					imgUrl: true,
+					teachingGoals: {
+						select: {
+							id: true,
+							name: true,
+							description: true,
+							authorId: true,
+							children: { select: { id: true } }
+						}
 					}
 				}
-			}
-		});
+			});
+		} catch (error) {
+			return {
+				props: {
+					course: course,
+					content: content,
+					summary: summary
+				}
+			};
+		}
 
 		const dbSkills = await database.skill.findMany({
 			select: {
@@ -107,9 +121,6 @@ export const getServerSideProps = withTranslations(
 			costOptions: DefaultCostParameter
 		});
 
-		let content: ToC.Content = [];
-		let summary = {};
-
 		if (path) {
 			const courseChapter = [
 				{
@@ -151,6 +162,14 @@ export default function CoursePreviewPage({
 	const [selectedIndex, setSelectedIndex] = useState(3);
 
 	const tabs = useEditorTabs();
+
+	if (!course) {
+		return (
+			<div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+				<Alert type={{ severity: "ERROR", message: "This course could not be found." }} />
+			</div>
+		);
+	}
 
 	async function switchTab(newIndex: number) {
 		setSelectedIndex(newIndex);
