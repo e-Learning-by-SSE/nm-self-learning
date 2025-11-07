@@ -1,11 +1,12 @@
 import { QuizContent } from "@self-learning/question-types";
 import { getRandomId } from "@self-learning/util/common";
 import { faker } from "@faker-js/faker";
-import { AccessLevel, Prisma, PrismaClient } from "@prisma/client";
+import { AccessLevel, GroupRole, Prisma, PrismaClient } from "@prisma/client";
 import { createLessonWithRandomContentAndDemoQuestions, createUsers } from "../seed-functions";
 import { createCourseContent, createCourseMeta, extractLessonIds } from "@self-learning/types";
 import { subHours } from "date-fns";
 import { defaultLicenseId } from "../license";
+import { softwareentwicklungDemoGroup } from "../seedSpecializations";
 
 faker.seed(1);
 
@@ -26,16 +27,8 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 				content: "Very Good",
 				isCorrect: true
 			},
-			{
-				answerId: "35d310ee-1acf-48e0-8f8c-090acd0e873a",
-				content: "Good",
-				isCorrect: true
-			},
-			{
-				answerId: "cd33a2ef-95e8-4353-ad1d-de778d62ad57",
-				content: "Bad",
-				isCorrect: false
-			},
+			{ answerId: "35d310ee-1acf-48e0-8f8c-090acd0e873a", content: "Good", isCorrect: true },
+			{ answerId: "cd33a2ef-95e8-4353-ad1d-de778d62ad57", content: "Bad", isCorrect: false },
 			{
 				answerId: "211b5171-d7b2-4fc9-98ab-88af35f53df2",
 				content: "Very Bad",
@@ -48,10 +41,7 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 				content:
 					"Lorem ipsum dolor sit amet consectetur adipisicing elit. Libero laudantium sequi illo, veritatis labore culpa, eligendi, quod consequatur autem ad dolorem explicabo quos alias harum fuga sapiente reiciendis. Incidunt, voluptates."
 			},
-			{
-				hintId: "def",
-				content: "# Lorem ipsum dolor \n- Eins\n- Zwei"
-			}
+			{ hintId: "def", content: "# Lorem ipsum dolor \n- Eins\n- Zwei" }
 		],
 		questionStep: 1
 	},
@@ -61,12 +51,7 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 		statement: "# Was ist 1 + 1 ?",
 		withCertainty: true,
 		caseSensitive: true,
-		acceptedAnswers: [
-			{
-				acceptedAnswerId: "724f781e-56b2-4057-831e-b1d6962c48b1",
-				value: "2"
-			}
-		],
+		acceptedAnswers: [{ acceptedAnswerId: "724f781e-56b2-4057-831e-b1d6962c48b1", value: "2" }],
 		hints: []
 	},
 	{
@@ -79,14 +64,8 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 	{
 		type: "programming",
 		hints: [
-			{
-				hintId: "asdrfewq",
-				content: "```java\nSystem.out.println();```"
-			},
-			{
-				content: "# Lorem ipsum dolor \n- Eins\n- Zwei",
-				hintId: getRandomId()
-			}
+			{ hintId: "asdrfewq", content: "```java\nSystem.out.println();```" },
+			{ content: "# Lorem ipsum dolor \n- Eins\n- Zwei", hintId: getRandomId() }
 		],
 		custom: {
 			mode: "standalone",
@@ -108,10 +87,7 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 				content:
 					"```ts\n// Verwende eine for-Schleife, um über alle Zahlen der Liste zu iterieren.\nfor (let i = 0; i < numbers.length; i++) {\n\t// DEINE LÖSUNG HIER\n}\n```"
 			},
-			{
-				content: "# Lorem ipsum dolor \n- Eins\n- Zwei",
-				hintId: getRandomId()
-			}
+			{ content: "# Lorem ipsum dolor \n- Eins\n- Zwei", hintId: getRandomId() }
 		],
 		custom: {
 			mode: "callable",
@@ -129,14 +105,8 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 	{
 		type: "programming",
 		hints: [
-			{
-				content: "```java\nSystem.out.println();```",
-				hintId: getRandomId()
-			},
-			{
-				content: "# Lorem ipsum dolor \n- Eins\n- Zwei",
-				hintId: getRandomId()
-			}
+			{ content: "```java\nSystem.out.println();```", hintId: getRandomId() },
+			{ content: "# Lorem ipsum dolor \n- Eins\n- Zwei", hintId: getRandomId() }
 		],
 		custom: {
 			mode: "standalone",
@@ -151,14 +121,8 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 	{
 		type: "programming",
 		hints: [
-			{
-				content: "```java\nSystem.out.println();```",
-				hintId: getRandomId()
-			},
-			{
-				content: "# Lorem ipsum dolor \n- Eins\n- Zwei",
-				hintId: getRandomId()
-			}
+			{ content: "```java\nSystem.out.println();```", hintId: getRandomId() },
+			{ content: "# Lorem ipsum dolor \n- Eins\n- Zwei", hintId: getRandomId() }
 		],
 		custom: {
 			mode: "callable",
@@ -405,62 +369,30 @@ export const reactCourses: Prisma.CourseCreateManyInput[] = [
 		),
 		meta: {}
 	}
-].map(course => ({
-	...course,
-	meta: createCourseMeta(course)
-}));
+].map(course => ({ ...course, meta: createCourseMeta(course) }));
 
 const reactAuthors: Prisma.UserCreateInput[] = [
 	{
 		name: "kent-c-dodds",
 		displayName: "Kent C. Dodds",
 		accounts: {
-			create: [
-				{
-					provider: "demo",
-					providerAccountId: "kent-c-dodds",
-					type: "demo-account"
-				}
-			]
+			create: [{ provider: "demo", providerAccountId: "kent-c-dodds", type: "demo-account" }]
 		},
-		student: {
-			create: {
-				username: "kent-c-dodds"
-			}
-		},
+		student: { create: { username: "kent-c-dodds" } },
 		author: {
 			create: {
 				displayName: "Kent C Dodds",
 				slug: "kent-c-dodds",
 				imgUrl: "https://raw.githubusercontent.com/kentcdodds/kentcdodds.com/main/public/images/small-circular-kent.png",
-				courses: {
-					connect: {
-						courseId: reactCourses[0].courseId
-					}
-				},
+				courses: { connect: { courseId: reactCourses[0].courseId } },
 				lessons: {
 					connect: extractLessonIds(reactLessons).map(lessonId => ({ lessonId }))
 				},
-				specializationAdmin: {
-					create: {
-						specializationId: "softwareentwicklung"
-					}
-				}
+				specializationAdmin: { create: { specializationId: "softwareentwicklung" } }
 			}
 		},
-		permissions: {
-			create: [
-				...reactLessons.flatMap(l =>
-					l.content.map(lesson => ({
-						accessLevel: AccessLevel.FULL,
-						lessonId: lesson.lessonId
-					}))
-				),
-				{
-					accessLevel: AccessLevel.FULL,
-					subjectId: "informatik"
-				}
-			]
+		memberships: {
+			create: { groupId: softwareentwicklungDemoGroup.name, role: GroupRole.MEMBER }
 		}
 	},
 	{
@@ -471,19 +403,9 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 		enabledFeatureLearningDiary: false,
 		enabledLearningStatistics: true,
 		accounts: {
-			create: [
-				{
-					provider: "demo",
-					providerAccountId: "dumbledore",
-					type: "demo-account"
-				}
-			]
+			create: [{ provider: "demo", providerAccountId: "dumbledore", type: "demo-account" }]
 		},
-		student: {
-			create: {
-				username: "dumbledore"
-			}
-		},
+		student: { create: { username: "dumbledore" } },
 		author: {
 			create: {
 				displayName: "Albus Dumbledore",
@@ -491,11 +413,8 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 				imgUrl: "https://i.imgur.com/UWMVO8m.jpeg"
 			}
 		},
-		permissions: {
-			create: {
-				accessLevel: AccessLevel.FULL,
-				subjectId: "informatik"
-			}
+		memberships: {
+			create: { groupId: softwareentwicklungDemoGroup.name, role: GroupRole.OWNER }
 		}
 	},
 	{
@@ -503,25 +422,18 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 		image: "https://i.pinimg.com/originals/ac/9f/c3/ac9fc3d306b9eb07b451933cc756f733.jpg",
 		displayName: "Minerva McGonagall",
 		accounts: {
-			create: [
-				{
-					provider: "demo",
-					providerAccountId: "mcgonagall",
-					type: "demo-account"
-				}
-			]
+			create: [{ provider: "demo", providerAccountId: "mcgonagall", type: "demo-account" }]
 		},
-		student: {
-			create: {
-				username: "mcgonagall"
-			}
-		},
+		student: { create: { username: "mcgonagall" } },
 		author: {
 			create: {
 				displayName: "Minerva McGonagall",
 				slug: "mcgonagall",
 				imgUrl: "https://i.pinimg.com/originals/ac/9f/c3/ac9fc3d306b9eb07b451933cc756f733.jpg"
 			}
+		},
+		memberships: {
+			create: { groupId: softwareentwicklungDemoGroup.name, role: GroupRole.MEMBER }
 		}
 	}
 ];
@@ -564,19 +476,9 @@ const users: Prisma.UserCreateInput[] = reactStudents.map(student => ({
 	image: student.image,
 	displayName: student.displayName,
 	accounts: {
-		create: [
-			{
-				provider: "demo",
-				providerAccountId: student.username,
-				type: "demo-account"
-			}
-		]
+		create: [{ provider: "demo", providerAccountId: student.username, type: "demo-account" }]
 	},
-	student: {
-		create: {
-			username: student.username
-		}
-	}
+	student: { create: { username: student.username } }
 }));
 
 export async function seedReactDemo() {
@@ -587,10 +489,7 @@ export async function seedReactDemo() {
 
 	await prisma.lesson.createMany({
 		data: reactLessons.flatMap(chapter =>
-			chapter.content.map(lesson => ({
-				...lesson,
-				licenseId: licenceId
-			}))
+			chapter.content.map(lesson => ({ ...lesson, licenseId: licenceId }))
 		)
 	});
 
@@ -607,13 +506,27 @@ export async function seedReactDemo() {
 
 	await prisma.specialization.update({
 		where: { specializationId: "softwareentwicklung" },
-		data: {
-			courses: {
-				connect: reactCourses.map(course => ({ courseId: course.courseId }))
-			}
-		}
+		data: { courses: { connect: reactCourses.map(course => ({ courseId: course.courseId })) } }
 	});
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Connect Specialization to Course");
+
+	const lessonsPermissions = reactLessons.flatMap(chapter =>
+		chapter.content.map(lesson => ({
+			accessLevel: AccessLevel.FULL,
+			lessonId: lesson.lessonId
+		}))
+	);
+	const coursesPermissions = reactCourses.map(c => ({
+		accessLevel: AccessLevel.FULL,
+		courseId: c.courseId
+	}));
+	const perms = [...lessonsPermissions, ...coursesPermissions];
+	await prisma.group.upsert({
+		where: { name: softwareentwicklungDemoGroup.name },
+		create: { name: softwareentwicklungDemoGroup.name, permissions: { create: perms } },
+		update: { permissions: { createMany: { data: perms, skipDuplicates: true } } }
+	});
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Create a group with FULL permissions to all resources");
 
 	for (const author of reactAuthors) {
 		await prisma.user.create({ data: author });
