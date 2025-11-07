@@ -12,7 +12,7 @@ jest.mock("../../prisma", () => ({
 		authorMetric_AverageCompletionRate: { findUnique: jest.fn() },
 		authorMetric_AverageSubjectCompletionRate: { findMany: jest.fn() },
 		authorMetric_AverageCourseCompletionRate: { findMany: jest.fn() },
-		authorMetric_AverageLessonCompletionRate: { findUnique: jest.fn() },
+		authorMetric_AverageLessonCompletionRate: { findMany: jest.fn() },
 		authorMetric_DailyAverageLessonCompletionRate: { findMany: jest.fn() },
 		authorMetric_AverageLessonCompletionRateByCourse: { findMany: jest.fn() },
 		authorMetric_DailyAverageLessonCompletionRateByCourse: { findMany: jest.fn() }
