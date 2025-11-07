@@ -62,15 +62,5 @@
     "Email": "E-Mail",
     "Name": "Name",
     "Information Updated": "Informationen aktualisiert",
-    "Settings Could not be Saved!": "Einstellungen konnten nicht gespeichert werden!",
-
-	"KeeTabBasic": "1. Grunddaten",
-  	"KeeTabSkills": "2. Skillansicht",
-  	"KeeTabModules": "3. Modulansicht",
-  	"KeeTabPreview": "4. Vorschau",
-	"noCoursePathTitle": "Kein Kurspfad verfügbar",
-	"noCoursePathDescription": "Die Generierung des Kurspfades war nicht möglich. Bitte passen Sie den Kursinhalt oder die Lernziele an und versuchen Sie es erneut.",
-	"noTeachingGoalTitle": "Dieser Kurs hat kein Lernziel",
-	"noTeachingGoalDescription": "Für Ihren Kurs wurden noch keine Lernziele definiert. Ohne Lernziele kann kein Kurspfad erstellt werden. Bitte legen Sie die Lernziele fest und versuchen Sie es erneut."
-
+    "Settings Could not be Saved!": "Einstellungen konnten nicht gespeichert werden!"
 }

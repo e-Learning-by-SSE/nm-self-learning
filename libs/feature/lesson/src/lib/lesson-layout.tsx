@@ -37,6 +37,17 @@ type BaseLessonLayoutProps = {
 
 type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta };
 
+export function getCourse(slug: string) {
+	return database.course.findUnique({
+		where: { slug },
+		select: {
+			courseId: true,
+			title: true,
+			slug: true
+		}
+	});
+}
+
 export async function getCombinedSmallCourse(slug: string) {
 	const course = await database.course.findFirst({
 		where: { slug },

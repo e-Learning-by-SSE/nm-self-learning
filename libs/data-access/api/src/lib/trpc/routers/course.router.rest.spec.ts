@@ -14,13 +14,12 @@ jest.mock("@self-learning/database", () => ({
 		enrollment: {
 			findMany: jest.fn()
 		},
-		/*
-<<<<<<< HEAD
+
 		dynCourse: {
 			findUnique: jest.fn(),
 			findMany: jest.fn()
-=======
-*/
+		},
+
 		completedLesson: {
 			groupBy: jest.fn()
 		}
