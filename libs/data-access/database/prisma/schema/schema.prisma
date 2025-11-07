@@ -75,7 +75,6 @@ model Subject {
     courses         Course[]
     specializations Specialization[]
     subjectAdmin    SubjectAdmin[]
-    permissions     Permission[]
 }
 
 model Specialization {
