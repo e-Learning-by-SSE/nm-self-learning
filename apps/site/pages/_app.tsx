@@ -12,6 +12,7 @@ import superjson from "superjson";
 import { GlobalFeatures } from "../../_features";
 import "./styles.css";
 import { appWithTranslation } from "next-i18next";
+import nextI18NextConfig from "../next-i18next.config";
 import { AiTutor, AiTutorProvider } from "@self-learning/ai-tutor";
 
 export default withTRPC<AppRouter>({

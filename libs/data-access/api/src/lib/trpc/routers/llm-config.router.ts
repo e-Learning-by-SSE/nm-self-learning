@@ -81,41 +81,9 @@ export const llmConfigRouter = t.router({
 			const { serverUrl, apiKey, defaultModel } = input;
 
 			try {
-<<<<<<< HEAD
 				const availableModels = await fetchAvailableModels(serverUrl, apiKey);
 				const modelExists = availableModels.models.some(
 					m => m.name === defaultModel || m.name.startsWith(defaultModel + ":")
-=======
-				const headers: Record<string, string> = {
-					"Content-Type": "application/json"
-				};
-
-				if (apiKey) {
-					headers["Authorization"] = `Bearer ${apiKey}`;
-				}
-
-				const controller = new AbortController();
-				const timeoutId = setTimeout(() => controller.abort(), secondsToMilliseconds(10));
-				const response = await fetch(serverUrl + "/tags", {
-					method: "GET",
-					headers,
-					signal: controller.signal
-				});
-				clearTimeout(timeoutId);
-
-				if (!response.ok) {
-					throw new TRPCError({
-						code: "BAD_REQUEST",
-						message: `Failed to connect to LLM server`
-					});
-				}
-
-				const data = await response.json();
-				const availableModels = data.models || [];
-				const modelExists = availableModels.some(
-					(model: any) =>
-						model.name === defaultModel || model.name.startsWith(defaultModel + ":")
->>>>>>> 69fd3814 (llm configuration ready for merge.)
 				);
 
 				if (!modelExists) {
@@ -130,7 +98,6 @@ export const llmConfigRouter = t.router({
 				}
 				throw new TRPCError({
 					code: "BAD_REQUEST",
-					message: "Failed to validate LLM configuration."
 					message: "Failed to validate LLM configuration."
 				});
 			}
@@ -182,39 +149,7 @@ export const llmConfigRouter = t.router({
 		.mutation(async ({ input }) => {
 			try {
 				const { serverUrl, apiKey } = input;
-				const headers: Record<string, string> = {
-					"Content-Type": "application/json"
-				};
-				if (apiKey) {
-					headers["Authorization"] = `Bearer ${apiKey}`;
-				}
-
-				const controller = new AbortController();
-				const timeoutId = setTimeout(() => controller.abort(), secondsToMilliseconds(10));
-				const response = await fetch(serverUrl + "/tags", {
-					method: "GET",
-					headers,
-					signal: controller.signal
-				});
-
-				clearTimeout(timeoutId);
-
-				if (!response.ok) {
-					if (response.status === 401) {
-						throw new TRPCError({
-							code: "UNAUTHORIZED",
-							message: "Invalid API key or unauthorized access"
-						});
-					} else {
-						throw new TRPCError({
-							code: "BAD_REQUEST",
-							message: "Failed to fetch available models."
-						});
-					}
-				}
-				const data = await response.json();
-				const models = data.models || [];
->>>>>>> 69fd3814 (llm configuration ready for merge.)
+				const availableModels = await fetchAvailableModels(serverUrl, apiKey);
 				return {
 					valid: true,
 					availableModels: availableModels.models.map(m => m.name)
@@ -225,7 +160,6 @@ export const llmConfigRouter = t.router({
 				}
 				throw new TRPCError({
 					code: "INTERNAL_SERVER_ERROR",
-					message: "Failed to fetch available models"
 					message: "Failed to fetch available models"
 				});
 			}
