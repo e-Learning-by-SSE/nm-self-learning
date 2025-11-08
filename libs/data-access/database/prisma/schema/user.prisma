@@ -89,6 +89,10 @@ model Group {
     grants      Permission[]    @relation("GrantorGroup")
     // skills      SkillRepository
 
+    // This is NOT used to inherit permissions but to differentiate between root and user-created groups
+    parentId    String?
+    parent      Group?      @relation("ParentGroup", fields: [parentId], references: [id], onDelete: Restrict)
+    children    Group[]     @relation("ParentGroup")  
 }
 
 
