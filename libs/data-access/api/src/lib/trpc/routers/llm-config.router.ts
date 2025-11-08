@@ -1,4 +1,4 @@
-import { adminProcedure, t } from "../trpc";
+import { adminProcedure, authProcedure, t } from "../trpc";
 import { database } from "@self-learning/database";
 import { TRPCError } from "@trpc/server";
 import { secondsToMilliseconds } from "date-fns";
@@ -53,8 +53,17 @@ export async function fetchLlmConfig() {
 }
 
 export const llmConfigRouter = t.router({
-	get: adminProcedure.query(async () => {
-		const config = await fetchLlmConfig();
+	get: authProcedure.query(async () => {
+		const config = await database.llmConfiguration.findFirst({
+			where: { isActive: true },
+			select: {
+				serverUrl: true,
+				defaultModel: true,
+				updatedAt: true,
+				apiKey: true
+			}
+		});
+
 		if (!config) {
 			return null;
 		}
