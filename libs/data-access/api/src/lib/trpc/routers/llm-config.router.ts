@@ -33,7 +33,6 @@ async function fetchAvailableModels(serverUrl: string, apiKey?: string, timeoutS
 			message: `${response.statusText}`
 		});
 	}
-
 	const data = await response.json();
 	return ollamaModelList.parse(data);
 }

@@ -10,6 +10,9 @@ services:
               source: /var/run/docker.sock
               target: /var/run/docker.sock
             - ./:/code
+        dns:
+            - 8.8.8.8
+            - 1.1.1.1
     dev-db:
         image: postgres:13
         #ports: # enable if you want to access it outside the dev environment
@@ -20,5 +23,14 @@ services:
             POSTGRES_DB: SelfLearningDb
         volumes:
             - dev_db_data:/var/lib/postgresql/data
+    chroma:
+        image: ghcr.io/chroma-core/chroma:latest
+        ports:
+            - "8000:8000"
+        environment:
+            - CHROMA_DB_IMPL=duckdb+parquet
+            - CHROMA_SERVER_HOST=chroma
+            - CHROMA_SERVER_PORT=8000
+            - CHROMA_SSL=false
 volumes:
     dev_db_data:

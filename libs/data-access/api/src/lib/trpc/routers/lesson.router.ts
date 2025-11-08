@@ -5,6 +5,7 @@ import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learni
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
+import { enqueueRagJob, getRagVersionHash } from "@self-learning/vector-store";
 
 export const lessonRouter = t.router({
 	findOneAllProps: authProcedure.input(z.object({ lessonId: z.string() })).query(({ input }) => {
@@ -83,14 +84,21 @@ export const lessonRouter = t.router({
 				},
 				content: input.content as Prisma.InputJsonArray,
 				lessonId: getRandomId(),
-				meta: createLessonMeta(input) as unknown as Prisma.JsonObject
+				meta: createLessonMeta(input) as unknown as Prisma.JsonObject,
+				ragVersionHash: getRagVersionHash(JSON.stringify(input.content)),
+				ragEnabled: input.ragEnabled ?? false
 			},
 			select: {
 				lessonId: true,
 				slug: true,
-				title: true
+				title: true,
+				ragEnabled: true
 			}
 		});
+
+		if (createdLesson.ragEnabled) {
+			enqueueRagJob(createdLesson.lessonId);
+		}
 
 		console.log("[lessonRouter.create]: Lesson created by", ctx.user.name, createdLesson);
 		return createdLesson;
@@ -103,6 +111,15 @@ export const lessonRouter = t.router({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
+			const hash = getRagVersionHash(JSON.stringify(input.lesson.content));
+
+			const existing = await database.lesson.findUnique({
+				where: { lessonId: input.lessonId },
+				select: { ragVersionHash: true, ragEnabled: true }
+			});
+
+			const changed = !existing || existing.ragVersionHash !== hash;
+
 			const updatedLesson = await database.lesson.update({
 				where: { lessonId: input.lessonId },
 				data: {
@@ -121,14 +138,23 @@ export const lessonRouter = t.router({
 					provides: {
 						set: input.lesson.provides.map(r => ({ id: r.id }))
 					},
-					meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject
+					meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject,
+					ragVersionHash: hash
 				},
 				select: {
 					lessonId: true,
 					slug: true,
-					title: true
+					title: true,
+					ragEnabled: true
 				}
 			});
+
+			if (updatedLesson.ragEnabled && changed) {
+				enqueueRagJob(updatedLesson.lessonId);
+			} else if (!updatedLesson.ragEnabled && existing?.ragEnabled) {
+				// If RAG was disabled, we might want to handle cleanup here
+				// For now, we just log it
+			}
 
 			console.log("[lessonRouter.edit]: Lesson updated by", ctx.user.name, updatedLesson);
 			return updatedLesson;

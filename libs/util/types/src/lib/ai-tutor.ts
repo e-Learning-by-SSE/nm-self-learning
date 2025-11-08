@@ -27,3 +27,52 @@ export const statusToTRPCError: Record<number, { code: TRPC_ERROR_CODE_KEY; mess
 };
 
 export const LOCAL_STORAGE_KEY = "aiTutorCurrentChat";
+
+// Type definitions for RAG system
+
+export interface DocumentChunk {
+	id: string;
+	text: string;
+	metadata: {
+		courseId: string;
+		courseName: string;
+		fileName: string;
+		chapterName?: string;
+		pageNumber?: number;
+		chunkIndex: number;
+	};
+}
+
+export interface RetrievalResult {
+	text: string;
+	score: number;
+	metadata: {
+		fileName: string;
+		chapterName?: string;
+		pageNumber?: number;
+	};
+}
+
+export interface EmbeddingResult {
+	embedding: number[];
+	text: string;
+}
+
+export const IngestionInputSchema = z.object({
+	courseId: z.string().cuid(),
+	courseName: z.string().min(1),
+	files: z.array(
+		z.object({
+			fileName: z.string().min(1),
+			url: z.string().min(1)
+		})
+	)
+});
+
+export type IngestionInput = z.infer<typeof IngestionInputSchema>;
+
+export interface IngestionResult {
+	success: boolean;
+	chunksCreated: number;
+	message: string;
+}
