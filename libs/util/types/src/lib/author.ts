@@ -1,19 +1,16 @@
 import { z } from "zod";
 
-const subjectAdminSchema = z.object({
-	subjectId: z.string()
-});
-
-const specializationSchema = z.object({
-	specializationId: z.string()
+const permissionSchema = z.object({
+	subjectId: z.string().nullable(),
+	courseId: z.string().nullable(),
+	lessonId: z.string().nullable()
 });
 
 export const authorSchema = z.object({
 	displayName: z.string().min(3),
 	slug: z.string().min(3),
 	imgUrl: z.string().url().nullable(),
-	subjectAdmin: z.array(subjectAdminSchema),
-	specializationAdmin: z.array(specializationSchema)
+	permissions: z.array(permissionSchema)
 });
 
 /**

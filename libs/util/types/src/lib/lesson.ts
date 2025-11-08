@@ -14,7 +14,9 @@ export type LessonInfo = {
 };
 
 export const lessonSchema = z.object({
+	groupId: z.string().nullable(),
 	lessonId: z.string().nullable(),
+	courseId: z.string().nullable(),
 	slug: z.string().min(3),
 	title: z.string().min(3),
 	subtitle: z.string().nullable().optional(),
@@ -42,7 +44,9 @@ export type Lesson = z.infer<typeof lessonSchema>;
 /** Returns a {@link Lesson} object with empty/null values.  */
 export function createEmptyLesson(): Lesson {
 	return {
+		groupId: null,
 		lessonId: null,
+		courseId: null,
 		slug: "",
 		title: "",
 		subtitle: null,

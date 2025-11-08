@@ -260,20 +260,14 @@ export const permissionRouter = t.router({
 			// delete group
 			await database.group.delete({ where: { id: groupId } });
 		}),
-	getResourceAccess: authProcedure
-		.input(z.object({ check: ResourceInputSchema }))
-		.query(async ({ input, ctx }) => {
-			const { check } = input;
-			const userId = ctx.user.id;
-			return await getUserPermission({ userId, ...check });
-		}),
-	hasResourceAccess: authProcedure
-		.input(z.object({ check: ResourceAccessSchema }))
-		.query(async ({ input, ctx }) => {
-			if (ctx.user.role === "ADMIN") return true;
-			const { check } = input;
-			return await hasResourceAccess({ userId: ctx.user.id, ...check });
-		}),
+	getResourceAccess: authProcedure.input(ResourceAccessSchema).query(async ({ input, ctx }) => {
+		const userId = ctx.user.id;
+		return await getUserPermission({ userId, ...input });
+	}),
+	hasResourceAccess: authProcedure.input(ResourceAccessSchema).query(async ({ input, ctx }) => {
+		if (ctx.user.role === "ADMIN") return true;
+		return await hasResourceAccess({ userId: ctx.user.id, ...input });
+	}),
 	// Done by group owners or website admins
 	changeGroupOwner: authProcedure
 		.input(z.object({ groupId: z.string(), newOwnerId: z.string() }))

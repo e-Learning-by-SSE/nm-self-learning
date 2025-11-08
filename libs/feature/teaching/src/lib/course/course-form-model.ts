@@ -1,9 +1,10 @@
-import { Prisma } from "@prisma/client";
+import { AccessLevel, Prisma } from "@prisma/client";
 import { authorsRelationSchema, courseContentSchema, createCourseMeta } from "@self-learning/types";
 import { stringOrNull } from "@self-learning/util/common";
 import { z } from "zod";
 
 export const courseFormSchema = z.object({
+	groupId: z.string().uuid(),
 	courseId: z.string().nullable(),
 	subjectId: z.string().nullable(),
 	slug: z.string().min(3),
@@ -21,7 +22,8 @@ export function mapCourseFormToInsert(
 	course: CourseFormModel,
 	courseId: string
 ): Prisma.CourseCreateInput {
-	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors } = course;
+	const { groupId, title, slug, subtitle, description, imgUrl, content, subjectId, authors } =
+		course;
 
 	const courseForDb: Prisma.CourseCreateInput = {
 		courseId,
@@ -32,10 +34,9 @@ export function mapCourseFormToInsert(
 		imgUrl: stringOrNull(imgUrl),
 		description: stringOrNull(description),
 		meta: createCourseMeta(course),
-		authors: {
-			connect: authors.map(author => ({ username: author.username }))
-		},
-		subject: subjectId ? { connect: { subjectId } } : undefined
+		authors: { connect: authors.map(author => ({ username: author.username })) },
+		subject: subjectId ? { connect: { subjectId } } : undefined,
+		permissions: { create: { groupId: groupId, accessLevel: AccessLevel.FULL } }
 	};
 
 	return courseForDb;
@@ -56,9 +57,7 @@ export function mapCourseFormToUpdate(
 		imgUrl: stringOrNull(imgUrl),
 		description: stringOrNull(description),
 		meta: createCourseMeta(course),
-		authors: {
-			set: authors.map(author => ({ username: author.username }))
-		},
+		authors: { set: authors.map(author => ({ username: author.username })) },
 		subject: subjectId ? { connect: { subjectId } } : undefined
 	};
 
