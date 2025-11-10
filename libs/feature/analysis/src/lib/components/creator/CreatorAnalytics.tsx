@@ -60,7 +60,7 @@ function ChartCard({
 }) {
 	const { t } = useTranslation("student-analytics");
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
-	const chartRef = useRef<ChartJS | null>(null);
+	const chartRef = useRef<ChartJS<"bar"> | null>(null);
 
 	useEffect(() => {
 		let mounted = true;
@@ -78,7 +78,7 @@ function ChartCard({
 				v >= 70 ? colorGreen : v >= 40 ? colorYellow : colorRed
 			);
 
-			chartRef.current = new Chart(canvasRef.current, {
+			chartRef.current = new Chart<"bar">(canvasRef.current, {
 				type: "bar",
 				data: {
 					labels,
