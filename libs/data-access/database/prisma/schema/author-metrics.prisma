@@ -1,0 +1,48 @@
+view AuthorMetric_AverageCompletionRate {
+  authorId                  String  @unique
+  authorUsername            String
+  averageCompletionRate     Float
+}
+
+view AuthorMetric_AverageSubjectCompletionRate {
+  authorId                  String  @unique
+  authorUsername            String
+  subjectId                 String
+  subjectTitle              String
+  totalEnrollments          Int?
+  completedEnrollments      Int?
+  averageCompletionRate     Float?
+}
+
+view AuthorMetric_AverageCourseCompletionRate {
+  authorId                  String  @unique
+  authorUsername            String
+  courseId                  String
+  courseTitle               String
+  totalEnrollments          Int
+  completedEnrollments      Int
+  averageCompletionRate     Float
+}
+
+view AuthorMetric_AverageLessonCompletionRate {
+  authorId                  String  @unique
+  authorUsername            String
+  courseId                  String
+  courseTitle               String
+  lessonId                  String
+  lessonTitle               String
+  usersStarted              Int
+  usersFinished             Int
+  averageCompletionRate     Float
+}
+
+view AuthorMetric_AverageLessonCompletionRateByCourse {
+  authorId                  String  @unique
+  authorUsername                String
+  courseId                  String
+  courseTitle               String
+  numLessons                Int
+  totalLessonsStarted       Int
+  totalLessonsFinished      Int
+  averageCourseCompletionRate Float
+}
