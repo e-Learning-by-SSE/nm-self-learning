@@ -1,388 +1,140 @@
-import { useEffect, useRef, useState } from "react";
-// import { withTranslations } from "@self-learning/api";
+"use client";
 import { trpc } from "@self-learning/api-client";
-import { useSession } from "next-auth/react";
-import type { Chart as ChartJS } from "chart.js";
+import { Table, TableDataColumn, TableHeaderColumn, SortIndicator } from "@self-learning/ui/common";
+import { getSemester } from "./aggregation-functions";
+import Link from "next/link";
+import { useState } from "react";
 
-/* Hilfsfunktionen für Prozentwerte */
-
-const pct = (n?: number) =>
-	n === undefined || n === null || !Number.isFinite(n) ? "—" : `${Number(n).toFixed(1)}%`;
-
-const toPctNumber = (v: unknown) => {
-	const n = Number(v ?? 0);
-	if (!Number.isFinite(n)) return 0;
-	return Number(n);
-};
-
-/* Farben für Diagramme */
-
-const colorGreen = "#7fb89b";
-const colorYellow = "#eae282";
-const colorRed = "#e57368";
-const colorAxis = "#525252";
-
-/* Datentypen */
-
-type LessonItem = {
-	label: string; // Titel der Lektion
-	rate: number; // durchschnittliche Abschlussrate (%)
-};
-
-type CourseItem = {
-	courseId: string;
-	label: string; // Kurstitel
-	rate: number; // durchschnittliche Abschlussrate für den Kurs
-	enrollments: number; // Anzahl der Einschreibungen
-};
-
-type PerCourseStats = {
-	avgCourseRate?: number;
-	numberOfStudents?: number;
-	highestLessonName?: string;
-	highestLessonRate?: number;
-	lowestLessonName?: string;
-	lowestLessonRate?: number;
-};
-
-type DashboardData = {
-	teacherName: string;
-	courses: CourseItem[];
-	lessonsByCourse: Record<string, LessonItem[]>;
-	perCourseStats: Record<string, PerCourseStats>;
-	overallAverageCompletionPct?: number;
-};
-
-/* ---------- Diagrammkarte ---------- */
-
-function ChartCard({
-	title,
-	data = [],
-	extraAction
-}: {
+type Course = {
+	slug: string;
 	title: string;
-	data?: { label: string; value: number }[];
-	extraAction?: React.ReactNode;
-}) {
-	const canvasRef = useRef<HTMLCanvasElement | null>(null);
-	const chartRef = useRef<ChartJS | null>(null);
+	courseId: string;
+};
 
-	useEffect(() => {
-		let mounted = true;
+type ParticipationData = Course & {
+	participants?: number | null | undefined;
+	participantsTotal?: number | null | undefined;
+};
 
-		(async () => {
-			const { default: Chart } = await import("chart.js/auto");
+function SortedTable({ participationData }: { participationData: ParticipationData[] }) {
+	const [data, setData] = useState(participationData);
+	const [sortConfig, setSortConfig] = useState<{
+		key: keyof ParticipationData | null;
+		direction: "ascending" | "descending";
+	}>({ key: null, direction: "ascending" });
 
-			chartRef.current?.destroy();
-			if (!mounted || !canvasRef.current) return;
+	// Sorting function
+	const sortData = (key: keyof ParticipationData) => {
+		const sortedData = [...data];
+		let direction: "ascending" | "descending" = "ascending";
 
-			const labels = data.map(d => d.label);
-			const values = data.map(d => d.value);
+		if (sortConfig.key === key && sortConfig.direction === "ascending") {
+			direction = "descending";
+		}
 
-			const colors = values.map(v =>
-				v >= 70 ? colorGreen : v >= 40 ? colorYellow : colorRed
-			);
+		sortedData.sort((a, b) => {
+			if ((a[key] ?? 0) < (b[key] ?? 0)) {
+				return direction === "ascending" ? -1 : 1;
+			}
+			if ((a[key] ?? 0) > (b[key] ?? 0)) {
+				return direction === "ascending" ? 1 : -1;
+			}
+			return 0;
+		});
 
-			chartRef.current = new Chart(canvasRef.current, {
-				type: "bar",
-				data: {
-					labels,
-					datasets: [
-						{
-							data: values,
-							backgroundColor: colors,
-							borderRadius: 8,
-							maxBarThickness: 36
-						}
-					]
-				},
-				options: {
-					indexAxis: "y",
-					responsive: true,
-					maintainAspectRatio: false,
-					plugins: {
-						legend: { display: false },
-						tooltip: {
-							callbacks: {
-								label: ctx => `${ctx.parsed["x"]?.toFixed?.(1) ?? 0}%`
-							}
-						}
-					},
-					scales: {
-						x: {
-							beginAtZero: true,
-							max: 100,
-							ticks: {
-								callback: v => `${v}%`,
-								color: colorAxis,
-								font: { size: 11 }
-							},
-							grid: { color: "#e5e7eb" }
-						},
-						y: {
-							ticks: {
-								color: colorAxis,
-								font: { size: 11 },
-								autoSkip: false
-							},
-							grid: { display: false }
-						}
-					}
-				}
-			});
-		})();
-
-		return () => {
-			mounted = false;
-			chartRef.current?.destroy();
-		};
-	}, [data]);
-
-	const empty = !data.length;
-
-	return (
-		<div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5">
-			<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-start justify-between">
-				<h2 className="text-lg font-semibold">{title}</h2>
-				{extraAction ? <div>{extraAction}</div> : null}
-			</div>
-
-			<div className="relative p-5" style={{ height: 380 }}>
-				<canvas ref={canvasRef} />
-				{empty && (
-					<div className="absolute inset-0 flex items-center justify-center text-neutral-500 text-sm">
-						Noch keine Daten verfügbar
-					</div>
-				)}
-			</div>
-		</div>
-	);
-}
-
-/* ---------- Dashboard-Layout ---------- */
-
-function AnalyticsDashboard({ data }: { data?: DashboardData }) {
-	const [coursePos, setCoursePos] = useState(0);
-
-	const courses = data?.courses ?? [];
-	const activeCourse = courses[coursePos];
-
-	const activeCourseId = activeCourse?.courseId ?? "";
-	const activeLessons = (data?.lessonsByCourse?.[activeCourseId] ?? []) as LessonItem[];
-	const stats = (data?.perCourseStats?.[activeCourseId] ?? {}) as PerCourseStats;
-
-	const lessonBars = activeLessons.map(lesson => ({
-		label: lesson.label,
-		value: lesson.rate
-	}));
-
-	const courseBars = courses.map(c => ({
-		label: c.label,
-		value: c.rate
-	}));
-
-	const goNextCourse = () => {
-		if (!courses.length) return;
-		setCoursePos(i => (i + 1) % courses.length);
+		setData(sortedData);
+		setSortConfig({ key, direction });
 	};
 
 	return (
-		<div className="max-w-7xl mx-auto p-6 md:p-8">
-			<h1 className="text-3xl font-bold mb-6">
-				Willkommen zurück,{" "}
-				<span className="text-neutral-700">{data?.teacherName ?? "—"}</span>!
-			</h1>
-
-			<section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-				{/* Linkes Diagramm */}
-				<ChartCard
-					title={
-						activeCourse
-							? `Abschlussrate – ${activeCourse.label}`
-							: "Abschlussrate – Lektionen"
-					}
-					data={lessonBars}
-					extraAction={
-						courses.length > 1 && (
-							<button
-								onClick={goNextCourse}
-								className="text-neutral-600 text-lg hover:text-neutral-800 transition"
-								aria-label="Nächster Kurs"
-								title="Nächster Kurs"
-							>
-								→
-							</button>
-						)
-					}
-				/>
-
-				{/* Rechtes Diagramm */}
-				<ChartCard title="Durchschnittliche Abschlussrate – Kurse" data={courseBars} />
-			</section>
-
-			<section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-				{/* Analyse-Box */}
-				<div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5">
-					<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center gap-2">
-						<h3 className="text-lg font-semibold">Analyse</h3>
-					</div>
-					<div className="p-5 text-sm leading-6 space-y-2">
-						<p>
-							<b>Durchschnittlicher Lektionenabschluss:</b> {pct(stats.avgCourseRate)}
-						</p>
-						<p>
-							<b>Anzahl der Studierenden:</b> {stats.numberOfStudents ?? "—"}
-						</p>
-						<p>
-							<b>Höchster Abschluss:</b>{" "}
-							{stats.highestLessonName
-								? `${stats.highestLessonName} – ${pct(stats.highestLessonRate)}`
-								: "—"}
-						</p>
-						<p>
-							<b>Niedrigster Abschluss:</b>{" "}
-							{stats.lowestLessonName
-								? `${stats.lowestLessonName} – ${pct(stats.lowestLessonRate)}`
-								: "—"}
-						</p>
-					</div>
-				</div>
-
-				{/* Übersicht-Box */}
-				<div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5">
-					<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center gap-2">
-						<h3 className="text-lg font-semibold">Übersicht</h3>
-					</div>
-					<div className="p-5 text-sm leading-6 space-y-2">
-						<p>
-							<b>Durchschnittliche Abschlussrate (insgesamt):</b>{" "}
-							{pct(data?.overallAverageCompletionPct)}
-						</p>
-					</div>
-				</div>
-			</section>
-		</div>
+		<>
+			<Table
+				head={
+					<>
+						<TableHeaderColumn onClick={() => sortData("title")}>
+							Kurs <SortIndicator columnId="title" sortConfig={sortConfig} />
+						</TableHeaderColumn>
+						<TableHeaderColumn onClick={() => sortData("participants")}>
+							Aktuelles Semester{" "}
+							<SortIndicator columnId="participants" sortConfig={sortConfig} />
+						</TableHeaderColumn>
+						<TableHeaderColumn onClick={() => sortData("participantsTotal")}>
+							Insgesamt{" "}
+							<SortIndicator columnId="participantsTotal" sortConfig={sortConfig} />
+						</TableHeaderColumn>
+					</>
+				}
+			>
+				{data.map(course => (
+					<tr key={course.slug}>
+						<TableDataColumn>
+							<Link href={`/courses/${course.slug}`}>{course.title}</Link>
+						</TableDataColumn>
+						<TableDataColumn>{course.participants ?? "*"}</TableDataColumn>
+						<TableDataColumn>{course.participantsTotal ?? "*"}</TableDataColumn>
+					</tr>
+				))}
+			</Table>
+		</>
 	);
 }
 
-// export const getServerSideProps = withTranslations(["common"]);
-
-export default function LearningAnalyticsPage() {
-	const { data: session, status } = useSession();
-	const { data: avgCourse } =
-		trpc.metrics.getAuthorMetric_AverageCourseCompletionRate.useQuery(undefined);
-
-	const { data: avgLessonRows } =
-		trpc.metrics.getAuthorMetric_AverageLessonCompletionRate.useQuery(undefined);
-
-	if (status === "loading") {
-		return <div className="p-10 text-neutral-600">Lade Sitzung …</div>;
-	}
-
-	const coursesRaw: any[] = Array.isArray(avgCourse) ? avgCourse : [];
-
-	const courses: CourseItem[] = coursesRaw.map(row => ({
-		courseId: row.courseId ?? row.coursed ?? row.courseID ?? "—",
-		label: row.courseTitle ?? row.courseName ?? "—",
-		rate: toPctNumber(row.averageCompletionRate),
-		enrollments: Number(row.totalEnrollments ?? 0)
-	}));
-
-	/* Lektionen / Kursstatistiken */
-
-	const lessonsRaw: any[] = Array.isArray(avgLessonRows) ? avgLessonRows : [];
-
-	const lessonsByCourse: Record<string, LessonItem[]> = {};
-	const perCourseHiLo: Record<string, { max?: LessonItem; min?: LessonItem }> = {};
-	const perCourseAgg: Record<
-		string,
-		{ sum: number; count: number; students?: number; avgCourseCompletionFromRow?: number }
-	> = {};
-
-	for (const row of lessonsRaw) {
-		const cId: string = (row.courseId ?? row.coursed ?? "—").toString().trim();
-		const lessonName: string = row.lessonTitle ?? row.lessonId ?? "Lektion";
-		const lessonRate: number = toPctNumber(row.averageCompletionRate);
-
-		(lessonsByCourse[cId] ??= []).push({
-			label: lessonName,
-			rate: lessonRate
-		});
-
-		const current = perCourseHiLo[cId] ?? {};
-		if (!current.max || lessonRate > current.max.rate) {
-			current.max = { label: lessonName, rate: lessonRate };
-		}
-		if (!current.min || lessonRate < current.min.rate) {
-			current.min = { label: lessonName, rate: lessonRate };
-		}
-		perCourseHiLo[cId] = current;
-
-		const agg = perCourseAgg[cId] ?? { sum: 0, count: 0 };
-		agg.sum += lessonRate;
-		agg.count += 1;
-		if (row.usersStarted !== undefined) {
-			agg.students = Number(row.usersStarted);
-		}
-		perCourseAgg[cId] = agg;
-	}
-
-	const perCourseStats: Record<string, PerCourseStats> = {};
-
-	for (const cId of Object.keys(perCourseAgg)) {
-		const agg = perCourseAgg[cId];
-		const fallbackAvg = agg.count > 0 ? agg.sum / agg.count : undefined;
-
-		perCourseStats[cId] = {
-			avgCourseRate: fallbackAvg,
-			numberOfStudents: agg.students
-		};
-	}
-
-	for (const cId of Object.keys(perCourseHiLo)) {
-		const hiLo = perCourseHiLo[cId];
-		perCourseStats[cId] = {
-			...(perCourseStats[cId] ?? {}),
-			highestLessonName: hiLo.max?.label,
-			highestLessonRate: hiLo.max?.rate,
-			lowestLessonName: hiLo.min?.label,
-			lowestLessonRate: hiLo.min?.rate
-		};
-	}
-
-	/* Gesamtübersicht */
-
-	let overallAverageCompletionPct: number | undefined = undefined;
-
-	if (courses.length > 0) {
-		const usable = courses.filter(c => Number.isFinite(c.rate) && c.rate > 0);
-		if (usable.length > 0) {
-			const sum = usable.reduce((acc, c) => acc + c.rate, 0);
-			overallAverageCompletionPct = sum / usable.length;
-		} else {
-			overallAverageCompletionPct = 0;
-		}
-	}
-
-	const teacherNameGuess =
-		((session?.user as any)?.name as string) ||
-		((session?.user as any)?.username as string) ||
-		((session?.user as any)?.email as string) ||
-		"—";
-
-	const dashboardData: DashboardData | undefined = courses.length
-		? {
-				teacherName: teacherNameGuess,
-				courses,
-				lessonsByCourse,
-				perCourseStats,
-				overallAverageCompletionPct
-			}
-		: undefined;
-
-	return (
-		<div className="bg-neutral-50 min-h-screen relative">
-			<AnalyticsDashboard data={dashboardData} />
-		</div>
+function CourseParticipation({
+	courses,
+	semester
+}: {
+	courses: Course[];
+	semester: { start: Date; end: Date };
+}) {
+	const { data, isLoading } = trpc.author.courseParticipation.useQuery(
+		{
+			courseId: courses.map(c => c.courseId),
+			start: semester.start,
+			end: semester.end
+		},
+		{ enabled: courses.length > 0 }
 	);
+
+	if (isLoading) {
+		return <p>Loading...</p>;
+	}
+	if (!data) {
+		return <p>Keine Daten vorhanden.</p>;
+	}
+
+	const merged = courses.map(course => {
+		const participationData = data.find(p => p.courseId === course.courseId);
+		return {
+			...course,
+			...(participationData || {})
+		};
+	});
+
+	return <SortedTable participationData={merged} />;
+}
+
+export function TeacherView() {
+	const today = new Date();
+	const semester = getSemester(today);
+	const { data, isLoading } = trpc.author.getCoursesAndSubjects.useQuery();
+
+	if (isLoading) {
+		return <p>Loading...</p>;
+	}
+
+	if (!data) {
+		return <p>Keine administrierten Kurse vorhanden.</p>;
+	}
+
+	const authoredCourses = data.subjectAdmin.map(subject => subject.subject.courses).flat();
+
+	data.specializationAdmin.forEach(specialization => {
+		specialization.specialization.courses.forEach(course => {
+			if (!authoredCourses.find(c => c.courseId === course.courseId)) {
+				authoredCourses.push(course);
+			}
+		});
+	});
+
+	return <CourseParticipation courses={authoredCourses} semester={semester} />;
 }
