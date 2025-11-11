@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { withTranslations } from "@self-learning/api";
 import { useEditorTabs } from "@self-learning/ui/course";
 
-export const getServerSideProps = withTranslations(["common"], async () => {
+export const getServerSideProps = withTranslations(["common", "kee"], async () => {
 	return { props: {} };
 });
 

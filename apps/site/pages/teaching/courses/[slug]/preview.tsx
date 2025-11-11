@@ -25,7 +25,7 @@ import * as ToC from "@self-learning/ui/course";
 import { createCourseSummary, mapCourseContent } from "@self-learning/course";
 
 export const getServerSideProps = withTranslations(
-	["common"],
+	["common", "kee"],
 	async (ctx: GetServerSidePropsContext) => {
 		const slug = ctx.params?.slug as string;
 
@@ -124,9 +124,8 @@ export const getServerSideProps = withTranslations(
 		if (path) {
 			const courseChapter = [
 				{
-					title: "Generated Course Content",
-					description:
-						"AI-generated learning path based on your current knowledge and learning goals.",
+					title: "generatedLessonPathTitle",
+					description: "generatedLessonPathDescription",
 					content: path.path.map(unit => ({
 						lessonId: unit.origin?.id ?? ""
 					}))

@@ -1,7 +1,7 @@
 import { useTranslation } from "next-i18next";
 
 export function useEditorTabs() {
-	const { t } = useTranslation("common");
+	const { t } = useTranslation("kee");
 
 	return [
 		{ label: t("KeeTabBasic"), path: "edit" },

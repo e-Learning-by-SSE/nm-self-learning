@@ -8,7 +8,7 @@ import { useState } from "react";
 import { AuthorGuard } from "libs/ui/layouts/src/lib/guards";
 import { withTranslations } from "@self-learning/api";
 
-export const getServerSideProps = withTranslations(["common"], async () => {
+export const getServerSideProps = withTranslations(["common", "kee"], async () => {
 	return { props: {} };
 });
 
