@@ -20,7 +20,7 @@ import { useLessonNavigation } from "@self-learning/ui/lesson";
 
 export type LessonLayoutProps = {
 	lesson: LessonData;
-	course: ResolvedValue<typeof getCourse>;
+	course: ResolvedValue<typeof getCombinedSmallCourse>;
 };
 
 export type StandaloneLessonLayoutProps = {
@@ -48,6 +48,31 @@ export function getCourse(slug: string) {
 	});
 }
 
+export async function getCombinedSmallCourse(slug: string) {
+	const course = await database.course.findFirst({
+		where: { slug },
+		select: {
+			courseId: true,
+			title: true,
+			slug: true
+		}
+	});
+
+	const dynCourse = await database.dynCourse.findFirst({
+		where: { slug },
+		select: {
+			courseId: true,
+			title: true,
+			slug: true
+		}
+	});
+	if (!course && !dynCourse) {
+		return null;
+	}
+	const combinedCourse = course ? course : dynCourse;
+	return combinedCourse;
+}
+
 export async function getStaticPropsForLessonCourseLayout(
 	params?: ParsedUrlQuery | undefined
 ): Promise<LessonLayoutProps | { notFound: true }> {
@@ -61,7 +86,8 @@ export async function getStaticPropsForLessonCourseLayout(
 		throw new Error("No course/lesson slug provided.");
 	}
 
-	const course = await getCourse(courseSlug);
+	const course = await getCombinedSmallCourse(courseSlug);
+
 	if (!course) {
 		return { notFound: true };
 	}

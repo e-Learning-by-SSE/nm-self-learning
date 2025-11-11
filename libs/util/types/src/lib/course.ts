@@ -82,3 +82,9 @@ export function createLesson(lessonId: string): CourseLesson {
 export function createCourseContent(content: CourseContent): CourseContent {
 	return content;
 }
+
+export type Summary = {
+	lessons: number;
+	chapters: number;
+	duration: number;
+};
