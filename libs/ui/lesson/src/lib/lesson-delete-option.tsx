@@ -1,7 +1,7 @@
 import { trpc } from "@self-learning/api-client";
 import { useState } from "react";
 import { TrashIcon } from "@heroicons/react/24/solid";
-import { Dialog, DialogActions } from "@self-learning/ui/common";
+import { Dialog, DialogActions, IconOnlyButton } from "@self-learning/ui/common";
 import Link from "next/link";
 
 export function LessonDeleteOption({ lessonId }: { lessonId: string }) {
@@ -31,14 +31,12 @@ export function LessonDeleteOption({ lessonId }: { lessonId: string }) {
 
 	return (
 		<>
-			<button
-				className="rounded bg-red-500 font-medium text-white hover:bg-red-600"
+			<IconOnlyButton
+				icon={<TrashIcon className="h-5 w-5" />}
+				variant="danger"
 				onClick={() => setShowConfirmation(true)}
-			>
-				<div className="ml-4">
-					<TrashIcon className="icon " />
-				</div>
-			</button>
+				title={"Lerneinheit löschen"}
+			/>
 			{showConfirmation && (
 				<LessonDeletionDialog
 					handleCancel={handleCancel}

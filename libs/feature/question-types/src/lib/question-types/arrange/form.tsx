@@ -11,7 +11,7 @@ import {
 	OnDialogCloseFn,
 	SectionHeader,
 	showToast,
-	IconButton,
+	IconTextButton,
 	Toggle,
 	IconOnlyButton
 } from "@self-learning/ui/common";
@@ -125,7 +125,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 			<SectionHeader
 				title="Kategorien"
 				button={
-					<IconButton
+					<IconTextButton
 						text="Kategorie Hinzufügen"
 						icon={<PlusIcon className="icon w-5" />}
 						onClick={() => setAddCategoryDialog(true)}

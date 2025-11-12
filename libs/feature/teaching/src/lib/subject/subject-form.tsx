@@ -1,7 +1,7 @@
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { SpecializationRelation } from "@self-learning/types";
-import { IconButton, ImageChip, OnDialogCloseFn, showToast } from "@self-learning/ui/common";
+import { IconTextButton, ImageChip, OnDialogCloseFn, showToast } from "@self-learning/ui/common";
 import { Form } from "@self-learning/ui/forms";
 import Link from "next/link";
 import { useState } from "react";
@@ -44,7 +44,7 @@ export function SpecializationForm({ subtitle }: { subtitle: string }) {
 		<Form.SidebarSection>
 			<Form.SidebarSectionTitle title="Spezialisierungen" subtitle={subtitle} />
 
-			<IconButton
+			<IconTextButton
 				type="button"
 				data-testid="author-add"
 				onClick={() => setOpenAddDialog(true)}

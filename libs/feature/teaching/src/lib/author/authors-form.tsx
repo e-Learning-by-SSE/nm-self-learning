@@ -1,5 +1,5 @@
 import { trpc } from "@self-learning/api-client";
-import { ImageChip, OnDialogCloseFn, IconButton } from "@self-learning/ui/common";
+import { ImageChip, OnDialogCloseFn, IconTextButton } from "@self-learning/ui/common";
 import { Form } from "@self-learning/ui/forms";
 import Link from "next/link";
 import { useState } from "react";
@@ -42,9 +42,10 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 	return (
 		<Form.SidebarSection>
 			<Form.SidebarSectionTitle title="Autoren" subtitle={subtitle}>
-				<IconButton
+				<IconTextButton
 					text="Hinzufügen"
 					icon={<PlusIcon className="h-5" />}
+					variant="secondary"
 					onClick={() => setOpenAddDialog(true)}
 				/>
 			</Form.SidebarSectionTitle>

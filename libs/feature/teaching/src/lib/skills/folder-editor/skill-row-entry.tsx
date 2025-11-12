@@ -1,4 +1,4 @@
-import { TableDataColumn } from "@self-learning/ui/common";
+import { TableDataColumn, IconOnlyButton } from "@self-learning/ui/common";
 import React from "react";
 import {
 	ChevronDownIcon,
@@ -163,7 +163,7 @@ function SkillRow({
 						</span>
 						<span className="ml-1 text-xs text-gray-500">{skill.skill.id}</span>
 					</div>
-					<div className="invisible  group-hover:visible">
+					<div className="invisible group-hover:visible">
 						<QuickEditButton onClick={() => handleSelection(skill.id)} skill={skill} />
 						<AddChildButton
 							parentSkill={skill.skill}
@@ -187,14 +187,13 @@ function QuickEditButton({
 	skill: SkillFolderVisualization;
 }) {
 	return (
-		<button
+		<IconOnlyButton
 			title="Bearbeiten"
-			className="mr-3 px-2 hover:text-secondary"
+			variant="hover-icon"
+			icon={<PencilIcon className="h-5 text-lg" />}
 			onClick={onClick}
 			disabled={skill.isSelected}
-		>
-			<PencilIcon className="ml-1 h-5 text-lg" />
-		</button>
+		/>
 	);
 }
 

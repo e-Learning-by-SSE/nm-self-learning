@@ -111,7 +111,6 @@ export function CourseContentForm() {
 				className="btn-primary mt-4"
 				onClick={() => setOpenNewChapterDialog(true)}
 			>
-				<PlusIcon className="mr-2 h-5" />
 				<span>Kapitel erstellen</span>
 			</button>
 
@@ -176,7 +175,12 @@ function LessonNode({
 						Lernkontrolle
 					</span>
 				)}
-				<IconOnlyButton onClick={onRemove} icon={<XMarkIcon className="h-5 w-5" />} variant="x-mark" title="Entfernen" />
+				<IconOnlyButton
+					onClick={onRemove}
+					icon={<XMarkIcon className="h-5 w-5" />}
+					variant="x-mark"
+					title="Entfernen"
+				/>
 			</div>
 		</span>
 	);
@@ -249,30 +253,24 @@ function ChapterNode({
 
 				<div className="flex items-center gap-2">
 					{/* Chapter-Management Icons */}
-					<button
-						type="button"
+					<IconOnlyButton
 						title="Nach oben"
-						className="rounded p-1 hover:bg-gray-300 text-gray-500"
+						variant="hover-bg"
+						icon={<ArrowUpIcon className="h-4 w-4" />}
 						onClick={() => moveChapter(index, "up")}
-					>
-						<ArrowUpIcon className="h-4 w-4" />
-					</button>
-					<button
-						type="button"
+					/>
+					<IconOnlyButton
 						title="Nach unten"
-						className="rounded p-1 hover:bg-gray-300 text-gray-500"
+						variant="hover-bg"
+						icon={<ArrowDownIcon className="h-4 w-4" />}
 						onClick={() => moveChapter(index, "down")}
-					>
-						<ArrowDownIcon className="h-4 w-4" />
-					</button>
-					<button
-						type="button"
+					/>
+					<IconOnlyButton
 						title="Beschreibung bearbeiten"
-						className="rounded p-1 hover:bg-gray-300 text-gray-500"
+						variant="hover-bg"
+						icon={<PencilIcon className="h-4 w-4" />}
 						onClick={() => setEditChapterDialogOpen(true)}
-					>
-						<PencilIcon className="h-4 w-4" />
-					</button>
+					/>
 					<button
 						type="button"
 						title="Kapitel entfernen"

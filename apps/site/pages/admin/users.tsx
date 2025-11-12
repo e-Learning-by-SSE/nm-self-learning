@@ -32,7 +32,7 @@ export default function UsersPage() {
 
 	return (
 		<AdminGuard>
-			<CenteredSection>
+			<CenteredSection className="bg-gray-50">
 				<div className="mb-16 flex items-center justify-between gap-4">
 					<h1 className="text-5xl">Nutzende</h1>
 				</div>

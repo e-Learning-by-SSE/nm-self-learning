@@ -1,16 +1,24 @@
 import { ButtonHTMLAttributes, DetailedHTMLProps } from "react";
 
-export type ButtonVariant = "primary" | "secondary" | "danger" | "tertiary" | "x-mark" | "stroked";
+export type ButtonVariant =
+	| "primary"
+	| "secondary"
+	| "danger"
+	| "tertiary"
+	| "x-mark"
+	| "stroked"
+	| "hover-icon"
+	| "hover-bg";
 
 /**
  * Enhanced Icon Button with responsive text
  * Text disappears on small viewports, only icon remains visible
  *
  * @example
- * <IconButton text="Edit" icon={<PencilIcon className="h-5" />} variant="primary" />
- * <IconButton text="Delete" icon={<TrashIcon className="h-5" />} variant="danger" />
+ * <IconTextButton text="Edit" icon={<PencilIcon className="h-5" />} variant="primary" />
+ * <IconTextButton text="Delete" icon={<TrashIcon className="h-5" />} variant="danger" />
  */
-export function IconButton({
+export function IconTextButton({
 	icon,
 	text,
 	variant = "primary",

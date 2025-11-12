@@ -12,7 +12,8 @@ export default function MultipleChoiceForm({
 	question: { type: MultipleChoiceQuestion["type"] };
 	index: number;
 }) {
-	const { control, watch, setValue, register } = useFormContext<QuestionTypeForm<MultipleChoiceQuestion>>();
+	const { control, watch, setValue, register } =
+		useFormContext<QuestionTypeForm<MultipleChoiceQuestion>>();
 	const { append, replace } = useFieldArray({
 		control,
 		name: `quiz.questions.${index}.answers`
@@ -42,52 +43,63 @@ export default function MultipleChoiceForm({
 		<section className="flex flex-col gap-8">
 			<div className="flex items-center gap-4">
 				<h5 className="text-2xl font-semibold tracking-tight">Antworten</h5>
-				<IconOnlyButton icon={<PlusIcon className="h-5 w-5"/>} variant = "primary" onClick={addAnswer} title={"Antwort hinzufügen"} />
+				<IconOnlyButton
+					icon={<PlusIcon className="h-5 w-5" />}
+					variant="primary"
+					onClick={addAnswer}
+					title={"Antwort hinzufügen"}
+				/>
 			</div>
 			<div className="flex items-center gap-2">
 				<Toggle
 					value={watch(`quiz.questions.${index}.randomizeAnswers`)}
 					onChange={value => setValue(`quiz.questions.${index}.randomizeAnswers`, value)}
-					label="Antworten dem Nutzer zufällig anordnen"
+					label="Antworten zufällig anordnen"
 				/>
 			</div>
 
 			{answers.map((answer, answerIndex) => (
 				<div
 					key={answer.answerId}
-					className={`relative flex flex-col gap-2 rounded-lg border border-light-border p-4 ${
+					className={`relative flex flex-col gap-2 rounded-lg border p-4 ${
 						answers?.[answerIndex]?.isCorrect
 							? "border-secondary bg-emerald-50"
-							: "border-red-500 bg-red-50"
+							: "border-gray-300 bg-gray-200"
 					}`}
 				>
-					<div className="flex justify-between">
-						<label className="flex w-fit select-none items-center gap-2">
-							<input
-								type="checkbox"
-								className="checkbox"
-								{...register(
-									`quiz.questions.${index}.answers.${answerIndex}.isCorrect`
+					<div className="flex items-start gap-4 w-full">
+						<div className="flex-1">
+							<Controller
+								control={control}
+								name={`quiz.questions.${index}.answers.${answerIndex}.content`}
+								render={({ field }) => (
+									<MarkdownField
+										content={field.value}
+										setValue={field.onChange}
+										placeholder="Antwort eingeben..."
+										inline={true}
+									/>
 								)}
-							/>
-							Diese Antwort ist korrekt.
-						</label>
+							></Controller>
+						</div>
 
 						<IconOnlyButton
-							icon={<TrashIcon className="h-5 w-5" />}
-							variant = "danger" 
+							icon={<TrashIcon className="h-4 w-4" />}
+							variant="danger"
 							onClick={() => removeAnswer(answerIndex)}
 							title={"Antwort entfernen"}
 						/>
 					</div>
-
-					<Controller
-						control={control}
-						name={`quiz.questions.${index}.answers.${answerIndex}.content`}
-						render={({ field }) => (
-							<MarkdownField content={field.value} setValue={field.onChange} />
-						)}
-					></Controller>
+					<label className="flex w-fit select-none items-center gap-2">
+						<input
+							type="checkbox"
+							className="checkbox"
+							{...register(
+								`quiz.questions.${index}.answers.${answerIndex}.isCorrect`
+							)}
+						/>
+						Richtige Antwort
+					</label>
 				</div>
 			))}
 		</section>

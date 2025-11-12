@@ -150,7 +150,7 @@ export function QuizEditor() {
 							<Button
 								key={type}
 								type={"button"}
-								title="Aufgabentyp Hinzufügen"
+								title="Aufgabentyp hinzufügen"
 								className={"w-full text-left px-3 py-1"}
 								onClick={() => appendQuestion(type as QuestionType["type"])}
 							>
@@ -315,30 +315,24 @@ function BaseQuestionForm({
 	children: React.ReactNode;
 }) {
 	return (
-		<div className="">
-			<span className="font-semibold text-secondary">
-				{QUESTION_TYPE_DISPLAY_NAMES[currentQuestion.type]}
-			</span>
-			<h5 className="mb-4 mt-2 text-2xl font-semibold tracking-tight">Aufgabe {index + 1}</h5>
+		<div className="flex flex-col gap-6">
+			<h5 className="text-2xl font-semibold tracking-tight">Aufgabe</h5>
+			<Controller
+				key={currentQuestion.questionId}
+				control={control}
+				name={`quiz.questions.${index}.statement`}
+				render={({ field }) => (
+					<MarkdownField content={field.value} setValue={field.onChange} />
+				)}
+			/>
 
-			<div className="flex flex-col gap-12">
-				<Controller
-					key={currentQuestion.questionId}
-					control={control}
-					name={`quiz.questions.${index}.statement`}
-					render={({ field }) => (
-						<MarkdownField content={field.value} setValue={field.onChange} />
-					)}
-				/>
+			<Divider />
 
-				<Divider />
+			{children}
 
-				{children}
+			<Divider />
 
-				<Divider />
-
-				<HintForm questionIndex={index} />
-			</div>
+			<HintForm questionIndex={index} />
 		</div>
 	);
 }
@@ -370,11 +364,16 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 	}
 
 	return (
-		<section className="flex flex-col gap-4">
+		<section className="flex flex-col gap-4 mb-8">
 			<div className="flex items-center gap-4">
 				<h5 className="text-2xl font-semibold tracking-tight">Hinweise</h5>
 
-				<IconOnlyButton icon={<PlusIcon className="h-5 w-5"/>} variant = "primary" onClick={addHint} title={"Hinweis Hinzufügen"} />
+				<IconOnlyButton
+					icon={<PlusIcon className="h-5 w-5" />}
+					variant="primary"
+					onClick={addHint}
+					title={"Hinweis hinzufügen"}
+				/>
 			</div>
 
 			<p className="text-sm text-light">
@@ -385,23 +384,31 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 			{hints.map((hint, hintIndex) => (
 				<div
 					key={hint.hintId}
-					className="flex flex-col gap-4 rounded-lg border border-yellow-500 bg-yellow-100  p-4"
+					className="flex flex-col gap-4 rounded-lg border border-gray-300 bg-gray-200  p-4"
 				>
-					<IconOnlyButton
-						icon={<TrashIcon className="h-5 w-5" />}
-						variant = "danger" 
-						onClick={() => removeHint(hintIndex)}
-						className={"self-end"}
-						title={"Hinweis Entfernen"}
-					/>
+					<div className="flex items-start gap-4 w-full">
+						<div className="flex-1">
+							<Controller
+								control={control}
+								name={`quiz.questions.${questionIndex}.hints.${hintIndex}.content`}
+								render={({ field }) => (
+									<MarkdownField
+										content={field.value}
+										setValue={field.onChange}
+										placeholder="Hinweis eingeben..."
+										inline={true}
+									/>
+								)}
+							></Controller>
+						</div>
 
-					<Controller
-						control={control}
-						name={`quiz.questions.${questionIndex}.hints.${hintIndex}.content`}
-						render={({ field }) => (
-							<MarkdownField content={field.value} setValue={field.onChange} />
-						)}
-					></Controller>
+						<IconOnlyButton
+							icon={<TrashIcon className="h-4 w-4" />}
+							variant="danger"
+							onClick={() => removeHint(hintIndex)}
+							title={"Hinweis entfernen"}
+						/>
+					</div>
 				</div>
 			))}
 		</section>
