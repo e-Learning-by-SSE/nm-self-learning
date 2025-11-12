@@ -105,7 +105,7 @@ video {
 .btn-danger,
 .btn-tertiary,
 .btn-stroked {
-	@apply flex place-content-center items-center rounded-lg gap-2 px-4 py-2 text-sm font-semibold transition-colors disabled:bg-opacity-25 hover:bg-gray-50;
+	@apply flex place-content-center items-center rounded-lg gap-2 px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-25 hover:bg-gray-50;
 }
 
 /* Primary button: green background, white text */
@@ -130,7 +130,7 @@ video {
 
 /* Stroked button: Gray outline, white background, black text  */
 .btn-stroked {
-	@apply border border-gray-200 bg-white px-8 py-2 text-sm font-medium disabled:opacity-25;
+	@apply border border-gray-200 bg-white px-8 py-2 text-sm font-medium;
 }
 
 /* Show more / Show less button: Blue border, blue text, white background  */
