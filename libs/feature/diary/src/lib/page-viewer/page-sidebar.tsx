@@ -132,7 +132,7 @@ function SidebarContentMobile({
 											onClick={() => onSelectPage(page.id)}
 											className="block"
 										>
-											<div className="flex items-center justify-between py-2 px-1 rounded break-words whitespace-normal">
+											<div className="flex items-center justify-between p-2 rounded break-words whitespace-normal">
 												<span className="flex-grow">{`${pages.indexOf(page) + 1}: ${page.course.title}`}</span>
 												<span className="ml-4">
 													<LearningDiaryEntryStatusBadge
@@ -142,8 +142,7 @@ function SidebarContentMobile({
 												</span>
 											</div>
 											<span className="block p-1 rounded overflow-hidden text-ellipsis whitespace-nowrap text-sm text-light">
-												Angefangen am:{" "}
-												{formatDateStringFull(page.createdAt)}
+												Begonnen am: {formatDateStringFull(page.createdAt)}
 											</span>
 										</Link>
 									</li>
@@ -222,7 +221,7 @@ function SideBarContent({
 					</span>
 				</div>
 				<span className="block p-1 rounded overflow-hidden text-ellipsis whitespace-nowrap text-sm text-light">
-					Angefangen am: {formatDateStringFull(page.createdAt)}
+					Begonnen am: {formatDateStringFull(page.createdAt)}
 				</span>
 			</Link>
 		</li>
