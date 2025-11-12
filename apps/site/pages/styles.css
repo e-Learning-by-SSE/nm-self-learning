@@ -105,12 +105,46 @@ video {
 .btn-danger,
 .btn-tertiary,
 .btn-stroked {
-	@apply flex place-content-center items-center rounded-lg gap-2 px-8 py-2 text-sm font-semibold transition-colors disabled:bg-opacity-25;
+	@apply flex place-content-center items-center rounded-lg gap-2 px-8 py-2 text-sm font-semibold transition-colors disabled:opacity-25;
 }
 
 /* Primary button: green background, white text */
 .btn-primary {
 	@apply bg-emerald-500 text-white hover:bg-emerald-600;
+}
+
+.hover-highlight-scale {
+	@apply transition-transform hover:scale-105 duration-300;
+}
+
+.hover-highlight-ease {
+	@apply transition-transform duration-300 ease-in-out;
+}
+
+.btn-gamify {
+	@apply inline-block px-6 py-3 font-medium text-white rounded-md transition-all duration-300 ease-in-out hover-highlight-scale;
+	@apply bg-gradient-to-br from-purple-500/80 to-indigo-700/80 backdrop-blur-sm;
+	@apply border border-purple-400/30 shadow-sm;
+	@apply hover:shadow-md hover:from-purple-600/90 hover:to-indigo-800/90 hover:translate-y-[-1px];
+	@apply focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-50;
+	@apply active:shadow-inner active:translate-y-[1px] active:scale-[0.99];
+}
+
+.hover-highlight-scale {
+	@apply transition-transform hover:scale-105 duration-300;
+}
+
+.hover-highlight-ease {
+	@apply transition-transform duration-300 ease-in-out;
+}
+
+.btn-gamify {
+	@apply inline-block px-6 py-3 font-medium text-white rounded-md transition-all duration-300 ease-in-out hover-highlight-scale;
+	@apply bg-gradient-to-br from-purple-500/80 to-indigo-700/80 backdrop-blur-sm;
+	@apply border border-purple-400/30 shadow-sm;
+	@apply hover:shadow-md hover:from-purple-600/90 hover:to-indigo-800/90 hover:translate-y-[-1px];
+	@apply focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-50;
+	@apply active:shadow-inner active:translate-y-[1px] active:scale-[0.99];
 }
 
 /* Secondary button: green outline, green text */
@@ -130,7 +164,7 @@ video {
 
 /* Stroked button: Gray outline, white background, black text  */
 .btn-stroked {
-	@apply border border-gray-200 bg-white px-8 py-2 text-sm font-medium disabled:opacity-25;
+	@apply border border-gray-200 bg-white px-8 py-2 text-sm font-medium hover:bg-gray-200 disabled:opacity-25;
 }
 
 /* X Mark Button: Text Gray, Hover Gray  */
@@ -164,7 +198,8 @@ input,
 textarea,
 select,
 .textfield {
-	@apply h-fit rounded-lg border border-light-border p-2 text-sm placeholder:text-slate-400 focus:border-secondary focus:ring-secondary disabled:bg-gray-100;
+	@apply h-fit rounded-lg border border-light-border p-2 text-sm 
+	placeholder:text-slate-400 focus:border-secondary focus:ring-secondary disabled:bg-gray-100;
 }
 
 .glass {
@@ -498,4 +533,80 @@ pre[class*="language-"] > code[class*="language-"] {
 	background: #f7ebc6;
 	box-shadow: inset 5px 0 0 #f7d87c;
 	z-index: 0;
+}
+
+/*********************************************************
+* Global animation effects not suiting for tailwind.config.js
+*/
+@keyframes animate-highlight-shimmering-effect {
+	0% {
+		background-position: -200% center;
+	}
+	100% {
+		background-position: 200% center;
+	}
+}
+
+.animate-highlight-shimmering {
+	@apply overflow-hidden;
+}
+
+.animate-highlight-shimmering::before {
+	content: "";
+	@apply absolute inset-0 pointer-events-none z-[1];
+	background: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgba(255, 255, 255, 0.8) 50%,
+		transparent 100%
+	);
+	background-size: 200% 100%;
+	background-repeat: no-repeat;
+	background-position: -200% center;
+	animation: animate-highlight-shimmering-effect 3s infinite;
+}
+
+.hover\:animate-highlight-shimmering {
+	@apply relative overflow-hidden;
+}
+
+.hover\:animate-highlight-shimmering::before {
+	content: "";
+	@apply absolute inset-0 pointer-events-none z-[1];
+	background: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgba(255, 255, 255, 0.8) 50%,
+		transparent 100%
+	);
+	background-size: 200% 100%;
+	background-repeat: no-repeat;
+	background-position: -200% center;
+}
+
+.hover\:animate-highlight-shimmering:hover::before {
+	animation: animate-highlight-shimmering-effect 2s ease-in-out forwards;
+}
+
+/* Stelle sicher, dass Inhalte über dem Glanzeffekt liegen */
+.animate-highlight-shimmering > *,
+.hover\:animate-highlight-shimmering > * {
+	@apply relative z-10;
+}
+
+/* Color-Change Animation - to set color variable from the outside*/
+@keyframes color-change {
+	0% {
+		background-color: var(--from-color);
+	}
+	50% {
+		background-color: var(--via-color);
+	}
+	100% {
+		background-color: var(--to-color);
+	}
+}
+
+.animate-color-change {
+	animation: color-change 4s ease forwards;
 }

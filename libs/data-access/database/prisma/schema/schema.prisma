@@ -9,20 +9,22 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
+/*
+<<<<<<< HEAD
 model Student {
-    userId                     String              @unique
-    username                   String              @id
+    userId                     String                @unique
+    username                   String                @id
     completedLessons           CompletedLesson[]
     enrollments                Enrollment[]
     customLearningLocations    LearningLocation[]
     quizAttempts               QuizAttempt[]
-    user                       User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user                       User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
     learningDiaryEntrys        LearningDiaryPage[]
     personalLearningTechniques LearningTechnique[]
     learningTechniqueRatings   TechniqueRating[]
     learningGoals              LearningGoal[]
-    generatedLessonPaths        GeneratedLessonPath[]
-    received                    Skill[] @relation("StudentToSkill")
+    generatedLessonPaths       GeneratedLessonPath[]
+    received                   Skill[]               @relation("StudentToSkill")
 }
 
 model Author {
@@ -78,7 +80,7 @@ model Subject {
     courses         Course[]
     specializations Specialization[]
     subjectAdmin    SubjectAdmin[]
-    dynCourse DynCourse[]
+    dynCourse       DynCourse[]
 }
 
 model Specialization {
@@ -113,48 +115,48 @@ model Course {
     authors              Author[]            @relation("AuthorToCourse")
     specializations      Specialization[]    @relation("CourseToSpecialization")
     learningDiaryEntries LearningDiaryPage[]
-	requires              Skill[]             @relation("courseRequiredSkills")
-    provides              Skill[]             @relation("courseProvidedSkills")
+    requires             Skill[]             @relation("courseRequiredSkills")
+    provides             Skill[]             @relation("courseProvidedSkills")
 }
 
 model DynCourse {
-    courseId             String               @id
-    slug                 String               @unique
+    courseId             String                @id
+    slug                 String                @unique
     title                String
     subtitle             String
     courseVersion        String
     description          String?
     imgUrl               String?
-    teachingGoals        Skill[]              @relation("DynCourseTeachingGoals")
-    requirements         Skill[]              @relation("DynCourseRequirements")
+    teachingGoals        Skill[]               @relation("DynCourseTeachingGoals")
+    requirements         Skill[]               @relation("DynCourseRequirements")
     meta                 Json
-    createdAt            DateTime             @default(now())
-    updatedAt            DateTime             @updatedAt
+    createdAt            DateTime              @default(now())
+    updatedAt            DateTime              @updatedAt
     subjectId            String?
     enrollments          Enrollment[]
-     completions         CompletedLesson[]
-    authors              Author[]             @relation("AuthorToDynCourse")
-    subject              Subject?             @relation(fields: [subjectId], references: [subjectId])
-    specializations      Specialization[]     @relation("DynCourseToSpecialization")
+    completions          CompletedLesson[]
+    authors              Author[]              @relation("AuthorToDynCourse")
+    subject              Subject?              @relation(fields: [subjectId], references: [subjectId])
+    specializations      Specialization[]      @relation("DynCourseToSpecialization")
     generatedLessonPaths GeneratedLessonPath[]
 }
 
 model GeneratedLessonPath {
-    lessonPathId         String               @id@default(cuid())
-    content              Json
-    meta                 Json
-    courseVersion        String
-    username             String
-    slug                 String               @unique
-    courseId             String
-    createdAt            DateTime             @default(now())
-    updatedAt            DateTime             @updatedAt
-    student              Student              @relation(fields: [username], references: [username], onDelete: Cascade)
-    course               DynCourse           @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
+    lessonPathId  String    @id @default(cuid())
+    content       Json
+    meta          Json
+    courseVersion String
+    username      String
+    slug          String    @unique
+    courseId      String
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @updatedAt
+    student       Student   @relation(fields: [username], references: [username], onDelete: Cascade)
+    course        DynCourse @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
 }
 
 model Enrollment {
-     id                 String            @id @default(uuid())
+    id                 String           @id @default(uuid())
     status             EnrollmentStatus
     progress           Int              @default(0)
     createdAt          DateTime         @default(now())
@@ -166,7 +168,6 @@ model Enrollment {
     course             Course?          @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
     dynCourse          DynCourse?       @relation(fields: [dynCourseId], references: [courseId], onDelete: Cascade)
     student            Student          @relation(fields: [username], references: [username], onDelete: Cascade)
-
 
     @@unique([courseId, username])
     @@unique([dynCourseId, username])
@@ -202,16 +203,16 @@ model Lesson {
 }
 
 model CompletedLesson {
-    completedLessonId Int      @id @default(autoincrement())
+    completedLessonId Int        @id @default(autoincrement())
     courseId          String?
     dynCourseId       String?
     lessonId          String
     username          String
-    createdAt         DateTime @default(now())
+    createdAt         DateTime   @default(now())
     course            Course?    @relation(fields: [courseId], references: [courseId])
     dynCourse         DynCourse? @relation(fields: [dynCourseId], references: [courseId])
-    lesson            Lesson   @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
-    user              Student  @relation(fields: [username], references: [username], onDelete: Cascade)
+    lesson            Lesson     @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
+    user              Student    @relation(fields: [username], references: [username], onDelete: Cascade)
 
     @@index([username, lessonId])
 }
@@ -240,7 +241,7 @@ model QuizAnswer {
     @@index([questionId])
 }
 
-
+*/
 model UploadedAssets {
     objectName String   @id
     fileName   String
@@ -251,17 +252,6 @@ model UploadedAssets {
     user       User?    @relation(fields: [username], references: [name])
 
     @@index([fileName])
-}
-
-enum UserRole {
-    USER
-    ADMIN
-}
-
-enum EnrollmentStatus {
-    ACTIVE
-    INACTIVE
-    COMPLETED
 }
 
 model License {
@@ -279,6 +269,21 @@ model License {
     lessons           Lesson[]
 }
 
+/*
+model SkillRepository {
+    id          String  @id @default(cuid())
+    name        String
+    description String?
+    skills      Skill[]
+    ownerName   String
+    owner       User    @relation(fields: [ownerName], references: [name])
+
+    @@unique([ownerName, name])
+    @@map("skill-repositories")
+}
+
+>>>>>>> master
+*/
 model Skill {
     id             String   @id @default(cuid())
     name           String
@@ -291,16 +296,16 @@ model Skill {
     requirementsOf Lesson[] @relation("requiredSkills")
 
     // Add references to DynCourse
-    goalsOfDynCourse        DynCourse[]     @relation("DynCourseTeachingGoals")
-    requirementsOfDynCourse DynCourse[]     @relation("DynCourseRequirements")
+    goalsOfDynCourse        DynCourse[] @relation("DynCourseTeachingGoals")
+    requirementsOfDynCourse DynCourse[] @relation("DynCourseRequirements")
 
     Student Student[] @relation("StudentToSkill")
 
     //@@unique([repositoryId, name])
+    requiredBy Course[] @relation("courseRequiredSkills")
+    providedBy Course[] @relation("courseProvidedSkills")
 
     @@map("skills")
-	requiredBy     Course[] @relation("courseRequiredSkills")
-  	providedBy     Course[] @relation("courseProvidedSkills")
 }
 
 model EventLog {
@@ -311,15 +316,97 @@ model EventLog {
     courseId   String?
     type       String
     payload    Json?
-    // @@id([userId, createdAt, action]) // todo chekc if optimization is needed
+    // @@id([userId, createdAt, action]) // todo check if optimization is needed
+}
+
+// // das schema beinhaltet daten die aus dem eventlog aggregiert werden. updatedAt ist der letzte zeitpunkt an dem die daten aktualisiert wurden.
+// model EventLogAggregations {
+//     id         Int    @id @default(autoincrement())
+//     updatedAt DateTime @updatedAt
+//     userId    String
+//     videosTimeWatched Int
+// }
+
+model Notification {
+    id             String       @id @default(uuid())
+    component      String // z. B. "BannerMessage"
+    props          Json // enthält die dynamischen Props der Komponente
+    displayFrom    DateTime
+    displayUntil   DateTime
+    createdAt      DateTime     @default(now())
+    updatedAt      DateTime     @updatedAt
+    targetAudience AudienceType @default(all)
+
+    targets NotificationUser[]
+}
+
+enum AudienceType {
+    all
+    user
+    admin
+    author
+}
+
+model NotificationUser {
+    notificationId String
+    userId         String
+    dismissed      Boolean      @default(false)
+    seenAt         DateTime?
+    notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+    user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@id([notificationId, userId])
+}
+
+model UserNotificationSetting {
+    id      String              @id @default(uuid())
+    userId  String
+    type    NotificationType
+    channel NotificationChannel
+    enabled Boolean             @default(true)
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, type, channel]) // Jeder User nur 1x pro Typ + Channel
+}
+
+enum NotificationType {
+    courseReminder
+    streakReminderFirst
+    streakReminderLast
+}
+
+enum NotificationChannel {
+    email
+    push
+}
+
+model ReminderLog {
+    id          String         @id @default(uuid())
+    user        User           @relation(fields: [userId], references: [id])
+    userId      String
+    templateKey String
+    sentAt      DateTime? // null, wenn geplant aber noch nicht gesendet
+    status      ReminderStatus
+    error       String?
+    metadata    Json?
+    updatedAt   DateTime       @updatedAt
+
+    @@index([userId, templateKey, sentAt])
+}
+
+enum ReminderStatus {
+    SCHEDULED
+    SENT
+    FAILED
 }
 
 model LlmConfiguration {
-  id              String   @id @default(cuid())
-  serverUrl       String
-  apiKey          String?
-  defaultModel    String   
-  isActive        Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+    id           String   @id @default(cuid())
+    serverUrl    String
+    apiKey       String?
+    defaultModel String
+    isActive     Boolean  @default(true)
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
 }

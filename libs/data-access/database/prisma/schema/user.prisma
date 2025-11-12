@@ -25,21 +25,33 @@ model Session {
 }
 
 model User {
-    id                          String           @id @default(cuid())
-    name                        String           @unique
+    id                          String                    @id @default(cuid())
+    name                        String                    @unique
     displayName                 String
-    email                       String?          @unique
+    email                       String?                   @unique
     emailVerified               DateTime?
     image                       String?
-    role                        UserRole         @default(USER)
+    role                        UserRole                  @default(USER)
     accounts                    Account[]
     author                      Author?
     sessions                    Session[]
     student                     Student?
     uploadedAssets              UploadedAssets[]
-    enabledLearningStatistics   Boolean          @default(false)
-    enabledFeatureLearningDiary Boolean          @default(false)
-    registrationCompleted       Boolean          @default(false)
+    enabledLearningStatistics   Boolean                   @default(false)
+    enabledFeatureLearningDiary Boolean                   @default(false)
+    registrationCompleted       Boolean                   @default(false)
+    gamificationProfile         GamificationProfile?
+    notifications               NotificationUser[]
+    reminders                   ReminderLog[]
+    notificationSettings        UserNotificationSetting[]
+    featureFlags                Features?
+    acceptedExperimentTerms     DateTime?
+    declinedExperimentTerms     DateTime?
+}
+
+enum UserRole {
+    USER
+    ADMIN
 }
 
 model VerificationToken {
@@ -48,4 +60,15 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model Features {
+    userId   String @id
+    username String @unique
+
+    learningStatistics Boolean @default(true)
+    learningDiary      Boolean @default(false)
+    experimental       Boolean @default(false)
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

@@ -1,15 +1,18 @@
 import { getCombinedCourses } from "@self-learning/course";
-import { createUserEvent, database } from "@self-learning/database";
+import { database } from "@self-learning/database";
 import { CourseContent, extractLessonIds } from "@self-learning/types";
+import { createEventLogEntry } from "@self-learning/util/eventlog";
 
 export async function markAsCompleted({
 	lessonId,
 	courseSlug,
-	username
+	username,
+	performanceScore
 }: {
 	lessonId: string;
 	courseSlug: string | null;
 	username: string;
+	performanceScore: number;
 }) {
 	let course = null;
 	if (courseSlug) {
@@ -23,7 +26,8 @@ export async function markAsCompleted({
 		data: {
 			courseId: course?.courseId,
 			lessonId,
-			username
+			username,
+			performanceScore
 		},
 		select: {
 			createdAt: true,
@@ -38,15 +42,22 @@ export async function markAsCompleted({
 			}
 		}
 	});
-
+	/*
+<<<<<<< HEAD
 	await addEarnedSkillsToUser(lessonId, username);
 
 	await createUserEvent({
+=======
+*/
+	// TODO remove since it is depricated
+	await createEventLogEntry({
 		username,
 		type: "LESSON_COMPLETE",
 		resourceId: lessonId,
 		courseId: course?.courseId,
-		payload: undefined
+		payload: {
+			completedLessonId: result.lessonId
+		}
 	});
 
 	if (course) {
@@ -75,7 +86,7 @@ async function updateCourseProgress(courseId: string, content: CourseContent, us
 	const progress = Math.floor((completedIds.size / lessons.size) * 100);
 
 	if (progress === 100) {
-		await createUserEvent({
+		await createEventLogEntry({
 			username,
 			type: "COURSE_COMPLETE",
 			resourceId: courseId,

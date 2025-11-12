@@ -1,9 +1,10 @@
 import { EnrollmentStatus } from "@prisma/client";
 import { getCourseCompletionOfStudent } from "@self-learning/completion";
 import { getCombinedCourses } from "@self-learning/course";
-import { createUserEvent, database } from "@self-learning/database";
 import { CourseCompletion, CourseEnrollment, ResolvedValue } from "@self-learning/types";
 import { AlreadyExists, NotFound } from "@self-learning/util/http";
+import { database } from "@self-learning/database";
+import { createEventLogEntry } from "@self-learning/util/eventlog";
 
 export async function getEnrollmentDetails(username: string) {
 	const enrollments = await database.enrollment.findMany({
@@ -178,7 +179,7 @@ export async function enrollUser({ courseId, username }: { courseId?: string; us
 		data
 	});
 
-	await createUserEvent({
+	await createEventLogEntry({
 		username,
 		type: "COURSE_ENROLL",
 		resourceId: courseId,
