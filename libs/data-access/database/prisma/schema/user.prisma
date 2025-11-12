@@ -43,6 +43,8 @@ model User {
     enabledLearningStatistics Boolean @default(false)
     enabledFeatureLearningDiary  Boolean  @default(false)
     registrationCompleted      Boolean  @default(false)
+
+    memberships        Member[]
 }
 
 model VerificationToken {
@@ -52,3 +54,68 @@ model VerificationToken {
 
     @@unique([identifier, token])
 }
+
+enum AccessLevel {
+    VIEW            
+    EDIT            // can edit 
+    FULL            // can edit and grant editing away (only on the same level)
+}
+
+enum GroupRole {
+    MEMBER
+    ADMIN
+    OWNER
+}
+
+model Member {
+    role        GroupRole
+    createdAt   DateTime    @default(now())
+    expiresAt   DateTime?
+
+    userId      String
+    groupId     String
+    user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+    group       Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+    @@unique([userId, groupId])
+}
+
+model Group {
+    id          String      @id @default(uuid())
+    name        String      @unique
+    members     Member[]
+    // lessons     Lesson[]    // this are ownerships
+    // courses     Course[]    // this are ownerships
+    permissions Permission[]    @relation("HolderGroup")
+    grants      Permission[]    @relation("GrantorGroup")
+    // skills      SkillRepository
+
+    // This is NOT used to inherit permissions but to differentiate between root and user-created groups
+    parentId    String?
+    parent      Group?      @relation("ParentGroup", fields: [parentId], references: [id], onDelete: Restrict)
+    children    Group[]     @relation("ParentGroup")  
+}
+
+
+model Permission {
+    id          String      @id @default(uuid())
+    grantorId   String?
+    groupId     String
+
+    courseId    String?
+    lessonId    String?
+
+    accessLevel AccessLevel
+
+    isWildcart  Boolean  @default(false) // this permission applies to all resources of grantor
+    isPublic    Boolean  @default(false) // this permission applies to all groups
+
+    grantor     Group?      @relation("GrantorGroup", fields: [grantorId], references: [id], onDelete: Cascade)
+    group       Group       @relation("HolderGroup", fields: [groupId], references: [id], onDelete: Cascade)
+    course      Course?     @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
+    lesson      Lesson?     @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
+
+    // Prohibit multiple permissions per one content
+    @@unique([groupId, courseId])
+    @@unique([groupId, lessonId])
+}
+

@@ -9,18 +9,12 @@ export const meRouter = t.router({
 			where: { name: ctx.user.name },
 			select: {
 				role: true,
-				author: {
+				permissions: {
 					select: {
-						subjectAdmin: {
-							select: {
-								subjectId: true
-							}
-						},
-						specializationAdmin: {
-							select: {
-								specializationId: true
-							}
-						}
+						accessLevel: true,
+						subject: { select: { subjectId: true } },
+						course: { select: { courseId: true } },
+						lesson: { select: { lessonId: true } }
 					}
 				}
 			}
@@ -40,7 +34,7 @@ export const meRouter = t.router({
 			}
 
 			const anonymousUsername = "anonymous-" + randomUUID();
-			
+
 			await tx.user.create({
 				data: {
 					name: anonymousUsername,

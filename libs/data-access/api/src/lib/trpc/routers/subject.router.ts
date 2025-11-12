@@ -1,9 +1,7 @@
 import { database } from "@self-learning/database";
 import { subjectSchema } from "@self-learning/types";
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { adminProcedure, authProcedure, t } from "../trpc";
-import { UserFromSession } from "../context";
 
 export const subjectRouter = t.router({
 	getAllWithSpecializations: t.procedure.query(() => {
@@ -14,11 +12,7 @@ export const subjectRouter = t.router({
 				title: true,
 				specializations: {
 					orderBy: { title: "asc" },
-					select: {
-						title: true,
-						cardImgUrl: true,
-						specializationId: true
-					}
+					select: { title: true, cardImgUrl: true, specializationId: true }
 				}
 			}
 		});
@@ -31,24 +25,7 @@ export const subjectRouter = t.router({
 				title: true,
 				subtitle: true,
 				cardImgUrl: true,
-				subjectAdmin: {
-					select: {
-						username: true,
-						author: {
-							select: {
-								slug: true,
-								displayName: true,
-								imgUrl: true
-							}
-						}
-					}
-				},
-				_count: {
-					select: {
-						courses: true,
-						specializations: true
-					}
-				}
+				_count: { select: { courses: true, specializations: true } }
 			}
 		});
 	}),
@@ -103,25 +80,8 @@ export const subjectRouter = t.router({
 
 		return subject;
 	}),
-	update: authProcedure.input(subjectSchema).mutation(({ input, ctx }) => {
-		if (ctx.user.role !== "ADMIN") {
-			const subjectAdmin = database.subjectAdmin.findUnique({
-				where: {
-					subjectId_username: {
-						subjectId: input.subjectId,
-						username: ctx.user.name
-					}
-				}
-			});
-
-			if (!subjectAdmin) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: "Requires ADMIN role or subjectAdmin."
-				});
-			}
-		}
-
+	update: authProcedure.input(subjectSchema).mutation(async ({ input }) => {
+		// all can edit subjects for now
 		return database.subject.update({
 			where: { subjectId: input.subjectId },
 			data: {
@@ -132,61 +92,5 @@ export const subjectRouter = t.router({
 				imgUrlBanner: input.imgUrlBanner
 			}
 		});
-	}),
-	setSpecializationPermissions: authProcedure
-		.input(
-			z.object({
-				subjectId: z.string(),
-				/** `{ [specializationId]: { [username]: boolean } }` */
-				specMap: z.record(z.record(z.boolean()))
-			})
-		)
-		.mutation(async ({ input, ctx }) => {
-			const canEdit = await canEditSubject(input.subjectId, ctx.user);
-
-			if (!canEdit) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: `Requires ADMIN role or subjectAdmin in ${input.subjectId}.`
-				});
-			}
-
-			const specIds = Object.keys(input.specMap);
-
-			const assigned: { username: string; specializationId: string }[] = specIds.flatMap(
-				specializationId =>
-					Object.entries(input.specMap[specializationId])
-						.filter(([_username, isChecked]) => isChecked)
-						.map(([username]) => ({ username, specializationId }))
-			);
-
-			await database.$transaction([
-				database.specializationAdmin.deleteMany({
-					where: {
-						OR: specIds.map(specializationId => ({ specializationId }))
-					}
-				}),
-				database.specializationAdmin.createMany({
-					data: assigned
-				})
-			]);
-		})
+	})
 });
-
-async function canEditSubject(subjectId: string, user: UserFromSession): Promise<boolean> {
-	if (user.role === "ADMIN") {
-		return true;
-	}
-
-	const subjectAdmin = await database.subjectAdmin.findUnique({
-		where: {
-			subjectId_username: { subjectId, username: user.name }
-		}
-	});
-
-	if (subjectAdmin) {
-		return true;
-	}
-
-	return false;
-}
