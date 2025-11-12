@@ -1,4 +1,4 @@
-import { CheckIcon, Cog8ToothIcon } from "@heroicons/react/24/solid";
+import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
 import { getAuthenticatedUser, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
@@ -303,7 +303,7 @@ function DashboardPage(props: Props) {
 								title="Bearbeiten"
 								onClick={openSettings}
 							>
-								<Cog8ToothIcon className="h-6 text-gray-500" />
+								<CogIcon className="h-6 text-gray-500" />
 							</button>
 						</div>
 
