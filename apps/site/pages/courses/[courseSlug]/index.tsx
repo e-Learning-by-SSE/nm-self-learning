@@ -1,6 +1,8 @@
 import { PlayIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
-import { useCourseCompletion } from "@self-learning/completion";
+import { withTranslations } from "@self-learning/api";
+import { trpc } from "@self-learning/api-client";
+import { SmallGradeBadge, useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
@@ -11,15 +13,19 @@ import {
 	LessonInfo,
 	ResolvedValue
 } from "@self-learning/types";
-import { AuthorsList } from "@self-learning/ui/common";
+import { AuthorsList, Tooltip } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection, useAuthentication } from "@self-learning/ui/layouts";
+import { handleEmailTracking } from "@self-learning/ui/notifications";
+import { withAuth } from "@self-learning/util/auth";
+import { authOptions } from "@self-learning/util/auth/server";
 import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
+import { getServerSession } from "next-auth";
+import { useSession } from "next-auth/react";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
-import { withTranslations } from "@self-learning/api";
+import { useEffect, useMemo } from "react";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -44,6 +50,7 @@ function mapToTocContent(
 						meta: { hasQuiz: false, mediaTypes: {} },
 						title: "Removed",
 						lessonType: LessonType.TRADITIONAL,
+						performanceScore: null,
 						lessonNr: -1
 					};
 
@@ -52,7 +59,7 @@ function mapToTocContent(
 	}));
 }
 
-async function mapCourseContent(content: CourseContent): Promise<ToC.Content> {
+async function mapCourseContent(content: CourseContent, username?: string): Promise<ToC.Content> {
 	const lessonIds = extractLessonIds(content);
 
 	const lessons = await database.lesson.findMany({
@@ -61,14 +68,26 @@ async function mapCourseContent(content: CourseContent): Promise<ToC.Content> {
 			lessonId: true,
 			slug: true,
 			title: true,
-			meta: true
+			meta: true,
+			completions: {
+				where: { username },
+				orderBy: { performanceScore: "desc" },
+				take: 1, // Nur den höchsten Score nehmen
+				select: {
+					performanceScore: true,
+					username: true
+				}
+			}
 		}
 	});
 
 	const map = new Map<string, LessonInfo>();
 
 	for (const lesson of lessons) {
-		map.set(lesson.lessonId, lesson as LessonInfo);
+		const { completions, ...rest } = lesson;
+		const performanceScore = completions.length > 0 ? completions[0].performanceScore : null;
+		const mappedLesson = { ...rest, performanceScore } as LessonInfo;
+		map.set(lesson.lessonId, mappedLesson);
 	}
 
 	return mapToTocContent(content, map);
@@ -108,37 +127,54 @@ type CourseProps = {
 	markdownDescription: CompiledMarkdown | null;
 };
 
-export const getServerSideProps = withTranslations(["common"], async ({ params }) => {
-	const courseSlug = params?.courseSlug as string | undefined;
-	if (!courseSlug) {
-		throw new Error("No slug provided.");
-	}
+export const getServerSideProps = withTranslations(
+	["common"],
+	withAuth(async context => {
+		const { req, res, params } = context;
+		const courseSlug = params?.courseSlug as string | undefined;
+		if (!courseSlug) {
+			throw new Error("No slug provided.");
+		}
 
-	const course = await getCourse(courseSlug);
-	if (!course) {
-		return { notFound: true };
-	}
+		const trackingResult = await handleEmailTracking(context);
+		if (trackingResult.shouldRedirect) {
+			return {
+				redirect: {
+					destination: `/courses/${courseSlug}`,
+					permanent: false
+				}
+			};
+		}
 
-	const content = await mapCourseContent(course.content as CourseContent);
-	let markdownDescription = null;
+		const course = await getCourse(courseSlug);
+		if (!course) {
+			return { notFound: true };
+		}
 
-	if (course.description && course.description.length > 0) {
-		markdownDescription = await compileMarkdown(course.description);
-		course.description = null;
-	}
+		const session = await getServerSession(req, res, authOptions);
+		const sessionUser = session?.user;
 
-	const summary = createCourseSummary(content);
+		const content = await mapCourseContent(course.content as CourseContent, sessionUser?.name);
+		let markdownDescription = null;
 
-	return {
-		props: {
-			course: JSON.parse(JSON.stringify(course)) as Defined<typeof course>,
-			summary,
-			content,
-			markdownDescription
-		},
-		notFound: !course
-	};
-});
+		if (course.description && course.description.length > 0) {
+			markdownDescription = await compileMarkdown(course.description);
+			course.description = null;
+		}
+
+		const summary = createCourseSummary(content);
+
+		return {
+			props: {
+				course: JSON.parse(JSON.stringify(course)) as Defined<typeof course>,
+				summary,
+				content,
+				markdownDescription
+			},
+			notFound: !course
+		};
+	})
+);
 
 async function getCourse(courseSlug: string) {
 	return database.course.findUnique({
@@ -190,7 +226,19 @@ function CourseHeader({
 
 	const enrollments = useEnrollments();
 	const { enroll } = useEnrollmentMutations();
-	const completion = useCourseCompletion(course.slug);
+	const { data: completion, refetch: fetchCourseCompletion } =
+		trpc.completion.getCourseCompletion.useQuery(
+			{ courseSlug: course.slug },
+			{ enabled: false }
+		);
+
+	const session = useSession();
+
+	useEffect(() => {
+		if (session.status === "authenticated" && !completion) {
+			fetchCourseCompletion();
+		}
+	}, [session.status, fetchCourseCompletion, completion]);
 
 	const isEnrolled = useMemo(() => {
 		if (!enrollments) return false;
@@ -213,6 +261,19 @@ function CourseHeader({
 
 	const firstLessonFromChapter = content[0]?.content[0] ?? null;
 	const lessonCompletionCount = completion?.courseCompletion.completedLessonCount ?? 0;
+
+	const avgScore = useMemo(() => {
+		const scores = content
+			.flatMap(chapter => chapter.content.map(lesson => lesson.performanceScore))
+			.filter(score => score != null);
+
+		const sumScore = scores.reduce((acc, score) => acc + (score ?? 0), 0);
+		if (scores.length === 0) return null;
+		else return sumScore / scores.length;
+	}, [content]);
+
+	const isParticipant = session.data?.user.featureFlags.experimental ?? false;
+
 	return (
 		<section className="flex flex-col gap-16">
 			<div className="flex flex-wrap-reverse gap-12 md:flex-nowrap">
@@ -250,7 +311,11 @@ function CourseHeader({
 							></Image>
 						)}
 
-						<ul className="absolute bottom-0 grid w-full grid-cols-3 divide-x divide-secondary rounded-b-lg border border-light-border border-t-transparent bg-white bg-opacity-80 p-2 text-center">
+						<ul
+							className={`absolute bottom-0 grid w-full ${
+								isParticipant ? "grid-cols-4" : "grid-cols-3"
+							} divide-x divide-secondary rounded-b-lg border border-light-border border-t-transparent bg-white bg-opacity-80 p-2 text-center`}
+						>
 							<li className="flex flex-col">
 								<span className="font-semibold text-secondary">Lerneinheiten</span>
 								<span className="text-light">{summary.lessons}</span>
@@ -265,6 +330,20 @@ function CourseHeader({
 									{formatSeconds(summary.duration)}
 								</span>
 							</li>
+							{isParticipant && (
+								<li className="flex flex-col items-center">
+									<span className="font-semibold text-secondary">
+										Mein Score{" "}
+									</span>
+									{avgScore != null ? (
+										<div className="flex justify-center">
+											<SmallGradeBadge rating={avgScore} />
+										</div>
+									) : (
+										<span>Keine</span>
+									)}
+								</li>
+							)}
 						</ul>
 					</div>
 
@@ -315,7 +394,8 @@ function CourseHeader({
 }
 
 function TableOfContents({ content, course }: { content: ToC.Content; course: Course }) {
-	const completion = useCourseCompletion(course.slug);
+	// const completion = useCourseCompletion(course.slug);
+	const completion: any = null;
 	const hasContent = content.length > 0;
 
 	if (!hasContent) {
@@ -392,11 +472,19 @@ function Lesson({
 
 function LessonEntry({ lesson }: { lesson: ToC.Content[0]["content"][0] }) {
 	return (
-		<span className="flex">
-			<span className="w-8 shrink-0 self-center font-medium text-secondary">
-				{lesson.lessonNr}
+		<span className="flex items-center justify-between w-full">
+			<span className="flex items-center">
+				<span className="w-8 shrink-0 self-center font-medium text-secondary">
+					{lesson.lessonNr}
+				</span>
+				<span>{lesson.title}</span>
 			</span>
-			<span>{lesson.title}</span>
+			{/* Grade badge - klein und konsistent mit GradeDisplay */}
+			{lesson.performanceScore != null && (
+				<Tooltip content="Deine bishere beste Bewertung für dieses Nanomodul.">
+					<SmallGradeBadge rating={lesson.performanceScore} />
+				</Tooltip>
+			)}
 		</span>
 	);
 }

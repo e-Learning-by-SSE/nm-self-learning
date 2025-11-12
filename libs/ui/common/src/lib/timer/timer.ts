@@ -29,3 +29,11 @@ export function useTimeout({
 		return () => clearTimeout(timer);
 	}, [callback, delayInMilliseconds]);
 }
+
+export function useInterval({ callback, interval }: { callback: () => void; interval: number }) {
+	useEffect(() => {
+		const timer = setInterval(callback, interval);
+
+		return () => clearInterval(timer);
+	}, [callback, interval]);
+}

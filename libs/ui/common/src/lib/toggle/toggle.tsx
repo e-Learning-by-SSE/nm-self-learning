@@ -1,3 +1,5 @@
+import { Label, Switch, Field } from "@headlessui/react";
+
 export function Toggle({
 	value,
 	onChange,
@@ -12,29 +14,26 @@ export function Toggle({
 	testid?: string;
 }) {
 	return (
-		<label className="inline-flex cursor-pointer items-center" data-testid={testid}>
-			<input
-				type="checkbox"
-				checked={value}
-				className="peer sr-only"
-				aria-label="Toggle switch"
-				onChange={e => onChange(e.target.checked)}
-				disabled={disabled}
-			/>
-			<div
-				className="after:start-[2px]
-             peer relative h-6 w-11 rounded-full
-              bg-gray-200 after:absolute after:top-[2px] 
-              after:h-5 after:w-5 after:rounded-full
-               after:border after:border-gray-300
-                after:bg-white after:transition-all 
-                after:content-[''] peer-checked:bg-secondary 
-                peer-checked:after:translate-x-full
-                 peer-checked:after:border-white 
-                 peer-focus:outline-none 
-                rtl:peer-checked:after:-translate-x-full dark:border-gray-600 dark:bg-gray-700"
-			></div>
-			<span className="ml-2">{label}</span>
-		</label>
+		<Field>
+			<div className="inline-flex cursor-pointer items-center" data-testid={testid}>
+				<Switch
+					checked={value}
+					onChange={onChange}
+					disabled={disabled}
+					className={`relative inline-flex h-6 w-11 items-center rounded-full
+						transition-colors focus:outline-none focus:ring-2
+						focus:ring-secondary focus:ring-offset-2
+						disabled:cursor-not-allowed disabled:opacity-50
+						${value ? "bg-secondary" : "bg-gray-200 dark:bg-gray-700"}`}
+				>
+					<span
+						className={`inline-block h-5 w-5 transform rounded-full
+							bg-white transition-transform
+							${value ? "translate-x-[22px] border-white" : "translate-x-[2px] border-gray-300"}`}
+					/>
+				</Switch>
+				<Label className="ml-2 cursor-pointer">{label}</Label>
+			</div>
+		</Field>
 	);
 }

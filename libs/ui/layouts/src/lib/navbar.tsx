@@ -11,18 +11,20 @@ import {
 	XMarkIcon
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon, StarIcon } from "@heroicons/react/24/solid";
-import { DropdownMenu } from "@self-learning/ui/common";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { ParsedUrlQuery } from "querystring";
 import { useCallback, useEffect, useState } from "react";
-import { redirectToLogin, redirectToLogout } from "./redirect-to-login";
 import { SearchBar } from "./search-bar";
+import { useLoginRedirect } from "@self-learning/util/auth";
+import { DropdownMenu } from "@self-learning/ui/common";
 import { useTranslation } from "next-i18next";
 
 export function Navbar() {
 	const session = useSession();
+	const { loginRedirect, logoutRedirect } = useLoginRedirect();
+
 	const user = session.data?.user;
 
 	return (
@@ -71,7 +73,7 @@ export function Navbar() {
 								{!user ? (
 									<button
 										className="text-w rounded-lg bg-emerald-500 px-8 py-2 font-semibold text-white"
-										onClick={redirectToLogin}
+										onClick={() => loginRedirect()}
 									>
 										Login
 									</button>
@@ -91,7 +93,7 @@ export function Navbar() {
 											avatarUrl={user.avatarUrl}
 											isAuthor={user.isAuthor}
 											isAdmin={user.role === "ADMIN"}
-											signOut={redirectToLogout}
+											signOut={() => logoutRedirect("/")}
 										/>
 									</div>
 								)}

@@ -1,17 +1,19 @@
 import { userEventRouter } from "./event-log.router";
 import { Context } from "../context";
 import { t } from "../trpc";
-import { evenTypePayloadSchema } from "@self-learning/types";
-import { createUserEvent, loadUserEvents } from "@self-learning/database";
+import { createEventLogEntry, loadUserEventLogs } from "@self-learning/util/eventlog";
+import { EventTypeMap } from "@self-learning/types";
 
 jest.mock("@self-learning/database");
-
+jest.mock("@self-learning/util/eventlog", () => ({
+	createEventLogEntry: jest.fn(),
+	loadUserEventLogs: jest.fn()
+}));
 function prepare() {
-	const mockCreateUserEvent = createUserEvent as jest.MockedFunction<typeof createUserEvent>;
+	const mockCreateUserEvent = createEventLogEntry as jest.MockedFunction<
+		typeof createEventLogEntry
+	>;
 	mockCreateUserEvent.mockResolvedValue({
-		id: 1,
-		createdAt: new Date(),
-		username: "john",
 		resourceId: "",
 		courseId: "",
 		type: "ERROR",
@@ -23,11 +25,15 @@ function prepare() {
 			name: "john",
 			role: "USER",
 			isAuthor: false,
-			enabledFeatureLearningDiary: false,
-			enabledLearningStatistics: true
+			avatarUrl: null,
+			featureFlags: {
+				learningDiary: false,
+				learningStatistics: false,
+				experimental: false
+			}
 		}
 	};
-	const mockLoadUserEvent = loadUserEvents as jest.MockedFunction<typeof loadUserEvents>;
+	const mockLoadUserEvent = loadUserEventLogs as jest.MockedFunction<typeof loadUserEventLogs>;
 	const caller = t.createCallerFactory(userEventRouter)(ctx);
 	return { caller, mockCreateUserEvent, mockLoadUserEvent };
 }
@@ -65,7 +71,7 @@ describe("userEventRouter create", () => {
 		const result = await caller.create(input); // could throw an error on validation fail
 		// also check manual validation
 
-		const schema = evenTypePayloadSchema.shape["ERROR"];
+		const schema = EventTypeMap["ERROR"];
 		expect(() => schema.parse(result.payload)).not.toThrow();
 	});
 	it("should not pass incorrect payloads", async () => {
