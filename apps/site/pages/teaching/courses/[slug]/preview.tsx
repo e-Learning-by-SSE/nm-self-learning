@@ -19,7 +19,7 @@ import {
 } from "@e-learning-by-sse/nm-skill-lib";
 import { withTranslations } from "@self-learning/api";
 import { GetServerSidePropsContext } from "next";
-import { DynCourseModel } from "@self-learning/teaching";
+import { DynCourseDetailedModel } from "@self-learning/teaching";
 import { CourseChapter, Summary } from "@self-learning/types";
 import * as ToC from "@self-learning/ui/course";
 import { createCourseSummary, mapCourseContent } from "@self-learning/course";
@@ -151,7 +151,7 @@ export default function CoursePreviewPage({
 	content,
 	summary
 }: {
-	course: DynCourseModel;
+	course: DynCourseDetailedModel;
 	content: ToC.Content;
 	summary: Summary;
 }) {

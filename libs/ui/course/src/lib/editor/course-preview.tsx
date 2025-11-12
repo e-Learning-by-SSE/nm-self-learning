@@ -1,11 +1,10 @@
-import { useCourseCompletion } from "@self-learning/completion";
 import { AuthorsList, AuthorProps } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
-import { CenteredSection, useAuthentication } from "@self-learning/ui/layouts";
+import { CenteredSection } from "@self-learning/ui/layouts";
 import { formatSeconds } from "@self-learning/util/common";
 import Image from "next/image";
 import Link from "next/link";
-import { DynCourseModel } from "@self-learning/teaching";
+import { DynCourseDetailedModel } from "@self-learning/teaching";
 import { Summary } from "@self-learning/types";
 import { useTranslation } from "next-i18next";
 
@@ -14,7 +13,7 @@ export function CoursePreview({
 	content,
 	summary
 }: {
-	course: DynCourseModel;
+	course: DynCourseDetailedModel;
 	content: ToC.Content;
 	summary: Summary;
 }) {
@@ -30,7 +29,7 @@ function Course({
 	summary,
 	content
 }: {
-	course: DynCourseModel;
+	course: DynCourseDetailedModel;
 	summary: Summary;
 	content: ToC.Content;
 }) {
@@ -103,7 +102,7 @@ function Course({
 				</div>
 			</div>
 			{hasTeachingGoal ? (
-				<TableOfContents content={content} course={course} />
+				<LessonPath content={content} course={course} />
 			) : (
 				<Warning title="noTeachingGoalTitle" description="noTeachingGoalDescription" />
 			)}
@@ -123,7 +122,7 @@ function Warning({ title, description }: { title: string; description: string })
 	);
 }
 
-function TableOfContents({ content, course }: { content: ToC.Content; course: DynCourseModel }) {
+function LessonPath({ content, course }: { content: ToC.Content; course: DynCourseDetailedModel }) {
 	const { t } = useTranslation("kee");
 	const hasContent = content.length > 0;
 
@@ -140,7 +139,6 @@ function TableOfContents({ content, course }: { content: ToC.Content; course: Dy
 						{content.length > 0 && (
 							<>
 								<h3 className="heading flex gap-4 text-2xl">
-									<span>{index + 1}.</span>
 									<span className="text-secondary">{t(chapter.title)} </span>
 								</h3>
 								<span className="mt-4 text-light">
@@ -151,48 +149,22 @@ function TableOfContents({ content, course }: { content: ToC.Content; course: Dy
 
 						<ul className="mt-8 flex flex-col gap-1">
 							{chapter.content.map(lesson => (
-								<Lesson
-									key={lesson.lessonId}
+								<Link
 									href={`/courses/${course.slug}/${lesson.slug}`}
-									lesson={lesson}
-								/>
+									className={`flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm "border-gray-300"`}
+								>
+									<span className="flex">
+										<span className="w-8 shrink-0 self-center font-medium text-secondary">
+											{lesson.lessonNr}
+										</span>
+										<span>{lesson.title}</span>
+									</span>
+								</Link>
 							))}
 						</ul>
 					</li>
 				))}
 			</ul>
 		</section>
-	);
-}
-
-function Lesson({ lesson, href }: { lesson: ToC.Content[0]["content"][0]; href: string }) {
-	const { isAuthenticated } = useAuthentication();
-
-	if (!isAuthenticated) {
-		return (
-			<div className="flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm border-gray-300">
-				<LessonEntry lesson={lesson} />
-			</div>
-		);
-	}
-
-	return (
-		<Link
-			href={href}
-			className={`flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm "border-gray-300"`}
-		>
-			<LessonEntry lesson={lesson} />
-		</Link>
-	);
-}
-
-function LessonEntry({ lesson }: { lesson: ToC.Content[0]["content"][0] }) {
-	return (
-		<span className="flex">
-			<span className="w-8 shrink-0 self-center font-medium text-secondary">
-				{lesson.lessonNr}
-			</span>
-			<span>{lesson.title}</span>
-		</span>
 	);
 }

@@ -377,7 +377,7 @@ export const courseRouter = t.router({
 				}))
 			};
 		}),
-	generateDynCourse: authProcedure
+	generateLessonPath: authProcedure
 		.input(
 			z.object({
 				courseId: z.string(),

@@ -16,7 +16,7 @@ export const dynCourseFormSchema = z.object({
 
 export type DynCourseFormModel = z.infer<typeof dynCourseFormSchema>;
 
-export const dynCourseSchema = z.object({
+export const dynCourseDetailedSchema = z.object({
 	courseId: z.string().nullable(),
 	subjectId: z.string().nullable(),
 	slug: z.string().min(3),
@@ -26,7 +26,7 @@ export const dynCourseSchema = z.object({
 	imgUrl: z.string().nullable(),
 	teachingGoals: z.array(skillFormSchema),
 	requirements: z.array(skillFormSchema),
-	authors: z.array(authorSchema) // authorsRelationSchema
+	authors: z.array(authorSchema) // here we have full author data
 });
 
-export type DynCourseModel = z.infer<typeof dynCourseSchema>;
+export type DynCourseDetailedModel = z.infer<typeof dynCourseDetailedSchema>;

@@ -444,7 +444,7 @@ function CoursePath({
 	course: CombinedCourseResult;
 	needsARefresh: boolean;
 }) {
-	const { mutateAsync } = trpc.course.generateDynCourse.useMutation();
+	const { mutateAsync: generateLessonPath } = trpc.course.generateLessonPath.useMutation();
 	const router = useRouter();
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [generationId, setGenerationId] = useState<string | null>(null);
@@ -454,7 +454,7 @@ function CoursePath({
 		try {
 			setIsGenerating(true);
 			setIsComplete(false);
-			const result = await mutateAsync({
+			const result = await generateLessonPath({
 				courseId: course.courseId,
 				knowledge: []
 			});

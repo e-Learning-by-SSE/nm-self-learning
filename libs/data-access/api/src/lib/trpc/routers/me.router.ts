@@ -38,54 +38,7 @@ export const meRouter = t.router({
 			if (!user) {
 				return false;
 			}
-			/*
-<<<<<<< HEAD
-			const lessons = await findLessons({ authorName: ctx.user.name });
-			const lessonsIds = lessons.lessons.map(lesson => lesson.lessonId);
 
-			const courses = await prisma.course.findMany({
-				where: {
-					authors: {
-						some: {
-							username: ctx.user.name
-						}
-					}
-				}
-			});
-			const courseIds = courses.map(course => course.courseId);
-
-			const authorId = await prisma.author.findUnique({
-				where: { username: ctx.user.name },
-				select: { id: true }
-			});
-
-			const skills = await prisma.skill.findMany({
-				where: {
-					authorId: authorId ? authorId.id : undefined,
-				}
-			});
-
-			const username = "anonymous" + randomUUID();
-
-			await prisma.user.create({
-				data: {
-					name: username,
-					displayName: user.displayName,
-					role: user.role,
-					author: {
-						create: {
-							displayName: user.displayName,
-							slug: username,
-							lessons: {
-								connect: lessonsIds.map(lessonId => ({ lessonId }))
-							},
-							courses: {
-								connect: courseIds.map(courseId => ({ courseId }))
-							}
-						}
-					},
-=======
-*/
 			const anonymousUsername = "anonymous-" + randomUUID();
 
 			await tx.user.create({

@@ -221,7 +221,10 @@ function AuthorDashboardPage({ author }: Props) {
 									<p className="text-light">Du hast noch keine Kurse erstellt.</p>
 								</div>
 							) : (
-								[...author.courses, ...author.dynCourse].map(course => (
+								[
+									...author.courses.map(c => ({ ...c, type: "static" })),
+									...author.dynCourse.map(c => ({ ...c, type: "dynamic" }))
+								].map(course => (
 									<li
 										key={course.courseId}
 										className="flex items-center rounded-lg border border-light-border bg-white"
@@ -230,7 +233,6 @@ function AuthorDashboardPage({ author }: Props) {
 											src={course.imgUrl ?? undefined}
 											className="h-16 w-16 rounded-l-lg object-cover"
 										/>
-
 										<div className="flex w-full items-center justify-between px-4">
 											<div className="flex flex-col gap-1">
 												<span className="text-xs text-light">
@@ -248,7 +250,11 @@ function AuthorDashboardPage({ author }: Props) {
 
 											<div className="flex flex-wrap justify-end gap-4">
 												<Link
-													href={`/teaching/courses/${course.slug}/edit`}
+													href={
+														course.type === "static"
+															? `/teaching/courses/edit/${course.courseId}`
+															: `/teaching/courses/${course.slug}/edit`
+													}
 													className="btn-stroked h-fit w-fit"
 												>
 													<PencilIcon className="icon" />
