@@ -15,7 +15,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "lesson_completed",
 			requiredValue: 1,
 			meta: { group: "grade_lessons_serial", grade: "PERFECT", level: 1 }
-		},
+		} as const,
 		{
 			code: "GRADE_LESSON_SERIAL_PERFECT_5",
 			title: "Perfekte Lektion II",
@@ -25,7 +25,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "lesson_completed",
 			requiredValue: 5,
 			meta: { group: "grade_lessons_serial", grade: "PERFECT", level: 2 }
-		},
+		} as const,
 		{
 			code: "GRADE_LESSON_SERIAL_PERFECT_10",
 			title: "Perfekte Lektion III",
@@ -35,7 +35,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "lesson_completed",
 			requiredValue: 10,
 			meta: { group: "grade_lessons_serial", grade: "PERFECT", level: 3 }
-		},
+		} as const,
 
 		/* inTotal (overall “perfect” grades) */
 		{
@@ -47,7 +47,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "lesson_completed",
 			requiredValue: 1,
 			meta: { group: "grade_lessons_total", grade: "PERFECT", level: 1 }
-		},
+		} as const,
 		{
 			code: "GRADE_LESSONS_PERFECT_TOTAL_5",
 			title: "Meister*in der Perfektion II",
@@ -57,7 +57,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "lesson_completed",
 			requiredValue: 5,
 			meta: { group: "grade_lessons_total", grade: "PERFECT", level: 2 }
-		},
+		} as const,
 		{
 			code: "GRADE_LESSONS_PERFECT_TOTAL_10",
 			title: "Meister*in der Perfektion III",
@@ -67,7 +67,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "lesson_completed",
 			requiredValue: 10,
 			meta: { group: "grade_lessons_total", grade: "PERFECT", level: 3 }
-		},
+		} as const,
 		{
 			code: "GRADE_LESSONS_PERFECT_TOTAL_20",
 			title: "Meister*in der Perfektion IV",
@@ -77,7 +77,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "lesson_completed",
 			requiredValue: 20,
 			meta: { group: "grade_lessons_total", grade: "PERFECT", level: 4 }
-		},
+		} as const,
 
 		/* ─────────────────────── 🧠 Very-Good Lessons (Grade “A”) ─────────────────────── */
 		/* inRow */
@@ -90,7 +90,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "lesson_completed",
 			requiredValue: 1,
 			meta: { group: "grade_lessons_serial", grade: "VERY_GOOD", level: 1 }
-		},
+		} as const,
 		{
 			code: "GRADE_LESSON_SERIAL_VERY_GOOD_5",
 			title: "Sehr gute Lektion II",
@@ -100,7 +100,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "lesson_completed",
 			requiredValue: 5,
 			meta: { group: "grade_lessons_serial", grade: "VERY_GOOD", level: 2 }
-		},
+		} as const,
 		{
 			code: "GRADE_LESSON_SERIAL_VERY_GOOD_10",
 			title: "Sehr gute Lektion III",
@@ -111,7 +111,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "lesson_completed",
 			requiredValue: 10,
 			meta: { group: "grade_lessons_serial", grade: "VERY_GOOD", level: 3 }
-		},
+		} as const,
 
 		/* inTotal */
 		{
@@ -123,7 +123,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "lesson_completed",
 			requiredValue: 1,
 			meta: { group: "grade_lessons_total", grade: "VERY_GOOD", level: 1 }
-		},
+		} as const,
 		{
 			code: "GRADE_LESSONS_VERY_GOOD_TOTAL_5",
 			title: "A-Meister*in II",
@@ -133,7 +133,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "lesson_completed",
 			requiredValue: 5,
 			meta: { group: "grade_lessons_total", grade: "VERY_GOOD", level: 2 }
-		},
+		} as const,
 		{
 			code: "GRADE_LESSONS_VERY_GOOD_TOTAL_10",
 			title: "A-Meister*in III",
@@ -143,7 +143,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "lesson_completed",
 			requiredValue: 10,
 			meta: { group: "grade_lessons_total", grade: "VERY_GOOD", level: 3 }
-		},
+		} as const,
 		{
 			code: "GRADE_LESSONS_VERY_GOOD_TOTAL_20",
 			title: "A-Meister*in IV",
@@ -153,7 +153,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "lesson_completed",
 			requiredValue: 20,
 			meta: { group: "grade_lessons_total", grade: "VERY_GOOD", level: 4 }
-		},
+		} as const,
 
 		/* ───────────────────────────── 🧠 Good Lessons (Grade “B”) ───────────────────────────── */
 		/* inRow */
@@ -166,7 +166,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "lesson_completed",
 			requiredValue: 1,
 			meta: { group: "grade_lessons_serial", grade: "GOOD", level: 1 }
-		},
+		} as const,
 		{
 			code: "GRADE_LESSON_SERIAL_GOOD_5",
 			title: "Gute Lektion II",
@@ -176,7 +176,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "lesson_completed",
 			requiredValue: 5,
 			meta: { group: "grade_lessons_serial", grade: "GOOD", level: 2 }
-		},
+		} as const,
 		{
 			code: "GRADE_LESSON_SERIAL_GOOD_10",
 			title: "Gute Lektion III",
@@ -186,7 +186,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "lesson_completed",
 			requiredValue: 10,
 			meta: { group: "grade_lessons_serial", grade: "GOOD", level: 3 }
-		},
+		} as const,
 
 		/* inTotal */
 		{
@@ -198,7 +198,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "lesson_completed",
 			requiredValue: 1,
 			meta: { group: "grade_lessons_total", grade: "GOOD", level: 1 }
-		},
+		} as const,
 		{
 			code: "GRADE_LESSONS_GOOD_TOTAL_5",
 			title: "B-Meister*in II",
@@ -208,7 +208,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "lesson_completed",
 			requiredValue: 5,
 			meta: { group: "grade_lessons_total", grade: "GOOD", level: 2 }
-		},
+		} as const,
 		{
 			code: "GRADE_LESSONS_GOOD_TOTAL_10",
 			title: "B-Meister*in III",
@@ -218,7 +218,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "lesson_completed",
 			requiredValue: 10,
 			meta: { group: "grade_lessons_total", grade: "GOOD", level: 3 }
-		},
+		} as const,
 		/* ───────────────────────────── ⏳ Daily Login Streak ──────────────────────────── */
 		{
 			code: "ACTIVITY_STREAK_§",
@@ -229,7 +229,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "daily_login",
 			requiredValue: 3,
 			meta: { group: "daily_streak", level: 1 }
-		},
+		} as const,
 		{
 			code: "ACTIVITY_STREAK_7",
 			title: "Engagiert",
@@ -239,7 +239,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "daily_login",
 			requiredValue: 7,
 			meta: { group: "daily_streak", level: 2 }
-		},
+		} as const,
 		{
 			code: "ACTIVITY_STREAK_14",
 			title: "Beständig",
@@ -249,7 +249,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "daily_login",
 			requiredValue: 14,
 			meta: { group: "daily_streak", level: 3 }
-		},
+		} as const,
 		{
 			code: "ACTIVITY_STREAK_30",
 			title: "Diszipliniert",
@@ -259,7 +259,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "daily_login",
 			requiredValue: 30,
 			meta: { group: "daily_streak", level: 4 }
-		},
+		} as const,
 		{
 			code: "ACTIVITY_STREAK_90",
 			title: "Meister*in",
@@ -269,7 +269,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "daily_login",
 			requiredValue: 90,
 			meta: { group: "daily_streak", level: 5 }
-		},
+		} as const,
 
 		/* ─────────────────────────────── ⏳ Focus ─────────────────────────────── */
 		{
@@ -281,7 +281,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "lesson_completed",
 			requiredValue: 30,
 			meta: { group: "focus_time", level: 2 }
-		},
+		} as const,
 		{
 			code: "FOCUS_60",
 			title: "Fokussiert II",
@@ -291,7 +291,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "lesson_completed",
 			requiredValue: 60,
 			meta: { group: "focus_time", level: 3 }
-		},
+		} as const,
 		{
 			code: "FOCUS_1",
 			title: "Das erste mal gelernt.",
@@ -301,7 +301,7 @@ export async function seedAchievements(tx: Prisma.TransactionClient): Promise<vo
 			trigger: "lesson_completed",
 			requiredValue: 1,
 			meta: { group: "focus_time", level: 1 }
-		}
+		} as const
 	];
 
 	for (const achievement of achievements) {
@@ -342,15 +342,11 @@ export async function createNewProfile(
 	username: string,
 	tx: PrismaClient | Prisma.TransactionClient
 ) {
-	const newStreak = {
-		count: 1,
-		status: "active",
-		pausedUntil: null
-	};
+	const newStreak = { count: 1, status: "active", pausedUntil: null };
 
 	await tx.gamificationProfile.create({
 		data: {
-			User: { connect: { name: username } },
+			user: { connect: { name: username } },
 			username,
 			lastLogin: new Date(),
 			// energy: 2, // default handles by prisma
