@@ -16,6 +16,7 @@ import { TRPCClientError } from "@trpc/client";
 import { inferRouterOutputs } from "@trpc/server";
 import { useState } from "react";
 import { AddAuthorDialog, AuthorFromGetAllQuery } from "../author/add-author-dialog";
+import Link from "next/link";
 
 type AuthorSpecializationMap = {
 	[specializationId: string]: {
@@ -169,14 +170,14 @@ export function SpecializationPermissionsDialog({
 										src={author.imgUrl ?? undefined}
 										className="h-10 w-10 shrink-0 rounded-lg object-cover"
 									/>
-									<a
+									<Link
 										target="_blank"
 										rel="noreferrer"
 										href={`/authors/${author.slug}`}
 										className="whitespace-nowrap hover:text-secondary"
 									>
 										{author.displayName}
-									</a>
+									</Link>
 								</span>
 							</TableDataColumn>
 							{specializations.map(spec => (

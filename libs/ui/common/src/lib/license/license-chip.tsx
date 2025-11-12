@@ -5,6 +5,7 @@ import { useState } from "react";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { DialogWithReactNodeTitle } from "../dialog/dialog";
 import { MarkdownViewer } from "@self-learning/ui/forms";
+import { ScaleIcon } from "@heroicons/react/24/outline";
 
 export function LicenseChip({
 	name,
@@ -18,37 +19,41 @@ export function LicenseChip({
 	url?: string;
 }) {
 	const [openModal, setOpenModal] = useState(false);
-	const isSquare = !imgUrl;
-
-	// const defaultLogoUrl = "/assets/images/placeholder.svg";
-	// TODO receive default URL from minio/DB
 	const defaultLogoUrl = "";
+
+	const handleClick = (e: React.MouseEvent) => {
+		if (!url) {
+			e.preventDefault();
+			setOpenModal(true);
+		}
+	};
+
+	const iconBox = imgUrl ? (
+		<ImageOrPlaceholder
+			src={imgUrl ?? defaultLogoUrl}
+			className="h-8 w-8 rounded object-cover"
+		/>
+	) : (
+		<div className="flex h-8 w-8 items-center justify-center rounded bg-gray-100">
+			<ScaleIcon className="h-5 w-5 text-gray-500" aria-hidden="true" />
+		</div>
+	);
+
 	return (
-		<div>
+		<div className="inline-flex flex-col items-center gap-1 text-xs text-gray-500">
 			<Link
 				href={url || "#"}
-				onClick={e => {
-					if (!url) {
-						e.preventDefault();
-						setOpenModal(true);
-					}
-				}}
-				className={`flex items-center gap-4 rounded-lg border border-light-border bg-white
-						${isSquare ? "pr-4" : ""} text-sm`}
-				data-testid="author"
+				onClick={handleClick}
+				className="flex flex-col items-center hover:text-secondary"
 				style={url ? {} : { cursor: "pointer" }}
 			>
-				<ImageOrPlaceholder
-					src={imgUrl ?? defaultLogoUrl}
-					className={`h-10 ${isSquare ? "w-10" : "w-30"} rounded-l-lg object-cover`}
-				/>
-				{isSquare && <span className="font-medium hover:text-secondary">{name}</span>}
+				{iconBox}
+				<span className="mt-1 text-[11px] text-center">{name}</span>
 			</Link>
+
 			{openModal && (
 				<LicenseViewModal
-					onClose={() => {
-						setOpenModal(false);
-					}}
+					onClose={() => setOpenModal(false)}
 					description={description ?? "*Keine Beschreibung für diese Lizenz vorhanden*"}
 					name={name}
 					logoUrl={imgUrl ?? defaultLogoUrl}

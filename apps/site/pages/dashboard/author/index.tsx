@@ -1,10 +1,13 @@
 import { ArrowDownTrayIcon, PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { TeacherView } from "@self-learning/analysis";
-import { t, withAuth, withTranslations } from "@self-learning/api";
+import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { SkillRepositoryOverview } from "@self-learning/teaching";
+import { Specialization, Subject } from "@self-learning/types";
 import {
+	Dialog,
+	DialogActions,
 	Divider,
 	IconOnlyButton,
 	IconTextButton,
@@ -15,18 +18,16 @@ import {
 	SectionHeader,
 	Table,
 	TableDataColumn,
-	TableHeaderColumn,
-	Dialog,
-	DialogActions
+	TableHeaderColumn
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
+import { withAuth } from "@self-learning/util/auth";
 import { formatDateAgo } from "@self-learning/util/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { Specialization, Subject } from "@self-learning/types";
 import { LessonDeleteOption } from "@self-learning/ui/lesson";
 import { ExportCourseDialog } from "@self-learning/teaching";
 

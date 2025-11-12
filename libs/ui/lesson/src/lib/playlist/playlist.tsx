@@ -150,7 +150,7 @@ export function MobilePlayList({
 				</span>
 			</div>
 
-			<ProgressBar completionPercentage={completionPercentage} />
+			<ProgressBar progressPercentage={completionPercentage} />
 			<div className="flex flex-col gap-3 xl:gap-12 py-4" onClick={onSelect}>
 				{contentWithCompletion.map((chapter, index) => (
 					<Chapter
@@ -298,7 +298,10 @@ function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) 
 				</span>
 			</div>
 
-			<ProgressBar completionPercentage={completionPercentage} />
+			<ProgressBar
+				text={`${completionPercentage}%`}
+				progressPercentage={completionPercentage}
+			/>
 
 			<Divider />
 

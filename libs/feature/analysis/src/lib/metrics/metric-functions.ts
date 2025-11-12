@@ -1,10 +1,10 @@
-import { UserEvent } from "@self-learning/database";
-import { EventTypeKeys, EventType } from "@self-learning/types";
+import { EventTypeKeys, EventTypeMap } from "@self-learning/types";
+import { UserEvent } from "./types";
 
 export function isEventType<K extends EventTypeKeys>(
 	event: UserEvent,
 	type: K
-): event is UserEvent & { payload: EventType[K] } {
+): event is UserEvent & { payload: EventTypeMap[K] } {
 	return event.type === type;
 }
 
@@ -21,7 +21,7 @@ export function isEventType<K extends EventTypeKeys>(
  */
 export function hintsUsed(
 	accumulator: number,
-	event: UserEvent & { payload: EventType["LESSON_QUIZ_SUBMISSION"] }
+	event: UserEvent & { payload: EventTypeMap["LESSON_QUIZ_SUBMISSION"] }
 ) {
 	return accumulator + event.payload.hintsUsed.length;
 }
@@ -40,7 +40,7 @@ export function hintsUsed(
  */
 export function quizAttempts(
 	accumulator: { successful: number; failed: number },
-	event: UserEvent & { payload: EventType["LESSON_QUIZ_SUBMISSION"] }
+	event: UserEvent & { payload: EventTypeMap["LESSON_QUIZ_SUBMISSION"] }
 ): { successful: number; failed: number } {
 	// Values of the event
 	const attempts = event.payload.attempts;

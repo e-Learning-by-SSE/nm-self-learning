@@ -14,7 +14,8 @@ import {
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
 import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
 import { formatDateAgo } from "@self-learning/util/common";
-import { withAuth, withTranslations } from "@self-learning/api";
+import { withTranslations } from "@self-learning/api";
+import { withAuth } from "@self-learning/util/auth";
 
 interface CourseOverviewProps {
 	enrollments: EnrollmentDetails[] | null;
@@ -292,12 +293,13 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 						</TableDataColumn>
 						<TableDataColumn key={"author"}>
 							<span className="text-sm text-gray-600">
-								{enrollment.course.authors[0].displayName}
+								{enrollment.course.authors[0]?.displayName ?? "Unbekannter Autor"}
 							</span>
 						</TableDataColumn>
 						<TableDataColumn key={"progress"}>
 							<ProgressBar
-								completionPercentage={
+								text={`${enrollment.completions.courseCompletion.completionPercentage}%`}
+								progressPercentage={
 									enrollment.completions.courseCompletion.completionPercentage
 								}
 							/>
