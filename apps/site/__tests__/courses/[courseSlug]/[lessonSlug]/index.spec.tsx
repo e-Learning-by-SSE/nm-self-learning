@@ -18,7 +18,8 @@ jest.mock("next-auth", () => ({
 jest.mock("@self-learning/database", () => ({
 	database: {
 		course: { findUnique: jest.fn() },
-		lesson: { findUnique: jest.fn() }
+		lesson: { findUnique: jest.fn() },
+		completedLesson: { findMany: jest.fn() }
 	}
 }));
 
@@ -54,6 +55,7 @@ describe("getServerSideProps", () => {
 			// Mock the database response
 			(database.course.findUnique as jest.Mock).mockResolvedValue(courseMock);
 			(database.lesson.findUnique as jest.Mock).mockResolvedValue(lessonMock);
+			(database.completedLesson.findMany as jest.Mock).mockResolvedValue([]);
 			(compileMarkdown as jest.Mock).mockResolvedValue("");
 			global.encodeURIComponent = jest.fn().mockReturnValue("loginPage");
 		});
@@ -66,7 +68,7 @@ describe("getServerSideProps", () => {
 			const result = await getServerSideProps(mockCtx);
 			expect(result).toEqual({
 				redirect: {
-					destination: `/api/auth/signin?callbackUrl=${redirectPage}`,
+					destination: `/login?callbackUrl=${redirectPage}`,
 					permanent: false
 				}
 			});
