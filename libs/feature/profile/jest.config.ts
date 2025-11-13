@@ -1,6 +1,6 @@
 /* eslint-disable */
 export default {
-	displayName: 'feature-profile',
+	displayName: "feature-profile",
 	preset: "../../../jest.preset.js",
-	coverageDirectory: "../../../coverage/libs/feature/profile'
+	coverageDirectory: "../../../coverage/libs/feature/profile"
 };

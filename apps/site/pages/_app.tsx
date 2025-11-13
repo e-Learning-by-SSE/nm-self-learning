@@ -5,14 +5,16 @@ import { loggerLink } from "@trpc/client/links/loggerLink";
 import { withTRPC } from "@trpc/next";
 import "katex/dist/katex.css";
 import { SessionProvider } from "next-auth/react";
+import { appWithTranslation } from "next-i18next";
+import nextI18NextConfig from "../next-i18next.config";
 import PlausibleProvider from "next-plausible";
 import { AppProps } from "next/app";
 import Head from "next/head";
+import Script from "next/script";
+import { PropsWithChildren } from "react";
 import superjson from "superjson";
-import { GlobalFeatures } from "../../_features";
+import { GlobalFeatures } from "../_features";
 import "./styles.css";
-import { appWithTranslation } from "next-i18next";
-import nextI18NextConfig from "../next-i18next.config";
 
 export default withTRPC<AppRouter>({
 	transformer: superjson,
@@ -53,7 +55,10 @@ function CustomApp({ Component, pageProps }: AppProps) {
 	return (
 		<>
 			{process.env.NODE_ENV === "development" && (
-				<script src="https://unpkg.com/react-scan/dist/auto.global.js" async />
+				<Script
+					src="https://unpkg.com/react-scan/dist/auto.global.js"
+					strategy="lazyOnload"
+				/>
 			)}
 			<PlausibleProvider
 				domain={process.env.NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN ?? ""}
@@ -90,13 +95,31 @@ function CustomApp({ Component, pageProps }: AppProps) {
 						<link rel="manifest" href={basePath + "/api/manifest"} />
 					</Head>
 					<GlobalFeatures />
-					<Navbar />
-					<main className="grid grow">
-						{Layout ? <>{Layout}</> : <Component {...pageProps} />}
-					</main>
-					<Footer />
+					<RootLayout>
+						{Layout ? (
+							// Layouts can define their own main-area and sidebars
+							<>{Layout}</>
+						) : (
+							<main className="grid grow">
+								<Component {...pageProps} />{" "}
+							</main>
+						)}
+					</RootLayout>
 				</SessionProvider>
 			</PlausibleProvider>
+		</>
+	);
+}
+
+function RootLayout({ children }: PropsWithChildren<unknown>) {
+	return (
+		<>
+			<Head>
+				<title>Self-Learning</title>
+			</Head>
+			<Navbar />
+			<div className="flex-1">{children}</div>
+			<Footer />
 		</>
 	);
 }

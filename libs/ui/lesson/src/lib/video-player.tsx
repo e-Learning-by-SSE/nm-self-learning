@@ -1,7 +1,7 @@
 "use client";
 
 import { EventLog, EventTypeKeys } from "@self-learning/types";
-import { useEventLog } from "@self-learning/util/common";
+import { useEventLog } from "@self-learning/util/eventlog";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactPlayer from "react-player";
 

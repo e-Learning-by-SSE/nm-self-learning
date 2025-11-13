@@ -27,8 +27,11 @@ describe("REST API of Course Router", () => {
 		role: "ADMIN",
 		isAuthor: true,
 		avatarUrl: null,
-		enabledFeatureLearningDiary: false,
-		enabledLearningStatistics: false
+		featureFlags: {
+			experimental: false,
+			learningDiary: false,
+			learningStatistics: false
+		}
 	};
 
 	describe("[GET]: /courses", () => {

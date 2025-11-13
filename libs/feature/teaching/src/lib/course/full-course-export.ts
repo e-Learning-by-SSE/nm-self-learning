@@ -51,6 +51,7 @@ export async function getFullCourseExport(slug: string) {
 		chapter.content.map(lesson => lesson.lessonId)
 	);
 	const lessons: LessonData[] = await getLessons(lessonIds);
+	// Todo add lesson data to above query to improve performance and reduce dependencies to lesson-data-access which was not designed for this purpose
 
 	return { course: course, lessons: lessons } as const;
 }
