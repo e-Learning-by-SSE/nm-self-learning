@@ -1,5 +1,7 @@
 import NextAuth from "next-auth";
 import { DefaultSession } from "next-auth";
+import { UserRole } from "@prisma/client";
+import "hast";
 
 declare global {
 	declare namespace NodeJS {
@@ -50,4 +52,42 @@ declare module "next-auth" {
 			};
 		};
 	}
+}
+
+// Augment HAST types
+// Used in markdown/invalid-language-filter.ts
+declare module "hast" {
+	interface Properties {
+		className?: string | string[];
+		alt?: string;
+	}
+}
+
+// declare module "*.svg" {
+// 	import * as React from "react";
+
+// 	export const ReactComponent: React.FunctionComponent<
+// 		React.SVGProps<SVGSVGElement> & { title?: string }
+// 	>;
+
+// 	// export default ReactComponent;
+// 	const src: string;
+// 	export default src;
+// }
+
+// /* eslint-disable @typescript-eslint/no-explicit-any */
+// declare module "*.svg" {
+// 	const content: any;
+// 	export const ReactComponent: any;
+// 	export default content;
+// }
+declare module "*.svg" {
+	import * as React from "react";
+
+	// Default export is a React component:
+	//   import Icon from "./icon.svg";
+	//   <Icon />
+	const SvgComponent: React.FunctionComponent<React.SVGProps<SVGSVGElement> & { title?: string }>;
+
+	export default SvgComponent;
 }

@@ -229,8 +229,11 @@ describe("REST API of Course Router", () => {
 			role: "USER",
 			isAuthor: true,
 			avatarUrl: null,
-			enabledFeatureLearningDiary: false,
-			enabledLearningStatistics: false
+			featureFlags: {
+				experimental: false,
+				learningDiary: false,
+				learningStatistics: false
+			}
 		};
 
 		const courseAuthor2: UserFromSession = {
@@ -239,8 +242,11 @@ describe("REST API of Course Router", () => {
 			role: "USER",
 			isAuthor: true,
 			avatarUrl: null,
-			enabledFeatureLearningDiary: false,
-			enabledLearningStatistics: false
+			featureFlags: {
+				experimental: false,
+				learningDiary: false,
+				learningStatistics: false
+			}
 		};
 
 		const nonAuthor: UserFromSession = {
@@ -249,8 +255,11 @@ describe("REST API of Course Router", () => {
 			role: "USER",
 			isAuthor: true,
 			avatarUrl: null,
-			enabledFeatureLearningDiary: false,
-			enabledLearningStatistics: false
+			featureFlags: {
+				experimental: false,
+				learningDiary: false,
+				learningStatistics: false
+			}
 		};
 
 		const adminNonAuthor: UserFromSession = {
@@ -259,8 +268,11 @@ describe("REST API of Course Router", () => {
 			role: "ADMIN",
 			isAuthor: true,
 			avatarUrl: null,
-			enabledFeatureLearningDiary: false,
-			enabledLearningStatistics: false
+			featureFlags: {
+				experimental: false,
+				learningDiary: false,
+				learningStatistics: false
+			}
 		};
 
 		beforeEach(() => {
