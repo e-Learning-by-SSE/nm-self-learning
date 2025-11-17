@@ -201,6 +201,8 @@ function getUserWithHighestLearnedTime(submissions: Submission[]) {
 		if (!userLessonMap.has(sub.username)) {
 			userLessonMap.set(sub.username, new Map());
 		}
+		// TODO Marcel fix, added non-null exception. Please revise code
+		// eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
 		const lessonMap = userLessonMap.get(sub.username)!;
 		const existing = lessonMap.get(sub.payload.lessonAttemptId);
 
