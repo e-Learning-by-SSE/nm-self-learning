@@ -425,7 +425,7 @@ function ProfilLayout(
 	pageProps: Props
 ) {
 	return (
-		<CenteredSection className="bg-gray-50">
+		<CenteredSection>
 			<Component {...pageProps} />
 		</CenteredSection>
 		// <DashboardSidebarLayout>

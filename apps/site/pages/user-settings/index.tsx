@@ -160,7 +160,7 @@ export default function SettingsPage(props: PageProps) {
 	};
 
 	return (
-		<CenteredSection className="bg-gray-50">
+		<CenteredSection>
 			<h1 className="text-2xl font-bold">{t_common("Settings")}</h1>
 
 			{hasSettingsChanged ? (

@@ -104,7 +104,7 @@ export function LessonEditor({
 			<form
 				id="lessonform"
 				onSubmit={form.handleSubmit(onSubmit, console.log)}
-				className="w-full bg-gray-100"
+				className="w-full"
 			>
 				<div className="flex flex-col px-4 max-w-screen-xl mx-auto">
 					<div className="flex justify-between mb-8">

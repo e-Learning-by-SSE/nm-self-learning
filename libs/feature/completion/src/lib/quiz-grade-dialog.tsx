@@ -261,7 +261,7 @@ function GradeAchievementSection({
 	if (achievements.size === 0) return null;
 
 	return (
-		<div className="bg-gray-50 p-4 rounded-lg">
+		<div className="p-4 rounded-lg">
 			<h3 className="font-bold text-lg mb-4 flex items-center">
 				<TrophyIcon className="w-5 h-5 mr-2 text-yellow-500" />
 				{title}

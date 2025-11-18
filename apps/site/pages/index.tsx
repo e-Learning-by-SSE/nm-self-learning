@@ -6,7 +6,7 @@ export const getServerSideProps = withTranslations(["common"]);
 
 export function LandingPage() {
 	return (
-		<div className="flex h-full flex-col gap-16 px-4 bg-gray-50">
+		<div className="flex h-full flex-col gap-16 px-4">
 			<div className="relative z-10 mx-auto grid max-w-screen-2xl items-start gap-8 py-8 lg:py-32 xl:grid-cols-2">
 				<div className="flex flex-col">
 					<h1 className="whitespace-nowrap text-4xl sm:text-6xl lg:text-9xl">

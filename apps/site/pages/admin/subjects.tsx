@@ -13,7 +13,7 @@ export default function SubjectsPage() {
 
 	return (
 		<AdminGuard>
-			<CenteredSection className="bg-gray-50">
+			<CenteredSection>
 				<div className="mb-16 flex items-center justify-between gap-4">
 					<h1 className="text-5xl">{t_common("Topic_other")}</h1>
 

@@ -193,8 +193,8 @@ async function getCourse(courseSlug: string) {
 
 export default function Course({ course, summary, content, markdownDescription }: CourseProps) {
 	return (
-		<div className="bg-gray-50 pb-32">
-			<CenteredSection className="bg-gray-50">
+		<div className="pb-32">
+			<CenteredSection>
 				<CourseHeader course={course} content={content} summary={summary} />
 			</CenteredSection>
 
@@ -206,7 +206,7 @@ export default function Course({ course, summary, content, markdownDescription }
 				</section>
 			)}
 
-			<CenteredSection className="bg-gray-50">
+			<CenteredSection>
 				<TableOfContents content={content} course={course} />
 			</CenteredSection>
 		</div>

@@ -45,19 +45,17 @@ export default function SpecializationPage() {
 	};
 
 	return (
-		<div className="bg-gray-50">
-			<SpecializationEditor
-				onSubmit={onSubmit}
-				initialSpecialization={{
-					specializationId: "",
-					title: "",
-					slug: "",
-					subtitle: "",
-					cardImgUrl: null,
-					imgUrlBanner: null
-				}}
-			/>
-		</div>
+		<SpecializationEditor
+			onSubmit={onSubmit}
+			initialSpecialization={{
+				specializationId: "",
+				title: "",
+				slug: "",
+				subtitle: "",
+				cardImgUrl: null,
+				imgUrlBanner: null
+			}}
+		/>
 	);
 }
 

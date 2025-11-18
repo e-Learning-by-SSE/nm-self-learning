@@ -283,7 +283,7 @@ function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) 
 	const completionPercentage = courseCompletion?.completionPercentage ?? 0;
 
 	return (
-		<div className="sticky top-0 z-20 flex flex-col gap-4 p-3 xl:p-0 rounded-lg bg-gray-50 pt-8">
+		<div className="sticky top-0 z-20 flex flex-col gap-4 p-3 xl:p-0 rounded-lg pt-8">
 			<div className="flex flex-col gap-2">
 				<Link
 					href={`/courses/${course.slug}`}

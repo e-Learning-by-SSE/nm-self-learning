@@ -171,7 +171,6 @@ export function QuizEditor() {
 								as="div"
 								value={value}
 								key={value.id}
-								className="bg-gray-50"
 							>
 								<RemovableTab key={value.id} onRemove={() => removeQuestion(index)}>
 									<div className="flex flex-col">

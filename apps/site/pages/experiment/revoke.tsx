@@ -63,7 +63,7 @@ export default function ExperimentRevokePage({ hasConsented, consentDate }: Expe
 
 	if (!hasConsented) {
 		return (
-			<CenteredSection className="bg-gray-50">
+			<CenteredSection>
 				<div className="mx-auto max-w-4xl">
 					<NoConsentFound />
 				</div>
@@ -72,7 +72,7 @@ export default function ExperimentRevokePage({ hasConsented, consentDate }: Expe
 	}
 
 	return (
-		<CenteredSection className="bg-gray-50">
+		<CenteredSection>
 			<div className="mx-auto max-w-4xl">
 				<div className="rounded-lg bg-white p-8 shadow-md">
 					<div className="mb-8">

@@ -34,7 +34,6 @@ export function CourseEditor({
 	}
 
 	return (
-		<div className="bg-gray-50">
 			<FormProvider {...form}>
 				<form
 					id="courseform"
@@ -93,7 +92,6 @@ export function CourseEditor({
 					</div>
 				</form>
 			</FormProvider>
-		</div>
 	);
 }
 

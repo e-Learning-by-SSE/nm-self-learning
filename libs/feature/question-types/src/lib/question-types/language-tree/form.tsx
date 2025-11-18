@@ -62,7 +62,7 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 	return (
 		<section>
 			<div className="p-4">
-				<div className="flex flex-col bg-gray-50 p-4 mb-5 rounded-lg">
+				<div className="flex flex-col p-4 mb-5 rounded-lg">
 					<span className="text-lg font-medium mb-3">Einstellungen</span>
 					<div className="flex flex-row">
 						<Toggle
@@ -89,7 +89,7 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 					</div>
 				</div>
 
-				<div className="flex flex-col bg-gray-50 p-4 mb-5 rounded-lg">
+				<div className="flex flex-col p-4 mb-5 rounded-lg">
 					<div className="flex items-center gap-4 py-6">
 						<h5 className="text-xl font-semibold">Anfängliche Baumstruktur</h5>
 						<IconOnlyButton
@@ -122,7 +122,7 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 						)}
 					</div>
 				</div>
-				<div className="flex flex-col bg-gray-50 p-4 mb-5 rounded-lg">
+				<div className="flex flex-col p-4 mb-5 rounded-lg">
 					<div className="flex items-center gap-4 py-6">
 						<h5 className="text-xl font-semibold">Antworten</h5>
 						<IconOnlyButton icon={<PlusIcon className="h-5 w-5"/>} variant = "primary" onClick={addAnswerTree} title={"Antwort Hinzufügen"} />

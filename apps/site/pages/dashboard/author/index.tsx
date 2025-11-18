@@ -123,7 +123,7 @@ function AuthorDashboardPage({ author }: Props) {
 	const [viewExportDialog, setViewExportDialog] = useState(false);
 
 	return (
-		<div className="bg-gray-50">
+		<div>
 			<CenteredSection>
 				<div className="flex flex-col gap-10">
 					{author.subjectAdmin.length > 0 && (

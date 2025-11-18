@@ -115,16 +115,16 @@ export default function SpecializationManagementPage() {
 		return (
 			<Unauthorized>
 				<ul className="list-inside list-disc">
-					<li>Admininstratoren</li>
-					<li>Admininstratoren für Fachbereich ({router.query.subjectId})</li>
-					<li>Admininstratoren für Spezialisierung ({router.query.specializationId})</li>
+					<li>Administratoren</li>
+					<li>Administratoren für Fachbereich ({router.query.subjectId})</li>
+					<li>Administratoren für Spezialisierung ({router.query.specializationId})</li>
 				</ul>
 			</Unauthorized>
 		);
 	}
 
 	return (
-		<div className="flex flex-col gap-8 bg-gray-50 pb-32">
+		<div className="flex flex-col gap-8 pb-32">
 			<TopicHeader
 				imgUrlBanner={specialization.imgUrlBanner}
 				parentLink="/subjects"

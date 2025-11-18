@@ -71,7 +71,7 @@ function getAuthor(slug: string | undefined) {
 export default function AuthorPage({ author, aboutMeMarkdown }: AuthorPageProps) {
 	return (
 		<div className="min-h-screen">
-			<CenteredSection className="bg-gray-50">
+			<CenteredSection>
 				<AuthorHeader author={author} />
 			</CenteredSection>
 

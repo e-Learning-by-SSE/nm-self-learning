@@ -33,7 +33,7 @@ export default function LessonManagementPage() {
 	}
 
 	return (
-		<CenteredSection className="bg-gray-50">
+		<CenteredSection>
 			<div className="mb-16 flex items-center justify-between gap-4 ">
 				<h1 className="text-5xl">Lerneinheiten</h1>
 
