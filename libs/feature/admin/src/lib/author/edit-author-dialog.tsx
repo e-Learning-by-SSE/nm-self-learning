@@ -35,12 +35,7 @@ export function EditAuthorDialog({
 								displayName: user.author.displayName,
 								imgUrl: user.author.imgUrl,
 								slug: user.author.slug,
-								subjectAdmin: user.author.subjectAdmin.map(s => ({
-									subjectId: s.subject.subjectId
-								})),
-								specializationAdmin: user.author.specializationAdmin.map(s => ({
-									specializationId: s.specialization.specializationId
-								}))
+								memberships: [] // TODO user.memberships
 							}}
 						/>
 					)}
@@ -62,11 +57,7 @@ function AuthorForm({
 	onClose: OnDialogCloseFn<Author>;
 }) {
 	const { mutateAsync: updateAuthor } = trpc.author.updateAsAdmin.useMutation();
-	const form = useForm({
-		resolver: zodResolver(authorSchema),
-		defaultValues: initialAuthor
-	});
-
+	const form = useForm({ resolver: zodResolver(authorSchema), defaultValues: initialAuthor });
 	function onSubmit(author: Author) {
 		console.log("Saving author...", author);
 
@@ -101,7 +92,7 @@ function AuthorForm({
 
 				<div className="grid gap-8 overflow-y-auto xl:grid-cols-[400px_600px] xl:overflow-y-auto">
 					<AuthorData />
-					<Permissions />
+					{/* TODO turn into a form */}
 				</div>
 
 				<div className="absolute bottom-10 right-10 xl:right-14">
@@ -161,126 +152,6 @@ function AuthorData() {
 					</div>
 				</LabeledField>
 			</div>
-		</section>
-	);
-}
-
-function Permissions() {
-	const { data: subjects } = trpc.subject.getAllWithSpecializations.useQuery();
-	const { control, setValue } = useFormContext<Author>();
-	const subjectAdmin = useWatch({ control: control, name: "subjectAdmin" });
-	const specializationAdmin = useWatch({ control: control, name: "specializationAdmin" });
-
-	return (
-		<section className="flex flex-col gap-8">
-			<section className="flex h-full flex-col gap-4 rounded-lg border border-light-border p-4">
-				<h2 className="text-2xl">Rechte</h2>
-				<p className="text-sm text-light">TODO: Beschreibung der Rechte</p>
-				<div className="flex gap-4">
-					{!subjects ? (
-						<LoadingBox />
-					) : (
-						<ul className="flex flex-col gap-2">
-							{subjects.map(subject => (
-								<li key={subject.subjectId}>
-									<div className="flex flex-col">
-										<span className="flex items-center gap-2">
-											<input
-												id={subject.subjectId}
-												type={"checkbox"}
-												className="checkbox"
-												checked={
-													!!subjectAdmin.find(
-														s => s.subjectId === subject.subjectId
-													)
-												}
-												onChange={e => {
-													if (e.target.checked) {
-														setValue(
-															"subjectAdmin",
-															[...subjectAdmin, subject].sort(
-																(a, b) =>
-																	a.subjectId.localeCompare(
-																		b.subjectId
-																	)
-															)
-														);
-													} else {
-														setValue(
-															"subjectAdmin",
-															subjectAdmin.filter(
-																s =>
-																	s.subjectId !==
-																	subject.subjectId
-															)
-														);
-													}
-												}}
-											/>
-											<label
-												htmlFor={subject.subjectId}
-												className="text-sm font-semibold"
-											>
-												{subject.title}
-											</label>
-										</span>
-										<ul className="py-2 pl-8 text-sm">
-											{subject.specializations.map(specialization => (
-												<li
-													key={specialization.specializationId}
-													className="flex items-center gap-2"
-												>
-													<input
-														type="checkbox"
-														id={specialization.specializationId}
-														className="checkbox"
-														checked={
-															!!specializationAdmin.find(
-																s =>
-																	s.specializationId ===
-																	specialization.specializationId
-															)
-														}
-														onChange={e => {
-															if (e.target.checked) {
-																setValue(
-																	"specializationAdmin",
-																	[
-																		...specializationAdmin,
-																		specialization
-																	].sort((a, b) =>
-																		a.specializationId.localeCompare(
-																			b.specializationId
-																		)
-																	)
-																);
-															} else {
-																setValue(
-																	"specializationAdmin",
-																	specializationAdmin.filter(
-																		s =>
-																			s.specializationId !==
-																			specialization.specializationId
-																	)
-																);
-															}
-														}}
-													/>
-													<label
-														htmlFor={specialization.specializationId}
-													>
-														{specialization.title}
-													</label>
-												</li>
-											))}
-										</ul>
-									</div>
-								</li>
-							))}
-						</ul>
-					)}
-				</div>
-			</section>
 		</section>
 	);
 }

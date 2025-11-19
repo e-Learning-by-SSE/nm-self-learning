@@ -20,7 +20,7 @@ export default function AuthorsPage() {
 	useRequiredSession();
 
 	const [displayName, setDisplayName] = useState("");
-	const { data: users, isLoading } = trpc.author.getAllWithSubject.useQuery();
+	const { data: users, isLoading } = trpc.author.getAllWithGroups.useQuery();
 	const [editTarget, setEditTarget] = useState<string | null>(null);
 	const [createAuthorDialog, setCreateAuthorDialog] = useState(false);
 	const { mutateAsync: promoteToAuthor } = trpc.admin.promoteToAuthor.useMutation();
@@ -96,13 +96,13 @@ export default function AuthorsPage() {
 							</>
 						}
 					>
-						{filteredAuthors.map(({ author, name }) => (
-							<Fragment key={name}>
-								{author && (
-									<tr key={name}>
+						{filteredAuthors.map(user => (
+							<Fragment key={user.name}>
+								{user.author && (
+									<tr key={user.name}>
 										<TableDataColumn>
 											<ImageOrPlaceholder
-												src={author?.imgUrl ?? undefined}
+												src={user.author?.imgUrl ?? undefined}
 												className="m-0 h-10 w-10 rounded-lg object-cover"
 											/>
 										</TableDataColumn>
@@ -110,17 +110,17 @@ export default function AuthorsPage() {
 											<div className="flex flex-wrap gap-4">
 												<Link
 													className="text-sm font-medium hover:text-secondary"
-													href={`/authors/${author.slug}`}
+													href={`/authors/${user.author.slug}`}
 												>
-													{author.displayName}
+													{user.author.displayName}
 												</Link>
 												<span className="flex gap-2 text-xs">
-													{author.subjectAdmin.map(({ subject }) => (
+													{user.memberships.map(({ role, group }) => (
 														<span
-															key={subject.title}
+															key={group.name}
 															className="rounded-full bg-secondary px-3 py-[2px] text-white"
 														>
-															Admin: {subject.title}
+															{group.name} - {role}
 														</span>
 													))}
 												</span>
@@ -130,7 +130,7 @@ export default function AuthorsPage() {
 											<div className="flex flex-wrap justify-end gap-4">
 												<button
 													className="btn-stroked"
-													onClick={() => onEdit(name)}
+													onClick={() => onEdit(user.name)}
 												>
 													Bearbeiten
 												</button>

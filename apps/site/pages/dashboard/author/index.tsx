@@ -1,6 +1,6 @@
 import { ArrowDownTrayIcon, PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { TeacherView } from "@self-learning/analysis";
-import { t, withAuth, withTranslations } from "@self-learning/api";
+import { withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { SkillRepositoryOverview } from "@self-learning/teaching";
@@ -31,10 +31,9 @@ import { ExportCourseDialog } from "@self-learning/teaching";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
 
-type Props = {
-	author: Author;
-};
+type Props = { author: Author };
 
+// TODO MOVE OUT
 export function getAuthor(username: string) {
 	return database.author.findUniqueOrThrow({
 		where: { username },
@@ -42,36 +41,6 @@ export function getAuthor(username: string) {
 			slug: true,
 			displayName: true,
 			imgUrl: true,
-			subjectAdmin: {
-				orderBy: { subject: { title: "asc" } },
-				select: {
-					subject: {
-						select: {
-							subjectId: true,
-							title: true,
-							cardImgUrl: true
-						}
-					}
-				}
-			},
-			specializationAdmin: {
-				orderBy: { specialization: { title: "asc" } },
-				select: {
-					specialization: {
-						select: {
-							specializationId: true,
-							title: true,
-							cardImgUrl: true,
-							subject: {
-								select: {
-									subjectId: true,
-									title: true
-								}
-							}
-						}
-					}
-				}
-			},
 			courses: {
 				orderBy: { title: "asc" },
 				select: {
@@ -79,9 +48,26 @@ export function getAuthor(username: string) {
 					slug: true,
 					title: true,
 					imgUrl: true,
-					specializations: {
+					specializations: { select: { title: true } }
+				}
+			},
+			user: {
+				select: {
+					memberships: {
 						select: {
-							title: true
+							role: true,
+							group: {
+								select: {
+									name: true,
+									permissions: {
+										select: {
+											accessLevel: true,
+											course: { select: { courseId: true, title: true } },
+											lesson: { select: { lessonId: true, title: true } }
+										}
+									}
+								}
+							}
 						}
 					}
 				}
@@ -94,19 +80,10 @@ export const getServerSideProps = withTranslations(
 	["common"],
 	withAuth<Props>(async (context, user) => {
 		if (user.isAuthor) {
-			return {
-				props: {
-					author: await getAuthor(user.name)
-				}
-			};
+			return { props: { author: await getAuthor(user.name) } };
 		}
 
-		return {
-			redirect: {
-				destination: "/",
-				permanent: false
-			}
-		};
+		return { redirect: { destination: "/", permanent: false } };
 	})
 );
 
@@ -119,67 +96,69 @@ function AuthorDashboardPage({ author }: Props) {
 	const authorName = session.data?.user.name;
 
 	const [viewExportDialog, setViewExportDialog] = useState(false);
-
+	const memberships = author.user.memberships;
 	return (
 		<div className="bg-gray-50">
 			<CenteredSection>
 				<div className="flex flex-col gap-10">
-					{author.subjectAdmin.length > 0 && (
-						<>
-							<section>
-								<SectionHeader
-									title="Fachgebiete"
-									subtitle="Administrator der folgenden Fachgebiete:"
-								/>
-
-								<ul className="flex flex-wrap gap-4">
-									{author.subjectAdmin.map(({ subject }) => (
-										<ImageChip
-											key={subject.subjectId}
-											imgUrl={subject.cardImgUrl}
-										>
-											<Link
-												href={`/teaching/subjects/${subject.subjectId}`}
-												className="font-medium hover:text-secondary"
-											>
-												{subject.title}
-											</Link>
-										</ImageChip>
-									))}
-								</ul>
-							</section>
-						</>
+					{memberships.length === 0 && (
+						<div className="mx-auto flex items-center gap-8">
+							<div className="h-32 w-32">
+								<VoidSvg />
+							</div>
+							<p className="text-light">Sie sind Mitglied keiner Gruppe.</p>
+						</div>
 					)}
-
-					{author.specializationAdmin.length > 0 && (
-						<>
-							<Divider />
-							<section>
+					{memberships.length > 0 &&
+						memberships.map(membership => (
+							<section key={membership.group.name}>
 								<SectionHeader
-									title="Spezialisierungen"
-									subtitle="Administrator der folgenden Spezialisierungen:"
+									title={membership.group.name}
+									subtitle={`Role: ${membership.role}`}
 								/>
+								{membership.group.permissions.length > 0 ? (
+									<ul className="flex flex-col gap-3">
+										{membership.group.permissions.map((perm, i) => {
+											const resource = perm.course ?? perm.lesson ?? null;
+											if (!resource) return null;
 
-								<ul className="flex flex-wrap gap-4">
-									{author.specializationAdmin.map(({ specialization }) => (
-										<ImageChip
-											key={specialization.specializationId}
-											imgUrl={specialization.cardImgUrl}
-										>
-											<Link
-												href={`/teaching/subjects/${specialization.subject.subjectId}/${specialization.specializationId}`}
-												className="font-medium hover:text-secondary"
-											>
-												{specialization.title}
-											</Link>
-										</ImageChip>
-									))}
-								</ul>
+											const resourceType = perm.course ? "Course" : "Lesson";
+											const resourceUrl =
+												resourceType === "Course"
+													? `/teaching/courses/${perm.course!.courseId}`
+													: `/teaching/lessons/${perm.lesson!.lessonId}`;
+
+											return (
+												<li
+													key={i}
+													className="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-100 py-2"
+												>
+													<div>
+														<Link
+															href={resourceUrl}
+															className="font-medium text-primary hover:underline"
+														>
+															{resource.title}
+														</Link>
+														<p className="text-xs text-gray-500">
+															{resourceType}
+														</p>
+													</div>
+													<p className="text-sm font-semibold text-gray-700">
+														Access: {perm.accessLevel}
+													</p>
+												</li>
+											);
+										})}
+									</ul>
+								) : (
+									<p className="text-gray-400 text-sm">
+										No permissions assigned in this group.
+									</p>
+								)}
+								<Divider />
 							</section>
-						</>
-					)}
-
-					<Divider />
+						))}
 
 					<section>
 						<div className="flex justify-between gap-4">
@@ -271,7 +250,7 @@ function AuthorDashboardPage({ author }: Props) {
 						<div className="flex justify-between gap-4">
 							<SectionHeader
 								title="Meine Lerneinheiten"
-								subtitle="Autor der folgenden Lerneinheiten:"
+								subtitle="Berechtigungen in den folgenden Lerneinheiten:"
 							/>
 
 							<Link href="/teaching/lessons/create">
@@ -446,15 +425,8 @@ function Lessons({ authorName }: { authorName: string }) {
 	const { title = "", page = 1 } = router.query;
 
 	const { data: lessons } = trpc.lesson.findMany.useQuery(
-		{
-			page: Number(page),
-			title: title as string,
-			authorName
-		},
-		{
-			keepPreviousData: true,
-			staleTime: 10_000
-		}
+		{ page: Number(page), title: title as string, authorName },
+		{ keepPreviousData: true, staleTime: 10_000 }
 	);
 
 	return (
@@ -467,16 +439,9 @@ function Lessons({ authorName }: { authorName: string }) {
 						placeholder="Suche nach Lerneinheiten"
 						value={title}
 						onChange={e => {
-							router.push(
-								{
-									query: {
-										title: e.target.value,
-										page: 1
-									}
-								},
-								undefined,
-								{ shallow: true }
-							);
+							router.push({ query: { title: e.target.value, page: 1 } }, undefined, {
+								shallow: true
+							});
 						}}
 					/>
 

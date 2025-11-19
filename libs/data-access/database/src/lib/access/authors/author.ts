@@ -1,37 +1,22 @@
 import { database } from "@self-learning/database";
 import { ResolvedValue } from "@self-learning/types";
 
-export async function getCoursesAndSubjects(username: string) {
-	return await database.author.findUnique({
-		where: { username },
+// TODO move to database access layer
+export async function getCoursesAndSubjects(name: string) {
+	return await database.user.findUnique({
+		where: { name },
 		select: {
-			subjectAdmin: {
+			memberships: {
 				select: {
-					subject: {
+					group: {
 						select: {
-							title: true,
-							slug: true,
-							courses: {
+							name: true,
+							permissions: {
+								where: { courseId: { not: null }, accessLevel: "FULL" },
 								select: {
-									title: true,
-									slug: true,
-									courseId: true
-								}
-							}
-						}
-					}
-				}
-			},
-			specializationAdmin: {
-				select: {
-					specialization: {
-						select: {
-							title: true,
-							courses: {
-								select: {
-									title: true,
-									slug: true,
-									courseId: true
+									accessLevel: true,
+									course: { select: { courseId: true, title: true, slug: true } }
+									// lesson: { select: { lessonId: true, title: true, slug: true } }
 								}
 							}
 						}
