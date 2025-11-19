@@ -16,7 +16,7 @@ type EditCourseProps = {
 };
 
 export const getServerSideProps = withTranslations(
-	["pages-course-info","common"],
+	["pages-course-info", "common"],
 	withAuth<EditCourseProps>(async (ctx, user) => {
 		const courseId = ctx.params?.courseId as string;
 		const { locale } = ctx;
@@ -38,6 +38,17 @@ export const getServerSideProps = withTranslations(
 					select: {
 						subjectId: true,
 						title: true
+					}
+				},
+				permissions: {
+					select: {
+						accessLevel: true,
+						group: {
+							select: {
+								id: true,
+								name: true
+							}
+						}
 					}
 				}
 			}
@@ -87,7 +98,12 @@ export const getServerSideProps = withTranslations(
 			slug: course.slug,
 			subjectId: course.subject?.subjectId ?? null,
 			authors: course.authors.map(author => ({ username: author.username })),
-			content: content
+			content: content,
+			permissions: course.permissions.map(p => ({
+				accessLevel: p.accessLevel,
+				groupId: p.group.id,
+				groupName: p.group.name
+			}))
 		};
 
 		return {

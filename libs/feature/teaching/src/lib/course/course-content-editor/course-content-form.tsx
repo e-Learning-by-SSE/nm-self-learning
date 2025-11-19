@@ -176,7 +176,12 @@ function LessonNode({
 						Lernkontrolle
 					</span>
 				)}
-				<IconOnlyButton onClick={onRemove} icon={<XMarkIcon className="h-5 w-5" />} variant="x-mark" title="Entfernen" />
+				<IconOnlyButton
+					onClick={onRemove}
+					icon={<XMarkIcon className="h-5 w-5" />}
+					variant="x-mark"
+					title="Entfernen"
+				/>
 			</div>
 		</span>
 	);
@@ -383,6 +388,7 @@ function EditExistingLessonDialog({
 					children: goal.children.map(c => c.name),
 					parents: goal.parents.map(p => p.name)
 				})),
+				permissions: [],
 				// currently there is no license label in the UI so we don't need to set this; see sample implementation below
 				// licenseId: data.licenseId ?? trpc.licenseRouter.getDefault.useQuery().data?.licenseId ?? 0,
 				authors: data.authors.map(a => ({ username: a.username })),

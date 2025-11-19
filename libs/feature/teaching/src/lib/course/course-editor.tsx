@@ -10,6 +10,7 @@ import { CourseContentForm } from "./course-content-editor/course-content-form";
 import { CourseFormModel, courseFormSchema } from "./course-form-model";
 import { CourseInfoForm } from "./course-info-form";
 import { useRouter } from "next/router";
+import { GroupForm } from "../group/forms/group-form";
 
 export function CourseEditor({
 	course,
@@ -72,6 +73,7 @@ export function CourseEditor({
 
 								<OpenAsJsonButton form={form} validationSchema={courseFormSchema} />
 								<CourseInfoForm />
+								<GroupForm subtitle="Gruppe, der dieses Kurs zugewiesen wurde" />
 								<AuthorsForm
 									subtitle="Die Autoren dieses Kurses."
 									emptyString="Für diesen Kurs sind noch keine Autoren hinterlegt."

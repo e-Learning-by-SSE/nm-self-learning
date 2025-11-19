@@ -4,7 +4,6 @@ import { stringOrNull } from "@self-learning/util/common";
 import { z } from "zod";
 
 export const courseFormSchema = z.object({
-	groupId: z.string().uuid(),
 	courseId: z.string().nullable(),
 	subjectId: z.string().nullable(),
 	slug: z.string().min(3),
@@ -13,7 +12,15 @@ export const courseFormSchema = z.object({
 	description: z.string().nullable(),
 	imgUrl: z.string().nullable(),
 	authors: authorsRelationSchema,
-	content: courseContentSchema
+	content: courseContentSchema,
+	permissions: z
+		.object({
+			accessLevel: z.nativeEnum(AccessLevel),
+			groupId: z.string(),
+			groupName: z.string()
+		})
+		.array()
+		.min(1, "At least one permission is required")
 });
 
 export type CourseFormModel = z.infer<typeof courseFormSchema>;
@@ -22,7 +29,7 @@ export function mapCourseFormToInsert(
 	course: CourseFormModel,
 	courseId: string
 ): Prisma.CourseCreateInput {
-	const { groupId, title, slug, subtitle, description, imgUrl, content, subjectId, authors } =
+	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors, permissions } =
 		course;
 
 	const courseForDb: Prisma.CourseCreateInput = {
@@ -36,7 +43,12 @@ export function mapCourseFormToInsert(
 		meta: createCourseMeta(course),
 		authors: { connect: authors.map(author => ({ username: author.username })) },
 		subject: subjectId ? { connect: { subjectId } } : undefined,
-		permissions: { create: { groupId: groupId, accessLevel: AccessLevel.FULL } }
+		permissions: {
+			create: permissions.map(p => ({
+				accessLevel: p.accessLevel,
+				groupId: p.groupId
+			}))
+		}
 	};
 
 	return courseForDb;
@@ -46,8 +58,9 @@ export function mapCourseFormToUpdate(
 	course: CourseFormModel,
 	courseId: string
 ): Prisma.CourseUpdateInput {
-	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors } = course;
-
+	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors, permissions } =
+		course;
+	// TODO permissions update
 	const courseForDb: Prisma.CourseUpdateInput = {
 		courseId,
 		slug,

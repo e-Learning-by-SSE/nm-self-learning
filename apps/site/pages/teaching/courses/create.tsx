@@ -46,6 +46,7 @@ export default function CreateCoursePage() {
 				<CourseEditor
 					onConfirm={onConfirm}
 					course={{
+						permissions: [],
 						courseId: "",
 						title: "",
 						slug: "",

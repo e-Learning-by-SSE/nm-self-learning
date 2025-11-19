@@ -26,6 +26,7 @@ export const getServerSideProps = withTranslations(
 			where: { lessonId },
 			select: {
 				lessonId: true,
+				courseId: true,
 				slug: true,
 				title: true,
 				subtitle: true,
@@ -38,7 +39,18 @@ export const getServerSideProps = withTranslations(
 				provides: true,
 				authors: true,
 				lessonType: true,
-				selfRegulatedQuestion: true
+				selfRegulatedQuestion: true,
+				permissions: {
+					select: {
+						accessLevel: true,
+						group: {
+							select: {
+								id: true,
+								name: true
+							}
+						}
+					}
+				}
 			}
 		});
 
@@ -56,6 +68,7 @@ export const getServerSideProps = withTranslations(
 		}
 
 		const lessonForm: LessonFormModel = {
+			courseId: lesson.courseId,
 			lessonId: lesson.lessonId,
 			slug: lesson.slug,
 			title: lesson.title,
@@ -78,7 +91,12 @@ export const getServerSideProps = withTranslations(
 			content: (lesson.content ?? []) as LessonContent,
 			quiz: lesson.quiz as Quiz,
 			lessonType: lesson.lessonType,
-			selfRegulatedQuestion: lesson.selfRegulatedQuestion
+			selfRegulatedQuestion: lesson.selfRegulatedQuestion,
+			permissions: lesson.permissions.map(p => ({
+				accessLevel: p.accessLevel,
+				groupId: p.group.id,
+				groupName: p.group.name
+			}))
 		};
 
 		return {
