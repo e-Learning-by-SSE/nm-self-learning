@@ -9,12 +9,21 @@ export const meRouter = t.router({
 			where: { name: ctx.user.name },
 			select: {
 				role: true,
-				permissions: {
+				memberships: {
 					select: {
-						accessLevel: true,
-						subject: { select: { subjectId: true } },
-						course: { select: { courseId: true } },
-						lesson: { select: { lessonId: true } }
+						role: true,
+						group: {
+							select: {
+								name: true,
+								permissions: {
+									select: {
+										accessLevel: true,
+										course: { select: { courseId: true, title: true } },
+										lesson: { select: { lessonId: true, title: true } }
+									}
+								}
+							}
+						}
 					}
 				}
 			}
@@ -24,9 +33,7 @@ export const meRouter = t.router({
 		return await database.$transaction(async tx => {
 			const user = await tx.user.findUnique({
 				where: { name: ctx.user.name },
-				include: {
-					author: true
-				}
+				include: { author: true }
 			});
 
 			if (!user) {
@@ -36,57 +43,34 @@ export const meRouter = t.router({
 			const anonymousUsername = "anonymous-" + randomUUID();
 
 			await tx.user.create({
-				data: {
-					name: anonymousUsername,
-					displayName: "Deleted User",
-					role: "USER"
-				}
+				data: { name: anonymousUsername, displayName: "Deleted User", role: "USER" }
 			});
 
 			if (user.author) {
 				await tx.author.update({
-					where: {
-						username: user.name
-					},
-					data: {
-						username: anonymousUsername,
-						slug: anonymousUsername
-					}
+					where: { username: user.name },
+					data: { username: anonymousUsername, slug: anonymousUsername }
 				});
 			}
 
 			await tx.skillRepository.updateMany({
-				where: {
-					ownerName: user.name
-				},
-				data: {
-					ownerName: anonymousUsername
-				}
+				where: { ownerName: user.name },
+				data: { ownerName: anonymousUsername }
 			});
 
 			await tx.eventLog.updateMany({
-				where: {
-					username: user.name
-				},
-				data: {
-					username: anonymousUsername
-				}
+				where: { username: user.name },
+				data: { username: anonymousUsername }
 			});
 
-			await tx.user.delete({
-				where: { name: ctx.user.name }
-			});
+			await tx.user.delete({ where: { name: ctx.user.name } });
 
 			return true;
 		});
 	}),
 	updateSettings: authProcedure.input(editUserSettingsSchema).mutation(async ({ ctx, input }) => {
 		await database.$transaction(async tx => {
-			const dbSettings = await tx.user.findUnique({
-				where: {
-					name: ctx.user.name
-				}
-			});
+			const dbSettings = await tx.user.findUnique({ where: { name: ctx.user.name } });
 
 			const { user } = input;
 			const isUserDefined = user !== undefined;
@@ -107,20 +91,13 @@ export const meRouter = t.router({
 				Object.entries(user ?? {}).filter(([_, value]) => value !== undefined)
 			);
 
-			return await tx.user.update({
-				where: {
-					name: ctx.user.name
-				},
-				data: updateData
-			});
+			return await tx.user.update({ where: { name: ctx.user.name }, data: updateData });
 		});
 	}),
 	registrationStatus: authProcedure.query(async ({ ctx }) => {
 		return await database.user.findUnique({
 			where: { name: ctx.user.name },
-			select: {
-				registrationCompleted: true
-			}
+			select: { registrationCompleted: true }
 		});
 	})
 });

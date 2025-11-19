@@ -18,56 +18,28 @@ export const authorRouter = t.router({
 	getByUsername: authProcedure.input(z.object({ username: z.string() })).query(({ input }) => {
 		return database.author.findUniqueOrThrow({
 			where: { username: input.username },
-			select: {
-				username: true,
-				slug: true,
-				displayName: true,
-				imgUrl: true
-			}
+			select: { username: true, slug: true, displayName: true, imgUrl: true }
 		});
 	}),
 	getAll: authProcedure.query(() => {
 		return database.author.findMany({
-			select: {
-				slug: true,
-				username: true,
-				displayName: true,
-				imgUrl: true
-			}
+			select: { slug: true, username: true, displayName: true, imgUrl: true }
 		});
 	}),
-	getAllWithSubject: adminProcedure.query(() => {
+	getAllWithGroups: adminProcedure.query(() => {
 		return database.user.findMany({
 			where: { NOT: { author: null } },
 			orderBy: { author: { displayName: "asc" } },
 			select: {
 				name: true,
 				role: true,
-				author: {
-					select: {
-						slug: true,
-						displayName: true,
-						imgUrl: true,
-						subjectAdmin: {
-							select: {
-								subject: {
-									select: {
-										title: true
-									}
-								}
-							}
-						}
-					}
-				}
+				author: { select: { slug: true, displayName: true, imgUrl: true } },
+				memberships: { select: { role: true, group: { select: { name: true } } } }
 			}
 		});
 	}),
 	getAuthorForForm: adminProcedure
-		.input(
-			z.object({
-				username: z.string()
-			})
-		)
+		.input(z.object({ username: z.string() }))
 		.query(({ input }) => {
 			return database.user.findUniqueOrThrow({
 				where: { name: input.username },
@@ -75,27 +47,19 @@ export const authorRouter = t.router({
 					name: true,
 					role: true,
 					author: {
+						select: { slug: true, displayName: true, imgUrl: true, username: true }
+					},
+					memberships: {
 						select: {
-							slug: true,
-							displayName: true,
-							imgUrl: true,
-							username: true,
-							subjectAdmin: {
+							role: true,
+							group: {
 								select: {
-									subject: {
+									name: true,
+									permissions: {
 										select: {
-											title: true,
-											subjectId: true
-										}
-									}
-								}
-							},
-							specializationAdmin: {
-								select: {
-									specialization: {
-										select: {
-											specializationId: true,
-											title: true
+											accessLevel: true,
+											course: { select: { courseId: true, title: true } },
+											lesson: { select: { lessonId: true, title: true } }
 										}
 									}
 								}
@@ -139,13 +103,9 @@ export const authorRouter = t.router({
 		}),
 	// eslint-disable-next-line @typescript-eslint/no-empty-function
 	updateAsAdmin: adminProcedure
-		.input(
-			z.object({
-				username: z.string(),
-				author: authorSchema
-			})
-		)
+		.input(z.object({ username: z.string(), author: authorSchema }))
 		.mutation(async ({ input }) => {
+			// TODO where to update permissions?
 			const updated = await updateAuthorAsAdmin(input);
 
 			console.log("Author updated: ", {
@@ -158,14 +118,8 @@ export const authorRouter = t.router({
 	updateSelf: authProcedure.input(editAuthorSchema).mutation(async ({ ctx, input }) => {
 		const updated = await database.author.update({
 			where: { username: ctx.user.name },
-			data: {
-				...input
-			},
-			select: {
-				displayName: true,
-				imgUrl: true,
-				slug: true
-			}
+			data: { ...input },
+			select: { displayName: true, imgUrl: true, slug: true }
 		});
 
 		console.log("[authorRouter.updateSelf]: Author updated", {
@@ -200,12 +154,7 @@ export async function findAuthor({
 
 	const [authors, count] = await database.$transaction([
 		database.author.findMany({
-			select: {
-				username: true,
-				displayName: true,
-				slug: true,
-				imgUrl: true
-			},
+			select: { username: true, displayName: true, slug: true, imgUrl: true },
 			where,
 			take,
 			skip

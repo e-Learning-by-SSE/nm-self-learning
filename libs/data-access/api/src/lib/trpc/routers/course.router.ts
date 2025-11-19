@@ -208,12 +208,20 @@ export const courseRouter = t.router({
 		return fullExport;
 	}),
 	create: authProcedure.input(courseFormSchema).mutation(async ({ input, ctx }) => {
-		if (!(await canCreate(ctx.user, input.groupId))) {
+		// TODO temporal block of multiple permissions creation
+		if (
+			input.permissions.length !== 1 ||
+			input.permissions[0].accessLevel !== AccessLevel.FULL
+		) {
 			throw new TRPCError({
-				code: "FORBIDDEN",
-				message: "Creating a course requires either: website ADMIN role | group MEMBER role"
+				code: "BAD_REQUEST",
+				message: "requires exactly one permission to the group with FULL access."
 			});
-		} else if (input.authors.length <= 0 && ctx.user.role != "ADMIN") {
+		}
+		if (!(await canCreate(ctx.user, input.permissions[0].groupId))) {
+			throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
+		}
+		if (input.authors.length <= 0 && ctx.user.role != "ADMIN") {
 			throw new TRPCError({
 				code: "FORBIDDEN",
 				message:

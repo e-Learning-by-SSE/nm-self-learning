@@ -3,7 +3,9 @@ import { z } from "zod";
 import { adminProcedure, authProcedure, t } from "../trpc";
 import { add } from "date-fns";
 import { TRPCError } from "@trpc/server";
-import { AccessLevel, GroupRole } from "@prisma/client";
+import { AccessLevel, GroupRole, Prisma } from "@prisma/client";
+import { paginate, Paginated, paginationSchema } from "@self-learning/util/common";
+import { GroupFormSchema } from "@self-learning/types";
 
 async function anyTrue(promises: (() => Promise<boolean>)[]) {
 	for (const fn of promises) {
@@ -169,7 +171,7 @@ export async function hasResourceAccess(
 
 export async function getGroupRole(groupId: string, userId: string) {
 	const access = await database.member.findFirst({
-		where: { userId, groupId, expiresAt: { gt: new Date() } },
+		where: { userId, groupId, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
 		select: { role: true }
 	});
 	return access?.role ?? null;
@@ -185,24 +187,43 @@ export async function createGroupPermission(params: PermissionInput) {
 	return await database.permission.create({ data: params });
 }
 
+export async function getGroup(groupId: string) {
+	return await database.group.findUnique({
+		where: { id: groupId },
+		select: {
+			id: true,
+			parentId: true,
+			name: true,
+			permissions: {
+				select: {
+					accessLevel: true,
+					course: { select: { courseId: true, title: true, slug: true } },
+					lesson: { select: { lessonId: true, title: true, slug: true } }
+				}
+			},
+			members: {
+				select: {
+					role: true,
+					expiresAt: true,
+					createdAt: true,
+					user: {
+						select: {
+							id: true,
+							displayName: true,
+							email: true,
+							author: { select: { id: true } }
+						}
+					}
+				}
+			}
+		}
+	});
+}
+
 export const permissionRouter = t.router({
 	// Can be done by "parent" group admins or website admins
 	createGroup: authProcedure
-		.input(
-			z.object({
-				parentId: z.string().optional(),
-				name: z.string(),
-				permissions: ResourceAccessSchema.array(),
-				members: z
-					.object({
-						userId: z.string(),
-						role: GroupRoleEnum,
-						durationMinutes: z.number().optional()
-					})
-					.array()
-					.optional()
-			})
-		)
+		.input(GroupFormSchema.omit({ id: true }))
 		.mutation(async ({ input, ctx }) => {
 			const { parentId, name, permissions, members } = input;
 			const userId = ctx.user.id;
@@ -213,14 +234,22 @@ export const permissionRouter = t.router({
 					message: "Cannot assign OWNER role when creating group"
 				});
 			}
-			// compute expiredAt
-			const m = members?.map(m => {
-				const now = new Date();
-				const expiresAt =
-					typeof m.durationMinutes === "number"
-						? add(now, { minutes: m.durationMinutes })
-						: null;
-				return { userId: m.userId, role: m.role, expiresAt };
+			// map permissions to drop display data
+			const perms = permissions.map(p => {
+				return ResourceAccessSchema.parse({
+					accessLevel: p.accessLevel,
+					courseId: p.course?.courseId,
+					lessonId: p.lesson?.lessonId
+				});
+			});
+			// for every resource must have FULL access level
+			const checks = perms.map(p => {
+				return { ...p, accessLevel: AccessLevel.FULL };
+			});
+
+			// map members to drop display data
+			const membs = members.map(m => {
+				return { userId: m.user.id, role: m.role, expiresAt: m.expiresAt };
 			});
 			// check permission - must have full access at parent or be admin
 			let hasAccess = ctx.user.role === "ADMIN";
@@ -228,7 +257,7 @@ export const permissionRouter = t.router({
 				// only website admins can create root groups
 				const [groupOk, resourceOk] = await Promise.all([
 					hasGroupRole(parentId, userId, GroupRole.ADMIN),
-					hasResourcesAccess(userId, permissions)
+					hasResourcesAccess(userId, checks)
 				]);
 				hasAccess = groupOk && resourceOk;
 			}
@@ -237,15 +266,195 @@ export const permissionRouter = t.router({
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 			}
 			// create
-			database.group.create({
+			return database.group.create({
 				data: {
 					name,
 					parentId,
-					permissions: { create: permissions },
-					members: { create: [...(m ?? []), { userId, role: GroupRole.OWNER }] }
+					permissions: { create: perms },
+					members: { create: [...(membs ?? []), { userId, role: GroupRole.OWNER }] }
 				}
 			});
 		}),
+	updateGroup: authProcedure.input(GroupFormSchema).mutation(async ({ input, ctx }) => {
+		const { id, permissions, members, name, parentId } = input;
+		const userId = ctx.user.id;
+		if (!id) {
+			throw new TRPCError({ code: "BAD_REQUEST", message: "Group id is required" });
+		}
+		// 3. Group name update
+		const { name: oldName, parentId: oldParentId } = await database.group.findUniqueOrThrow({
+			where: { id },
+			select: { name: true, parentId: true }
+		});
+		// restrict changing parentId
+		if (parentId !== oldParentId) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: "Cannot change parentId of the group"
+			});
+		}
+		// check if update name
+		if (name !== oldName) {
+			const hasAccess =
+				ctx.user.role === "ADMIN" || (await hasGroupRole(id, userId, GroupRole.OWNER));
+			if (!hasAccess) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Insufficient permissions to update members"
+				});
+			}
+		}
+
+		// 1. Members
+		// check one member has OWNER role
+		if (members?.filter(m => m.role === GroupRole.OWNER).length !== 1) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: "Group must have exactly one OWNER"
+			});
+		}
+		// map members to drop display data
+		const membs = members.map(m => {
+			return { userId: m.user.id, role: m.role, expiresAt: m.expiresAt };
+		});
+		// fetch old members to check if something changed
+		const oldMembers = await database.member.findMany({
+			where: { groupId: id },
+			select: { userId: true, role: true, expiresAt: true }
+		});
+		type MemberKey = string;
+		const memberDiffs = new Map<MemberKey, Omit<MembershipInput, "groupId">>();
+		for (const m of membs) {
+			memberDiffs.set(m.userId, m);
+		}
+		for (const m of oldMembers) {
+			const d = memberDiffs.get(m.userId);
+			if (d && d.role === m.role && d.expiresAt?.getTime() === m.expiresAt?.getTime()) {
+				// if unchanged - ignore
+				memberDiffs.delete(m.userId);
+			} else {
+				// if just added - add
+				memberDiffs.set(m.userId, m);
+			}
+		}
+		// check if has ADMIN permission (only if members have changed)
+		if (memberDiffs.size > 0) {
+			const hasAccess =
+				ctx.user.role === "ADMIN" || (await hasGroupRole(id, userId, GroupRole.ADMIN));
+			if (!hasAccess) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Insufficient permissions to update members"
+				});
+			}
+		}
+
+		// 2. Permissions
+		// map permissions to drop display data
+		const perms = permissions.map(p => {
+			return ResourceAccessSchema.parse({
+				accessLevel: p.accessLevel,
+				courseId: p.course?.courseId,
+				lessonId: p.lesson?.lessonId
+			});
+		});
+		// fetch existing permissions to delermine diffs
+		const existingPerms = await database.permission.findMany({
+			where: { groupId: id },
+			select: { lessonId: true, courseId: true, accessLevel: true }
+		});
+		// compute diffs
+		type ResourceKey = string;
+		const permToKey = (p: { lessonId?: string | null; courseId?: string | null }) =>
+			p.courseId ? `course:${p.courseId}` : `lesson:${p.lessonId}`;
+		const diffs = new Map<ResourceKey, ResourceAccess>();
+		for (const p of perms) {
+			diffs.set(permToKey(p), p);
+		}
+		for (const p of existingPerms) {
+			const d = diffs.get(permToKey(p));
+			if (d && d.accessLevel === p.accessLevel) {
+				// if unchanged - ignore
+				diffs.delete(permToKey(p));
+			} else {
+				// if just added - add
+				diffs.set(permToKey(p), ResourceAccessSchema.parse(p));
+			}
+		}
+		// check permission - must have full access at parent or be admin (only if permissions have changed)
+		if (diffs.size > 0) {
+			const hasAccess =
+				ctx.user.role === "ADMIN" ||
+				(await hasResourcesAccess(userId, Array.from(diffs.values())));
+
+			if (!hasAccess) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Insufficient permissions to update permissions"
+				});
+			}
+		}
+
+		// 4. run update
+		return await database.group.update({
+			where: { id },
+			data: {
+				name,
+				parentId,
+				permissions: {
+					deleteMany: {
+						OR: [
+							// delete course permissions not present in new request
+							{
+								courseId: {
+									notIn: perms.filter(p => p.courseId).map(p => p.courseId!)
+								},
+								lessonId: null
+							},
+							// delete lesson permissions not present in new request
+							{
+								lessonId: {
+									notIn: perms.filter(p => p.lessonId).map(p => p.lessonId!)
+								},
+								courseId: null
+							}
+						]
+					},
+					upsert: perms.map(p =>
+						p.courseId
+							? {
+									where: {
+										groupId_courseId: { groupId: id, courseId: p.courseId }
+									},
+									update: { accessLevel: p.accessLevel },
+									create: {
+										courseId: p.courseId,
+										accessLevel: p.accessLevel
+									}
+								}
+							: {
+									where: {
+										groupId_lessonId: { groupId: id, lessonId: p.lessonId! }
+									},
+									update: { accessLevel: p.accessLevel },
+									create: {
+										lessonId: p.lessonId!,
+										accessLevel: p.accessLevel
+									}
+								}
+					)
+				},
+				members: {
+					deleteMany: { userId: { notIn: membs.map(m => m.userId) } },
+					upsert: membs.map(m => ({
+						where: { userId_groupId: { groupId: id, userId: m.userId } },
+						update: { role: m.role, expiresAt: m.expiresAt },
+						create: m
+					}))
+				}
+			}
+		});
+	}),
 	deleteGroup: authProcedure
 		.input(z.object({ groupId: z.string() }))
 		.mutation(async ({ input, ctx }) => {
@@ -258,7 +467,7 @@ export const permissionRouter = t.router({
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 			}
 			// delete group
-			await database.group.delete({ where: { id: groupId } });
+			return await database.group.delete({ where: { id: groupId } });
 		}),
 	getResourceAccess: authProcedure.input(ResourceAccessSchema).query(async ({ input, ctx }) => {
 		const userId = ctx.user.id;
@@ -296,7 +505,7 @@ export const permissionRouter = t.router({
 				}
 			}
 			// change owner
-			await database.$transaction([
+			return await database.$transaction([
 				database.member.updateMany({
 					where: { groupId, userId },
 					data: { role: GroupRole.ADMIN }
@@ -337,6 +546,12 @@ export const permissionRouter = t.router({
 			// now add user to the group
 			return await createGroupAccess(groupId, userId, role, durationMinutes);
 			// TODO make log of access created
+		}),
+	hasGroupRole: authProcedure
+		.input(z.object({ groupId: z.string(), role: GroupRoleEnum }))
+		.query(async ({ input, ctx }) => {
+			if (ctx.user.role === "ADMIN") return true;
+			return await hasGroupRole(input.groupId, ctx.user.id, input.role);
 		}),
 	// Done by resource owners or website admins
 	grantGroupPermission: authProcedure
@@ -420,5 +635,102 @@ export const permissionRouter = t.router({
 		.mutation(async ({ input }) => {
 			const { permissionId } = input;
 			return await database.permission.delete({ where: { id: permissionId } });
+		}),
+	getGroup: authProcedure.input(z.object({ id: z.string() })).query(async ({ input }) => {
+		return await getGroup(input.id);
+	}),
+	findMyGroups: authProcedure.input(paginationSchema).query(async ({ input, ctx }) => {
+		const pageSize = 15;
+		const userId = ctx.user.id;
+
+		const where: Prisma.GroupWhereInput = {
+			members: { some: { userId } }
+		};
+
+		const [groupsRaw, count] = await database.$transaction([
+			database.group.findMany({
+				include: {
+					_count: { select: { members: true } },
+					members: {
+						where: { role: GroupRole.OWNER },
+						take: 1,
+						select: { user: { select: { name: true } } }
+					}
+				},
+				...paginate(pageSize, input.page),
+				orderBy: { name: "asc" },
+				where
+			}),
+			database.group.count({ where })
+		]);
+		// flatten result
+		const result = groupsRaw.map(g => ({
+			groupId: g.id,
+			name: g.name,
+			memberCount: g._count.members,
+			ownerName: g.members[0]?.user.name || null
+		}));
+
+		return {
+			result,
+			pageSize: pageSize,
+			page: input.page,
+			totalCount: count
+		} satisfies Paginated<unknown>;
+	}),
+	findGroups: t.procedure
+		.input(
+			paginationSchema.extend({
+				name: z.string().optional(),
+				authorName: z.string().optional()
+			})
+		)
+		.query(async ({ input }) => {
+			const pageSize = 15;
+
+			const where: Prisma.GroupWhereInput = {
+				name:
+					input.name && input.name.length > 0
+						? { contains: input.name, mode: "insensitive" }
+						: undefined,
+				members: input.authorName
+					? {
+							some: {
+								user: { name: { contains: input.authorName, mode: "insensitive" } }
+							}
+						}
+					: undefined
+			};
+
+			const [groupsRaw, count] = await database.$transaction([
+				database.group.findMany({
+					include: {
+						_count: { select: { members: true } },
+						members: {
+							where: { role: GroupRole.OWNER },
+							take: 1,
+							select: { user: { select: { name: true } } }
+						}
+					},
+					...paginate(pageSize, input.page),
+					orderBy: { name: "asc" },
+					where
+				}),
+				database.group.count({ where })
+			]);
+			// flatten result
+			const result = groupsRaw.map(g => ({
+				groupId: g.id,
+				name: g.name,
+				memberCount: g._count.members,
+				ownerName: g.members[0]?.user.name || null
+			}));
+
+			return {
+				result,
+				pageSize: pageSize,
+				page: input.page,
+				totalCount: count
+			} satisfies Paginated<unknown>;
 		})
 });

@@ -3,13 +3,15 @@ import { database } from "@self-learning/database";
 import { paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { adminProcedure, t } from "../trpc";
+import { adminProcedure, authProcedure, t } from "../trpc";
 import { userSchema } from "@self-learning/types";
 import { deleteUser, deleteUserAndDependentData } from "@self-learning/admin";
 
 export const adminRouter = t.router({
-	findUsers: adminProcedure
-		.input(paginationSchema.extend({ name: z.string().optional() }))
+	findUsers: authProcedure
+		.input(
+			paginationSchema.extend({ name: z.string().optional(), email: z.string().optional() })
+		)
 		.query(async ({ input }) => {
 			const page = input.page;
 			const pageSize = 15;
@@ -19,6 +21,11 @@ export const adminRouter = t.router({
 					? {
 							contains: input.name,
 							mode: "insensitive"
+						}
+					: undefined,
+				email: input.email
+					? {
+							contains: input.email
 						}
 					: undefined
 			};

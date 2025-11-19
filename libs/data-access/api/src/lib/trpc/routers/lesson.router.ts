@@ -65,13 +65,17 @@ export const lessonRouter = t.router({
 			} satisfies Paginated<unknown>;
 		}),
 	create: authProcedure.input(lessonSchema).mutation(async ({ input, ctx }) => {
-		if (!input.groupId) {
+		// TODO temporal block of multiple permissions creation
+		if (
+			input.permissions.length !== 1 ||
+			input.permissions[0].accessLevel !== AccessLevel.FULL
+		) {
 			throw new TRPCError({
 				code: "BAD_REQUEST",
-				message: "groupId is required to create a lesson."
+				message: "requires exactly one permission to the group with FULL access."
 			});
 		}
-		if (!(await canCreate(ctx.user, input.groupId))) {
+		if (!(await canCreate(ctx.user, input.permissions[0].groupId))) {
 			throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
 		}
 		const createdLesson = await database.lesson.create({
@@ -85,7 +89,12 @@ export const lessonRouter = t.router({
 				content: input.content as Prisma.InputJsonArray,
 				lessonId: getRandomId(),
 				meta: createLessonMeta(input) as unknown as Prisma.JsonObject,
-				permissions: { create: { groupId: input.groupId, accessLevel: AccessLevel.FULL } }
+				permissions: {
+					create: input.permissions.map(p => ({
+						accessLevel: p.accessLevel,
+						groupId: p.groupId
+					}))
+				}
 			},
 			select: { lessonId: true, slug: true, title: true }
 		});
@@ -111,7 +120,8 @@ export const lessonRouter = t.router({
 					licenseId: input.lesson.licenseId,
 					requires: { set: input.lesson.requires.map(r => ({ id: r.id })) },
 					provides: { set: input.lesson.provides.map(r => ({ id: r.id })) },
-					meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject
+					meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject,
+					permissions: { deleteMany: {}, create: [] } // TODO: handle permission updates
 				},
 				select: { lessonId: true, slug: true, title: true }
 			});
