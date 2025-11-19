@@ -12,23 +12,13 @@ export default function SubjectManagementPage() {
 	const router = useRouter();
 
 	const [openPermissionDialog, setOpenPermissionDialog] = useState(false);
-	const { data: permissions } = trpc.me.permissions.useQuery();
 	const { data: subject } = trpc.subject.getForEdit.useQuery(
-		{
-			subjectId: router.query.subjectId as string
-		},
-		{
-			enabled: !!router.query.subjectId
-		}
+		{ subjectId: router.query.subjectId as string },
+		{ enabled: !!router.query.subjectId }
 	);
-
-	const canView =
-		!!subject &&
-		!!permissions &&
-		(permissions.role === "ADMIN" ||
-			permissions.author?.subjectAdmin.find(s => s.subjectId === subject.subjectId));
-
-	if (!canView) {
+	// TODO everybody can do it for now
+	// typescript is angry if I ignore !subject
+	if (!subject) {
 		return (
 			<Unauthorized>
 				<ul className="list-inside list-disc">
@@ -42,7 +32,7 @@ export default function SubjectManagementPage() {
 	return (
 		<div className="flex flex-col gap-8 bg-gray-50 pb-32">
 			<TopicHeader
-				imgUrlBanner={subject?.imgUrlBanner}
+				imgUrlBanner={subject.imgUrlBanner}
 				parentLink="/subjects"
 				parentTitle="Fachgebiet"
 				title={subject.title}

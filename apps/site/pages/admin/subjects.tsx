@@ -46,9 +46,9 @@ export default function SubjectsPage() {
 										</Link>
 										<p className="text-sm text-light">{subject.subtitle}</p>
 									</div>
-
+									{/* TODO who created subject - do we care
 									<ul className="flex flex-wrap gap-4">
-										{subject.subjectAdmin.map(admin => (
+										{subject.permissions.map(admin => (
 											<AuthorChip
 												key={admin.author.slug}
 												imgUrl={admin.author.imgUrl}
@@ -57,6 +57,7 @@ export default function SubjectsPage() {
 											/>
 										))}
 									</ul>
+									*/}
 								</div>
 							</li>
 						))}

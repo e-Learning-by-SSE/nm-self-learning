@@ -25,7 +25,6 @@ export default function SpecializationManagementPage() {
 	const { page = 1, title = "" } = router.query;
 	const [titleFilter, setTitle] = useState(title);
 
-	const { data: permissions } = trpc.me.permissions.useQuery();
 	const { data: specialization } = trpc.specialization.getForEdit.useQuery(
 		{
 			specializationId: router.query.specializationId as string
@@ -101,17 +100,10 @@ export default function SpecializationManagementPage() {
 			}
 		}
 	}
+	// TODO always can view
+	const canView = true;
 
-	const canView =
-		specialization &&
-		permissions &&
-		(permissions.role === "ADMIN" ||
-			permissions.author?.subjectAdmin.find(s => s.subjectId === specialization.subjectId) ||
-			permissions?.author?.specializationAdmin.find(
-				s => s.specializationId === specialization.specializationId
-			));
-
-	if (!canView) {
+	if (!canView || !specialization) {
 		return (
 			<Unauthorized>
 				<ul className="list-inside list-disc">
