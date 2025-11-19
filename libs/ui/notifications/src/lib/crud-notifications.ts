@@ -43,7 +43,8 @@ export async function createNotification<K extends keyof NotificationPropsMap>(
 		const newNotification = await client.notification.create({
 			data: {
 				component,
-				props: props ?? {},
+				// TODO Marcel
+				props: props as any,
 				displayFrom: new Date(),
 				displayUntil: addBusinessDays(new Date(), 5),
 				targetAudience,

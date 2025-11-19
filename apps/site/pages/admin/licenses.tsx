@@ -39,6 +39,10 @@ export default function LicensesPage() {
 		setEditTarget(null);
 	}
 
+	const onLicenseDialogClose = () => {
+		setEditTarget(null);
+	};
+
 	return (
 		<AdminGuard>
 			<CenteredSection>
@@ -55,9 +59,7 @@ export default function LicensesPage() {
 					onChange={e => setDisplayName(e.target.value)}
 				/>
 
-				{editTarget === "new" && (
-					<CreateLicenseDialog onClose={() => setEditTarget(null)} />
-				)}
+				{editTarget === "new" && <CreateLicenseDialog onClose={onLicenseDialogClose} />}
 				{typeof editTarget === "number" && (
 					<EditLicenseDialog onClose={onEditDialogClose} licenseId={editTarget} />
 				)}

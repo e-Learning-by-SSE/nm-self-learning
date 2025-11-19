@@ -1,5 +1,6 @@
 import { IncomingMessage, ServerResponse } from "http";
 import { GetServerSidePropsContext } from "next";
+import { Socket } from "node:net";
 
 // Mock the provided context of getServerSideProps
 export type MockRequest = IncomingMessage & {
@@ -22,8 +23,8 @@ export const createMockContext = (
 			headers: {},
 			method: "GET",
 			url: "/",
-			connection: {} as any,
-			socket: {} as any
+			connection: {} as Socket,
+			socket: {} as Socket
 		} as MockRequest,
 		res: {} as ServerResponse,
 		params: {},

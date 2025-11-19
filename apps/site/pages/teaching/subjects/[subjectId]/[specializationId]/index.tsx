@@ -19,6 +19,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { withTranslations } from "@self-learning/api";
+import { keepPreviousData } from "@tanstack/react-query";
 
 export default function SpecializationManagementPage() {
 	const router = useRouter();
@@ -43,7 +44,7 @@ export default function SpecializationManagementPage() {
 		{
 			enabled: !!specialization?.specializationId,
 			staleTime: 10_000,
-			keepPreviousData: true
+			placeholderData: keepPreviousData
 		}
 	);
 

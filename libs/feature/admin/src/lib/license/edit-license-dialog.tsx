@@ -29,7 +29,7 @@ export function CreateLicenseDialog({ onClose }: { onClose: OnDialogCloseFn<Lice
 				subtitle: result.name
 			});
 			onClose(result);
-		} catch (err) {
+		} catch {
 			showToast({
 				type: "error",
 				title: "Lizenz konnte nicht erstellt werden!",
@@ -78,7 +78,7 @@ export function EditLicenseDialog({
 				subtitle: result.name
 			});
 			onClose(result);
-		} catch (err) {
+		} catch {
 			showToast({
 				type: "error",
 				title: "Lizenz konnte nicht gespeichert werden!",

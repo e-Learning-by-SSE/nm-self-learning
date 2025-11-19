@@ -16,7 +16,13 @@ jest.mock("@self-learning/quiz", () => {
 	const actual = jest.requireActual("@self-learning/quiz");
 	return {
 		...actual,
-		useQuiz: jest.fn(() => defaultUseQuizReturn)
+		useQuiz: jest.fn(() => defaultUseQuizReturn),
+
+		QuestionTab: ({ children, ...props }: any) => (
+			<div data-testid="question-tab-mock" {...props}>
+				{children}
+			</div>
+		)
 	};
 });
 jest.mock("@self-learning/lesson");

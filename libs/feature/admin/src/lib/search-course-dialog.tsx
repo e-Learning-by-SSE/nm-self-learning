@@ -8,6 +8,7 @@ import {
 	Paginator
 } from "@self-learning/ui/common";
 import { Fragment, useState } from "react";
+import { keepPreviousData } from "@tanstack/react-query";
 
 export function SearchCourseDialog({
 	open,
@@ -25,7 +26,7 @@ export function SearchCourseDialog({
 		},
 		{
 			staleTime: 10_000,
-			keepPreviousData: true
+			placeholderData: keepPreviousData
 		}
 	);
 

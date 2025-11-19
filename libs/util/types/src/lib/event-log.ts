@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Single source of truth
-const eventDefinitions = {
+export const eventDefinitions = {
 	USER_MODIFY: z.object({
 		type: z.any(), // TODO
 		value: z.any()
@@ -154,7 +154,9 @@ export const eventLogSchema = z
 			eventResult.error.issues.forEach(issue => {
 				ctx.addIssue({
 					...issue,
-					path: [...ctx.path, ...issue.path]
+					// TODO: Marcel fix, previously:
+					// path: [...ctx.path, ...issue.path]
+					path: issue.path // Fix proposed by ChatGPT
 				});
 			});
 		}

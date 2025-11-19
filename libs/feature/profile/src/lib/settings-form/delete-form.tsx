@@ -89,7 +89,7 @@ export function DeleteMeForm() {
 										});
 									}
 									router.push("/");
-								} catch (error) {
+								} catch {
 									showToast({
 										type: "error",
 										title: t("The Account Could Not Be Deleted"),

@@ -30,7 +30,7 @@ export function CreateGoalDialog({
 		setValue,
 		watch,
 		formState: { errors }
-	} = useForm<FormData>({
+	} = useForm({
 		resolver: zodResolver(learningGoalCreateSchema),
 		defaultValues: {
 			description: "",

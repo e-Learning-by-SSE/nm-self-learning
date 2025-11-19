@@ -84,6 +84,8 @@ async function checkCourseInactivity(results: SchedulerResult) {
 			);
 
 			// Send the reminder
+			// TODO Marcel fix, added non-null exception. Please revise code
+			// eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
 			const result = await sendCourseReminder(enrollment.student.user.email!, {
 				userName: enrollment.student.user.displayName,
 				courseName: enrollment.course.title,

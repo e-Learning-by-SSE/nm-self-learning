@@ -44,10 +44,14 @@ describe("checkStreakRisks integration", () => {
 			streakReminders: 0,
 			errors: 0
 		};
+		// Required by sendStreakReminderToUser to build tracking URLs
+		if (process.env.NEXT_PUBLIC_SITE_BASE_URL === undefined) {
+			process.env.NEXT_PUBLIC_SITE_BASE_URL = "https://example.com";
+		}
 	});
 
-	it("should send reminders to eligible users at 12:00 UTC", async () => {
-		mockCurrentTime(12);
+	it("should send reminders to eligible users at 10:00 UTC", async () => {
+		mockCurrentTime(10);
 		const yesterday = subDays(new Date(), 1);
 
 		(database.user.findMany as jest.Mock).mockResolvedValue([

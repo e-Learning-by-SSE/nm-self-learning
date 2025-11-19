@@ -53,5 +53,6 @@
 			"@self-learning/webhooks": ["libs/feature/webhooks/src/index.ts"]
 		}
 	},
+    "files": ["./index.d.ts"],
 	"exclude": ["node_modules", "tmp"]
 }

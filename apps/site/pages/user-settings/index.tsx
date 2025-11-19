@@ -2,7 +2,6 @@ import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import {
 	DeleteMeForm,
-	EXPERIMENT_END_DATE,
 	ExperimentShortInfo,
 	FeatureSettingsForm,
 	getExperimentStatus,

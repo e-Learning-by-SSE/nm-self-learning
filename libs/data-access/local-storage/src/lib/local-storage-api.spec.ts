@@ -6,7 +6,6 @@ import {
 	saveToLocalStorage
 } from "./local-storage-api";
 import SuperJSON from "superjson";
-import { object } from "zod";
 
 describe("localStorageApi", () => {
 	beforeEach(() => {

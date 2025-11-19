@@ -1,14 +1,14 @@
-import NextAuth from "next-auth";
-import { DefaultSession } from "next-auth";
+import { UserRole } from "@prisma/client";
+import "hast";
 
 declare global {
 	declare namespace NodeJS {
 		interface ProcessEnv {
-			NODE_ENV: "development" | "production";
+			readonly NODE_ENV: "development" | "production" | "test";
 			NEXT_PUBLIC_SITE_BASE_URL: string;
 			NEXT_PUBLIC_IS_DEMO_INSTANCE: string | undefined;
 			NEXT_PUBLIC_BASE_PATH: string | undefined;
-			NEXT_TRAILING_SLASH: Boolean | undefined;
+			NEXT_TRAILING_SLASH: boolean | undefined;
 			NEXT_PUBLIC_MATOMO_ULR: string | undefined;
 			NEXT_PUBLIC_MATOMO_SITE_ID: string | undefined;
 			DATABASE_URL: string;
@@ -23,8 +23,8 @@ declare global {
 			KEYCLOAK_CLIENT_ID: string;
 			KEYCLOAK_CLIENT_SECRET: string;
 			KEYCLOAK_PROVIDER_NAME: string | undefined;
-			NEXTAUTH_URL: string;
-			NEXTAUTH_SECRET: string;
+			NEXTAUTH_URL?: string;
+			NEXTAUTH_SECRET?: string;
 			APP_VERSION: string;
 			SCHEDULER_SECRET: string | undefined;
 			RESEND_API_KEY: string | undefined;
@@ -50,4 +50,25 @@ declare module "next-auth" {
 			};
 		};
 	}
+}
+
+// Augment HAST types
+// Used in markdown/invalid-language-filter.ts
+declare module "hast" {
+	interface Properties {
+		className?: string | string[];
+		alt?: string;
+	}
+}
+
+declare module "*.svg" {
+	import * as React from "react";
+
+	export const ReactComponent: React.FunctionComponent<
+		React.SVGProps<SVGSVGElement> & { title?: string }
+	>;
+
+	// export default ReactComponent;
+	const src: string;
+	export default src;
 }

@@ -6,7 +6,7 @@ import { AlreadyExists } from "./error";
 
 describe("apiHandler", () => {
 	// TODO: disabled, because error will be logged to the console (which is correct, but confusing when inspecting test logs)
-	xit("Throw Error", async () => {
+	it("Throw Error", async () => {
 		return testApiHandler({
 			pagesHandler: (req, res) =>
 				apiHandler(req, res, "GET", async () => {
@@ -48,9 +48,8 @@ Object {
       Object {
         "code": "invalid_type",
         "expected": "number",
-        "message": "Expected number, received string",
+        "message": "Invalid input: expected number, received string",
         "path": Array [],
-        "received": "string",
       },
     ],
     "name": "ValidationError",
