@@ -178,10 +178,7 @@ function extractNavigationInfo(
 ): LessonNavigationData {
 	const tmp = courseContent.map(chapter => ({
 		content: chapter.content.map(lesson => {
-			const lessonInfo = lessons[lesson.lessonId] ?? {
-				slug: undefined,
-				lessonId: undefined
-			};
+			const lessonInfo = lessons[lesson.lessonId] ?? { slug: undefined, lessonId: undefined };
 			return lessonInfo;
 		})
 	}));
@@ -242,10 +239,7 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
 	const INITIAL_PDF: OpenedMediaInfo[] = useMemo(
 		() =>
 			lessonContent
-				.map((m, idx) => ({
-					...m,
-					content_id: idx
-				}))
+				.map((m, idx) => ({ ...m, content_id: idx }))
 				.filter(m => m.type === "pdf") as OpenedMediaInfo[],
 		[lessonContent]
 	);
@@ -257,9 +251,7 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonProps) {
 
 	const handleCloseDialog = () => {
 		setShowDialog(false);
-		router.push({ pathname: path, query: { modal: "closed" } }, undefined, {
-			shallow: true
-		});
+		router.push({ pathname: path, query: { modal: "closed" } }, undefined, { shallow: true });
 	};
 
 	if (showDialog && markdown.preQuestion) {
@@ -468,9 +460,14 @@ export function ChapterName({
 }
 
 function AuthorEditButton({ lesson }: { lesson: LessonProps["lesson"] }) {
-	const session = useRequiredSession();
+	// const session = useRequiredSession();
 
-	if (session.data?.user.isAuthor || session.data?.user.role === "ADMIN") {
+	// session.data?.user.role === "ADMIN" - checked inside hasAccessLevel
+	const hasAccess = trpc.permission.hasResourceAccess.useQuery({
+		lessonId: lesson.lessonId,
+		accessLevel: "EDIT"
+	});
+	if (hasAccess) {
 		return (
 			<Link
 				href={`/teaching/lessons/edit/${lesson.lessonId}`}

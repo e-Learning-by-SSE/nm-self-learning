@@ -1,3 +1,4 @@
+import { trpc } from "@self-learning/api-client";
 import { LessonEditor, LessonFormModel } from "@self-learning/teaching";
 import { Dialog, OnDialogCloseFn } from "@self-learning/ui/common";
 import { Unauthorized, useRequiredSession } from "@self-learning/ui/layouts";
@@ -11,15 +12,19 @@ export function LessonEditorDialogWithGuard({
 	initialLesson?: LessonFormModel;
 }) {
 	const session = useRequiredSession();
-	// Admins can edit everything
+	const isNew = initialLesson !== undefined && initialLesson.lessonId !== null;
 	const isAdmin = session.data?.user.role === "ADMIN";
-	// All Authors can edit new lessons
-	const isAuthorOfNewLesson = initialLesson === undefined && session.data?.user.isAuthor;
-	// Authors can edit their own lessons
-	const isAuthorOfLesson = initialLesson?.authors.some(
-		a => a.username === session.data?.user.name
-	);
-	const canEdit = isAdmin || isAuthorOfNewLesson || isAuthorOfLesson;
+	const isAuthor = session.data?.user.isAuthor;
+
+	let canEdit = isAdmin || (isAuthor && isNew);
+	// If not new => check edit permissions
+	if (!canEdit && initialLesson?.lessonId) {
+		const { data } = trpc.permission.hasResourceAccess.useQuery({
+			lessonId: initialLesson.lessonId,
+			accessLevel: "EDIT"
+		});
+		canEdit = data;
+	}
 
 	return (
 		<div>

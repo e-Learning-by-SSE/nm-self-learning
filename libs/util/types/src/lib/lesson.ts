@@ -2,8 +2,9 @@ import { z } from "zod";
 import { authorsRelationSchema } from "./author";
 import { lessonContentSchema } from "./lesson-content";
 import { LessonMeta } from "./lesson-meta";
-import { LessonType } from "@prisma/client";
+import { AccessLevel, LessonType } from "@prisma/client";
 import { skillFormSchema } from "./skill";
+import { group } from "console";
 
 export type LessonInfo = {
 	lessonId: string;
@@ -14,7 +15,14 @@ export type LessonInfo = {
 };
 
 export const lessonSchema = z.object({
-	groupId: z.string().nullable(),
+	permissions: z
+		.object({
+			accessLevel: z.nativeEnum(AccessLevel),
+			groupId: z.string(),
+			groupName: z.string()
+		})
+		.array()
+		.min(1, "At least one permission is required"),
 	lessonId: z.string().nullable(),
 	courseId: z.string().nullable(),
 	slug: z.string().min(3),
@@ -44,7 +52,7 @@ export type Lesson = z.infer<typeof lessonSchema>;
 /** Returns a {@link Lesson} object with empty/null values.  */
 export function createEmptyLesson(): Lesson {
 	return {
-		groupId: null,
+		permissions: [],
 		lessonId: null,
 		courseId: null,
 		slug: "",
