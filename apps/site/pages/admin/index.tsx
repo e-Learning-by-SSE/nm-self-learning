@@ -36,6 +36,12 @@ export default function AdminPage() {
 					/>
 
 					<Card
+						href="/admin/groups"
+						imageElement={<CodingSvg />}
+						title={t("Manage Groups")}
+					/>
+
+					<Card
 						href="/admin/authors"
 						imageElement={<PersonalInformationSvg />}
 						title={t("Manage Authors")}
