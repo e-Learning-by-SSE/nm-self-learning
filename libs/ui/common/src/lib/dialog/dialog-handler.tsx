@@ -1,3 +1,4 @@
+"use client";
 import React, { memo, useEffect, useState } from "react";
 
 const listenerMap: Map<string, Array<(state: State) => void>> = new Map();

@@ -8,6 +8,7 @@ import { subjects } from "./seedSubjects";
 import { specializations } from "./seedSpecializations";
 import { license } from "./license";
 import { seedStrategiesAndTechniques } from "./learning-diary/learning-strategies";
+import { seedAchievements } from "./seedAchievements";
 
 const prisma = new PrismaClient();
 
@@ -40,10 +41,14 @@ async function seed(): Promise<void> {
 
 	await prisma.license.createMany({ data: license });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Licenses");
+
 	await prisma.subject.createMany({ data: subjects });
 
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Subjects");
 	await prisma.specialization.createMany({ data: specializations });
+
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Achievements");
+	await seedAchievements(prisma);
 
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Specialities");
 	await psychologyExample();

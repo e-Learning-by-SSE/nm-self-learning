@@ -21,6 +21,8 @@ import { subjectRouter } from "./routers/subject.router";
 import { llmConfigRouter } from "./routers/llm-config.router";
 import { userEventRouter } from "./routers/event-log.router";
 import { MetricsRouter } from "./routers/metrics.router";
+import { notificationRouter } from "./routers/notification.router";
+import { gamificationRouter } from "./routers/achievement.router";
 
 export const appRouter = t.router({
 	admin: adminRouter,
@@ -35,14 +37,16 @@ export const appRouter = t.router({
 	lesson: lessonRouter,
 	licenseRouter: licenseRouter,
 	me: meRouter,
+	achievement: gamificationRouter,
 	storage: storageRouter,
 	specialization: specializationRouter,
 	subject: subjectRouter,
 	programming: programmingRouter,
 	skill: skillRouter,
 	events: userEventRouter,
-	llmConfig: llmConfigRouter,
-	metrics: MetricsRouter
+	metrics: MetricsRouter,
+	notification: notificationRouter,
+	llmConfig: llmConfigRouter
 });
 
 // export type definition of API
