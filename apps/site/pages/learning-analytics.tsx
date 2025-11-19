@@ -20,6 +20,7 @@ We keep it commented to preserve the idea for later expansion.
  // const PreviewTypes = ["Videos", "Heatmap", "Teacher"] as const;
  // const renderMetricComponent = (metricSelection: string) => { ... }
  // etc.
+ //
 */
 
 export const getServerSideProps = withTranslations(["common", "student-analytics"]);
