@@ -1,7 +1,7 @@
 generator client {
     provider        = "prisma-client-js"
     binaryTargets   = ["native", "linux-musl"]
-    previewFeatures = ["prismaSchemaFolder"]
+    previewFeatures = ["prismaSchemaFolder", "views"]
 }
 
 datasource db {
@@ -158,11 +158,11 @@ enum ReminderStatus {
 }
 
 model LlmConfiguration {
-  id              String   @id @default(cuid())
-  serverUrl       String
-  apiKey          String?
-  defaultModel    String   
-  isActive        Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+    id           String   @id @default(cuid())
+    serverUrl    String
+    apiKey       String?
+    defaultModel String
+    isActive     Boolean  @default(true)
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
 }

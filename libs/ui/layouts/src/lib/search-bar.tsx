@@ -118,7 +118,7 @@ export function SearchBar() {
 		setIsFocused(false);
 	};
 	const shouldFetch = filterText.length > 0 && isFocused;
-	const [selectedResult, setSelectedResult] = useState<SearchResultInfo>();
+	const [selectedResult, setSelectedResult] = useState<any>();
 	const { data: lessons, isLoading: lessonsLoading } = trpc.lesson.findMany.useQuery(
 		titleSearchParams,
 		{ enabled: shouldFetch }
@@ -151,7 +151,7 @@ export function SearchBar() {
 	const { t } = useTranslation("common");
 
 	const handleSelect = (item: {
-		baseLink: string;
+		baselink: string;
 		title: string;
 		slug: string;
 		type: string;
@@ -194,7 +194,9 @@ export function SearchBar() {
 	return (
 		<Combobox
 			value={selectedResult}
-			onChange={handleSelect}
+			onChange={value => {
+				if (value) handleSelect(value);
+			}}
 			as="div"
 			className="relative w-full max-w-xs hidden lg:block"
 		>

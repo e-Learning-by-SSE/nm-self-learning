@@ -20,6 +20,7 @@ import { storageRouter } from "./routers/storage.router";
 import { subjectRouter } from "./routers/subject.router";
 import { llmConfigRouter } from "./routers/llm-config.router";
 import { userEventRouter } from "./routers/event-log.router";
+import { MetricsRouter } from "./routers/metrics.router";
 import { notificationRouter } from "./routers/notification.router";
 import { gamificationRouter } from "./routers/achievement.router";
 
@@ -43,6 +44,7 @@ export const appRouter = t.router({
 	programming: programmingRouter,
 	skill: skillRouter,
 	events: userEventRouter,
+	metrics: MetricsRouter,
 	notification: notificationRouter,
 	llmConfig: llmConfigRouter
 });

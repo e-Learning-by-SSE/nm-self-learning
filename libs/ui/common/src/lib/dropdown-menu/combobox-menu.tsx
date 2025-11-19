@@ -64,7 +64,9 @@ export function ComboboxMenu({
 	return (
 		<Combobox
 			as="div"
-			onChange={onChange}
+			onChange={(value: string | null) => {
+				if (value !== null) onChange(value);
+			}}
 			value={displayValue}
 			className="relative inline-block w-full text-left"
 		>
