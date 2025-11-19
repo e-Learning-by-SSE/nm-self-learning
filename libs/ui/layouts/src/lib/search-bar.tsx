@@ -104,6 +104,13 @@ function getSearchSections({
 	return searchSections;
 }
 
+type ResultItem = {
+	baseLink: string;
+	title: string;
+	slug: string;
+	type: string;
+};
+
 export function SearchBar() {
 	const isAuthenticated = useSession().status === "authenticated";
 	const [filterText, setFilterText] = useState("");
@@ -118,7 +125,7 @@ export function SearchBar() {
 		setIsFocused(false);
 	};
 	const shouldFetch = filterText.length > 0 && isFocused;
-	const [selectedResult, setSelectedResult] = useState<SearchResultInfo>();
+	const [selectedResult, setSelectedResult] = useState<ResultItem | null>(null);
 	const { data: lessons, isLoading: lessonsLoading } = trpc.lesson.findMany.useQuery(
 		titleSearchParams,
 		{ enabled: shouldFetch }
@@ -150,12 +157,7 @@ export function SearchBar() {
 
 	const { t } = useTranslation("common");
 
-	const handleSelect = (item: {
-		baseLink: string;
-		title: string;
-		slug: string;
-		type: string;
-	}) => {
+	const handleSelect = (item: ResultItem | null) => {
 		if (!item) {
 			return;
 		}

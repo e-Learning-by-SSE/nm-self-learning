@@ -48,8 +48,14 @@ export function MarkdownListboxMenu({
 }) {
 	const buttonRef = useRef<HTMLButtonElement>(null);
 
+	const onChangeWrapper = (option: string | null) => {
+		if (option) {
+			onChange(option);
+		}
+	};
+
 	return (
-		<Listbox onChange={onChange} value={displayValue}>
+		<Listbox onChange={onChangeWrapper} value={displayValue}>
 			<ListboxButton
 				ref={buttonRef}
 				as="button"

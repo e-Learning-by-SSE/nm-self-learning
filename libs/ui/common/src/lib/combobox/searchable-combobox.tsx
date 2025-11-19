@@ -47,11 +47,13 @@ export function SearchableCombobox<T>({
 			getLabel(b).toLowerCase().indexOf(query.toLowerCase())
 	);
 
-	function handleSelect(item: T) {
-		setSelected(item);
-		setQuery(getLabel(item)); // Update the query to reflect the selected item's label
-		onChange(item);
-		setIsOpen(false);
+	function handleSelect(item: T | null) {
+		if (item) {
+			setSelected(item);
+			setQuery(getLabel(item)); // Update the query to reflect the selected item's label
+			onChange(item);
+			setIsOpen(false);
+		}
 	}
 
 	function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
