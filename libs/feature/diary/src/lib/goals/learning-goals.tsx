@@ -332,14 +332,17 @@ function GoalRow({
 			console.log("Warning: trying to swap nonexisting goals!");
 			return;
 		}
-		if (toMove?.order ?? 0 < target.order ?? 0) {
-			// TODO what if one of these fails?
-			await editGoal({ order: toMove.order, id: target.id });
-			await editGoal({ order: target.order, id: toMove.id });
-		} else {
-			await editGoal({ order: toMove.order, id: target.id });
-			await editGoal({ order: target.order, id: toMove.id });
-		}
+		// TODO Marcel: What was the intension of the expression (which is not boolean and both branches do the same)?
+		await editGoal({ order: toMove.order, id: target.id });
+		await editGoal({ order: target.order, id: toMove.id });
+		// if (toMove?.order ?? 0 < target.order ?? 0) {
+		// 	// TODO what if one of these fails?
+		// 	await editGoal({ order: toMove.order, id: target.id });
+		// 	await editGoal({ order: target.order, id: toMove.id });
+		// } else {
+		// 	await editGoal({ order: toMove.order, id: target.id });
+		// 	await editGoal({ order: target.order, id: toMove.id });
+		// }
 	}
 
 	return (
