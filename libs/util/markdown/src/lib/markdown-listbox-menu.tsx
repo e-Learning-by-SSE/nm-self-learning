@@ -49,7 +49,7 @@ export function MarkdownListboxMenu({
 	const buttonRef = useRef<HTMLButtonElement>(null);
 
 	return (
-		<Listbox onChange={onChange} value={displayValue}>
+		<Listbox onChange={onChange} value={displayValue ?? undefined}>
 			<ListboxButton
 				ref={buttonRef}
 				as="button"

@@ -66,7 +66,13 @@ export function SearchableCombobox<T>({
 	}
 
 	return (
-		<Combobox value={selected} onChange={handleSelect} onClose={() => setIsOpen(false)}>
+		<Combobox
+			value={selected}
+			onChange={(value: T | null) => {
+				if (value !== null) handleSelect(value);
+			}}
+			onClose={() => setIsOpen(false)}
+		>
 			<div
 				className="relative w-full cursor-default overflow-hidden rounded-lg bg-white text-left shadow-md focus:outline-none"
 				onClick={() => setIsOpen(true)}

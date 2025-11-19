@@ -332,7 +332,8 @@ function GoalRow({
 			console.log("Warning: trying to swap nonexisting goals!");
 			return;
 		}
-		if (toMove?.order ?? 0 < target.order ?? 0) {
+		// if (toMove?.order ?? 0 < target.order ?? 0) { --> never nullish
+		if (toMove?.order ?? 0 < target.order) {
 			// TODO what if one of these fails?
 			await editGoal({ order: toMove.order, id: target.id });
 			await editGoal({ order: target.order, id: toMove.id });

@@ -94,6 +94,7 @@
 		"rehype-prism-plus": "^2.0.1",
 		"remark-gfm": "^4.0.1",
 		"remark-math": "^6.0.0",
+		"resend": "^4.5.1",
 		"sharp": "^0.34.4",
 		"superjson": "^2.2.2",
 		"swagger-ui-react": "^5.29.5",
