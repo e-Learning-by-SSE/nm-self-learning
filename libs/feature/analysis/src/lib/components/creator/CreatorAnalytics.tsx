@@ -256,7 +256,7 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 	);
 }
 
-export default function LearningAnalyticsPage() {
+export function CreatorAnalytics() {
 	const { t } = useTranslation("student-analytics");
 	const { data: session, status } = useSession();
 	const { data: avgCourse } =

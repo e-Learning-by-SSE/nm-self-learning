@@ -5,7 +5,7 @@ import { TimeAllocation } from "./TimeAllocation";
 import { Feedback } from "./Feedback";
 import { useTranslation } from "next-i18next";
 
-export default function StudentAnalytics() {
+export function StudentAnalytics() {
 	const { data: session } = useSession();
 	const { t } = useTranslation("student-analytics");
 

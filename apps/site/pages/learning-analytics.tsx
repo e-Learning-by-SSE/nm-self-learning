@@ -1,12 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { withTranslations } from "@self-learning/api";
-import { trpc } from "@self-learning/api-client";
 import { useSession } from "next-auth/react";
 
-import StudentAnalytics from "/code/libs/feature/analysis/src/lib/components/student/StudentAnalytics";
-import CreatorAnalytics from "/code/libs/feature/analysis/src/lib/components/creator/CreatorAnalytics";
+import { StudentAnalytics } from "@self-learning/analysis";
+import { CreatorAnalytics } from "@self-learning/analysis";
 
 /*
 ----------------------------------------------------------
