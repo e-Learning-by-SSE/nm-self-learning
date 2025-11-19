@@ -122,7 +122,13 @@ export function Playlist({ content, course, lesson, completion }: PlaylistProps)
 	);
 }
 
-export function MobilePlayList({ content, course, lesson, completion, onSelect}: PlaylistProps & { onSelect: () => void }) {
+export function MobilePlayList({
+	content,
+	course,
+	lesson,
+	completion,
+	onSelect
+}: PlaylistProps & { onSelect: () => void }) {
 	const contentWithCompletion = useContentWithCompletion(content, completion);
 	useLearningDiaryRecording(course.slug, lesson.lessonId);
 	const courseCompletion = completion?.courseCompletion;
@@ -144,7 +150,7 @@ export function MobilePlayList({ content, course, lesson, completion, onSelect}:
 				</span>
 			</div>
 
-			<ProgressBar completionPercentage={completionPercentage} />
+			<ProgressBar progressPercentage={completionPercentage} />
 			<div className="flex flex-col gap-3 xl:gap-12 py-4" onClick={onSelect}>
 				{contentWithCompletion.map((chapter, index) => (
 					<Chapter
@@ -292,7 +298,10 @@ function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) 
 				</span>
 			</div>
 
-			<ProgressBar completionPercentage={completionPercentage} />
+			<ProgressBar
+				text={`${completionPercentage}%`}
+				progressPercentage={completionPercentage}
+			/>
 
 			<Divider />
 

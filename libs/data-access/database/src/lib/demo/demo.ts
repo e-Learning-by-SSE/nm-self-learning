@@ -21,6 +21,7 @@ import { createStudents } from "./metrics/seed-students";
 import { createEnrollments } from "./metrics/seed-enrollments";
 import { createCourses } from "./metrics/seed-courses";
 import { createSubjects } from "./metrics/seed-subject";
+import { seedDummy } from "./seed-dummy";
 
 const prisma = new PrismaClient();
 
@@ -71,4 +72,6 @@ export async function seedDemos(): Promise<void> {
 	const quizAttempts = await createQuizAttempts();
 
 	await createQuizAnswers(quizAttempts);
+
+	await seedDummy();
 }

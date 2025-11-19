@@ -32,4 +32,12 @@
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
 	"editor.formatOnSave": true,
 	"editor.formatOnPaste": false,
+	"files.exclude": {
+		"node_modules": true,
+		"dist": true,
+		"build": true,
+		".next": true,
+		"*.log": true,
+		"*.lock": true,
+	},
 }
