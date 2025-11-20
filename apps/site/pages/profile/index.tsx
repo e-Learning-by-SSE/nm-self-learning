@@ -553,20 +553,22 @@ export default function ProfilPage({
 				</div>
 
 				{/* Recent Lessons / Learning Diary */}
-				<div className="rounded-xl  bg-white shadow-sm border border-c-border-muted p-6 h-full flex flex-col">
-					<h2 className="mb-4 text-lg font-semibold text-c-text-strong">
-						{ltbEnabled ? "Lerntagebuch Einträge" : "Zuletzt bearbeitete Lerneinheiten"}
-					</h2>
+				<div className="rounded-xl bg-white shadow-sm border border-c-border-muted p-6 h-full flex flex-col">
 					{ltbEnabled ? (
 						<>
 							<StatusBadgeInfo
-								header="Letzter Lerntagebucheintrag"
-								className="mb-4"
+								header="Letzte Lerntagebucheinträge"
+								className="mb-4 text-lg font-semibold text-c-text-strong"
 							/>
 							<LastLearningDiaryEntry pages={learningDiaryEntrys} />
 						</>
 					) : (
-						<LessonList lessons={recentLessons} />
+						<>
+							<h2 className="mb-4 text-lg font-semibold text-c-text-strong">
+								Zuletzte bearbeitete Lerneinheiten
+							</h2>
+							<LessonList lessons={recentLessons} />
+						</>
 					)}
 				</div>
 			</div>
