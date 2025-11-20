@@ -17,6 +17,46 @@
 	--color-light: theme("colors.slate.500");
 	--color-light-border: theme("colors.slate.200");
 	--gradient: linear-gradient(62deg, #c2dbf3, #d7b6f5);
+
+	/* Neutral surfaces */
+	--c-surface-base: theme("colors.gray.50"); /* Background */
+	--c-surface-1: theme("colors.white");
+	--c-surface-2: theme("colors.gray.100");
+	--c-surface-3: theme("colors.gray.200");
+
+	/* Text */
+	--c-text-strong: theme("colors.slate.800");
+	--c-text-base: theme("colors.slate.700");
+	--c-text-muted: theme("colors.slate.500");
+	--c-text-inverted: theme("colors.white");
+
+	/* Borders */
+	--c-border: theme("colors.gray.200");
+	--c-border-strong: theme("colors.gray.300");
+	--c-border-muted: theme("colors.gray.100");
+
+	/* Primary */
+	--c-primary: theme("colors.emerald.500");
+	--c-primary-strong: theme("colors.emerald.600"); /* Hover */
+	--c-primary-muted: theme("colors.emerald.400"); /* Focus */
+
+	/* Accent */
+	--c-accent: theme("colors.purple.500");
+	--c-accent-strong: theme("colors.purple.600"); /* Hover */
+	--c-accent-muted: theme("colors.purple.400"); /* Focus */
+
+	/* Danger */
+	--c-danger: theme("colors.red.500");
+	--c-danger-strong: theme("colors.red.600"); /* Hover */
+	--c-danger-muted: theme("colors.red.400"); /* Focus */
+
+	/* Info */
+	--c-info: theme("colors.blue.500");
+	--c-info-strong: theme("colors.blue.600"); /* Hover */
+	--c-info-muted: theme("colors.blue.400"); /* Focus */
+
+	/* Hover */
+	--c-hover: theme("colors.gray.100");
 }
 
 @font-face {

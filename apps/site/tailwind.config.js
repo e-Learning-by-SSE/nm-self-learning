@@ -105,7 +105,32 @@ module.exports = {
 			colors: {
 				secondary: "var(--color-secondary)",
 				light: "var(--color-light)",
-				"light-border": "var(--color-light-border)"
+				"light-border": "var(--color-light-border)",
+
+				/* Neutral surfaces */
+				"c-surface-0": "var(--c-surface-0)",
+				"c-surface-1": "var(--c-surface-1)",
+				"c-surface-2": "var(--c-surface-2)",
+				"c-surface-3": "var(--c-surface-3)",
+
+				/* Text */
+				"c-text-strong": "var(--c-text-strong)",
+				"c-text-base": "var(--c-text-base)",
+				"c-text-muted": "var(--c-text-muted)",
+				"c-text-inverse": "var(--c-text-inverse)",
+
+				/* Borders */
+				"c-border": "var(--c-border)",
+				"c-border-strong": "var(--c-border-strong)",
+				"c-border-muted": "var(--c-border-muted)",
+
+				/* Brand / Primary Actions */
+				"c-primary": "var(--c-primary)",
+				"c-primary-hover": "var(--c-primary-hover)",
+				"c-primary-ring": "var(--c-primary-ring)",
+
+				/* Hover */
+				"c-hover": "var(--c-hover)"
 			},
 			backgroundSize: {
 				"300%": "300% 300%"
