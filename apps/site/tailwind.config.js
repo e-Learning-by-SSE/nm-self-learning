@@ -107,8 +107,8 @@ module.exports = {
 				light: "var(--color-light)",
 				"light-border": "var(--color-light-border)",
 
-				/* Neutral surfaces */
-				"c-surface-0": "var(--c-surface-0)",
+				/* Surface */
+				"c-surface-base": "var(--c-surface-base)",
 				"c-surface-1": "var(--c-surface-1)",
 				"c-surface-2": "var(--c-surface-2)",
 				"c-surface-3": "var(--c-surface-3)",
@@ -117,17 +117,32 @@ module.exports = {
 				"c-text-strong": "var(--c-text-strong)",
 				"c-text-base": "var(--c-text-base)",
 				"c-text-muted": "var(--c-text-muted)",
-				"c-text-inverse": "var(--c-text-inverse)",
+				"c-text-inverted": "var(--c-text-inverted)",
 
 				/* Borders */
 				"c-border": "var(--c-border)",
 				"c-border-strong": "var(--c-border-strong)",
 				"c-border-muted": "var(--c-border-muted)",
 
-				/* Brand / Primary Actions */
+				/* Primary */
 				"c-primary": "var(--c-primary)",
-				"c-primary-hover": "var(--c-primary-hover)",
-				"c-primary-ring": "var(--c-primary-ring)",
+				"c-primary-strong": "var(--c-primary-strong)",
+				"c-primary-muted": "var(--c-primary-muted)",
+
+				/* Accent */
+				"c-accent": "var(--c-accent)",
+				"c-accent-strong": "var(--c-accent-strong)",
+				"c-accent-muted": "var(--c-accent-muted)",
+
+				/* Danger */
+				"c-danger": "var(--c-danger)",
+				"c-danger-strong": "var(--c-danger-strong)",
+				"c-danger-muted": "var(--c-danger-muted)",
+
+				/* Info */
+				"c-info": "var(--c-info)",
+				"c-info-strong": "var(--c-info-strong)",
+				"c-info-muted": "var(--c-info-muted)",
 
 				/* Hover */
 				"c-hover": "var(--c-hover)"
