@@ -185,7 +185,7 @@ export function GameifyDialog({
 									{onClose && (
 										<button
 											type="button"
-											className="rounded-full p-1 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
+											className="rounded-full p-1 hover:bg-c-hover-muted focus:outline-none focus:ring-2 focus:ring-gray-300"
 											onClick={() => onClose(undefined)}
 											aria-label="Close"
 										>

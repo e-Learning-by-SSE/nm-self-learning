@@ -13,7 +13,8 @@ import {
 	showToast,
 	SimpleDialog,
 	Tab,
-	Tabs
+	Tabs,
+	SectionHeader
 } from "@self-learning/ui/common";
 import { IdSet } from "@self-learning/util/common";
 import { useEffect, useState, useCallback } from "react";
@@ -91,10 +92,21 @@ export function LearningGoals({
 
 	return (
 		<>
-			<div className="flex items-center justify-end gap-4">
-				<button className="btn-primary" onClick={() => setOpenAddDialog(true)}>
-					<span>Lernziel erstellen</span>
-				</button>
+			<div className="flex justify-between gap-4">
+				<SectionHeader
+					title="Meine Lernziele"
+					subtitle="Auflistung der erstellen Lernziele:"
+				/>
+
+				<div className="mt-4">
+					<button
+						className="btn btn-primary"
+						type="button"
+						onClick={() => setOpenAddDialog(true)}
+					>
+						<span>Lernziel erstellen</span>
+					</button>
+				</div>
 			</div>
 
 			<div className="py-2 ">
@@ -344,7 +356,7 @@ function GoalRow({
 
 	return (
 		<section>
-			<li className="flex flex-col gap-2 rounded-lg bg-gray-100 p-4">
+			<li className="flex flex-col gap-2 rounded-lg bg-c-surface-2 p-4">
 				<div className="group flex flex-row flex-grow justify-between mb-2">
 					<div className="flex">
 						<div className="relative mr-4 flex">
@@ -364,7 +376,7 @@ function GoalRow({
 								<QuickEditButton onClick={() => onClick(goal)} />
 								<GoalDeleteOption
 									goalId={goal.id}
-									className="px-2 hover:text-secondary"
+									className="px-2 hover:text-c-primary"
 								/>
 							</div>
 							<IconOnlyButton
@@ -456,14 +468,14 @@ function SubGoalRow({
 							<QuickEditButton onClick={() => onClick(goal)} />
 							<GoalDeleteOption
 								goalId={goal.id}
-								className="px-2 hover:text-secondary"
+								className="px-2 hover:text-c-primary"
 							/>
 						</div>
 					)}
 					<button
 						type="button"
 						title="Priorität erhöhen"
-						className="rounded p-1 hover:bg-gray-200"
+						className="rounded p-1 hover:bg-c-hover"
 						onClick={moveUp}
 						hidden={!moveUp || !editable}
 					>
@@ -473,7 +485,7 @@ function SubGoalRow({
 					<button
 						type="button"
 						title="Priorität senken"
-						className="rounded p-1 hover:bg-gray-200"
+						className="rounded p-1 hover:bg-c-hover"
 						onClick={moveDown}
 						hidden={!moveDown || !editable}
 					>
@@ -494,7 +506,7 @@ function SubGoalRow({
  */
 function QuickEditButton({ onClick }: Readonly<{ onClick: () => void }>) {
 	return (
-		<button title="Bearbeiten" className="px-2 hover:text-secondary" onClick={onClick}>
+		<button title="Bearbeiten" className="px-2 hover:text-c-primary" onClick={onClick}>
 			<PencilIcon className="h-5 text-lg" />
 		</button>
 	);
@@ -555,7 +567,7 @@ function GoalDeleteOption({
 			className={` ${
 				className
 					? className
-					: "rounded-lg border border-light-border bg-red-400 px-2 py-2 hover:bg-red-600"
+					: "rounded-lg border border-c-border bg-c-danger-muted px-2 py-2 hover:bg-c-danger-strong"
 			}`}
 			onClick={handleDelete}
 		>

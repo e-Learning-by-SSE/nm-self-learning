@@ -11,7 +11,7 @@ import {
 	OnDialogCloseFn,
 	SectionHeader,
 	showToast,
-	IconButton,
+	IconTextButton,
 	Toggle,
 	IconOnlyButton
 } from "@self-learning/ui/common";
@@ -125,7 +125,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 			<SectionHeader
 				title="Kategorien"
 				button={
-					<IconButton
+					<IconTextButton
 						text="Kategorie Hinzufügen"
 						icon={<PlusIcon className="icon w-5" />}
 						onClick={() => setAddCategoryDialog(true)}
@@ -186,7 +186,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 												<ul
 													ref={provided.innerRef}
 													{...provided.droppableProps}
-													className="flex w-full gap-4 overflow-x-auto min-h-[164px] rounded-lg bg-gray-100 p-4"
+													className="flex w-full gap-4 overflow-x-auto min-h-[164px] rounded-lg bg-c-surface-2 p-4"
 												>
 													{items[containerId].map((item, index) => (
 														<DraggableContent

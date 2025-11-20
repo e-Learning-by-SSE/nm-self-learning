@@ -372,12 +372,12 @@ export function StreakSlotMachineDialog({
 					{/* Main content area */}
 					<div className="space-y-6">
 						{showAchievements ? (
-							<div className="bg-gray-50 p-4 rounded-lg">
+							<div className="bg-c-surface-1 p-4 rounded-lg">
 								<div className="flex justify-between items-center mb-4">
 									<h3 className="font-bold text-lg">Deine Errungenschaften</h3>
 									<button
 										onClick={() => setShowAchievements(false)}
-										className="text-gray-500 hover:text-gray-700"
+										className="text-c-text hover:text-c-text-strong"
 									>
 										<XMarkIcon className="w-5 h-5" />
 									</button>
@@ -437,7 +437,7 @@ export function StreakSlotMachineDialog({
 											</p>
 										</div>
 										<div className="flex items-start">
-											<XCircleIcon className="w-6 h-6 text-red-500 mr-2 flex-shrink-0" />
+											<XCircleIcon className="w-6 h-6 text-c-danger mr-2 flex-shrink-0" />
 											<p>
 												Solltest du dich an einem Werktag nicht anmelden,
 												wird der Zähler zurückgesetzt. Du kannst ihn aber
@@ -545,7 +545,7 @@ function DisclosureSection({
 		<Disclosure defaultOpen={defaultOpen}>
 			{({ open }) => (
 				<div className="border rounded-lg overflow-hidden">
-					<DisclosureButton className="w-full flex justify-between items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold">
+					<DisclosureButton className="w-full flex justify-between items-center px-4 py-2 bg-c-surface-2 hover:bg-c-hover text-c-text-strong font-semibold">
 						<span>{title}</span>
 						<ChevronDoubleDownIcon
 							className={`w-5 h-5 transition-transform ${

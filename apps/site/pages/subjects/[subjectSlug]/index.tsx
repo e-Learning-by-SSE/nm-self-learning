@@ -51,7 +51,7 @@ export default function SubjectPage({ subject }: SubjectPageProps) {
 	const { title, subtitle, specializations, imgUrlBanner } = subject;
 
 	return (
-		<div className="bg-gray-50 pb-32">
+		<div className="pb-32">
 			<TopicHeader
 				imgUrlBanner={imgUrlBanner}
 				parentLink="/subjects"

@@ -18,7 +18,6 @@ export default function LanguageTreeAnswer() {
 		}
 	});
 
-
 	const onInputChange = (value: string) => {
 		setAnswer({
 			questionId: question.questionId,
@@ -33,10 +32,15 @@ export default function LanguageTreeAnswer() {
 			{tree && (
 				<div className="flex max-h-600px overflow-hidden">
 					<div className="w-1/2 p-4 border-r  max-h-[500px] overflow-y-auto">
-						<TreeEditor tree={tree} setTree={setTree} setInput={onInputChange} allowTextInputForParents={question.customTextInputInParentNodes}  />
+						<TreeEditor
+							tree={tree}
+							setTree={setTree}
+							setInput={onInputChange}
+							allowTextInputForParents={question.customTextInputInParentNodes}
+						/>
 					</div>
 					<div className="w-1/2">
-						<TreeVisualization  className="h-[500px]" root={tree} />
+						<TreeVisualization className="h-[500px]" root={tree} />
 					</div>
 				</div>
 			)}
@@ -54,10 +58,10 @@ export default function LanguageTreeAnswer() {
 					value={input}
 					readOnly
 					disabled
-					className="font-mono bg-gray-50 w-full"
+					className="font-mono bg-c-surface-1 w-full"
 					rows={5}
 				/>
-				{error && <p className="text-red-500 mt-2">{error}</p>}
+				{error && <p className="text-c-danger mt-2">{error}</p>}
 			</div>
 
 			{evaluation && (

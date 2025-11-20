@@ -196,7 +196,7 @@ function LicenseDataEditSection() {
 	const errors = formState.errors;
 
 	return (
-		<section className="flex flex-col rounded-lg border border-light-border p-4">
+		<section className="flex flex-col rounded-lg border border-c-border p-4">
 			<h2 className="mb-4 text-2xl">Daten</h2>
 			<div className="flex flex-col gap-4">
 				<LabeledField label="Name" error={errors.name?.message}>

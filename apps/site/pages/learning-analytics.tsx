@@ -28,7 +28,7 @@ export default function Page() {
 	};
 
 	return (
-		<div className="bg-gray-50">
+		<div>
 			<select
 				className="px-4 py-2 rounded  bg-sky-50"
 				onChange={e => setMetricSelection(e.target.value)}

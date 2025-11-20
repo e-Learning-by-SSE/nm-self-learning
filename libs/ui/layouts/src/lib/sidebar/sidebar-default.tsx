@@ -19,9 +19,9 @@ export function DefaultSidebar({ setOpen }: { setOpen: (open: boolean) => void }
 
 function SidebarHeader({ setOpen }: { setOpen: (open: boolean) => void }) {
 	return (
-		<div className="to flex justify-between border-b border-light-border p-4">
+		<div className="to flex justify-between border-b border-c-border p-4">
 			<Link href="/" className="flex items-center gap-4">
-				<AcademicCapIcon height="48" className="text-secondary" />
+				<AcademicCapIcon height="48" className="text-c-primary" />
 				<span className="text-lg font-semibold">SELF LEARNING</span>
 			</Link>
 			<button
@@ -66,7 +66,7 @@ function SidebarFooter() {
 	const session = useSession();
 
 	return (
-		<div className="flex flex-col border-t border-light-border">
+		<div className="flex flex-col border-t border-c-border">
 			<div className="flex py-4">
 				{session.data?.user?.name && <UserInformation name={session.data.user.name} />}
 			</div>

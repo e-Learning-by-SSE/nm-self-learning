@@ -40,7 +40,7 @@ export const getServerSideProps = withTranslations(["common"], async () => {
 export default function Subjects({ subjects }: SubjectsProps) {
 	const { t } = useTranslation("common");
 	return (
-		<div className="bg-gray-50 py-16">
+		<div className="py-16">
 			<div className="mx-auto max-w-screen-xl px-4 xl:px-0">
 				<h1 className="mb-16 text-4xl sm:text-6xl">{t("Topic_other")}</h1>
 				<ItemCardGrid>

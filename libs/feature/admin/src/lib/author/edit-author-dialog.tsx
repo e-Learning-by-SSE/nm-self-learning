@@ -122,7 +122,7 @@ function AuthorData() {
 	const errors = formState.errors;
 
 	return (
-		<section className="flex flex-col rounded-lg border border-light-border p-4">
+		<section className="flex flex-col rounded-lg border border-c-border p-4">
 			<h2 className="mb-4 text-2xl">Daten</h2>
 			<div className="flex flex-col gap-4">
 				<LabeledField label="Name" error={errors.displayName?.message}>
@@ -173,9 +173,9 @@ function Permissions() {
 
 	return (
 		<section className="flex flex-col gap-8">
-			<section className="flex h-full flex-col gap-4 rounded-lg border border-light-border p-4">
+			<section className="flex h-full flex-col gap-4 rounded-lg border border-c-border p-4">
 				<h2 className="text-2xl">Rechte</h2>
-				<p className="text-sm text-light">TODO: Beschreibung der Rechte</p>
+				<p className="text-sm text-c-text-muted">TODO: Beschreibung der Rechte</p>
 				<div className="flex gap-4">
 					{!subjects ? (
 						<LoadingBox />

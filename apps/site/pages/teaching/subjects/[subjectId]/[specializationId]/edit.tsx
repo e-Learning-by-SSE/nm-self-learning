@@ -37,7 +37,7 @@ export default function SpecializationEditPage() {
 	};
 
 	return (
-		<div className="bg-gray-50">
+		<div>
 			{specialization && (
 				<SpecializationEditor onSubmit={onSubmit} initialSpecialization={specialization} />
 			)}

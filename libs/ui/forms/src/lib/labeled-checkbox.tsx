@@ -16,7 +16,7 @@ export function LabeledCheckbox({
 				type="checkbox"
 				checked={checked}
 				onChange={onChange}
-				className={"secondary form-checkbox rounded text-secondary focus:ring-secondary"}
+				className={"secondary form-checkbox rounded text-c-primary focus:ring-c-primary"}
 			/>
 		</label>
 	);

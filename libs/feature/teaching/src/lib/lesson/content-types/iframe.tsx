@@ -16,7 +16,7 @@ export function IFrameInput({ index }: { index: number }) {
 	return (
 		<SectionCard>
 			<h3 className="text-xl mb-2">{getContentTypeDisplayName("iframe")}</h3>
-			<span className="text-light mb-2">
+			<span className="text-c-text-muted mb-2">
 				Hinweis: Nicht alle Webseiten erlauben das Einbetten von iFrames.
 			</span>
 

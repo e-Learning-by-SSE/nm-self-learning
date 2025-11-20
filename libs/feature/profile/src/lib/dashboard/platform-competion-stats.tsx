@@ -114,18 +114,18 @@ function GradeBreakdownDialog({
 						return (
 							<div
 								key={grade}
-								className="flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
+								className="flex items-center justify-between p-4 rounded-lg border border-c-border hover:border-c-border-strong transition-colors"
 							>
 								<div className="flex items-center gap-3">
 									<SmallGradeBadge rating={grade as PerformanceGrade} />
-									<div className="text-sm font-medium text-gray-700">
+									<div className="text-sm font-medium text-c-text">
 										{getGradeDisplayName(grade as PerformanceGrade)}
 									</div>
 								</div>
 
 								<div className="flex items-center gap-4">
 									{/* Progress Bar */}
-									<div className="w-24 bg-gray-200 rounded-full h-3">
+									<div className="w-24 bg-c-surface-3 rounded-full h-3">
 										<div
 											className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500 ease-out"
 											style={{ width: `${percentage}%` }}
@@ -137,7 +137,7 @@ function GradeBreakdownDialog({
 										<div className="text-lg font-bold text-gray-900">
 											{count}
 										</div>
-										<div className="text-xs text-gray-500">
+										<div className="text-xs text-c-text-muted">
 											{percentage.toFixed(1)}%
 										</div>
 									</div>
@@ -148,7 +148,7 @@ function GradeBreakdownDialog({
 				</div>
 
 				{/* Summary Stats */}
-				<div className="mt-6 pt-4 border-t border-gray-200">
+				<div className="mt-6 pt-4 border-t border-c-border">
 					<div className="grid grid-cols-2 gap-4 text-center">
 						<div className="p-3 bg-blue-50 rounded-lg">
 							<div className="text-2xl font-bold text-blue-600">{totalLessons}</div>
@@ -182,7 +182,7 @@ export function InlineProgressBar({ value, max }: { value: number; max: number }
 	return (
 		<div className="inline-block font-mono text-sm w-fit min-w-[180px]">
 			<div className="flex items-center gap-2">
-				<span className="text-gray-500">
+				<span className="text-c-text-muted">
 					{value}/{max}
 				</span>
 				<div className="ml-2 w-32">
@@ -277,13 +277,13 @@ export function PlatformStatsAchievementsSection({
 				<div className="space-y-6">
 					{/* Deine Stats */}
 					<div>
-						<h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+						<h3 className="text-lg font-semibold text-c-text-strong mb-4 flex items-center gap-2">
 							<TrophyIcon className="h-5 w-5 text-blue-500" />
 							Deine Erfolge
 						</h3>
 
-						<div className="bg-gradient-to-br from-white to-gray-50 rounded-lg border border-gray-200 p-4">
-							<div className="grid grid-cols-3 divide-x divide-gray-200">
+						<div className="bg-gradient-to-br from-white to-gray-50 rounded-lg border border-c-border p-4">
+							<div className="grid grid-cols-3 divide-x divide-c-border">
 								{/* Streak */}
 								<div className="text-center">
 									<div className="text-3xl font-bold text-blue-600 mb-1">
@@ -330,7 +330,7 @@ export function PlatformStatsAchievementsSection({
 
 					{/* Spitzenreiter Stats - mit goldenem Schimmer */}
 					<div>
-						<h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+						<h3 className="text-lg font-semibold text-c-text-strong mb-4 flex items-center gap-2">
 							<TrophyIcon className="h-5 w-5 text-yellow-500" />
 							{stats.topUser.isCurrentUser ? (
 								<span className="text-purple-600">
@@ -345,7 +345,7 @@ export function PlatformStatsAchievementsSection({
 						</h3>
 
 						{stats.topUser.isCurrentUser && (
-							<div className="mb-2 p-1 bg-gray-50 border border-gray-200 rounded-lg">
+							<div className="mb-2 p-1 bg-c-surface-1 border border-c-border rounded-lg">
 								<p className="text-xs text-green-700">
 									<span role="img" aria-label="Schloss-Emoji">
 										🔒
@@ -363,7 +363,7 @@ export function PlatformStatsAchievementsSection({
 							<div className="grid grid-cols-3 divide-x divide-gray-200">
 								{/* Streak */}
 								<div className="text-center">
-									<div className="text-3xl font-bold text-emerald-600 mb-1">
+									<div className="text-3xl font-bold text-c-primary-strong mb-1">
 										{stats.topUser.currentStreak}
 									</div>
 									<div className="text-sm text-gray-600">Tage-Streak</div>
@@ -371,7 +371,7 @@ export function PlatformStatsAchievementsSection({
 
 								{/* Achievements */}
 								<div className="text-center">
-									<div className="text-3xl font-bold text-emerald-600 mb-1">
+									<div className="text-3xl font-bold text-c-primary-strong mb-1">
 										{stats.topUser.achievementCount}
 									</div>
 									<div className="text-sm text-gray-600">Erfolge</div>
@@ -379,7 +379,7 @@ export function PlatformStatsAchievementsSection({
 
 								{/* Rating */}
 								<div className="text-center">
-									<div className="text-3xl font-bold text-emerald-600 mb-1">
+									<div className="text-3xl font-bold text-c-primary-strong mb-1">
 										<SmallGradeBadge rating={stats.topUser.averageRating} />
 									</div>
 									<div className="text-sm text-gray-600">Ø Bewertung</div>
@@ -389,9 +389,9 @@ export function PlatformStatsAchievementsSection({
 					</div>
 
 					{/* Achievement Feed */}
-					<div className="bg-white rounded-lg border border-gray-200 p-2">
+					<div className="bg-white rounded-lg border border-c-border p-2">
 						<div className="flex items-center justify-between mb-4">
-							<h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+							<h3 className="text-lg font-semibold text-c-text-strong flex items-center gap-2">
 								<TrophyIcon className="h-5 w-5 text-purple-600" />
 								Letzte Fortschritte
 							</h3>
@@ -447,7 +447,7 @@ export function PlatformStatsAchievementsSection({
 
 					{/* Heutige Rekorde - unten nebeneinander */}
 					<div>
-						<h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+						<h3 className="text-lg font-semibold text-c-text-strong mb-4 flex items-center gap-2">
 							<ClockIcon className="h-5 w-5 text-blue-500" />
 							Heutige Plattform Rekorde
 						</h3>

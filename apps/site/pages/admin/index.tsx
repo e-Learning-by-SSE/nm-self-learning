@@ -13,7 +13,7 @@ export default function AdminPage() {
 
 	return (
 		<AdminGuard>
-			<CenteredSection className="bg-gray-50">
+			<CenteredSection>
 				<h1 className="mb-16 text-5xl">{t("Management")}</h1>
 
 				<div className="grid grid-cols-2 gap-8">

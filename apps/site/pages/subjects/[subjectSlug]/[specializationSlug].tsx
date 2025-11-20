@@ -62,7 +62,7 @@ export default function SpecializationPage({ specialization }: SpecializationPag
 	const { title, subtitle, imgUrlBanner, subject, courses } = specialization;
 
 	return (
-		<div className="bg-gray-50 pb-32">
+		<div className="pb-32">
 			<TopicHeader
 				imgUrlBanner={imgUrlBanner}
 				parentLink={`/subjects/${subject.slug}`}
