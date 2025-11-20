@@ -539,8 +539,8 @@ export default function ProfilPage({
 			{/* Second row - Letzter Kurs und Zuletzt bearbeitete Lerneinheiten */}
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 				{/* Last Course */}
-				<div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6 h-full flex flex-col">
-					<h2 className="mb-4 text-lg font-semibold text-gray-900">Letzter Kurs</h2>
+				<div className="rounded-xl bg-white shadow-sm border border-c-border-muted p-6 h-full flex flex-col">
+					<h2 className="mb-4 text-lg font-semibold text-c-text-strong">Letzter Kurs</h2>
 					<LastCourseProgress
 						lastEnrollment={
 							student.enrollments.sort(
@@ -553,8 +553,8 @@ export default function ProfilPage({
 				</div>
 
 				{/* Recent Lessons / Learning Diary */}
-				<div className="rounded-xl  bg-white shadow-sm border border-gray-100 p-6 h-full flex flex-col">
-					<h2 className="mb-4 text-lg font-semibold text-gray-900">
+				<div className="rounded-xl  bg-white shadow-sm border border-c-border-muted p-6 h-full flex flex-col">
+					<h2 className="mb-4 text-lg font-semibold text-c-text-strong">
 						{ltbEnabled ? "Lerntagebuch Einträge" : "Zuletzt bearbeitete Lerneinheiten"}
 					</h2>
 					{ltbEnabled ? (
@@ -573,8 +573,8 @@ export default function ProfilPage({
 
 			{/* Third row - Course Enrollment Overview (full width) */}
 			<div className="w-full">
-				<div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6">
-					<h2 className="mb-4 text-lg font-semibold text-gray-900">Mein Lernplan</h2>
+				<div className="rounded-xl bg-white shadow-sm border border-c-border-muted p-6">
+					<h2 className="mb-4 text-lg font-semibold text-c-text-strong">Mein Lernplan</h2>
 					<CourseEnrollmentOverview enrollments={enrollments} />
 				</div>
 			</div>
@@ -633,8 +633,8 @@ function MyFunctionsCard() {
 	];
 
 	return (
-		<div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6 h-full">
-			<h2 className="mb-4 text-lg font-semibold text-gray-900">Meine Funktionen</h2>
+		<div className="rounded-xl bg-white shadow-sm border border-c-border-muted p-6 h-full">
+			<h2 className="mb-4 text-lg font-semibold text-c-text-strong">Meine Funktionen</h2>
 			<div className="space-y-1">
 				{functions
 					.filter(f => !!f.condition)
@@ -642,24 +642,26 @@ function MyFunctionsCard() {
 						<div key={index}>
 							<Link
 								href={func.href}
-								className="group flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
+								className="group flex items-center p-3 rounded-lg hover:bg-c-hover-subtle transition-colors duration-150 cursor-pointer"
 							>
 								<div className="flex-shrink-0 mr-3">
-									<func.icon className="h-5 w-5 text-gray-500 group-hover:text-gray-700 transition-colors" />
+									<func.icon className="h-5 w-5 text-c-text-muted group-hover:text-c-text transition-colors" />
 								</div>
 								<div className="flex-1 min-w-0">
 									<div className="flex items-center justify-between">
-										<p className="text-sm font-medium text-gray-900 group-hover:text-gray-700 transition-colors">
+										<p className="text-sm font-medium text-c-text-strong group-hover:text-c-text transition-colors">
 											{func.title}
 										</p>
-										<LinkIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 ml-2 flex-shrink-0 transition-colors" />
+										<LinkIcon className="h-4 w-4 text-c-text-muted group-hover:text-c-text ml-2 flex-shrink-0 transition-colors" />
 									</div>
-									<p className="text-xs text-gray-500 mt-1">{func.description}</p>
+									<p className="text-xs text-c-text-muted mt-1">
+										{func.description}
+									</p>
 								</div>
 							</Link>
 							{/* Trenner - außer beim letzten Element */}
 							{index < functions.length - 1 && (
-								<div className="border-b border-gray-100 mx-3"></div>
+								<div className="border-b border-c-border-muted mx-3"></div>
 							)}
 						</div>
 					))}
@@ -701,7 +703,7 @@ function ProfileCard({
 	);
 
 	return (
-		<section className="relative rounded-xl bg-gradient-to-br from-white to-gray-50 shadow-sm border border-gray-100 p-6 space-y-6">
+		<section className="relative rounded-xl bg-gradient-to-br from-white to-gray-50 shadow-sm border border-c-border-muted p-6 space-y-6">
 			<div className="absolute -top-3 -right-3 h-16 w-16 z-10">
 				<StreakIndicatorCircle
 					count={gamificationProfile.loginStreak.count}
@@ -712,10 +714,10 @@ function ProfileCard({
 			<div className="flex justify-start">
 				<button
 					onClick={openSettings}
-					className="rounded-full p-2 hover:bg-gray-100 transition-colors"
+					className="rounded-full p-2 hover:bg-c-hover-muted transition-colors"
 					title="Einstellungen"
 				>
-					<CogIcon className="h-5 w-5 text-gray-500" />
+					<CogIcon className="h-5 w-5 text-c-text-muted" />
 				</button>
 			</div>
 			{/* User Info */}
@@ -725,25 +727,25 @@ function ProfileCard({
 						src={user.image ?? undefined}
 						className="h-24 w-24 rounded-full object-cover border-4 border-white shadow-md"
 					/>
-					<div className="absolute -bottom-1 -right-1 h-6 w-6 bg-green-500 rounded-full border-2 border-white"></div>
+					<div className="absolute -bottom-1 -right-1 h-6 w-6 bg-c-primary rounded-full border-2 border-white"></div>
 				</div>
 				<div>
-					<h1 className="text-xl font-bold text-gray-900">{user.name}</h1>
-					<p className="text-sm text-gray-600 mt-1">{user.email}</p>
+					<h1 className="text-xl font-bold text-c-text-strong">{user.name}</h1>
+					<p className="text-sm text-c-text-muted mt-1">{user.email}</p>
 				</div>
 			</div>
 
 			{/* Stats Grid */}
-			<div className="bg-white rounded-lg p-5 space-y-4 border border-gray-100">
+			<div className="bg-white rounded-lg p-5 space-y-4 border border-c-border-muted">
 				{/* Completion Stats */}
 				<div>
-					<h3 className="text-sm font-semibold text-gray-700 mb-3">Abgeschlossen</h3>
+					<h3 className="text-sm font-semibold text-c-text mb-3">Abgeschlossen</h3>
 					<div className="grid grid-cols-2 gap-4">
 						<div className="text-center">
-							<div className="text-2xl font-bold text-emerald-600">
+							<div className="text-2xl font-bold text-c-primary-strong">
 								{completedCourses}
 							</div>
-							<div className="text-xs text-gray-500 uppercase tracking-wide">
+							<div className="text-xs text-c-text-muted uppercase tracking-wide">
 								Kurse
 							</div>
 						</div>
@@ -751,35 +753,37 @@ function ProfileCard({
 							<div className="text-2xl font-bold text-blue-600">
 								{uniqueCompletedLesson.size}
 							</div>
-							<div className="text-xs text-gray-500 uppercase tracking-wide">
+							<div className="text-xs text-c-text-muted uppercase tracking-wide">
 								Lerneinheiten
 							</div>
 						</div>
 					</div>
 				</div>
 
-				<div className="border-t border-gray-100 pt-4 space-y-3">
+				<div className="border-t border-c-border-muted pt-4 space-y-3">
 					{/* Learning Time */}
 					<div className="flex items-center justify-between">
-						<span className="text-sm text-gray-600">Insgesamt Zeit gelernt</span>
-						<span className="text-sm font-semibold text-emerald-600">
+						<span className="text-sm text-c-text-muted">Insgesamt Zeit gelernt</span>
+						<span className="text-sm font-semibold text-c-primary-strong">
 							{formatTimeIntervalToString(totalLearningTime)}
 						</span>
 					</div>
 
 					{/* Longest Streak */}
 					<div className="flex items-center justify-between">
-						<span className="text-sm text-gray-600">Längster Streak</span>
-						<span className="text-sm font-semibold  text-emerald-600">
+						<span className="text-sm text-c-text-muted">Längster Streak</span>
+						<span className="text-sm font-semibold  text-c-primary-strong">
 							{longestStreak} Tage
 						</span>
 					</div>
 					{/*  */}
 					<div className="flex items-center justify-between">
 						<Tooltip content="Lerneinheiten die du erfolgreich bearbeitet hast. Auch mehrfachbewertungen werden hier gezählt.">
-							<span className="text-sm text-gray-600">Lerneinheiten bearbeitet</span>
+							<span className="text-sm text-c-text-muted">
+								Lerneinheiten bearbeitet
+							</span>
 						</Tooltip>
-						<span className="text-sm font-semibold  text-emerald-600">
+						<span className="text-sm font-semibold text-c-primary-strong">
 							{completionCount.completedLessons}
 						</span>
 					</div>
@@ -793,7 +797,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 	return (
 		<>
 			{pages.length == 0 ? (
-				<span className="text-sm text-light">
+				<span className="text-sm text-c-text-muted">
 					Du hast noch keinen Lerntagebucheintrag erstellt.
 				</span>
 			) : (
@@ -806,8 +810,8 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 								key={page.id}
 							>
 								<li
-									className="hover: flex items-center rounded-lg border border-light-border
-                            p-3 transition-transform hover:bg-slate-100"
+									className="hover: flex items-center rounded-lg border border-c-border-muted
+                            p-3 transition-transform hover:bg-c-hover-muted"
 								>
 									<div className="flex w-full flex-col lg:flex-row items-center justify-between gap-2 px-4">
 										<div className="flex items-center gap-2">
@@ -819,7 +823,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 												<span className="truncate max-w-full inline-block align-middle">
 													{page.course.title}
 												</span>
-												<span className="text-xs text-gray-400 truncate block max-w-full">
+												<span className="text-xs text-c-text-muted truncate block max-w-full">
 													Verbrachte Zeit:{" "}
 													{formatTimeIntervalToString(
 														page.totalDurationLearnedMs ?? 0
@@ -827,7 +831,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 												</span>
 											</div>
 										</div>
-										<span className="hidden text-xs text-light md:block">
+										<span className="hidden text-xs text-c-text-muted md:block">
 											{formatDateStringShort(page.createdAt)}
 										</span>
 									</div>
@@ -845,7 +849,9 @@ function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 	return (
 		<>
 			{lessons.length === 0 ? (
-				<span className="text-sm text-light">Du hast keine Lerneinheiten bearbeitet.</span>
+				<span className="text-sm text-c-text-muted">
+					Du hast keine Lerneinheiten bearbeitet.
+				</span>
 			) : (
 				<ul className="flex max-h-96 flex-col gap-3 overflow-auto overflow-x-visible">
 					{lessons.map((lesson, index) => (
@@ -854,7 +860,7 @@ function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 							href={`/courses/${lesson.courseSlug}/${lesson.slug}`}
 							key={"course-" + index}
 						>
-							<li className="flex items-center rounded-lg border border-light-border overflow-hidden transition-all hover:scale-[1.02] hover:bg-slate-50 hover:shadow-md hover:border-gray-200">
+							<li className="flex items-center rounded-lg border border-light-border overflow-hidden transition-all hover:scale-[1.02] hover:bg-c-hover-subtle hover:shadow-md hover:border-c-border">
 								{/* Course Image */}
 								<ImageOrPlaceholder
 									src={lesson.courseImgUrl ?? undefined}
@@ -865,10 +871,10 @@ function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 								<div className="flex-1 flex items-center justify-between p-4 min-w-0">
 									{/* Left side: Title and Date */}
 									<div className="flex flex-col min-w-0 flex-1">
-										<span className="font-medium text-gray-900 truncate">
+										<span className="font-medium text-c-text-strong truncate">
 											{lesson.title}
 										</span>
-										<span className="text-xs text-gray-500 mt-1">
+										<span className="text-xs text-c-text-muted mt-1">
 											{formatDateAgo(lesson.touchedAt)}
 										</span>
 									</div>
@@ -877,7 +883,7 @@ function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 									<div className="flex items-center gap-2 ml-4 flex-shrink-0">
 										{lesson.completed ? (
 											<>
-												<CheckIcon className="h-5 w-5 text-green-500" />
+												<CheckIcon className="h-5 w-5 text-c-primary" />
 												{
 													<SmallGradeBadge
 														rating={lesson.performanceScore ?? 0}
@@ -885,7 +891,7 @@ function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 												}
 											</>
 										) : (
-											<div className="h-5 w-5 rounded-full border-2 border-gray-300" />
+											<div className="h-5 w-5 rounded-full border-2 border-c-border-strong" />
 										)}
 									</div>
 								</div>
@@ -902,12 +908,12 @@ function LastCourseProgress({ lastEnrollment }: { lastEnrollment?: Student["enro
 	if (!lastEnrollment) {
 		return (
 			<div>
-				<span className="text-sm text-light">
+				<span className="text-sm text-c-text-muted">
 					Du bist momentan in keinem Kurs eingeschrieben.
 				</span>
 				<Link
 					href="/subjects"
-					className="text-sm ml-1 text-light underline hover:text-secondary"
+					className="text-sm ml-1 text-c-text-muted underline hover:text-c-primary"
 				>
 					Leg los
 				</Link>
@@ -929,7 +935,7 @@ function LastCourseProgress({ lastEnrollment }: { lastEnrollment?: Student["enro
 						badge={
 							lastEnrollment.status === "COMPLETED" ? (
 								<ImageCardBadge
-									className="bg-emerald-500 text-white"
+									className="bg-c-primary text-white"
 									text="Abgeschlossen"
 								/>
 							) : (
