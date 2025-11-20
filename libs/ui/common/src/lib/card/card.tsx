@@ -20,7 +20,7 @@ export function Card({
 					className: "h-full w-full object-contain"
 				})}
 			</div>
-			<span className="w-full rounded-b-lg bg-c-primary p-4 text-center font-semibold text-white">
+			<span className="w-full rounded-b-lg bg-c-primary hover:bg-c-primary-strong p-4 text-center font-semibold text-white">
 				{title}
 			</span>
 		</Link>
