@@ -18,15 +18,15 @@
 	--color-light-border: theme("colors.slate.200");
 	--gradient: linear-gradient(62deg, #c2dbf3, #d7b6f5);
 
-	/* Neutral surfaces */
-	--c-surface-base: theme("colors.gray.50"); /* Background */
-	--c-surface-1: theme("colors.white");
+	/* Background / surface */
+	--c-surface-0: theme("colors.white");
+	--c-surface-1: theme("colors.gray.50"); /* Background */
 	--c-surface-2: theme("colors.gray.100");
 	--c-surface-3: theme("colors.gray.200");
 
 	/* Text */
 	--c-text-strong: theme("colors.slate.800");
-	--c-text-base: theme("colors.slate.700");
+	--c-text: theme("colors.slate.700");
 	--c-text-muted: theme("colors.slate.500");
 	--c-text-inverted: theme("colors.white");
 
@@ -37,8 +37,9 @@
 
 	/* Primary */
 	--c-primary: theme("colors.emerald.500");
-	--c-primary-strong: theme("colors.emerald.600"); /* Hover */
+	--c-primary-strong: theme("colors.emerald.600"); /* Hover: Primary */
 	--c-primary-muted: theme("colors.emerald.400"); /* Focus */
+	--c-primary-subtle: theme("colors.emerald.50"); /* Hover: Secondary */
 
 	/* Accent */
 	--c-accent: theme("colors.purple.500");
@@ -49,14 +50,19 @@
 	--c-danger: theme("colors.red.500");
 	--c-danger-strong: theme("colors.red.600"); /* Hover */
 	--c-danger-muted: theme("colors.red.400"); /* Focus */
+	--c-danger-subtle: theme("colors.red.100"); /* Hover */
 
 	/* Info */
 	--c-info: theme("colors.blue.500");
 	--c-info-strong: theme("colors.blue.600"); /* Hover */
 	--c-info-muted: theme("colors.blue.400"); /* Focus */
+	--c-info-subtle: theme("colors.blue.50"); /* Hover */
 
 	/* Hover */
-	--c-hover: theme("colors.gray.100");
+	--c-hover: theme("colors.gray.200");
+	--c-hover-strong: theme("colors.gray.300");
+	--c-hover-muted: theme("colors.gray.100");
+	--c-hover-subtle: theme("colors.gray.50");
 }
 
 @font-face {
@@ -112,12 +118,12 @@ html {
 	-moz-osx-font-smoothing: auto;
 	background-repeat: no-repeat;
 	background-attachment: fixed;
-	color: theme("colors.slate.700");
-	accent-color: var(--color-secondary);
+	color: var(--c-text);
+	accent-color: var(--c-primary);
 }
 
 #__next {
-	@apply flex h-full min-h-screen flex-col bg-gray-50;
+	@apply flex h-full min-h-screen flex-col bg-c-surface-1;
 }
 
 h1,
@@ -125,7 +131,7 @@ h2,
 h3 {
 	font-weight: 700;
 	letter-spacing: -0.05em;
-	color: theme("colors.slate.800");
+	color: var(--c-text-strong);
 }
 
 video {
@@ -135,7 +141,7 @@ video {
 .heading {
 	font-weight: 700;
 	letter-spacing: -0.05em;
-	color: theme("colors.slate.800");
+	color: var(--c-text-strong);
 }
 
 /* Base button styles that all button variants inherit */
@@ -150,7 +156,7 @@ video {
 
 /* Primary button: green background, white text */
 .btn-primary {
-	@apply bg-emerald-500 text-white hover:bg-emerald-600;
+	@apply bg-c-primary text-c-text-inverted hover:bg-c-primary-strong;
 }
 
 .hover-highlight-scale {
@@ -189,12 +195,12 @@ video {
 
 /* Secondary button: green outline, green text */
 .btn-secondary {
-	@apply border border-emerald-500 bg-transparent text-emerald-600 hover:bg-emerald-50;
+	@apply border border-c-primary bg-transparent text-c-primary-strong hover:bg-c-primary-subtle;
 }
 
 /* Danger button: red background, white text */
 .btn-danger {
-	@apply bg-red-500 text-white hover:bg-red-600;
+	@apply bg-c-danger text-white hover:bg-c-danger-strong;
 }
 
 /* Tertiary button: gray outline, gray text (previously border button) */
@@ -204,17 +210,17 @@ video {
 
 /* Stroked button: Gray outline, white background, black text  */
 .btn-stroked {
-	@apply border border-gray-200 bg-white px-8 py-2 text-sm font-medium hover:bg-gray-200;
+	@apply border border-c-border bg-white px-8 py-2 text-sm font-medium hover:bg-c-hover-muted;
 }
 
 /* Show more / Show less button: Blue border, blue text, white background  */
 .btn-show-more {
-	@apply mt-4 border border-blue-500 text-blue-500 bg-white rounded hover:bg-blue-50;
+	@apply mt-4 border border-c-info text-c-info bg-white rounded hover:bg-c-info-subtle;
 }
 
 /* X Mark Button: Text Gray, Hover Gray  */
 .btn-x-mark {
-	@apply rounded-full text-gray-400 hover:bg-gray-50 hover:text-red-500 p-1;
+	@apply rounded-full text-gray-400 hover:bg-c-hover-subtle hover:text-c-danger p-1;
 }
 
 /* Icon button with text that can be hidden on mobile */
@@ -229,11 +235,11 @@ video {
 
 /* Icon button variants for minimal UI controls */
 .btn-hover-icon {
-	@apply hover:text-secondary px-2 py-0;
+	@apply hover:text-c-primary px-2 py-0;
 }
 
 .btn-hover-bg {
-	@apply rounded p-1 hover:bg-gray-300 text-gray-500 border-0;
+	@apply rounded p-1 hover:bg-c-hover-strong text-c-text-muted border-0;
 }
 
 .icon {
@@ -241,7 +247,7 @@ video {
 }
 
 .checkbox {
-	@apply rounded text-secondary accent-secondary focus:ring-secondary;
+	@apply rounded text-c-primary accent-c-primary focus:ring-c-primary;
 }
 
 .select {
