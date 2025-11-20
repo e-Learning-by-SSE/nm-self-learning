@@ -63,8 +63,8 @@ export default function MultipleChoiceForm({
 					key={answer.answerId}
 					className={`relative flex flex-col gap-2 rounded-lg border p-4 ${
 						answers?.[answerIndex]?.isCorrect
-							? "border-secondary bg-emerald-50"
-							: "border-gray-300 bg-gray-200"
+							? "border-secondary bg-c-primary-subtle"
+							: "border-c-border-strong bg-c-surface-2"
 					}`}
 				>
 					<div className="flex items-start gap-4 w-full">

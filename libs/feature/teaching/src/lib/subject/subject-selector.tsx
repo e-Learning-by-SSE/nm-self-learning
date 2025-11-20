@@ -45,7 +45,7 @@ export function SpecializationSelector({
 				<DropdownDialog.Options>
 					{filtered?.map(subject => (
 						<div key={subject.subjectId} className="flex flex-col">
-							<span className="bg-gray-100 px-4 py-2 text-sm font-semibold">
+							<span className="bg-c-surface-2 px-4 py-2 text-sm font-semibold">
 								{subject.title}
 							</span>
 							<ul className="flex flex-col divide-y divide-light-border">
@@ -60,7 +60,7 @@ export function SpecializationSelector({
 												type="button"
 												onClick={() => onClose(spec)}
 												className={`flex items-center gap-4 rounded pr-4 ${
-													focus ? "bg-secondary text-white" : ""
+													focus ? "bg-c-primary text-white" : ""
 												}`}
 											>
 												<ImageOrPlaceholder

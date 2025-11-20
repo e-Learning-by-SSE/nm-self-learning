@@ -87,7 +87,7 @@ export function SpecializationEditor({
 					sidebar={
 						<>
 							<div>
-								<span className="font-semibold text-secondary">
+								<span className="font-semibold text-c-primary">
 									Spezialisierung{" "}
 									{initialSpecialization.specializationId === ""
 										? "erstellen"

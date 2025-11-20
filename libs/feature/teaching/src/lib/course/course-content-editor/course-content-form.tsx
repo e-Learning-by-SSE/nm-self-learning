@@ -155,7 +155,7 @@ function LessonNode({
 
 				<button
 					type="button"
-					className="flex items-center whitespace-nowrap hover:text-secondary"
+					className="flex items-center whitespace-nowrap hover:text-c-primary"
 					onClick={() => setLessonEditorDialogOpen(true)}
 				>
 					<span className="text-sm">{data ? data.title : "Loading..."}</span>
@@ -171,7 +171,7 @@ function LessonNode({
 
 			<div className="flex gap-4">
 				{(data?.meta as LessonMeta)?.hasQuiz && (
-					<span className="flex items-center justify-center rounded-full bg-secondary px-3 py-1 text-xs font-medium text-white min-h-[2rem]">
+					<span className="flex items-center justify-center rounded-full bg-c-primary px-3 py-1 text-xs font-medium text-white min-h-[2rem]">
 						Lernkontrolle
 					</span>
 				)}
@@ -242,13 +242,13 @@ function ChapterNode({
 	}
 
 	return (
-		<li className="flex flex-col gap-2 rounded-lg bg-gray-100 p-4">
+		<li className="flex flex-col gap-2 rounded-lg bg-c-surface-2 p-4">
 			<span className="flex items-center justify-between gap-4">
 				<span className="flex items-center gap-4 whitespace-nowrap text-xl font-semibold ">
 					<span className="w-fit min-w-[24px] text-center text-gray-400">
 						{index + 1}.
 					</span>
-					<span className="tracking-tight text-secondary">{chapter.title}</span>
+					<span className="tracking-tight text-c-primary">{chapter.title}</span>
 				</span>
 
 				<div className="flex items-center gap-2">
@@ -274,7 +274,7 @@ function ChapterNode({
 					<button
 						type="button"
 						title="Kapitel entfernen"
-						className="rounded p-1 hover:bg-red-100 text-red-500"
+						className="rounded p-1 hover:bg-c-danger-subtle text-c-danger"
 						onClick={onRemove}
 					>
 						<TrashIcon className="h-4 w-4" />
@@ -298,7 +298,7 @@ function ChapterNode({
 			{expanded && (
 				<>
 					{chapter.description && chapter.description.length > 0 && (
-						<p className="pb-4 text-sm text-light">{chapter.description}</p>
+						<p className="pb-4 text-sm text-c-text-muted">{chapter.description}</p>
 					)}
 
 					<ul className="flex flex-col gap-1">

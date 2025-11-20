@@ -25,7 +25,7 @@ import { MinorScaleFadeIn } from "@self-learning/ui/common";
  *   displayValue={selectedLevel}
  *   options={["**Easy**", "**Medium**", "**Hard**"]}
  *   onChange={setSelectedLevel}
- *   customFocusStyle={(focus) => (focus ? "bg-blue-500 text-white" : "text-gray-800")}
+ *   customFocusStyle={(focus) => (focus ? "bg-blue-500 text-white" : "text-c-text-strong")}
  *   constomButtonStyle="w-full border px-4 py-2 text-left rounded"
  * />
  */
@@ -98,8 +98,8 @@ export function MarkdownListboxMenu({
 										customFocusStyle
 											? customFocusStyle(focus)
 											: focus
-												? "text-white bg-secondary"
-												: "text-gray-700"
+												? "text-white bg-c-primary"
+												: "text-c-text"
 									}`}
 								>
 									{selected ? (

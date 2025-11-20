@@ -105,11 +105,11 @@ export function Unauthorized({ children }: { children?: React.ReactNode }) {
 		<CenteredSection>
 			<div className="flex flex-col gap-8">
 				<h1 className="text-5xl">Nicht autorisiert</h1>
-				<span className="text-light">
+				<span className="text-c-text-muted">
 					Diese Seite ist nur für Benutzer mit entsprechenden Rechten erreichbar.
 				</span>
 
-				{children && <div className="text-light">{children}</div>}
+				{children && <div className="text-c-text-muted">{children}</div>}
 
 				<Link href="/" className="btn-primary w-fit">
 					<ArrowLeftIcon className="icon" />

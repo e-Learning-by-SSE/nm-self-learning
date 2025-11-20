@@ -60,7 +60,7 @@ export function SkillRepositoryOverview() {
 										<TableDataColumn>
 											<div className="flex flex-wrap gap-4">
 												<Link
-													className="text-sm font-medium hover:text-secondary"
+													className="text-sm font-medium hover:text-c-primary"
 													href={`/skills/repository/${id}`}
 												>
 													{name}
@@ -79,7 +79,7 @@ export function SkillRepositoryOverview() {
 								<tr key={"default:table"}>
 									<TableDataColumn>
 										<div className="flex flex-wrap gap-4">
-											<span className="text-sm font-medium hover:text-secondary">
+											<span className="text-sm font-medium hover:text-c-secondary">
 												Keine Skillkarten vorhanden
 											</span>
 										</div>
@@ -142,7 +142,7 @@ function RepositoryDeleteOption({ repositoryId }: { repositoryId: string }) {
 				<Dialog title={"Löschen"} onClose={handleCancel}>
 					Möchten Sie dieses Repository wirklich löschen?
 					<DialogActions onClose={handleCancel}>
-						<button className="btn-primary hover:bg-red-500" onClick={handleConfirm}>
+						<button className="btn-primary hover:bg-c-danger" onClick={handleConfirm}>
 							Löschen
 						</button>
 					</DialogActions>

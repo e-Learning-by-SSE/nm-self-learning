@@ -23,7 +23,7 @@ export function LandingPage() {
 								href={"https://www.uni-hildesheim.de/"}
 								target="_blank"
 								rel="noreferrer"
-								className="font-semibold text-secondary hover:underline"
+								className="font-semibold text-c-primary hover:underline"
 							>
 								Universität Hildesheim
 							</a>
@@ -41,14 +41,14 @@ export function LandingPage() {
 
 						<Link
 							href="/subjects"
-							className="w-fit rounded-lg bg-secondary px-16 py-6 text-center text-lg font-semibold text-white"
+							className="w-fit rounded-lg bg-c-primary hover:bg-c-primary-strong px-16 py-6 text-center text-lg font-semibold text-white"
 						>
 							Lerninhalte entdecken
 						</Link>
 
 						<ul className="text-md mt-12 flex list-inside list-disc flex-col gap-6">
 							<li>
-								Auf der Plattform werden dir studiengangbezogene Lerninhalte in
+								Auf der Plattform werden dir studiengangsbezogene Lerninhalte in
 								individualisierten und flexiblen Lernpfaden, bestehend aus kleinen
 								Lerneinheiten, präsentiert.
 							</li>
@@ -75,7 +75,7 @@ export function LandingPage() {
 
 				<div
 					style={{ height: "384px", width: "384px" }}
-					className="animate-blob animation-delay-3000 absolute right-48 top-64 hidden rounded-full bg-secondary bg-pink-300 opacity-80 mix-blend-multiply blur-xl filter xl:block"
+					className="animate-blob animation-delay-3000 absolute right-48 top-64 hidden rounded-full bg-c-primary bg-pink-300 opacity-80 mix-blend-multiply blur-xl filter xl:block"
 				></div>
 
 				<div

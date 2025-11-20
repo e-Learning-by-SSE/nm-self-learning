@@ -186,7 +186,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 												<ul
 													ref={provided.innerRef}
 													{...provided.droppableProps}
-													className="flex w-full gap-4 overflow-x-auto min-h-[164px] rounded-lg bg-gray-100 p-4"
+													className="flex w-full gap-4 overflow-x-auto min-h-[164px] rounded-lg bg-c-surface-2 p-4"
 												>
 													{items[containerId].map((item, index) => (
 														<DraggableContent

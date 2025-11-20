@@ -65,7 +65,7 @@ function LessonDeletionDialog({
 				<ul className="flex flex-wrap gap-4 list-inside list-disc text-sm font-medium">
 					{linkedEntities.map(course => (
 						<li key={course.slug}>
-							<Link href={`/courses/${course.slug}`} className="hover:text-secondary">
+							<Link href={`/courses/${course.slug}`} className="hover:text-c-primary">
 								{course.title}
 							</Link>
 						</li>
@@ -80,7 +80,7 @@ function LessonDeletionDialog({
 		<Dialog title={"Löschen"} onClose={handleCancel}>
 			Möchten Sie diese Lerneinheit wirklich löschen?
 			<DialogActions onClose={handleCancel}>
-				<button className="btn-primary hover:bg-red-500" onClick={handleConfirm}>
+				<button className="btn-primary hover:bg-c-danger" onClick={handleConfirm}>
 					Löschen
 				</button>
 			</DialogActions>

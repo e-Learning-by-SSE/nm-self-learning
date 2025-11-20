@@ -42,7 +42,7 @@ export default function MultipleChoiceAnswer({ lesson }: { lesson: LessonLayoutP
 								<MDXRemote {...markdown.answersMd[answerId]} />
 							</MarkdownContainer>
 						) : (
-							<span className="text-red-500">Error: No markdown content found.</span>
+							<span className="text-c-danger">Error: No markdown content found.</span>
 						)}
 					</MultipleChoiceOption>
 				))}
@@ -73,13 +73,15 @@ export function MultipleChoiceOption({
 	let className = "bg-white";
 
 	if (showResult) {
-		className = isUserAnswerCorrect ? "bg-emerald-50 border-emerald-500" : "bg-red-50";
+		className = isUserAnswerCorrect
+			? "bg-c-primary-subtle border-c-primary"
+			: "bg-c-danger-subtle";
 	}
 
-	const justifiedLayout = justified ? "border-b border-light-border rounded-t-lg" : "rounded-lg";
+	const justifiedLayout = justified ? "border-b border-c-border rounded-t-lg" : "rounded-lg";
 
 	return (
-		<div className="rounded-lg border border-light-border bg-white">
+		<div className="rounded-lg border border-c-border bg-white">
 			<button
 				className={`w-full flex gap-8 px-8 py-2 text-start focus:outline-secondary ${className} ${justifiedLayout}`}
 				onClick={onToggle}

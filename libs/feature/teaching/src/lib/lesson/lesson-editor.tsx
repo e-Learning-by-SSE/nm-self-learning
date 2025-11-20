@@ -109,7 +109,7 @@ export function LessonEditor({
 				<div className="flex flex-col px-4 max-w-screen-xl mx-auto">
 					<div className="flex justify-between mb-8">
 						<div className="flex flex-col gap-2">
-							<span className="font-semibold text-2xl text-secondary">
+							<span className="font-semibold text-2xl text-c-primary">
 								{initialLesson ? "Lerneinheit bearbeiten" : "Lerneinheit erstellen"}
 							</span>
 							<h1 className="text-4xl">{initialLesson?.title}</h1>

@@ -221,9 +221,9 @@ function SortedTable({
 
 	return (
 		<div>
-			<div className="overflow-y-auto rounded-lg border-x border-b border-light-border bg-white">
+			<div className="overflow-y-auto rounded-lg border-x border-b border-c-border bg-white">
 				<table className="w-full table-auto">
-					<thead className="top-0 z-10 rounded-lg border-y border-light-border bg-gray-100">
+					<thead className="top-0 z-10 rounded-lg border-y border-c-border bg-c-surface-2">
 						<tr>
 							{Object.entries(columns)
 								.filter(([_, column]) => column.isDisplayed)
@@ -235,7 +235,7 @@ function SortedTable({
 								))}
 
 							<th
-								className="cursor-pointer border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
+								className="cursor-pointer border-y border-c-border py-4 px-8 text-start text-sm font-semibold"
 								key="chevron"
 								onClick={() => {
 									setChevronMenu(true);
@@ -259,7 +259,7 @@ function SortedTable({
 							</th>
 						</tr>
 					</thead>
-					<tbody className="divide-y divide-light-border">
+					<tbody className="divide-y divide-c-border">
 						{learningDiaryEntries
 							.slice()
 							.filter(entry => getFilterFunction(entry, searchQuarry))
@@ -272,7 +272,7 @@ function SortedTable({
 											"/learning-diary/page/" + learningDiaryEntry.id
 										);
 									}}
-									className={"cursor-pointer hover:bg-gray-100"}
+									className={"cursor-pointer hover:bg-c-hover-muted"}
 								>
 									{Object.entries(columns)
 										.filter(([_, column]) => column.isDisplayed)
@@ -285,7 +285,7 @@ function SortedTable({
 													{key === "course" && (
 														//TODO: should the course title actually be centered?
 														<div>
-															<span className="flex items-center justify-center text-gray-800 hover:text-secondary">
+															<span className="flex items-center justify-center text-c-text-strong hover:text-c-primary">
 																<span className="truncate">
 																	{
 																		learningDiaryEntry.course

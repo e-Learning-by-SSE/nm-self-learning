@@ -167,11 +167,7 @@ export function QuizEditor() {
 				<Reorder.Group values={quiz} onReorder={setQuiz} axis="x" className="w-full">
 					<Tabs selectedIndex={questionIndex} onChange={index => setQuestionIndex(index)}>
 						{orderedQuestions.map((value, index) => (
-							<Reorder.Item
-								as="div"
-								value={value}
-								key={value.id}
-							>
+							<Reorder.Item as="div" value={value} key={value.id}>
 								<RemovableTab key={value.id} onRemove={() => removeQuestion(index)}>
 									<div className="flex flex-col">
 										<span className="text-xs font-normal">
@@ -231,7 +227,7 @@ function QuizConfigForm() {
 	}
 
 	return (
-		<div className="-mt-8 flex flex-col gap-4 rounded-lg bg-gray-200 p-4">
+		<div className="-mt-8 flex flex-col gap-4 rounded-lg bg-c-surface-3 p-4">
 			<div className="flex flex-col gap-4">
 				<span className="flex items-center gap-4">
 					<input
@@ -247,7 +243,7 @@ function QuizConfigForm() {
 				</span>
 
 				{!config ? (
-					<ul className="list-inside list-disc text-sm text-light">
+					<ul className="list-inside list-disc text-sm text-c-text-muted">
 						<li>Alle Fragen müssen korrekt beantwortet werden</li>
 						<li>Lösungen werden nach falscher Beantwortung nicht angezeigt</li>
 						<li>Unbegrenzte Verwendung von Hinweisen</li>
@@ -375,7 +371,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 				/>
 			</div>
 
-			<p className="text-sm text-light">
+			<p className="text-sm text-c-text-muted">
 				Studierende können die angegebenen Hinweise nutzen, wenn sie Probleme beim
 				Beantworten einer Frage haben.
 			</p>
@@ -383,7 +379,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 			{hints.map((hint, hintIndex) => (
 				<div
 					key={hint.hintId}
-					className="flex flex-col gap-4 rounded-lg border border-gray-300 bg-gray-200  p-4"
+					className="flex flex-col gap-4 rounded-lg border border-c-border-strong bg-c-surface-3 p-4"
 				>
 					<div className="flex items-start gap-4 w-full">
 						<div className="flex-1">

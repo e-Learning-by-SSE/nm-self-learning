@@ -14,7 +14,7 @@ export function Tabs({
 }) {
 	return (
 		<HeadlessTab.Group selectedIndex={selectedIndex} onChange={onChange}>
-			<HeadlessTab.List className="flex w-full flex-wrap gap-4 border-b border-light-border">
+			<HeadlessTab.List className="flex w-full flex-wrap gap-4 border-b border-c-border">
 				{children}
 			</HeadlessTab.List>
 		</HeadlessTab.Group>
@@ -28,7 +28,7 @@ export function Tab({ children }: { children: ReactNode }) {
 				<li className="focus-visible: flex min-w-[128px] cursor-pointer flex-col gap-1 focus:ring-0 focus-visible:outline-none">
 					<span
 						className={`mx-auto px-2 py-2 font-semibold ${
-							selected ? "text-secondary" : "text-light"
+							selected ? "text-c-primary" : "text-c-text-muted"
 						}`}
 					>
 						{children}
@@ -38,7 +38,7 @@ export function Tab({ children }: { children: ReactNode }) {
 						<span
 							className={
 								selected
-									? "h-[2px] flex-1 bg-secondary"
+									? "h-[2px] flex-1 bg-c-primary"
 									: "h-[2px] flex-1 bg-gray-400"
 							}
 						></span>
@@ -58,7 +58,7 @@ export function RemovableTab({
 }) {
 	return (
 		<Tab>
-			<span className="flex items-end gap-4 hover:text-secondary">
+			<span className="flex items-end gap-4 hover:text-c-primary">
 				<span>{children}</span>
 				<IconOnlyButton
 					icon={<XMarkIcon className="h-5 w-5" />}
@@ -94,13 +94,13 @@ export function VerticalTab({ children }: { children: ReactNode }) {
 			{({ selected }) => (
 				<li className="grid grid-cols-[4px_1fr] gap-2">
 					{selected && (
-						<span className="flex h-full w-[4px] rounded-lg bg-secondary"></span>
+						<span className="flex h-full w-[4px] rounded-lg bg-c-primary"></span>
 					)}
 					{!selected && <span></span>}
 					<button
 						type="button"
-						className={`w-fit py-1 focus:ring-0 focus-visible:outline-secondary ${
-							selected ? "font-semibold text-secondary" : "text-light"
+						className={`w-fit py-1 focus:ring-0 focus-visible:outline-c-primary ${
+							selected ? "font-semibold text-c-primary" : "text-c-text-muted"
 						}`}
 					>
 						{children}

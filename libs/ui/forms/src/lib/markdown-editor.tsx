@@ -63,7 +63,7 @@ export function MarkdownField({
 
 			<div className="flex items-center gap-2">
 				<div
-					className="flex-1 cursor-pointer rounded-lg border border-light-border bg-white p-2 min-h-8"
+					className="flex-1 cursor-pointer rounded-lg border border-c-border bg-white p-2 min-h-8"
 					onClick={() => setOpenEditor(true)}
 				>
 					<div
@@ -147,7 +147,7 @@ export function MarkdownEditorDialog({
 					<span className="relative flex justify-between">
 						<label className="text-sm font-semibold">Vorschau</label>
 					</span>
-					<div className="relative flex w-full grow overflow-auto border border-light-border bg-white p-4">
+					<div className="relative flex w-full grow overflow-auto border border-c-border bg-white p-4">
 						<div className="prose prose-emerald w-full">
 							<ReactMarkdown
 								remarkPlugins={remarkPlugins}
@@ -286,7 +286,7 @@ function EditorQuickActions({ editor }: { editor: editor.IStandaloneCodeEditor }
 	const iconSize = "h-5";
 
 	return (
-		<div className="mb-2 rounded-xl bg-gray-200 p-2">
+		<div className="mb-2 rounded-xl bg-c-surface-3 p-2">
 			<div className="flex flex-wrap gap-1 items-center">
 				{[
 					{ title: "Bold", format: "BOLD", content: <BoldIcon className={iconSize} /> },
@@ -461,15 +461,15 @@ function CombinedImageButton({
 			</button>
 
 			{showImageOptions && (
-				<div className="absolute z-20 mt-2 w-80 rounded-lg border border-gray-200 bg-white shadow-xl animate-in slide-in-from-top-2 duration-200">
-					<div className="p-3 border-b border-gray-100">
-						<div className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-							<PhotoIcon className="h-5 w-5 text-secondary" />
+				<div className="absolute z-20 mt-2 w-80 rounded-lg border border-c-border bg-white shadow-xl animate-in slide-in-from-top-2 duration-200">
+					<div className="p-3 border-b border-c-border-muted">
+						<div className="text-sm font-semibold text-c-text-strong flex items-center gap-2">
+							<PhotoIcon className="h-5 w-5 text-c-primary" />
 							Bild einfügen
 						</div>
 					</div>
 
-					<div className="p-3 border-b border-gray-100">
+					<div className="p-3 border-b border-c-border-muted">
 						<div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
 							Breite wählen
 						</div>
@@ -477,7 +477,7 @@ function CombinedImageButton({
 							{imageSizes.map(size => (
 								<button
 									key={size.key}
-									className={`flex items-center justify-between p-2 text-left rounded-md transition-all duration-150 hover:bg-emerald-50 ${
+									className={`flex items-center justify-between p-2 text-left rounded-md transition-all duration-150 hover:bg-c-primary-subtle ${
 										selectedSize === size.key
 											? "bg-emerald-100 border border-emerald-200 shadow-sm"
 											: "hover:shadow-sm border border-transparent"
@@ -486,23 +486,23 @@ function CombinedImageButton({
 								>
 									<div className="flex items-center space-x-2">
 										<div>
-											<div className="font-medium text-xs text-gray-900">
+											<div className="font-medium text-xs text-c-text-strong">
 												{size.label}
 											</div>
-											<div className="text-xs text-gray-500">
+											<div className="text-xs text-c-text-muted">
 												{size.description}
 											</div>
 										</div>
 									</div>
 									{selectedSize === size.key && (
-										<div className="w-1.5 h-1.5 bg-secondary rounded-full animate-pulse" />
+										<div className="w-1.5 h-1.5 bg-c-primary rounded-full animate-pulse" />
 									)}
 								</button>
 							))}
 						</div>
 					</div>
 
-					<div className="p-3 border-b border-gray-100">
+					<div className="p-3 border-b border-c-border-muted">
 						<div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
 							Höhe (optional)
 						</div>
@@ -512,7 +512,7 @@ function CombinedImageButton({
 								placeholder="z.B. 200, 150px, 50%"
 								defaultValue={selectedImageHeight.current}
 								onChange={e => handleHeightChange(e.target.value)}
-								className="flex-1 p-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-transparent"
+								className="flex-1 p-2 text-sm border border-c-border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-transparent"
 							/>
 							{selectedImageHeight.current && (
 								<button
@@ -522,19 +522,19 @@ function CombinedImageButton({
 										setShowImageOptions(false);
 										setTimeout(() => setShowImageOptions(true), 0);
 									}}
-									className="px-2 py-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+									className="px-2 py-1 text-xs text-c-text-muted hover:text-c-text hover:bg-c-hover-muted rounded-md transition-colors"
 									title="Höhe zurücksetzen"
 								>
 									✕
 								</button>
 							)}
 						</div>
-						<div className="text-xs text-gray-500 mt-1">
+						<div className="text-xs text-c-text-muted mt-1">
 							Leer lassen für automatische Höhe
 						</div>
 					</div>
 
-					<div className="p-3 border-b border-gray-100">
+					<div className="p-3 border-b border-c-border-muted">
 						<div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
 							Bild-URL
 						</div>
@@ -543,9 +543,9 @@ function CombinedImageButton({
 							placeholder="https://example.com/image.jpg"
 							value={selectedUrl}
 							onChange={e => setSelectedUrl(e.target.value)}
-							className="w-full p-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-transparent"
+							className="w-full p-2 text-sm border border-c-border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-transparent"
 						/>
-						<div className="text-xs text-gray-500 mt-1">
+						<div className="text-xs text-c-text-muted mt-1">
 							Gib eine Bild-URL ein oder lade ein Bild hoch
 						</div>
 					</div>
@@ -553,7 +553,7 @@ function CombinedImageButton({
 					<div className="p-3 space-y-2">
 						<button
 							type="button"
-							className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-secondary text-white rounded-md hover:bg-emerald-600 transition-colors duration-200 text-sm font-medium"
+							className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-c-primary text-white rounded-md hover:bg-c-primary-strong transition-colors duration-200 text-sm font-medium"
 							onClick={insertImageMarkdown}
 						>
 							Markdown-Link einfügen
@@ -564,8 +564,8 @@ function CombinedImageButton({
 						</div>
 					</div>
 
-					<div className="p-2 border-t border-gray-100 bg-gray-50 rounded-b-lg">
-						<div className="text-xs text-gray-500 text-center">
+					<div className="p-2 border-t border-c-border-muted bg-c-surface-1 rounded-b-lg">
+						<div className="text-xs text-c-text-muted text-center">
 							Größe: {selectedSizeData.description}
 							{selectedImageHeight.current && ` × ${selectedImageHeight.current}`}
 						</div>
@@ -603,11 +603,11 @@ function EditorQuickActionsHeaderDropdown({ onChange }: { onChange: (value: stri
 				<ChevronDownIcon className="icon" />
 			</button>
 			{menuOpen && (
-				<div className="absolute z-10 mt-1 w-full rounded-md border border-gray-300 bg-white shadow-lg">
+				<div className="absolute z-10 mt-1 w-full rounded-md border border-c-border-strong bg-white shadow-lg">
 					{headers.map(header => (
 						<button
 							key={header}
-							className="block w-full p-2 text-left hover:bg-gray-100"
+							className="block w-full p-2 text-left hover:bg-c-hover-muted"
 							onClick={() => handleMenuSelect(header)}
 						>
 							{header}
@@ -650,11 +650,11 @@ function EditorQuickActionsCodeDropdown({ onChange }: { onChange: (value: string
 				<ChevronDownIcon className="icon" />
 			</button>
 			{menuOpen && (
-				<div className="absolute z-10 mt-1 w-full rounded-md border border-gray-300 bg-white shadow-lg">
+				<div className="absolute z-10 mt-1 w-full rounded-md border border-c-border-strong bg-white shadow-lg">
 					{Object.entries(languages).map(([key, value]) => (
 						<button
 							key={key}
-							className="block w-full p-2 text-left hover:bg-gray-100"
+							className="block w-full p-2 text-left hover:bg-c-hover-muted"
 							onClick={() => handleMenuSelect(key)}
 						>
 							{value}

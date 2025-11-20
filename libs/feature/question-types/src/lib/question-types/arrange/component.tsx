@@ -46,7 +46,7 @@ export default function ArrangeQuestion() {
 												<ul
 													ref={provided.innerRef}
 													{...provided.droppableProps}
-													className="flex min-w-fit flex-col gap-4 rounded-lg bg-gray-100 p-4"
+													className="flex min-w-fit flex-col gap-4 rounded-lg bg-c-surface-2 p-4"
 												>
 													{answer.value[containerId]?.map(
 														(item, index) => (
@@ -93,7 +93,7 @@ export default function ArrangeQuestion() {
 							<ul
 								ref={provided.innerRef}
 								{...provided.droppableProps}
-								className="flex min-h-[128px] flex-wrap gap-4 rounded-lg border-white bg-gray-100 p-4"
+								className="flex min-h-[128px] flex-wrap gap-4 rounded-lg border-white bg-c-surface-2 p-4"
 							>
 								{answer.value["_init"].map((item, index) => (
 									<Draggable

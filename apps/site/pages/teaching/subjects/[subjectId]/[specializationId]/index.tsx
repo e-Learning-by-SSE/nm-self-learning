@@ -196,7 +196,7 @@ export default function SpecializationManagementPage() {
 
 									<TableDataColumn>
 										<Link
-											className="text-sm font-medium hover:text-secondary"
+											className="text-sm font-medium hover:text-c-primary"
 											href={`/courses/${course.slug}`}
 										>
 											{course.title}
@@ -204,14 +204,14 @@ export default function SpecializationManagementPage() {
 									</TableDataColumn>
 
 									<TableDataColumn>
-										<span className="text-light">
+										<span className="text-c-text-muted">
 											{course.authors.map(a => a.displayName).join(", ")}
 										</span>
 									</TableDataColumn>
 									<TableDataColumn>
 										<div className="flex justify-end">
 											<button
-												className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-red-500"
+												className="rounded-full p-2 text-gray-400 hover:bg-c-hover-muted hover:text-c-danger"
 												title="Aus Spezialisierung entfernen"
 												onClick={() => handleRemoveCourse(course)}
 											>

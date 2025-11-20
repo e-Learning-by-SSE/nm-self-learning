@@ -69,7 +69,7 @@ export default function CoursesPage() {
 
 						<TableDataColumn>
 							<Link
-								className="text-sm font-medium hover:text-secondary"
+								className="text-sm font-medium hover:text-c-primary"
 								href={`/teaching/courses/edit/${course.courseId}`}
 							>
 								{course.title}
@@ -77,7 +77,7 @@ export default function CoursesPage() {
 						</TableDataColumn>
 
 						<TableDataColumn>
-							<span className="text-light">
+							<span className="text-c-text-muted">
 								{course.authors.map(a => a.displayName).join(", ")}
 							</span>
 						</TableDataColumn>

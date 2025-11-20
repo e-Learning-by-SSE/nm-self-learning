@@ -35,9 +35,9 @@ export function SelectedSkillsInfoForm({
 // 	return (
 // 		<>
 // 			<h2 className="text-xl">Ausgewählte Skills:</h2>
-// 			<span className="pb-4 text-sm text-light">Die rechts ausgewählten Skills</span>
+// 			<span className="pb-4 text-sm text-c-text-muted">Die rechts ausgewählten Skills</span>
 
-// 			<section className="flex h-64 flex-col overflow-auto rounded-lg border border-light-border">
+// 			<section className="flex h-64 flex-col overflow-auto rounded-lg border border-c-border">
 // 				<div className="flex flex-col">
 // 					{skills.map((skill, index) => (
 // 						<span
@@ -114,7 +114,7 @@ export function SkillInfoForm({
 							className="px-4"
 						/>
 					</div>
-					<div className="flex flex-col gap-4 border-b-2 border-light-border">
+					<div className="flex flex-col gap-4 border-b-2 border-c-border">
 						<LabeledField label="Name" error={errors.name?.message}>
 							<input type="text" className="textfield" {...form.register("name")} />
 						</LabeledField>

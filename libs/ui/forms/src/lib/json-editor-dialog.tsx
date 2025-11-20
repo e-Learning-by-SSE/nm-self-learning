@@ -62,7 +62,7 @@ export function JsonEditorDialog<T>({
 
 						{error && (
 							<div className="mb-8 max-h-32 overflow-auto">
-								<pre className="rounded-lg bg-red-50 p-4 pb-4 text-xs text-red-500">
+								<pre className="rounded-lg bg-c-danger-subtle p-4 pb-4 text-xs text-c-danger">
 									{error}
 								</pre>
 							</div>

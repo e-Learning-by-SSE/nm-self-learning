@@ -705,7 +705,7 @@ function ProfileCard({
 	);
 
 	return (
-		<section className="relative rounded-xl bg-gradient-to-br from-white to-gray-50 shadow-sm border border-c-border-muted p-6 space-y-6">
+		<section className="relative rounded-xl bg-gradient-to-br from-white to-c-surface-0 shadow-sm border border-c-border-muted p-6 space-y-6">
 			<div className="absolute -top-3 -right-3 h-16 w-16 z-10">
 				<StreakIndicatorCircle
 					count={gamificationProfile.loginStreak.count}
@@ -774,7 +774,7 @@ function ProfileCard({
 					{/* Longest Streak */}
 					<div className="flex items-center justify-between">
 						<span className="text-sm text-c-text-muted">Längster Streak</span>
-						<span className="text-sm font-semibold  text-c-primary-strong">
+						<span className="text-sm font-semibold text-c-primary-strong">
 							{longestStreak} Tage
 						</span>
 					</div>
@@ -862,7 +862,7 @@ function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 							href={`/courses/${lesson.courseSlug}/${lesson.slug}`}
 							key={"course-" + index}
 						>
-							<li className="flex items-center rounded-lg border border-light-border overflow-hidden transition-all hover:scale-[1.02] hover:bg-c-hover-subtle hover:shadow-md hover:border-c-border">
+							<li className="flex items-center rounded-lg border border-c-border overflow-hidden transition-all hover:scale-[1.02] hover:bg-c-hover-subtle hover:shadow-md hover:border-c-border">
 								{/* Course Image */}
 								<ImageOrPlaceholder
 									src={lesson.courseImgUrl ?? undefined}

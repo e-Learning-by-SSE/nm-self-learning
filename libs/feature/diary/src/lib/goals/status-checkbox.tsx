@@ -50,7 +50,7 @@ export function GoalStatusCheckbox({
 				type="checkbox"
 				checked={checked}
 				disabled={disabled}
-				className={`flex flex-grow aspect-square bg-gray-100 border-gray-300 rounded dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 ${statusColorSettings}`}
+				className={`flex flex-grow aspect-square bg-c-surface-2 border-c-border-strong rounded dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 ${statusColorSettings}`}
 				onChange={() => onChange?.(goal)}
 				data-testid={`goal_status:${goal.id}`}
 			/>

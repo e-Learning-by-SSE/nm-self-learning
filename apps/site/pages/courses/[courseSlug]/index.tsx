@@ -314,7 +314,7 @@ function CourseHeader({
 						<ul
 							className={`absolute bottom-0 grid w-full ${
 								isParticipant ? "grid-cols-4" : "grid-cols-3"
-							} divide-x divide-c-primary rounded-b-lg border border-light-border border-t-transparent bg-white bg-opacity-80 p-2 text-center`}
+							} divide-x divide-c-primary rounded-b-lg border border-c-border border-t-transparent bg-white bg-opacity-80 p-2 text-center`}
 						>
 							<li className="flex flex-col">
 								<span className="font-semibold text-c-primary">Lerneinheiten</span>

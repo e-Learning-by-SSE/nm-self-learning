@@ -27,11 +27,11 @@ export function LabeledField({
 				<div className={"flex items-center justify-between"}>
 					<div className="flex items-center gap-2">
 						<span className="text-sm font-semibold">{label}</span>
-						{optional && <span className="text-xs text-light">(optional)</span>}
+						{optional && <span className="text-xs text-c-text-muted">(optional)</span>}
 					</div>
 					{button ? button : null}
 				</div>
-				{error && <span className="text-xs text-red-500">{error}</span>}
+				{error && <span className="text-xs text-c-danger">{error}</span>}
 			</label>
 			{children}
 		</fieldset>
@@ -40,12 +40,12 @@ export function LabeledField({
 
 export function FieldError({ error }: { error?: string | null }) {
 	if (error) {
-		return <p className="absolute left-0 -bottom-5 text-xs text-red-500">{error}</p>;
+		return <p className="absolute left-0 -bottom-5 text-xs text-c-danger">{error}</p>;
 	}
 
 	return null;
 }
 
 export function FieldHint({ children }: { children?: ReactNode }) {
-	return <p className="text-xs text-light">{children}</p>;
+	return <p className="text-xs text-c-text-muted">{children}</p>;
 }

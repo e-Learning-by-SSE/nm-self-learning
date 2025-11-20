@@ -142,7 +142,7 @@ function AuthorDashboardPage({ author }: Props) {
 										>
 											<Link
 												href={`/teaching/subjects/${subject.subjectId}`}
-												className="font-medium hover:text-secondary"
+												className="font-medium hover:text-c-primary"
 											>
 												{subject.title}
 											</Link>
@@ -170,7 +170,7 @@ function AuthorDashboardPage({ author }: Props) {
 										>
 											<Link
 												href={`/teaching/subjects/${specialization.subject.subjectId}/${specialization.specializationId}`}
-												className="font-medium hover:text-secondary"
+												className="font-medium hover:text-c-primary"
 											>
 												{specialization.title}
 											</Link>
@@ -203,13 +203,15 @@ function AuthorDashboardPage({ author }: Props) {
 									<div className="h-32 w-32">
 										<VoidSvg />
 									</div>
-									<p className="text-light">Du hast noch keine Kurse erstellt.</p>
+									<p className="text-c-text-muted">
+										Du hast noch keine Kurse erstellt.
+									</p>
 								</div>
 							) : (
 								author.courses.map(course => (
 									<li
 										key={course.courseId}
-										className="flex items-center rounded-lg border border-light-border bg-white"
+										className="flex items-center rounded-lg border border-c-border bg-white"
 									>
 										<ImageOrPlaceholder
 											src={course.imgUrl ?? undefined}
@@ -218,14 +220,14 @@ function AuthorDashboardPage({ author }: Props) {
 
 										<div className="flex w-full items-center justify-between px-4">
 											<div className="flex flex-col gap-1">
-												<span className="text-xs text-light">
+												<span className="text-xs text-c-text-muted">
 													{course.specializations
 														.map(s => s.title)
 														.join(" | ")}
 												</span>
 												<Link
 													href={`/courses/${course.slug}`}
-													className="text-sm font-medium hover:text-secondary"
+													className="text-sm font-medium hover:text-c-primary"
 												>
 													{course.title}
 												</Link>
@@ -386,7 +388,7 @@ function CourseDeletionDialog({
 						Er wird im folgenden Fachgebiet verwendet:{" "}
 						<Link
 							href={`/subjects/${linkedEntities.subject.slug}`}
-							className="hover:text-secondary"
+							className="hover:text-c-primary"
 						>
 							{linkedEntities.subject.title}
 						</Link>
@@ -399,7 +401,7 @@ function CourseDeletionDialog({
 						<li key={specialization.slug}>
 							<Link
 								href={`/subjects/${specialization.subject.slug}/${specialization.slug}`}
-								className="hover:text-secondary"
+								className="hover:text-c-primary"
 							>
 								{specialization.subject.title} / {specialization.title}
 							</Link>
@@ -415,7 +417,7 @@ function CourseDeletionDialog({
 		<Dialog title={"Löschen"} onClose={onCancel}>
 			Möchten Sie diesen Kurs wirklich löschen?
 			<DialogActions onClose={onCancel}>
-				<button className="btn-primary hover:bg-red-500" onClick={onSubmit}>
+				<button className="btn-primary hover:bg-c-danger" onClick={onSubmit}>
 					Löschen
 				</button>
 			</DialogActions>
@@ -493,13 +495,13 @@ function Lessons({ authorName }: { authorName: string }) {
 								<TableDataColumn>
 									<Link
 										href={`/lessons/${lesson.slug}`}
-										className="font-medium hover:text-secondary"
+										className="font-medium hover:text-c-primary"
 									>
 										{lesson.title}
 									</Link>
 								</TableDataColumn>
 								<TableDataColumn>
-									<span className="text-light">
+									<span className="text-c-text-muted">
 										{formatDateAgo(lesson.updatedAt)}
 									</span>
 								</TableDataColumn>

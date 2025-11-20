@@ -51,7 +51,7 @@ export function SearchCourseDialog({
 									onClick={() => onClose(course)}
 									data-testid="course-option"
 									className={`flex items-center gap-4 rounded px-4 py-2 ${
-										focus ? "bg-secondary text-white" : ""
+										focus ? "bg-c-primary text-white" : ""
 									}`}
 								>
 									<ImageOrPlaceholder
@@ -62,7 +62,7 @@ export function SearchCourseDialog({
 										<span className="text-sm font-medium">{course.title}</span>
 										<span
 											className={`text-start text-xs ${
-												focus ? "text-white" : "text-light"
+												focus ? "text-white" : "text-c-text-muted"
 											}`}
 										>
 											{course.authors.map(a => a.displayName).join(", ")}

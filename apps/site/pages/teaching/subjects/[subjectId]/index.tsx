@@ -94,7 +94,7 @@ export default function SubjectManagementPage() {
 					{subject.specializations.map(spec => (
 						<li
 							key={spec.specializationId}
-							className="flex rounded-lg border border-light-border bg-white"
+							className="flex rounded-lg border border-c-border bg-white"
 						>
 							<ImageOrPlaceholder
 								src={spec.cardImgUrl ?? undefined}
@@ -104,11 +104,11 @@ export default function SubjectManagementPage() {
 								<div className="flex flex-col gap-2">
 									<Link
 										href={`/teaching/subjects/${subject.subjectId}/${spec.specializationId}`}
-										className="text-lg font-semibold hover:text-secondary"
+										className="text-lg font-semibold hover:text-c-primary"
 									>
 										{spec.title}
 									</Link>
-									<p className="text-sm text-light">{spec.subtitle}</p>
+									<p className="text-sm text-c-text-muted">{spec.subtitle}</p>
 								</div>
 
 								<ul className="flex flex-wrap gap-4">

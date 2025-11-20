@@ -338,7 +338,7 @@ function DashboardPage(props: Props) {
 				<div className="grid grid-cols-1 gap-8 pt-10 lg:grid-cols-2">
 					<div className="rounded bg-white p-4 shadow">
 						<h2 className="text-xl py-2 px-2">Letzter Kurs</h2>
-						<div className="mb-4 border-b border-light-border h-[6px]"></div>
+						<div className="mb-4 border-b border-c-border h-[6px]"></div>
 						<LastCourseProgress
 							lastEnrollment={
 								props.student.enrollments.sort(
@@ -364,7 +364,7 @@ function DashboardPage(props: Props) {
 								<h2 className="text-xl py-2 px-2">
 									Zuletzt bearbeitete Lerneinheiten
 								</h2>
-								<div className="mb-4 border-b border-light-border h-[6px]"></div>
+								<div className="mb-4 border-b border-c-border h-[6px]"></div>
 								<LessonList lessons={props.recentLessons} />
 							</>
 						)}
@@ -422,7 +422,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 								key={page.id}
 							>
 								<li
-									className="hover: flex items-center rounded-lg border border-light-border
+									className="hover: flex items-center rounded-lg border border-c-border
 							p-3 transition-transform hover:bg-c-hover-muted hover:scale-105"
 								>
 									<div className="flex w-full flex-col lg:flex-row items-center justify-between gap-2 pl-5 pr-2">

@@ -119,11 +119,11 @@ function SidebarContentMobile({
 							{label}
 						</div>
 						<div className="relative">
-							<div className="absolute top-0 left-0 h-full border-l-2 border-gray-300"></div>
+							<div className="absolute top-0 left-0 h-full border-l-2 border-c-border-strong"></div>
 							<ul className="pl-4">
 								{pages.map(page => (
 									<li
-										className={`mb-1 rounded hover:bg-gray-100 ${selectedPageId === page.id ? "bg-gray-100" : ""}`}
+										className={`mb-1 rounded hover:bg-c-hover-muted ${selectedPageId === page.id ? "bg-c-surface-2" : ""}`}
 										ref={selectedPageId === page.id ? myElementRef : null}
 										key={page.id}
 									>
@@ -141,7 +141,7 @@ function SidebarContentMobile({
 													/>
 												</span>
 											</div>
-											<span className="block p-1 rounded overflow-hidden text-ellipsis whitespace-nowrap text-sm text-light">
+											<span className="block p-1 rounded overflow-hidden text-ellipsis whitespace-nowrap text-sm text-c-text-muted">
 												Begonnen am: {formatDateStringFull(page.createdAt)}
 											</span>
 										</Link>
@@ -165,7 +165,7 @@ export function Sidebar({ pages, selectedPageId }: { pages: PagesMeta; selectedP
 				{label}
 			</div>
 			<div className="relative">
-				<div className="absolute top-0 left-0 h-full border-l-2 border-gray-300"></div>
+				<div className="absolute top-0 left-0 h-full border-l-2 border-c-border-strong"></div>
 				<ul className="pl-4">
 					{renderPages.map(page => (
 						<SideBarContent
@@ -186,7 +186,7 @@ export function Sidebar({ pages, selectedPageId }: { pages: PagesMeta; selectedP
 	return (
 		<aside
 			className="sticky py-4 flex flex-col overflow-hidden top-[61px]
-        w-full border-t border-r-gray-200
+        w-full border-t border-r-c-border
         xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4"
 		>
 			<StatusBadgeInfo header="Einträge" className="mb-2" headerStyles="font-bold text-2xl" />
@@ -212,7 +212,7 @@ function SideBarContent({
 }) {
 	const { changePage } = useDiaryPageRouter();
 	return (
-		<li className={`mb-1 rounded hover:bg-gray-100 ${selected ? "bg-gray-100" : ""}`}>
+		<li className={`mb-1 rounded hover:bg-c-hover-muted ${selected ? "bg-c-surface-2" : ""}`}>
 			<Link href={"/learning-diary/page/" + page.id} onClick={() => changePage(page.id)}>
 				<div className="flex items-center justify-between pt-2 pl-1 rounded break-words whitespace-normal">
 					<span className="flex-grow mr-1">{`${index}. ${page.course.title}`}</span>
@@ -220,7 +220,7 @@ function SideBarContent({
 						<LearningDiaryEntryStatusBadge {...page} className="top-2" />
 					</span>
 				</div>
-				<span className="block p-1 rounded overflow-hidden text-ellipsis whitespace-nowrap text-sm text-light">
+				<span className="block p-1 rounded overflow-hidden text-ellipsis whitespace-nowrap text-sm text-c-text-muted">
 					Begonnen am: {formatDateStringFull(page.createdAt)}
 				</span>
 			</Link>

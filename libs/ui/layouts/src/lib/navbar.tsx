@@ -54,7 +54,7 @@ export function Navbar() {
 											<AcademicCapIcon className="h-8 shrink-0 text-white" />
 										</div>
 										<div className="hidden w-0 flex-col lg:flex lg:w-fit">
-											<span className="whitespace-nowrap text-sm text-light">
+											<span className="whitespace-nowrap text-sm text-c-text-muted">
 												Universität Hildesheim
 											</span>
 											<span className="whitespace-nowrap font-bold text-c-primary">
