@@ -66,10 +66,12 @@ export function Paginator({
 
 	return (
 		<div className="flex flex-wrap items-center justify-between gap-4 py-4">
-			<p className="text-sm text-light">
+			<p className="text-sm text-c-text-muted">
 				Zeige{" "}
-				<span className="font-medium text-black">{Math.min(result.length, pageSize)}</span>{" "}
-				von <span className="font-medium text-black">{totalCount}</span> Ergebnissen
+				<span className="font-medium text-c-text-strong">
+					{Math.min(result.length, pageSize)}
+				</span>{" "}
+				von <span className="font-medium text-c-text-strong">{totalCount}</span> Ergebnissen
 			</p>
 			<nav
 				className="isolate inline-flex -space-x-px rounded-lg shadow-sm"
@@ -93,7 +95,7 @@ export function Paginator({
 				))}
 
 				{pageLinks.back.length > 0 && (
-					<span className="relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700">
+					<span className="relative inline-flex items-center border border-c-border-strong bg-white px-4 py-2 text-sm font-medium text-c-text">
 						...
 					</span>
 				)}
@@ -109,7 +111,7 @@ export function Paginator({
 								onPageChange={onPageChange}
 							/>
 						))}
-						<span className="relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700">
+						<span className="relative inline-flex items-center border border-c-border-strong bg-white px-4 py-2 text-sm font-medium text-c-text">
 							...
 						</span>
 					</>
@@ -148,9 +150,9 @@ function ForwardBackwardLink({
 	isForward: boolean;
 	disabled: boolean;
 }) {
-	const className = `relative inline-flex items-center border border-gray-300 bg-white px-2 py-2 text-sm font-medium ${
+	const className = `relative inline-flex items-center border border-c-border-strong bg-white px-2 py-2 text-sm font-medium ${
 		isForward ? "rounded-r-lg" : "rounded-l-lg"
-	} ${disabled ? "text-gray-300" : "text-gray-500"}`;
+	} ${disabled ? "text-gray-300" : "text-c-text"}`;
 
 	const icon = isForward ? (
 		<ChevronRightIcon className="h-5" />
@@ -198,10 +200,10 @@ function PageLink({
 	if (typeof onPageChange === "function") {
 		return (
 			<button
-				className={`relative inline-flex items-center border  px-4 py-2 text-sm font-medium text-secondary focus:z-20 ${
+				className={`relative inline-flex items-center border px-4 py-2 text-sm font-medium text-c-primary focus:z-20 ${
 					isActive
-						? "z-10 border-secondary bg-emerald-50 hover:bg-emerald-100"
-						: "border-gray-300 bg-white text-gray-500 hover:bg-gray-50"
+						? "z-10 border-c-primary bg-c-primary-subtle hover:bg-c-primary-muted"
+						: "border-c-border-strong bg-white text-c-text bg-c-text-muted hover:bg-c-hover-subtle"
 				}`}
 				onClick={() => onPageChange(page)}
 			>
@@ -214,10 +216,10 @@ function PageLink({
 		<Link
 			href={url}
 			aria-current="page"
-			className={`relative inline-flex items-center border  px-4 py-2 text-sm font-medium text-secondary focus:z-20 ${
+			className={`relative inline-flex items-center border px-4 py-2 text-sm font-medium text-secondary focus:z-20 ${
 				isActive
-					? "z-10 border-secondary bg-emerald-50 hover:bg-emerald-100"
-					: "border-gray-300 bg-white text-gray-500 hover:bg-gray-50"
+					? "z-10 border-secondary bg-c-primary-subtle hover:bg-emerald-100"
+					: "border-c-border-strong bg-white text-c-text-muted hover:bg-c-hover-subtle"
 			}`}
 		>
 			{page}
