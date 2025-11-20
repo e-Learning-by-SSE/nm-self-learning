@@ -108,14 +108,14 @@ module.exports = {
 				"light-border": "var(--color-light-border)",
 
 				/* Surface */
-				"c-surface-base": "var(--c-surface-base)",
+				"c-surface-0": "var(--c-surface-0)",
 				"c-surface-1": "var(--c-surface-1)",
 				"c-surface-2": "var(--c-surface-2)",
 				"c-surface-3": "var(--c-surface-3)",
 
 				/* Text */
 				"c-text-strong": "var(--c-text-strong)",
-				"c-text-base": "var(--c-text-base)",
+				"c-text": "var(--c-text)",
 				"c-text-muted": "var(--c-text-muted)",
 				"c-text-inverted": "var(--c-text-inverted)",
 
@@ -128,6 +128,7 @@ module.exports = {
 				"c-primary": "var(--c-primary)",
 				"c-primary-strong": "var(--c-primary-strong)",
 				"c-primary-muted": "var(--c-primary-muted)",
+				"c-primary-subtle": "var(--c-primary-subtle)",
 
 				/* Accent */
 				"c-accent": "var(--c-accent)",
@@ -138,14 +139,19 @@ module.exports = {
 				"c-danger": "var(--c-danger)",
 				"c-danger-strong": "var(--c-danger-strong)",
 				"c-danger-muted": "var(--c-danger-muted)",
+				"c-danger-subtle": "var(--c-danger-subtle)",
 
 				/* Info */
 				"c-info": "var(--c-info)",
 				"c-info-strong": "var(--c-info-strong)",
 				"c-info-muted": "var(--c-info-muted)",
+				"c-info-subtle": "var(--c-info-subtle)",
 
 				/* Hover */
-				"c-hover": "var(--c-hover)"
+				"c-hover": "var(--c-hover)",
+				"c-hover-strong": "var(--c-hover-strong)",
+				"c-hover-muted": "var(--c-hover-muted)",
+				"c-hover-subtle": "var(--c-hover-subtle)"
 			},
 			backgroundSize: {
 				"300%": "300% 300%"
