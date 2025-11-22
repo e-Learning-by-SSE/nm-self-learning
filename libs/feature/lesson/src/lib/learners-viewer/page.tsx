@@ -5,7 +5,7 @@ import {
 	ChevronDoubleRightIcon,
 	DocumentIcon,
 	PencilIcon,
-	PlayIcon
+	QuestionMarkCircleIcon
 } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
@@ -641,8 +641,8 @@ function LinkToQuiz({ url }: { url: string }) {
 				className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
 				data-testid="quizLink"
 			>
-				<span>Zur Lernkontrolle</span>
-				<PlayIcon className="h-6 shrink-0" />
+				<span>Lernkontrolle</span>
+				<QuestionMarkCircleIcon className="h-6 shrink-0" />
 			</Link>
 		</div>
 	);
