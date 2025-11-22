@@ -417,7 +417,7 @@ function LessonNavigation({
 			<button
 				onClick={() => previous && navigateToLesson(previous)}
 				disabled={!previous}
-				className="rounded-lg bg-white flex items-center gap-4 border border-light-border px-4 py-2 disabled:text-gray-300"
+				className="rounded-lg bg-white hidden lg:flex items-center gap-4 border border-light-border px-4 py-2 disabled:text-gray-300"
 				title="Vorherige Lerneinheit"
 				data-testid="previousLessonButton"
 			>
@@ -428,7 +428,7 @@ function LessonNavigation({
 			<button
 				onClick={() => next && navigateToLesson(next)}
 				disabled={!next}
-				className="rounded-lg bg-white flex items-center gap-4 border border-light-border px-4 py-2 disabled:text-gray-300"
+				className="rounded-lg bg-white hidden lg:flex items-center gap-4 border border-light-border px-4 py-2 disabled:text-gray-300"
 				title="Nächste Lerneinheit"
 				data-testid="nextLessonButton"
 			>
