@@ -66,8 +66,8 @@ describe("REST API of Lesson Router", () => {
 					lessonId: lesson.lessonId,
 					title: lesson.title || `Lesson ${index}`,
 					slug: lesson.slug || `slug${index}`,
-					updatedAt: new Date(`2024-01-${String(index + 1).padStart(2, '0')}T00:00:00Z`),
-					authors: [{ username: "Author1" }] as MockAuthor[]  // Use consistent object format
+					updatedAt: new Date(`2024-01-${String(index + 1).padStart(2, "0")}T00:00:00Z`),
+					authors: [{ username: "Author1" }] as MockAuthor[] // Use consistent object format
 				};
 			});
 
@@ -75,15 +75,32 @@ describe("REST API of Lesson Router", () => {
 		for (let i = 5; i < 10; i++) {
 			lessonsMock[i] = {
 				...lessonsMock[i],
-				authors: [{ username: "Author2", displayName: "Author Two", slug: "author-2", imgUrl: null }] as MockAuthor[]
+				authors: [
+					{
+						username: "Author2",
+						displayName: "Author Two",
+						slug: "author-2",
+						imgUrl: null
+					}
+				] as MockAuthor[]
 			};
 		}
 		for (let i = 10; i < lessonsMock.length; i++) {
 			lessonsMock[i] = {
 				...lessonsMock[i],
 				authors: [
-					{ username: "Author1", displayName: "Author One", slug: "author-1", imgUrl: null },
-					{ username: "Author2", displayName: "Author Two", slug: "author-2", imgUrl: null }
+					{
+						username: "Author1",
+						displayName: "Author One",
+						slug: "author-1",
+						imgUrl: null
+					},
+					{
+						username: "Author2",
+						displayName: "Author Two",
+						slug: "author-2",
+						imgUrl: null
+					}
 				] as MockAuthor[]
 			};
 		}
@@ -92,13 +109,13 @@ describe("REST API of Lesson Router", () => {
 			jest.clearAllMocks();
 
 			// Mock the individual database methods
-			(database.lesson.findMany as jest.Mock).mockImplementation(async (query) => {
+			(database.lesson.findMany as jest.Mock).mockImplementation(async query => {
 				let lessons: MockLesson[] = [...lessonsMock];
-				
+
 				// Simulate filtering by title (WHERE query)
 				if (query.where && query.where.title && query.where.title.contains) {
 					const titleFilter: string = query.where.title.contains.toLowerCase();
-					lessons = lessons.filter(lesson => 
+					lessons = lessons.filter(lesson =>
 						lesson.title.toLowerCase().includes(titleFilter)
 					);
 				}
@@ -108,7 +125,7 @@ describe("REST API of Lesson Router", () => {
 					const authorFilter: string = query.where.authors.some.username;
 					lessons = lessons.filter(lesson =>
 						lesson.authors.some(author => {
-							if (typeof author === 'string') {
+							if (typeof author === "string") {
 								return author === authorFilter;
 							} else {
 								return author.username === authorFilter;
@@ -129,7 +146,7 @@ describe("REST API of Lesson Router", () => {
 					slug: lesson.slug,
 					updatedAt: lesson.updatedAt,
 					authors: lesson.authors.map((author: MockAuthor) => {
-						if (typeof author === 'string') {
+						if (typeof author === "string") {
 							return {
 								displayName: `Display ${author}`,
 								slug: author.toLowerCase(),
@@ -146,13 +163,13 @@ describe("REST API of Lesson Router", () => {
 				}));
 			});
 
-			(database.lesson.count as jest.Mock).mockImplementation(async (query) => {
+			(database.lesson.count as jest.Mock).mockImplementation(async query => {
 				let lessons: MockLesson[] = [...lessonsMock];
-				
+
 				// Apply the same filtering logic as findMany
 				if (query.where && query.where.title && query.where.title.contains) {
 					const titleFilter: string = query.where.title.contains.toLowerCase();
-					lessons = lessons.filter(lesson => 
+					lessons = lessons.filter(lesson =>
 						lesson.title.toLowerCase().includes(titleFilter)
 					);
 				}
@@ -161,7 +178,7 @@ describe("REST API of Lesson Router", () => {
 					const authorFilter: string = query.where.authors.some.username;
 					lessons = lessons.filter(lesson =>
 						lesson.authors.some(author => {
-							if (typeof author === 'string') {
+							if (typeof author === "string") {
 								return author === authorFilter;
 							} else {
 								return author.username === authorFilter;
@@ -174,7 +191,7 @@ describe("REST API of Lesson Router", () => {
 			});
 
 			// Mock the transaction to call the individual methods
-			(database.$transaction as jest.Mock).mockImplementation(async (operations) => {
+			(database.$transaction as jest.Mock).mockImplementation(async operations => {
 				// Execute the operations and return their results
 				const results = await Promise.all(operations);
 				return results;
@@ -196,8 +213,25 @@ describe("REST API of Lesson Router", () => {
 
 			const expected = {
 				result: lessonsMock.slice(0, pageSize).map(lesson => ({
+					lessonId: lesson.lessonId,
 					title: lesson.title,
-					slug: lesson.slug
+					slug: lesson.slug,
+					updatedAt: lesson.updatedAt.toISOString(),
+					authors: lesson.authors.map((author: MockAuthor) => {
+						if (typeof author === "string") {
+							return {
+								displayName: `Display ${author}`,
+								slug: author.toLowerCase(),
+								imgUrl: null
+							};
+						} else {
+							return {
+								displayName: author.displayName || `Display ${author.username}`,
+								slug: author.slug || author.username.toLowerCase(),
+								imgUrl: author.imgUrl || null
+							};
+						}
+					})
 				})),
 				pageSize,
 				page: 1,
@@ -224,14 +258,31 @@ describe("REST API of Lesson Router", () => {
 			});
 
 			// Filter lessons that contain "5" in title
-			const filteredLessons = lessonsMock.filter(lesson => 
+			const filteredLessons = lessonsMock.filter(lesson =>
 				lesson.title.toLowerCase().includes(titleFilter)
 			);
 
 			const expected = {
 				result: filteredLessons.map(lesson => ({
+					lessonId: lesson.lessonId,
 					title: lesson.title,
-					slug: lesson.slug
+					slug: lesson.slug,
+					updatedAt: lesson.updatedAt.toISOString(),
+					authors: lesson.authors.map((author: MockAuthor) => {
+						if (typeof author === "string") {
+							return {
+								displayName: `Display ${author}`,
+								slug: author.toLowerCase(),
+								imgUrl: null
+							};
+						} else {
+							return {
+								displayName: author.displayName || `Display ${author.username}`,
+								slug: author.slug || author.username.toLowerCase(),
+								imgUrl: author.imgUrl || null
+							};
+						}
+					})
 				})),
 				pageSize,
 				page: 1,
@@ -259,7 +310,7 @@ describe("REST API of Lesson Router", () => {
 			// Filter lessons that have "Author1" (exclude indices 5-9 which only have Author2)
 			const filteredLessons = lessonsMock.filter(lesson =>
 				lesson.authors.some(author => {
-					if (typeof author === 'string') {
+					if (typeof author === "string") {
 						return author === "Author1";
 					} else {
 						return author.username === "Author1";
@@ -269,8 +320,25 @@ describe("REST API of Lesson Router", () => {
 
 			const expected = {
 				result: filteredLessons.map(lesson => ({
+					lessonId: lesson.lessonId,
 					title: lesson.title,
-					slug: lesson.slug
+					slug: lesson.slug,
+					updatedAt: lesson.updatedAt.toISOString(),
+					authors: lesson.authors.map((author: MockAuthor) => {
+						if (typeof author === "string") {
+							return {
+								displayName: `Display ${author}`,
+								slug: author.toLowerCase(),
+								imgUrl: null
+							};
+						} else {
+							return {
+								displayName: author.displayName || `Display ${author.username}`,
+								slug: author.slug || author.username.toLowerCase(),
+								imgUrl: author.imgUrl || null
+							};
+						}
+					})
 				})),
 				pageSize,
 				page: 1,
@@ -297,8 +365,25 @@ describe("REST API of Lesson Router", () => {
 
 			const expected = {
 				result: lessonsMock.slice(5, 10).map(lesson => ({
+					lessonId: lesson.lessonId,
 					title: lesson.title,
-					slug: lesson.slug
+					slug: lesson.slug,
+					updatedAt: lesson.updatedAt.toISOString(),
+					authors: lesson.authors.map((author: MockAuthor) => {
+						if (typeof author === "string") {
+							return {
+								displayName: `Display ${author}`,
+								slug: author.toLowerCase(),
+								imgUrl: null
+							};
+						} else {
+							return {
+								displayName: author.displayName || `Display ${author.username}`,
+								slug: author.slug || author.username.toLowerCase(),
+								imgUrl: author.imgUrl || null
+							};
+						}
+					})
 				})),
 				pageSize,
 				page: 2,
@@ -308,7 +393,6 @@ describe("REST API of Lesson Router", () => {
 			expect(response.statusCode).toBe(200);
 			expect(response.body).toEqual(expected);
 		});
-
 		it("should return 401 on unauthorized calls", async () => {
 			const pageSize = 20;
 
@@ -338,9 +422,9 @@ describe("REST API of Lesson Router", () => {
 
 		beforeEach(() => {
 			jest.clearAllMocks();
-			
+
 			// Mock the database response
-			(database.lesson.findUnique as jest.Mock).mockImplementation(async (query) => {
+			(database.lesson.findUnique as jest.Mock).mockImplementation(async query => {
 				if (query.where.slug === lessonMock.slug) {
 					return {
 						lessonId: lessonMock.lessonId,
@@ -470,7 +554,7 @@ describe("REST API of Lesson Router", () => {
 			jest.clearAllMocks();
 
 			// Mock lesson.findUnique for 404 check
-			(database.lesson.findUnique as jest.Mock).mockImplementation(async (query) => {
+			(database.lesson.findUnique as jest.Mock).mockImplementation(async query => {
 				if (query.where.slug === "test-lesson") {
 					return { lessonId: lessonMock.lessonId };
 				}
@@ -478,7 +562,7 @@ describe("REST API of Lesson Router", () => {
 			});
 
 			// Mock lesson.findFirst for authorization check
-			(database.lesson.findFirst as jest.Mock).mockImplementation(async (query) => {
+			(database.lesson.findFirst as jest.Mock).mockImplementation(async query => {
 				// Check if the requesting user is one of the lesson authors
 				const requestingUser = query.where.authors?.some?.username;
 				const lessonAuthors = ["teacher1", "teacher2"]; // Multiple authors
@@ -490,7 +574,7 @@ describe("REST API of Lesson Router", () => {
 			});
 
 			// Mock user.findMany for valid users check
-			(database.user.findMany as jest.Mock).mockImplementation(async (query) => {
+			(database.user.findMany as jest.Mock).mockImplementation(async query => {
 				const requestedUsernames = query.where.name.in || [];
 				const allUsers = [
 					{ name: "student1" },
@@ -498,13 +582,11 @@ describe("REST API of Lesson Router", () => {
 					// Note: student3 doesn't exist in system
 				];
 
-				return allUsers.filter(user => 
-					requestedUsernames.includes(user.name)
-				);
+				return allUsers.filter(user => requestedUsernames.includes(user.name));
 			});
 
 			// Mock completedLesson.findMany for progress data
-			(database.completedLesson.findMany as jest.Mock).mockImplementation(async (query) => {
+			(database.completedLesson.findMany as jest.Mock).mockImplementation(async query => {
 				const requestedUsernames = query.where.username?.in || [];
 
 				// Simulate completion data - student1 completed, student2 did not
@@ -513,9 +595,7 @@ describe("REST API of Lesson Router", () => {
 					// student2 has not completed the lesson
 				];
 
-				return completionData.filter(data => 
-					requestedUsernames.includes(data.username)
-				);
+				return completionData.filter(data => requestedUsernames.includes(data.username));
 			});
 		});
 
@@ -532,7 +612,7 @@ describe("REST API of Lesson Router", () => {
 			expect(response.statusCode).toBe(200);
 			expect(response.body).toEqual([
 				{ username: "student1", progress: 1 }, // Completed
-				{ username: "student2", progress: 0 }  // Not completed
+				{ username: "student2", progress: 0 } // Not completed
 				// student3 not in results (doesn't exist in system)
 			]);
 		});
@@ -664,7 +744,7 @@ describe("REST API of Lesson Router", () => {
 			expect(response.statusCode).toBe(200);
 			expect(response.body).toEqual([
 				{ username: "student1", progress: 0 }, // No completion
-				{ username: "student2", progress: 0 }  // No completion
+				{ username: "student2", progress: 0 } // No completion
 			]);
 		});
 

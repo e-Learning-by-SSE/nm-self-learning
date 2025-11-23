@@ -65,7 +65,21 @@ export const lessonRouter = t.router({
 		)
 		.output(
 			z.object({
-				result: z.array(z.object({ title: z.string(), slug: z.string() })),
+				result: z.array(
+					z.object({
+						lessonId: z.string(),
+						title: z.string(),
+						slug: z.string(),
+						updatedAt: z.date(),
+						authors: z.array(
+							z.object({
+								displayName: z.string(),
+								slug: z.string(),
+								imgUrl: z.string().nullable()
+							})
+						)
+					})
+				),
 				pageSize: z.number(),
 				page: z.number(),
 				totalCount: z.number()
@@ -80,10 +94,7 @@ export const lessonRouter = t.router({
 			});
 
 			return {
-				result: lessons.map(lesson => ({
-					title: lesson.title,
-					slug: lesson.slug
-				})),
+				result: lessons,
 				pageSize: actualPageSize,
 				page: page,
 				totalCount: count
