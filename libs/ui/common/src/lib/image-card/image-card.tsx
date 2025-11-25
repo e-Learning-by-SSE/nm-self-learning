@@ -37,10 +37,10 @@ export function ImageCard({
 				<div className="flex flex-col gap-4">
 					<h2 className="text-2xl">{title}</h2>
 					{subtitle && subtitle.length > 0 && (
-						<span className="text-sm text-slate-500">{subtitle}</span>
+						<span className="text-sm text-c-text-muted">{subtitle}</span>
 					)}
 				</div>
-				{footer && <div className="flex flex-col text-slate-500">{footer}</div>}
+				{footer && <div className="flex flex-col text-c-text-muted">{footer}</div>}
 			</div>
 		</div>
 	);

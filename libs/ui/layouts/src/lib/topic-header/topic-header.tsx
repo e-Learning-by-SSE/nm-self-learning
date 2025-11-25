@@ -35,7 +35,7 @@ export function TopicHeader({
 					<h2 className="text-2xl text-c-primary">{parentTitle}</h2>
 				</Link>
 				<h1 className="mt-2 text-3xl sm:text-6xl">{title}</h1>
-				<div className="mt-4 text-slate-500">{[subtitle]}</div>
+				<div className="mt-4 text-c-text-muted">{[subtitle]}</div>
 				{children}
 			</div>
 		</div>
