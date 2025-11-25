@@ -56,8 +56,8 @@ function NoResults() {
 		<div className="px-4 py-8 text-center text-sm sm:px-8">
 			<FaceFrownIcon className="mx-auto h-7 w-7 text-gray-400" />
 			<p className="mt-4 font-semibold text-gray-900">Nichts hier</p>
-			<p className="mt-2 text-gray-500">Leider konnten wir nichts finden was</p>
-			<p className="text-gray-500">deiner Suchanfrage entspricht</p>
+			<p className="mt-2 text-c-text-muted">Leider konnten wir nichts finden was</p>
+			<p className="text-c-text-muted">deiner Suchanfrage entspricht</p>
 		</div>
 	);
 }

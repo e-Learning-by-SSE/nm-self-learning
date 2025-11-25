@@ -322,7 +322,7 @@ export function StreakSlotMachineDialog({
 											locale: de,
 											addSuffix: true
 										})}
-										<div className="text-xs text-gray-500">
+										<div className="text-xs text-c-text-muted">
 											An dem Tag an dem die Pause endet, verlierst du keinen
 											Fortschritt.
 										</div>

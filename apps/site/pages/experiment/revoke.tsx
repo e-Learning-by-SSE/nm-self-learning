@@ -141,7 +141,7 @@ export default function ExperimentRevokePage({ hasConsented, consentDate }: Expe
 					</div>
 
 					<div className="mt-8 border-t pt-6 text-center">
-						<p className="text-xs text-gray-500">
+						<p className="text-xs text-c-text-muted">
 							Bei Fragen zum Widerruf können Sie sich jederzeit an das Forschungsteam
 							wenden:
 							<a

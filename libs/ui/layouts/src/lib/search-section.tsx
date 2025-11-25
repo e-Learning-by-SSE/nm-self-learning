@@ -23,7 +23,9 @@ export function SearchSection({
 			<div className="bg-gray-200 p-2">{title}</div>
 			<div className="w-full overflow-hidden text-ellipsis">
 				{showEmptySpace && (
-					<div className="block w-full p-2 italic text-gray-500">Keine Ergebnisse</div>
+					<div className="block w-full p-2 italic text-c-text-muted">
+						Keine Ergebnisse
+					</div>
 				)}
 				{results.slice(searchResultOffset, maxDisplayedSearchResults).map(result => (
 					<Link

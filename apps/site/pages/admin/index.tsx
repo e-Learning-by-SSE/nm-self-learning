@@ -61,7 +61,7 @@ export default function AdminPage() {
 						title={t("LLM Configuration")}
 					/>
 				</div>
-				<div className="text-center text-sm text-gray-500 mt-8">
+				<div className="text-center text-sm text-c-text-muted mt-8">
 					{t("App Version: {{version}}", { version: appVersion })}
 				</div>
 			</CenteredSection>

@@ -103,7 +103,7 @@ export default function LlmConfigPage() {
 			<AdminGuard>
 				<CenteredSection>
 					<div className="text-center">
-						<p className="text-gray-500">Loading LLM configuration...</p>
+						<p className="text-c-text-muted">Loading LLM configuration...</p>
 					</div>
 				</CenteredSection>
 			</AdminGuard>
@@ -135,7 +135,7 @@ export default function LlmConfigPage() {
 									className="textfield w-full"
 									placeholder="https://example.com/ollama/api"
 								/>
-								<p className="text-sm text-gray-500 mt-1">
+								<p className="text-sm text-c-text-muted mt-1">
 									{t("Base URL of your LLM server", {
 										url: "https://example.com/ollama/api"
 									})}
@@ -161,7 +161,7 @@ export default function LlmConfigPage() {
 									}
 								/>
 								{config?.hasApiKey && (
-									<p className="text-sm text-gray-500 mt-1">
+									<p className="text-sm text-c-text-muted mt-1">
 										{t("Leave empty if API key is not required")}
 									</p>
 								)}
@@ -234,7 +234,7 @@ export default function LlmConfigPage() {
 								</div>
 
 								{config && (
-									<div className="text-sm text-gray-500">
+									<div className="text-sm text-c-text-muted">
 										{t("Last updated", {
 											date: formatDateString(config.updatedAt, "d. MMM yyyy")
 										})}

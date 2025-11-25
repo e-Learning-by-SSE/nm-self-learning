@@ -135,7 +135,9 @@ export default function ExperimentConsentPage({
 										disabled={locked}
 										className="mt-1 h-4 w-4 rounded border-gray-300 text-c-primary focus:ring-c-primary disabled:opacity-50 disabled:cursor-not-allowed"
 									/>
-									<span className={`text-sm ${locked ? "text-gray-500" : ""}`}>
+									<span
+										className={`text-sm ${locked ? "text-c-text-muted" : ""}`}
+									>
 										Ich habe die obigen Informationen gelesen und verstanden.
 										Mir ist bewusst, dass meine Teilnahme freiwillig ist und ich
 										diese jederzeit ohne Angabe von Gründen beenden kann.
@@ -150,7 +152,9 @@ export default function ExperimentConsentPage({
 										disabled={locked}
 										className="mt-1 h-4 w-4 rounded border-gray-300 text-c-primary focus:ring-c-primary disabled:opacity-50 disabled:cursor-not-allowed"
 									/>
-									<span className={`text-sm ${locked ? "text-gray-500" : ""}`}>
+									<span
+										className={`text-sm ${locked ? "text-c-text-muted" : ""}`}
+									>
 										Ich erkläre mich bereit, an dieser Forschungsstudie
 										teilzunehmen.
 									</span>
@@ -190,7 +194,7 @@ export default function ExperimentConsentPage({
 
 					<div className="mt-8 border-t pt-6">
 						<div className="text-center">
-							<p className="text-xs text-gray-500 mb-2">
+							<p className="text-xs text-c-text-muted mb-2">
 								Bei Rückfragen oder Unklarheiten zur Studie können Sie sich
 								jederzeit an das Forschungsteam wenden:
 								<a

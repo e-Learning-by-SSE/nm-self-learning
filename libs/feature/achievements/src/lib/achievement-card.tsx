@@ -20,7 +20,7 @@ function DefaultAchievementProgressBar({
 				// text={`${achievement.progressValue}/${achievement.requiredValue}`}
 				bgColor="bg-blue-500"
 			/>
-			<p className="text-xs text-gray-500 mt-1">
+			<p className="text-xs text-c-text-muted mt-1">
 				{achievement.progressValue}/{achievement.requiredValue}
 			</p>
 		</div>
