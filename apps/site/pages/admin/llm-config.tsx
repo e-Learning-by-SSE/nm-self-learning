@@ -243,14 +243,14 @@ export default function LlmConfigPage() {
 							</div>
 						</form>
 						{errorMessage && (
-							<div className="mt-4 p-4 bg-red-50 rounded-md">
-								<p className="text-sm text-red-700">
+							<div className="mt-4 p-4 bg-c-danger-subtle rounded-md">
+								<p className="text-sm text-c-danger-strong">
 									<strong>Code: </strong>
-									<span className="text-red-600">{errorMessage.code}</span>
+									<span className="text-c-danger">{errorMessage.code}</span>
 								</p>
-								<p className="text-sm text-red-700">
+								<p className="text-sm text-c-danger-strong">
 									<strong>Message: </strong>
-									<span className="text-red-600">{errorMessage.message}</span>
+									<span className="text-c-danger">{errorMessage.message}</span>
 								</p>
 							</div>
 						)}

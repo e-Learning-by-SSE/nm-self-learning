@@ -351,7 +351,7 @@ function AuthorDeleteDialog({ onClose }: { onClose: () => void }) {
 							i18nKey="All data, including the created courses and learning units, will be deleted."
 							components={{
 								strong: <p className="mb-4 text-lg font-semibold " />,
-								red: <p className="text-base text-red-300" />
+								red: <p className="text-base text-c-danger" />
 							}}
 						/>
 					</div>

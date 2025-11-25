@@ -207,7 +207,7 @@ export default function ExperimentConsentPage({
 							{hasAlreadyConsented && (
 								<Link
 									href="/experiment/revoke"
-									className="text-sm text-red-600 hover:underline"
+									className="text-sm text-c-danger-strong hover:underline"
 								>
 									Einverständnis widerrufen
 								</Link>
