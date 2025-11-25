@@ -63,7 +63,7 @@ function SubjectCard({ subject }: { subject: SubjectsProps["subjects"][0] }) {
 				subtitle={subject.subtitle}
 				imgUrl={subject.cardImgUrl}
 				footer={
-					<span className="flex items-center gap-3 text-sm font-semibold text-purple-500">
+					<span className="flex items-center gap-3 text-sm font-semibold text-c-accent">
 						<SparklesIcon className="h-5" />
 						<span>
 							{subject._count.specializations}{" "}
