@@ -282,7 +282,7 @@ export function PlatformStatsAchievementsSection({
 							Deine Erfolge
 						</h3>
 
-						<div className="bg-gradient-to-br from-white to-gray-50 rounded-lg border border-c-border p-4">
+						<div className="bg-gradient-to-br from-white to-c-surface-1 rounded-lg border border-c-border p-4">
 							<div className="grid grid-cols-3 divide-x divide-c-border">
 								{/* Streak */}
 								<div className="text-center">
@@ -358,7 +358,7 @@ export function PlatformStatsAchievementsSection({
 
 						{/* Container mit goldenem Rand */}
 						<div
-							className={`bg-gradient-to-br from-white to-gray-50 rounded-lg border-2 ${stats.topUser.isCurrentUser ? "border-purple-300 shadow-purple-100 " : "border-yellow-300 shadow-yellow-100 "}  shadow-lg  p-4`}
+							className={`bg-gradient-to-br from-white to-c-surface-1 rounded-lg border-2 ${stats.topUser.isCurrentUser ? "border-purple-300 shadow-purple-100 " : "border-yellow-300 shadow-yellow-100 "}  shadow-lg  p-4`}
 						>
 							<div className="grid grid-cols-3 divide-x divide-gray-200">
 								{/* Streak */}
