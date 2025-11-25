@@ -54,7 +54,7 @@ export function SmallGradeBadge({
 			default:
 				return {
 					text: "",
-					className: "text-gray-700 bg-gray-100 border-gray-300"
+					className: "text-gray-700 bg-gray-100 border-c-border-strong"
 				};
 		}
 	})();
@@ -114,7 +114,7 @@ export function GradeBadge({
 				};
 			default:
 				return {
-					color: "text-gray-700 bg-gray-100 border-2 border-gray-300",
+					color: "text-gray-700 bg-gray-100 border-2 border-c-border-strong",
 					text: "Unbekannt",
 					display: "?"
 				};

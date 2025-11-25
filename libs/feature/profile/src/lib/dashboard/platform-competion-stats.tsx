@@ -360,7 +360,7 @@ export function PlatformStatsAchievementsSection({
 						<div
 							className={`bg-gradient-to-br from-white to-c-surface-1 rounded-lg border-2 ${stats.topUser.isCurrentUser ? "border-purple-300 shadow-purple-100 " : "border-yellow-300 shadow-yellow-100 "}  shadow-lg  p-4`}
 						>
-							<div className="grid grid-cols-3 divide-x divide-gray-200">
+							<div className="grid grid-cols-3 divide-x divide-c-border">
 								{/* Streak */}
 								<div className="text-center">
 									<div className="text-3xl font-bold text-c-primary-strong mb-1">
