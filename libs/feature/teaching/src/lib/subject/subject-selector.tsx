@@ -48,7 +48,7 @@ export function SpecializationSelector({
 							<span className="bg-c-surface-2 px-4 py-2 text-sm font-semibold">
 								{subject.title}
 							</span>
-							<ul className="flex flex-col divide-y divide-light-border">
+							<ul className="flex flex-col divide-y divide-c-border">
 								{subject.specializations.map(spec => (
 									<ComboboxOption
 										value={spec}
