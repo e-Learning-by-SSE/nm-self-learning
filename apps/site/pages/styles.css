@@ -63,6 +63,22 @@
 	--c-hover-strong: theme("colors.gray.300");
 	--c-hover-muted: theme("colors.gray.100");
 	--c-hover-subtle: theme("colors.gray.50");
+
+	/* Goal */
+	--c-goal-complete: theme("colors.green.500");
+	--c-goal-active: theme("colors.orange.400");
+	--c-goal-inactive: theme("colors.gray.400");
+
+	/* Diary */
+	--c-diary-new: theme("colors.blue.500");
+	--c-diary-incomplete: theme("colors.gray.400");
+	--c-diary-complete: theme("colors.green.500");
+
+	/* Toast */
+	--c-toast-success: theme("colors.green.500");
+	--c-toast-error: theme("colors.red.500");
+	--c-toast-info: theme("colors.blue.500");
+	--c-toast-warning: theme("colors.orange.500");
 }
 
 @font-face {
