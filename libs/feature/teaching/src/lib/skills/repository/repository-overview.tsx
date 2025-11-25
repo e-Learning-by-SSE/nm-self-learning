@@ -79,7 +79,7 @@ export function SkillRepositoryOverview() {
 								<tr key={"default:table"}>
 									<TableDataColumn>
 										<div className="flex flex-wrap gap-4">
-											<span className="text-sm font-medium hover:text-c-secondary">
+											<span className="text-sm font-medium hover:text-c-primary">
 												Keine Skillkarten vorhanden
 											</span>
 										</div>

@@ -101,7 +101,7 @@ function SpecializationCard({
 				imgUrl={specialization.cardImgUrl}
 				badge={<ImageCardBadge text="Spezialisierung" className="bg-purple-500" />}
 				footer={
-					<span className="flex items-center gap-3 text-sm font-semibold text-emerald-500">
+					<span className="flex items-center gap-3 text-sm font-semibold text-c-primary">
 						<Square3Stack3DIcon className="h-5" />
 						<span>
 							{specialization._count.courses}{" "}

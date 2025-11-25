@@ -28,7 +28,7 @@ import { MinorScaleFadeIn } from "../transition/minor-scale-fade-in";
  *   displayValue={selected}
  *   options={["English", "Deutsch", "Español"]}
  *   onChange={setSelected}
- *   customFocusStyle={(focus) => focus ? "bg-emerald-500 text-white" : ""}
+ *   customFocusStyle={(focus) => focus ? "bg-c-primary text-white" : ""}
  * />
  */
 export function ComboboxMenu({

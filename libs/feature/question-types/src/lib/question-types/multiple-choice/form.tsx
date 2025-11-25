@@ -63,7 +63,7 @@ export default function MultipleChoiceForm({
 					key={answer.answerId}
 					className={`relative flex flex-col gap-2 rounded-lg border p-4 ${
 						answers?.[answerIndex]?.isCorrect
-							? "border-secondary bg-c-primary-subtle"
+							? "border-c-primary bg-c-primary-subtle"
 							: "border-c-border-strong bg-c-surface-2"
 					}`}
 				>

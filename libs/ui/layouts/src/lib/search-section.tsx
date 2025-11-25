@@ -27,7 +27,7 @@ export function SearchSection({
 				)}
 				{results.slice(searchResultOffset, maxDisplayedSearchResults).map(result => (
 					<Link
-						className="block w-full overflow-hidden text-ellipsis p-2 hover:bg-emerald-500 hover:text-white"
+						className="block w-full overflow-hidden text-ellipsis p-2 hover:bg-c-primary hover:text-white"
 						key={result.title}
 						onClick={onClick}
 						href={`/${baseLink}/${result.slug}`}

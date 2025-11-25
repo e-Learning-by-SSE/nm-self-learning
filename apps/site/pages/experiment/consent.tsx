@@ -133,7 +133,7 @@ export default function ExperimentConsentPage({
 										checked={hasReadFullText}
 										onChange={e => setHasReadFullText(e.target.checked)}
 										disabled={locked}
-										className="mt-1 h-4 w-4 rounded border-gray-300 text-emerald-500 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+										className="mt-1 h-4 w-4 rounded border-gray-300 text-c-primary focus:ring-c-primary disabled:opacity-50 disabled:cursor-not-allowed"
 									/>
 									<span className={`text-sm ${locked ? "text-gray-500" : ""}`}>
 										Ich habe die obigen Informationen gelesen und verstanden.
@@ -148,7 +148,7 @@ export default function ExperimentConsentPage({
 										checked={agreesToParticipate}
 										onChange={e => setAgreesToParticipate(e.target.checked)}
 										disabled={locked}
-										className="mt-1 h-4 w-4 rounded border-gray-300 text-emerald-500 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+										className="mt-1 h-4 w-4 rounded border-gray-300 text-c-primary focus:ring-c-primary disabled:opacity-50 disabled:cursor-not-allowed"
 									/>
 									<span className={`text-sm ${locked ? "text-gray-500" : ""}`}>
 										Ich erkläre mich bereit, an dieser Forschungsstudie
@@ -220,7 +220,7 @@ function ConsentConfirmation({ consentDate }: { consentDate?: Date }) {
 	return (
 		<div className="mb-8 rounded-lg bg-emerald-50 p-6 border border-emerald-200">
 			<div className="flex items-center gap-4">
-				<CheckIcon className="h-12 w-12 text-emerald-500 flex-shrink-0" />
+				<CheckIcon className="h-12 w-12 text-c-primary flex-shrink-0" />
 				<div>
 					<h2 className="text-xl font-bold text-emerald-900">
 						Einverständnis bereits erteilt

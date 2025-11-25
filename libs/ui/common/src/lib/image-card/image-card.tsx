@@ -51,7 +51,7 @@ export function ImageCardBadge({
 	className
 }: {
 	text: string;
-	/** Tailwind background color, i.e. `bg-emerald-500`. */
+	/** Tailwind background color, i.e. `bg-c-primary`. */
 	className?: string;
 }) {
 	return (

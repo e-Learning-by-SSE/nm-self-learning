@@ -109,7 +109,7 @@ function SkillRow({
 		>
 			<TableDataColumn className={"text-center align-middle"}>
 				<input
-					className="secondary form-checkbox rounded text-c-primary focus:ring-c-primary"
+					className="c-primary form-checkbox rounded text-c-primary focus:ring-c-primary"
 					type="checkbox"
 					defaultChecked={false} // TODO mass select
 				/>

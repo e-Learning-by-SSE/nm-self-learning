@@ -58,7 +58,7 @@ export function MetricsViewer({
 							onClick={() => setOption(option)}
 							className={`px-8 py-2 border rounded text-xs font-semibold ${
 								selectedOption === option
-									? " bg-emerald-500   text-white"
+									? " bg-c-primary   text-white"
 									: "bg-gray-200 text-gray-600"
 							}`}
 						>

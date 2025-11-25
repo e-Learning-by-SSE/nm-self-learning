@@ -83,7 +83,7 @@ export function MultipleChoiceOption({
 	return (
 		<div className="rounded-lg border border-c-border bg-white">
 			<button
-				className={`w-full flex gap-8 px-8 py-2 text-start focus:outline-secondary ${className} ${justifiedLayout}`}
+				className={`w-full flex gap-8 px-8 py-2 text-start focus:outline-c-primary ${className} ${justifiedLayout}`}
 				onClick={onToggle}
 				disabled={disabled}
 				data-testid="MultipleChoiceOption"

@@ -93,7 +93,7 @@ export function SearchableCombobox<T>({
 							{({ active }) => (
 								<li
 									className={`${
-										active ? "bg-emerald-500 text-white" : "text-black"
+										active ? "bg-c-primary text-white" : "text-black"
 									} cursor-pointer px-3 py-2`}
 								>
 									{getLabel(item)}

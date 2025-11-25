@@ -32,7 +32,7 @@ export function TopicHeader({
 
 			<div className="relative mx-auto flex w-full max-w-screen-xl flex-col px-4 py-8 xl:px-0">
 				<Link href={parentLink}>
-					<h2 className="text-2xl text-emerald-500">{parentTitle}</h2>
+					<h2 className="text-2xl text-c-primary">{parentTitle}</h2>
 				</Link>
 				<h1 className="mt-2 text-3xl sm:text-6xl">{title}</h1>
 				<div className="mt-4 text-slate-500">{[subtitle]}</div>

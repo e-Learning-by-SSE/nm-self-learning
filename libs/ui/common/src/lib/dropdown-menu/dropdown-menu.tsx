@@ -74,7 +74,7 @@ export function DropdownMenu({
 												customFocusStyle
 													? customFocusStyle(focus)
 													: focus
-														? "bg-emerald-500 text-white"
+														? "bg-c-primary text-white"
 														: ""
 											} flex items-center`}
 										>
