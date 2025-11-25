@@ -152,7 +152,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 							// eslint-disable-next-line react/jsx-no-useless-fragment
 							<Fragment key={containerId}>
 								{containerId === "_init" ? null : (
-									<div className="flex min-w-fit flex-col gap-4 rounded-lg bg-gray-200 p-4">
+									<div className="flex min-w-fit flex-col gap-4 rounded-lg bg-c-surface-3 p-4">
 										<span className="flex items-center justify-between gap-4 font-semibold">
 											<span>{containerId}</span>
 											<div className="flex gap-2">

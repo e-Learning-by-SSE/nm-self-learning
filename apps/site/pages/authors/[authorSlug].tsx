@@ -117,7 +117,7 @@ export function AuthorHeader({ author }: { author: Author }) {
 						alt=""
 					></Image>
 				) : (
-					<div className="h-64 w-64 rounded-lg bg-gray-200"></div>
+					<div className="h-64 w-64 rounded-lg bg-c-surface-3"></div>
 				)}
 			</div>
 			<div className="flex flex-col place-items-center gap-16">

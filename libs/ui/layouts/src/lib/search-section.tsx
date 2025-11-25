@@ -20,7 +20,7 @@ export function SearchSection({
 	const showEmptySpace = results.length === 0;
 	return (
 		<>
-			<div className="bg-gray-200 p-2">{title}</div>
+			<div className="bg-c-surface-3 p-2">{title}</div>
 			<div className="w-full overflow-hidden text-ellipsis">
 				{showEmptySpace && (
 					<div className="block w-full p-2 italic text-c-text-muted">

@@ -59,7 +59,7 @@ export function MetricsViewer({
 							className={`px-8 py-2 border rounded text-xs font-semibold ${
 								selectedOption === option
 									? " bg-c-primary   text-white"
-									: "bg-gray-200 text-gray-600"
+									: "bg-c-surface-3 text-gray-600"
 							}`}
 						>
 							{option}

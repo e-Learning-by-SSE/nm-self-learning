@@ -152,7 +152,7 @@ function AuthorData() {
 												className="mx-auto h-32 w-32 shrink-0 rounded-lg object-cover"
 											></img>
 										) : (
-											<div className="mx-auto h-32 w-32  shrink-0 rounded-lg bg-gray-200"></div>
+											<div className="mx-auto h-32 w-32  shrink-0 rounded-lg bg-c-surface-3"></div>
 										)}
 									</>
 								}

@@ -42,7 +42,7 @@ export function IFrameInput({ index }: { index: number }) {
 				{url && url.length > 0 ? (
 					<iframe src={url} title="iframe" width="100%" height="500px"></iframe>
 				) : (
-					<div className="h-[500px] w-full bg-gray-200"></div>
+					<div className="h-[500px] w-full bg-c-surface-3"></div>
 				)}
 			</div>
 		</SectionCard>

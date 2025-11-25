@@ -138,7 +138,7 @@ function LessonNode({
 					<button
 						type="button"
 						title="Nach oben"
-						className="rounded p-1 hover:bg-gray-200"
+						className="rounded p-1 hover:bg-c-hover"
 						onClick={() => moveLesson(lesson.lessonId, "up")}
 					>
 						<ArrowUpIcon className="h-3" />
@@ -146,7 +146,7 @@ function LessonNode({
 					<button
 						type="button"
 						title="Nach unten"
-						className="rounded p-1 hover:bg-gray-200"
+						className="rounded p-1 hover:bg-c-hover"
 						onClick={() => moveLesson(lesson.lessonId, "down")}
 					>
 						<ArrowDownIcon className="h-3" />

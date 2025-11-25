@@ -126,7 +126,7 @@ function BigScreenPlaylistArea({ course, lesson }: LessonLayoutProps) {
 				/>
 			) : (
 				<div className="h-full pt-8">
-					<div className="h-full animate-pulse rounded-lg bg-gray-200"></div>
+					<div className="h-full animate-pulse rounded-lg bg-c-surface-3"></div>
 				</div>
 			)}
 		</aside>
