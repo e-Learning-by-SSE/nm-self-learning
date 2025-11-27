@@ -23,10 +23,10 @@ export function Toast({ id, title, subtitle, type }: ToastProps & { id: string }
 			className="relative grid w-full grid-cols-[auto_1fr_auto] items-start gap-4 rounded-lg border border-c-border bg-white p-4 shadow-lg sm:w-96"
 			data-testid={`toast-${type}`}
 		>
-			{type === "success" && <CheckCircleIcon className="h-6 text-green-500" />}
-			{type === "error" && <XCircleIcon className="h-6 text-c-danger" />}
-			{type === "info" && <InformationCircleIcon className="h-6 text-c-info" />}
-			{type === "warning" && <ExclamationTriangleIcon className="h-6 text-orange-500" />}
+			{type === "success" && <CheckCircleIcon className="h-6 text-c-toast-success" />}
+			{type === "error" && <XCircleIcon className="h-6 text-c-toast-error" />}
+			{type === "info" && <InformationCircleIcon className="h-6 text-c-toast-info" />}
+			{type === "warning" && <ExclamationTriangleIcon className="h-6 text-c-toast-warning" />}
 			<div className="flex flex-col gap-1">
 				<span className="text-sm font-semibold">{title}</span>
 				<span className="text-sm text-c-text-muted">{subtitle}</span>

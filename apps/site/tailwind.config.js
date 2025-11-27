@@ -151,7 +151,27 @@ module.exports = {
 				"c-hover": "var(--c-hover)",
 				"c-hover-strong": "var(--c-hover-strong)",
 				"c-hover-muted": "var(--c-hover-muted)",
-				"c-hover-subtle": "var(--c-hover-subtle)"
+				"c-hover-subtle": "var(--c-hover-subtle)",
+
+				/* Goal */
+				"c-goal-complete": "var(--c-goal-complete)",
+				"c-goal-complete-muted": "var(--c-goal-complete-muted)",
+
+				"c-goal-active": "var(--c-goal-active)",
+				"c-goal-active-muted": "var(--c-goal-active-muted)",
+
+				"c-goal-inactive": "var(--c-goal-inactive)",
+
+				/* Diary */
+				"c-diary-new": "var(--c-diary-new)",
+				"c-diary-incomplete": "var(--c-diary-incomplete)",
+				"c-diary-complete": "var(--c-diary-complete)",
+
+				/* Toast */
+				"c-toast-success": "var(--c-toast-success)",
+				"c-toast-error": "var(--c-toast-error)",
+				"c-toast-info": "var(--c-toast-info)",
+				"c-toast-warning": "var(--c-toast-warning)"
 			},
 			backgroundSize: {
 				"300%": "300% 300%"

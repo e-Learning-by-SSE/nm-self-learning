@@ -10,12 +10,12 @@ import { useState } from "react";
 function getIcon(hasRead: boolean, isDraft: boolean) {
 	if (isDraft) {
 		if (hasRead) {
-			return <EllipsisHorizontalCircleIcon className="fill-gray-400" />;
+			return <EllipsisHorizontalCircleIcon className="fill-c-diary-incomplete" />;
 		} else {
-			return <ExclamationCircleIcon className="fill-blue-400" />;
+			return <ExclamationCircleIcon className="fill-c-diary-new" />;
 		}
 	} else {
-		return <CheckCircleIcon className="fill-green-500" />;
+		return <CheckCircleIcon className="fill-c-diary-complete" />;
 	}
 }
 
