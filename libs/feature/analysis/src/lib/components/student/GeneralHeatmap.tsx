@@ -28,9 +28,7 @@ const startOfISOWeek = (d: Date) => {
 	return x;
 };
 
-const normalizeDate = (dateInput: any) => {
-	if (!dateInput) return null;
-	const d = new Date(dateInput);
+const normalizeDate = (d: Date) => {
 	if (isNaN(d.getTime())) return null;
 	return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
 		d.getDate()
@@ -185,19 +183,14 @@ export function GeneralHeatmap() {
 		const dailyMap = new Map<string, number>();
 
 		if (metric === "timeMetric" && dailyLearning) {
-			for (const e of dailyLearning as any[]) {
-				const iso = normalizeDate(e.day ?? (e as any).date);
+			for (const e of dailyLearning) {
+				const iso = normalizeDate(e.day);
 				if (!iso) continue;
-				const seconds =
-					typeof e.timeSeconds === "number"
-						? e.timeSeconds
-						: typeof (e as any).seconds === "number"
-							? (e as any).seconds
-							: 0;
+				const seconds = typeof e.timeSeconds === "number" ? e.timeSeconds : 0;
 				dailyMap.set(iso, seconds / 3600);
 			}
 		} else if (hourlyQuiz) {
-			for (const e of hourlyQuiz as any[]) {
+			for (const e of hourlyQuiz) {
 				const iso = normalizeDate(e.hour);
 				if (!iso) continue;
 				const val =

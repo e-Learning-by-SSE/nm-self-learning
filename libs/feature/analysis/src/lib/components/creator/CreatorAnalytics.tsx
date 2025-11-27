@@ -277,16 +277,16 @@ export function CreatorAnalytics() {
 		return <div className="p-10 text-neutral-600">{t("loadingSession")}</div>;
 	}
 
-	const coursesRaw: any[] = Array.isArray(avgCourse) ? avgCourse : [];
+	const coursesRaw = Array.isArray(avgCourse) ? avgCourse : [];
 
 	const courses: CourseItem[] = coursesRaw.map(row => ({
-		courseId: row.courseId ?? row.coursed ?? row.courseID ?? "—",
-		label: row.courseTitle ?? row.courseName ?? "—",
+		courseId: row.courseId ?? "—",
+		label: row.courseTitle ?? "—",
 		rate: toPctNumber(row.averageCompletionRate),
 		enrollments: Number(row.totalEnrollments ?? 0)
 	}));
 
-	const lessonsRaw: any[] = Array.isArray(avgLessonRows) ? avgLessonRows : [];
+	const lessonsRaw = Array.isArray(avgLessonRows) ? avgLessonRows : [];
 
 	const lessonsByCourse: Record<string, LessonItem[]> = {};
 	const perCourseHiLo: Record<string, { max?: LessonItem; min?: LessonItem }> = {};
@@ -296,7 +296,7 @@ export function CreatorAnalytics() {
 	> = {};
 
 	for (const row of lessonsRaw) {
-		const cId: string = (row.courseId ?? row.coursed ?? "—").toString().trim();
+		const cId: string = (row.courseId ?? "—").toString().trim();
 		const lessonName: string = row.lessonTitle ?? row.lessonId ?? "Lektion";
 		const lessonRate: number = toPctNumber(row.averageCompletionRate);
 
@@ -358,11 +358,7 @@ export function CreatorAnalytics() {
 		}
 	}
 
-	const teacherNameGuess =
-		((session?.user as any)?.name as string) ||
-		((session?.user as any)?.username as string) ||
-		((session?.user as any)?.email as string) ||
-		t("defaultName");
+	const teacherNameGuess = (session?.user?.name as string) || t("defaultName");
 
 	const dashboardData: DashboardData | undefined = courses.length
 		? {

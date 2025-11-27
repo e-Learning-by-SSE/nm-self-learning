@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { trpc } from "@self-learning/api-client";
 import { useTranslation } from "next-i18next";
 
@@ -215,11 +215,11 @@ export default function StudyTimeHeatmap({
 	const hasNoData = useMemo(() => {
 		if (internalMetric === "hours") {
 			if (period === "day" || period === "week")
-				return !hourlyLearning || (hourlyLearning as any[]).length === 0;
+				return !hourlyLearning || hourlyLearning.length === 0;
 			return !dailyLearning || (Array.isArray(dailyLearning) && dailyLearning.length === 0);
 		} else {
 			// "Erledigte Aufgaben" & "Richtige Aufgaben"/Units/Accuracy always come from hourlyQuiz (for aggregation)
-			return !hourlyQuiz || (hourlyQuiz as any[]).length === 0;
+			return !hourlyQuiz || hourlyQuiz.length === 0;
 		}
 	}, [period, internalMetric, dailyLearning, hourlyLearning, hourlyQuiz]);
 
@@ -234,7 +234,7 @@ export default function StudyTimeHeatmap({
 		if (internalMetric === "hours") {
 			// from DailyLearningTime (seconds → hours)
 			if (dailyLearning) {
-				for (const entry of dailyLearning as any[]) {
+				for (const entry of dailyLearning) {
 					const iso = normalizeDate(entry.day);
 					if (!iso) continue;
 					const value = (entry.timeSeconds ?? 0) / 3600;
@@ -259,7 +259,7 @@ export default function StudyTimeHeatmap({
 			if (internalMetric === "hours") {
 				// Hours of learning time
 				hoursForDay = Array.isArray(hourlyLearning)
-					? (hourlyLearning as any[])
+					? hourlyLearning
 							.filter(h => normalizeDate(h.hour) === isoToday)
 							.map(h => {
 								const d = parseUTC(h.hour);
@@ -311,12 +311,12 @@ export default function StudyTimeHeatmap({
 			if (internalMetric === "hours") {
 				// Aggregation from hourly learning time
 				const end = addDays(start, 7);
-				const weekHours = (
-					Array.isArray(hourlyLearning) ? (hourlyLearning as any[]) : []
-				).filter(h => {
-					const d = parseUTC(h.hour);
-					return d >= start && d < end;
-				});
+				const weekHours = (Array.isArray(hourlyLearning) ? hourlyLearning : []).filter(
+					h => {
+						const d = parseUTC(h.hour);
+						return d >= start && d < end;
+					}
+				);
 
 				for (const h of weekHours) {
 					const d = parseUTC(h.hour);
