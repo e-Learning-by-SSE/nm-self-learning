@@ -4,11 +4,11 @@ const prisma = new PrismaClient();
 
 export async function createAuthorCourseRelation(courseIds: string[]) {
 	try {
-		// Assign Albus Dumbledore (id: 6) to all courses from CourseIds
+		// Assign Albus Dumbledore all courses from CourseIds
 		for (const courseId of courseIds) {
 			await prisma.course.update({
 				where: { courseId },
-				data: { authors: { connect: { id: 6 } } }
+				data: { authors: { connect: { username: "dumbledore" } } }
 			});
 		}
 
