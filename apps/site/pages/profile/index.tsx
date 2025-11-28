@@ -15,6 +15,7 @@ import {
 } from "@self-learning/profile";
 import { EventTypeMap, LoginStreak } from "@self-learning/types";
 import {
+	SectionCard,
 	ImageCard,
 	ImageCardBadge,
 	ImageOrPlaceholder,
@@ -539,7 +540,7 @@ export default function ProfilPage({
 			{/* Second row - Letzter Kurs und Zuletzt bearbeitete Lerneinheiten */}
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 				{/* Last Course */}
-				<div className="rounded-xl bg-white shadow-sm border border-c-border-muted p-6 h-full flex flex-col">
+				<SectionCard>
 					<h2 className="mb-4 text-lg font-semibold text-c-text-strong">Letzter Kurs</h2>
 					<LastCourseProgress
 						lastEnrollment={
@@ -550,10 +551,10 @@ export default function ProfilPage({
 							)[0]
 						}
 					/>
-				</div>
+				</SectionCard>
 
 				{/* Recent Lessons / Learning Diary */}
-				<div className="rounded-xl bg-white shadow-sm border border-c-border-muted p-6 h-full flex flex-col">
+				<SectionCard>
 					{ltbEnabled ? (
 						<>
 							<StatusBadgeInfo
@@ -570,16 +571,14 @@ export default function ProfilPage({
 							<LessonList lessons={recentLessons} />
 						</>
 					)}
-				</div>
+				</SectionCard>
 			</div>
 
 			{/* Third row - Course Enrollment Overview (full width) */}
-			<div className="w-full">
-				<div className="rounded-xl bg-white shadow-sm border border-c-border-muted p-6">
-					<h2 className="mb-4 text-lg font-semibold text-c-text-strong">Mein Lernplan</h2>
-					<CourseEnrollmentOverview enrollments={enrollments} />
-				</div>
-			</div>
+			<SectionCard>
+				<h2 className="mb-4 text-lg font-semibold text-c-text-strong">Mein Lernplan</h2>
+				<CourseEnrollmentOverview enrollments={enrollments} />
+			</SectionCard>
 
 			{/* Dialogs */}
 			<StreakSlotMachineDialog
@@ -635,7 +634,7 @@ function MyFunctionsCard() {
 	];
 
 	return (
-		<div className="rounded-xl bg-white shadow-sm border border-c-border-muted p-6 h-full">
+		<SectionCard>
 			<h2 className="mb-4 text-lg font-semibold text-c-text-strong">Meine Funktionen</h2>
 			<div className="space-y-1">
 				{functions
@@ -668,7 +667,7 @@ function MyFunctionsCard() {
 						</div>
 					))}
 			</div>
-		</div>
+		</SectionCard>
 	);
 }
 
