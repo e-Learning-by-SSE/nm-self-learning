@@ -16,3 +16,4 @@ export * from "./lib/event-log";
 export * from "./lib/llm-config";
 export * from "./lib/ai-tutor";
 export * from "./lib/lesson-content";
+export * from "./lib/rag";

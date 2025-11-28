@@ -1,13 +1,28 @@
 import { database } from "@self-learning/database";
+import { startRagWorker } from "./ragWorker";
 
-export async function enqueueRagJob(lessonId: string) {
+export async function getJobCount() {
+	return await database.ragJob.count({
+		where: { attempts: { lt: 3 } }
+	});
+}
+
+export async function getRagJob(lessonId: string) {
+	return await database.ragJob.findFirst({
+		where: { lessonId, attempts: { lt: 3 } }
+	});
+}
+
+export async function enqueueRagJob(lessonId: string, jobType: string) {
 	await database.ragJob.create({
 		data: {
 			lessonId,
 			status: "queued",
-			attempts: 0
+			attempts: 0,
+			jobType: jobType
 		}
 	});
+	startRagWorker();
 }
 
 export async function fetchNextRagJob() {

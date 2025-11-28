@@ -33,30 +33,47 @@ async function fetchAvailableModels(serverUrl: string, apiKey?: string, timeoutS
 			message: `${response.statusText}`
 		});
 	}
+
 	const data = await response.json();
 	return ollamaModelList.parse(data);
 }
 
+export async function fetchLlmConfig() {
+	const config = await database.llmConfiguration.findFirst({
+		where: { isActive: true },
+		select: {
+			serverUrl: true,
+			defaultModel: true,
+			updatedAt: true,
+			apiKey: true
+		}
+	});
+
+	if (config) {
+		return {
+			...config,
+			apiKey: config?.apiKey ?? undefined
+		};
+	} else {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "No configuration data found."
+		});
+	}
+}
+
 export const llmConfigRouter = t.router({
 	get: authProcedure.query(async () => {
-		const config = await database.llmConfiguration.findFirst({
-			where: { isActive: true },
-			select: {
-				serverUrl: true,
-				defaultModel: true,
-				updatedAt: true,
-				apiKey: true
-			}
-		});
-
+		const config = await fetchLlmConfig();
 		if (!config) {
 			return null;
 		}
 
+		const { apiKey, ...rest } = config;
+
 		return {
-			...config,
-			hasApiKey: !!config.apiKey,
-			apiKey: undefined
+			...rest,
+			hasApiKey: !!apiKey
 		};
 	}),
 
@@ -68,12 +85,6 @@ export const llmConfigRouter = t.router({
 				const availableModels = await fetchAvailableModels(serverUrl, apiKey);
 				const modelExists = availableModels.models.some(
 					m => m.name === defaultModel || m.name.startsWith(defaultModel + ":")
-				);
-				const data = await response.json();
-				const availableModels = data.models || [];
-				const modelExists = availableModels.some(
-					(model: any) =>
-						model.name === defaultModel || model.name.startsWith(defaultModel + ":")
 				);
 
 				if (!modelExists) {
@@ -89,21 +100,6 @@ export const llmConfigRouter = t.router({
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message: "Failed to validate LLM configuration."
-				});
-			}
-				if (!modelExists) {
-					throw new TRPCError({
-						code: "BAD_REQUEST",
-						message: `Model "${defaultModel}" is not available on the server. Available models: ${availableModels.map((m: any) => m.name).join(", ")}`
-					});
-				}
-			} catch (error) {
-				if (error instanceof TRPCError) {
-					throw error;
-				}
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: `Failed to validate LLM configuration: ${error instanceof Error ? error.message : "Unknown error"}`
 				});
 			}
 

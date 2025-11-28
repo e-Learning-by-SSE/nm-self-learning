@@ -17,6 +17,7 @@ import { LessonOutlineContext } from "./lesson-outline-context";
 import { useNavigableContent } from "@self-learning/ui/layouts";
 import { MobileSidebarNavigation } from "@self-learning/ui/layouts";
 import { useLessonNavigation } from "@self-learning/ui/lesson";
+import { FloatingTutorButton } from "@self-learning/ai-tutor";
 
 export type LessonLayoutProps = {
 	lesson: LessonData;
@@ -169,6 +170,7 @@ export function LessonLayout(
 	return (
 		<BaseLessonLayout title={pageProps.lesson.title} playlistArea={playlistArea} {...pageProps}>
 			<Component {...pageProps} />
+			<FloatingTutorButton />
 		</BaseLessonLayout>
 	);
 }

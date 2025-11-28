@@ -3,60 +3,48 @@ import { documentProcessor } from "./documentProcessor";
 import type { RetrievalResult } from "@self-learning/types";
 
 class RAGRetriever {
-	//Download PDF from MinIO URL
-	async processPDFFromURL(
-		courseId: string,
-		courseName: string,
-		pdfFiles: Array<{ url: string; fileName: string }>
-	) {
-		// Download PDFs from MinIO
+	async processPDFFromURL(lessonId: string, lessonName: string, pdfFiles: string[]) {
 		const downloadedFiles = await Promise.all(
 			pdfFiles.map(async file => {
-				const response = await fetch(file.url);
+				const response = await fetch(file);
 
 				if (!response.ok) {
-					throw new Error(`Failed to download PDF from ${file.url}`);
+					throw new Error(`Failed to download PDF from ${file}`);
 				}
 
 				const uint8Array = new Uint8Array(await response.arrayBuffer());
 				return {
-					buffer: uint8Array,
-					fileName: file.fileName
+					buffer: uint8Array
 				};
 			})
 		);
 
-		// Ingest downloaded PDFs
-		return this.ingestCourse(courseId, courseName, downloadedFiles);
+		return this.ingestlesson(lessonId, lessonName, downloadedFiles);
 	}
 
-	// Ingest course PDFs (call this when uploading PDFs)
-	async ingestCourse(
-		courseId: string,
-		courseName: string,
-		pdfFiles: Array<{ buffer: Uint8Array; fileName: string }>
+	async ingestlesson(
+		lessonId: string,
+		lessonName: string,
+		pdfFiles: Array<{ buffer: Uint8Array }>
 	) {
 		try {
-			console.log(`🚀 Starting ingestion for course: ${courseName}`);
+			console.log(`🚀 Starting ingestion for lesson: ${lessonName}`);
 
-			// Check if course already exists
-			const exists = await vectorStore.courseExists(courseId);
+			const exists = await vectorStore.lessonExists(lessonId);
 			if (exists) {
-				console.log(`⚠️ Course ${courseId} already exists. Deleting old data...`);
-				await vectorStore.deleteCourse(courseId);
+				console.log(`⚠️ lesson ${lessonId} already exists. Deleting old data...`);
+				await vectorStore.deletelesson(lessonId);
 			}
 
-			// Process PDFs into chunks
 			const chunks = await documentProcessor.processMultiplePDFs(
 				pdfFiles,
-				courseId,
-				courseName
+				lessonId,
+				lessonName
 			);
 
-			// Store in vector database
-			await vectorStore.addDocuments(courseId, chunks);
+			await vectorStore.addDocuments(lessonId, chunks);
 
-			console.log(`✅ Course ${courseName} ingested successfully!`);
+			console.log(`✅ lesson ${lessonName} ingested successfully!`);
 			return {
 				success: true,
 				chunksCreated: chunks.length,
@@ -68,21 +56,18 @@ class RAGRetriever {
 		}
 	}
 
-	// Retrieve relevant context for a question
 	async retrieveContext(
-		courseId: string,
+		lessonId: string,
 		question: string,
 		topK = 5
 	): Promise<{ context: string; sources: RetrievalResult[] }> {
 		try {
-			// Check if course exists
-			const exists = await vectorStore.courseExists(courseId);
+			const exists = await vectorStore.lessonExists(lessonId);
 			if (!exists) {
-				throw new Error(`Course ${courseId} not found. Please ingest the course first.`);
+				throw new Error(`lesson ${lessonId} not found. Please ingest the lesson first.`);
 			}
 
-			// Search for relevant chunks
-			const results = await vectorStore.search(courseId, question, topK);
+			const results = await vectorStore.search(lessonId, question, topK);
 
 			if (results.length === 0) {
 				return {
@@ -91,10 +76,9 @@ class RAGRetriever {
 				};
 			}
 
-			// Format context for LLM
 			const context = results
 				.map((result, idx) => {
-					const source = result.metadata.chapterName || result.metadata.fileName;
+					const source = result.metadata.lessonName;
 					const page = result.metadata.pageNumber
 						? ` (Page ${result.metadata.pageNumber})`
 						: "";
@@ -109,11 +93,8 @@ class RAGRetriever {
 		}
 	}
 
-	// Delete course data
-	async deleteCourse(courseId: string) {
-		await vectorStore.deleteCourse(courseId);
+	async deletelesson(lessonId: string) {
+		await vectorStore.deletelesson(lessonId);
 	}
 }
-
-// Export singleton instance
 export const ragRetriever = new RAGRetriever();

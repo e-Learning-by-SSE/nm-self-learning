@@ -7,7 +7,7 @@ import {
 	StandaloneLessonLayout
 } from "@self-learning/lesson";
 
-export const getServerSideProps = withTranslations(["common"], async context => {
+export const getServerSideProps = withTranslations(["common", "ai-tutor"], async context => {
 	return withAuth(async _user => {
 		const props = await getStaticPropsForStandaloneLessonLayout(context.params);
 

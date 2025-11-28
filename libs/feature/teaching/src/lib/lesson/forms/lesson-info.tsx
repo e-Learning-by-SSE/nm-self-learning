@@ -133,6 +133,7 @@ export function LessonInfoEditor() {
 				subtitle="Autoren dieser Lerneinheit."
 				emptyString="Für diese Lerneinheit sind noch keine Autoren hinterlegt."
 			/>
+			<AiTutorConsent />
 			<LicenseForm />
 			<LessonSkillManager />
 		</>

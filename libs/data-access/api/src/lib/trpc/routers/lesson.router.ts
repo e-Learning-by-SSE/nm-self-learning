@@ -1,6 +1,6 @@
 import { Course, Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
-import { createLessonMeta, lessonSchema } from "@self-learning/types";
+import { createLessonMeta, lessonSchema, lessonContentSchema } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
@@ -68,6 +68,11 @@ export const lessonRouter = t.router({
 			} satisfies Paginated<unknown>;
 		}),
 	create: authProcedure.input(lessonSchema).mutation(async ({ input, ctx }) => {
+		const ragCheck = input.ragEnabled ?? false;
+		let hash: string | null = null;
+		if (ragCheck && input.content.length) {
+			hash = getRagVersionHash(JSON.stringify(input.content));
+		}
 		const createdLesson = await database.lesson.create({
 			data: {
 				...input,
@@ -85,7 +90,7 @@ export const lessonRouter = t.router({
 				content: input.content as Prisma.InputJsonArray,
 				lessonId: getRandomId(),
 				meta: createLessonMeta(input) as unknown as Prisma.JsonObject,
-				ragVersionHash: getRagVersionHash(JSON.stringify(input.content)),
+				ragVersionHash: hash,
 				ragEnabled: input.ragEnabled ?? false
 			},
 			select: {
@@ -96,8 +101,8 @@ export const lessonRouter = t.router({
 			}
 		});
 
-		if (createdLesson.ragEnabled) {
-			enqueueRagJob(createdLesson.lessonId);
+		if (createdLesson.ragEnabled && hash) {
+			enqueueRagJob(createdLesson.lessonId, "embed");
 		}
 
 		console.log("[lessonRouter.create]: Lesson created by", ctx.user.name, createdLesson);
@@ -111,8 +116,11 @@ export const lessonRouter = t.router({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
-			const hash = getRagVersionHash(JSON.stringify(input.lesson.content));
-
+			const ragCheck = input.lesson.ragEnabled ?? false;
+			let hash: string | null = null;
+			if (ragCheck && input.lesson.content.length) {
+				hash = getRagVersionHash(JSON.stringify(input.lesson.content));
+			}
 			const existing = await database.lesson.findUnique({
 				where: { lessonId: input.lessonId },
 				select: { ragVersionHash: true, ragEnabled: true }
@@ -139,7 +147,8 @@ export const lessonRouter = t.router({
 						set: input.lesson.provides.map(r => ({ id: r.id }))
 					},
 					meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject,
-					ragVersionHash: hash
+					ragVersionHash: hash,
+					ragEnabled: input.lesson.ragEnabled ?? false
 				},
 				select: {
 					lessonId: true,
@@ -149,11 +158,15 @@ export const lessonRouter = t.router({
 				}
 			});
 
-			if (updatedLesson.ragEnabled && changed) {
-				enqueueRagJob(updatedLesson.lessonId);
+			if (updatedLesson.ragEnabled && hash) {
+				if (!existing?.ragEnabled) {
+					enqueueRagJob(updatedLesson.lessonId, "embed");
+				} else {
+					enqueueRagJob(updatedLesson.lessonId, "delete");
+					enqueueRagJob(updatedLesson.lessonId, "embed");
+				}
 			} else if (!updatedLesson.ragEnabled && existing?.ragEnabled) {
-				// If RAG was disabled, we might want to handle cleanup here
-				// For now, we just log it
+				enqueueRagJob(updatedLesson.lessonId, "delete");
 			}
 
 			console.log("[lessonRouter.edit]: Lesson updated by", ctx.user.name, updatedLesson);
@@ -181,6 +194,7 @@ export const lessonRouter = t.router({
 						lessonId: input.lessonId
 					}
 				});
+				enqueueRagJob(input.lessonId, "delete");
 			} else {
 				const deleted = await database.lesson.deleteMany({
 					where: {
@@ -198,6 +212,8 @@ export const lessonRouter = t.router({
 						code: "FORBIDDEN",
 						message: "User is not an author of this lesson or lesson does not exist."
 					});
+				} else {
+					enqueueRagJob(input.lessonId, "delete");
 				}
 			}
 		})

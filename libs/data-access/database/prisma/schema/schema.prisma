@@ -286,6 +286,7 @@ model RagJob {
   lessonId         String
   status           String
   attempts         Int       @default(0)
+  jobType          String
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 }

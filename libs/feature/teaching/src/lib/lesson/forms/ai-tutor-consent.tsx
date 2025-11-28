@@ -1,12 +1,11 @@
 import { Form } from "@self-learning/ui/forms";
 import { Toggle } from "@self-learning/ui/common";
-import { useState } from "react";
-import { useFormContext } from "react-hook-form";
+import { Controller, useFormContext } from "react-hook-form";
 import { LessonFormModel } from "../lesson-form-model";
 
 export function AiTutorConsent() {
-	const { setValue, watch } = useFormContext<LessonFormModel>();
-	const [isEnabled, setIsEnabled] = useState(watch("ragEnabled") ?? false);
+	const form = useFormContext<LessonFormModel>();
+	const { control } = form;
 
 	return (
 		<Form.SidebarSection>
@@ -14,17 +13,26 @@ export function AiTutorConsent() {
 				title="AI Tutor Consent"
 				subtitle="Consent to use this content for AI Tutor Context"
 				children={
-					<Toggle
-						label=""
-						value={isEnabled}
-						onChange={() => {
-							setIsEnabled(!isEnabled);
-							setValue("ragEnabled", !isEnabled);
-						}}
+					<Controller
+						name={"ragEnabled"}
+						control={control}
+						render={({ field }) => (
+							<Toggle
+								label=""
+								value={field.value ?? false}
+								onChange={checked => {
+									field.onChange(checked);
+								}}
+							/>
+						)}
 					/>
 				}
 			/>
-			<ContentConsentSection isEnabled={isEnabled} />
+			<Controller
+				name={"ragEnabled"}
+				control={control}
+				render={({ field }) => <ContentConsentSection isEnabled={field.value ?? false} />}
+			/>
 		</Form.SidebarSection>
 	);
 }

@@ -4,10 +4,7 @@ import { useAiTutorContext } from "../context/ai-tutor-context";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
 import ReactMarkdown from "react-markdown";
 import { IconOnlyButton } from "@self-learning/ui/common";
-<<<<<<< HEAD
 import { useTranslation } from "react-i18next";
-=======
->>>>>>> bdb6e7a0 (feat: ai tutor chatbot rebase on llm-config)
 
 export function AiTutor() {
 	const {
@@ -25,11 +22,8 @@ export function AiTutor() {
 
 	const session = useSession();
 	const user = session.data?.user;
-<<<<<<< HEAD
 	const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 	const { t } = useTranslation("ai-tutor");
-=======
->>>>>>> bdb6e7a0 (feat: ai tutor chatbot rebase on llm-config)
 
 	if (!config) return null;
 
@@ -46,7 +40,6 @@ export function AiTutor() {
 							<div className="flex items-center gap-3">
 								<div className="w-10 h-10">
 									<img
-<<<<<<< HEAD
 										className="rounded-xl object-cover object-top h-12"
 										alt="Avatar"
 										src={`${basePath}/avatar-female.png`}
@@ -58,18 +51,6 @@ export function AiTutor() {
 									<div className="flex items-center gap-2">
 										<div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
 										<span className="text-xs text-gray-600">{t("Online")}</span>
-=======
-										className="rounded-xl object-cover object-top"
-										alt="Avatar"
-										src={"/ai-tutor-3.png"}
-									/>
-								</div>
-								<div>
-									<h3 className="font-bold text-gray-900">AI Tutor</h3>
-									<div className="flex items-center gap-2">
-										<div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-										<span className="text-xs text-gray-600">Online</span>
->>>>>>> bdb6e7a0 (feat: ai tutor chatbot rebase on llm-config)
 									</div>
 								</div>
 							</div>
@@ -79,11 +60,7 @@ export function AiTutor() {
 										<TrashIcon className="h-5 text-gray-700 hover:text-white" />
 									}
 									onClick={clearChat}
-<<<<<<< HEAD
 									title={t("Clear Chat")}
-=======
-									title="Clear Chat"
->>>>>>> bdb6e7a0 (feat: ai tutor chatbot rebase on llm-config)
 									className="hover:bg-red-500/90 rounded-xl"
 								/>
 								<IconOnlyButton
@@ -92,11 +69,7 @@ export function AiTutor() {
 									}
 									onClick={closeTutor}
 									className="p-2 hover:bg-green-500/90 rounded-xl"
-<<<<<<< HEAD
 									title={t("Close Tutor")}
-=======
-									title="Close Tutor"
->>>>>>> bdb6e7a0 (feat: ai tutor chatbot rebase on llm-config)
 								/>
 							</div>
 						</div>
@@ -120,7 +93,6 @@ export function AiTutor() {
 										}`}
 									>
 										{msg.role === "user" ? (
-<<<<<<< HEAD
 											<img
 												className="rounded-xl object-cover object-top w-10 h-9"
 												alt="Avatar"
@@ -133,30 +105,6 @@ export function AiTutor() {
 												className="rounded-xl object-cover object-top w-10 h-9"
 												alt="Avatar"
 												src={`${basePath}/avatar-female.png`}
-=======
-											<div>
-												{user?.avatarUrl ? (
-													<img
-														className="rounded-xl object-cover object-top"
-														alt="Avatar"
-														src={
-															user.avatarUrl || "/profile-avatar.svg"
-														}
-														width={42}
-														height={42}
-													/>
-												) : (
-													<div className=" bg-gray-100"></div>
-												)}
-											</div>
-										) : (
-											<img
-												className="rounded-xl object-cover object-top"
-												alt="Avatar"
-												src={"/ai-tutor-3.png"}
-												width={42}
-												height={42}
->>>>>>> bdb6e7a0 (feat: ai tutor chatbot rebase on llm-config)
 											/>
 										)}
 									</div>
@@ -182,7 +130,6 @@ export function AiTutor() {
 								<div className="flex items-start gap-3 max-w-xs">
 									<div className="w-8 h-8 rounded-xl flex items-center justify-center bg-emerald-600">
 										<img
-<<<<<<< HEAD
 											className="rounded-xl object-cover object-top w-10 h-9"
 											alt="Avatar"
 											src={`${basePath}/avatar-female.png`}
@@ -190,15 +137,6 @@ export function AiTutor() {
 									</div>
 									<div className="px-4 py-3 rounded-2xl text-sm backdrop-blur-sm shadow-lg bg-white/70 text-gray-800">
 										{t("Thinking...")}
-=======
-											className="rounded-xl object-cover object-top"
-											alt="Avatar"
-											src={"/ai-tutor-3.png"}
-										/>
-									</div>
-									<div className="px-4 py-3 rounded-2xl text-sm backdrop-blur-sm shadow-lg bg-white/70 text-gray-800">
-										Thinking...
->>>>>>> bdb6e7a0 (feat: ai tutor chatbot rebase on llm-config)
 									</div>
 								</div>
 							)}
@@ -217,11 +155,7 @@ export function AiTutor() {
 								}}
 								onKeyDown={handleKeyDown}
 								disabled={loading}
-<<<<<<< HEAD
 								placeholder={t("Ask anything about the course...")}
-=======
-								placeholder="Ask anything about the course..."
->>>>>>> bdb6e7a0 (feat: ai tutor chatbot rebase on llm-config)
 								className="flex-1 px-4 py-3 bg-white/60 rounded-xl max-h-48 min-h-16"
 							/>
 							<button
@@ -229,11 +163,7 @@ export function AiTutor() {
 								disabled={loading}
 								className="btn btn-primary max-h-12 self-end"
 							>
-<<<<<<< HEAD
 								{t("Send")}
-=======
-								Send
->>>>>>> bdb6e7a0 (feat: ai tutor chatbot rebase on llm-config)
 							</button>
 						</div>
 					</div>

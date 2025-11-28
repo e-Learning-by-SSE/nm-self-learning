@@ -6,7 +6,7 @@ import { withTranslations } from "@self-learning/api";
 import { formatDateString } from "@self-learning/util/common";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "next-i18next";
 import { llmConfigSchema } from "@self-learning/types";
 import { TRPCClientError } from "@trpc/client";
 import { FloatingTutorButton } from "@self-learning/ai-tutor";
@@ -43,94 +43,6 @@ export default function LlmConfigPage() {
 		}
 	}, [config, once, reset]);
 
-	// const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-	// 	const { name, value } = e.target;
-	// 	setFormData(prev => ({
-	// 		...prev,
-	// 		[name]: value
-	// 	}));
-	// };
-
-	const handleValidateConfig = async () => {
-		if (!formData.serverUrl || !formData.defaultModel) {
-			showToast({
-				type: "error",
-				title: "Validation Error",
-				subtitle: "Please fill in all required fields"
-			});
-			return;
-		}
-	const handleValidateConfig = async () => {
-		if (!formData.serverUrl || !formData.defaultModel) {
-			showToast({
-				type: "error",
-				title: "Validation Error",
-				subtitle: "Please fill in all required fields"
-			});
-			return;
-		}
-
-		setValidating(true);
-		try {
-			const result = await validateConfig.mutateAsync({
-				serverUrl: formData.serverUrl,
-				apiKey: formData.apiKey || undefined,
-				defaultModel: formData.defaultModel
-			});
-		setValidating(true);
-		try {
-			const result = await validateConfig.mutateAsync({
-				serverUrl: formData.serverUrl,
-				apiKey: formData.apiKey || undefined,
-				defaultModel: formData.defaultModel
-			});
-
-			if (result.valid) {
-				setAvailableModels(result.availableModels);
-				showToast({
-					type: "success",
-					title: "Configuration Valid",
-					subtitle: `Successfully connected to LLM server. Found ${result.availableModels.length} models.`
-				});
-
-				try {
-					const response = await fetch(formData.serverUrl + "api/generate", {
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-							Authorization: formData.apiKey ? `Bearer ${formData.apiKey}` : ""
-						},
-						body: JSON.stringify({
-							prompt: "hello world",
-							model: formData.defaultModel,
-							stream: false
-						})
-					});
-					if (!response.ok) {
-						throw new Error("Failed to generate response from LLM server");
-					}
-					const data = await response.json();
-					setResponse(data.response);
-					showToast({
-						type: "success",
-						title: "Test Successful",
-						subtitle: `LLM server responded with: ${data.response}`
-					});
-				} catch (err) {
-					console.error("Error occurred while testing LLM server:", err);
-				}
-			}
-		} catch (error) {
-			showToast({
-				type: "error",
-				title: "Validation Failed",
-				subtitle: error instanceof Error ? error.message : "Unknown error occurred"
-			});
-		} finally {
-			setValidating(false);
-		}
-	};
-
 	const onSubmit = async (data: typeof formData) => {
 		try {
 			await saveConfig.mutateAsync({
@@ -144,11 +56,7 @@ export default function LlmConfigPage() {
 				title: t("Configuration Saved"),
 				subtitle: t("LLM configuration has been saved successfully!")
 			});
-			showToast({
-				type: "success",
-				title: "Configuration Saved",
-				subtitle: "LLM configuration has been saved successfully!"
-			});
+			setErrorMessage(null);
 
 			refetch();
 		} catch (error) {
@@ -177,6 +85,7 @@ export default function LlmConfigPage() {
 						count: result.availableModels.length
 					})
 				});
+				setErrorMessage(null);
 			}
 		} catch (error) {
 			setErrorMessage(
@@ -184,6 +93,7 @@ export default function LlmConfigPage() {
 					? { code: error.data?.code, message: error.message }
 					: { code: "UNKNOWN", message: "Failed to fetch available models" }
 			);
+			setAvailableModels([]);
 		} finally {
 			setFetchingModels(false);
 		}
@@ -311,46 +221,6 @@ export default function LlmConfigPage() {
 
 							<div className="flex justify-between items-center pt-4 border-t">
 								<div className="flex gap-2">
-									<button
-										type="button"
-										onClick={handleValidateConfig}
-										disabled={
-											validating ||
-											!formData.serverUrl ||
-											!formData.defaultModel
-										}
-										className="btn bg-gray-600 text-white hover:bg-gray-700"
-									>
-										{validating ? "Validating..." : "Validate Configuration"}
-									</button>
-
-									<button
-										type="submit"
-										disabled={saveConfig.isLoading}
-										className="btn btn-primary"
-									>
-										{saveConfig.isLoading
-											? "Saving..."
-											: config
-												? "Update Configuration"
-												: "Save Configuration"}
-									</button>
-								</div>
-							<div className="flex justify-between items-center pt-4 border-t">
-								<div className="flex gap-2">
-									<button
-										type="button"
-										onClick={handleValidateConfig}
-										disabled={
-											validating ||
-											!formData.serverUrl ||
-											!formData.defaultModel
-										}
-										className="btn bg-gray-600 text-white hover:bg-gray-700"
-									>
-										{validating ? "Validating..." : "Validate Configuration"}
-									</button>
-
 									<button
 										type="submit"
 										disabled={saveConfig.isLoading}
