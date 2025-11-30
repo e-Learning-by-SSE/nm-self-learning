@@ -12,7 +12,7 @@ import { Controller, useFormContext } from "react-hook-form";
 import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { LessonSkillManager } from "./lesson-skill-manager";
-import { GroupForm } from "../../group/forms/group-form";
+import { GroupAccessEditor } from "../../group/forms/group-form";
 
 export function LessonInfoEditor() {
 	const form = useFormContext<LessonFormModel>();
@@ -136,7 +136,7 @@ export function LessonInfoEditor() {
 					</LabeledField>
 				</div>
 			</Form.SidebarSection>
-			<GroupForm subtitle="Gruppe, der dieser Lerninhalt zugewiesen wurde" />
+			<GroupAccessEditor subtitle="Gruppen, die auf diese Lerninhalt zugreifen können" />
 			<AuthorsForm
 				subtitle="Autoren dieser Lerneinheit."
 				emptyString="Für diese Lerneinheit sind noch keine Autoren hinterlegt."

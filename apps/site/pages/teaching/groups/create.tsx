@@ -7,10 +7,9 @@ import { withTranslations } from "@self-learning/api";
 export default function CreateGroupPage() {
 	const session = useRequiredSession();
 	const authorUsername = session.data?.user.name;
-	const isAdmin = session.data?.user.role === "ADMIN";
 	const router = useRouter();
 	const { mutateAsync: createGroupAsync } = trpc.permission.createGroup.useMutation();
-	if (!authorUsername || !isAdmin) {
+	if (!authorUsername) {
 		return <Unauthorized>Um eine Gruppe zu erstellen, musst du ein Autor sein.</Unauthorized>;
 	}
 

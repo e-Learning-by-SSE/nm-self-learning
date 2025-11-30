@@ -5,7 +5,12 @@ import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learni
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
-import { hasGroupRole, hasResourceAccess } from "./permission.router";
+import {
+	getUserPermission,
+	greaterOrEqAccessLevel,
+	hasGroupRole,
+	hasResourceAccess
+} from "./permission.router";
 import { UserFromSession } from "../context";
 
 export const lessonRouter = t.router({
@@ -65,17 +70,15 @@ export const lessonRouter = t.router({
 			} satisfies Paginated<unknown>;
 		}),
 	create: authProcedure.input(lessonSchema).mutation(async ({ input, ctx }) => {
-		// TODO temporal block of multiple permissions creation
-		if (
-			input.permissions.length !== 1 ||
-			input.permissions[0].accessLevel !== AccessLevel.FULL
-		) {
+		// make sure one permission is "original"
+		const grantorGroup = input.permissions.find(p => !p.grantorId);
+		if (input.permissions.filter(p => !p.grantorId).length !== 1 || !grantorGroup) {
 			throw new TRPCError({
 				code: "BAD_REQUEST",
-				message: "requires exactly one permission to the group with FULL access."
+				message: "requires exactly one permission not as a grant."
 			});
 		}
-		if (!(await canCreate(ctx.user, input.permissions[0].groupId))) {
+		if (!(await canCreate(ctx.user, grantorGroup.groupId))) {
 			throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
 		}
 		const createdLesson = await database.lesson.create({
@@ -92,7 +95,8 @@ export const lessonRouter = t.router({
 				permissions: {
 					create: input.permissions.map(p => ({
 						accessLevel: p.accessLevel,
-						groupId: p.groupId
+						groupId: p.groupId,
+						grantorId: p.grantorId ?? null
 					}))
 				}
 			},
@@ -105,9 +109,68 @@ export const lessonRouter = t.router({
 	edit: authProcedure
 		.input(z.object({ lessonId: z.string(), lesson: lessonSchema }))
 		.mutation(async ({ input, ctx }) => {
-			if (!(await canEdit(ctx.user, input.lessonId))) {
-				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
+			// get user access level to resource - must be at least EDIT
+			const { accessLevel: actualAccess } = await getUserPermission({
+				userId: ctx.user.id,
+				lessonId: input.lessonId
+			});
+			if (!actualAccess || !greaterOrEqAccessLevel(actualAccess, AccessLevel.EDIT)) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 			}
+			// drop display fields
+			const perms = input.lesson.permissions.map(p => {
+				return {
+					accessLevel: p.accessLevel,
+					groupId: p.groupId,
+					grantorId: p.grantorId ?? null
+				};
+			});
+			// check if grantor group is valid
+			const grantorGroup = perms.find(p => !p.grantorId);
+			if (perms.filter(p => !p.grantorId).length !== 1 || !grantorGroup) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "requires exactly one permission not as a grant."
+				});
+			}
+			// fetch existing permissions to delermine diffs
+			const existingPerms = await database.permission.findMany({
+				where: { lessonId: input.lessonId },
+				select: { groupId: true, grantorId: true, accessLevel: true }
+			});
+			// compute if premissions are equal
+			type Permission = {
+				grantorId?: number | null;
+				groupId: number;
+				accessLevel: AccessLevel;
+			};
+			const toKey = (p: Permission) => `${p.groupId}|${p.accessLevel}|${p.grantorId ?? "-"}`;
+			const keys = new Set(perms.map(toKey));
+			const equal =
+				existingPerms.length === perms.length &&
+				existingPerms.every(ep => keys.has(toKey(ep)));
+			//
+			if (!equal) {
+				// must have FULL access in the resource to change permissions
+				if (!greaterOrEqAccessLevel(actualAccess, AccessLevel.FULL)) {
+					throw new TRPCError({
+						code: "FORBIDDEN",
+						message: "Insufficient permissions to update permissions"
+					});
+				}
+				// get old grantor group
+				const oldGrantor = existingPerms.find(p => !p.grantorId);
+				if ((oldGrantor && toKey(oldGrantor)) !== toKey(grantorGroup)) {
+					// changed grantor group
+					if (!(await canCreate(ctx.user, grantorGroup.groupId))) {
+						throw new TRPCError({
+							code: "FORBIDDEN",
+							message: "Insufficient permissions to change grantor group"
+						});
+					}
+				}
+			}
+			// update
 			const updatedLesson = await database.lesson.update({
 				where: { lessonId: input.lessonId },
 				data: {
@@ -121,7 +184,19 @@ export const lessonRouter = t.router({
 					requires: { set: input.lesson.requires.map(r => ({ id: r.id })) },
 					provides: { set: input.lesson.provides.map(r => ({ id: r.id })) },
 					meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject,
-					permissions: { deleteMany: {}, create: [] } // TODO: handle permission updates
+					permissions: {
+						deleteMany: { groupId: { notIn: perms.map(p => p.groupId) } },
+						upsert: perms.map(p => ({
+							where: {
+								groupId_lessonId: { lessonId: input.lessonId, groupId: p.groupId }
+							},
+							create: p,
+							update: {
+								accessLevel: p.accessLevel,
+								grantorId: p.grantorId
+							}
+						}))
+					}
 				},
 				select: { lessonId: true, slug: true, title: true }
 			});
@@ -137,8 +212,8 @@ export const lessonRouter = t.router({
 				FROM "Course"
 				WHERE EXISTS (SELECT 1
 							  FROM jsonb_array_elements("Course".content) AS chapter
-									   CROSS JOIN jsonb_array_elements(chapter - > 'content') AS lesson
-							  WHERE lesson ->>'lessonId' = ${input.lessonId})
+									   CROSS JOIN jsonb_array_elements(chapter -> 'content') AS lesson
+							  WHERE lesson->>'lessonId' = ${input.lessonId})
 			`;
 			return courses as Course[];
 		}),
@@ -191,9 +266,9 @@ export async function findLessons({
 	return { lessons, count };
 }
 
-async function canCreate(user: UserFromSession, groupId: string): Promise<boolean> {
+async function canCreate(user: UserFromSession, groupId: number): Promise<boolean> {
 	if (user.role === "ADMIN") return true;
-	return await hasGroupRole(user.id, groupId, GroupRole.MEMBER);
+	return await hasGroupRole(groupId, user.id, GroupRole.MEMBER);
 }
 
 async function canEdit(user: UserFromSession, lessonId: string): Promise<boolean> {

@@ -2,6 +2,7 @@ import { AccessLevel, GroupRole, Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import {
 	courseFormSchema,
+	CoursePermission,
 	getFullCourseExport,
 	mapCourseFormToInsert,
 	mapCourseFormToUpdate
@@ -12,7 +13,12 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 import { UserFromSession } from "../context";
-import { hasGroupRole, hasResourceAccess } from "./permission.router";
+import {
+	getUserPermission,
+	greaterOrEqAccessLevel,
+	hasGroupRole,
+	hasResourceAccess
+} from "./permission.router";
 
 export const courseRouter = t.router({
 	listAvailableCourses: authProcedure
@@ -208,25 +214,23 @@ export const courseRouter = t.router({
 		return fullExport;
 	}),
 	create: authProcedure.input(courseFormSchema).mutation(async ({ input, ctx }) => {
-		// TODO temporal block of multiple permissions creation
-		if (
-			input.permissions.length !== 1 ||
-			input.permissions[0].accessLevel !== AccessLevel.FULL
-		) {
-			throw new TRPCError({
-				code: "BAD_REQUEST",
-				message: "requires exactly one permission to the group with FULL access."
-			});
-		}
-		if (!(await canCreate(ctx.user, input.permissions[0].groupId))) {
-			throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
-		}
 		if (input.authors.length <= 0 && ctx.user.role != "ADMIN") {
 			throw new TRPCError({
 				code: "FORBIDDEN",
 				message:
 					"Deleting the last author as is not allowed, except for Admin Users. Contact the side administrator for more information. "
 			});
+		}
+		// make sure one permission is "original" (TODO exact copy from lessonRouter)
+		const grantorGroup = input.permissions.find(p => !p.grantorId);
+		if (input.permissions.filter(p => !p.grantorId).length !== 1 || !grantorGroup) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: "requires exactly one permission not as a grant."
+			});
+		}
+		if (!(await canCreate(ctx.user, grantorGroup.groupId))) {
+			throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
 		}
 
 		const courseForDb = mapCourseFormToInsert(input, getRandomId());
@@ -242,7 +246,66 @@ export const courseRouter = t.router({
 	edit: authProcedure
 		.input(z.object({ courseId: z.string(), course: courseFormSchema }))
 		.mutation(async ({ input, ctx }) => {
-			const courseForDb = mapCourseFormToUpdate(input.course, input.courseId);
+			// TODO similar to lessonRouter
+			// get user access level to resource - must be at least EDIT
+			const { accessLevel: actualAccess } = await getUserPermission({
+				userId: ctx.user.id,
+				courseId: input.courseId
+			});
+			if (!actualAccess || !greaterOrEqAccessLevel(actualAccess, AccessLevel.EDIT)) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
+			// drop display fields
+			const perms = input.course.permissions.map(p => {
+				return {
+					accessLevel: p.accessLevel,
+					groupId: p.groupId,
+					grantorId: p.grantorId ?? null
+				};
+			});
+			// check if grantor group is valid
+			const grantorGroup = perms.find(p => !p.grantorId);
+			if (perms.filter(p => !p.grantorId).length !== 1 || !grantorGroup) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "requires exactly one permission not as a grant."
+				});
+			}
+			// fetch existing permissions to delermine diffs
+			const existingPerms = await database.permission.findMany({
+				where: { courseId: input.courseId },
+				select: { groupId: true, grantorId: true, accessLevel: true }
+			});
+			// compute if premissions are equal
+			const toKey = (p: CoursePermission) =>
+				`${p.groupId}|${p.accessLevel}|${p.grantorId ?? "-"}`;
+			const keys = new Set(perms.map(toKey));
+			const equal =
+				existingPerms.length === perms.length &&
+				existingPerms.every(ep => keys.has(toKey(ep)));
+			//
+			if (!equal) {
+				// must have FULL access in the resource to change permissions
+				if (!greaterOrEqAccessLevel(actualAccess, AccessLevel.FULL)) {
+					throw new TRPCError({
+						code: "FORBIDDEN",
+						message: "Insufficient permissions to update permissions"
+					});
+				}
+				// get old grantor group
+				const oldGrantor = existingPerms.find(p => !p.grantorId);
+				if ((oldGrantor && toKey(oldGrantor)) !== toKey(grantorGroup)) {
+					// changed grantor group
+					if (!(await canCreate(ctx.user, grantorGroup.groupId))) {
+						throw new TRPCError({
+							code: "FORBIDDEN",
+							message: "Insufficient permissions to change grantor group"
+						});
+					}
+				}
+			}
+
+			const courseForDb = mapCourseFormToUpdate(input.course, input.courseId, perms);
 
 			if (!(await canEdit(ctx.user, input.courseId))) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
@@ -366,9 +429,9 @@ export const courseRouter = t.router({
 		})
 });
 
-async function canCreate(user: UserFromSession, groupId: string): Promise<boolean> {
+async function canCreate(user: UserFromSession, groupId: number): Promise<boolean> {
 	if (user.role === "ADMIN") return true;
-	return await hasGroupRole(user.id, groupId, GroupRole.MEMBER);
+	return await hasGroupRole(groupId, user.id, GroupRole.MEMBER);
 }
 
 // TODO for now all can read
