@@ -65,7 +65,12 @@ export function computeExpiresAt(durationMinutes: number): Date {
 
 export const GroupFormSchema = z.object({
 	id: z.number().nullable(),
-	parentId: z.number().nullable(),
+	parent: z
+		.object({
+			id: z.number(),
+			name: z.string()
+		})
+		.nullable(),
 	name: z.string().min(3),
 	permissions: ResourceAccessFormSchema.array(),
 	members: MemberFormSchema.array()
@@ -79,7 +84,7 @@ export type Member = z.infer<typeof MemberFormSchema>;
 export function createEmptyGroup(): Group {
 	return {
 		id: null,
-		parentId: null,
+		parent: null,
 		name: "",
 		permissions: [],
 		members: []
