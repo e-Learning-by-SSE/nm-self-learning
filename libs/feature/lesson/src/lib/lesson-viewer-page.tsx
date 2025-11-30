@@ -5,7 +5,7 @@ import {
 	PencilIcon,
 	PlayIcon
 } from "@heroicons/react/24/solid";
-import { LessonType } from "@prisma/client";
+import { AccessLevel, LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
 import { getCourse, useLessonContext, useLessonOutlineContext } from "@self-learning/lesson";
@@ -25,7 +25,7 @@ import {
 	NavigableContentViewer,
 	MarkdownContainer,
 	useNavigableContent,
-	useRequiredSession
+	ResourceGuard
 } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
 import { useEventLog } from "@self-learning/util/common";
@@ -460,25 +460,20 @@ export function ChapterName({
 }
 
 function AuthorEditButton({ lesson }: { lesson: LessonProps["lesson"] }) {
-	// const session = useRequiredSession();
-
-	// session.data?.user.role === "ADMIN" - checked inside hasAccessLevel
-	const hasAccess = trpc.permission.hasResourceAccess.useQuery({
-		lessonId: lesson.lessonId,
-		accessLevel: "EDIT"
-	});
-	if (hasAccess) {
-		return (
+	return (
+		<ResourceGuard
+			mode="hide"
+			accessLevel={AccessLevel.EDIT}
+			allowedGroups={lesson.permissions}
+		>
 			<Link
 				href={`/teaching/lessons/edit/${lesson.lessonId}`}
 				className="btn-stroked h-fit xl:w-fit"
 			>
 				<PencilIcon className="h-6" />
 			</Link>
-		);
-	}
-
-	return null;
+		</ResourceGuard>
+	);
 }
 
 function LessonControls({

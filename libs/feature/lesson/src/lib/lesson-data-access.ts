@@ -27,6 +27,13 @@ const selectStatement = {
 			slug: true,
 			imgUrl: true
 		}
+	},
+	permissions: {
+		select: {
+			accessLevel: true,
+			grantorId: true,
+			groupId: true
+		}
 	}
 };
 

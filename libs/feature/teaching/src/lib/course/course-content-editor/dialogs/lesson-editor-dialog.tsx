@@ -12,7 +12,11 @@ export function LessonEditorDialogWithGuard({
 	initialLesson?: LessonFormModel;
 }) {
 	return (
-		<ResourceGuard accessLevel={AccessLevel.EDIT} allowedGroups={initialLesson?.permissions}>
+		<ResourceGuard
+			mode="fallback"
+			accessLevel={AccessLevel.EDIT}
+			allowedGroups={initialLesson?.permissions}
+		>
 			<LessonEditorDialog initialLesson={initialLesson} onClose={onClose} />
 		</ResourceGuard>
 	);

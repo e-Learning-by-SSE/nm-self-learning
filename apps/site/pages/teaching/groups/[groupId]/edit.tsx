@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { ResourceAccessFormSchema } from "@self-learning/types";
 import { GroupRole } from "@prisma/client";
+import { MemberGuard } from "@self-learning/ui/layouts";
 
 type EditGroupProps = {
 	group: GroupFormModel;
@@ -77,5 +78,9 @@ export default function EditGroupPage({ group }: EditGroupProps) {
 		await update();
 	};
 
-	return <GroupEditor initialGroup={group} onSubmit={handleEditClose} />;
+	return (
+		<MemberGuard groupId={group.id ?? undefined} groupRole={GroupRole.MEMBER}>
+			<GroupEditor initialGroup={group} onSubmit={handleEditClose} />
+		</MemberGuard>
+	);
 }

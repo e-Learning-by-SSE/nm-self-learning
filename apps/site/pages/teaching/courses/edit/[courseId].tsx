@@ -120,7 +120,7 @@ export const getServerSideProps = withTranslations(
 );
 
 export default function EditCoursePage({ course, lessons }: EditCourseProps) {
-	const { mutateAsync: updateCourse, isLoading } = trpc.course.edit.useMutation();
+	const { mutateAsync: updateCourse } = trpc.course.edit.useMutation();
 	const router = useRouter();
 	const trpcContext = trpc.useUtils();
 	const isInitialRender = useRef(true);
@@ -158,9 +158,9 @@ export default function EditCoursePage({ course, lessons }: EditCourseProps) {
 
 	return (
 		<ResourceGuard
+			mode="fallback"
 			accessLevel={AccessLevel.EDIT}
 			allowedGroups={course.permissions}
-			isLoading={isLoading}
 		>
 			<CourseEditor course={course} onConfirm={onConfirm} />
 		</ResourceGuard>

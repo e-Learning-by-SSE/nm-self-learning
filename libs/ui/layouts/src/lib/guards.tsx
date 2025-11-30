@@ -78,7 +78,7 @@ export function MemberGuard({
 	groupRole = GroupRole.MEMBER // TODO
 }: {
 	groupRole: GroupRole;
-	groupId: number;
+	groupId?: number;
 	children?: React.ReactNode;
 }) {
 	const error = `Um darauf zugreifen zu können, müssen Sie Mitglied einer Gruppe sein.`;
@@ -88,7 +88,7 @@ export function MemberGuard({
 	const userGroups = new Set(session.data?.user.memberships);
 	// TODO now I sacrifize expiresAt & groupRole to make it simple; const now = new Date();
 
-	if (session.status === "loading") {
+	if (session.status === "loading" || groupId === undefined) {
 		return <LoadingBox />;
 	}
 
@@ -96,45 +96,53 @@ export function MemberGuard({
 	return <AuthorizedGuard condition={hasAccess} children={children} error={error} />;
 }
 
+export function testResourceGuard(
+	accessLevel: AccessLevel,
+	allowedGroups: GroupAccess[],
+	userGroups: Set<number>
+) {
+	const perm = allowedGroups
+		.filter(g => userGroups.has(g.groupId))
+		.reduce((best: GroupAccess | null, g) => {
+			if (!best || greaterAccessLevel(g.accessLevel, best.accessLevel)) {
+				// if better - return g
+				return g;
+			}
+			return best;
+		}, null);
+	return !!perm && greaterOrEqAccessLevel(perm.accessLevel, accessLevel);
+}
+
 export function ResourceGuard({
 	children,
 	accessLevel,
 	// resource, TODO fallback to load data from server?
 	allowedGroups, // if undefined - always allow
-	isLoading
+	mode
 }: {
 	accessLevel: AccessLevel;
 	// resource: ResourceInput;
 	allowedGroups?: GroupAccess[];
 	children?: React.ReactNode;
-	isLoading?: boolean;
+	mode: "hide" | "fallback";
 }) {
 	const error = `Um darauf zugreifen zu können, müssen Sie Mitglied einer Gruppe mit der Berechtigung '${accessLevel}' für die Ressource sein.`;
 	const session = useRequiredSession();
 	const isAdmin = session.data?.user.role === "ADMIN";
-	// const isAuthor = session.data?.user.isAuthor;
 	const userGroups = new Set(session.data?.user.memberships);
 	// TODO now I sacrifize expiresAt to make it simple; const now = new Date();
 
-	if (isLoading || session.status === "loading") {
-		return <LoadingBox />;
+	if (session.status === "loading" || allowedGroups === undefined || userGroups === undefined) {
+		return mode === "fallback" ? <LoadingBox /> : null;
 	}
 
-	let hasAccess = !allowedGroups || isAdmin; // if allowedGroups undefined - always allow
-	// go through group cache
-	if (!hasAccess && allowedGroups) {
-		const perm = allowedGroups
-			.filter(g => userGroups.has(g.groupId))
-			.reduce((best: GroupAccess | null, g) => {
-				if (!best || greaterAccessLevel(g.accessLevel, best.accessLevel)) {
-					// if better - return g
-					return g;
-				}
-				return best;
-			}, null);
-		hasAccess = !!perm && greaterOrEqAccessLevel(perm.accessLevel, accessLevel);
+	const hasAccess = isAdmin || testResourceGuard(accessLevel, allowedGroups, userGroups);
+	if (hasAccess) {
+		// eslint-disable-next-line react/jsx-no-useless-fragment
+		return <>{children}</>;
 	}
-	return <AuthorizedGuard condition={hasAccess} children={children} error={error} />;
+
+	return mode === "fallback" ? <Unauthorized>{error}</Unauthorized> : null;
 
 	// const { data: hasEditAccess, isLoading } =
 	// 		trpc.permission.hasResourceAccess.useQuery(

@@ -124,7 +124,11 @@ export default function EditLessonPage({ lesson }: EditLessonProps) {
 	};
 
 	return (
-		<ResourceGuard accessLevel={AccessLevel.EDIT} allowedGroups={lesson.permissions}>
+		<ResourceGuard
+			mode="fallback"
+			accessLevel={AccessLevel.EDIT}
+			allowedGroups={lesson.permissions}
+		>
 			<LessonEditor initialLesson={lesson} onSubmit={handleEditClose} isFullScreen={true} />
 		</ResourceGuard>
 	);
