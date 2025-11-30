@@ -34,7 +34,9 @@ export const adminRouter = t.router({
 				database.user.findMany({
 					where,
 					select: {
+						id: true,
 						name: true,
+						displayName: true,
 						email: true,
 						role: true,
 						image: true
