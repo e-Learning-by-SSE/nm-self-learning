@@ -128,8 +128,16 @@ export async function hasResourcesAccess(userId: string, checks: ResourceAccess[
 		.map(r => r.lessonId);
 	const perms = await database.permission.findMany({
 		where: {
-			courseId: { in: courseIds },
-			lessonId: { in: lessonIds },
+			OR: [
+				{
+					courseId: { in: courseIds },
+					lessonId: null
+				},
+				{
+					lessonId: { in: lessonIds },
+					courseId: null
+				}
+			],
 			group: {
 				members: {
 					some: {
@@ -206,7 +214,7 @@ export async function getGroup(groupId: number) {
 		where: { id: groupId },
 		select: {
 			id: true,
-			parentId: true,
+			parent: { select: { id: true, name: true } },
 			name: true,
 			permissions: {
 				select: {
@@ -239,7 +247,7 @@ export const permissionRouter = t.router({
 	createGroup: authProcedure
 		.input(GroupFormSchema.omit({ id: true }))
 		.mutation(async ({ input, ctx }) => {
-			const { parentId, name, permissions, members } = input;
+			const { parent, name, permissions, members } = input;
 			const userId = ctx.user.id;
 			// check so members has no OWNER role
 			if (members?.some(m => m.role === GroupRole.OWNER)) {
@@ -267,12 +275,13 @@ export const permissionRouter = t.router({
 			});
 			// check permission - must have full access at parent or be admin
 			let hasAccess = ctx.user.role === "ADMIN";
-			if (!hasAccess && !!parentId) {
+			if (!hasAccess && !!parent?.id) {
 				// only website admins can create root groups
 				const [groupOk, resourceOk] = await Promise.all([
-					hasGroupRole(parentId, userId, GroupRole.ADMIN),
+					hasGroupRole(parent.id, userId, GroupRole.ADMIN),
 					hasResourcesAccess(userId, checks)
 				]);
+				console.log("groupOk", groupOk, "resourceOk", resourceOk);
 				hasAccess = groupOk && resourceOk;
 			}
 
@@ -283,14 +292,14 @@ export const permissionRouter = t.router({
 			return database.group.create({
 				data: {
 					name,
-					parentId,
+					parentId: parent?.id,
 					permissions: { create: perms },
 					members: { create: [...(membs ?? []), { userId, role: GroupRole.OWNER }] }
 				}
 			});
 		}),
 	updateGroup: authProcedure.input(GroupFormSchema).mutation(async ({ input, ctx }) => {
-		const { id, permissions, members, name, parentId } = input;
+		const { id, permissions, members, name, parent } = input;
 		const userId = ctx.user.id;
 		if (!id) {
 			throw new TRPCError({ code: "BAD_REQUEST", message: "Group id is required" });
@@ -301,7 +310,7 @@ export const permissionRouter = t.router({
 			select: { name: true, parentId: true }
 		});
 		// restrict changing parentId
-		if (parentId !== oldParentId) {
+		if (parent?.id !== oldParentId) {
 			throw new TRPCError({
 				code: "FORBIDDEN",
 				message: "Cannot change parentId of the group"
@@ -413,7 +422,7 @@ export const permissionRouter = t.router({
 			where: { id },
 			data: {
 				name,
-				parentId,
+				parentId: parent?.id,
 				permissions: {
 					deleteMany: {
 						OR: [
