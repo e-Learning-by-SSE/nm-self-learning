@@ -85,16 +85,9 @@ export default function GroupPage() {
 
 	// processing
 	// verify groupId
-	const groupId = router.query.groupId as string;
-	const session = useRequiredSession();
-	const user = session.data?.user;
-	if (!router.query.groupId || !user) {
-		return (
-			<Unauthorized>
-				<span>Du muss Mitglieder*in sein 1</span>
-			</Unauthorized>
-		);
-	}
+	const groupId = parseInt(router.query.groupId as string);
+	// const session = useRequiredSession();
+	// const user = session.data?.user;
 
 	const { data: group } = trpc.permission.getGroup.useQuery(
 		{
@@ -105,16 +98,14 @@ export default function GroupPage() {
 		}
 	);
 
-	const { data } = trpc.permission.hasGroupRole.useQuery({
-		groupId,
-		role: GroupRole.MEMBER
-	});
-	const canView = !!data;
+	if (group === undefined) {
+		return <LoadingBox />;
+	}
 
-	if (!canView || !group) {
+	if (!group) {
 		return (
 			<Unauthorized>
-				<span>Du muss Mitglieder*in sein</span>
+				<span>Du muss Mitglieder*in dieser Gruppe sein</span>
 			</Unauthorized>
 		);
 	}

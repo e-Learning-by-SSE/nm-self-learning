@@ -4,7 +4,6 @@ import { lessonContentSchema } from "./lesson-content";
 import { LessonMeta } from "./lesson-meta";
 import { AccessLevel, LessonType } from "@prisma/client";
 import { skillFormSchema } from "./skill";
-import { group } from "console";
 
 export type LessonInfo = {
 	lessonId: string;
@@ -18,8 +17,9 @@ export const lessonSchema = z.object({
 	permissions: z
 		.object({
 			accessLevel: z.nativeEnum(AccessLevel),
-			groupId: z.string(),
-			groupName: z.string()
+			groupId: z.number(),
+			groupName: z.string(),
+			grantorId: z.number().nullable()
 		})
 		.array()
 		.min(1, "At least one permission is required"),

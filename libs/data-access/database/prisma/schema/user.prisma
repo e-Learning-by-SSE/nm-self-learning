@@ -73,14 +73,14 @@ model Member {
     expiresAt   DateTime?
 
     userId      String
-    groupId     String
+    groupId     Int
     user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
     group       Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
     @@unique([userId, groupId])
 }
 
 model Group {
-    id          String      @id @default(uuid())
+    id          Int         @id @default(autoincrement())
     name        String      @unique
     members     Member[]
     // lessons     Lesson[]    // this are ownerships
@@ -90,7 +90,7 @@ model Group {
     // skills      SkillRepository
 
     // This is NOT used to inherit permissions but to differentiate between root and user-created groups
-    parentId    String?
+    parentId    Int?
     parent      Group?      @relation("ParentGroup", fields: [parentId], references: [id], onDelete: Restrict)
     children    Group[]     @relation("ParentGroup")  
 }
@@ -98,8 +98,8 @@ model Group {
 
 model Permission {
     id          String      @id @default(uuid())
-    grantorId   String?
-    groupId     String
+    grantorId   Int?
+    groupId     Int
 
     courseId    String?
     lessonId    String?

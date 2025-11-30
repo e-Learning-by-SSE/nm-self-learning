@@ -9,7 +9,7 @@ const mathChapters = [Analysis.chapters].flat();
 const didacticCourses = [DidacticsOfGeometry.course];
 const mathCourses = [Analysis.course];
 
-const group = { name: "Mathematics", id: "Mathematics" };
+const group = { name: "Mathematics" };
 
 const authors = [
 	createAuthor({

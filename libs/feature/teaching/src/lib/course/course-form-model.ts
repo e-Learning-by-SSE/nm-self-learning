@@ -16,8 +16,9 @@ export const courseFormSchema = z.object({
 	permissions: z
 		.object({
 			accessLevel: z.nativeEnum(AccessLevel),
-			groupId: z.string(),
-			groupName: z.string()
+			groupId: z.number(),
+			groupName: z.string(),
+			grantorId: z.number().nullable()
 		})
 		.array()
 		.min(1, "At least one permission is required")
@@ -54,13 +55,19 @@ export function mapCourseFormToInsert(
 	return courseForDb;
 }
 
+export type CoursePermission = {
+	grantorId?: number | null;
+	groupId: number;
+	accessLevel: AccessLevel;
+};
+
 export function mapCourseFormToUpdate(
 	course: CourseFormModel,
-	courseId: string
+	courseId: string,
+	perms: CoursePermission[]
 ): Prisma.CourseUpdateInput {
-	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors, permissions } =
-		course;
-	// TODO permissions update
+	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors } = course;
+
 	const courseForDb: Prisma.CourseUpdateInput = {
 		courseId,
 		slug,
@@ -71,7 +78,20 @@ export function mapCourseFormToUpdate(
 		description: stringOrNull(description),
 		meta: createCourseMeta(course),
 		authors: { set: authors.map(author => ({ username: author.username })) },
-		subject: subjectId ? { connect: { subjectId } } : undefined
+		subject: subjectId ? { connect: { subjectId } } : undefined,
+		permissions: {
+			deleteMany: { groupId: { notIn: perms.map(p => p.groupId) } },
+			upsert: perms.map(p => ({
+				where: {
+					groupId_courseId: { courseId, groupId: p.groupId }
+				},
+				create: p,
+				update: {
+					accessLevel: p.accessLevel,
+					grantorId: p.grantorId
+				}
+			}))
+		}
 	};
 
 	return courseForDb;

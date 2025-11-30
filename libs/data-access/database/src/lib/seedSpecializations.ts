@@ -183,6 +183,5 @@ export const softwareentwicklungDemoSpecialization: Prisma.SpecializationCreateM
 ];
 
 export const softwareentwicklungDemoGroup: Prisma.GroupCreateInput = {
-	name: "Software Engineering",
-	id: "Software Engineering"
+	name: "Software Engineering"
 };

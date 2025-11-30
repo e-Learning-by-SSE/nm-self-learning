@@ -392,7 +392,14 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 			}
 		},
 		memberships: {
-			create: { groupId: softwareentwicklungDemoGroup.name, role: GroupRole.MEMBER }
+			create: {
+				group: {
+					connect: {
+						name: softwareentwicklungDemoGroup.name
+					}
+				},
+				role: GroupRole.MEMBER
+			}
 		}
 	},
 	{
@@ -414,7 +421,14 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 			}
 		},
 		memberships: {
-			create: { groupId: softwareentwicklungDemoGroup.name, role: GroupRole.OWNER }
+			create: {
+				group: {
+					connect: {
+						name: softwareentwicklungDemoGroup.name
+					}
+				},
+				role: GroupRole.OWNER
+			}
 		}
 	},
 	{
@@ -433,7 +447,14 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 			}
 		},
 		memberships: {
-			create: { groupId: softwareentwicklungDemoGroup.name, role: GroupRole.MEMBER }
+			create: {
+				group: {
+					connect: {
+						name: softwareentwicklungDemoGroup.name
+					}
+				},
+				role: GroupRole.MEMBER
+			}
 		}
 	}
 ];

@@ -1,8 +1,7 @@
-import { AccessLevel, Prisma } from "@prisma/client";
+import { AccessLevel } from "@prisma/client";
 import { z } from "zod";
 import { GroupRoleEnum } from "./author";
 import { add } from "date-fns";
-import exp from "constants";
 
 export const test = z.object({
 	id: z.string().uuid().optional()
@@ -65,8 +64,8 @@ export function computeExpiresAt(durationMinutes: number): Date {
 // 			})
 
 export const GroupFormSchema = z.object({
-	id: z.string().nullable(),
-	parentId: z.string().nullable(),
+	id: z.number().nullable(),
+	parentId: z.number().nullable(),
 	name: z.string().min(3),
 	permissions: ResourceAccessFormSchema.array(),
 	members: MemberFormSchema.array()
@@ -75,7 +74,6 @@ export const GroupFormSchema = z.object({
 
 export type Group = z.infer<typeof GroupFormSchema>;
 export type Member = z.infer<typeof MemberFormSchema>;
-export type ResourceAccess = z.infer<typeof ResourceAccessFormSchema>;
 
 /** Returns a {@link Group} object with empty/null values.  */
 export function createEmptyGroup(): Group {
@@ -86,4 +84,21 @@ export function createEmptyGroup(): Group {
 		permissions: [],
 		members: []
 	};
+}
+
+// Group Access
+export type GroupAccess = {
+	groupId: number;
+	accessLevel: AccessLevel;
+	grantorId: number | null;
+};
+
+//
+const accessLevelHierarchy: Record<AccessLevel, number> = { VIEW: 1, EDIT: 2, FULL: 3 };
+
+export function greaterAccessLevel(a: AccessLevel, b: AccessLevel): boolean {
+	return accessLevelHierarchy[a] > accessLevelHierarchy[b];
+}
+export function greaterOrEqAccessLevel(a: AccessLevel, b: AccessLevel): boolean {
+	return accessLevelHierarchy[a] >= accessLevelHierarchy[b];
 }

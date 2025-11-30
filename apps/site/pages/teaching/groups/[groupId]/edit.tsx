@@ -1,6 +1,5 @@
 import { getGroup, hasGroupRole, withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
-import { database } from "@self-learning/database";
 import { GroupEditor, GroupFormModel } from "@self-learning/teaching";
 import { OnDialogCloseFn, showToast } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
@@ -21,7 +20,7 @@ export const getServerSideProps = withTranslations(
 			};
 		}
 
-		const groupId = ctx.params?.groupId as string;
+		const groupId = parseInt(ctx.params?.groupId as string);
 		const { locale } = ctx;
 
 		// verify if can edit this group

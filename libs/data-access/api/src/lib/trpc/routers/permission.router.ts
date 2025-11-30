@@ -44,7 +44,7 @@ export const ResourceAccessSchema = z.union([
 export type ResourceAccess = z.infer<typeof ResourceAccessSchema>;
 
 export const MembershipInputSchema = z.object({
-	groupId: z.string().uuid(),
+	groupId: z.number(),
 	expiresAt: z.date().nullable(),
 	userId: z.string(),
 	role: GroupRoleEnum
@@ -52,8 +52,8 @@ export const MembershipInputSchema = z.object({
 export type MembershipInput = z.infer<typeof MembershipInputSchema>;
 
 export type PermissionInput = {
-	groupId: string;
-	grantorId?: string | null;
+	groupId: number;
+	grantorId?: number | null;
 	accessLevel: AccessLevel;
 } & ResourceInput;
 
@@ -89,7 +89,14 @@ export async function getUserPermission({
 		where: {
 			courseId,
 			lessonId,
-			group: { members: { some: { userId: userId, expiresAt: { gt: date } } } }
+			group: {
+				members: {
+					some: {
+						userId: userId,
+						OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }]
+					}
+				}
+			}
 		},
 		select: { accessLevel: true, groupId: true }
 	});
@@ -102,7 +109,7 @@ export async function getUserPermission({
 			}
 			return prev;
 		},
-		{ accessLevel: null as AccessLevel | null, groupId: null as string | null }
+		{ accessLevel: null as AccessLevel | null, groupId: null as number | null }
 	);
 }
 
@@ -123,7 +130,14 @@ export async function hasResourcesAccess(userId: string, checks: ResourceAccess[
 		where: {
 			courseId: { in: courseIds },
 			lessonId: { in: lessonIds },
-			group: { members: { some: { userId: userId, expiresAt: { gt: new Date() } } } }
+			group: {
+				members: {
+					some: {
+						userId: userId,
+						OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }]
+					}
+				}
+			}
 		},
 		select: { accessLevel: true, courseId: true, lessonId: true }
 	});
@@ -147,7 +161,7 @@ export async function hasResourcesAccess(userId: string, checks: ResourceAccess[
 }
 
 export async function createGroupAccess(
-	groupId: string,
+	groupId: number,
 	userId: string,
 	role: GroupRole,
 	durationMinutes?: number
@@ -169,7 +183,7 @@ export async function hasResourceAccess(
 	return accessLevelHierarchy[actualLevel] >= accessLevelHierarchy[params.accessLevel];
 }
 
-export async function getGroupRole(groupId: string, userId: string) {
+export async function getGroupRole(groupId: number, userId: string) {
 	const access = await database.member.findFirst({
 		where: { userId, groupId, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
 		select: { role: true }
@@ -177,7 +191,7 @@ export async function getGroupRole(groupId: string, userId: string) {
 	return access?.role ?? null;
 }
 
-export async function hasGroupRole(groupId: string, userId: string, role: GroupRole) {
+export async function hasGroupRole(groupId: number, userId: string, role: GroupRole) {
 	const groupRole = await getGroupRole(groupId, userId);
 	return !!groupRole && greaterOrEqGroupRole(groupRole, role);
 }
@@ -187,7 +201,7 @@ export async function createGroupPermission(params: PermissionInput) {
 	return await database.permission.create({ data: params });
 }
 
-export async function getGroup(groupId: string) {
+export async function getGroup(groupId: number) {
 	return await database.group.findUnique({
 		where: { id: groupId },
 		select: {
@@ -300,17 +314,21 @@ export const permissionRouter = t.router({
 			if (!hasAccess) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
-					message: "Insufficient permissions to update members"
+					message: "Insufficient permissions to update group name"
 				});
 			}
 		}
 
 		// 1. Members
 		// check one member has OWNER role
-		if (members?.filter(m => m.role === GroupRole.OWNER).length !== 1) {
+		const ownerCount = members.filter(m => m.role === GroupRole.OWNER).length;
+		const validOwnerCount = members.filter(
+			m => m.role === GroupRole.OWNER && m.expiresAt === null
+		).length;
+		if (ownerCount !== 1 && validOwnerCount !== 1) {
 			throw new TRPCError({
 				code: "BAD_REQUEST",
-				message: "Group must have exactly one OWNER"
+				message: "Group must have exactly one OWNER without expiration"
 			});
 		}
 		// map members to drop display data
@@ -322,19 +340,15 @@ export const permissionRouter = t.router({
 			where: { groupId: id },
 			select: { userId: true, role: true, expiresAt: true }
 		});
-		type MemberKey = string;
-		const memberDiffs = new Map<MemberKey, Omit<MembershipInput, "groupId">>();
-		for (const m of membs) {
-			memberDiffs.set(m.userId, m);
-		}
+		const memberDiffs = new Map(membs.map(m => [m.userId, m]));
 		for (const m of oldMembers) {
 			const d = memberDiffs.get(m.userId);
-			if (d && d.role === m.role && d.expiresAt?.getTime() === m.expiresAt?.getTime()) {
+			if (!d) {
+				// was removed - keep in diffs
+				memberDiffs.set(m.userId, m);
+			} else if (d.role === m.role && d.expiresAt?.getTime() === m.expiresAt?.getTime()) {
 				// if unchanged - ignore
 				memberDiffs.delete(m.userId);
-			} else {
-				// if just added - add
-				memberDiffs.set(m.userId, m);
 			}
 		}
 		// check if has ADMIN permission (only if members have changed)
@@ -363,29 +377,28 @@ export const permissionRouter = t.router({
 			where: { groupId: id },
 			select: { lessonId: true, courseId: true, accessLevel: true }
 		});
-		// compute diffs
-		type ResourceKey = string;
-		const permToKey = (p: { lessonId?: string | null; courseId?: string | null }) =>
-			p.courseId ? `course:${p.courseId}` : `lesson:${p.lessonId}`;
-		const diffs = new Map<ResourceKey, ResourceAccess>();
-		for (const p of perms) {
-			diffs.set(permToKey(p), p);
-		}
+		// compute diffs - deletions and additions/updates
+		const toKey = (p: { lessonId?: string | null; courseId?: string | null }) =>
+			p.courseId ? `c:${p.courseId}` : `l:${p.lessonId}`;
+		const diffs = new Map(perms.map(p => [toKey(p), p]));
 		for (const p of existingPerms) {
-			const d = diffs.get(permToKey(p));
-			if (d && d.accessLevel === p.accessLevel) {
-				// if unchanged - ignore
-				diffs.delete(permToKey(p));
-			} else {
-				// if just added - add
-				diffs.set(permToKey(p), ResourceAccessSchema.parse(p));
+			const d = diffs.get(toKey(p));
+			if (!d) {
+				// was removed - add to diffs
+				diffs.set(toKey(p), ResourceAccessSchema.parse(p));
+			} else if (d.accessLevel === p.accessLevel) {
+				// was unchanged - ignore
+				diffs.delete(toKey(p));
 			}
 		}
 		// check permission - must have full access at parent or be admin (only if permissions have changed)
 		if (diffs.size > 0) {
+			// to change resource permission must have FULL access to each
+			const checks = Array.from(diffs.values()).map(p => {
+				return { ...p, accessLevel: AccessLevel.FULL };
+			});
 			const hasAccess =
-				ctx.user.role === "ADMIN" ||
-				(await hasResourcesAccess(userId, Array.from(diffs.values())));
+				ctx.user.role === "ADMIN" || (await hasResourcesAccess(userId, checks));
 
 			if (!hasAccess) {
 				throw new TRPCError({
@@ -456,7 +469,7 @@ export const permissionRouter = t.router({
 		});
 	}),
 	deleteGroup: authProcedure
-		.input(z.object({ groupId: z.string() }))
+		.input(z.object({ groupId: z.number() }))
 		.mutation(async ({ input, ctx }) => {
 			const { groupId } = input;
 			const userId = ctx.user.id;
@@ -479,7 +492,7 @@ export const permissionRouter = t.router({
 	}),
 	// Done by group owners or website admins
 	changeGroupOwner: authProcedure
-		.input(z.object({ groupId: z.string(), newOwnerId: z.string() }))
+		.input(z.object({ groupId: z.number(), newOwnerId: z.string() }))
 		.mutation(async ({ input, ctx }) => {
 			const { groupId, newOwnerId } = input;
 			let userId: string;
@@ -521,7 +534,7 @@ export const permissionRouter = t.router({
 	grantGroupAccess: authProcedure
 		.input(
 			z.object({
-				groupId: z.string(),
+				groupId: z.number(),
 				userId: z.string(),
 				role: GroupRoleEnum,
 				durationMinutes: z.number().optional()
@@ -548,20 +561,20 @@ export const permissionRouter = t.router({
 			// TODO make log of access created
 		}),
 	hasGroupRole: authProcedure
-		.input(z.object({ groupId: z.string(), role: GroupRoleEnum }))
+		.input(z.object({ groupId: z.number(), role: GroupRoleEnum }))
 		.query(async ({ input, ctx }) => {
 			if (ctx.user.role === "ADMIN") return true;
 			return await hasGroupRole(input.groupId, ctx.user.id, input.role);
 		}),
 	// Done by resource owners or website admins
 	grantGroupPermission: authProcedure
-		.input(z.object({ groupId: z.string(), permission: ResourceAccessSchema }))
+		.input(z.object({ groupId: z.number(), permission: ResourceAccessSchema }))
 		.mutation(async ({ input, ctx }) => {
 			const { groupId, permission } = input;
 			const userId = ctx.user.id; // grantor
 			// check if grantor has FULL access level to that resource (does not need to be in the group)
 			let hasAccess = ctx.user.role === "ADMIN";
-			let grantorId: string | null = null;
+			let grantorId: number | null = null;
 			if (!hasAccess) {
 				const { accessLevel, groupId } = await getUserPermission({ userId, ...permission });
 				hasAccess = !!accessLevel && greaterOrEqAccessLevel(accessLevel, AccessLevel.FULL);
@@ -605,7 +618,7 @@ export const permissionRouter = t.router({
 		}),
 	// Done by group admins or website admins. Cannot revoke OWNER role - use changeGroupOwner
 	revokeGroupAccess: authProcedure
-		.input(z.object({ userId: z.string(), groupId: z.string() }))
+		.input(z.object({ userId: z.string(), groupId: z.number() }))
 		.mutation(async ({ input, ctx }) => {
 			const userId = ctx.user.id;
 			// fetch membership which is revoked
@@ -636,8 +649,11 @@ export const permissionRouter = t.router({
 			const { permissionId } = input;
 			return await database.permission.delete({ where: { id: permissionId } });
 		}),
-	getGroup: authProcedure.input(z.object({ id: z.string() })).query(async ({ input }) => {
-		return await getGroup(input.id);
+	getGroup: authProcedure.input(z.object({ id: z.number() })).query(async ({ input, ctx }) => {
+		const hasAccess =
+			ctx.user.role === "ADMIN" ||
+			(await hasGroupRole(input.id, ctx.user.id, GroupRole.MEMBER));
+		return hasAccess ? await getGroup(input.id) : null;
 	}),
 	findMyGroups: authProcedure.input(paginationSchema).query(async ({ input, ctx }) => {
 		const pageSize = 15;

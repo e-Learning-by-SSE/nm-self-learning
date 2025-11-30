@@ -132,7 +132,7 @@ export function createAuthor({
 			}
 		},
 		student: { create: { username: userName } },
-		memberships: { create: { groupId: group, role: role } }
+		memberships: { create: { group: { connect: { name: group } }, role: role } }
 	};
 }
 
@@ -354,7 +354,7 @@ export async function seedCaseStudy(
 		}));
 		const perms = [...lessonsPermissions, ...coursesPermissions];
 		await prisma.group.upsert({
-			where: { id: group.id },
+			where: { name: group.name },
 			create: { ...group, permissions: { create: perms } },
 			update: { permissions: { createMany: { data: perms, skipDuplicates: true } } }
 		});

@@ -1,16 +1,11 @@
 "use client";
 import { Combobox, ComboboxOption } from "@headlessui/react";
 import { trpc } from "@self-learning/api-client";
-import {
-	DropdownDialog,
-	OnDialogCloseFn,
-	Paginator,
-	TableDataColumn
-} from "@self-learning/ui/common";
+import { DropdownDialog, OnDialogCloseFn, Paginator } from "@self-learning/ui/common";
 import { Fragment, useState } from "react";
 
 export type GroupSearchEntry = {
-	groupId: string;
+	groupId: number;
 	name: string;
 	memberCount: number;
 	ownerName: string | null;

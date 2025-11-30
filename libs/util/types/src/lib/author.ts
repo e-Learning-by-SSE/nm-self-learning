@@ -4,7 +4,7 @@ import { z } from "zod";
 export const GroupRoleEnum = z.nativeEnum(GroupRole);
 
 export const membershipSchema = z.object({
-	groupId: z.string().uuid(),
+	groupId: z.number(),
 	expiresAt: z.date().nullable(),
 	userId: z.string(),
 	role: GroupRoleEnum

@@ -6,6 +6,9 @@ import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { useRouter } from "next/router";
+import { GroupMembersEditor } from "./forms/members-form";
+import { GroupPermissionsEditor } from "./forms/group-permissions";
+import { GroupInfoEditor } from "./editors/group-info";
 
 export type GroupFormModel = Group;
 
@@ -13,7 +16,7 @@ export async function onGroupCreatorSubmit(
 	onClose: () => void,
 	createGroupAsync: (group: GroupFormModel) => Promise<{
 		name: string;
-		id: string;
+		id: number;
 	}>,
 	group?: GroupFormModel
 ) {
@@ -41,7 +44,7 @@ export async function onGroupEditorSubmit(
 	onClose: () => void,
 	editGroupAsync: (group: {
 		group: GroupFormModel;
-		groupId: string;
+		groupId: number;
 	}) => Promise<{ title: string }>,
 	group?: GroupFormModel
 ) {
@@ -49,7 +52,7 @@ export async function onGroupEditorSubmit(
 		if (group) {
 			const result = await editGroupAsync({
 				group: group,
-				groupId: group.id as string
+				groupId: group.id as number
 			});
 			showToast({
 				type: "success",
@@ -74,7 +77,7 @@ export function GroupEditor({
 	onSubmit: OnDialogCloseFn<GroupFormModel>;
 	initialGroup?: GroupFormModel;
 }) {
-	const isNew = !!initialGroup;
+	const isNew = !initialGroup?.id;
 	const router = useRouter();
 	const [selectedTab, setSelectedTab] = useState(0);
 	const form = useForm<GroupFormModel>({
@@ -119,13 +122,12 @@ export function GroupEditor({
 						<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
 							<Tab>Grunddaten</Tab>
 							<Tab>Mitglieder</Tab>
-							<Tab>Ressourcen</Tab>
 							<Tab>Berechtigungen</Tab>
 						</Tabs>
-						{/* {selectedTab === 0 && <GroupInfoEditor />}
-						{selectedTab === 1 && <GroupMembersElement isEditor={true} />}
-						{selectedTab === 2 && <GroupResourcesEditor />}
-						{selectedTab === 3 && <GroupGrantsEditor />} */}
+						{selectedTab === 0 && <GroupInfoEditor />}
+						{selectedTab === 1 && <GroupMembersEditor />}
+						{selectedTab === 2 && <GroupPermissionsEditor />}
+						{/*{selectedTab === 3 && <GroupGrantsEditor />} */}
 					</div>
 				</div>
 			</form>
