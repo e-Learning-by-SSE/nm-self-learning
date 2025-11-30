@@ -1,11 +1,9 @@
-import { LinkIcon, PencilIcon, PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
-import { SearchCourseDialog, SearchUserDialog } from "@self-learning/admin";
+import { PencilIcon, PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { SearchUserDialog } from "@self-learning/admin";
 import { trpc } from "@self-learning/api-client";
 import {
-	ImageOrPlaceholder,
 	LoadingBox,
 	OnDialogCloseFn,
-	Paginator,
 	SectionHeader,
 	showToast,
 	Table,
@@ -13,19 +11,14 @@ import {
 	TableHeaderColumn
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
-import {
-	CenteredContainerXL,
-	TopicHeader,
-	Unauthorized,
-	useRequiredSession
-} from "@self-learning/ui/layouts";
+import { CenteredContainerXL, TopicHeader, Unauthorized } from "@self-learning/ui/layouts";
 import { TRPCClientError } from "@trpc/client";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { withTranslations } from "@self-learning/api";
 import { GroupRole } from "@prisma/client";
-import { formatDateString, formatTimeIntervalToString } from "@self-learning/util/common";
+import { formatTimeIntervalToString } from "@self-learning/util/common";
 import { ResourceAccessFormType, ResourceAccessFormSchema } from "@self-learning/types";
 
 function normalizePermission(perm: ResourceAccessFormType) {
@@ -89,7 +82,7 @@ export default function GroupPage() {
 	// const session = useRequiredSession();
 	// const user = session.data?.user;
 
-	const { data: group } = trpc.permission.getGroup.useQuery(
+	const { data: group, isLoading } = trpc.permission.getGroup.useQuery(
 		{
 			id: groupId
 		},
@@ -98,7 +91,7 @@ export default function GroupPage() {
 		}
 	);
 
-	if (group === undefined) {
+	if (isLoading) {
 		return <LoadingBox />;
 	}
 

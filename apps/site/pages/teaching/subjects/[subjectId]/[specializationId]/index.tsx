@@ -25,7 +25,7 @@ export default function SpecializationManagementPage() {
 	const { page = 1, title = "" } = router.query;
 	const [titleFilter, setTitle] = useState(title);
 
-	const { data: specialization } = trpc.specialization.getForEdit.useQuery(
+	const { data: specialization, isLoading } = trpc.specialization.getForEdit.useQuery(
 		{
 			specializationId: router.query.specializationId as string
 		},
@@ -102,6 +102,10 @@ export default function SpecializationManagementPage() {
 	}
 	// TODO always can view
 	const canView = true;
+
+	if (isLoading) {
+		return <LoadingBox />;
+	}
 
 	if (!canView || !specialization) {
 		return (

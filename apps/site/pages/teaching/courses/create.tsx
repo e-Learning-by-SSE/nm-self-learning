@@ -1,6 +1,6 @@
 import { trpc } from "@self-learning/api-client";
 import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
-import { showToast } from "@self-learning/ui/common";
+import { LoadingBox, showToast } from "@self-learning/ui/common";
 import { Unauthorized, useRequiredSession } from "@self-learning/ui/layouts";
 import { useRouter } from "next/router";
 import { withTranslations } from "@self-learning/api";
@@ -34,6 +34,10 @@ export default function CreateCoursePage() {
 				subtitle: JSON.stringify(error, null, 2)
 			});
 		}
+	}
+
+	if (session.status === "loading") {
+		return <LoadingBox />;
 	}
 
 	if (!author) {

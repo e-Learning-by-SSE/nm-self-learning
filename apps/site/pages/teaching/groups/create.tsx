@@ -3,12 +3,18 @@ import { GroupEditor, GroupFormModel, onGroupCreatorSubmit } from "@self-learnin
 import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";
 import { withTranslations } from "@self-learning/api";
+import { LoadingBox } from "@self-learning/ui/common";
 
 export default function CreateGroupPage() {
 	const session = useRequiredSession();
 	const authorUsername = session.data?.user.name;
 	const router = useRouter();
 	const { mutateAsync: createGroupAsync } = trpc.permission.createGroup.useMutation();
+
+	if (session.status === "loading") {
+		return <LoadingBox />;
+	}
+
 	if (!authorUsername) {
 		return <Unauthorized>Um eine Gruppe zu erstellen, musst du ein Autor sein.</Unauthorized>;
 	}

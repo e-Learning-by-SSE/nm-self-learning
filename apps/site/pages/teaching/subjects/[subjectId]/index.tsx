@@ -1,7 +1,12 @@
 import { PencilIcon, PlusIcon, UserGroupIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { SpecializationPermissionsDialog } from "@self-learning/teaching";
-import { AuthorChip, ImageOrPlaceholder, SectionHeader } from "@self-learning/ui/common";
+import {
+	AuthorChip,
+	ImageOrPlaceholder,
+	LoadingBox,
+	SectionHeader
+} from "@self-learning/ui/common";
 import { CenteredContainerXL, TopicHeader, Unauthorized } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -12,10 +17,14 @@ export default function SubjectManagementPage() {
 	const router = useRouter();
 
 	const [openPermissionDialog, setOpenPermissionDialog] = useState(false);
-	const { data: subject } = trpc.subject.getForEdit.useQuery(
+	const { data: subject, isLoading } = trpc.subject.getForEdit.useQuery(
 		{ subjectId: router.query.subjectId as string },
 		{ enabled: !!router.query.subjectId }
 	);
+
+	if (isLoading) {
+		return <LoadingBox />;
+	}
 	// TODO everybody can do it for now
 	// typescript is angry if I ignore !subject
 	if (!subject) {
