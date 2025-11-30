@@ -1,5 +1,5 @@
 import { PlusIcon } from "@heroicons/react/24/solid";
-import { SearchUserDialog, EditAuthorDialog } from "@self-learning/admin";
+import { SearchUserDialog, EditAuthorDialog, UserSearchEntry } from "@self-learning/admin";
 import { trpc } from "@self-learning/api-client";
 import {
 	ImageOrPlaceholder,
@@ -42,13 +42,17 @@ export default function AuthorsPage() {
 		setEditTarget(null);
 	}
 
-	async function onCreateAuthor(username?: string): Promise<void> {
+	async function onCreateAuthor(user?: UserSearchEntry): Promise<void> {
 		setCreateAuthorDialog(false);
 
-		if (username) {
+		if (user) {
 			try {
-				await promoteToAuthor({ username });
-				showToast({ type: "success", title: "Autor hinzugefügt", subtitle: username });
+				await promoteToAuthor({ username: user.name });
+				showToast({
+					type: "success",
+					title: "Autor hinzugefügt",
+					subtitle: user.displayName
+				});
 			} catch (error) {
 				if (error instanceof TRPCClientError) {
 					showToast({
