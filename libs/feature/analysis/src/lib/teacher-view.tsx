@@ -4,12 +4,9 @@ import { Table, TableDataColumn, TableHeaderColumn, SortIndicator } from "@self-
 import { getSemester } from "./aggregation-functions";
 import Link from "next/link";
 import { useState } from "react";
+import { AccessLevel } from "@prisma/client";
 
-type Course = {
-	slug: string;
-	title: string;
-	courseId: string;
-};
+type Course = { slug: string; title: string; courseId: string };
 
 type ParticipationData = Course & {
 	participants?: number | null | undefined;
@@ -87,11 +84,7 @@ function CourseParticipation({
 	semester: { start: Date; end: Date };
 }) {
 	const { data, isLoading } = trpc.author.courseParticipation.useQuery(
-		{
-			courseId: courses.map(c => c.courseId),
-			start: semester.start,
-			end: semester.end
-		},
+		{ courseId: courses.map(c => c.courseId), start: semester.start, end: semester.end },
 		{ enabled: courses.length > 0 }
 	);
 
@@ -104,10 +97,7 @@ function CourseParticipation({
 
 	const merged = courses.map(course => {
 		const participationData = data.find(p => p.courseId === course.courseId);
-		return {
-			...course,
-			...(participationData || {})
-		};
+		return { ...course, ...(participationData || {}) };
 	});
 
 	return <SortedTable participationData={merged} />;
@@ -126,15 +116,11 @@ export function TeacherView() {
 		return <p>Keine administrierten Kurse vorhanden.</p>;
 	}
 
-	const authoredCourses = data.subjectAdmin.map(subject => subject.subject.courses).flat();
+	const adrministratedCourses = data.memberships.flatMap(m =>
+		m.group.permissions
+			.filter((p): p is { course: Course; accessLevel: AccessLevel } => p.course !== null)
+			.map(p => p.course)
+	);
 
-	data.specializationAdmin.forEach(specialization => {
-		specialization.specialization.courses.forEach(course => {
-			if (!authoredCourses.find(c => c.courseId === course.courseId)) {
-				authoredCourses.push(course);
-			}
-		});
-	});
-
-	return <CourseParticipation courses={authoredCourses} semester={semester} />;
+	return <CourseParticipation courses={adrministratedCourses} semester={semester} />;
 }
