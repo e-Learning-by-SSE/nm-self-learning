@@ -6,7 +6,7 @@ import { LessonContent } from "@self-learning/types";
 import { OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";
-import { hasAuthorPermission, ResourceGuard } from "@self-learning/ui/layouts";
+import { ResourceGuard } from "@self-learning/ui/layouts";
 import { AccessLevel } from "@prisma/client";
 
 type EditLessonProps = {

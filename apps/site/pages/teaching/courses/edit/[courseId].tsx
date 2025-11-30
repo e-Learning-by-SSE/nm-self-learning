@@ -7,7 +7,7 @@ import { CourseContent, extractLessonIds } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { useRef } from "react";
-import { hasAuthorPermission, ResourceGuard } from "@self-learning/ui/layouts";
+import { ResourceGuard } from "@self-learning/ui/layouts";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
 type EditCourseProps = {
