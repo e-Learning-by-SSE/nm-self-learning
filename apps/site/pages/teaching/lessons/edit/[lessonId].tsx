@@ -6,7 +6,8 @@ import { LessonContent } from "@self-learning/types";
 import { OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";
-import { hasAuthorPermission } from "@self-learning/ui/layouts";
+import { hasAuthorPermission, ResourceGuard } from "@self-learning/ui/layouts";
+import { AccessLevel } from "@prisma/client";
 
 type EditLessonProps = {
 	lesson: LessonFormModel;
@@ -43,6 +44,7 @@ export const getServerSideProps = withTranslations(
 				permissions: {
 					select: {
 						accessLevel: true,
+						grantorId: true,
 						group: {
 							select: {
 								id: true,
@@ -58,14 +60,14 @@ export const getServerSideProps = withTranslations(
 			return { notFound: true };
 		}
 
-		if (!hasAuthorPermission({ user, permittedAuthors: lesson.authors.map(a => a.username) })) {
-			return {
-				redirect: {
-					destination: "/403",
-					permanent: false
-				}
-			};
-		}
+		// if (!hasAuthorPermission({ user, permittedAuthors: lesson.authors.map(a => a.username) })) {
+		// 	return {
+		// 		redirect: {
+		// 			destination: "/403",
+		// 			permanent: false
+		// 		}
+		// 	};
+		// }
 
 		const lessonForm: LessonFormModel = {
 			courseId: lesson.courseId,
@@ -95,7 +97,8 @@ export const getServerSideProps = withTranslations(
 			permissions: lesson.permissions.map(p => ({
 				accessLevel: p.accessLevel,
 				groupId: p.group.id,
-				groupName: p.group.name
+				groupName: p.group.name,
+				grantorId: p.grantorId
 			}))
 		};
 
@@ -120,5 +123,9 @@ export default function EditLessonPage({ lesson }: EditLessonProps) {
 		);
 	};
 
-	return <LessonEditor initialLesson={lesson} onSubmit={handleEditClose} isFullScreen={true} />;
+	return (
+		<ResourceGuard accessLevel={AccessLevel.EDIT} allowedGroups={lesson.permissions}>
+			<LessonEditor initialLesson={lesson} onSubmit={handleEditClose} isFullScreen={true} />
+		</ResourceGuard>
+	);
 }

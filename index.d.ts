@@ -41,6 +41,7 @@ declare module "next-auth" {
 			avatarUrl?: string | null;
 			enabledLearningStatistics: boolean;
 			enabledFeatureLearningDiary: boolean;
+			memberships: number[];
 		};
 	}
 }

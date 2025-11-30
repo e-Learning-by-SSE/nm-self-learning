@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { AccessLevel, Prisma } from "@prisma/client";
 import { withAuth, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
@@ -7,7 +7,7 @@ import { CourseContent, extractLessonIds } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { useRef } from "react";
-import { hasAuthorPermission } from "@self-learning/ui/layouts";
+import { hasAuthorPermission, ResourceGuard } from "@self-learning/ui/layouts";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
 type EditCourseProps = {
@@ -43,6 +43,7 @@ export const getServerSideProps = withTranslations(
 				permissions: {
 					select: {
 						accessLevel: true,
+						grantorId: true,
 						group: {
 							select: {
 								id: true,
@@ -60,14 +61,14 @@ export const getServerSideProps = withTranslations(
 			};
 		}
 
-		if (!hasAuthorPermission({ user, permittedAuthors: course.authors.map(a => a.username) })) {
-			return {
-				redirect: {
-					destination: "/403",
-					permanent: false
-				}
-			};
-		}
+		// if (!hasAuthorPermission({ user, permittedAuthors: course.authors.map(a => a.username) })) {
+		// 	return {
+		// 		redirect: {
+		// 			destination: "/403",
+		// 			permanent: false
+		// 		}
+		// 	};
+		// }
 
 		const content = course.content as CourseContent;
 
@@ -102,7 +103,8 @@ export const getServerSideProps = withTranslations(
 			permissions: course.permissions.map(p => ({
 				accessLevel: p.accessLevel,
 				groupId: p.group.id,
-				groupName: p.group.name
+				groupName: p.group.name,
+				grantorId: p.grantorId
 			}))
 		};
 
@@ -118,7 +120,7 @@ export const getServerSideProps = withTranslations(
 );
 
 export default function EditCoursePage({ course, lessons }: EditCourseProps) {
-	const { mutateAsync: updateCourse } = trpc.course.edit.useMutation();
+	const { mutateAsync: updateCourse, isLoading } = trpc.course.edit.useMutation();
 	const router = useRouter();
 	const trpcContext = trpc.useUtils();
 	const isInitialRender = useRef(true);
@@ -154,5 +156,13 @@ export default function EditCoursePage({ course, lessons }: EditCourseProps) {
 		update();
 	}
 
-	return <CourseEditor course={course} onConfirm={onConfirm} />;
+	return (
+		<ResourceGuard
+			accessLevel={AccessLevel.EDIT}
+			allowedGroups={course.permissions}
+			isLoading={isLoading}
+		>
+			<CourseEditor course={course} onConfirm={onConfirm} />
+		</ResourceGuard>
+	);
 }

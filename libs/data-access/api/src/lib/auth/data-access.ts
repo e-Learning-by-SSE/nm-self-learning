@@ -25,7 +25,8 @@ export async function createUserSession({
 			image: true,
 			author: { select: { username: true } },
 			enabledFeatureLearningDiary: true,
-			enabledLearningStatistics: true
+			enabledLearningStatistics: true,
+			memberships: { select: { groupId: true } }
 		}
 	});
 
@@ -40,7 +41,8 @@ export async function createUserSession({
 				image: true,
 				author: { select: { username: true } },
 				enabledFeatureLearningDiary: true,
-				enabledLearningStatistics: true
+				enabledLearningStatistics: true,
+				memberships: { select: { groupId: true } }
 			}
 		});
 	} else if (userFromDb.role !== "ADMIN" && token && token["isAdmin"] === true) {
@@ -54,7 +56,8 @@ export async function createUserSession({
 				image: true,
 				author: { select: { username: true } },
 				enabledFeatureLearningDiary: true,
-				enabledLearningStatistics: true
+				enabledLearningStatistics: true,
+				memberships: { select: { groupId: true } }
 			}
 		});
 	}
@@ -66,6 +69,7 @@ export async function createUserSession({
 		isAuthor: !!userFromDb.author,
 		avatarUrl: userFromDb.image,
 		enabledLearningStatistics: userFromDb.enabledLearningStatistics,
-		enabledFeatureLearningDiary: userFromDb.enabledFeatureLearningDiary
+		enabledFeatureLearningDiary: userFromDb.enabledFeatureLearningDiary,
+		memberships: userFromDb.memberships.map(m => m.groupId)
 	};
 }

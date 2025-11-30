@@ -1,7 +1,7 @@
-import { trpc } from "@self-learning/api-client";
+import { AccessLevel } from "@prisma/client";
 import { LessonEditor, LessonFormModel } from "@self-learning/teaching";
 import { Dialog, OnDialogCloseFn } from "@self-learning/ui/common";
-import { Unauthorized, useRequiredSession } from "@self-learning/ui/layouts";
+import { ResourceGuard } from "@self-learning/ui/layouts";
 import Link from "next/link";
 
 export function LessonEditorDialogWithGuard({
@@ -11,29 +11,10 @@ export function LessonEditorDialogWithGuard({
 	onClose: OnDialogCloseFn<LessonFormModel>;
 	initialLesson?: LessonFormModel;
 }) {
-	const session = useRequiredSession();
-	const isNew = initialLesson !== undefined && initialLesson.lessonId !== null;
-	const isAdmin = session.data?.user.role === "ADMIN";
-	const isAuthor = session.data?.user.isAuthor;
-
-	let canEdit = isAdmin || (isAuthor && isNew);
-	// If not new => check edit permissions
-	if (!canEdit && initialLesson?.lessonId) {
-		const { data } = trpc.permission.hasResourceAccess.useQuery({
-			lessonId: initialLesson.lessonId,
-			accessLevel: "EDIT"
-		});
-		canEdit = data;
-	}
-
 	return (
-		<div>
-			{canEdit ? (
-				<LessonEditorDialog initialLesson={initialLesson} onClose={onClose} />
-			) : (
-				<Unauthorized />
-			)}
-		</div>
+		<ResourceGuard accessLevel={AccessLevel.EDIT} allowedGroups={initialLesson?.permissions}>
+			<LessonEditorDialog initialLesson={initialLesson} onClose={onClose} />
+		</ResourceGuard>
 	);
 }
 
