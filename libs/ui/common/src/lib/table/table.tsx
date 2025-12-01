@@ -1,8 +1,18 @@
 import React from "react";
 
-export function Table({ head, children }: { head: React.ReactElement; children: React.ReactNode }) {
+export function Table({
+	head,
+	children,
+	overflow
+}: {
+	head: React.ReactElement;
+	children: React.ReactNode;
+	overflow?: "auto" | "visible";
+}) {
 	return (
-		<div className="overflow-auto rounded-lg border-x border-b border-light-border bg-white">
+		<div
+			className={`overflow-${overflow ?? "auto"} rounded-lg border-x border-b border-light-border bg-white`}
+		>
 			<table className="w-full table-auto">
 				<thead className="sticky top-0 z-10 rounded-lg border-y border-light-border bg-gray-100">
 					<tr>{head}</tr>
