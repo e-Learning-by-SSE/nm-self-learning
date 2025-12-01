@@ -309,8 +309,8 @@ export const permissionRouter = t.router({
 			where: { id },
 			select: { name: true, parentId: true }
 		});
-		// restrict changing parentId
-		if (parent?.id !== oldParentId) {
+		// restrict changing parentId (parent?.id produces undefined !== null)
+		if ((parent && parent.id) !== oldParentId) {
 			throw new TRPCError({
 				code: "FORBIDDEN",
 				message: "Cannot change parentId of the group"
@@ -334,7 +334,7 @@ export const permissionRouter = t.router({
 		const validOwnerCount = members.filter(
 			m => m.role === GroupRole.OWNER && m.expiresAt === null
 		).length;
-		if (ownerCount !== 1 && validOwnerCount !== 1) {
+		if (ownerCount !== 1 || validOwnerCount !== 1) {
 			throw new TRPCError({
 				code: "BAD_REQUEST",
 				message: "Group must have exactly one OWNER without expiration"
