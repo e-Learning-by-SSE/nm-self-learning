@@ -1,14 +1,12 @@
-import { PencilIcon, PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { SearchUserDialog } from "@self-learning/admin";
 import { trpc } from "@self-learning/api-client";
 import {
+	IconButton,
 	LoadingBox,
 	OnDialogCloseFn,
 	SectionHeader,
-	showToast,
-	Table,
-	TableDataColumn,
-	TableHeaderColumn
+	showToast
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredContainerXL, TopicHeader, Unauthorized } from "@self-learning/ui/layouts";
@@ -18,26 +16,14 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { withTranslations } from "@self-learning/api";
 import { GroupRole } from "@prisma/client";
-import { formatTimeIntervalToString } from "@self-learning/util/common";
-import { ResourceAccessFormType, ResourceAccessFormSchema } from "@self-learning/types";
-
-function normalizePermission(perm: ResourceAccessFormType) {
-	return perm.course
-		? {
-				type: "Kurs",
-				title: perm.course.title,
-				id: "c:" + perm.course.courseId,
-				slug: perm.course.slug,
-				accessLevel: perm.accessLevel
-			}
-		: {
-				type: "Lerninhalt",
-				title: perm.lesson!.title,
-				id: "l:" + perm.lesson!.lessonId,
-				slug: perm.lesson!.slug,
-				accessLevel: perm.accessLevel
-			};
-}
+import { ResourceAccessFormSchema } from "@self-learning/types";
+import {
+	getPermKey,
+	GroupPermissionRow,
+	GroupPermissionTable,
+	GroupMemberRow,
+	GroupMemberTable
+} from "@self-learning/teaching";
 
 export default function GroupPage() {
 	const router = useRouter();
@@ -128,81 +114,32 @@ export default function GroupPage() {
 						<SectionHeader
 							title="Mitglieder*innen"
 							subtitle="Alle Mitglieder*innen dieser Gruppe."
+							button={
+								<IconButton
+									text="Mitglieder*in hinzufügen"
+									icon={<PlusIcon className="icon w-5" />}
+									onClick={() => setGrantGroupAccessDialog(true)}
+								/>
+							}
 						/>
 
-						<div className="mb-8 flex flex-wrap gap-4">
-							<button
-								className="btn-stroked w-fit"
-								onClick={() => setGrantGroupAccessDialog(true)}
-							>
-								<PlusIcon className="icon h-5" />
-								<span>Mitglieder*in hinzufügen</span>
-							</button>
-
-							{grantGroupAccessDialog && (
-								<SearchUserDialog
-									open={grantGroupAccessDialog}
-									onClose={handleGrantGroupAccess}
-								/>
-							)}
-						</div>
+						{grantGroupAccessDialog && (
+							<SearchUserDialog
+								open={grantGroupAccessDialog}
+								onClose={handleGrantGroupAccess}
+							/>
+						)}
 
 						<SearchField
 							placeholder="Suche nach Mitglieder*in"
 							onChange={e => setMemberName(e.target.value)}
 						/>
 
-						<Table
-							head={
-								<>
-									<TableHeaderColumn>Name</TableHeaderColumn>
-									<TableHeaderColumn>Rolle</TableHeaderColumn>
-									<TableHeaderColumn>Dauer</TableHeaderColumn>
-									<TableHeaderColumn></TableHeaderColumn>
-								</>
-							}
-						>
+						<GroupMemberTable>
 							{group.members.map(member => (
-								<tr key={member.user.id}>
-									<TableDataColumn>
-										<span className="text-light">
-											{member.user.displayName}
-										</span>
-									</TableDataColumn>
-
-									<TableDataColumn>
-										<span className="text-light">{member.role}</span>
-									</TableDataColumn>
-									<TableDataColumn>
-										<span className="text-light">
-											{member.expiresAt ? (
-												member.expiresAt.getTime() - Date.now() < 0 ? (
-													<span className="text-red-500">Abgelaufen</span>
-												) : (
-													formatTimeIntervalToString(
-														member.expiresAt.getTime() - Date.now()
-													)
-												)
-											) : (
-												"Unbefristet"
-											)}
-										</span>
-									</TableDataColumn>
-									<TableDataColumn>
-										<div className="flex justify-end">
-											<button
-												className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-red-500"
-												title="Entziehen"
-												onClick={() => {}}
-												// onClick={() => handleRevokeGroupAccess(course)}
-											>
-												<XMarkIcon className="h-5" />
-											</button>
-										</div>
-									</TableDataColumn>
-								</tr>
+								<GroupMemberRow key={member.user.id} member={member} />
 							))}
-						</Table>
+						</GroupMemberTable>
 
 						<SectionHeader
 							title="Berechtigungen"
@@ -214,50 +151,12 @@ export default function GroupPage() {
 							onChange={e => setMemberName(e.target.value)}
 						/>
 
-						<Table
-							head={
-								<>
-									<TableHeaderColumn>Ressource</TableHeaderColumn>
-									<TableHeaderColumn>Titel</TableHeaderColumn>
-									<TableHeaderColumn>Slug</TableHeaderColumn>
-									<TableHeaderColumn>Zugriffsebene</TableHeaderColumn>
-									<TableHeaderColumn></TableHeaderColumn>
-								</>
-							}
-						>
-							{group.permissions.map(perm => {
-								const p = normalizePermission(ResourceAccessFormSchema.parse(perm));
-								return (
-									<tr key={p.id}>
-										<TableDataColumn>
-											<span className="text-light">{p.type}</span>
-										</TableDataColumn>
-
-										<TableDataColumn>
-											<span className="text-light">{p.title}</span>
-										</TableDataColumn>
-										<TableDataColumn>
-											<span className="text-light">{p.slug}</span>
-										</TableDataColumn>
-										<TableDataColumn>
-											<span className="text-light">{p.accessLevel}</span>
-										</TableDataColumn>
-										<TableDataColumn>
-											<div className="flex justify-end">
-												<button
-													className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-red-500"
-													title="Entziehen"
-													onClick={() => {}}
-													// onClick={() => handleRevokeGroupAccess(course)}
-												>
-													<XMarkIcon className="h-5" />
-												</button>
-											</div>
-										</TableDataColumn>
-									</tr>
-								);
+						<GroupPermissionTable>
+							{group.permissions.map(p => {
+								const np = ResourceAccessFormSchema.parse(p);
+								return <GroupPermissionRow permission={np} key={getPermKey(np)} />;
 							})}
-						</Table>
+						</GroupPermissionTable>
 					</>
 				)}
 			</CenteredContainerXL>

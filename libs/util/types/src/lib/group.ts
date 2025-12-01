@@ -23,7 +23,12 @@ export const ResourceAccessFormSchema = z.union([
 ]);
 export const MemberFormSchema = z.object({
 	role: GroupRoleEnum,
-	expiresAt: z.coerce.date().nullable(),
+	expiresAt: z.coerce
+		.date()
+		.nullable()
+		.refine(date => !date || date > new Date(), {
+			message: "Expiration date must be in the future"
+		}),
 	user: z.object({
 		id: z.string(),
 		displayName: z.string().nullable(),

@@ -131,7 +131,7 @@ export function ResourceAccessEditor({ subtitle }: { subtitle: string }) {
 											onRemove={() => editor.remove(index)}
 										>
 											<span>{field.value?.groupName}</span>
-											<LabeledField label="Access level auswählen">
+											<LabeledField label="Zugriffsebene auswählen">
 												<GenericCombobox
 													value={field.value?.accessLevel ?? null}
 													onChange={newLevel =>
@@ -275,7 +275,7 @@ export function GroupAccessEditor({ subtitle }: { subtitle: string }) {
 							render={({ field }) => (
 								<Chip displayImage={false} onRemove={() => editor.remove(index)}>
 									<span>{field.value?.groupName}</span>
-									<LabeledField label="Access level auswählen">
+									<LabeledField label="Zugriffsebene auswählen">
 										<GenericCombobox
 											value={field.value?.accessLevel ?? null}
 											onChange={newLevel =>

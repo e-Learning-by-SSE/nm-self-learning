@@ -2,10 +2,10 @@ import { IconButton, SectionHeader } from "@self-learning/ui/common";
 import { Controller, useFieldArray, useFormContext, useFormState } from "react-hook-form";
 import { GroupFormModel } from "../group-editor";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { PlusIcon } from "@heroicons/react/24/solid";
 import { GroupRole } from "@prisma/client";
 import { useState } from "react";
-import { GroupMemberAdd } from "../editors/group-members";
+import { GroupMemberRowEditor, GroupMemberTable } from "../editors/group-members";
 import { SearchUserDialog, UserSearchEntry } from "@self-learning/admin";
 
 export function GroupMembersEditor() {
@@ -35,6 +35,8 @@ export function GroupMembersEditor() {
 
 	// const [memberEditorActive, setMemberEditorActive] = useState(false);
 
+	// TODO errors are not shown because members is array of objects
+
 	return (
 		<CenteredSection>
 			<SectionHeader
@@ -52,33 +54,33 @@ export function GroupMembersEditor() {
 				<SearchUserDialog open={searchUserActive} onClose={onSelectUser} />
 			)}
 
-			<div className="flex flex-col gap-2">
+			<GroupMemberTable>
 				{editor.fields.map((field, index) => (
 					<Controller
 						key={field.id}
 						name={`members.${index}`}
 						control={control}
 						render={({ field, fieldState }) => (
-							<div className="rounded border p-2 border-light-border">
-								<GroupMemberAdd member={field.value} onChange={field.onChange} />
-								<button
-									type="button"
-									title="Entfernen"
-									className="rounded p-1 hover:bg-red-100 text-red-500"
-									onClick={() => editor.remove(index)}
-								>
-									<TrashIcon className="h-4 w-4" />
-								</button>
+							<>
+								<GroupMemberRowEditor
+									member={field.value}
+									onChange={field.onChange}
+									onDelete={() => editor.remove(index)}
+								/>
 								{fieldState.error?.message && (
-									<span className="px-4 text-xs text-red-500">
-										{fieldState.error.message}
-									</span>
+									<tr>
+										<td colSpan={100} className="bg-red-50 rounded-lg">
+											<span className="px-2 py-1 text-xs text-red-500">
+												{fieldState.error.message}
+											</span>
+										</td>
+									</tr>
 								)}
-							</div>
+							</>
 						)}
 					/>
 				))}
-			</div>
+			</GroupMemberTable>
 			{error && <span className="px-4 text-xs text-red-500">{error}</span>}
 		</CenteredSection>
 	);
