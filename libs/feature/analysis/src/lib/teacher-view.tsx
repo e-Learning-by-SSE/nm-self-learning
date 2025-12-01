@@ -115,12 +115,9 @@ export function TeacherView() {
 	if (!data) {
 		return <p>Keine administrierten Kurse vorhanden.</p>;
 	}
-
-	const adrministratedCourses = data.memberships.flatMap(m =>
-		m.group.permissions
-			.filter((p): p is { course: Course; accessLevel: AccessLevel } => p.course !== null)
-			.map(p => p.course)
-	);
+	const adrministratedCourses = data
+		.filter((p): p is typeof p & { course: Course } => p.course !== null)
+		.map(p => p.course);
 
 	return <CourseParticipation courses={adrministratedCourses} semester={semester} />;
 }
