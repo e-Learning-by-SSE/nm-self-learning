@@ -59,6 +59,8 @@ export const adminRouter = t.router({
 				notificationSettings: true,
 				acceptedExperimentTerms: true,
 				declinedExperimentTerms: true,
+				enabledLearningStatistics: true,
+				enabledFeatureLearningDiary: true,
 				featureFlags: true
 			}
 		});

@@ -1,4 +1,4 @@
-import { withAuth, withTranslations } from "@self-learning/api";
+import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { DynCourseEditor, DynCourseFormModel } from "@self-learning/teaching";
@@ -10,93 +10,89 @@ type EditCourseProps = {
 	course: DynCourseFormModel;
 };
 
-export const getServerSideProps = withTranslations(
-	["common"],
-	withAuth<EditCourseProps>(async (ctx, _) => {
-		const courseId = ctx.params?.courseId as string;
-		const { locale } = ctx;
+export const getServerSideProps = withTranslations(["common"], async ({ params, locale }) => {
+	const courseId = params?.courseId as string;
 
-		if (!courseId) {
-			return {
-				notFound: true
-			};
-		}
+	if (!courseId) {
+		return {
+			notFound: true
+		};
+	}
 
-		const dynCourse = await database.dynCourse.findUnique({
-			where: { courseId },
-			include: {
-				authors: {
-					select: {
-						username: true
-					}
-				},
-				specializations: {
-					select: {
-						specializationId: true
-					}
-				},
-				subject: {
-					select: {
-						subjectId: true,
-						title: true
-					}
-				},
-				teachingGoals: {
-					select: {
-						id: true,
-						name: true,
-						description: true,
-						children: true,
-						parents: true,
-						authorId: true
-					}
-				},
-				requirements: {
-					select: {
-						id: true,
-						name: true,
-						description: true,
-						children: true,
-						parents: true,
-						authorId: true
-					}
+	const dynCourse = await database.dynCourse.findUnique({
+		where: { courseId },
+		include: {
+			authors: {
+				select: {
+					username: true
+				}
+			},
+			specializations: {
+				select: {
+					specializationId: true
+				}
+			},
+			subject: {
+				select: {
+					subjectId: true,
+					title: true
+				}
+			},
+			teachingGoals: {
+				select: {
+					id: true,
+					name: true,
+					description: true,
+					children: true,
+					parents: true,
+					authorId: true
+				}
+			},
+			requirements: {
+				select: {
+					id: true,
+					name: true,
+					description: true,
+					children: true,
+					parents: true,
+					authorId: true
 				}
 			}
-		});
-
-		if (!dynCourse) {
-			return {
-				notFound: true
-			};
 		}
+	});
 
-		const teachingGoals = dynCourse.teachingGoals.map(goal => ({
-			...goal,
-			children: goal.children.map(child => child.id),
-			parents: goal.parents.map(parent => parent.id)
-		}));
-
-		const requirements = dynCourse.requirements.map(goal => ({
-			...goal,
-			children: goal.children.map(child => child.id),
-			parents: goal.parents.map(parent => parent.id)
-		}));
-
-		const courseForProps = {
-			...dynCourse,
-			teachingGoals,
-			requirements
-		};
-
+	if (!dynCourse) {
 		return {
-			notFound: !dynCourse,
-			props: {
-				course: courseForProps,
-				...(await serverSideTranslations(locale ?? "en", ["common"]))
-			}
+			notFound: true
 		};
-	})
-);
+	}
+
+	const teachingGoals = dynCourse.teachingGoals.map(goal => ({
+		...goal,
+		children: goal.children.map(child => child.id),
+		parents: goal.parents.map(parent => parent.id)
+	}));
+
+	const requirements = dynCourse.requirements.map(goal => ({
+		...goal,
+		children: goal.children.map(child => child.id),
+		parents: goal.parents.map(parent => parent.id)
+	}));
+
+	const courseForProps = {
+		...dynCourse,
+		teachingGoals,
+		requirements
+	};
+
+	return {
+		notFound: !dynCourse,
+		props: {
+			course: courseForProps,
+			...(await serverSideTranslations(locale ?? "en", ["common"]))
+		}
+	};
+});
 
 export default function EditCoursePage({ course }: EditCourseProps) {
 	const { mutateAsync: updateCourse } = trpc.course.editDynamic.useMutation();
