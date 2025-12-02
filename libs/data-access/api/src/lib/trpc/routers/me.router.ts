@@ -112,15 +112,6 @@ export const meRouter = t.router({
 				});
 			}
 
-			await tx.skillRepository.updateMany({
-				where: {
-					ownerName: user.name
-				},
-				data: {
-					ownerName: anonymousUsername
-				}
-			});
-
 			await tx.eventLog.updateMany({
 				where: {
 					username: user.name

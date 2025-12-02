@@ -13,7 +13,8 @@ export const authorSchema = z.object({
 	slug: z.string().min(3),
 	imgUrl: z.string().url().nullable(),
 	subjectAdmin: z.array(subjectAdminSchema),
-	specializationAdmin: z.array(specializationSchema)
+	specializationAdmin: z.array(specializationSchema),
+	username: z.string().optional()
 });
 
 /**

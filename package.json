@@ -1,6 +1,6 @@
 {
 	"name": "self-learning",
-	"version": "unstable",
+	"version": "0.5-SNAPSHOT",
 	"license": "MIT",
 	"scripts": {
 		"postinstall": "prisma generate --no-hints",
@@ -80,6 +80,7 @@
 		"react-dom": "18.3.1",
 		"react-hook-form": "^7.52.1",
 		"react-hot-toast": "^2.4.1",
+		"react-hotkeys-hook": "^4.6.2",
 		"react-is": "18.3.1",
 		"react-markdown": "^9.0.1",
 		"react-player": "^2.16.0",

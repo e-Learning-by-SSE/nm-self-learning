@@ -1,17 +1,32 @@
+import { DefaultCostParameter } from "@e-learning-by-sse/nm-skill-lib";
 import { Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import {
 	courseFormSchema,
+	dynCourseFormSchema,
 	getFullCourseExport,
 	mapCourseFormToInsert,
 	mapCourseFormToUpdate
 } from "@self-learning/teaching";
-import { CourseContent, CourseMeta, extractLessonIds, LessonMeta } from "@self-learning/types";
+import {
+	CourseChapter,
+	CourseContent,
+	CourseMeta,
+	createCourseMeta,
+	extractLessonIds,
+	LessonMeta
+} from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
+import {
+	emitCourseGenerationError,
+	emitCourseGenerationResult
+} from "../../../../../../../apps/site/pages/api/course-generation-events";
+import { workerPoolManager } from "../../workers/worker-pool-manager";
+import { randomUUID } from "crypto";
 import { z } from "zod";
-import { authorProcedure, authProcedure, t } from "../trpc";
 import { UserFromSession } from "../context";
+import { authorProcedure, authProcedure, isCourseAuthorProcedure, t } from "../trpc";
 
 export const courseRouter = t.router({
 	listAvailableCourses: authProcedure
@@ -52,7 +67,7 @@ export const courseRouter = t.router({
 		.query(async ({ input }) => {
 			const pageSize = input.pageSize ?? 20;
 
-			const where: Prisma.CourseWhereInput = {
+			const whereCourse: Prisma.CourseWhereInput = {
 				title:
 					input.title && input.title.length > 0
 						? { contains: input.title, mode: "insensitive" }
@@ -63,15 +78,38 @@ export const courseRouter = t.router({
 				authors: input.authorId ? { some: { username: input.authorId } } : undefined
 			};
 
-			const result = await database.course.findMany({
+			const whereDynCourse: Prisma.DynCourseWhereInput = {
+				title:
+					input.title && input.title.length > 0
+						? { contains: input.title, mode: "insensitive" }
+						: undefined,
+				specializations: input.specializationId
+					? { some: { specializationId: input.specializationId } }
+					: undefined,
+				authors: input.authorId ? { some: { username: input.authorId } } : undefined
+			};
+
+			const course = await database.course.findMany({
 				select: {
 					slug: true,
 					title: true
 				},
 				...paginate(pageSize, input.page),
 				orderBy: { title: "asc" },
-				where
+				where: whereCourse
 			});
+
+			const dynCourse = await database.dynCourse.findMany({
+				select: {
+					slug: true,
+					title: true
+				},
+				...paginate(pageSize, input.page),
+				orderBy: { title: "asc" },
+				where: whereDynCourse
+			});
+
+			const result = [...course, ...dynCourse].sort((a, b) => a.title.localeCompare(b.title));
 
 			return {
 				result,
@@ -137,7 +175,8 @@ export const courseRouter = t.router({
 		.query(async ({ input }) => {
 			const pageSize = 15;
 
-			const where: Prisma.CourseWhereInput = {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const where: any = {
 				title:
 					input.title && input.title.length > 0
 						? { contains: input.title, mode: "insensitive" }
@@ -151,7 +190,7 @@ export const courseRouter = t.router({
 					: undefined
 			};
 
-			const [result, count] = await database.$transaction([
+			const [resultCourse, countCourse] = await database.$transaction([
 				database.course.findMany({
 					select: {
 						courseId: true,
@@ -177,6 +216,38 @@ export const courseRouter = t.router({
 				database.course.count({ where })
 			]);
 
+			const [resultDynCourse, countDynCourse] = await database.$transaction([
+				database.dynCourse.findMany({
+					select: {
+						courseId: true,
+						slug: true,
+						imgUrl: true,
+						title: true,
+						authors: {
+							select: {
+								displayName: true
+							}
+						},
+						subject: {
+							select: {
+								subjectId: true,
+								title: true
+							}
+						}
+					},
+					...paginate(pageSize, input.page),
+					orderBy: { title: "asc" },
+					where
+				}),
+				database.course.count({ where })
+			]);
+
+			const result = [...resultCourse, ...resultDynCourse].sort((a, b) =>
+				a.title.localeCompare(b.title)
+			);
+
+			const count = countCourse + countDynCourse;
+
 			return {
 				result,
 				pageSize: pageSize,
@@ -184,37 +255,261 @@ export const courseRouter = t.router({
 				totalCount: count
 			} satisfies Paginated<unknown>;
 		}),
-	getContent: t.procedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
-		const course = await database.course.findUniqueOrThrow({
-			where: { slug: input.slug },
-			select: {
-				content: true
+	getContent: authProcedure
+		.input(z.object({ slug: z.string() }))
+		.query(async ({ input, ctx }) => {
+			let course = await database.course.findUnique({
+				where: { slug: input.slug },
+				select: {
+					courseId: true,
+					content: true
+				}
+			});
+
+			if (!course) {
+				const dynCourse = await database.dynCourse.findUniqueOrThrow({
+					where: { slug: input.slug },
+					select: {
+						courseId: true,
+						generatedLessonPaths: {
+							where: {
+								username: ctx.user.name
+							},
+							select: {
+								content: true
+							}
+						}
+					}
+				});
+
+				course = {
+					...dynCourse,
+					content: dynCourse.generatedLessonPaths[0]?.content ?? []
+				};
 			}
-		});
 
-		const content = (course.content ?? []) as CourseContent;
-		const lessonIds = extractLessonIds(content);
+			const content = (course.content ?? []) as CourseContent;
 
-		const lessons = await database.lesson.findMany({
-			where: { lessonId: { in: lessonIds } },
-			select: {
-				lessonId: true,
-				slug: true,
-				title: true,
-				meta: true
+			const lessonIds = extractLessonIds(content);
+
+			const lessons = await database.lesson.findMany({
+				where: { lessonId: { in: lessonIds } },
+				select: {
+					lessonId: true,
+					slug: true,
+					title: true,
+					meta: true
+				}
+			});
+
+			const lessonMap: {
+				[lessonId: string]: {
+					title: string;
+					lessonId: string;
+					slug: string;
+					meta: LessonMeta;
+				};
+			} = {};
+
+			for (const lesson of lessons) {
+				lessonMap[lesson.lessonId] = lesson as (typeof lessons)[0] & { meta: LessonMeta };
 			}
-		});
 
-		const lessonMap: {
-			[lessonId: string]: { title: string; lessonId: string; slug: string; meta: LessonMeta };
-		} = {};
+			return { content, lessonMap };
+		}),
+	getCourse: authorProcedure
+		.input(z.object({ slug: z.string() }))
+		.output(courseFormSchema)
+		.query(async ({ input }) => {
+			const course = await database.course.findUniqueOrThrow({
+				where: { slug: input.slug },
+				include: {
+					authors: true,
+					provides: {
+						include: {
+							children: true,
+							parents: true
+						}
+					},
+					requires: {
+						include: {
+							children: true,
+							parents: true
+						}
+					},
+					specializations: true
+				}
+			});
 
-		for (const lesson of lessons) {
-			lessonMap[lesson.lessonId] = lesson as (typeof lessons)[0] & { meta: LessonMeta };
-		}
+			return {
+				courseId: course.courseId,
+				subjectId: course.subjectId ?? null,
+				slug: course.slug,
+				title: course.title,
+				subtitle: course.subtitle ?? "",
+				description: course.description ?? null,
+				imgUrl: course.imgUrl ?? null,
 
-		return { content, lessonMap };
-	}),
+				content: normalizeContent(course.content),
+
+				specializations: course.specializations ?? [],
+
+				authors: course.authors.map(a => ({
+					username: a.username
+				})),
+
+				provides: course.provides.map(s => ({
+					id: s.id,
+					name: s.name,
+					description: s.description ?? null,
+					authorId: s.authorId,
+					children: s.children.map(child => child.id),
+					parents: s.parents.map(parent => parent.id)
+				})),
+
+				requires: course.requires.map(s => ({
+					id: s.id,
+					name: s.name,
+					description: s.description ?? null,
+					authorId: s.authorId,
+					children: s.children.map(child => child.id),
+					parents: s.parents.map(parent => parent.id)
+				}))
+			};
+		}),
+	generateLessonPath: authProcedure
+		.input(
+			z.object({
+				courseId: z.string(),
+				knowledge: z.array(z.string())
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const generationId = randomUUID();
+
+			/* Run the generation in the background
+			 The result will be sent via SSE.*/
+			const run = async () => {
+				try {
+					const course = await database.dynCourse.findUniqueOrThrow({
+						where: { courseId: input.courseId },
+						select: {
+							courseVersion: true,
+							teachingGoals: {
+								select: {
+									id: true,
+									children: {
+										// Needed for nestedSkills
+										select: { id: true }
+									}
+								}
+							}
+						}
+					});
+
+					const dbSkills = await database.skill.findMany({
+						select: {
+							id: true,
+							children: {
+								select: { id: true }
+							}
+						}
+					});
+
+					const userGlobalKnowledge = await database.student.findUnique({
+						where: { username: ctx.user.name },
+						select: {
+							received: {
+								select: {
+									id: true
+								}
+							}
+						}
+					});
+
+					const lessons = (
+						await database.lesson.findMany({
+							select: {
+								lessonId: true,
+								requires: {
+									select: {
+										id: true
+									}
+								},
+								provides: {
+									select: {
+										id: true
+									}
+								}
+							}
+						})
+					).map(lesson => ({
+						...lesson,
+						requires: lesson.requires ?? [],
+						provides: lesson.provides ?? []
+					}));
+
+					const pool = workerPoolManager.getPathGenerationPool();
+
+					const pathResult = (await pool.runTask({
+						type: "generatePath",
+						payload: {
+							dbSkills,
+							userGlobalKnowledge: userGlobalKnowledge?.received ?? [],
+							course: {
+								...course,
+								teachingGoals: course.teachingGoals ?? []
+							},
+							lessons,
+							knowledge: input.knowledge,
+							costOptions: DefaultCostParameter
+						}
+					})) as { path: Array<{ origin: { id: string } }> } | null;
+
+					if (!pathResult || !pathResult.path) {
+						throw new Error("Path generation failed.");
+					}
+
+					const courseChapter = [
+						{
+							title: "Generated Course Content",
+							description:
+								"AI-generated learning path based on your current knowledge and learning goals.",
+							content: pathResult.path.map(unit => ({
+								lessonId: unit.origin?.id ?? ""
+							}))
+						} as CourseChapter
+					];
+
+					const courseContent: CourseContent = courseChapter;
+
+					const generatedCourse = await database.generatedLessonPath.create({
+						data: {
+							content: courseContent,
+							courseVersion: course.courseVersion,
+							slug: randomUUID(),
+							courseId: input.courseId,
+							meta: createCourseMeta({ content: courseContent }),
+							username: ctx.user.name,
+							createdAt: new Date(),
+							updatedAt: new Date()
+						}
+					});
+
+					emitCourseGenerationResult(generationId, { slug: generatedCourse.slug }, 500);
+				} catch (err) {
+					console.error(`[Course Generation] Error for ${generationId}:`, err);
+					const error = err as Error;
+					emitCourseGenerationError(generationId, {
+						message: error.message ?? "Unknown error"
+					});
+				}
+			};
+
+			run();
+
+			return { generationId };
+		}),
 	fullExport: t.procedure.input(z.object({ slug: z.string() })).query(async ({ input, ctx }) => {
 		const fullExport = await getFullCourseExport(input.slug);
 
@@ -234,6 +529,145 @@ export const courseRouter = t.router({
 
 		return fullExport;
 	}),
+	createDynamic: authorProcedure.input(dynCourseFormSchema).mutation(async ({ input, ctx }) => {
+		if (!canCreate(ctx.user)) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message:
+					"Creating a course requires either: admin role | admin of all related subjects | admin of all related specializations"
+			});
+		} else if (input.authors.length <= 0 && ctx.user.role != "ADMIN") {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message:
+					"Deleting the last author as is not allowed, except for Admin Users. Contact the side administrator for more information. "
+			});
+		}
+
+		const created = await database.dynCourse.create({
+			data: {
+				...input,
+				courseId: crypto.randomUUID(),
+				slug: input.slug,
+				courseVersion: Date.now().toString(),
+				subjectId: input.subjectId ?? undefined,
+				meta: {},
+				authors: {
+					connect: input.authors.map(author => ({ username: author.username }))
+				},
+				teachingGoals: {
+					connect: input.teachingGoals.map(goal => ({
+						name: goal.name,
+						description: goal.description,
+						id: goal.id
+					}))
+				},
+				requirements: {
+					connect: input.requirements.map(skill => ({
+						name: skill.name,
+						description: skill.description,
+						id: skill.id
+					}))
+				}
+			},
+			select: {
+				title: true,
+				slug: true,
+				courseId: true
+			}
+		});
+
+		console.log("[courseRouter.createDynamic]: Course created by", ctx.user.name, created);
+		return created;
+	}),
+	editDynamic: isCourseAuthorProcedure
+		.input(
+			z.object({
+				courseId: z.string(),
+				course: dynCourseFormSchema
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const { courseId, ...updateData } = input.course;
+			const updated = await database.dynCourse.update({
+				where: { courseId: courseId ?? "" },
+				data: {
+					...updateData,
+					courseVersion: Date.now().toString(),
+					slug: updateData.slug,
+					meta: {},
+
+					authors: {
+						set: [],
+						connect: updateData.authors.map(author => ({
+							username: author.username
+						}))
+					},
+					teachingGoals: {
+						set: updateData.teachingGoals.map(goal => ({ id: goal.id }))
+					},
+					requirements: { set: updateData.requirements.map(skill => ({ id: skill.id })) }
+				},
+				select: {
+					title: true,
+					slug: true,
+					courseId: true
+				}
+			});
+
+			console.log("[courseRouter.editDynamic]: Course updated by", ctx.user?.name, updated);
+			return updated;
+		}),
+	getDynCourse: authorProcedure
+		.input(z.object({ slug: z.string() }))
+		.output(dynCourseFormSchema)
+		.query(async ({ input }) => {
+			const course = await database.dynCourse.findUniqueOrThrow({
+				where: { slug: input.slug },
+				include: {
+					authors: true,
+					teachingGoals: {
+						include: {
+							children: true,
+							parents: true
+						}
+					},
+					requirements: {
+						include: {
+							children: true,
+							parents: true
+						}
+					},
+					specializations: true
+				}
+			});
+			return {
+				courseId: course.courseId,
+				subjectId: course.subjectId,
+				slug: course.slug,
+				title: course.title,
+				subtitle: course.subtitle,
+				description: course.description,
+				imgUrl: course.imgUrl,
+				authors: course.authors.map(a => ({ username: a.username })),
+				teachingGoals: course.teachingGoals.map(goal => ({
+					id: goal.id,
+					name: goal.name,
+					description: goal.description,
+					authorId: goal.authorId,
+					children: goal.children.map(c => c.id),
+					parents: goal.parents.map(p => p.id)
+				})),
+				requirements: course.requirements.map(req => ({
+					id: req.id,
+					name: req.name,
+					description: req.description,
+					authorId: req.authorId,
+					children: req.children.map(c => c.id),
+					parents: req.parents.map(p => p.id)
+				}))
+			};
+		}),
 	create: authProcedure.input(courseFormSchema).mutation(async ({ input, ctx }) => {
 		if (!canCreate(ctx.user)) {
 			throw new TRPCError({
@@ -249,6 +683,7 @@ export const courseRouter = t.router({
 			});
 		}
 
+		input.authors = [...input.authors, { username: ctx.user.name }];
 		const courseForDb = mapCourseFormToInsert(input, getRandomId());
 
 		const created = await database.course.create({
@@ -494,4 +929,20 @@ async function authorizedUserForExport(
 	}
 
 	return false;
+}
+
+function normalizeContent(
+	raw: unknown
+): { title: string; content: { lessonId: string }[]; description?: string | null }[] {
+	if (!Array.isArray(raw)) return [];
+
+	return raw
+		.filter((item): item is any => item && typeof item === "object") // Remove null and non-objects
+		.map((item: any) => ({
+			title: typeof item.title === "string" ? item.title : "Untitled",
+			content: Array.isArray(item.content)
+				? item.content.filter((c: any) => typeof c.lessonId === "string")
+				: [],
+			description: "description" in item ? item.description : undefined
+		}));
 }

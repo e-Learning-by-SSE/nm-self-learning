@@ -16,13 +16,94 @@ import { getSspStandaloneLessonLayout } from "./standalone-lesson-layout";
 import { useMemo } from "react";
 import { MobileSidebarNavigation } from "@self-learning/ui/layouts";
 import Head from "next/head";
+import { database } from "@self-learning/database";
 
 export type LessonLayoutProps = {
 	lesson: LessonData;
-	course: ResolvedValue<typeof getCourse>;
+	course: ResolvedValue<typeof getCombinedSmallCourse>;
+};
+/*
+<<<<<<< HEAD:libs/feature/lesson/src/lib/lesson-layout.tsx
+export type StandaloneLessonLayoutProps = {
+	lesson: LessonData;
 };
 
+type BaseLessonLayoutProps = {
+	title: string;
+	playlistArea: React.ReactNode;
+	children: React.ReactNode;
+	course?: ResolvedValue<typeof getCourse>;
+	lesson?: LessonData;
+};
+
+type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta };
+
+export function getCourse(slug: string) {
+	return database.course.findUnique({
+		where: { slug },
+		select: {
+			courseId: true,
+			title: true,
+			slug: true
+		}
+	});
+}
+
+export async function getCombinedSmallCourse(slug: string) {
+	const course = await database.course.findFirst({
+		where: { slug },
+		select: {
+			courseId: true,
+			title: true,
+			slug: true
+		}
+	});
+
+	const dynCourse = await database.dynCourse.findFirst({
+		where: { slug },
+		select: {
+			courseId: true,
+			title: true,
+			slug: true
+		}
+	});
+	if (!course && !dynCourse) {
+		return null;
+	}
+	const combinedCourse = course ? course : dynCourse;
+	return combinedCourse;
+}
+
+export async function getStaticPropsForLessonCourseLayout(
+=======*/
+
+export async function getCombinedSmallCourse(slug: string) {
+	const course = await database.course.findFirst({
+		where: { slug },
+		select: {
+			courseId: true,
+			title: true,
+			slug: true
+		}
+	});
+
+	const dynCourse = await database.dynCourse.findFirst({
+		where: { slug },
+		select: {
+			courseId: true,
+			title: true,
+			slug: true
+		}
+	});
+	if (!course && !dynCourse) {
+		return null;
+	}
+	const combinedCourse = course ? course : dynCourse;
+	return combinedCourse;
+}
+
 export async function getSSpLessonCourseLayout(
+	//>>>>>>> master:libs/feature/lesson/src/lib/learners-viewer/course-lesson-layout.tsx
 	params?: ParsedUrlQuery | undefined
 ): Promise<LessonLayoutProps | { notFound: true }> {
 	const standaloneProps = await getSspStandaloneLessonLayout(params);
@@ -35,7 +116,8 @@ export async function getSSpLessonCourseLayout(
 		throw new Error("No course/lesson slug provided.");
 	}
 
-	const course = await getCourse(courseSlug);
+	const course = await getCombinedSmallCourse(courseSlug);
+
 	if (!course) {
 		return { notFound: true };
 	}

@@ -2,20 +2,22 @@ import { LessonType } from "@prisma/client";
 import {
 	calculateAverageQuizScore,
 	QuizCompletionDialog,
-	QuizFailedDialog,
-	useMarkAsCompleted
+	QuizFailedDialog
 } from "@self-learning/completion";
 import {
-	ChapterName,
 	LessonCourseData,
-	LessonData,
 	LessonLayoutProps,
 	StandaloneLessonLayoutProps,
-	useLessonContext,
-	getCourse,
 	useLessonSession
 } from "@self-learning/lesson";
 import { ArrowPathIcon, PlayIcon } from "@heroicons/react/24/solid";
+import { useMarkAsCompleted } from "@self-learning/completion";
+import {
+	useLessonContext,
+	ChapterName,
+	LessonData,
+	getCombinedSmallCourse
+} from "@self-learning/lesson";
 import { MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuizContent } from "@self-learning/question-types";
 import {
@@ -36,7 +38,12 @@ import { useAttemptSubmission } from "../quiz-submit-attempt";
 
 export type QuestionProps = {
 	lesson: LessonData;
+	/*
+<<<<<<< HEAD
+	course?: ResolvedValue<typeof getCombinedSmallCourse>;
+=======*/
 	course?: LessonCourseData;
+	//>>>>>>> master
 	quiz: Quiz;
 	markdown: {
 		questionsMd: MdLookup;

@@ -186,15 +186,44 @@ export function LessonContentEditor() {
 					RenderContent={RenderContentType}
 				/>
 			</div>
+			{/*
+<<<<<<< HEAD
+			<SectionHeader
+				title="Inhalt"
+				subtitle="Inhalt, der zur Wissensvermittlung genutzt werden soll. Wenn mehrere Elemente
+					angelegt werden, kann der Student selber entscheiden, welches Medium angezeigt
+					werden soll."
+			/>
+
+			<div className="grid gap-4 text-sm grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+				{contentTypes.map(contentType => (
+					<AddButton
+						key={contentType}
+						contentType={contentType}
+						disabled={typesWithUsage[contentType] === true}
+						addContent={addContent}
+					/>
+				))}
+			</div>
+
+			<div className="mb-8 mt-4 flex gap-4">
+				{content.length > 0 && (
+					<Reorder.Group
+						className="w-full"
+						axis="x"
+						values={content}
+						onReorder={setContent}
+=======
+*/}
 			<div
 				className="w-full sticky bottom-0
-				max-h-[35vh] lg:max-h-none 
-				border-t lg:border-t-0 lg:border-l border-l-0 
-			  bg-gray-100 
+				max-h-[35vh] lg:max-h-none
+				border-t lg:border-t-0 lg:border-l border-l-0
+			  bg-gray-100
 				shadow-[0_-6px_6px_-4px_rgba(0,0,0,0.1)] lg:shadow-none"
 			>
 				<div
-					className="sticky z-4 overflow-y-auto 
+					className="sticky z-4 overflow-y-auto
 				bottom-0 lg:top-16 lg:max-h-none max-h-[35vh]
 				lg:left-auto lg:h-auto pl-8 pr-4"
 				>
@@ -252,6 +281,22 @@ function RenderContentType({
 	index?: number;
 	item?: FieldArrayWithId<{ content: LessonContent }, "content", "id">;
 }) {
+	/*
+<<<<<<< HEAD
+	return (
+		<button
+			type="button"
+			className="btn-primary w-full"
+			onClick={() => addContent(contentType)}
+			disabled={disabled}
+		>
+			<PlusIcon className="icon h-5" />
+			<span>{getContentTypeDisplayName(contentType)} hinzufügen</span>
+		</button>
+	);
+}
+=======
+*/
 	if (!item || index === undefined || index === null) {
 		return (
 			<SectionCard>

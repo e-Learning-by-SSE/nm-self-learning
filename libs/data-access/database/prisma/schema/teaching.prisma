@@ -1,15 +1,17 @@
 model Student {
-    userId                     String              @unique
-    username                   String              @id
+    userId                     String                @unique
+    username                   String                @id
     completedLessons           CompletedLesson[]
     enrollments                Enrollment[]
     customLearningLocations    LearningLocation[]
     quizAttempts               QuizAttempt[]
-    user                       User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user                       User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
     learningDiaryEntrys        LearningDiaryPage[]
     personalLearningTechniques LearningTechnique[]
     learningTechniqueRatings   TechniqueRating[]
     learningGoals              LearningGoal[]
+    generatedLessonPaths       GeneratedLessonPath[]
+    received                   Skill[]               @relation("StudentToSkill")
 }
 
 model Author {
@@ -24,6 +26,8 @@ model Author {
     courses             Course[]              @relation("AuthorToCourse")
     lessons             Lesson[]              @relation("AuthorToLesson")
     teams               Team[]                @relation("AuthorToTeam")
+    skills              Skill[]
+    dynCourse           DynCourse[]           @relation("AuthorToDynCourse")
 }
 
 model SubjectAdmin {
@@ -63,6 +67,7 @@ model Subject {
     courses         Course[]
     specializations Specialization[]
     subjectAdmin    SubjectAdmin[]
+    dynCourse       DynCourse[]
 }
 
 model Specialization {
@@ -76,6 +81,7 @@ model Specialization {
     subject             Subject               @relation(fields: [subjectId], references: [subjectId], onDelete: Cascade)
     specializationAdmin SpecializationAdmin[]
     courses             Course[]              @relation("CourseToSpecialization")
+    dynCourses          DynCourse[]           @relation("DynCourseToSpecialization")
 }
 
 model Course {
@@ -96,6 +102,44 @@ model Course {
     authors              Author[]            @relation("AuthorToCourse")
     specializations      Specialization[]    @relation("CourseToSpecialization")
     learningDiaryEntries LearningDiaryPage[]
+    requires             Skill[]             @relation("courseRequiredSkills")
+    provides             Skill[]             @relation("courseProvidedSkills")
+}
+
+model DynCourse {
+    courseId             String                @id
+    slug                 String                @unique
+    title                String
+    subtitle             String
+    courseVersion        String
+    description          String?
+    imgUrl               String?
+    teachingGoals        Skill[]               @relation("DynCourseTeachingGoals")
+    requirements         Skill[]               @relation("DynCourseRequirements")
+    meta                 Json
+    createdAt            DateTime              @default(now())
+    updatedAt            DateTime              @updatedAt
+    subjectId            String?
+    enrollments          Enrollment[]
+    completions          CompletedLesson[]
+    authors              Author[]              @relation("AuthorToDynCourse")
+    subject              Subject?              @relation(fields: [subjectId], references: [subjectId])
+    specializations      Specialization[]      @relation("DynCourseToSpecialization")
+    generatedLessonPaths GeneratedLessonPath[]
+}
+
+model GeneratedLessonPath {
+    lessonPathId  String    @id @default(cuid())
+    content       Json
+    meta          Json
+    courseVersion String
+    username      String
+    slug          String    @unique
+    courseId      String
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @updatedAt
+    student       Student   @relation(fields: [username], references: [username], onDelete: Cascade)
+    course        DynCourse @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
 }
 
 model Enrollment {
@@ -105,11 +149,14 @@ model Enrollment {
     lastProgressUpdate DateTime         @default(now())
     completedAt        DateTime?
     courseId           String
+    dynCourseId        String?
     username           String
     course             Course           @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
     student            Student          @relation(fields: [username], references: [username], onDelete: Cascade)
+    dynCourse          DynCourse?       @relation(fields: [dynCourseId], references: [courseId], onDelete: Cascade)
 
-    @@id([courseId, username])
+    @@unique([courseId, username])
+    @@unique([dynCourseId, username])
 }
 
 enum LessonType {
@@ -143,15 +190,17 @@ model Lesson {
 }
 
 model CompletedLesson {
-    completedLessonId Int      @id @default(autoincrement())
+    completedLessonId Int        @id @default(autoincrement())
     courseId          String?
+    dynCourseId       String?
     lessonId          String
     username          String
-    createdAt         DateTime @default(now())
-    performanceScore  Float    @default(0) // 0-1, 1 is perfect
-    course            Course?  @relation(fields: [courseId], references: [courseId])
-    lesson            Lesson   @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
-    user              Student  @relation(fields: [username], references: [username], onDelete: Cascade)
+    createdAt         DateTime   @default(now())
+    performanceScore  Float      @default(0) // 0-1, 1 is perfect
+    course            Course?    @relation(fields: [courseId], references: [courseId])
+    dynCourse         DynCourse? @relation(fields: [dynCourseId], references: [courseId])
+    lesson            Lesson     @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
+    user              Student    @relation(fields: [username], references: [username], onDelete: Cascade)
 
     @@index([username, lessonId])
 }

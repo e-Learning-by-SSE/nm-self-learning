@@ -13,7 +13,7 @@ import {
 	createCourseMeta,
 	createLessonMeta,
 	extractLessonIds,
-	LessonContent /* eslint-disable quotes */,
+	LessonContent,
 	LessonContentType
 } from "@self-learning/types";
 import { slugify } from "@self-learning/util/common";
@@ -28,10 +28,12 @@ const adminName = "dumbledore";
 
 export function createLessonWithRandomContentAndDemoQuestions({
 	title,
-	questions
+	questions,
+	provides
 }: {
 	title: string;
 	questions: QuizContent;
+	provides?: string[];
 }) {
 	const content = [
 		{
@@ -54,7 +56,8 @@ export function createLessonWithRandomContentAndDemoQuestions({
 		description: faker.lorem.paragraphs(3),
 		content,
 		questions,
-		licenseId: defaultLicense.licenseId
+		licenseId: defaultLicense.licenseId,
+		provides
 	});
 }
 
@@ -66,7 +69,8 @@ export function createLesson({
 	questions,
 	licenseId,
 	lessonType,
-	selfRegulatedQuestion
+	selfRegulatedQuestion,
+	provides
 }: {
 	title: string;
 	subtitle: string | null;
@@ -76,8 +80,9 @@ export function createLesson({
 	licenseId?: number | null;
 	lessonType?: LessonType;
 	selfRegulatedQuestion?: string;
+	provides?: string[];
 }) {
-	const lesson: Prisma.LessonCreateManyInput = {
+	const lesson: Prisma.LessonCreateInput = {
 		title,
 		lessonId: faker.string.uuid(),
 		slug: slugify(faker.string.alphanumeric(8) + title, { lower: true, strict: true }),
@@ -88,7 +93,8 @@ export function createLesson({
 		selfRegulatedQuestion: selfRegulatedQuestion,
 		quiz: { questions, config: null },
 		meta: {},
-		licenseId: licenseId ?? 0
+		license: licenseId ? { connect: { licenseId: licenseId } } : undefined,
+		provides: provides ? { connect: provides.map(goalId => ({ id: goalId })) } : undefined
 	};
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -176,12 +182,10 @@ export function createCourse({
 
 	course.meta = createCourseMeta(course);
 
-	const result = {
+	return {
 		data: course as Prisma.CourseCreateManyInput,
 		specializationId: specializationId
 	};
-
-	return result;
 }
 
 export function createMultipleChoice({
@@ -389,6 +393,33 @@ export async function createUsers(users: Prisma.UserCreateInput[]): Promise<void
 		await prisma.user.create({ data: user });
 	}
 }
+/*
+<<<<<<< HEAD
+async function getAdminUser() {
+	return prisma.user.findFirst({
+		where: { name: adminName }
+	});
+}
+
+export async function getAuthor() {
+	return await prisma.author.findFirst({
+		where: { username: adminName }
+	});
+}
+
+export type Skill = {
+	id: string;
+	name: string;
+	description: string;
+};
+=======
+*/
+
+export async function getAuthor() {
+	return await prisma.author.findFirst({
+		where: { username: adminName }
+	});
+}
 
 export async function getAdminUser() {
 	return await prisma.user.findFirst({ where: { name: adminName } });
@@ -396,11 +427,13 @@ export async function getAdminUser() {
 
 export type Skill = { id: string; name: string; description: string };
 
-export async function createSkills(skills: Skill[], repositoryId: string) {
+export async function createSkills(skills: Skill[]) {
+	const author = await getAuthor();
+
 	await Promise.all(
 		skills.map(async skill => {
 			const input: Prisma.SkillUncheckedCreateInput = {
-				repositoryId: repositoryId,
+				authorId: author ? author.id : 0,
 				...skill
 			};
 
@@ -411,15 +444,16 @@ export async function createSkills(skills: Skill[], repositoryId: string) {
 
 export type SkillGroup = { id: string; name: string; description: string; children: string[] };
 
-export async function createSkillGroups(skillGroups: SkillGroup[], repository: Repository) {
+export async function createSkillGroups(skillGroups: SkillGroup[]) {
 	// Need to preserve ordering and wait to be finished before creating the next one!
 	for (const skill of skillGroups) {
+		const author = await getAuthor();
 		const nested = skill.children?.map(i => ({ id: i }));
 
 		await prisma.skill.create({
 			data: {
 				id: skill.id,
-				repositoryId: repository.id,
+				authorId: author ? author.id : 0,
 				name: skill.name,
 				description: skill.description,
 				children: { connect: nested }
@@ -427,7 +461,9 @@ export async function createSkillGroups(skillGroups: SkillGroup[], repository: R
 		});
 	}
 }
-
+/*
+<<<<<<< HEAD
+=======
 export type Repository = { id: string; name: string; description: string };
 
 export async function createRepositories(repository: Repository) {
@@ -442,6 +478,8 @@ export async function createRepositories(repository: Repository) {
 	});
 }
 
+>>>>>>> master
+*/
 // Function to generate a random date between 50 days and 6 hours ago
 
 export function getRandomCreatedAt(): Date {

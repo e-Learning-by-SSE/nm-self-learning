@@ -36,30 +36,27 @@ model License {
     lessons           Lesson[]
 }
 
-model SkillRepository {
-    id          String  @id @default(cuid())
-    name        String
-    description String?
-    skills      Skill[]
-    ownerName   String
-    owner       User    @relation(fields: [ownerName], references: [name])
-
-    @@unique([ownerName, name])
-    @@map("skill-repositories")
-}
-
 model Skill {
-    id             String          @id @default(cuid())
+    id             String   @id @default(cuid())
     name           String
     description    String?
-    repositoryId   String
-    repository     SkillRepository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
-    children       Skill[]         @relation("parent")
-    parents        Skill[]         @relation("parent")
-    goalsOf        Lesson[]        @relation("providedSkills")
-    requirementsOf Lesson[]        @relation("requiredSkills")
+    authorId       Int
+    author         Author   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+    children       Skill[]  @relation("parent")
+    parents        Skill[]  @relation("parent")
+    goalsOf        Lesson[] @relation("providedSkills")
+    requirementsOf Lesson[] @relation("requiredSkills")
 
-    @@unique([repositoryId, name])
+    // Add references to DynCourse
+    goalsOfDynCourse        DynCourse[] @relation("DynCourseTeachingGoals")
+    requirementsOfDynCourse DynCourse[] @relation("DynCourseRequirements")
+
+    Student Student[] @relation("StudentToSkill")
+
+    //@@unique([repositoryId, name])
+    requiredBy Course[] @relation("courseRequiredSkills")
+    providedBy Course[] @relation("courseProvidedSkills")
+
     @@map("skills")
 }
 
@@ -74,7 +71,7 @@ model EventLog {
     // @@id([userId, createdAt, action]) // todo check if optimization is needed
 }
 
-// // das schema beinhaltet daten die aus dem eventlog aggregiert werden. updatedAt ist der letzte zeitpunkt an dem die daten aktualisiert wurden. 
+// // das schema beinhaltet daten die aus dem eventlog aggregiert werden. updatedAt ist der letzte zeitpunkt an dem die daten aktualisiert wurden.
 // model EventLogAggregations {
 //     id         Int    @id @default(autoincrement())
 //     updatedAt DateTime @updatedAt
@@ -154,15 +151,14 @@ enum ReminderStatus {
     SCHEDULED
     SENT
     FAILED
-    SKIPPED
 }
 
 model LlmConfiguration {
-  id              String   @id @default(cuid())
-  serverUrl       String
-  apiKey          String?
-  defaultModel    String   
-  isActive        Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+    id           String   @id @default(cuid())
+    serverUrl    String
+    apiKey       String?
+    defaultModel String
+    isActive     Boolean  @default(true)
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
 }

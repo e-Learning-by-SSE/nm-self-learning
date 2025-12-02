@@ -1,14 +1,13 @@
 /* eslint-disable react/jsx-no-useless-fragment */
-import { trpc } from "@self-learning/api-client";
-import { SkillFormModel, SkillRepositoryModel } from "@self-learning/types";
-import { LoadingBox } from "@self-learning/ui/common";
+import { SkillFormModel } from "@self-learning/types";
 import { Form, LabeledField } from "@self-learning/ui/forms";
-import { memo, useEffect, useState } from "react";
-import { SelectSkillDialog } from "../../skills/skill-dialog/select-skill-dialog";
+import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { LessonFormModel } from "../lesson-form-model";
-import { LabeledFieldSelectSkillsView } from "../../skills/skill-dialog/select-skill-view";
-import { MarkdownListboxMenu } from "@self-learning/markdown";
+import { PlusIcon } from "@heroicons/react/24/solid";
+import { IconButton } from "@self-learning/ui/common";
+import { SelectSkillDialog } from "../../skills/skill-dialog/select-skill-dialog";
+import { SkillManagementComponent } from "../../skills/skill-dialog/select-skill-view";
 
 type SkillModalIdentifier = "provides" | "requires";
 
@@ -23,14 +22,9 @@ export function LessonSkillManager() {
 		provides: watch("provides")
 	};
 
-	const [selectedRepository, setSelectedRepository] = useState<SkillRepositoryModel | null>(null);
 	const [selectSkillModal, setSelectSkillModal] = useState<{ id: SkillModalIdentifier } | null>(
 		null
 	);
-
-	const selectRepository = (id: SkillRepositoryModel) => {
-		setSelectedRepository(id);
-	};
 
 	const addSkills = (skill: SkillFormModel[] | undefined, id: SkillModalIdentifier) => {
 		if (!skill) return;
@@ -51,110 +45,74 @@ export function LessonSkillManager() {
 				title="Skills"
 				subtitle="Vermittelte und benötigte Skills dieser Lerneinheit"
 			/>
-			<LinkedSkillRepositoryMemorized selectRepository={selectRepository} />
-			{selectedRepository && (
-				<>
-					<LabeledFieldSelectSkillsView
-						label={"Vermittelte Skills"}
-						skills={watchingSkills["provides"]}
-						onDeleteSkill={skill => {
-							deleteSkill(skill, "provides");
-						}}
-						onAddSkill={skill => {
-							addSkills(skill, "provides");
-						}}
-						repoId={selectedRepository.id}
-					/>
+			<>
+				<LabeledFieldSelectSkillsView
+					label={"Vermittelte Skills"}
+					skills={watchingSkills["provides"]}
+					onDeleteSkill={skill => {
+						deleteSkill(skill, "provides");
+					}}
+					onAddSkill={skill => {
+						addSkills(skill, "provides");
+					}}
+				/>
 
-					<LabeledFieldSelectSkillsView
-						label={"Benötigte Skills"}
-						skills={watchingSkills["requires"]}
-						onDeleteSkill={skill => {
-							deleteSkill(skill, "requires");
+				<LabeledFieldSelectSkillsView
+					label={"Benötigte Skills"}
+					skills={watchingSkills["requires"]}
+					onDeleteSkill={skill => {
+						deleteSkill(skill, "requires");
+					}}
+					onAddSkill={skill => {
+						addSkills(skill, "requires");
+					}}
+				/>
+				{selectSkillModal && (
+					<SelectSkillDialog
+						onClose={skill => {
+							setSelectSkillModal(null);
+							addSkills(skill, selectSkillModal.id);
 						}}
-						onAddSkill={skill => {
-							addSkills(skill, "requires");
-						}}
-						repoId={selectedRepository.id}
 					/>
-					{selectSkillModal && (
-						<SelectSkillDialog
-							onClose={skill => {
-								setSelectSkillModal(null);
-								addSkills(skill, selectSkillModal.id);
-							}}
-							repositoryId={selectedRepository.id}
-						/>
-					)}
-				</>
-			)}
+				)}
+			</>
 		</Form.SidebarSection>
 	);
 }
 
-const LinkedSkillRepositoryMemorized = memo(LinkedSkillRepository);
-
-function LinkedSkillRepository({
-	selectRepository
+export function LabeledFieldSelectSkillsView({
+	skills,
+	onDeleteSkill,
+	onAddSkill,
+	label
 }: {
-	selectRepository: (id: SkillRepositoryModel) => void;
+	skills: SkillFormModel[];
+	onDeleteSkill: (skill: SkillFormModel) => void;
+	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
+	label: string;
 }) {
-	// TODO Make a method to get a smaller version of the repository
-	const { data: repositories, isLoading } = trpc.skill.getRepositories.useQuery();
-
-	if (isLoading) {
-		return <div />;
-	}
-
-	const onChange = (name: string) => {
-		const repository = repositories?.find(repository => repository.name === name);
-		if (repository) {
-			selectRepository(repository);
-		}
-	};
+	const [selectSkillModal, setSelectSkillModal] = useState<boolean>(false);
 
 	return (
-		<>
-			{isLoading ? (
-				<LoadingBox />
-			) : (
-				<>
-					{repositories && repositories.length > 0 && (
-						<LabeledField label="Verlinkte Skill-Repositories">
-							<RepositoryDropDown repositories={repositories} onChange={onChange} />
-						</LabeledField>
-					)}
-				</>
-			)}
-		</>
-	);
-}
-
-function RepositoryDropDown({
-	repositories,
-	onChange
-}: {
-	repositories: SkillRepositoryModel[];
-	onChange: (name: string) => void;
-}) {
-	const [selectedRepository, setSelectedRepository] = useState<string>(repositories[0].name);
-
-	const changeDisplaySelectedRepository = (name: string) => {
-		setSelectedRepository(name);
-	};
-
-	useEffect(() => {
-		onChange(selectedRepository);
-	}, [onChange, selectedRepository]);
-
-	return (
-		<div className="flex w-full">
-			<MarkdownListboxMenu
-				title=""
-				onChange={name => changeDisplaySelectedRepository(name)}
-				displayValue={selectedRepository ?? repositories[0].name}
-				options={repositories.map(repository => repository.name)}
+		<LabeledField
+			label={label}
+			button={
+				<IconButton
+					text="Hinzufügen"
+					icon={<PlusIcon />}
+					onClick={() => setSelectSkillModal(true)}
+					title={"Hinzufügen"}
+					data-testid="BenoetigteSkills-add"
+				/>
+			}
+		>
+			<SkillManagementComponent
+				skills={skills}
+				setSelectSkillModal={setSelectSkillModal}
+				onAddSkill={onAddSkill}
+				selectSkillModal={selectSkillModal}
+				onDeleteSkill={onDeleteSkill}
 			/>
-		</div>
+		</LabeledField>
 	);
 }

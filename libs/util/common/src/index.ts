@@ -5,4 +5,5 @@ export * from "./lib/pagination";
 export * from "./lib/is-truthy";
 export * from "./lib/umlaut-slugify";
 export * from "./lib/duplicate-remover/duplicates";
+export * from "./lib/sse-client";
 export * from "./lib/matches";

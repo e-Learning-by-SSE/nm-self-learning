@@ -1,3 +1,4 @@
+import { getCombinedCourses } from "@self-learning/course";
 import { database } from "@self-learning/database";
 import { CourseContent, extractLessonIds } from "@self-learning/types";
 import { createEventLogEntry } from "@self-learning/util/eventlog";
@@ -13,15 +14,13 @@ export async function markAsCompleted({
 	username: string;
 	performanceScore: number;
 }) {
-	const course = courseSlug
-		? await database.course.findUniqueOrThrow({
-				where: { slug: courseSlug },
-				select: {
-					courseId: true,
-					content: true
-				}
-			})
-		: null;
+	let course = null;
+	if (courseSlug) {
+		const result = await getCombinedCourses({
+			slug: courseSlug
+		});
+		course = result[0] ?? null;
+	}
 
 	const result = await database.completedLesson.create({
 		data: {
@@ -43,7 +42,13 @@ export async function markAsCompleted({
 			}
 		}
 	});
+	/*
+<<<<<<< HEAD
+	await addEarnedSkillsToUser(lessonId, username);
 
+	await createUserEvent({
+=======
+*/
 	// TODO remove since it is depricated
 	await createEventLogEntry({
 		username,
@@ -64,8 +69,14 @@ export async function markAsCompleted({
 
 async function updateCourseProgress(courseId: string, content: CourseContent, username: string) {
 	const completedLessons = await database.completedLesson.findMany({
-		where: { AND: { username, courseId } },
-		select: { lessonId: true }
+		where: {
+			AND: [
+				{ username },
+				{
+					OR: [{ courseId }, { dynCourseId: courseId }]
+				}
+			]
+		}
 	});
 
 	// Remove duplicates to support re-visiting a lesson
@@ -85,12 +96,40 @@ async function updateCourseProgress(courseId: string, content: CourseContent, us
 	}
 
 	// TODO: Student must be enrolled in course, otherwise this will fail
-	await database.enrollment.update({
-		where: { courseId_username: { courseId, username } },
-		select: null,
+	await database.enrollment.updateMany({
+		where: {
+			username,
+			OR: [{ courseId }, { dynCourseId: courseId }]
+		},
 		data: {
 			progress,
 			lastProgressUpdate: new Date()
 		}
+	});
+}
+
+async function addEarnedSkillsToUser(lessonId: string, username: string) {
+	return await database.$transaction(async tx => {
+		const lesson = await tx.lesson.findUniqueOrThrow({
+			where: {
+				lessonId
+			},
+			select: {
+				provides: {
+					select: {
+						id: true
+					}
+				}
+			}
+		});
+
+		await tx.student.update({
+			where: { username },
+			data: {
+				received: {
+					connect: lesson.provides.map(skill => ({ id: skill.id }))
+				}
+			}
+		});
 	});
 }

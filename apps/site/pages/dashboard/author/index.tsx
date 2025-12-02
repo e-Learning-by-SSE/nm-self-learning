@@ -3,7 +3,6 @@ import { TeacherView } from "@self-learning/analysis";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
-import { SkillRepositoryOverview } from "@self-learning/teaching";
 import { Specialization, Subject } from "@self-learning/types";
 import {
 	Dialog,
@@ -27,6 +26,7 @@ import { formatDateAgo } from "@self-learning/util/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { ParentSkillOverview } from "@self-learning/teaching";
 import { LessonDeleteOption } from "@self-learning/ui/lesson";
 import { ExportCourseDialog } from "@self-learning/teaching";
 
@@ -74,6 +74,20 @@ export function getAuthor(username: string) {
 				}
 			},
 			courses: {
+				orderBy: { title: "asc" },
+				select: {
+					courseId: true,
+					slug: true,
+					title: true,
+					imgUrl: true,
+					specializations: {
+						select: {
+							title: true
+						}
+					}
+				}
+			},
+			dynCourse: {
 				orderBy: { title: "asc" },
 				select: {
 					courseId: true,
@@ -189,16 +203,18 @@ function AuthorDashboardPage({ author }: Props) {
 								subtitle="Autor der folgenden Kurse:"
 							/>
 
-							<Link href="/teaching/courses/create">
-								<IconButton
-									text="Kurs erstellen"
-									icon={<PlusIcon className="icon h-5" />}
-								/>
-							</Link>
+							<div className="flex flex-row items-center gap-4">
+								<Link href="/teaching/courses/new">
+									<IconButton
+										text="Kurs erstellen"
+										icon={<PlusIcon className="icon h-5" />}
+									/>
+								</Link>
+							</div>
 						</div>
 
 						<ul className="flex flex-col gap-4 py-4">
-							{author.courses.length === 0 ? (
+							{author.courses.length === 0 && author.dynCourse.length === 0 ? (
 								<div className="mx-auto flex items-center gap-8">
 									<div className="h-32 w-32">
 										<VoidSvg />
@@ -206,7 +222,10 @@ function AuthorDashboardPage({ author }: Props) {
 									<p className="text-light">Du hast noch keine Kurse erstellt.</p>
 								</div>
 							) : (
-								author.courses.map(course => (
+								[
+									...author.courses.map(c => ({ ...c, type: "static" })),
+									...author.dynCourse.map(c => ({ ...c, type: "dynamic" }))
+								].map(course => (
 									<li
 										key={course.courseId}
 										className="flex items-center rounded-lg border border-light-border bg-white"
@@ -215,7 +234,6 @@ function AuthorDashboardPage({ author }: Props) {
 											src={course.imgUrl ?? undefined}
 											className="h-16 w-16 rounded-l-lg object-cover"
 										/>
-
 										<div className="flex w-full items-center justify-between px-4">
 											<div className="flex flex-col gap-1">
 												<span className="text-xs text-light">
@@ -233,7 +251,11 @@ function AuthorDashboardPage({ author }: Props) {
 
 											<div className="flex flex-wrap justify-end gap-4">
 												<Link
-													href={`/teaching/courses/edit/${course.courseId}`}
+													href={
+														course.type === "static"
+															? `/teaching/courses/edit/${course.courseId}`
+															: `/teaching/courses/${course.slug}/edit`
+													}
 													className="btn-stroked h-fit w-fit"
 												>
 													<PencilIcon className="icon" />
@@ -287,20 +309,21 @@ function AuthorDashboardPage({ author }: Props) {
 					</section>
 
 					<Divider />
+
 					<section>
 						<div className="flex justify-between gap-4">
 							<SectionHeader
-								title="Meine Skillkarten"
-								subtitle="Autor der folgenden Skillkarten:"
+								title="Skillkarten"
+								subtitle="Besitzer der folgenden Skillkarten"
 							/>
-							<Link href="/skills/repository/create">
-								<IconButton
-									icon={<PlusIcon className="icon h-5" />}
-									text="Skillkarte erstellen"
-								/>
+							<Link href="/skills">
+								<button type="button" className="btn-stroked w-fit self-end">
+									<PencilIcon className="icon" />
+									<span>Skills bearbeiten</span>
+								</button>
 							</Link>
 						</div>
-						<SkillRepositoryOverview />
+						<ParentSkillOverview />
 					</section>
 
 					<Divider />

@@ -302,6 +302,10 @@ pre[class*="language-"] {
 	background: #1e1e1e;
 }
 
+.text-secondary {
+	color: var(--color-secondary);
+}
+
 /*********************************************************
 * Tokens
 */

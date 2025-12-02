@@ -9,6 +9,9 @@ import {
 } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
+//import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
+import { getCombinedSmallCourse, useLessonContext } from "@self-learning/lesson";
+
 import {
 	SmallGradeBadge,
 	useCourseCompletion,
@@ -56,10 +59,17 @@ import { useLessonOutlineContext } from "../lesson-outline-context";
 import { LessonLayoutProps } from "./course-lesson-layout";
 import { createLessonPropsFrom } from "./create-lesson-props";
 import { StandaloneLessonLayoutProps } from "./standalone-lesson-layout";
-
+/*
+<<<<<<< HEAD:libs/feature/lesson/src/lib/lesson-viewer-page.tsx
+export type LessonProps = {
+	lesson: LessonData;
+	course?: ResolvedValue<typeof getCombinedSmallCourse>;
+=======
+*/
 export type LessonLearnersViewProps = {
 	lesson: LessonData & { performanceScore?: number | null };
 	course?: LessonCourseData;
+	//>>>>>>> master:libs/feature/lesson/src/lib/learners-viewer/page.tsx
 	markdown: {
 		description: CompiledMarkdown | null;
 		article: CompiledMarkdown | null;
@@ -762,7 +772,7 @@ function SelfRegulatedPreQuestion({
 				/>
 			</div>
 			<div className="mt-2 flex justify-end gap-2">
-				{userAnswer.length == 0 ? (
+				{userAnswer.length === 0 ? (
 					<button type="button" className="btn-secondary" onClick={handleSkipQuestion}>
 						Schritt Überspringen
 					</button>

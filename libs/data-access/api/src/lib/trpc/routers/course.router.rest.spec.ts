@@ -14,6 +14,12 @@ jest.mock("@self-learning/database", () => ({
 		enrollment: {
 			findMany: jest.fn()
 		},
+
+		dynCourse: {
+			findUnique: jest.fn(),
+			findMany: jest.fn()
+		},
+
 		completedLesson: {
 			groupBy: jest.fn()
 		}
@@ -54,7 +60,7 @@ describe("REST API of Course Router", () => {
 			jest.clearAllMocks();
 			// Mock the database response
 			(database.course.findMany as jest.Mock).mockImplementation(async query => {
-				let courses = coursesMock;
+				let courses = [...coursesMock];
 
 				// Simulate filtering by author (WHERE query)
 				if (query.where && query.where.authors) {
@@ -64,9 +70,10 @@ describe("REST API of Course Router", () => {
 						)
 					);
 				}
-
 				return courses;
 			});
+
+			(database.dynCourse.findMany as jest.Mock).mockResolvedValue([]);
 		});
 
 		it("should list all courses (paginated) if no filter specified", async () => {
@@ -85,10 +92,13 @@ describe("REST API of Course Router", () => {
 			});
 
 			const expected = {
-				result: coursesMock.slice(0, pageSize).map(course => ({
-					title: course.title,
-					slug: course.slug
-				})),
+				result: coursesMock
+					.slice(0, pageSize)
+					.map(course => ({
+						title: course.title,
+						slug: course.slug
+					}))
+					.sort((a, b) => (a.title ?? "").localeCompare(b.title ?? "")),
 				pageSize,
 				page: 1,
 				totalCount: coursesMock.length
@@ -114,16 +124,18 @@ describe("REST API of Course Router", () => {
 				user: privilegedUser
 			});
 
-			// Remove courses without "Author1": [5, 6, 7, 8, 9]
-			coursesMock.splice(5, 5);
+			const expectedCourses = coursesMock
+				.filter(c => c.authors.some(a => a.username === "Author1"))
+				.sort((a, b) => (a.title ?? "").localeCompare(b.title ?? ""));
+
 			const expected = {
-				result: coursesMock.map(course => ({
+				result: expectedCourses.slice(0, pageSize).map(course => ({
 					title: course.title,
 					slug: course.slug
 				})),
 				pageSize,
 				page: 1,
-				totalCount: Math.min(coursesMock.length, pageSize)
+				totalCount: expectedCourses.length
 			};
 
 			expect(response.statusCode).toBe(200);
