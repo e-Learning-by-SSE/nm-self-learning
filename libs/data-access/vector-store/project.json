@@ -5,21 +5,19 @@
 	"projectType": "library",
 	"tags": [],
 	"targets": {
-		"build": {
-			"executor": "@nx/js:tsc",
-			"outputs": ["{options.outputPath}"],
+        "lint": {
+			"executor": "@nx/linter:eslint",
+			"outputs": ["{options.outputFile}"],
 			"options": {
-				"outputPath": "dist/libs/data-access/vector-store",
-				"main": "libs/data-access/vector-store/src/index.ts",
-				"tsConfig": "libs/data-access/vector-store/tsconfig.lib.json",
-				"assets": ["libs/data-access/vector-store/*.md"]
+				"lintFilePatterns": ["libs/data-access/vector-store/**/*.ts"]
 			}
 		},
 		"test": {
 			"executor": "@nx/jest:jest",
-			"outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+			"outputs": ["{workspaceRoot}/coverage/libs/data-access/vector-store"],
 			"options": {
-				"jestConfig": "libs/data-access/vector-store/jest.config.ts"
+				"jestConfig": "libs/data-access/vector-store/jest.config.ts",
+				"passWithNoTests": true
 			}
 		}
 	}

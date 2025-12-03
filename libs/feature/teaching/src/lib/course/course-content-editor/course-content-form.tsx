@@ -373,6 +373,8 @@ function EditExistingLessonDialog({
 			onClose={handleEditDialogClose}
 			initialLesson={{
 				...data,
+                ragVersionHash: data.ragVersionHash ?? undefined,
+                ragVectorCount: data.ragVectorCount ?? undefined,
 				requires: data.requires.map(req => ({
 					...req,
 					children: req.children.map(c => c.name),

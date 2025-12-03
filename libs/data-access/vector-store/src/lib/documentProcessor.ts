@@ -1,11 +1,15 @@
 import type { DocumentChunk } from "@self-learning/types";
-import { PDFParse } from "pdf-parse";
+import pdf from "pdf-parse";
 
 class DocumentProcessor {
-	async extractTextFromPDF(buffer: Uint8Array): Promise<string> {
+	private toBuffer(u8: Uint8Array): Buffer {
+  // If the Uint8Array spans the whole underlying ArrayBuffer, this is zero-copy.
+  return Buffer.from(u8.buffer, u8.byteOffset, u8.byteLength);
+}
+    
+    async extractTextFromPDF(buffer: Uint8Array): Promise<string> {
 		try {
-			const parser = new PDFParse(buffer);
-			const data = await parser.getText();
+			const data = await pdf(this.toBuffer(buffer));
 			return data.text;
 		} catch (error) {
 			console.error(`❌ Failed to extract text from PDF buffer:`, error);
