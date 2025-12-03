@@ -13,20 +13,20 @@
 }
 
 :root {
-	--color-secondary: theme("colors.emerald.500");
-	--color-light: theme("colors.slate.500");
-	--color-light-border: theme("colors.slate.200");
+	--color-secondary: theme("colors.emerald.500"); /* DEPRECATED */
+	--color-light: theme("colors.slate.500"); /* DEPRECATED */
+	--color-light-border: theme("colors.slate.200"); /* DEPRECATED */
 	--gradient: linear-gradient(62deg, #c2dbf3, #d7b6f5);
 
 	/* Background / surface */
 	--c-surface-0: theme("colors.white");
-	--c-surface-1: theme("colors.gray.50"); /* Background */
+	--c-surface-1: theme("colors.gray.50");
 	--c-surface-2: theme("colors.gray.100");
 	--c-surface-3: theme("colors.gray.200");
 
 	/* Text */
-	--c-text-strong: theme("colors.slate.800");
 	--c-text: theme("colors.slate.700");
+	--c-text-strong: theme("colors.slate.800");
 	--c-text-muted: theme("colors.slate.500");
 	--c-text-inverted: theme("colors.white");
 
@@ -37,26 +37,14 @@
 
 	/* Primary */
 	--c-primary: theme("colors.emerald.500");
-	--c-primary-strong: theme("colors.emerald.600"); /* Hover: Primary */
-	--c-primary-muted: theme("colors.emerald.400"); /* Focus */
-	--c-primary-subtle: theme("colors.emerald.50"); /* Hover: Secondary */
+	--c-primary-strong: theme("colors.emerald.600");
+	--c-primary-muted: theme("colors.emerald.400");
+	--c-primary-subtle: theme("colors.emerald.50");
 
 	/* Accent */
 	--c-accent: theme("colors.purple.500");
-	--c-accent-strong: theme("colors.purple.600"); /* Hover */
-	--c-accent-muted: theme("colors.purple.400"); /* Focus */
-
-	/* Danger */
-	--c-danger: theme("colors.red.500");
-	--c-danger-strong: theme("colors.red.600"); /* Hover */
-	--c-danger-muted: theme("colors.red.400"); /* Focus */
-	--c-danger-subtle: theme("colors.red.100"); /* Hover */
-
-	/* Info */
-	--c-info: theme("colors.blue.500");
-	--c-info-strong: theme("colors.blue.600"); /* Hover */
-	--c-info-muted: theme("colors.blue.400"); /* Focus */
-	--c-info-subtle: theme("colors.blue.50"); /* Hover */
+	--c-accent-strong: theme("colors.purple.600");
+	--c-accent-muted: theme("colors.purple.400");
 
 	/* Hover */
 	--c-hover: theme("colors.gray.200");
@@ -64,25 +52,27 @@
 	--c-hover-muted: theme("colors.gray.100");
 	--c-hover-subtle: theme("colors.gray.50");
 
-	/* Goal */
-	--c-goal-complete: theme("colors.green.500");
-	--c-goal-complete-muted: theme("colors.green.200");
+	/* Semantic Colors */
+	--c-neutral: theme("colors.gray.200");
+	--c-neutral-strong: theme("colors.gray.300");
+	--c-neutral-muted: theme("colors.gray.100");
+	--c-neutral-subtle: theme("colors.gray.50");
 
-	--c-goal-active: theme("colors.orange.400");
-	--c-goal-active-muted: theme("colors.orange.200");
+	--c-success: theme("colors.green.500");
+	--c-success-muted: theme("colors.green.200");
 
-	--c-goal-inactive: theme("colors.gray.400");
+	--c-danger: theme("colors.red.500");
+	--c-danger-strong: theme("colors.red.600");
+	--c-danger-muted: theme("colors.red.400");
+	--c-danger-subtle: theme("colors.red.100");
 
-	/* Diary */
-	--c-diary-new: theme("colors.blue.500");
-	--c-diary-incomplete: theme("colors.gray.400");
-	--c-diary-complete: theme("colors.green.500");
+	--c-info: theme("colors.blue.500");
+	--c-info-strong: theme("colors.blue.600");
+	--c-info-muted: theme("colors.blue.400");
+	--c-info-subtle: theme("colors.blue.50");
 
-	/* Toast */
-	--c-toast-success: theme("colors.green.500");
-	--c-toast-error: theme("colors.red.500");
-	--c-toast-info: theme("colors.blue.500");
-	--c-toast-warning: theme("colors.orange.500");
+	--c-attention: theme("colors.orange.500");
+	--c-attention-muted: theme("colors.orange.400");
 }
 
 @font-face {
@@ -271,7 +261,7 @@ video {
 }
 
 .select {
-	@apply h-fit rounded-lg border border-light-border py-2  text-sm placeholder:text-slate-400 focus:border-secondary focus:ring-secondary disabled:bg-gray-100;
+	@apply h-fit rounded-lg border border-light-border py-2  text-sm placeholder:text-slate-400 focus:border-secondary focus:ring-secondary bg-c-surface-0 disabled:bg-gray-100;
 }
 
 input,
@@ -279,7 +269,7 @@ textarea,
 select,
 .textfield {
 	@apply h-fit rounded-lg border border-light-border p-2 text-sm 
-	placeholder:text-slate-400 focus:border-secondary focus:ring-secondary disabled:bg-gray-100;
+	placeholder:text-slate-400 focus:border-secondary focus:ring-secondary bg-c-surface-0 disabled:bg-gray-100;
 }
 
 .glass {
@@ -295,7 +285,7 @@ select,
 }
 
 .card {
-	@apply rounded-lg p-8;
+	@apply rounded-lg p-6;
 }
 
 .gradient {

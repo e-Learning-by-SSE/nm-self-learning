@@ -29,18 +29,18 @@ export function GoalStatusCheckbox({
 	switch (goal.status) {
 		case "ACTIVE":
 			statusColorSettings = disabled
-				? "disabled:cursor-not-allowed text-c-goal-active-muted focus:ring-c-goal-active-muted"
-				: "text-c-goal-active focus:ring-c-goal-active";
+				? "disabled:cursor-not-allowed text-c-attention-muted focus:ring-c-attention-muted"
+				: "text-c-attention focus:ring-c-attention";
 			break;
 		case "COMPLETED":
 			statusColorSettings = disabled
-				? "disabled:cursor-not-allowed text-c-goal-complete-muted focus:ring-c-goal-complete-muted"
-				: "text-c-goal-complete focus:ring-c-goal-complete";
+				? "disabled:cursor-not-allowed text-c-success-muted focus:ring-c-success-muted"
+				: "text-c-success focus:ring-c-success";
 			break;
 		default:
 			statusColorSettings = disabled
-				? "disabled:cursor-not-allowed focus:ring-c-goal-inactive"
-				: "focus:ring-c-goal-inactive";
+				? "disabled:cursor-not-allowed focus:ring-c-neutral"
+				: "focus:ring-c-neutral";
 	}
 
 	const checked = goal.status === "COMPLETED" || goal.status === "ACTIVE";

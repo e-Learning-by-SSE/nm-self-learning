@@ -141,37 +141,37 @@ module.exports = {
 				"c-danger-muted": "var(--c-danger-muted)",
 				"c-danger-subtle": "var(--c-danger-subtle)",
 
-				/* Info */
-				"c-info": "var(--c-info)",
-				"c-info-strong": "var(--c-info-strong)",
-				"c-info-muted": "var(--c-info-muted)",
-				"c-info-subtle": "var(--c-info-subtle)",
-
 				/* Hover */
 				"c-hover": "var(--c-hover)",
 				"c-hover-strong": "var(--c-hover-strong)",
 				"c-hover-muted": "var(--c-hover-muted)",
 				"c-hover-subtle": "var(--c-hover-subtle)",
 
-				/* Goal */
-				"c-goal-complete": "var(--c-goal-complete)",
-				"c-goal-complete-muted": "var(--c-goal-complete-muted)",
+				/* Semantic Colors */
+				"c-neutral": "var(--c-neutral)",
+				"c-neutral-strong": "var(--c-neutral-strong)",
+				"c-neutral-muted": "var(--c-neutral-muted)",
+				"c-neutral-subtle": "var(--c-neutral-subtle)",
 
-				"c-goal-active": "var(--c-goal-active)",
-				"c-goal-active-muted": "var(--c-goal-active-muted)",
+				"c-success": "var(--c-success)",
+				"c-success-strong": "var(--c-success-strong)",
+				"c-success-muted": "var(--c-success-muted)",
+				"c-success-subtle": "var(--c-success-subtle)",
 
-				"c-goal-inactive": "var(--c-goal-inactive)",
+				"c-error": "var(--c-error)",
+				"c-error-strong": "var(--c-error-strong)",
+				"c-error-muted": "var(--c-error-muted)",
+				"c-error-subtle": "var(--c-error-subtle)",
 
-				/* Diary */
-				"c-diary-new": "var(--c-diary-new)",
-				"c-diary-incomplete": "var(--c-diary-incomplete)",
-				"c-diary-complete": "var(--c-diary-complete)",
+				"c-info": "var(--c-info)",
+				"c-info-strong": "var(--c-info-strong)",
+				"c-info-muted": "var(--c-info-muted)",
+				"c-info-subtle": "var(--c-info-subtle)",
 
-				/* Toast */
-				"c-toast-success": "var(--c-toast-success)",
-				"c-toast-error": "var(--c-toast-error)",
-				"c-toast-info": "var(--c-toast-info)",
-				"c-toast-warning": "var(--c-toast-warning)"
+				"c-attention": "var(--c-attention)",
+				"c-attention-strong": "var(--c-attention-strong)",
+				"c-attention-muted": "var(--c-attention-muted)",
+				"c-attention-subtle": "var(--c-attention-subtle)"
 			},
 			backgroundSize: {
 				"300%": "300% 300%"
