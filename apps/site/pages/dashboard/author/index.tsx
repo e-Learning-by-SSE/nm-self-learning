@@ -240,14 +240,14 @@ function AuthorDashboardPage({ author }: Props) {
 													<IconTextButton
 														icon={<PencilIcon className="h-5 w-5" />}
 														text={"Bearbeiten"}
-														variant="stroked"
+														className="btn-stroked"
 														title="Kurs bearbeiten"
 													/>
 												</Link>
 												<IconTextButton
 													icon={<ArrowDownTrayIcon className="h-5 w-5" />}
 													text={"Export"}
-													variant="stroked"
+													className="btn-stroked"
 													title="Kurs exportieren"
 													onClick={() => setViewExportDialog(true)}
 												/>
@@ -432,7 +432,7 @@ function LessonTaskbar({ lessonId }: { lessonId: string }) {
 				<IconTextButton
 					icon={<PencilIcon className="h-5 w-5" />}
 					text={"Bearbeiten"}
-					variant="stroked"
+					className="btn-stroked"
 					title="Lerneinheit bearbeiten"
 				/>
 			</Link>

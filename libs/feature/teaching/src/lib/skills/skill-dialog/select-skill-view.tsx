@@ -27,7 +27,7 @@ export function LabeledFieldSelectSkillsView({
 				<IconTextButton
 					text="Hinzufügen"
 					icon={<PlusIcon className="h-5 w-5" />}
-					variant="secondary"
+					className="btn-secondary"
 					onClick={() => setSelectSkillModal(true)}
 					title={"Hinzufügen"}
 					data-testid="BenoetigteSkills-add"
@@ -65,7 +65,7 @@ export function SelectSkillsView({
 			<IconTextButton
 				text="Hinzufügen"
 				icon={<PlusIcon className="h-5 w-5" />}
-				variant="secondary"
+				className="btn-secondary"
 				onClick={() => setSelectSkillModal(true)}
 				title={"Hinzufügen"}
 				data-testid="BenoetigteSkills-add"

@@ -51,7 +51,7 @@ export function MarkdownField({
 						{!inline && (
 							<IconTextButton
 								icon={<PencilIcon className="h-5 w-5" />}
-								variant={header.btn_variant || "stroked"}
+								className={`btn-${header.btn_variant || "stroked"}`}
 								text="Bearbeiten"
 								onClick={() => setOpenEditor(true)}
 								title="Beschreibung bearbeiten"
@@ -97,7 +97,7 @@ export function MarkdownField({
 				<div className="flex justify-end bottom-0 right-0 py-2">
 					<IconTextButton
 						icon={<PencilIcon className="h-5 w-5" />}
-						variant="stroked"
+						className="btn-stroked"
 						text="Bearbeiten"
 						onClick={() => setOpenEditor(true)}
 						title="Beschreibung bearbeiten"

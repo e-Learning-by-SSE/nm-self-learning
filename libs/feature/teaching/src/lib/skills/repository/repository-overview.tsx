@@ -104,7 +104,7 @@ function RepositoryTaskbar({ repositoryId }: { repositoryId: string }) {
 				<IconTextButton
 					icon={<PencilIcon className="h-5 w-5" />}
 					text={"Bearbeiten"}
-					variant="stroked"
+					className="btn-stroked"
 					title="Repository bearbeiten"
 				/>
 			</Link>

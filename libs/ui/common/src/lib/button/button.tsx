@@ -21,7 +21,6 @@ export type ButtonVariant =
 export function IconTextButton({
 	icon,
 	text,
-	variant = "primary",
 	hideTextOnMobile = true,
 	className = "",
 	...props
@@ -32,11 +31,10 @@ export function IconTextButton({
 	hideTextOnMobile?: boolean;
 }) {
 	const baseClasses = "btn btn-with-icon";
-	const variantClass = `btn-${variant}`;
 	const textClasses = hideTextOnMobile ? "hidden sm:inline" : "";
 
 	return (
-		<button type="button" className={`${baseClasses} ${variantClass} ${className}`} {...props}>
+		<button type="button" className={`${baseClasses} ${className}`} {...props}>
 			{icon}
 			<span className={`text-sm ${textClasses}`}>{text}</span>
 		</button>

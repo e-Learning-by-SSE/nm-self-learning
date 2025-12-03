@@ -45,7 +45,7 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 				<IconTextButton
 					text="Hinzufügen"
 					icon={<PlusIcon className="h-5" />}
-					variant="secondary"
+					className="btn-secondary"
 					onClick={() => setOpenAddDialog(true)}
 				/>
 			</Form.SidebarSectionTitle>
