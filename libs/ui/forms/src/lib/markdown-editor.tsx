@@ -63,7 +63,7 @@ export function MarkdownField({
 
 			<div className="flex items-center gap-2">
 				<div
-					className="flex-1 cursor-pointer rounded-lg border border-c-border bg-white p-2 min-h-8"
+					className="flex-1 cursor-pointer rounded-lg border border-c-border bg-c-surface-0 p-2 min-h-8"
 					onClick={() => setOpenEditor(true)}
 				>
 					<div

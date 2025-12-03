@@ -57,7 +57,7 @@ export function MarkdownListboxMenu({
 				className={
 					customButtonStyle
 						? customButtonStyle
-						: "items-center justify-between px-3 py-2 border rounded space-x-2 w-full"
+						: "items-center justify-between px-3 py-2 border rounded space-x-2 w-full bg-c-surface-0"
 				}
 			>
 				{({ open }) => (

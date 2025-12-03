@@ -71,5 +71,5 @@ export function TableDataColumn({
 	children?: React.ReactNode;
 	className?: string;
 }) {
-	return <td className={className ?? "py-2 px-4 text-sm"}>{children}</td>;
+	return <td className={className ?? "bg-c-surface-0 py-2 px-4 text-sm"}>{children}</td>;
 }
