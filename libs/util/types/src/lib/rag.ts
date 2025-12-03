@@ -35,6 +35,20 @@ export const IngestionInputSchema = z.object({
 	)
 });
 
+export const EnqueueJobInputSchema = z.object({
+	lessonId: z.string().cuid(),
+	jobType: z.enum(["embed", "delete"])
+});
+
+export const UpdateJobStatusInputSchema = z.object({
+	jobId: z.string().uuid(),
+	status: z.enum(["queued", "completed", "failed"])
+});
+
+export const JobIDInputSchema = z.object({
+	jobId: z.string().uuid()
+});
+
 export type IngestionInput = z.infer<typeof IngestionInputSchema>;
 
 export interface IngestionResult {

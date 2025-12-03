@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { parentPort } from "worker_threads";
-import { ragRetriever } from "@self-learning/vector-store";
-import { vectorStore } from "@self-learning/vector-store";
+import { ragRetriever } from "@self-learning/ai-tutor/rag";
+import { vectorStore } from "@self-learning/ai-tutor/rag";
 import { database } from "@self-learning/database";
 import { lessonContentSchema } from "@self-learning/types";
 

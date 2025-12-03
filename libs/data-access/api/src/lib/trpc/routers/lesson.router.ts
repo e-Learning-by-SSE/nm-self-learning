@@ -5,7 +5,8 @@ import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learni
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
-import { enqueueRagJob, getRagVersionHash } from "@self-learning/vector-store";
+import { getRagVersionHash } from "@self-learning/ai-tutor/rag";
+import { enqueueRagJob } from "./rag-queue.router";
 
 export const lessonRouter = t.router({
 	findOneAllProps: authProcedure.input(z.object({ lessonId: z.string() })).query(({ input }) => {

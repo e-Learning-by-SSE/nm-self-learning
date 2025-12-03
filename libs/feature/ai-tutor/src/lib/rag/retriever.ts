@@ -1,4 +1,4 @@
-import { vectorStore } from "@self-learning/vector-store";
+import { vectorStore } from "./vectorStore";
 import { documentProcessor } from "./documentProcessor";
 import type { DocumentChunk, RetrievalResult } from "@self-learning/types";
 

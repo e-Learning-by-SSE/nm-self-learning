@@ -3,7 +3,7 @@ import { authProcedure, t } from "../trpc";
 import { database } from "@self-learning/database";
 import { tutorInputSchema } from "@self-learning/types";
 import { statusToTRPCError, Payload, ServerConfig, PageContext } from "@self-learning/types";
-import { ragRetriever } from "@self-learning/vector-store";
+import { ragRetriever } from "@self-learning/ai-tutor/rag";
 import { fetchLlmConfig } from "./llm-config.router";
 
 const defaultPrompt = `You are an excellent tutor. An excellent tutor is a guide and an educator.
