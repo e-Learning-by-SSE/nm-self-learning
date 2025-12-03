@@ -1,10 +1,11 @@
 import NextAuth from "next-auth";
+import { DefaultSession } from "next-auth";
 
-// https://stackoverflow.com/questions/45194598/using-process-env-in-typescript
 declare global {
-	namespace NodeJS {
+	declare namespace NodeJS {
 		interface ProcessEnv {
 			NODE_ENV: "development" | "production";
+			NEXT_PUBLIC_SITE_BASE_URL: string;
 			NEXT_PUBLIC_IS_DEMO_INSTANCE: string | undefined;
 			NEXT_PUBLIC_BASE_PATH: string | undefined;
 			NEXT_TRAILING_SLASH: Boolean | undefined;
@@ -20,10 +21,13 @@ declare global {
 			PISTON_URL: string;
 			KEYCLOAK_ISSUER_URL: string;
 			KEYCLOAK_CLIENT_ID: string;
+			KEYCLOAK_CLIENT_SECRET: string;
 			KEYCLOAK_PROVIDER_NAME: string | undefined;
 			NEXTAUTH_URL: string;
 			NEXTAUTH_SECRET: string;
-			APP_VERSION: string | undefined;
+			APP_VERSION: string;
+			SCHEDULER_SECRET: string | undefined;
+			RESEND_API_KEY: string | undefined;
 		}
 	}
 }
@@ -36,11 +40,14 @@ declare module "next-auth" {
 		user: {
 			id: string;
 			name: string;
-			role: "USER" | "ADMIN";
+			role: UserRole;
 			isAuthor: boolean;
 			avatarUrl?: string | null;
-			enabledLearningStatistics: boolean;
-			enabledFeatureLearningDiary: boolean;
+			featureFlags: {
+				learningDiary: boolean;
+				learningStatistics: boolean;
+				experimental: boolean;
+			};
 		};
 	}
 }

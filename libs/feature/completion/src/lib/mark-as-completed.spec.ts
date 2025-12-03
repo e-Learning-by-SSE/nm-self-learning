@@ -17,6 +17,7 @@ import { markAsCompleted } from "./mark-as-completed";
 const DISABLE_TESTS = process.env["CI"] === "true";
 const it = DISABLE_TESTS ? test.skip : test;
 
+const performanceScore = 0;
 const username = "markAsCompletedUser";
 const courseSlug = "mark-as-completed-course-slug";
 const content = createCourseContent([
@@ -76,7 +77,8 @@ describe("markAsCompleted", () => {
 			await markAsCompleted({
 				username,
 				courseSlug,
-				lessonId
+				lessonId,
+				performanceScore
 			});
 
 			const completedLesson = await database.completedLesson.findFirst({
@@ -94,7 +96,8 @@ describe("markAsCompleted", () => {
 			await markAsCompleted({
 				username,
 				courseSlug,
-				lessonId
+				lessonId,
+				performanceScore
 			});
 
 			const userEvent = await database.eventLog.findFirst({
@@ -107,7 +110,8 @@ describe("markAsCompleted", () => {
 			await markAsCompleted({
 				username,
 				courseSlug,
-				lessonId
+				lessonId,
+				performanceScore
 			});
 
 			const userEvent = await database.eventLog.findFirst({
@@ -127,7 +131,8 @@ describe("markAsCompleted", () => {
 					markAsCompleted({
 						username,
 						lessonId: c,
-						courseSlug
+						courseSlug,
+						performanceScore
 					})
 				)
 			);
@@ -162,7 +167,7 @@ describe("markAsCompleted", () => {
 		});
 
 		it("should create completedLesson entry", async () => {
-			await markAsCompleted({ username, lessonId, courseSlug: null });
+			await markAsCompleted({ username, lessonId, courseSlug: null, performanceScore });
 
 			const completedLesson = await database.completedLesson.findFirst({
 				where: { AND: { lessonId, username } }

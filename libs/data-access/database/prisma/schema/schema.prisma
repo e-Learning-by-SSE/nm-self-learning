@@ -1,195 +1,13 @@
 generator client {
-  provider = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl"]
-  previewFeatures = ["prismaSchemaFolder"]
+    provider        = "prisma-client-js"
+    binaryTargets   = ["native", "linux-musl"]
+    previewFeatures = ["prismaSchemaFolder"]
 }
 
 datasource db {
     provider = "postgres"
     url      = env("DATABASE_URL")
 }
-
-model Student {
-    userId                      String                        @unique
-    username                    String                        @id
-    completedLessons            CompletedLesson[]
-    enrollments                 Enrollment[]
-    customLearningLocations     LearningLocation[]
-    quizAttempts                QuizAttempt[]
-    user                        User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
-    learningDiaryEntrys         LearningDiaryPage[]
-    personalLearningTechniques  LearningTechnique[]
-    learningTechniqueRatings    TechniqueRating[]
-	learningGoals				LearningGoal[]
-}
-
-
-model Author {
-    id                  Int                   @id @default(autoincrement())
-    username            String                @unique
-    displayName         String
-    slug                String                @unique
-    imgUrl              String?
-    user                User                  @relation(fields: [username], references: [name], onDelete: Cascade)
-    specializationAdmin SpecializationAdmin[]
-    subjectAdmin        SubjectAdmin[]
-    courses             Course[]              @relation("AuthorToCourse")
-    lessons             Lesson[]              @relation("AuthorToLesson")
-    teams               Team[]                @relation("AuthorToTeam")
-}
-
-model SubjectAdmin {
-    subjectId String
-    username  String
-    subject   Subject @relation(fields: [subjectId], references: [subjectId], onDelete: Cascade)
-    author    Author  @relation(fields: [username], references: [username], onDelete: Cascade)
-
-    @@id([subjectId, username])
-}
-
-model SpecializationAdmin {
-    specializationId String
-    username         String
-    specialization   Specialization @relation(fields: [specializationId], references: [specializationId], onDelete: Cascade)
-    author           Author         @relation(fields: [username], references: [username], onDelete: Cascade)
-
-    @@id([specializationId, username])
-}
-
-model Team {
-    teamId      Int      @id @default(autoincrement())
-    slug        String   @unique
-    name        String
-    description String?
-    imgUrl      String?
-    authors     Author[] @relation("AuthorToTeam")
-}
-
-model Subject {
-    subjectId       String           @id
-    slug            String           @unique
-    title           String
-    subtitle        String
-    imgUrlBanner    String?
-    cardImgUrl      String?
-    courses         Course[]
-    specializations Specialization[]
-    subjectAdmin    SubjectAdmin[]
-}
-
-model Specialization {
-    specializationId    String                @id
-    slug                String                @unique
-    title               String
-    subtitle            String
-    imgUrlBanner        String?
-    cardImgUrl          String?
-    subjectId           String
-    subject             Subject               @relation(fields: [subjectId], references: [subjectId], onDelete: Cascade)
-    specializationAdmin SpecializationAdmin[]
-    courses             Course[]              @relation("CourseToSpecialization")
-}
-
-model Course {
-    courseId             String               @id
-    slug                 String               @unique
-    title                String
-    subtitle             String
-    description          String?
-    imgUrl               String?
-    content              Json
-    meta                 Json
-    createdAt            DateTime             @default(now())
-    updatedAt            DateTime             @updatedAt
-    subjectId            String?
-    completions          CompletedLesson[]
-    subject              Subject?             @relation(fields: [subjectId], references: [subjectId])
-    enrollments          Enrollment[]
-    authors              Author[]             @relation("AuthorToCourse")
-    specializations      Specialization[]     @relation("CourseToSpecialization")
-    learningDiaryEntries LearningDiaryPage[]
-}
-
-model Enrollment {
-    status             EnrollmentStatus
-    progress           Int              @default(0)
-    createdAt          DateTime         @default(now())
-    lastProgressUpdate DateTime         @default(now())
-    completedAt        DateTime?
-    courseId           String
-    username           String
-    course             Course           @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
-    student            Student          @relation(fields: [username], references: [username], onDelete: Cascade)
-
-    @@id([courseId, username])
-}
-
-enum LessonType {
-    TRADITIONAL
-    SELF_REGULATED
-}
-
-model Lesson {
-    lessonId              String                        @id
-    slug                  String                        @unique
-    title                 String
-    subtitle              String?
-    description           String?
-    imgUrl                String?
-    content               Json
-    quiz                  Json?
-    meta                  Json
-    createdAt             DateTime                      @default(now())
-    updatedAt             DateTime                      @updatedAt
-    completions           CompletedLesson[]
-    quizAttempts          QuizAttempt[]
-    authors               Author[]                      @relation("AuthorToLesson")
-    license               License?                      @relation(fields: [licenseId], references: [licenseId], onDelete: Restrict, onUpdate: Restrict)
-    licenseId             Int?
-    lessonType            LessonType                    @default(TRADITIONAL)
-    selfRegulatedQuestion String?
-    requires              Skill[]                       @relation("requiredSkills")
-    provides              Skill[]                       @relation("providedSkills")
-    lessonStart           LearningDiaryLearnedLessons[] // TODO check if this is necessary
-}
-
-model CompletedLesson {
-    completedLessonId Int      @id @default(autoincrement())
-    courseId          String?
-    lessonId          String
-    username          String
-    createdAt         DateTime @default(now())
-    course            Course?  @relation(fields: [courseId], references: [courseId])
-    lesson            Lesson   @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
-    user              Student  @relation(fields: [username], references: [username], onDelete: Cascade)
-
-    @@index([username, lessonId])
-}
-
-model QuizAttempt {
-    attemptId  String       @id @default(uuid())
-    createdAt  DateTime     @default(now())
-    state      String
-    username   String
-    lessonId   String
-    QuizAnswer QuizAnswer[]
-    lesson     Lesson       @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
-    student    Student      @relation(fields: [username], references: [username], onDelete: Cascade)
-
-    @@index([username, lessonId])
-}
-
-model QuizAnswer {
-    answerId      Int         @id @default(autoincrement())
-    quizAttemptId String
-    questionId    String
-    answer        Json
-    isCorrect     Boolean
-    quizAttempt   QuizAttempt @relation(fields: [quizAttemptId], references: [attemptId], onDelete: Cascade)
-
-    @@index([questionId])
-}
-
 
 model UploadedAssets {
     objectName String   @id
@@ -201,17 +19,6 @@ model UploadedAssets {
     user       User?    @relation(fields: [username], references: [name])
 
     @@index([fileName])
-}
-
-enum UserRole {
-    USER
-    ADMIN
-}
-
-enum EnrollmentStatus {
-    ACTIVE
-    INACTIVE
-    COMPLETED
 }
 
 model License {
@@ -230,15 +37,15 @@ model License {
 }
 
 model SkillRepository {
-  id            String        @id @default(cuid())
-  name          String
-  description   String?
-  skills        Skill[]
-  ownerName     String
-  owner         User     @relation(fields: [ownerName], references: [name])
+    id          String  @id @default(cuid())
+    name        String
+    description String?
+    skills      Skill[]
+    ownerName   String
+    owner       User    @relation(fields: [ownerName], references: [name])
 
-  @@unique([ownerName, name])
-  @@map("skill-repositories")
+    @@unique([ownerName, name])
+    @@map("skill-repositories")
 }
 
 model Skill {
@@ -257,14 +64,97 @@ model Skill {
 }
 
 model EventLog {
-  id          Int    @id @default(autoincrement())
-  createdAt   DateTime  @default(now())
-  username    String
-  resourceId  String?
-  courseId    String?
-  type        String
-  payload     Json?
-  // @@id([userId, createdAt, action]) // todo check if optimization is needed
+    id         Int      @id @default(autoincrement())
+    createdAt  DateTime @default(now())
+    username   String
+    resourceId String?
+    courseId   String?
+    type       String
+    payload    Json?
+    // @@id([userId, createdAt, action]) // todo check if optimization is needed
+}
+
+// // das schema beinhaltet daten die aus dem eventlog aggregiert werden. updatedAt ist der letzte zeitpunkt an dem die daten aktualisiert wurden. 
+// model EventLogAggregations {
+//     id         Int    @id @default(autoincrement())
+//     updatedAt DateTime @updatedAt
+//     userId    String
+//     videosTimeWatched Int
+// }
+
+model Notification {
+    id             String       @id @default(uuid())
+    component      String // z. B. "BannerMessage"
+    props          Json // enthält die dynamischen Props der Komponente
+    displayFrom    DateTime
+    displayUntil   DateTime
+    createdAt      DateTime     @default(now())
+    updatedAt      DateTime     @updatedAt
+    targetAudience AudienceType @default(all)
+
+    targets NotificationUser[]
+}
+
+enum AudienceType {
+    all
+    user
+    admin
+    author
+}
+
+model NotificationUser {
+    notificationId String
+    userId         String
+    dismissed      Boolean      @default(false)
+    seenAt         DateTime?
+    notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+    user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@id([notificationId, userId])
+}
+
+model UserNotificationSetting {
+    id      String              @id @default(uuid())
+    userId  String
+    type    NotificationType
+    channel NotificationChannel
+    enabled Boolean             @default(true)
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, type, channel]) // Jeder User nur 1x pro Typ + Channel
+}
+
+enum NotificationType {
+    courseReminder
+    streakReminderFirst
+    streakReminderLast
+}
+
+enum NotificationChannel {
+    email
+    push
+}
+
+model ReminderLog {
+    id          String         @id @default(uuid())
+    user        User           @relation(fields: [userId], references: [id])
+    userId      String
+    templateKey String
+    sentAt      DateTime? // null, wenn geplant aber noch nicht gesendet
+    status      ReminderStatus
+    error       String?
+    metadata    Json?
+    updatedAt   DateTime       @updatedAt
+
+    @@index([userId, templateKey, sentAt])
+}
+
+enum ReminderStatus {
+    SCHEDULED
+    SENT
+    FAILED
+    SKIPPED
 }
 
 model LlmConfiguration {

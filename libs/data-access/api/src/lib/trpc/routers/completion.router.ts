@@ -16,14 +16,16 @@ export const completionRouter = t.router({
 		.input(
 			z.object({
 				lessonId: z.string(),
-				courseSlug: z.string().nullable()
+				courseSlug: z.string().nullable(),
+				performanceScore: z.number()
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
 			return markAsCompleted({
 				lessonId: input.lessonId,
 				courseSlug: input.courseSlug,
-				username: ctx.user.name
+				username: ctx.user.name,
+				performanceScore: input.performanceScore
 			});
 		})
 });
