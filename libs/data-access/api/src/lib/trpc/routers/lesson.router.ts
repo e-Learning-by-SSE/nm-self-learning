@@ -1,6 +1,6 @@
 import { Course, Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
-import { createLessonMeta, lessonSchema, lessonContentSchema } from "@self-learning/types";
+import { createLessonMeta, lessonSchema } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";

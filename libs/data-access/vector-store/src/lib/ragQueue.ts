@@ -26,11 +26,17 @@ export async function enqueueRagJob(lessonId: string, jobType: string) {
 }
 
 export async function fetchNextRagJob() {
-	const job = await database.ragJob.findFirst({
+	return await database.ragJob.findFirst({
 		where: { status: "queued" },
 		orderBy: { createdAt: "asc" }
 	});
-	return job;
+}
+
+export async function fetchRagJobs() {
+	return await database.ragJob.findMany({
+		where: { attempts: { lt: 3 } },
+		orderBy: { createdAt: "asc" }
+	});
 }
 
 export async function updateRagJobStatus(id: string, status: string) {

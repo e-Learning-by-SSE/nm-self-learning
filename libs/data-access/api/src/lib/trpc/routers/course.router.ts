@@ -10,7 +10,7 @@ import {
 import { CourseContent, CourseMeta, extractLessonIds, LessonMeta } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
-import { workerPoolManager } from "../../workers/worker-pool-manager";
+import { workerPoolManager } from "../workers/worker-pool-manager";
 import { randomUUID } from "crypto";
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
@@ -184,7 +184,6 @@ export const courseRouter = t.router({
 				result,
 				pageSize: pageSize,
 				page: input.page,
-				totalCount: count
 				totalCount: count
 			} satisfies Paginated<unknown>;
 		}),

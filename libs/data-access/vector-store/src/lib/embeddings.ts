@@ -8,10 +8,8 @@ class EmbeddingService {
 		if (this.isInitialized) return;
 
 		console.log("🔄 Loading embedding model...");
-
-		// Load the model (happens once, then cached)
 		this.embedder = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", {
-			quantized: true // Smaller model size, faster loading
+			quantized: true
 		});
 
 		this.isInitialized = true;
@@ -24,13 +22,10 @@ class EmbeddingService {
 		}
 
 		try {
-			// Generate embedding
 			const output = await this.embedder(text, {
 				pooling: "mean",
 				normalize: true
 			});
-
-			// Convert to array
 			return Array.from(output.data);
 		} catch (error) {
 			console.error("❌ Embedding generation failed:", error);
@@ -42,8 +37,6 @@ class EmbeddingService {
 		if (!this.isInitialized) {
 			await this.initialize();
 		}
-
-		// Generate embeddings for multiple texts
 		const embeddings: number[][] = [];
 
 		for (const text of texts) {
@@ -54,6 +47,4 @@ class EmbeddingService {
 		return embeddings;
 	}
 }
-
-// Export singleton instance
 export const embeddingService = new EmbeddingService();

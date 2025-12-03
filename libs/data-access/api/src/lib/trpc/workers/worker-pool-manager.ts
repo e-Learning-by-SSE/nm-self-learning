@@ -1,9 +1,10 @@
-import path from "path";
+import * as path from "path";
 import { WorkerPool } from "./worker-pool";
 
 class WorkerPoolManager {
 	private static instance: WorkerPoolManager;
 	private pathGenerationPool?: WorkerPool;
+	private ragProcessingPool?: WorkerPool;
 
 	private constructor() {}
 
@@ -24,7 +25,7 @@ class WorkerPoolManager {
 				),
 				minWorkers: 2,
 				maxWorkers: 6,
-				maxIdleTime: 100000 
+				maxIdleTime: 100000
 			});
 
 			// Log pool events for monitoring
@@ -43,16 +44,50 @@ class WorkerPoolManager {
 		return this.pathGenerationPool;
 	}
 
+	public getRagProcessingPool(): WorkerPool {
+		if (!this.ragProcessingPool) {
+			this.ragProcessingPool = new WorkerPool({
+				workerPath: path.join(
+					process.cwd(),
+					"../../",
+					"dist/apps/site/workers/rag-worker-thread.js"
+				),
+				minWorkers: 1,
+				maxWorkers: 3,
+				maxIdleTime: 300000
+			});
+
+			this.ragProcessingPool.on("workerCreated", workerId => {
+				console.log(`[WorkerPool] RAG processing worker ${workerId} created`);
+			});
+
+			this.ragProcessingPool.on("workerRemoved", workerId => {
+				console.log(`[WorkerPool] RAG processing worker ${workerId} removed`);
+			});
+
+			this.ragProcessingPool.on("workersCleanedUp", count => {
+				console.log(`[WorkerPool] Cleaned up ${count} idle RAG workers`);
+			});
+		}
+		return this.ragProcessingPool;
+	}
+
 	public async terminate(): Promise<void> {
 		if (this.pathGenerationPool) {
 			await this.pathGenerationPool.terminate();
 			this.pathGenerationPool = undefined;
 		}
+
+		if (this.ragProcessingPool) {
+			await this.ragProcessingPool.terminate();
+			this.ragProcessingPool = undefined;
+		}
 	}
 
 	public getStats() {
 		return {
-			pathGeneration: this.pathGenerationPool?.getStats() || null
+			pathGeneration: this.pathGenerationPool?.getStats() || null,
+			ragProcessing: this.ragProcessingPool?.getStats() || null
 		};
 	}
 }

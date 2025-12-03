@@ -65,5 +65,63 @@ class DocumentProcessor {
 		console.log(`✅ Total chunks created: ${allChunks.length}`);
 		return allChunks;
 	}
+
+	async processArticles(
+		articles: string[],
+		lessonId: string,
+		lessonName: string
+	): Promise<DocumentChunk[]> {
+		const allChunks: DocumentChunk[] = [];
+
+		for (let i = 0; i < articles.length; i++) {
+			const article = articles[i];
+			const textChunks = this.chunkText(article, 1000, 200);
+
+			const chunks: DocumentChunk[] = textChunks.map((text, index) => ({
+				id: `${lessonId}_${lessonName}_article${i}_chunk_${index}`,
+				text,
+				metadata: {
+					lessonId,
+					lessonName,
+					articleIndex: i,
+					chunkIndex: index
+				}
+			}));
+
+			allChunks.push(...chunks);
+		}
+
+		console.log(`✅ Total article chunks created: ${allChunks.length}`);
+		return allChunks;
+	}
+
+	async processVideoTranscripts(
+		transcripts: string[],
+		lessonId: string,
+		lessonName: string
+	): Promise<DocumentChunk[]> {
+		const allChunks: DocumentChunk[] = [];
+
+		for (let i = 0; i < transcripts.length; i++) {
+			const transcript = transcripts[i];
+			const textChunks = this.chunkText(transcript, 1000, 200);
+
+			const chunks: DocumentChunk[] = textChunks.map((text, index) => ({
+				id: `${lessonId}_${lessonName}_video${i}_chunk_${index}`,
+				text,
+				metadata: {
+					lessonId,
+					lessonName,
+					videoIndex: i,
+					chunkIndex: index
+				}
+			}));
+
+			allChunks.push(...chunks);
+		}
+
+		console.log(`✅ Total video transcript chunks created: ${allChunks.length}`);
+		return allChunks;
+	}
 }
 export const documentProcessor = new DocumentProcessor();

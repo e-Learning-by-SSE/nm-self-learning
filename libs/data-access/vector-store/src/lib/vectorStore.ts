@@ -1,5 +1,5 @@
 import { ChromaClient } from "chromadb";
-import { embeddingService } from "@self-learning/ai-tutor";
+import { embeddingService } from "./embeddings";
 import type { DocumentChunk, RetrievalResult } from "@self-learning/types";
 
 class VectorStore {

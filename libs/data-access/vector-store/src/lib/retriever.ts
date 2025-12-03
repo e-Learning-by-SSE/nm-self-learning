@@ -1,9 +1,36 @@
 import { vectorStore } from "@self-learning/vector-store";
 import { documentProcessor } from "./documentProcessor";
-import type { RetrievalResult } from "@self-learning/types";
+import type { DocumentChunk, RetrievalResult } from "@self-learning/types";
 
 class RAGRetriever {
-	async processPDFFromURL(lessonId: string, lessonName: string, pdfFiles: string[]) {
+	async processcontent(
+		lessonId: string,
+		lessonName: string,
+		pdfFiles: string[],
+		articleContent: string[],
+		videoTranscripts: string[]
+	) {
+		if (pdfFiles.length !== 0) {
+			const downloadedFiles = await this.processPDFFromURL(pdfFiles);
+			return this.ingestlesson(
+				lessonId,
+				lessonName,
+				downloadedFiles,
+				articleContent,
+				videoTranscripts
+			);
+		}
+		const pdfContent: Array<{ buffer: Uint8Array }> = [];
+		return this.ingestlesson(
+			lessonId,
+			lessonName,
+			pdfContent,
+			articleContent,
+			videoTranscripts
+		);
+	}
+
+	async processPDFFromURL(pdfFiles: string[]) {
 		const downloadedFiles = await Promise.all(
 			pdfFiles.map(async file => {
 				const response = await fetch(file);
@@ -19,13 +46,15 @@ class RAGRetriever {
 			})
 		);
 
-		return this.ingestlesson(lessonId, lessonName, downloadedFiles);
+		return downloadedFiles;
 	}
 
 	async ingestlesson(
 		lessonId: string,
 		lessonName: string,
-		pdfFiles: Array<{ buffer: Uint8Array }>
+		pdfFiles: Array<{ buffer: Uint8Array }>,
+		articleContent: string[] = [],
+		videoTranscripts: string[] = []
 	) {
 		try {
 			console.log(`🚀 Starting ingestion for lesson: ${lessonName}`);
@@ -36,11 +65,33 @@ class RAGRetriever {
 				await vectorStore.deletelesson(lessonId);
 			}
 
-			const chunks = await documentProcessor.processMultiplePDFs(
-				pdfFiles,
-				lessonId,
-				lessonName
-			);
+			let pdfChunks: DocumentChunk[] = [];
+			let articleChunks: DocumentChunk[] = [];
+			let videoChunks: DocumentChunk[] = [];
+
+			if (pdfFiles.length !== 0) {
+				pdfChunks = await documentProcessor.processMultiplePDFs(
+					pdfFiles,
+					lessonId,
+					lessonName
+				);
+			}
+			if (articleContent.length !== 0) {
+				articleChunks = await documentProcessor.processArticles(
+					articleContent,
+					lessonId,
+					lessonName
+				);
+			}
+			if (videoTranscripts.length !== 0) {
+				videoChunks = await documentProcessor.processVideoTranscripts(
+					videoTranscripts,
+					lessonId,
+					lessonName
+				);
+			}
+
+			const chunks = [...pdfChunks, ...articleChunks, ...videoChunks];
 
 			await vectorStore.addDocuments(lessonId, chunks);
 
