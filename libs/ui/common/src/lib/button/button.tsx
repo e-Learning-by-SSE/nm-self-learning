@@ -1,14 +1,10 @@
 import { ButtonHTMLAttributes, DetailedHTMLProps } from "react";
 
-export type ButtonVariant =
-	| "primary"
-	| "secondary"
-	| "danger"
-	| "tertiary"
-	| "x-mark"
-	| "stroked"
-	| "hover-icon"
-	| "hover-bg";
+/**
+ * @deprecated since 2025-12
+ * Use className="btn-primary" etc. inside the IconButton instead
+ */
+export type ButtonVariant = "primary" | "secondary" | "danger" | "tertiary" | "x-mark" | "stroked";
 
 /**
  * Enhanced Icon Button with responsive text
