@@ -158,7 +158,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 											<div className="flex gap-2">
 												<IconOnlyButton
 													icon={<PencilIcon className="h-5 w-5" />}
-													variant="tertiary"
+													className="btn-tertiary"
 													onClick={() =>
 														setEditCategoryDialog(containerId)
 													}
@@ -166,7 +166,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 												/>
 												<IconOnlyButton
 													icon={<PlusIcon className="h-5 w-5" />}
-													variant="primary"
+													className="btn-primary"
 													onClick={() =>
 														setEditItemDialog({ containerId })
 													}
@@ -174,7 +174,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 												/>
 												<IconOnlyButton
 													icon={<TrashIcon className="h-5 w-5" />}
-													variant="danger"
+													className="btn-danger"
 													onClick={() => onDeleteContainer(containerId)}
 													title={"Kategorie entfernen"}
 												/>
@@ -237,7 +237,7 @@ function DraggableContent({
 					<div className="flex justify-end gap-2">
 						<IconOnlyButton
 							icon={<PencilIcon className="h-5 w-5" />}
-							variant="tertiary"
+							className="btn-tertiary"
 							onClick={() =>
 								setEditItemDialog({
 									containerId,
@@ -249,7 +249,7 @@ function DraggableContent({
 
 						<IconOnlyButton
 							icon={<XMarkIcon className="h-5 w-5" />}
-							variant="x-mark"
+							className="btn-x-mark"
 							onClick={() => onDeleteItem(containerId, item.id)}
 							title="Löschen"
 						/>

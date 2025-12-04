@@ -41,10 +41,9 @@ export default function ExactForm({
 
 					<IconOnlyButton
 						icon={<PlusIcon className="h-5 w-5" />}
-						variant="primary"
 						onClick={addAnswer}
 						title={"Antwort hinzufügen"}
-						className={"h-fit w-fit items-center"}
+						className={"btn-primary h-fit w-fit items-center"}
 					/>
 				</div>
 
@@ -73,7 +72,7 @@ export default function ExactForm({
 
 							<IconOnlyButton
 								icon={<TrashIcon className="h-5 w-5" />}
-								variant="danger"
+								className="btn-danger"
 								onClick={() => removeAnswer(acceptedAnswerIndex)}
 								title={"Antwort entfernen"}
 							/>

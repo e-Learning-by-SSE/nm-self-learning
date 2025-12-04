@@ -189,7 +189,7 @@ function QuickEditButton({
 	return (
 		<IconOnlyButton
 			title="Bearbeiten"
-			variant="hover-icon"
+			className="btn-hover-icon"
 			icon={<PencilIcon className="h-5 text-lg" />}
 			onClick={onClick}
 			disabled={skill.isSelected}

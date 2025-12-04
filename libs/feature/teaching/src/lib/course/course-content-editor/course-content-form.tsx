@@ -178,7 +178,7 @@ function LessonNode({
 				<IconOnlyButton
 					onClick={onRemove}
 					icon={<XMarkIcon className="h-5 w-5" />}
-					variant="x-mark"
+					className="btn-x-mark"
 					title="Entfernen"
 				/>
 			</div>
@@ -255,19 +255,19 @@ function ChapterNode({
 					{/* Chapter-Management Icons */}
 					<IconOnlyButton
 						title="Nach oben"
-						variant="hover-bg"
+						className="btn-hover-bg"
 						icon={<ArrowUpIcon className="h-4 w-4" />}
 						onClick={() => moveChapter(index, "up")}
 					/>
 					<IconOnlyButton
 						title="Nach unten"
-						variant="hover-bg"
+						className="btn-hover-bg"
 						icon={<ArrowDownIcon className="h-4 w-4" />}
 						onClick={() => moveChapter(index, "down")}
 					/>
 					<IconOnlyButton
 						title="Beschreibung bearbeiten"
-						variant="hover-bg"
+						className="btn-hover-bg"
 						icon={<PencilIcon className="h-4 w-4" />}
 						onClick={() => setEditChapterDialogOpen(true)}
 					/>

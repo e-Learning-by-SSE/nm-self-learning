@@ -27,7 +27,7 @@ export function Chip({
 				{onRemove && (
 					<IconOnlyButton
 						icon={<XMarkIcon className="h-5 w-5" />}
-						variant="x-mark"
+						className="btn-x-mark"
 						onClick={onRemove}
 						data-testid={"remove"}
 						title="Author Entfernen"

@@ -94,8 +94,7 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 						<h5 className="text-xl font-semibold">Anfängliche Baumstruktur</h5>
 						<IconOnlyButton
 							icon={<PlusIcon className="h-5 w-5" />}
-							variant="primary"
-							className={`${initialTreeInput ? "invisible" : "visible"}`}
+							className={`btn-primary ${initialTreeInput ? "invisible" : "visible"}`}
 							onClick={addInitialTree}
 							title={"Struktur Hinzufügen"}
 						/>
@@ -127,7 +126,7 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 						<h5 className="text-xl font-semibold">Antworten</h5>
 						<IconOnlyButton
 							icon={<PlusIcon className="h-5 w-5" />}
-							variant="primary"
+							className="btn-primary"
 							onClick={addAnswerTree}
 							title={"Antwort Hinzufügen"}
 						/>

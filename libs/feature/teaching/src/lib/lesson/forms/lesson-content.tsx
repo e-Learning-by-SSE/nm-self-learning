@@ -152,7 +152,7 @@ function ContentOutlineTab({
 					{remove && (
 						<IconOnlyButton
 							icon={<TrashIcon className="h-5 w-5" />}
-							variant="x-mark"
+							className="btn-x-mark"
 							onClick={remove}
 							title="Entfernen"
 						/>
@@ -211,7 +211,7 @@ export function LessonContentEditor() {
 							button={
 								<IconOnlyButton
 									icon={<PlusIcon className="h-5 w-5" />}
-									variant="primary"
+									className="btn-primary"
 									title={"Inhalt hinzufügen"}
 								/>
 							}

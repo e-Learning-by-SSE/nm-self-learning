@@ -45,7 +45,7 @@ export default function MultipleChoiceForm({
 				<h5 className="text-2xl font-semibold tracking-tight">Antworten</h5>
 				<IconOnlyButton
 					icon={<PlusIcon className="h-5 w-5" />}
-					variant="primary"
+					className="btn-primary"
 					onClick={addAnswer}
 					title={"Antwort hinzufügen"}
 				/>
@@ -85,7 +85,7 @@ export default function MultipleChoiceForm({
 
 						<IconOnlyButton
 							icon={<TrashIcon className="h-4 w-4" />}
-							variant="danger"
+							className="btn-danger"
 							onClick={() => removeAnswer(answerIndex)}
 							title={"Antwort entfernen"}
 						/>

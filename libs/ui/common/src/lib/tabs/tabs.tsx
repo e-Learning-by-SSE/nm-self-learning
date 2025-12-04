@@ -62,10 +62,9 @@ export function RemovableTab({
 				<span>{children}</span>
 				<IconOnlyButton
 					icon={<XMarkIcon className="h-5 w-5" />}
-					variant="x-mark"
 					onClick={onRemove}
 					title="Entfernen"
-					className="flex items-center"
+					className="btn-x-mark flex items-center"
 				/>
 			</span>
 		</Tab>

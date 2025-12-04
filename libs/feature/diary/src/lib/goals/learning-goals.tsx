@@ -381,10 +381,9 @@ function GoalRow({
 							</div>
 							<IconOnlyButton
 								icon={<PlusIcon className="h-3 w-3" />}
-								variant="primary"
 								title={t("create")}
 								onClick={() => onCreateGoal?.(goal)}
-								className="w-14 text-center flex justify-center"
+								className="btn-primary w-14 text-center flex justify-center"
 							/>
 						</div>
 					)}

@@ -134,7 +134,7 @@ function RepositoryDeleteOption({ repositoryId }: { repositoryId: string }) {
 		<>
 			<IconOnlyButton
 				icon={<TrashIcon className="h-5 w-5" />}
-				variant="danger"
+				className="btn-danger"
 				onClick={() => setShowConfirmation(true)}
 				title={"Repository löschen"}
 			/>

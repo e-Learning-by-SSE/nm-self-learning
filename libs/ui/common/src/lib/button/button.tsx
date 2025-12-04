@@ -27,7 +27,6 @@ export function IconTextButton({
 }: DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
 	icon: React.ReactNode;
 	text: string;
-	variant?: ButtonVariant;
 	hideTextOnMobile?: boolean;
 }) {
 	const baseClasses = "btn btn-with-icon";
@@ -47,18 +46,15 @@ export function IconTextButton({
  */
 export function IconOnlyButton({
 	icon,
-	variant = "tertiary",
 	className = "",
 	...props
 }: DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
 	icon: React.ReactNode;
-	variant?: ButtonVariant;
 }) {
 	const baseClasses = "btn btn-icon-only";
-	const variantClass = `btn-${variant}`;
 
 	return (
-		<button type="button" className={`${baseClasses} ${variantClass} ${className}`} {...props}>
+		<button type="button" className={`${baseClasses} ${className}`} {...props}>
 			{icon}
 		</button>
 	);

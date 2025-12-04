@@ -148,8 +148,7 @@ function InlineRemoveButton({
 					onClick={onRemove}
 					title={"Skill entfernen"}
 					icon={<XMarkIcon className="h-5 w-5" />}
-					variant="x-mark"
-					className="p-2 mr-2"
+					className="btn-x-mark p-2 mr-2"
 				/>
 			</div>
 		</div>

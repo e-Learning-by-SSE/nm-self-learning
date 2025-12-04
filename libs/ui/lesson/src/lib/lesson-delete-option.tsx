@@ -33,7 +33,7 @@ export function LessonDeleteOption({ lessonId }: { lessonId: string }) {
 		<>
 			<IconOnlyButton
 				icon={<TrashIcon className="h-5 w-5" />}
-				variant="danger"
+				className="btn-danger"
 				onClick={() => setShowConfirmation(true)}
 				title={"Lerneinheit löschen"}
 			/>

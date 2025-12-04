@@ -230,12 +230,11 @@ export function LocationChooseDialog({
 								{!location.defaultLocation && (
 									<IconOnlyButton
 										icon={<XMarkIcon className="h-3 w-3" />}
-										variant="x-mark"
 										onClick={e => {
 											e.stopPropagation();
 											deleteLearningLocationAsync(location.id);
 										}}
-										className="ml-auto text-c-danger hover:text-c-danger-strong"
+										className="btn-x-mark ml-auto text-c-danger hover:text-c-danger-strong"
 									/>
 								)}
 							</div>

@@ -108,10 +108,9 @@ export function SkillInfoForm({
 
 						<IconOnlyButton
 							icon={<XMarkIcon className="h-5" />}
-							variant="tertiary"
 							onClick={resetEditTarget}
 							title="Ansicht ohne Veränderungen schließen"
-							className="px-4"
+							className="btn-tertiary px-4"
 						/>
 					</div>
 					<div className="flex flex-col gap-4 border-b-2 border-c-border">

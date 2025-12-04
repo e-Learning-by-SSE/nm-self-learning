@@ -365,7 +365,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 
 				<IconOnlyButton
 					icon={<PlusIcon className="h-5 w-5" />}
-					variant="primary"
+					className="btn-primary"
 					onClick={addHint}
 					title={"Hinweis hinzufügen"}
 				/>
@@ -399,7 +399,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 
 						<IconOnlyButton
 							icon={<TrashIcon className="h-4 w-4" />}
-							variant="danger"
+							className="btn-danger"
 							onClick={() => removeHint(hintIndex)}
 							title={"Hinweis entfernen"}
 						/>
