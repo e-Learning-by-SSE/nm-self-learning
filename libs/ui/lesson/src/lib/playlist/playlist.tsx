@@ -220,7 +220,7 @@ function Lesson({
 		<>
 			<Link
 				href={href}
-				className={`relative flex items-center overflow-hidden rounded-lg py-1 px-4 hover:bg-c-hover ${
+				className={`relative flex items-center overflow-hidden rounded-lg py-1 px-4 hover:bg-c-neutral ${
 					isActive ? "bg-c-surface-3 font-medium text-black" : "text-c-text-muted"
 				}`}
 			>

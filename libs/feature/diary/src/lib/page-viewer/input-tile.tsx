@@ -218,7 +218,7 @@ export function LocationChooseDialog({
 					return (
 						<div key={location.id} className="py-1 relative">
 							<div
-								className="flex w-full items-center space-x-4 rounded border border-c-border-strong p-4 shadow-sm bg-white hover:bg-c-hover-muted cursor-pointer"
+								className="flex w-full items-center space-x-4 rounded border border-c-border-strong p-4 shadow-sm bg-white hover:bg-c-neutral-muted cursor-pointer"
 								onClick={() => handleLocationClick(location.id)}
 							>
 								{location.iconURL && location.iconURL !== "" && (

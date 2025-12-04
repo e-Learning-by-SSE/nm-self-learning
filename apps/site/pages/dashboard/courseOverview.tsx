@@ -267,7 +267,7 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 					<tr key={enrollment.course.slug}>
 						<TableDataColumn key={"title"}>
 							<Link href={`/courses/${enrollment.course.slug}/`} className="block">
-								<div className="flex items-center space-x-4 p-2 hover:bg-c-hover-muted">
+								<div className="flex items-center space-x-4 p-2 hover:bg-c-neutral-muted">
 									{enrollment.course.imgUrl ? (
 										<Image
 											src={enrollment.course.imgUrl}

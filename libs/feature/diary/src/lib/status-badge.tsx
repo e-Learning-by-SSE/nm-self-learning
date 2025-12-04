@@ -64,7 +64,7 @@ export function ExpandableDetailsSection({
 			<div className="flex justify-between">
 				<h2 className={`${headerStyles ?? "text-xl"}`}>{header}</h2>
 				<button
-					className="rounded-full p-1 hover:bg-c-hover-muted"
+					className="rounded-full p-1 hover:bg-c-neutral-muted"
 					onClick={toggleExpanded}
 					aria-expanded={isExpanded}
 				>

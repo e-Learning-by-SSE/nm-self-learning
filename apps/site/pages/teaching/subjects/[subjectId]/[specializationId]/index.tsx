@@ -211,7 +211,7 @@ export default function SpecializationManagementPage() {
 									<TableDataColumn>
 										<div className="flex justify-end">
 											<button
-												className="rounded-full p-2 text-gray-400 hover:bg-c-hover-muted hover:text-c-danger"
+												className="rounded-full p-2 text-gray-400 hover:bg-c-neutral-muted hover:text-c-danger"
 												title="Aus Spezialisierung entfernen"
 												onClick={() => handleRemoveCourse(course)}
 											>

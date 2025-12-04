@@ -203,7 +203,7 @@ function PageLink({
 				className={`relative inline-flex items-center border px-4 py-2 text-sm font-medium text-c-primary focus:z-20 ${
 					isActive
 						? "z-10 border-c-primary bg-c-primary-subtle hover:bg-c-primary-muted"
-						: "border-c-border-strong bg-white text-c-text bg-c-text-muted hover:bg-c-hover-subtle"
+						: "border-c-border-strong bg-white text-c-text bg-c-text-muted hover:bg-c-neutral-subtle"
 				}`}
 				onClick={() => onPageChange(page)}
 			>
@@ -219,7 +219,7 @@ function PageLink({
 			className={`relative inline-flex items-center border px-4 py-2 text-sm font-medium text-c-primary focus:z-20 ${
 				isActive
 					? "z-10 border-c-primary bg-c-primary-subtle hover:bg-emerald-100"
-					: "border-c-border-strong bg-white text-c-text-muted hover:bg-c-hover-subtle"
+					: "border-c-border-strong bg-white text-c-text-muted hover:bg-c-neutral-subtle"
 			}`}
 		>
 			{page}

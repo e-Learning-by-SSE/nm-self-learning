@@ -38,7 +38,7 @@ export function Navbar() {
 						<div className="relative flex h-16 items-center justify-between">
 							<div className="absolute inset-y-0 left-0 flex items-center lg:hidden">
 								{/* Mobile dropdown-menu button*/}
-								<DisclosureButton className="inline-flex items-center justify-center rounded-md p-2 py-2 text-c-text-muted hover:bg-c-hover hover:text-c-text focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+								<DisclosureButton className="inline-flex items-center justify-center rounded-md p-2 py-2 text-c-text-muted hover:bg-c-neutral hover:text-c-text focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
 									<span className="sr-only">Menü Öffnen</span>
 									{open ? (
 										<XMarkIcon className="block h-6 w-6" aria-hidden="true" />

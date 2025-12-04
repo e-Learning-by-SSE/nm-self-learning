@@ -643,7 +643,7 @@ function MyFunctionsCard() {
 						<div key={index}>
 							<Link
 								href={func.href}
-								className="group flex items-center p-3 rounded-lg hover:bg-c-hover-subtle transition-colors duration-150 cursor-pointer"
+								className="group flex items-center p-3 rounded-lg hover:bg-c-neutral-subtle transition-colors duration-150 cursor-pointer"
 							>
 								<div className="flex-shrink-0 mr-3">
 									<func.icon className="h-5 w-5 text-c-text-muted group-hover:text-c-text transition-colors" />
@@ -715,7 +715,7 @@ function ProfileCard({
 			<div className="flex justify-start">
 				<button
 					onClick={openSettings}
-					className="rounded-full p-2 hover:bg-c-hover-muted transition-colors"
+					className="rounded-full p-2 hover:bg-c-neutral-muted transition-colors"
 					title="Einstellungen"
 				>
 					<CogIcon className="h-5 w-5 text-c-text-muted" />
@@ -812,7 +812,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 							>
 								<li
 									className="hover: flex items-center rounded-lg border border-c-border-muted
-                            p-3 transition-transform hover:bg-c-hover-muted"
+                            p-3 transition-transform hover:bg-c-neutral-muted"
 								>
 									<div className="flex w-full flex-col lg:flex-row items-center justify-between gap-2 px-4">
 										<div className="flex items-center gap-2">
@@ -861,7 +861,7 @@ function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 							href={`/courses/${lesson.courseSlug}/${lesson.slug}`}
 							key={"course-" + index}
 						>
-							<li className="flex items-center rounded-lg border border-c-border overflow-hidden transition-all hover:scale-[1.02] hover:bg-c-hover-subtle hover:shadow-md hover:border-c-border">
+							<li className="flex items-center rounded-lg border border-c-border overflow-hidden transition-all hover:scale-[1.02] hover:bg-c-neutral-subtle hover:shadow-md hover:border-c-border">
 								{/* Course Image */}
 								<ImageOrPlaceholder
 									src={lesson.courseImgUrl ?? undefined}

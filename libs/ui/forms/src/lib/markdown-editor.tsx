@@ -522,7 +522,7 @@ function CombinedImageButton({
 										setShowImageOptions(false);
 										setTimeout(() => setShowImageOptions(true), 0);
 									}}
-									className="px-2 py-1 text-xs text-c-text-muted hover:text-c-text hover:bg-c-hover-muted rounded-md transition-colors"
+									className="px-2 py-1 text-xs text-c-text-muted hover:text-c-text hover:bg-c-neutral-muted rounded-md transition-colors"
 									title="Höhe zurücksetzen"
 								>
 									✕
@@ -607,7 +607,7 @@ function EditorQuickActionsHeaderDropdown({ onChange }: { onChange: (value: stri
 					{headers.map(header => (
 						<button
 							key={header}
-							className="block w-full p-2 text-left hover:bg-c-hover-muted"
+							className="block w-full p-2 text-left hover:bg-c-neutral-muted"
 							onClick={() => handleMenuSelect(header)}
 						>
 							{header}
@@ -654,7 +654,7 @@ function EditorQuickActionsCodeDropdown({ onChange }: { onChange: (value: string
 					{Object.entries(languages).map(([key, value]) => (
 						<button
 							key={key}
-							className="block w-full p-2 text-left hover:bg-c-hover-muted"
+							className="block w-full p-2 text-left hover:bg-c-neutral-muted"
 							onClick={() => handleMenuSelect(key)}
 						>
 							{value}

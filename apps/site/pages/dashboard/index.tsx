@@ -317,7 +317,7 @@ function DashboardPage(props: Props) {
 					<div className="grid grid-rows-2">
 						<div className="flex justify-end items-start">
 							<button
-								className="rounded-full p-2 hover:bg-c-hover-muted"
+								className="rounded-full p-2 hover:bg-c-neutral-muted"
 								title="Bearbeiten"
 								onClick={openSettings}
 							>
@@ -423,7 +423,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 							>
 								<li
 									className="hover: flex items-center rounded-lg border border-c-border
-							p-3 transition-transform hover:bg-c-hover-muted hover:scale-105"
+							p-3 transition-transform hover:bg-c-neutral-muted hover:scale-105"
 								>
 									<div className="flex w-full flex-col lg:flex-row items-center justify-between gap-2 pl-5 pr-2">
 										<div className="flex items-center gap-2">
@@ -474,7 +474,7 @@ function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 						>
 							<li
 								className="hover: flex items-center rounded-lg border border-c-border
-							px-3 transition-transform hover:bg-c-hover-muted hover:scale-105"
+							px-3 transition-transform hover:bg-c-neutral-muted hover:scale-105"
 							>
 								<ImageOrPlaceholder
 									src={lesson.courseImgUrl ?? undefined}

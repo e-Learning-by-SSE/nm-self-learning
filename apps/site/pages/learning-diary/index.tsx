@@ -272,7 +272,7 @@ function SortedTable({
 											"/learning-diary/page/" + learningDiaryEntry.id
 										);
 									}}
-									className={"cursor-pointer hover:bg-c-hover-muted"}
+									className={"cursor-pointer hover:bg-c-neutral-muted"}
 								>
 									{Object.entries(columns)
 										.filter(([_, column]) => column.isDisplayed)

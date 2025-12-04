@@ -123,7 +123,7 @@ function SidebarContentMobile({
 							<ul className="pl-4">
 								{pages.map(page => (
 									<li
-										className={`mb-1 rounded hover:bg-c-hover-muted ${selectedPageId === page.id ? "bg-c-surface-2" : ""}`}
+										className={`mb-1 rounded hover:bg-c-neutral-muted ${selectedPageId === page.id ? "bg-c-surface-2" : ""}`}
 										ref={selectedPageId === page.id ? myElementRef : null}
 										key={page.id}
 									>
@@ -212,7 +212,7 @@ function SideBarContent({
 }) {
 	const { changePage } = useDiaryPageRouter();
 	return (
-		<li className={`mb-1 rounded hover:bg-c-hover-muted ${selected ? "bg-c-surface-2" : ""}`}>
+		<li className={`mb-1 rounded hover:bg-c-neutral-muted ${selected ? "bg-c-surface-2" : ""}`}>
 			<Link href={"/learning-diary/page/" + page.id} onClick={() => changePage(page.id)}>
 				<div className="flex items-center justify-between pt-2 pl-1 rounded break-words whitespace-normal">
 					<span className="flex-grow mr-1">{`${index}. ${page.course.title}`}</span>

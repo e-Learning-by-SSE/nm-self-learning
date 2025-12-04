@@ -103,7 +103,7 @@ function SkillRow({
 		<tr
 			style={depthCssStyle}
 			title={title}
-			className={`group cursor-pointer hover:bg-c-hover-muted ${cycleError ? "bg-c-danger-subtle" : ""}
+			className={`group cursor-pointer hover:bg-c-neutral-muted ${cycleError ? "bg-c-danger-subtle" : ""}
 				${cycleWarning ? "bg-yellow-100" : ""}
 				${skill.isSelected ? "bg-c-surface-3" : ""} `}
 		>

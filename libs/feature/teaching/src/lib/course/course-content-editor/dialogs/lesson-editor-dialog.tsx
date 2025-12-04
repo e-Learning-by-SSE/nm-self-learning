@@ -47,7 +47,7 @@ function LessonEditorDialog({
 		>
 			<div className="absolute right-8 top-8 flex gap-4">
 				<Link
-					className="btn-stroked focus:primary hover:bg-c-hover-muted focus:outline-none focus:ring-2 focus:ring-offset-2"
+					className="btn-stroked focus:primary hover:bg-c-neutral-muted focus:outline-none focus:ring-2 focus:ring-offset-2"
 					target="_blank"
 					rel="noreferrer"
 					href={

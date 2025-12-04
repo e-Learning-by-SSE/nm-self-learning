@@ -102,7 +102,7 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 					<div className="flex justify-center w-full h-[150px] p-4">
 						{initialTreeInput ? (
 							<li
-								className="flex items-center w-full rounded-lg border border-c-border h-10 bg-white hover:cursor-pointer hover:bg-c-hover-muted"
+								className="flex items-center w-full rounded-lg border border-c-border h-10 bg-white hover:cursor-pointer hover:bg-c-neutral-muted"
 								onClick={addInitialTree}
 							>
 								<div className="flex w-full items-center justify-between px-4">
@@ -137,7 +137,7 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 								{answerTreeInput.map((answer, index) => (
 									<li
 										key={index}
-										className="flex items-start w-full justify-start rounded-lg border border-c-border bg-white p-2 hover:cursor-pointer hover:bg-c-hover-muted"
+										className="flex items-start w-full justify-start rounded-lg border border-c-border bg-white p-2 hover:cursor-pointer hover:bg-c-neutral-muted"
 										onClick={e => {
 											// Prevent opening the dialog when clicking on the delete button
 											if ((e.target as HTMLElement).closest("button")) {

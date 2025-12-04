@@ -545,7 +545,7 @@ function DisclosureSection({
 		<Disclosure defaultOpen={defaultOpen}>
 			{({ open }) => (
 				<div className="border rounded-lg overflow-hidden">
-					<DisclosureButton className="w-full flex justify-between items-center px-4 py-2 bg-c-surface-2 hover:bg-c-hover text-c-text-strong font-semibold">
+					<DisclosureButton className="w-full flex justify-between items-center px-4 py-2 bg-c-surface-2 hover:bg-c-neutral text-c-text-strong font-semibold">
 						<span>{title}</span>
 						<ChevronDoubleDownIcon
 							className={`w-5 h-5 transition-transform ${

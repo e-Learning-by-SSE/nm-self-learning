@@ -474,7 +474,7 @@ function SubGoalRow({
 					<button
 						type="button"
 						title="Priorität erhöhen"
-						className="rounded p-1 hover:bg-c-hover"
+						className="rounded p-1 hover:bg-c-neutral"
 						onClick={moveUp}
 						hidden={!moveUp || !editable}
 					>
@@ -484,7 +484,7 @@ function SubGoalRow({
 					<button
 						type="button"
 						title="Priorität senken"
-						className="rounded p-1 hover:bg-c-hover"
+						className="rounded p-1 hover:bg-c-neutral"
 						onClick={moveDown}
 						hidden={!moveDown || !editable}
 					>

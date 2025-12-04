@@ -34,7 +34,7 @@ export function Toast({ id, title, subtitle, type }: ToastProps & { id: string }
 			<button
 				type="button"
 				onClick={() => toast.remove(id)}
-				className="rounded-full hover:bg-c-hover-muted"
+				className="rounded-full hover:bg-c-neutral-muted"
 			>
 				<XMarkIcon className="h-5 text-slate-400" />
 			</button>
