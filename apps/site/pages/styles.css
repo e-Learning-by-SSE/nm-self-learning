@@ -226,7 +226,7 @@ video {
 
 /* Stroked button: Gray outline, white background, black text  */
 .btn-stroked {
-	@apply border border-c-border bg-white px-8 py-2 text-sm font-medium hover:bg-c-hover-muted;
+	@apply border border-c-border bg-white px-8 py-2 text-sm font-medium hover:bg-c-neutral-muted;
 }
 
 /* Show more / Show less button: Blue border, blue text, white background  */
@@ -236,7 +236,7 @@ video {
 
 /* X Mark Button: Text Gray, Hover Gray  */
 .btn-x-mark {
-	@apply rounded-full text-gray-400 hover:bg-c-hover-subtle hover:text-c-danger p-1;
+	@apply rounded-full text-gray-400 hover:bg-c-neutral-subtle hover:text-c-danger p-1;
 }
 
 /* Icon button with text that can be hidden on mobile */
@@ -246,7 +246,7 @@ video {
 
 /* Icon-only buttons (no border when only icon is shown) */
 .btn-icon-only {
-	@apply inline-flex border-0 p-2 rounded hover:bg-c-hover-strong;
+	@apply inline-flex border-0 p-2 rounded hover:bg-c-neutral-strong;
 }
 
 .icon {
