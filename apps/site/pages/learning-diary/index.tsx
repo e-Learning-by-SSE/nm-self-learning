@@ -283,9 +283,8 @@ function SortedTable({
 														learningDiaryEntry.pageCount}
 
 													{key === "course" && (
-														//TODO: should the course title actually be centered?
 														<div>
-															<span className="flex items-center justify-center text-c-text-strong hover:text-c-primary">
+															<span className="text-c-text-strong hover:text-c-primary">
 																<span className="truncate">
 																	{
 																		learningDiaryEntry.course
