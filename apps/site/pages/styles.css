@@ -243,11 +243,6 @@ video {
 	@apply inline-flex border-0 p-2 rounded hover:bg-c-hover-strong;
 }
 
-/* Icon button variants for minimal UI controls */
-.btn-hover-icon {
-	@apply hover:text-c-primary px-2 py-0;
-}
-
 .icon {
 	@apply mr-2 -ml-2 h-5 shrink-0;
 }

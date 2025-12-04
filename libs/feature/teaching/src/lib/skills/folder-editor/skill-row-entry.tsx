@@ -189,7 +189,7 @@ function QuickEditButton({
 	return (
 		<IconOnlyButton
 			title="Bearbeiten"
-			className="btn-hover-icon"
+			className="!px-2 !py-0"
 			icon={<PencilIcon className="h-5 text-lg" />}
 			onClick={onClick}
 			disabled={skill.isSelected}
