@@ -51,7 +51,7 @@ export function IconOnlyButton({
 }: DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
 	icon: React.ReactNode;
 }) {
-	const baseClasses = "btn btn-icon-only";
+	const baseClasses = "btn btn-icon-only text-c-text-muted";
 
 	return (
 		<button type="button" className={`${baseClasses} ${className}`} {...props}>

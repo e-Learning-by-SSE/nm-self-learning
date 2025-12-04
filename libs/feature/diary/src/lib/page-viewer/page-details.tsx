@@ -45,7 +45,7 @@ export function DiaryLearnedContent({
 				/>
 			</div>
 			{showMore && <MoreDetails page={page} endDate={endDate} />}
-			<button onClick={() => setShowMore(!showMore)} className="self-start btn btn-show-more">
+			<button onClick={() => setShowMore(!showMore)} className="self-start btn btn-info">
 				{showMore ? "Weniger anzeigen" : "Mehr anzeigen"}
 			</button>
 		</div>

@@ -255,30 +255,25 @@ function ChapterNode({
 					{/* Chapter-Management Icons */}
 					<IconOnlyButton
 						title="Nach oben"
-						className="btn-hover-bg"
 						icon={<ArrowUpIcon className="h-4 w-4" />}
 						onClick={() => moveChapter(index, "up")}
 					/>
 					<IconOnlyButton
 						title="Nach unten"
-						className="btn-hover-bg"
 						icon={<ArrowDownIcon className="h-4 w-4" />}
 						onClick={() => moveChapter(index, "down")}
 					/>
 					<IconOnlyButton
 						title="Beschreibung bearbeiten"
-						className="btn-hover-bg"
 						icon={<PencilIcon className="h-4 w-4" />}
 						onClick={() => setEditChapterDialogOpen(true)}
 					/>
-					<button
-						type="button"
+					<IconOnlyButton
 						title="Kapitel entfernen"
-						className="rounded p-1 hover:bg-c-danger-subtle text-c-danger"
+						icon={<TrashIcon className="h-4 w-4 text-c-danger" />}
+						className="hover:bg-c-danger-subtle"
 						onClick={onRemove}
-					>
-						<TrashIcon className="h-4 w-4" />
-					</button>
+					/>
 
 					{/* Expand/Collapse Button */}
 					<button
