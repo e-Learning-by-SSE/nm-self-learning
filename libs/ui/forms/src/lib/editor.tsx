@@ -25,7 +25,7 @@ export function EditorField({
 					editor?.getAction("editor.action.formatDocument")?.run();
 				}, 250);
 			}}
-			className="h-full border border-light-border"
+			className="h-full border border-c-border"
 			options={{
 				minimap: { enabled: false },
 				tabSize: 4,

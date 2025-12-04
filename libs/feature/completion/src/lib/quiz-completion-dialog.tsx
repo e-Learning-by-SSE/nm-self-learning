@@ -31,24 +31,24 @@ export function QuizCompletionDialog({
 	} else {
 		return (
 			<Dialog onClose={onClose} title="Geschafft!" style={{ maxWidth: "600px" }}>
-				<div className="flex flex-col text-sm text-light">
+				<div className="flex flex-col text-sm text-c-text-muted">
 					<p>
 						Du hast die Lerneinheit{" "}
-						<span className="font-semibold text-secondary">{lesson.title}</span>{" "}
+						<span className="font-semibold text-c-primary">{lesson.title}</span>{" "}
 						erfolgreich abgeschlossen.
 					</p>
 
 					{nextLesson ? (
 						<div className="flex flex-col">
 							<p>Die nächste Lerneinheit ist ...</p>
-							<span className="mt-4 self-center rounded-lg bg-gray-100 px-12 py-4 text-xl font-semibold tracking-tighter text-secondary">
+							<span className="mt-4 self-center rounded-lg bg-c-surface-2 px-12 py-4 text-xl font-semibold tracking-tighter text-c-primary">
 								{nextLesson.title}
 							</span>
 						</div>
 					) : (
 						<p>
 							Der Kurs{" "}
-							<span className="font-semibold text-secondary">{course.title}</span>{" "}
+							<span className="font-semibold text-c-primary">{course.title}</span>{" "}
 							enthält keine weiteren Lerneinheiten für dich.
 						</p>
 					)}
@@ -80,10 +80,10 @@ export function QuizFailedDialog({
 }) {
 	return (
 		<Dialog onClose={onClose} title="Nicht Bestanden" style={{ maxWidth: "600px" }}>
-			<div className="flex flex-col text-sm text-light">
+			<div className="flex flex-col text-sm text-c-text-muted">
 				<p>
 					Du hast leider zu viele Fragen falsch beantwortet, um die Lerneinheit{" "}
-					<span className="font-semibold text-secondary">{lesson.title}</span>{" "}
+					<span className="font-semibold text-c-primary">{lesson.title}</span>{" "}
 					abzuschließen.
 				</p>
 			</div>

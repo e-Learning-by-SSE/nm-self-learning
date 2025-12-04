@@ -141,10 +141,10 @@ function ContentOutlineTab({
 	return (
 		<>
 			{item && (
-				<div className="flex gap-2 mb-2 text-nowrap flex-nowrap items-center rounded-lg border border-light-border bg-white text-sm p-2">
-					{swappable && <Bars3Icon className="h-5 text-light" />}
+				<div className="flex gap-2 mb-2 text-nowrap flex-nowrap items-center rounded-lg border border-c-border bg-white text-sm p-2">
+					{swappable && <Bars3Icon className="h-5 text-c-text-muted" />}
 					<span
-						className={`w-full ${active ? "text-secondary" : "text-light"}`}
+						className={`w-full ${active ? "text-c-primary" : "text-c-text-muted"}`}
 						onClick={select}
 					>
 						{getContentTypeDisplayName(item.type)}
@@ -152,7 +152,7 @@ function ContentOutlineTab({
 					{remove && (
 						<IconOnlyButton
 							icon={<TrashIcon className="h-5 w-5" />}
-							variant="x-mark"
+							className="btn-x-mark"
 							onClick={remove}
 							title="Entfernen"
 						/>
@@ -190,7 +190,7 @@ export function LessonContentEditor() {
 				className="w-full sticky bottom-0
 				max-h-[35vh] lg:max-h-none 
 				border-t lg:border-t-0 lg:border-l border-l-0 
-			  bg-gray-100 
+			  bg-c-bg-c-surface-2 
 				shadow-[0_-6px_6px_-4px_rgba(0,0,0,0.1)] lg:shadow-none"
 			>
 				<div
@@ -211,7 +211,7 @@ export function LessonContentEditor() {
 							button={
 								<IconOnlyButton
 									icon={<PlusIcon className="h-5 w-5" />}
-									variant="primary"
+									className="btn-primary"
 									title={"Inhalt hinzufügen"}
 								/>
 							}
@@ -255,7 +255,7 @@ function RenderContentType({
 	if (!item || index === undefined || index === null) {
 		return (
 			<SectionCard>
-				<span className="text-light">Diese Lerneinheit hat noch keinen Inhalt.</span>
+				<span className="text-c-text-muted">Diese Lerneinheit hat noch keinen Inhalt.</span>
 			</SectionCard>
 		);
 	}
@@ -276,7 +276,7 @@ function RenderContentType({
 		return <IFrameInput index={index} />;
 	}
 	// Must not happen!
-	return <span className="text-red-500">Error: Unknown content type</span>;
+	return <span className="text-c-danger">Error: Unknown content type</span>;
 }
 
 export function LessonDescriptionForm() {

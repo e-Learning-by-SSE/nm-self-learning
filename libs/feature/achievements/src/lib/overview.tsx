@@ -111,7 +111,7 @@ export function AchievementOverview({ className }: AchievementOverviewProps) {
 	if (!nestedAchievements) {
 		return (
 			<div className={`text-center py-8 ${className || ""}`}>
-				<p className="text-gray-500">Keine Errungenschaften gefunden.</p>
+				<p className="text-c-text-muted">Keine Errungenschaften gefunden.</p>
 			</div>
 		);
 	}
@@ -157,13 +157,13 @@ function AchievementCategory({
 	const categoryDisplayName = getCategoryDisplayName(category);
 
 	return (
-		<div className="bg-white rounded-lg border border-light-border p-6">
+		<div className="bg-white rounded-lg border border-c-border p-6">
 			<div className="flex items-center justify-between mb-6">
 				<h3 className="text-xl font-semibold flex items-center gap-2">
 					<TrophyIcon className="h-6 w-6 text-yellow-500" />
 					{categoryDisplayName}
 				</h3>
-				<div className="text-sm text-gray-500">
+				<div className="text-sm text-c-text-muted">
 					{unlockedCount} von {totalCount} freigeschaltet
 				</div>
 			</div>

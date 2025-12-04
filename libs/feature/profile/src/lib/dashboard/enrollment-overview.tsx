@@ -113,7 +113,7 @@ function TabContent({
 }) {
 	return (
 		<div className="flex h-full flex-col">
-			<div className="flex items-center justify-between border-b border-gray-300 pb-2">
+			<div className="flex items-center justify-between border-b border-c-border-strong pb-2">
 				<div className="flex">
 					<Tabs selectedIndex={selectedTab} onChange={setSelectedTab}>
 						<Tab>In Bearbeitung</Tab>
@@ -229,7 +229,7 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 					<tr key={enrollment.course.slug}>
 						<TableDataColumn key={"title"}>
 							<Link href={`/courses/${enrollment.course.slug}/`} className="block">
-								<div className="flex items-center space-x-4 p-2 hover:bg-gray-100">
+								<div className="flex items-center space-x-4 p-2 hover:bg-c-neutral-muted">
 									{enrollment.course.imgUrl ? (
 										<Image
 											src={enrollment.course.imgUrl}
@@ -239,12 +239,12 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 											height={48}
 										/>
 									) : (
-										<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
-											<span className="text-gray-500">Kein Bild</span>
+										<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-c-surface-2">
+											<span className="text-c-text-muted">Kein Bild</span>
 										</div>
 									)}
 									<div>
-										<span className="flex items-center justify-center text-gray-800 hover:text-secondary">
+										<span className="flex items-center justify-center text-c-text-strong hover:text-c-primary">
 											<span className="truncate">
 												{enrollment.course.title}
 											</span>

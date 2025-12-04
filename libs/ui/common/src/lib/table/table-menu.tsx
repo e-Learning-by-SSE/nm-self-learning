@@ -25,9 +25,9 @@ export function TableVisibilityDropdown({
 						type="checkbox"
 						checked={column.isDisplayed}
 						onChange={() => handleCheckboxChange(key)}
-						className="form-checkbox rounded text-secondary"
+						className="form-checkbox rounded text-c-primary"
 					/>
-					<label className="text-gray-700">{column.label}</label>
+					<label className="text-c-text">{column.label}</label>
 				</div>
 			))}
 		</div>

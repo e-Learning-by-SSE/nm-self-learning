@@ -111,10 +111,10 @@ export default function UsersPage() {
 function RoleLabel({ role }: { role: string }) {
 	if (role === "USER") return null;
 
-	let roleColor = "bg-secondary";
+	let roleColor = "bg-c-primary";
 
 	if (role === "ADMIN") {
-		roleColor = "bg-red-500";
+		roleColor = "bg-c-danger";
 	}
 
 	return <span className={`rounded-full ${roleColor} px-3 py-[2px] text-white`}>{role}</span>;

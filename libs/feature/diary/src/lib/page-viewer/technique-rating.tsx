@@ -133,7 +133,7 @@ export function UsedTechniqueList({ techniques }: { techniques: Technique[] }) {
 			<ul className="space-y-4 w-full">
 				{techniques.map(technique => (
 					<li key={technique.id} className="flex items-center justify-between">
-						<span className="flex-grow whitespace-normal break-words text-gray-800">
+						<span className="flex-grow whitespace-normal break-words text-c-text-strong">
 							{technique.name}
 						</span>
 						{technique.score !== undefined && (
@@ -164,10 +164,10 @@ function StrategyList({ strategies, onTechniqueClick, onCreateTechniqueClick }: 
 							title="Erweiterte Informationen"
 							onClick={() => handleInfoClick(strategy)}
 						>
-							<InformationCircleIcon className="h-6 w-6 text-gray-500" />
+							<InformationCircleIcon className="h-6 w-6 text-c-text-muted" />
 						</button>
 					</div>
-					<ul className="pl-8 border-l-2 border-gray-300">
+					<ul className="pl-8 border-l-2 border-c-border-strong">
 						{strategy.techniques.map(technique => (
 							<li
 								key={technique.id}

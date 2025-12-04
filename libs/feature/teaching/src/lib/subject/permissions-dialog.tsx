@@ -120,8 +120,8 @@ export function SpecializationPermissionsDialog({
 			title="Berechtigte Autoren"
 			style={{ maxWidth: "80vw", maxHeight: "80vh" }}
 		>
-			<div className="flex flex-col gap-4 divide-x divide-light-border overflow-auto">
-				<div className="text-sm text-light">
+			<div className="flex flex-col gap-4 divide-x divide-c-border overflow-auto">
+				<div className="text-sm text-c-text-muted">
 					<p>
 						In diesem Dialog können Autoren <strong>Spezialisierungen</strong>{" "}
 						zugeordnet werden. Nur Autoren, die einer Spezialisierung zugeordnet sind,
@@ -174,7 +174,7 @@ export function SpecializationPermissionsDialog({
 										target="_blank"
 										rel="noreferrer"
 										href={`/authors/${author.slug}`}
-										className="whitespace-nowrap hover:text-secondary"
+										className="whitespace-nowrap hover:text-c-primary"
 									>
 										{author.displayName}
 									</Link>

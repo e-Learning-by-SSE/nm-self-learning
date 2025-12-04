@@ -289,7 +289,7 @@ function DashboardPage(props: Props) {
 	};
 
 	return (
-		<div className="bg-gray-50">
+		<div>
 			<CenteredSection>
 				<div className="grid grid-cols-1 gap-8 lg:pt-10 lg:grid-cols-[2fr_1fr]">
 					<section className="flex items-center">
@@ -303,7 +303,7 @@ function DashboardPage(props: Props) {
 							</h1>
 							<span>
 								Du hast bereits{" "}
-								<span className="mx-1 font-semibold text-secondary">
+								<span className="mx-1 font-semibold text-c-primary">
 									{props.student._count.completedLessons}
 								</span>{" "}
 								{props.student._count.completedLessons === 1
@@ -317,11 +317,11 @@ function DashboardPage(props: Props) {
 					<div className="grid grid-rows-2">
 						<div className="flex justify-end items-start">
 							<button
-								className="rounded-full p-2 hover:bg-gray-100"
+								className="rounded-full p-2 hover:bg-c-neutral-muted"
 								title="Bearbeiten"
 								onClick={openSettings}
 							>
-								<CogIcon className="h-6 text-gray-500" />
+								<CogIcon className="h-6 text-c-text-muted" />
 							</button>
 						</div>
 
@@ -338,7 +338,7 @@ function DashboardPage(props: Props) {
 				<div className="grid grid-cols-1 gap-8 pt-10 lg:grid-cols-2">
 					<div className="rounded bg-white p-4 shadow">
 						<h2 className="text-xl py-2 px-2">Letzter Kurs</h2>
-						<div className="mb-4 border-b border-light-border h-[6px]"></div>
+						<div className="mb-4 border-b border-c-border h-[6px]"></div>
 						<LastCourseProgress
 							lastEnrollment={
 								props.student.enrollments.sort(
@@ -364,7 +364,7 @@ function DashboardPage(props: Props) {
 								<h2 className="text-xl py-2 px-2">
 									Zuletzt bearbeitete Lerneinheiten
 								</h2>
-								<div className="mb-4 border-b border-light-border h-[6px]"></div>
+								<div className="mb-4 border-b border-c-border h-[6px]"></div>
 								<LessonList lessons={props.recentLessons} />
 							</>
 						)}
@@ -408,7 +408,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 	return (
 		<>
 			{pages.length == 0 ? (
-				<span className="text-sm text-light">
+				<span className="text-sm text-c-text-muted">
 					Keine Lerntagebucheinträge vorhanden. Einträge werden erstellt, wenn du mit dem
 					Lernen beginnst.
 				</span>
@@ -422,8 +422,8 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 								key={page.id}
 							>
 								<li
-									className="hover: flex items-center rounded-lg border border-light-border
-							p-3 transition-transform hover:bg-slate-100 hover:scale-105"
+									className="hover: flex items-center rounded-lg border border-c-border
+							p-3 transition-transform hover:bg-c-neutral-muted hover:scale-105"
 								>
 									<div className="flex w-full flex-col lg:flex-row items-center justify-between gap-2 pl-5 pr-2">
 										<div className="flex items-center gap-2">
@@ -443,7 +443,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 												</span>
 											</div>
 										</div>
-										<span className="hidden text-xs text-light md:block">
+										<span className="hidden text-xs text-c-text-muted md:block">
 											{formatDateStringShort(page.createdAt)}
 										</span>
 									</div>
@@ -461,7 +461,7 @@ function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 	return (
 		<>
 			{lessons.length === 0 ? (
-				<span className="text-sm text-light">
+				<span className="text-sm text-c-text-muted">
 					Du hast noch keine Lerneinheiten bearbeitet.
 				</span>
 			) : (
@@ -473,8 +473,8 @@ function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 							key={"course-" + index}
 						>
 							<li
-								className="hover: flex items-center rounded-lg border border-light-border
-							px-3 transition-transform hover:bg-slate-100"
+								className="hover: flex items-center rounded-lg border border-c-border
+							px-3 transition-transform hover:bg-c-neutral-muted hover:scale-105"
 							>
 								<ImageOrPlaceholder
 									src={lesson.courseImgUrl ?? undefined}
@@ -489,7 +489,7 @@ function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 										)}
 									</span>
 
-									<span className="hidden text-xs text-light md:block">
+									<span className="hidden text-xs text-c-text-muted md:block">
 										{formatDateAgo(lesson.touchedAt)}
 									</span>
 								</div>
@@ -504,14 +504,14 @@ function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 
 function ProgressFooter({ progress }: { progress: number }) {
 	return (
-		<span className="relative h-5 w-full rounded-lg bg-gray-200">
+		<span className="relative h-5 w-full rounded-lg bg-c-surface-3">
 			<span
-				className="absolute left-0 h-5 rounded-lg bg-secondary"
+				className="absolute left-0 h-5 rounded-lg bg-c-primary"
 				style={{ width: `${progress}%` }}
 			></span>
 			<span
 				className={`absolute top-0 w-full px-2 text-start text-sm font-semibold ${
-					progress === 0 ? "text-secondary" : "text-white"
+					progress === 0 ? "text-c-primary" : "text-white"
 				}`}
 			>
 				{progress}%
@@ -524,12 +524,12 @@ function LastCourseProgress({ lastEnrollment }: { lastEnrollment?: Student["enro
 	if (!lastEnrollment) {
 		return (
 			<div>
-				<span className="text-sm text-light">
+				<span className="text-sm text-c-text-muted">
 					Du bist momentan in keinem Kurs eingeschrieben.
 				</span>
 				<Link
 					href="/subjects"
-					className="text-sm ml-1 text-light underline hover:text-secondary"
+					className="text-sm ml-1 text-c-text-muted underline hover:text-c-primary"
 				>
 					Leg los
 				</Link>
@@ -551,7 +551,7 @@ function LastCourseProgress({ lastEnrollment }: { lastEnrollment?: Student["enro
 						badge={
 							lastEnrollment.status === "COMPLETED" ? (
 								<ImageCardBadge
-									className="bg-emerald-500 text-white"
+									className="bg-c-primary text-white"
 									text="Abgeschlossen"
 								/>
 							) : (
