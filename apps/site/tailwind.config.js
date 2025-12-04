@@ -107,6 +107,19 @@ module.exports = {
 				light: "var(--color-light)",
 				"light-border": "var(--color-light-border)",
 
+				/* Neutral */
+				"c-neutral-0": "var(--c-neutral-0)",
+				"c-neutral-50": "var(--c-neutral-50)",
+				"c-neutral-100": "var(--c-neutral-100)",
+				"c-neutral-200": "var(--c-neutral-200)",
+				"c-neutral-300": "var(--c-neutral-300)",
+				"c-neutral-400": "var(--c-neutral-400)",
+				"c-neutral-500": "var(--c-neutral-500)",
+				"c-neutral-600": "var(--c-neutral-600)",
+				"c-neutral-700": "var(--c-neutral-700)",
+				"c-neutral-800": "var(--c-neutral-800)",
+				"c-neutral-900": "var(--c-neutral-900)",
+
 				/* Surface */
 				"c-surface-0": "var(--c-surface-0)",
 				"c-surface-1": "var(--c-surface-1)",
@@ -140,12 +153,6 @@ module.exports = {
 				"c-danger-strong": "var(--c-danger-strong)",
 				"c-danger-muted": "var(--c-danger-muted)",
 				"c-danger-subtle": "var(--c-danger-subtle)",
-
-				/* Hover */
-				"c-hover": "var(--c-hover)",
-				"c-hover-strong": "var(--c-hover-strong)",
-				"c-hover-muted": "var(--c-hover-muted)",
-				"c-hover-subtle": "var(--c-hover-subtle)",
 
 				/* Semantic Colors */
 				"c-neutral": "var(--c-neutral)",

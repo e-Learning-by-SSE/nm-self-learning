@@ -18,22 +18,34 @@
 	--color-light-border: theme("colors.slate.200"); /* DEPRECATED */
 	--gradient: linear-gradient(62deg, #c2dbf3, #d7b6f5);
 
+	--c-neutral-0: theme("colors.white");
+	--c-neutral-50: theme("colors.gray.50");
+	--c-neutral-100: theme("colors.gray.100");
+	--c-neutral-200: theme("colors.gray.200");
+	--c-neutral-300: theme("colors.gray.300");
+	--c-neutral-400: theme("colors.gray.400");
+	--c-neutral-500: theme("colors.gray.500");
+	--c-neutral-600: theme("colors.gray.600");
+	--c-neutral-700: theme("colors.gray.700");
+	--c-neutral-800: theme("colors.gray.800");
+	--c-neutral-900: theme("colors.gray.900");
+
 	/* Background / surface */
-	--c-surface-0: theme("colors.white");
-	--c-surface-1: theme("colors.gray.50");
-	--c-surface-2: theme("colors.gray.100");
-	--c-surface-3: theme("colors.gray.200");
+	--c-surface-0: var(--c-neutral-0);
+	--c-surface-1: var(--c-neutral-50);
+	--c-surface-2: var(--c-neutral-100);
+	--c-surface-3: var(--c-neutral-200);
 
 	/* Text */
-	--c-text: theme("colors.slate.700");
-	--c-text-strong: theme("colors.slate.800");
-	--c-text-muted: theme("colors.slate.500");
-	--c-text-inverted: theme("colors.white");
+	--c-text: var(--c-neutral-700);
+	--c-text-strong: var(--c-neutral-800);
+	--c-text-muted: var(--c-neutral-500);
+	--c-text-inverted: var(--c-neutral-0);
 
 	/* Borders */
-	--c-border: theme("colors.gray.200");
-	--c-border-strong: theme("colors.gray.300");
-	--c-border-muted: theme("colors.gray.100");
+	--c-border: var(--c-neutral-200);
+	--c-border-strong: var(--c-neutral-300);
+	--c-border-muted: var(--c-neutral-100);
 
 	/* Primary */
 	--c-primary: theme("colors.emerald.500");
@@ -46,17 +58,11 @@
 	--c-accent-strong: theme("colors.purple.600");
 	--c-accent-muted: theme("colors.purple.400");
 
-	/* Hover */
-	--c-hover: theme("colors.gray.200");
-	--c-hover-strong: theme("colors.gray.300");
-	--c-hover-muted: theme("colors.gray.100");
-	--c-hover-subtle: theme("colors.gray.50");
-
 	/* Semantic Colors */
-	--c-neutral: theme("colors.gray.200");
-	--c-neutral-strong: theme("colors.gray.300");
-	--c-neutral-muted: theme("colors.gray.100");
-	--c-neutral-subtle: theme("colors.gray.50");
+	--c-neutral: var(--c-neutral-200);
+	--c-neutral-strong: var(--c-neutral-300);
+	--c-neutral-muted: var(--c-neutral-100);
+	--c-neutral-subtle: var(--c-neutral-50);
 
 	--c-success: theme("colors.green.500");
 	--c-success-muted: theme("colors.green.200");
