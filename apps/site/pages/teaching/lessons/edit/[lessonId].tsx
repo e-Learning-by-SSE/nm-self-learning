@@ -17,7 +17,6 @@ export const getServerSideProps = withTranslations(
 	["common"],
 	withAuth<EditLessonProps>(async (ctx, user) => {
 		const lessonId = ctx.params?.lessonId;
-		const { locale } = ctx;
 
 		if (typeof lessonId !== "string") {
 			throw new Error("No [lessonId] provided.");

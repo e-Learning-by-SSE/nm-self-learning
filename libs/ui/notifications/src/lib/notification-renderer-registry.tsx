@@ -73,11 +73,14 @@ export function DynamicNotificationRenderer({ notification }: { notification: No
 	}
 }
 
-function ExperimentConsentForwarder(
-	props: NotificationPropsMap["ExperimentConsentForwarder"] & {
-		id: string;
-	}
-) {
+// TODO Marcel check. Previous use of NotificationPropsMap with ExperimentConsentForwarder: z.object({}).optional() lead to type error:
+// Type '{ id: string; component: "ExperimentConsentForwarder"; props: Record<string, never>; }' is not assignable to type 'Record<string, never>'
+type ExperimentConsentForwarderNotification = Extract<
+	NotificationEntry,
+	{ component: "ExperimentConsentForwarder" }
+>;
+
+function ExperimentConsentForwarder(props: ExperimentConsentForwarderNotification) {
 	const { mutateAsync: deleteNotification } = trpc.notification.delete.useMutation();
 	const session = useRequiredSession();
 	const { data: registrationStatus, isLoading } = trpc.me.getRegistrationStatus.useQuery(

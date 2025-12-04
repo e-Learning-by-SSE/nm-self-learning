@@ -29,6 +29,7 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { LessonDeleteOption } from "@self-learning/ui/lesson";
 import { ExportCourseDialog } from "@self-learning/teaching";
+import { keepPreviousData } from "@tanstack/react-query";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
 
@@ -453,7 +454,7 @@ function Lessons({ authorName }: { authorName: string }) {
 			authorName
 		},
 		{
-			keepPreviousData: true,
+			placeholderData: keepPreviousData,
 			staleTime: 10_000
 		}
 	);
