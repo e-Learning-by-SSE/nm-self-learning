@@ -125,11 +125,13 @@ export default function ArrangeForm({ index }: { index: number }) {
 			<SectionHeader
 				title="Kategorien"
 				button={
-					<IconTextButton
-						text="Kategorie Hinzufügen"
-						icon={<PlusIcon className="icon w-5" />}
+					<button
+						type="button"
+						className="btn-primary"
 						onClick={() => setAddCategoryDialog(true)}
-					/>
+					>
+						Kategorie erstellen
+					</button>
 				}
 			/>
 			<div className="flex items-center gap-2">
