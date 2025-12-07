@@ -32,6 +32,8 @@
 			"@self-learning/markdown": ["libs/util/markdown/src/index.ts"],
 			"@self-learning/question-types": ["libs/feature/question-types/src/index.ts"],
 			"@self-learning/quiz": ["libs/feature/quiz/src/index.ts"],
+			"@self-learning/rag-processing": ["libs/feature/rag-processing/src/index.ts"],
+			"@self-learning/rag-processing/server": ["libs/feature/rag-processing/src/server.ts"],
 			"@self-learning/settings": ["libs/feature/settings/src/index.ts"],
 			"@self-learning/teaching": ["libs/feature/teaching/src/index.ts"],
 			"@self-learning/types": ["libs/util/types/src/index.ts"],

@@ -5,6 +5,8 @@ import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learni
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
+import { getRagVersionHash, ragProcessor } from "@self-learning/rag-processing";
+import { enqueueRagJob } from "@self-learning/rag-processing";
 
 export const lessonRouter = t.router({
 	findOneAllProps: authProcedure.input(z.object({ lessonId: z.string() })).query(({ input }) => {
@@ -67,6 +69,11 @@ export const lessonRouter = t.router({
 			} satisfies Paginated<unknown>;
 		}),
 	create: authProcedure.input(lessonSchema).mutation(async ({ input, ctx }) => {
+		const ragCheck = input.ragEnabled ?? false;
+		let hash: string | null = null;
+		if (ragCheck && input.content.length) {
+			hash = getRagVersionHash(JSON.stringify(input.content));
+		}
 		const createdLesson = await database.lesson.create({
 			data: {
 				...input,
@@ -83,14 +90,21 @@ export const lessonRouter = t.router({
 				},
 				content: input.content as Prisma.InputJsonArray,
 				lessonId: getRandomId(),
-				meta: createLessonMeta(input) as unknown as Prisma.JsonObject
+				meta: createLessonMeta(input) as unknown as Prisma.JsonObject,
+				ragVersionHash: hash,
+				ragEnabled: input.ragEnabled ?? false
 			},
 			select: {
 				lessonId: true,
 				slug: true,
-				title: true
+				title: true,
+				ragEnabled: true
 			}
 		});
+
+		if (createdLesson.ragEnabled && hash) {
+			enqueueRagJob(createdLesson.lessonId, "embed");
+		}
 
 		console.log("[lessonRouter.create]: Lesson created by", ctx.user.name, createdLesson);
 		return createdLesson;
@@ -103,6 +117,18 @@ export const lessonRouter = t.router({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
+			const ragCheck = input.lesson.ragEnabled ?? false;
+			let hash: string | null = null;
+			if (ragCheck && input.lesson.content.length) {
+				hash = getRagVersionHash(JSON.stringify(input.lesson.content));
+			}
+			const existing = await database.lesson.findUnique({
+				where: { lessonId: input.lessonId },
+				select: { ragVersionHash: true, ragEnabled: true }
+			});
+
+			const changed = !existing || existing.ragVersionHash !== hash;
+
 			const updatedLesson = await database.lesson.update({
 				where: { lessonId: input.lessonId },
 				data: {
@@ -121,14 +147,28 @@ export const lessonRouter = t.router({
 					provides: {
 						set: input.lesson.provides.map(r => ({ id: r.id }))
 					},
-					meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject
+					meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject,
+					ragVersionHash: hash,
+					ragEnabled: input.lesson.ragEnabled ?? false
 				},
 				select: {
 					lessonId: true,
 					slug: true,
-					title: true
+					title: true,
+					ragEnabled: true
 				}
 			});
+
+			if (updatedLesson.ragEnabled && hash) {
+				if (!existing?.ragEnabled) {
+					enqueueRagJob(updatedLesson.lessonId, "embed");
+				} else {
+					await ragProcessor.deleteLesson(updatedLesson.lessonId);
+					enqueueRagJob(updatedLesson.lessonId, "embed");
+				}
+			} else if (!updatedLesson.ragEnabled && existing?.ragEnabled) {
+				await ragProcessor.deleteLesson(updatedLesson.lessonId);
+			}
 
 			console.log("[lessonRouter.edit]: Lesson updated by", ctx.user.name, updatedLesson);
 			return updatedLesson;
@@ -155,6 +195,7 @@ export const lessonRouter = t.router({
 						lessonId: input.lessonId
 					}
 				});
+				await ragProcessor.deleteLesson(input.lessonId);
 			} else {
 				const deleted = await database.lesson.deleteMany({
 					where: {
@@ -172,6 +213,8 @@ export const lessonRouter = t.router({
 						code: "FORBIDDEN",
 						message: "User is not an author of this lesson or lesson does not exist."
 					});
+				} else {
+					await ragProcessor.deleteLesson(input.lessonId);
 				}
 			}
 		})

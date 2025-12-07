@@ -15,3 +15,4 @@ export * from "./lib/settings";
 export * from "./lib/event-log";
 export * from "./lib/llm-config";
 export * from "./lib/ai-tutor";
+export * from "./lib/rag-processing";

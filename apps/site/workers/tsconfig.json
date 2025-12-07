@@ -1,0 +1,18 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "strict": true,
+    "module": "commonjs",
+    "target": "ES2022",
+    "noEmit": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    "allowJs": true,
+    "outDir": "./dist"
+  },
+  "files": [
+    "rag_worker_thread.ts",
+    "polyfills.js"
+  ]
+}

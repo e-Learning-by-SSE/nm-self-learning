@@ -33,7 +33,9 @@ export const lessonSchema = z.object({
 			questionOrder: z.array(z.string()),
 			config: z.any().nullable()
 		})
-		.nullable()
+		.nullable(),
+	ragEnabled: z.boolean().optional(),
+	ragVersionHash: z.string().optional()
 	// TODO: quizContentSchema causes "Jest failed to parse a file"
 });
 
@@ -55,6 +57,8 @@ export function createEmptyLesson(): Lesson {
 		content: [],
 		authors: [],
 		lessonType: LessonType.TRADITIONAL,
-		selfRegulatedQuestion: null
+		selfRegulatedQuestion: null,
+		ragEnabled: false,
+		ragVersionHash: undefined
 	};
 }

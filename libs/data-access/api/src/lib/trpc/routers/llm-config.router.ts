@@ -49,21 +49,22 @@ export async function fetchLlmConfig() {
 		}
 	});
 
-	return config;
+	if (config) {
+		return {
+			...config,
+			apiKey: config?.apiKey ?? undefined
+		};
+	} else {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "No configuration data found."
+		});
+	}
 }
 
 export const llmConfigRouter = t.router({
 	get: authProcedure.query(async () => {
-		const config = await database.llmConfiguration.findFirst({
-			where: { isActive: true },
-			select: {
-				serverUrl: true,
-				defaultModel: true,
-				updatedAt: true,
-				apiKey: true
-			}
-		});
-
+		const config = await fetchLlmConfig();
 		if (!config) {
 			return null;
 		}

@@ -151,6 +151,8 @@ model Lesson {
     requires              Skill[]                       @relation("requiredSkills")
     provides              Skill[]                       @relation("providedSkills")
     lessonStart           LearningDiaryLearnedLessons[] // TODO check if this is necessary
+    ragEnabled            Boolean                       @default(false)
+    ragVersionHash        String?                       @db.VarChar(128)
 }
 
 model CompletedLesson {
@@ -275,4 +277,14 @@ model LlmConfiguration {
   isActive        Boolean   @default(true)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+}
+
+model RagJob {
+  id               String    @id @default(cuid())
+  lessonId         String
+  status           String
+  attempts         Int       @default(0)
+  jobType          String
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }

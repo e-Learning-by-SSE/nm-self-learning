@@ -1,18 +1,40 @@
 import { z } from "zod";
 import { TRPC_ERROR_CODE_KEY } from "@trpc/server/dist/rpc";
 
-export const messagesSchema = z.object({
+export const tutorInputSchema = z.object({
 	messages: z.array(
 		z.object({
 			role: z.string().min(1),
 			content: z.string().min(1)
 		})
-	)
+	),
+	pageContext: z
+		.object({
+			type: z.enum(["course", "lesson"]),
+			courseSlug: z.string().min(1),
+			lessonSlug: z.string().min(1).optional()
+		})
+		.nullable()
 });
 
 export interface Message {
 	role: string;
 	content: string;
+}
+
+export interface Payload {
+	type: "lesson" | "course";
+	lessonId?: string;
+	courseId?: string;
+	title?: string;
+	courseTitle?: string;
+	courseDescription?: string;
+}
+
+export interface PageContext {
+	type: "course" | "lesson";
+	courseSlug: string;
+	lessonSlug?: string;
 }
 
 export const statusToTRPCError: Record<number, { code: TRPC_ERROR_CODE_KEY; message: string }> = {

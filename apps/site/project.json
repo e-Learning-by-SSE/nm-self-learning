@@ -64,6 +64,31 @@
           "apps/site/**/*.{ts,tsx,js,jsx}"
         ]
       }
+    },
+    "build-worker": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/site/workers",
+        "main": "apps/site/workers/rag_worker_thread.ts",
+        "tsConfig": "apps/site/workers/tsconfig.json",
+        "bundle": true,
+        "thirdParty": true,
+        "skipTypeCheck": true,
+        "format": [
+          "cjs"
+        ],
+        "external": [
+          "@prisma/client",
+          "chromadb",
+          "pdf-parse",
+          "worker_threads",
+          "path",
+          "fs",
+          "@xenova/transformers"
+        ]
+      }
     }
   },
   "tags": []
