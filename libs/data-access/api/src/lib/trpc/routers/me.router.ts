@@ -25,13 +25,12 @@ async function updateUserFeatures(
 	input: EditFeatureSettings,
 	client: PrismaClient | Prisma.TransactionClient = database
 ) {
-
-	console.log("user", user)
+	console.log("user", user);
 	if (input.experimental != null && !isAdmin(user)) {
 		throw new TRPCError({
 			code: "FORBIDDEN",
 			message: "Admin permission for experimental change is necessary"
-		})
+		});
 	}
 
 	const isFeatureLearningDiaryChanged = user?.featureFlags?.learningDiary !== input.learningDiary;
@@ -139,7 +138,6 @@ export const meRouter = t.router({
 	}),
 	update: authProcedure.input(editUserSchema).mutation(async ({ ctx, input }) => {
 		await database.$transaction(async tx => {
-			editUserSchema;
 			const updateData = Object.fromEntries(
 				Object.entries(input.user ?? {}).filter(([_, value]) => value !== undefined)
 			);

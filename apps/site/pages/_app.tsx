@@ -17,6 +17,7 @@ import { GlobalFeatures } from "../_features";
 import "./styles.css";
 
 export default withTRPC<AppRouter>({
+	transformer: superjson,
 	config() {
 		return {
 			links: [
@@ -26,10 +27,10 @@ export default withTRPC<AppRouter>({
 						(opts.direction === "down" && opts.result instanceof Error)
 				}),
 				httpBatchLink({
-					url: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/trpc`
+					url: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/trpc`,
+					transformer: superjson
 				})
 			],
-			transformer: superjson,
 			queryClientConfig: {
 				defaultOptions: {
 					queries: {
@@ -43,8 +44,10 @@ export default withTRPC<AppRouter>({
 })(appWithTranslation(CustomApp, nextI18NextConfig));
 
 function CustomApp({ Component, pageProps }: AppProps) {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const Layout = (Component as any).getLayout
-		? (Component as any).getLayout(Component, pageProps)
+		? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+			(Component as any).getLayout(Component, pageProps)
 		: null;
 
 	const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";

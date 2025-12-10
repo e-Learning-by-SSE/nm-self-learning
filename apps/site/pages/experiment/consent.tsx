@@ -58,7 +58,7 @@ export default function ExperimentConsentPage({
 				subtitle: "Vielen Dank für Ihre Teilnahme am Experiment!"
 			});
 			void loginRedirect("/profile");
-		} catch (error) {
+		} catch {
 			showToast({
 				type: "error",
 				title: "Fehler",
@@ -82,7 +82,7 @@ export default function ExperimentConsentPage({
 				subtitle: "Sie können die Plattform normal weiter nutzen."
 			});
 			void loginRedirect("/dashboard");
-		} catch (error) {
+		} catch {
 			showToast({
 				type: "error",
 				title: "Fehler",

@@ -187,13 +187,13 @@ export default function LlmConfigPage() {
 										type="button"
 										onClick={handleFetchAvailableModels}
 										disabled={
-											getAvailableModels.isLoading ||
+											getAvailableModels.isPending ||
 											fetchingModels ||
 											!formData.serverUrl
 										}
 										className="btn-secondary flex-1"
 									>
-										{getAvailableModels.isLoading
+										{getAvailableModels.isPending
 											? t("Fetching...")
 											: t("Fetch Models")}
 									</button>
@@ -222,10 +222,10 @@ export default function LlmConfigPage() {
 								<div className="flex gap-2">
 									<button
 										type="submit"
-										disabled={saveConfig.isLoading}
+										disabled={saveConfig.isPending}
 										className="btn btn-primary"
 									>
-										{saveConfig.isLoading
+										{saveConfig.isPending
 											? t("Saving...")
 											: config
 												? t("Update Configuration")

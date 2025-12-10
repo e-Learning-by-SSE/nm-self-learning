@@ -22,6 +22,7 @@ import { ReactElement, useId, useMemo, useState } from "react";
 import { SearchField } from "./searchfield";
 import { UploadProgressDialog } from "./upload-progress-dialog";
 import { useTranslation } from "next-i18next";
+import { keepPreviousData } from "@tanstack/react-query";
 
 const MediaType = {
 	image: "image",
@@ -282,7 +283,7 @@ function AssetPickerDialog({
 			page
 		},
 		{
-			keepPreviousData: true
+			placeholderData: keepPreviousData
 		}
 	);
 

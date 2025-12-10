@@ -5,7 +5,7 @@ import {
 	ChevronDoubleRightIcon,
 	DocumentIcon,
 	PencilIcon,
-	PlayIcon
+	QuestionMarkCircleIcon
 } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
@@ -417,7 +417,7 @@ function LessonNavigation({
 			<button
 				onClick={() => previous && navigateToLesson(previous)}
 				disabled={!previous}
-				className="rounded-lg bg-white flex items-center gap-4 border border-c-border px-4 py-2 disabled:text-gray-300"
+				className="rounded-lg bg-white flex items-center  gap-4 border border-c-border px-4 py-2 disabled:text-gray-300 rounded-lg bg-white hidden"
 				title="Vorherige Lerneinheit"
 				data-testid="previousLessonButton"
 			>
@@ -428,7 +428,7 @@ function LessonNavigation({
 			<button
 				onClick={() => next && navigateToLesson(next)}
 				disabled={!next}
-				className="rounded-lg bg-white flex items-center gap-4 border border-c-border px-4 py-2 disabled:text-gray-300"
+				className="rounded-lg bg-white hidden lg:flex items-center gap-4 border border-c-border px-4 py-2 disabled:text-gray-300"
 				title="Nächste Lerneinheit"
 				data-testid="nextLessonButton"
 			>
@@ -641,8 +641,8 @@ function LinkToQuiz({ url }: { url: string }) {
 				className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
 				data-testid="quizLink"
 			>
-				<span>Zur Lernkontrolle</span>
-				<PlayIcon className="h-6 shrink-0" />
+				<span>Lernkontrolle</span>
+				<QuestionMarkCircleIcon className="h-6 shrink-0" />
 			</Link>
 		</div>
 	);

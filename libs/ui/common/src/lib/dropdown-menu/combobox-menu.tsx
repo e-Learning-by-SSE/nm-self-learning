@@ -61,10 +61,16 @@ export function ComboboxMenu({
 		return options.filter(option => option.toLowerCase().includes(query.toLowerCase()));
 	}, [query, options]);
 
+	const onChangeWrapper = (option: string | null) => {
+		if (option) {
+			onChange(option);
+		}
+	};
+
 	return (
 		<Combobox
 			as="div"
-			onChange={onChange}
+			onChange={onChangeWrapper}
 			value={displayValue}
 			className="relative inline-block w-full text-left"
 		>

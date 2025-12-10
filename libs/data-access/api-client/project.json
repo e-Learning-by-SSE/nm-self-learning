@@ -3,14 +3,14 @@
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "libs/data-access/api-client/src",
 	"projectType": "library",
+	"tags": [],
 	"targets": {
 		"lint": {
-			"executor": "@nx/linter:eslint",
+			"executor": "@nx/eslint:lint",
 			"outputs": ["{options.outputFile}"],
 			"options": {
 				"lintFilePatterns": ["libs/data-access/api-client/**/*.ts"]
 			}
 		}
-	},
-	"tags": []
+	}
 }

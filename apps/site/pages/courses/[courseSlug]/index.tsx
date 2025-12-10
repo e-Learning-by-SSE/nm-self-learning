@@ -2,7 +2,7 @@ import { PlayIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
-import { SmallGradeBadge, useCourseCompletion } from "@self-learning/completion";
+import { SmallGradeBadge } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
@@ -61,6 +61,7 @@ function mapToTocContent(
 
 async function mapCourseContent(content: CourseContent, username?: string): Promise<ToC.Content> {
 	const lessonIds = extractLessonIds(content);
+	console.log("LessonIDs", lessonIds);
 
 	const lessons = await database.lesson.findMany({
 		where: { lessonId: { in: lessonIds } },
@@ -80,6 +81,8 @@ async function mapCourseContent(content: CourseContent, username?: string): Prom
 			}
 		}
 	});
+
+	console.log("lessons", lessons);
 
 	const map = new Map<string, LessonInfo>();
 

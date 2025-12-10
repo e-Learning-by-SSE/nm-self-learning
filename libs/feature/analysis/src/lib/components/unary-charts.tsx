@@ -83,7 +83,7 @@ export function DailyPlot({
 				callbacks: {
 					label: function (context) {
 						const value = context.parsed.y;
-						return toInterval(value);
+						return toInterval(value ?? 0);
 					}
 				}
 			}
@@ -137,7 +137,7 @@ const DEFAULT_INTERVAL_BASED_BAR_CHART_OPTIONS: ChartOptions<"bar"> = {
 			callbacks: {
 				label: function (context) {
 					const value = context.parsed.y;
-					return toInterval(value);
+					return toInterval(value ?? 0);
 				}
 			}
 		}

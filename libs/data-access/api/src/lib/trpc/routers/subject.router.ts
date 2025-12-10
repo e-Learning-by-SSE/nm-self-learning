@@ -138,7 +138,7 @@ export const subjectRouter = t.router({
 			z.object({
 				subjectId: z.string(),
 				/** `{ [specializationId]: { [username]: boolean } }` */
-				specMap: z.record(z.record(z.boolean()))
+				specMap: z.record(z.string(), z.record(z.string(), z.boolean()))
 			})
 		)
 		.mutation(async ({ input, ctx }) => {

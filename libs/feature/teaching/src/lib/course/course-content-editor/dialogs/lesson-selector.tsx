@@ -2,6 +2,7 @@ import { Combobox, ComboboxOption } from "@headlessui/react";
 import { trpc } from "@self-learning/api-client";
 import { DropdownDialog, Paginator } from "@self-learning/ui/common";
 import { Fragment, useState } from "react";
+import { keepPreviousData } from "@tanstack/react-query";
 
 export function LessonSelector({
 	open,
@@ -16,7 +17,7 @@ export function LessonSelector({
 		{ title, page },
 		{
 			staleTime: 10_000,
-			keepPreviousData: true
+			placeholderData: keepPreviousData
 		}
 	);
 

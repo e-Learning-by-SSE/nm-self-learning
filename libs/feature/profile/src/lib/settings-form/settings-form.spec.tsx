@@ -1,14 +1,14 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { FeatureSettingsForm } from "settings";
+import { FeatureSettingsForm } from "@self-learning/profile";
 import userEvent from "@testing-library/user-event";
 
 describe("FeatureSettingsForm", () => {
 	it("should turn on both settings when statistics is turned on", async () => {
 		const onChange = jest.fn();
 		const initialState = {
-			enabledFeatureLearningDiary: false,
-			enabledLearningStatistics: false
+			learningDiary: false,
+			learningStatistics: false
 		};
 		render(<FeatureSettingsForm featureSettings={initialState} onChange={onChange} />);
 		const ltbCheckbox = screen.getByTestId("ltb-toggle");
@@ -16,8 +16,8 @@ describe("FeatureSettingsForm", () => {
 
 		await waitFor(() => {
 			expect(onChange).toHaveBeenCalledWith({
-				enabledFeatureLearningDiary: true,
-				enabledLearningStatistics: true
+				learningDiary: true,
+				learningStatistics: true
 			});
 		});
 	});
@@ -25,8 +25,8 @@ describe("FeatureSettingsForm", () => {
 	it("should turn off learning diary when statistics is turned off", async () => {
 		const onChange = jest.fn();
 		const initialState = {
-			enabledFeatureLearningDiary: true,
-			enabledLearningStatistics: true
+			learningDiary: true,
+			learningStatistics: true
 		};
 		render(<FeatureSettingsForm featureSettings={initialState} onChange={onChange} />);
 
@@ -38,8 +38,8 @@ describe("FeatureSettingsForm", () => {
 
 		await waitFor(() => {
 			expect(onChange).toHaveBeenCalledWith({
-				enabledFeatureLearningDiary: false,
-				enabledLearningStatistics: false
+				learningDiary: false,
+				learningStatistics: false
 			});
 		});
 	});

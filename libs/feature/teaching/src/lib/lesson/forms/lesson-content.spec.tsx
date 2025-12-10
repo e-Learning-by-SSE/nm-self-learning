@@ -7,6 +7,7 @@ function FormWrapper({
 	defaultValues,
 	children
 }: {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	defaultValues: any;
 	children: React.ReactNode;
 }) {
