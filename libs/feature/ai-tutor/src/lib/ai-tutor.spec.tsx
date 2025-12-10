@@ -4,7 +4,6 @@ import { useSession } from "next-auth/react";
 import { trpc } from "@self-learning/api-client";
 import { AiTutorProvider } from "./context/ai-tutor-context";
 import { AiTutor } from "./components/ai-tutor";
-import { FloatingTutorButton } from "./components/floating-tutor-button";
 import { showToast } from "@self-learning/ui/common";
 
 // Mock dependencies
@@ -83,7 +82,8 @@ describe("AI Tutor", () => {
 
 		// Check if the message was sent
 		expect(mockMutateAsync).toHaveBeenCalledWith({
-			messages: [{ role: "user", content: "Hello" }]
+			messages: [{ role: "user", content: "Hello" }],
+			pageContext: null
 		});
 
 		// Check if response is displayed
