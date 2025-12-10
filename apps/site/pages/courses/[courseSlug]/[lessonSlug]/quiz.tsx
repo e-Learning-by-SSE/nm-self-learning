@@ -1,13 +1,10 @@
 import { withAuth } from "@self-learning/api";
-import {
-	getStaticPropsForLessonCourseLayout,
-	LessonLayout,
-} from "@self-learning/lesson";
+import { getStaticPropsForLessonCourseLayout, LessonLayout } from "@self-learning/lesson";
 import { compileQuizMarkdown, QuestionProps, Quiz, QuizLearnersView } from "@self-learning/quiz";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { FloatingTutorButton } from "@self-learning/ai-tutor";
 
-
-export const getServerSideProps = withAuth<QuestionProps>(async ({params, locale}) => {
+export const getServerSideProps = withAuth<QuestionProps>(async ({ params, locale }) => {
 	const parentProps = await getStaticPropsForLessonCourseLayout(params);
 
 	if ("notFound" in parentProps) return { notFound: true };
@@ -17,7 +14,7 @@ export const getServerSideProps = withAuth<QuestionProps>(async ({params, locale
 
 	const { questionsMd, answersMd, hintsMd, processedQuestions } = await compileQuizMarkdown(quiz);
 	quiz.questions = processedQuestions;
-	
+
 	return {
 		props: {
 			...(await serverSideTranslations(locale ?? "en", ["common"])),
@@ -29,7 +26,12 @@ export const getServerSideProps = withAuth<QuestionProps>(async ({params, locale
 });
 
 export default function QuestionsPage({ course, lesson, quiz, markdown }: QuestionProps) {
-	return <QuizLearnersView course={course} lesson={lesson} quiz={quiz} markdown={markdown} />;
+	return (
+		<>
+			<QuizLearnersView course={course} lesson={lesson} quiz={quiz} markdown={markdown} />
+			<FloatingTutorButton />
+		</>
+	);
 }
 
 QuestionsPage.getLayout = LessonLayout;

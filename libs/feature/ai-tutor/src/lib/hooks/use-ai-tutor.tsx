@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { trpc } from "@self-learning/api-client";
 import { showToast } from "@self-learning/ui/common";
 import { Message } from "@self-learning/types";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "next-i18next";
 
 export function useAiTutor() {
 	const [messages, setMessages] = useState<Message[]>([]);
@@ -10,7 +10,7 @@ export function useAiTutor() {
 	const [loading, setLoading] = useState(false);
 	const [isTutorOpen, setIsTutorOpen] = useState(false);
 	const [isAnimating, setIsAnimating] = useState(false);
-	const { t } = useTranslation("ai-tutor");
+	const { t } = useTranslation("feature-ai-tutor");
 
 	const { data: config } = trpc.llmConfig.get.useQuery();
 	const aiResponse = trpc.aiTutor.sendMessage.useMutation();

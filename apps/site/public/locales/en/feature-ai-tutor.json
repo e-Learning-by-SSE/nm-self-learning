@@ -17,5 +17,6 @@
     "Backend server is taking too long to respond": "Backend server is taking too long to respond",
     "Unknown error": "Unknown error",
     "Message Failed": "Message Failed",
-    "Failed to communicate with LLM server": "Failed to communicate with LLM server"
+    "Failed to communicate with LLM server": "Failed to communicate with LLM server",
+    "Ai Tutor is not available.": "Ai Tutor is not available."
 }

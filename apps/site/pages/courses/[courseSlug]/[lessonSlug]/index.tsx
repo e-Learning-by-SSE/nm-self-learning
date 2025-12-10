@@ -6,6 +6,7 @@ import {
 	LessonLearnersView,
 	LessonProps
 } from "@self-learning/lesson";
+import { FloatingTutorButton } from "@self-learning/ai-tutor";
 
 export const getServerSideProps = withTranslations(["common"], async context => {
 	return withAuth(async _user => {
@@ -30,12 +31,15 @@ export const getServerSideProps = withTranslations(["common"], async context => 
 
 export default function LessonPage({ lesson, course, markdown }: LessonProps) {
 	return (
-		<LessonLearnersView
-			lesson={lesson}
-			course={course}
-			markdown={markdown}
-			key={lesson.lessonId}
-		/>
+		<>
+			<LessonLearnersView
+				lesson={lesson}
+				course={course}
+				markdown={markdown}
+				key={lesson.lessonId}
+			/>
+			<FloatingTutorButton />
+		</>
 	);
 }
 

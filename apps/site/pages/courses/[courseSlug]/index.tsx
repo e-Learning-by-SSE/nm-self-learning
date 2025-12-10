@@ -109,37 +109,40 @@ type CourseProps = {
 	markdownDescription: CompiledMarkdown | null;
 };
 
-export const getServerSideProps = withTranslations(["common", "ai-tutor"], async ({ params }) => {
-	const courseSlug = params?.courseSlug as string | undefined;
-	if (!courseSlug) {
-		throw new Error("No slug provided.");
+export const getServerSideProps = withTranslations(
+	["common", "feature-ai-tutor"],
+	async ({ params }) => {
+		const courseSlug = params?.courseSlug as string | undefined;
+		if (!courseSlug) {
+			throw new Error("No slug provided.");
+		}
+
+		const course = await getCourse(courseSlug);
+		if (!course) {
+			return { notFound: true };
+		}
+
+		const content = await mapCourseContent(course.content as CourseContent);
+		let markdownDescription = null;
+
+		if (course.description && course.description.length > 0) {
+			markdownDescription = await compileMarkdown(course.description);
+			course.description = null;
+		}
+
+		const summary = createCourseSummary(content);
+
+		return {
+			props: {
+				course: JSON.parse(JSON.stringify(course)) as Defined<typeof course>,
+				summary,
+				content,
+				markdownDescription
+			},
+			notFound: !course
+		};
 	}
-
-	const course = await getCourse(courseSlug);
-	if (!course) {
-		return { notFound: true };
-	}
-
-	const content = await mapCourseContent(course.content as CourseContent);
-	let markdownDescription = null;
-
-	if (course.description && course.description.length > 0) {
-		markdownDescription = await compileMarkdown(course.description);
-		course.description = null;
-	}
-
-	const summary = createCourseSummary(content);
-
-	return {
-		props: {
-			course: JSON.parse(JSON.stringify(course)) as Defined<typeof course>,
-			summary,
-			content,
-			markdownDescription
-		},
-		notFound: !course
-	};
-});
+);
 
 async function getCourse(courseSlug: string) {
 	return database.course.findUnique({

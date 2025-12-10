@@ -4,7 +4,7 @@ import { useAiTutorContext } from "../context/ai-tutor-context";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
 import ReactMarkdown from "react-markdown";
 import { IconOnlyButton } from "@self-learning/ui/common";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "next-i18next";
 
 export function AiTutor() {
 	const {
@@ -23,7 +23,7 @@ export function AiTutor() {
 	const session = useSession();
 	const user = session.data?.user;
 	const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-	const { t } = useTranslation("ai-tutor");
+	const { t } = useTranslation("feature-ai-tutor");
 
 	if (!config) return null;
 

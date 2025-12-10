@@ -1,5 +1,6 @@
 import React, { createContext, useContext } from "react";
 import { useAiTutor } from "../hooks/use-ai-tutor";
+import { useTranslation } from "next-i18next";
 
 type AiTutorContextType = ReturnType<typeof useAiTutor>;
 
@@ -11,9 +12,10 @@ export const AiTutorProvider: React.FC<{ children: React.ReactNode }> = ({ child
 };
 
 export const useAiTutorContext = (): AiTutorContextType => {
+	const { t } = useTranslation("feature-ai-tutor");
 	const ctx = useContext(AiTutorContext);
 	if (!ctx) {
-		throw new Error("useAiTutorContext must be used within an AiTutorProvider");
+		throw new Error(t("Ai Tutor is not available."));
 	}
 	return ctx;
 };
