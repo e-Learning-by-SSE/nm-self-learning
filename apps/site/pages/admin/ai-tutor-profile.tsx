@@ -1,6 +1,5 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { aiTutorProfileSchema } from "@self-learning/types";
+import { AITutorProfile, defaultAITutorProfile } from "@self-learning/types";
 import { AdminGuard, CenteredSection } from "@self-learning/ui/layouts";
 import { LabeledField, Upload } from "@self-learning/ui/forms";
 import { ImageOrPlaceholder } from "@self-learning/ui/common";
@@ -8,26 +7,13 @@ import { trpc } from "@self-learning/api-client";
 import { showToast } from "@self-learning/ui/common";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
-import { z } from "zod";
 import { formatDateString } from "@self-learning/util/common";
 import { withTranslations } from "@self-learning/api";
 import { useTranslation } from "next-i18next";
 
 export default function AITutorProfileAdminPage() {
-	type FormValues = z.infer<typeof aiTutorProfileSchema>;
-
-	const { register, handleSubmit, reset, watch, setValue } = useForm<FormValues>({
-		resolver: zodResolver(aiTutorProfileSchema),
-		defaultValues: {
-			id: undefined,
-			name: "",
-			description: undefined,
-			author: "",
-			model: undefined,
-			avatarUrl: undefined,
-			systemPrompt: "",
-			updatedAt: undefined
-		}
+	const { register, handleSubmit, watch, reset, setValue } = useForm<AITutorProfile>({
+		defaultValues: defaultAITutorProfile
 	});
 	const formData = watch();
 	const [fetchingModels, setFetchingModels] = useState(false);
@@ -38,8 +24,7 @@ export default function AITutorProfileAdminPage() {
 	const profiles = trpc.aiTutorProfile.getAll.useQuery();
 	const saveProfile = trpc.aiTutorProfile.save.useMutation();
 	const deleteProfile = trpc.aiTutorProfile.delete.useMutation();
-	const { t: t_llm_config } = useTranslation("pages-admin-llm-config");
-	const { t } = useTranslation("pages-admin-ai-tutor0profiles");
+	const { t } = useTranslation("pages-admin-ai-tutor-profile");
 
 	const formSubmit = async (data: typeof formData) => {
 		try {
@@ -61,18 +46,10 @@ export default function AITutorProfileAdminPage() {
 			showToast({
 				type: "error",
 				title: t("Error creating profile"),
-				subtitle: error instanceof Error ? error.message : t("An unknown error occurred")
+				subtitle: error instanceof Error ? t(error.message) : t("An unknown error occurred")
 			});
 		} finally {
-			reset({
-				id: undefined,
-				name: "",
-				description: "",
-				author: "",
-				model: undefined,
-				systemPrompt: "",
-				updatedAt: undefined
-			});
+			reset(defaultAITutorProfile);
 		}
 	};
 
@@ -83,14 +60,14 @@ export default function AITutorProfileAdminPage() {
 			setAvailableModels(models.models);
 			showToast({
 				type: "success",
-				title: t_llm_config("Models fetched"),
+				title: t("Models fetched"),
 				subtitle: t("Available models have been fetched successfully.")
 			});
 		} catch (error) {
 			showToast({
 				type: "error",
-				title: t_llm_config("Fetch Models Failed"),
-				subtitle: error instanceof Error ? error.message : t("An unknown error occurred")
+				title: t("Fetch Models Failed"),
+				subtitle: error instanceof Error ? t(error.message) : t("An unknown error occurred")
 			});
 		} finally {
 			setFetchingModels(false);
@@ -112,18 +89,10 @@ export default function AITutorProfileAdminPage() {
 			showToast({
 				type: "error",
 				title: t("Delete Profile Failed"),
-				subtitle: ""
+				subtitle: error instanceof Error ? t(error.message) : t("An unknown error occurred")
 			});
 		} finally {
-			reset({
-				id: undefined,
-				name: "",
-				description: "",
-				author: "",
-				model: undefined,
-				systemPrompt: "",
-				updatedAt: undefined
-			});
+			reset(defaultAITutorProfile);
 		}
 	};
 
@@ -139,15 +108,7 @@ export default function AITutorProfileAdminPage() {
 			<div className="w-full bg-white p-6 rounded shadow md:w-1/4 mb-6 md:mb-0">
 				<button
 					onClick={() => {
-						reset({
-							id: undefined,
-							name: "",
-							description: "",
-							author: "",
-							model: undefined,
-							systemPrompt: "",
-							updatedAt: undefined
-						});
+						reset(defaultAITutorProfile);
 					}}
 					className="btn btn-primary mb-4 w-full"
 				>
@@ -175,7 +136,7 @@ export default function AITutorProfileAdminPage() {
 							>
 								<ImageOrPlaceholder
 									src={profile.avatarUrl ?? undefined}
-									alt="Profile Picture"
+									alt={t("Profile Picture")}
 									className="w-8 h-8 rounded-xl"
 								/>
 								<span className="flex-grow cursor-default">
@@ -206,7 +167,7 @@ export default function AITutorProfileAdminPage() {
 											{...register("name")}
 											type={"text"}
 											className="textfield w-full mb-4"
-											placeholder={"Psychologist-Tutor"}
+											placeholder={t("Psychology-Tutor")}
 										/>
 									</LabeledField>
 									<LabeledField label={t("Author" + " *")}>
@@ -222,7 +183,7 @@ export default function AITutorProfileAdminPage() {
 								</div>
 								<div className="flex flex-col items-center space-y-3 p-4 rounded border-2 border-dashed border-gray-300">
 									<ImageOrPlaceholder
-										src={watch("avatarUrl") ?? undefined}
+										src={watch("avatarUrl")}
 										alt={t("Profile Picture")}
 										className="w-20 h-20 rounded-xl"
 									/>
@@ -235,6 +196,7 @@ export default function AITutorProfileAdminPage() {
 									/>
 								</div>
 							</div>
+							{/* Move this to a shared component */}
 							<div className="flex items-end space-x-4">
 								<div className="flex-grow">
 									<LabeledField label={t("Model")}>
@@ -244,9 +206,7 @@ export default function AITutorProfileAdminPage() {
 													{formData.model}
 												</option>
 											) : (
-												<option value="">
-													{t_llm_config("Select a model")}
-												</option>
+												<option value="">{t("Select a model")}</option>
 											)}
 											{availableModels.map(model => (
 												<option key={model} value={model}>
@@ -262,9 +222,7 @@ export default function AITutorProfileAdminPage() {
 									onClick={handleFetchAvailableModels}
 									disabled={availableModels.length !== 0 || fetchingModels}
 								>
-									{getModels.isLoading
-										? t_llm_config("Fetching...")
-										: t_llm_config("Fetch Models")}
+									{getModels.isLoading ? t("Fetching...") : t("Fetch Models")}
 								</button>
 							</div>
 							<LabeledField label={t("System Prompt") + " *"}>
@@ -289,11 +247,12 @@ export default function AITutorProfileAdminPage() {
 									disabled={saveProfile.isLoading}
 								>
 									{saveProfile.isLoading
-										? t_llm_config("Saving...")
+										? t("Saving...")
 										: formData.id
-											? "Update Profile"
-											: "Create Profile"}
+											? t("Update Profile")
+											: t("Create Profile")}
 								</button>
+								{/* Move this to a shared component */}
 								{formData.id !== undefined && (
 									<>
 										<button
@@ -305,12 +264,12 @@ export default function AITutorProfileAdminPage() {
 											disabled={deleteProfile.isLoading}
 										>
 											{deleteProfile.isLoading
-												? "Deleting..."
-												: "Delete Profile"}
+												? t("Deleting...")
+												: t("Delete Profile")}
 										</button>
 										<div className="flex-grow">
 											<div className="text-sm text-gray-500 text-end pt-4">
-												{t_llm_config("Last updated", {
+												{t("Last updated", {
 													date: formatDateString(
 														formData.updatedAt ?? new Date(),
 														"d. MMM yyyy"

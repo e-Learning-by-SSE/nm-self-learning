@@ -10,3 +10,17 @@ export const aiTutorProfileSchema = z.object({
 	description: z.string().optional(),
 	updatedAt: z.date().optional()
 });
+
+export type AITutorProfile = z.infer<typeof aiTutorProfileSchema>;
+
+// set default values for a new profile
+export const defaultAITutorProfile: AITutorProfile = {
+	id: undefined,
+	name: "",
+	description: "",
+	author: "",
+	model: undefined,
+	avatarUrl: undefined,
+	systemPrompt: "",
+	updatedAt: undefined
+};

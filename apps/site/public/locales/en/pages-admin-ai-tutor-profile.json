@@ -18,5 +18,9 @@
     "Update Profile": "Update Profile",
     "Create Profile": "Create Profile",
     "Deleting...": "Deleting...",
-    "Delete Profile": "Delete Profile"
+    "Delete Profile": "Delete Profile",
+    "Psychology-Tutor": "Psychology-Tutor",
+    "LLM configuration not found": "LLM configuration not found",
+    "No default model configured": "No default model configured",
+    "Failed to save profile data": "Failed to save profile data"
 }
