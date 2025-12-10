@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import "./polyfills.js";
 import { parentPort } from "worker_threads";
 import {
 	ragProcessor,
