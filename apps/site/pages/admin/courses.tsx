@@ -38,7 +38,7 @@ export default function CoursesPage() {
 	}
 
 	return (
-		<CenteredSection className="bg-gray-50">
+		<CenteredSection>
 			<div className="mb-16 flex items-center justify-between gap-4">
 				<h1 className="text-5xl">Kurse</h1>
 
@@ -70,7 +70,7 @@ export default function CoursesPage() {
 
 						<TableDataColumn>
 							<Link
-								className="text-sm font-medium hover:text-secondary"
+								className="text-sm font-medium hover:text-c-primary"
 								href={`/teaching/courses/edit/${course.courseId}`}
 							>
 								{course.title}
@@ -78,7 +78,7 @@ export default function CoursesPage() {
 						</TableDataColumn>
 
 						<TableDataColumn>
-							<span className="text-light">
+							<span className="text-c-text-muted">
 								{course.authors.map(a => a.displayName).join(", ")}
 							</span>
 						</TableDataColumn>

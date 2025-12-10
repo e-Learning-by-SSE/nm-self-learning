@@ -309,7 +309,7 @@ function AssetPickerDialog({
 			onClose={onClose}
 			className="max-h-[80vh] w-[80vw] overflow-auto 2xl:w-[60vw]"
 		>
-			<span className="absolute bottom-8 left-8 text-xs text-light">
+			<span className="absolute bottom-8 left-8 text-xs text-c-text-muted">
 				type: {mediaType ? mediaType : "all"}
 			</span>
 
@@ -337,7 +337,9 @@ function AssetPickerDialog({
 						{!data ? (
 							<LoadingBox height={256} />
 						) : filteredAssets.length === 0 ? (
-							<span className="text-sm text-light">Keine Dateien gefunden.</span>
+							<span className="text-sm text-c-text-muted">
+								Keine Dateien gefunden.
+							</span>
 						) : (
 							<>
 								<Table
@@ -365,12 +367,12 @@ function AssetPickerDialog({
 														alt="Preview"
 													/>
 												) : (
-													<div className="h-16 w-24 shrink-0 rounded-lg bg-gray-200"></div>
+													<div className="h-16 w-24 shrink-0 rounded-lg bg-c-surface-3"></div>
 												)}
 											</TableDataColumn>
 											<TableDataColumn>
 												<a
-													className="font-medium hover:text-secondary"
+													className="font-medium hover:text-c-primary"
 													target="blank"
 													rel="noreferrer"
 													href={asset.publicUrl}
@@ -455,15 +457,15 @@ function AssetOptionsMenu({ asset }: { asset: Asset }) {
 
 	return (
 		<Menu as="div" className="relative flex">
-			<MenuButton className="rounded-full p-2 hover:bg-gray-50">
+			<MenuButton className="rounded-full p-2 hover:bg-c-neutral-subtle">
 				<EllipsisVerticalIcon className="h-5 text-gray-400" />
 			</MenuButton>
-			<MenuItems className="absolute left-4 top-4 divide-y divide-gray-100 rounded-md bg-white object-left-top text-sm shadow-lg ring-1 ring-emerald-500 ring-opacity-5 focus:outline-none">
+			<MenuItems className="absolute left-4 top-4 divide-y divide-c-border-muted rounded-md bg-white object-left-top text-sm shadow-lg ring-1 ring-c-primary ring-opacity-5 focus:outline-none">
 				<MenuItem as="div" className="p-1">
 					{({ focus }) => (
 						<button
 							className={`${
-								focus ? "bg-secondary text-white" : ""
+								focus ? "bg-c-primary text-white" : ""
 							} flex w-full items-center gap-4 whitespace-nowrap rounded-md px-4 py-2 opacity-25`}
 						>
 							<PencilIcon className="h-5" />
@@ -476,7 +478,7 @@ function AssetOptionsMenu({ asset }: { asset: Asset }) {
 						<button
 							onClick={onDelete}
 							className={`${
-								focus ? "bg-secondary text-white" : "text-red-500"
+								focus ? "bg-c-primary text-white" : "text-c-danger"
 							} flex w-full items-center gap-4 whitespace-nowrap rounded-md px-4 py-2`}
 						>
 							<TrashIcon className="h-5" />

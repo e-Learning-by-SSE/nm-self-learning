@@ -11,5 +11,5 @@ export function ChapterName({
 	const lessonContext = useLessonContext(lesson.lessonId, course?.slug ?? "");
 	const chapterName = course ? lessonContext.chapterName : null;
 
-	return <div className="font-semibold text-secondary min-h-[24px]">{chapterName}</div>;
+	return <div className="font-semibold text-c-primary min-h-[24px]">{chapterName}</div>;
 }

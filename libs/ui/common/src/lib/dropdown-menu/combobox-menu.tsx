@@ -28,7 +28,7 @@ import { MinorScaleFadeIn } from "../transition/minor-scale-fade-in";
  *   displayValue={selected}
  *   options={["English", "Deutsch", "Español"]}
  *   onChange={setSelected}
- *   customFocusStyle={(focus) => focus ? "bg-emerald-500 text-white" : ""}
+ *   customFocusStyle={(focus) => focus ? "bg-c-primary text-white" : ""}
  * />
  */
 export function ComboboxMenu({
@@ -80,9 +80,9 @@ export function ComboboxMenu({
 					title={title}
 					displayValue={() => displayValue ?? ""}
 					onChange={e => setQuery(e.target.value)}
-					className="w-full focus:outline-none focus:ring-0 focus:ring-offset-0 focus:shadow-none focus:border-gray-300 border-gray-300"
+					className="w-full focus:outline-none focus:ring-0 focus:ring-offset-0 focus:shadow-none focus:border-c-border-strong border-c-border-strong"
 				/>
-				<ComboboxButton className="ml-2 text-gray-500 hover:text-gray-700">
+				<ComboboxButton className="ml-2 text-c-text-muted hover:text-c-text">
 					<ChevronUpDownIcon className="w-5 h-5" />
 				</ComboboxButton>
 			</div>
@@ -104,7 +104,7 @@ export function ComboboxMenu({
 											customFocusStyle
 												? customFocusStyle(focus)
 												: focus
-													? "bg-emerald-500 text-white"
+													? "bg-c-primary text-white"
 													: ""
 										} ${selected ? "font-medium" : ""}`}
 									>

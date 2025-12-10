@@ -42,7 +42,7 @@ export function Feedback({
 			className={`flex flex-col gap-2 rounded-lg border p-4 ${
 				isCorrect
 					? "border-green-500 bg-green-100 text-green-500"
-					: " border-red-500 bg-red-100 text-red-500"
+					: " border-c-danger bg-c-danger-subtle text-c-danger"
 			}`}
 		>
 			{isCorrect ? (

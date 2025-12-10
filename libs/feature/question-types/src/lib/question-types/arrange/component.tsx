@@ -34,7 +34,7 @@ export default function ArrangeQuestion() {
 								{containerId === "_init" ? null : (
 									<ul
 										key={containerId}
-										className="flex min-w-[256px] flex-col gap-4 rounded-lg bg-gray-200 p-4"
+										className="flex min-w-[256px] flex-col gap-4 rounded-lg bg-c-surface-3 p-4"
 									>
 										<span className="font-semibold">{containerId}</span>
 
@@ -46,7 +46,7 @@ export default function ArrangeQuestion() {
 												<ul
 													ref={provided.innerRef}
 													{...provided.droppableProps}
-													className="flex min-w-fit flex-col gap-4 rounded-lg bg-gray-100 p-4"
+													className="flex min-w-fit flex-col gap-4 rounded-lg bg-c-surface-2 p-4"
 												>
 													{answer.value[containerId]?.map(
 														(item, index) => (
@@ -81,7 +81,7 @@ export default function ArrangeQuestion() {
 						))}
 				</div>
 
-				<div className="flex min-h-[128px] flex-col gap-4 rounded-lg bg-gray-200 p-4">
+				<div className="flex min-h-[128px] flex-col gap-4 rounded-lg bg-c-surface-3 p-4">
 					<span className="font-semibold">Nicht zugeordnet</span>
 
 					<Droppable
@@ -93,7 +93,7 @@ export default function ArrangeQuestion() {
 							<ul
 								ref={provided.innerRef}
 								{...provided.droppableProps}
-								className="flex min-h-[128px] flex-wrap gap-4 rounded-lg border-white bg-gray-100 p-4"
+								className="flex min-h-[128px] flex-wrap gap-4 rounded-lg border-white bg-c-surface-2 p-4"
 							>
 								{answer.value["_init"].map((item, index) => (
 									<Draggable

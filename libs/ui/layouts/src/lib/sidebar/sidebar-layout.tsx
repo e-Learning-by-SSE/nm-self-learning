@@ -157,7 +157,7 @@ export function SidebarLink({
 		<Link
 			href={href}
 			className={`flex items-center gap-4 rounded py-2 px-2 ${
-				isActive ? "bg-secondary text-white" : "text-light hover:bg-indigo-50"
+				isActive ? "bg-c-primary text-white" : "text-c-text-muted hover:bg-indigo-50"
 			}`}
 		>
 			{icon}

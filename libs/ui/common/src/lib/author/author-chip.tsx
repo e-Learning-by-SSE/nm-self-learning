@@ -7,7 +7,7 @@ export function AuthorChip({ displayName, slug, imgUrl }: AuthorProps) {
 	return (
 		<Link
 			href={`/authors/${slug}`}
-			className="flex items-center gap-4 rounded-lg border border-light-border bg-white pr-4 text-sm"
+			className="flex items-center gap-4 rounded-lg border border-c-border bg-white pr-4 text-sm"
 			data-testid="author"
 		>
 			<ImageOrPlaceholder

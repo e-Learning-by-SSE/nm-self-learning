@@ -55,11 +55,11 @@ export function CreateGoalDialog({
 				<LabeledField label="Beschreibung" optional={false}>
 					<textarea
 						{...register("description")}
-						className="textfield border border-gray-300 rounded-md p-2"
+						className="textfield border border-c-border-strong rounded-md p-2"
 						rows={5}
 					/>
 					{errors.description && (
-						<span className="text-red-500 text-sm">{errors.description.message}</span>
+						<span className="text-c-danger text-sm">{errors.description.message}</span>
 					)}
 				</LabeledField>
 				<LabeledField label="Übergeordnetes Ziel (optional)">
@@ -116,11 +116,11 @@ export function EditGoalDialog({
 				<LabeledField label="Beschreibung" optional={false}>
 					<textarea
 						{...register("description")}
-						className="textfield border border-gray-300 rounded-md p-2"
+						className="textfield border border-c-border-strong rounded-md p-2"
 						rows={5}
 					/>
 					{errors.description && (
-						<span className="text-red-500 text-sm">{errors.description.message}</span>
+						<span className="text-c-danger text-sm">{errors.description.message}</span>
 					)}
 				</LabeledField>
 

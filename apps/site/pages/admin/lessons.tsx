@@ -34,7 +34,7 @@ export default function LessonManagementPage() {
 	}
 
 	return (
-		<CenteredSection className="bg-gray-50">
+		<CenteredSection>
 			<div className="mb-16 flex items-center justify-between gap-4 ">
 				<h1 className="text-5xl">Lerneinheiten</h1>
 
@@ -72,7 +72,7 @@ export default function LessonManagementPage() {
 					<tr key={lesson.lessonId}>
 						<TableDataColumn>
 							<Link
-								className="text-sm font-medium hover:text-secondary"
+								className="text-sm font-medium hover:text-c-primary"
 								href={`/teaching/lessons/edit/${lesson.lessonId}`}
 							>
 								{lesson.title}
@@ -80,7 +80,7 @@ export default function LessonManagementPage() {
 						</TableDataColumn>
 
 						<TableDataColumn>
-							<span className="text-light">
+							<span className="text-c-text-muted">
 								{lesson.authors.map(a => a.displayName).join(", ")}
 							</span>
 						</TableDataColumn>
@@ -88,7 +88,7 @@ export default function LessonManagementPage() {
 						<TableDataColumn>
 							<div className="flex items-right gap-4">
 								<span
-									className="text-light"
+									className="text-c-text-muted"
 									title={new Date(lesson.updatedAt).toLocaleString()}
 								>
 									{formatDateAgo(lesson.updatedAt)}

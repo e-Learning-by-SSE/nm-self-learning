@@ -63,7 +63,7 @@ export default function ExperimentRevokePage({ hasConsented, consentDate }: Expe
 
 	if (!hasConsented) {
 		return (
-			<CenteredSection className="bg-gray-50">
+			<CenteredSection>
 				<div className="mx-auto max-w-4xl">
 					<NoConsentFound />
 				</div>
@@ -72,7 +72,7 @@ export default function ExperimentRevokePage({ hasConsented, consentDate }: Expe
 	}
 
 	return (
-		<CenteredSection className="bg-gray-50">
+		<CenteredSection>
 			<div className="mx-auto max-w-4xl">
 				<div className="rounded-lg bg-white p-8 shadow-md">
 					<div className="mb-8">
@@ -104,7 +104,7 @@ export default function ExperimentRevokePage({ hasConsented, consentDate }: Expe
 									type="checkbox"
 									checked={hasUnderstoodConsequences}
 									onChange={e => setHasUnderstoodConsequences(e.target.checked)}
-									className="mt-1 h-4 w-4 rounded border-gray-300 text-red-500 focus:ring-red-500"
+									className="mt-1 h-4 w-4 rounded border-c-border-strong text-c-danger focus:ring-c-danger"
 								/>
 								<span className="text-sm">
 									Ich habe die Konsequenzen des Widerrufs verstanden und möchte
@@ -141,7 +141,7 @@ export default function ExperimentRevokePage({ hasConsented, consentDate }: Expe
 					</div>
 
 					<div className="mt-8 border-t pt-6 text-center">
-						<p className="text-xs text-gray-500">
+						<p className="text-xs text-c-text-muted">
 							Bei Fragen zum Widerruf können Sie sich jederzeit an das Forschungsteam
 							wenden:
 							<a
@@ -216,11 +216,11 @@ function ConsequencesInformation() {
 				</div>
 			</div>
 
-			<div className="rounded-lg bg-gray-50 p-4 border border-gray-200">
+			<div className="rounded-lg bg-c-surface-1 p-4 border border-c-border">
 				<h3 className="font-semibold text-gray-900 mb-2">
 					Was passiert nach dem Widerruf?
 				</h3>
-				<ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+				<ul className="list-disc list-inside text-sm text-c-text space-y-1">
 					<li>Sie können die Lernplattform weiterhin normal nutzen</li>
 					<li>Ihre Lernfortschritte bleiben erhalten</li>
 					<li>Sie werden aus der Studiengruppe entfernt</li>
@@ -243,14 +243,14 @@ function DataDeletionOptions({
 			<h2 className="text-xl font-semibold">Umgang mit bereits erhobenen Daten</h2>
 
 			<div className="space-y-4">
-				<div className="rounded-lg border border-gray-200 p-4">
+				<div className="rounded-lg border border-c-border p-4">
 					<label className="flex items-start gap-3 cursor-pointer">
 						<input
 							type="radio"
 							name="dataHandling"
 							checked={!wantsDataDeletion}
 							onChange={() => setWantsDataDeletion(false)}
-							className="mt-1 h-4 w-4 text-emerald-500 focus:ring-emerald-500"
+							className="mt-1 h-4 w-4 text-c-primary focus:ring-c-primary"
 						/>
 						<div>
 							<span className="font-medium">Daten für die Forschung belassen</span>
@@ -263,14 +263,14 @@ function DataDeletionOptions({
 					</label>
 				</div>
 
-				<div className="rounded-lg border border-gray-200 p-4">
+				<div className="rounded-lg border border-c-border p-4">
 					<label className="flex items-start gap-3 cursor-pointer">
 						<input
 							type="radio"
 							name="dataHandling"
 							checked={wantsDataDeletion}
 							onChange={() => setWantsDataDeletion(true)}
-							className="mt-1 h-4 w-4 text-red-500 focus:ring-red-500"
+							className="mt-1 h-4 w-4 text-c-danger focus:ring-c-danger"
 						/>
 						<div>
 							<span className="font-medium">Vollständige Datenlöschung</span>

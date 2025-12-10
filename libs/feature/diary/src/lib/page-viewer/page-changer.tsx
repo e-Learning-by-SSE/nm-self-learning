@@ -21,7 +21,7 @@ export function useDiaryPageRouter() {
 	return { changePage };
 }
 
- export function useDiaryPage({ pages, diaryId }: { pages: { id: string }[]; diaryId: string }) {
+export function useDiaryPage({ pages, diaryId }: { pages: { id: string }[]; diaryId: string }) {
 	const { changePage } = useDiaryPageRouter();
 
 	const currentPageIndex = pages.findIndex(page => page.id === diaryId);
@@ -75,7 +75,7 @@ export function PageChanger({ pages, currentPageId }: { pages: PagesMeta; curren
 		<div className="flex flex-row flex-grow justify-between items-stretch space-x-4">
 			<Tooltip className="flex" placement={"bottom"} content="Zum ersten Eintrag springen">
 				<button
-					className="flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
+					className="flex place-content-center items-center gap-2 rounded-lg bg-c-primary px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
 					onClick={jumpToFirstEntry}
 					disabled={currentPageIndex === 0}
 				>
@@ -88,7 +88,7 @@ export function PageChanger({ pages, currentPageId }: { pages: PagesMeta; curren
 				content="Zum vorherigen Eintrag springen"
 			>
 				<button
-					className="flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
+					className="flex place-content-center items-center gap-2 rounded-lg bg-c-primary px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
 					onClick={updateToPreviousId}
 					disabled={currentPageIndex === 0}
 				>
@@ -109,7 +109,7 @@ export function PageChanger({ pages, currentPageId }: { pages: PagesMeta; curren
 			</form>
 			<Tooltip className="flex" placement={"bottom"} content="Zum nächsten Eintrag springen">
 				<button
-					className="flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
+					className="flex place-content-center items-center gap-2 rounded-lg bg-c-primary px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
 					onClick={updateToNextId}
 					disabled={currentPageIndex === pages.length - 1}
 				>
@@ -119,7 +119,7 @@ export function PageChanger({ pages, currentPageId }: { pages: PagesMeta; curren
 			</Tooltip>
 			<Tooltip className="flex" placement={"bottom"} content="Zum letzten Eintrag springen">
 				<button
-					className="flex place-content-center items-center gap-2 rounded-lg bg-emerald-500 px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
+					className="flex place-content-center items-center gap-2 rounded-lg bg-c-primary px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
 					onClick={jumpToLastEntry}
 					disabled={currentPageIndex === pages.length - 1}
 				>

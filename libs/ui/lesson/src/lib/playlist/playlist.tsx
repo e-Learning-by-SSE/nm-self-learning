@@ -144,7 +144,7 @@ export function MobilePlayList({
 				>
 					{course.title}
 				</Link>
-				<span className="text-sm text-light">
+				<span className="text-sm text-c-text-muted">
 					{courseCompletion?.completedLessonCount ?? 0} /{" "}
 					{extractLessonIds(content).length} Lerneinheiten abgeschlossen
 				</span>
@@ -220,14 +220,14 @@ function Lesson({
 		<>
 			<Link
 				href={href}
-				className={`relative flex items-center overflow-hidden rounded-lg py-1 px-4 hover:bg-gray-200 ${
-					isActive ? "bg-gray-200 font-medium text-black" : "text-light"
+				className={`relative flex items-center overflow-hidden rounded-lg py-1 px-4 hover:bg-c-neutral ${
+					isActive ? "bg-c-surface-3 font-medium text-black" : "text-c-text-muted"
 				}`}
 			>
 				<span
 					style={{ width: lesson.isCompleted ? "2px" : "1px" }}
 					className={`absolute h-full ${
-						lesson.isCompleted ? "bg-emerald-500" : "bg-gray-300"
+						lesson.isCompleted ? "bg-c-primary" : "bg-gray-300"
 					}`}
 				></span>
 				<span
@@ -266,7 +266,7 @@ function ContentTabItem({
 			{item && (
 				<div className="flex gap-2 mb-2 text-nowrap flex-nowrap items-center text-sm">
 					<span
-						className={`w-full ${active ? "text-secondary" : "text-light"}`}
+						className={`w-full ${active ? "text-c-primary" : "text-c-text-muted"}`}
 						onClick={select}
 					>
 						{getContentTypeDisplayName(item.type)}
@@ -283,7 +283,7 @@ function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) 
 	const completionPercentage = courseCompletion?.completionPercentage ?? 0;
 
 	return (
-		<div className="sticky top-0 z-20 flex flex-col gap-4 p-3 xl:p-0 rounded-lg bg-gray-100 pt-8">
+		<div className="sticky top-0 z-20 flex flex-col gap-4 p-3 xl:p-0 rounded-lg pt-8">
 			<div className="flex flex-col gap-2">
 				<Link
 					href={`/courses/${course.slug}`}
@@ -292,7 +292,7 @@ function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) 
 				>
 					{course.title}
 				</Link>
-				<span className="text-sm text-light">
+				<span className="text-sm text-c-text-muted">
 					{courseCompletion?.completedLessonCount ?? 0} /{" "}
 					{extractLessonIds(content).length} Lerneinheiten abgeschlossen
 				</span>
@@ -362,12 +362,12 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 	return (
 		<div className="flex flex-col gap-4" data-testid="CurrentlyPlaying">
 			<span className="flex items-center gap-2 text-sm">
-				<PlayIcon className="h-5 shrink-0 text-secondary" />
+				<PlayIcon className="h-5 shrink-0 text-c-primary" />
 				<span className="overflow-hidden text-ellipsis whitespace-nowrap font-medium">
 					{currentChapter?.title}
 				</span>
-				<span className="text-light">-</span>
-				<span className="overflow-hidden text-ellipsis whitespace-nowrap font-medium text-secondary">
+				<span className="text-c-text-muted">-</span>
+				<span className="overflow-hidden text-ellipsis whitespace-nowrap font-medium text-c-primary">
 					{lesson.title}
 				</span>
 			</span>
@@ -387,7 +387,7 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 					<button
 						onClick={() => navigateToPreviousLesson()}
 						disabled={!previous}
-						className="rounded-lg border border-light-border p-2 disabled:text-gray-300"
+						className="rounded-lg border border-c-border p-2 disabled:text-gray-300"
 						title="Vorherige Lerneinheit"
 						data-testid="previousLessonButton"
 					>
@@ -396,7 +396,7 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 					<button
 						onClick={() => navigateToNextLesson()}
 						disabled={!next}
-						className="rounded-lg border border-light-border p-2 disabled:text-gray-300"
+						className="rounded-lg border border-c-border p-2 disabled:text-gray-300"
 						title="Nächste Lerneinheit"
 						data-testid="nextLessonButton"
 					>

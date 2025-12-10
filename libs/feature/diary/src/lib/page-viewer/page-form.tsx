@@ -208,9 +208,9 @@ export function DiaryContentForm({
 				<Tooltip content={"Wechselt zwischen der normalen und der kompakten Ansicht."}>
 					<button onClick={toggleCompactView}>
 						{isCompact ? (
-							<ArrowsPointingOutIcon className="h-6 w-6 text-gray-500" />
+							<ArrowsPointingOutIcon className="h-6 w-6 text-c-text-muted" />
 						) : (
-							<ArrowsPointingInIcon className="h-6 w-6 text-gray-500" />
+							<ArrowsPointingInIcon className="h-6 w-6 text-c-text-muted" />
 						)}
 					</button>
 				</Tooltip>

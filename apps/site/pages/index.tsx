@@ -31,7 +31,7 @@ export function LandingPage() {
 											href={t("Operator_URL")}
 											target="_blank"
 											rel="noreferrer"
-											className="font-semibold text-secondary hover:underline"
+											className="font-semibold text-c-primary hover:underline"
 										/>
 									)
 								}}
@@ -54,7 +54,7 @@ export function LandingPage() {
 								Link: (
 									<Link
 										href="/subjects"
-										className="w-fit rounded-lg bg-secondary px-16 py-6 text-center text-lg font-semibold text-white"
+										className="w-fit rounded-lg bg-c-primary hover:bg-c-primary-strong px-16 py-6 text-center text-lg font-semibold text-white"
 									/>
 								),
 								ul: (
@@ -72,7 +72,7 @@ export function LandingPage() {
 
 				<div
 					style={{ height: "384px", width: "384px" }}
-					className="animate-blob animation-delay-3000 absolute right-48 top-64 hidden rounded-full bg-secondary bg-pink-300 opacity-80 mix-blend-multiply blur-xl filter xl:block"
+					className="animate-blob animation-delay-3000 absolute right-48 top-64 hidden rounded-full bg-c-primary bg-pink-300 opacity-80 mix-blend-multiply blur-xl filter xl:block"
 				></div>
 
 				<div

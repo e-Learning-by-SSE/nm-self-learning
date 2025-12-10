@@ -159,7 +159,7 @@ export default function SettingsPage(props: PageProps) {
 	};
 
 	return (
-		<CenteredSection className="bg-gray-50">
+		<CenteredSection>
 			<h1 className="text-2xl font-bold">{t_common("Settings")}</h1>
 
 			{hasSettingsChanged ? (
@@ -182,7 +182,7 @@ export default function SettingsPage(props: PageProps) {
 					</div>
 				</div>
 			) : (
-				<p className="text-gray-600 text-sm mb-4">
+				<p className="text-c-text text-sm mb-4">
 					Einige Einstellungen werden möglicherweise erst nach einem erneuten Login aktiv.
 				</p>
 			)}
@@ -236,7 +236,7 @@ export default function SettingsPage(props: PageProps) {
 
 function SettingSection({ title, children }: { title: string; children: React.ReactNode }) {
 	return (
-		<section className="space-y-4 mt-8 rounded-lg border bg-gray-100 p-6">
+		<section className="space-y-4 mt-8 rounded-lg border bg-c-surface-2 p-6">
 			<h3>{title}</h3>
 			{children}
 		</section>

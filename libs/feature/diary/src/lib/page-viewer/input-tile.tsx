@@ -22,7 +22,7 @@ export function Tile({
 	return (
 		<div
 			className={`flex flex-grow justify-center items-center w-full min-h-48 px-4 py-2 rounded-lg cursor-pointer ${
-				isFilled ? "bg-green-100" : "bg-gray-100"
+				isFilled ? "bg-green-100" : "bg-c-surface-2"
 			}`}
 			onClick={() => onClick(true)}
 		>
@@ -78,8 +78,8 @@ export function CompactTile({
 }>) {
 	return (
 		<div className="flex flex-col">
-			<div className="relative -bottom-2 flex bg-gray-200 rounded-t-lg text-center">
-				<span className="text-gray-800 font-semibold p-2">{tileName}:</span>
+			<div className="relative -bottom-2 flex bg-c-surface-2 rounded-t-lg text-center">
+				<span className="text-c-text-strong font-semibold p-2">{tileName}:</span>
 			</div>
 
 			<Tile onClick={onClick} isFilled={isFilled}>
@@ -103,8 +103,8 @@ export function InfoTile({
 }>) {
 	return (
 		<div className="flex flex-col xl:grid xl:grid-cols-4 items-stretch w-full h-full space-y-1 xl:space-y-0 xl:space-x-4">
-			<div className="flex flex-col xl:col-span-1 bg-gray-200 rounded-lg text-center p-4 min-h-48">
-				<span className="text-gray-800 font-semibold">{tileName}:</span>
+			<div className="flex flex-col xl:col-span-1 bg-c-surface-3 rounded-lg text-center p-4 min-h-48">
+				<span className="text-c-text-strong font-semibold">{tileName}:</span>
 				<span className="text-gray-600 mt-1 py-4 info-tile-scroll flex-grow overflow-y-auto">
 					{tileDescription}
 				</span>
@@ -218,22 +218,23 @@ export function LocationChooseDialog({
 					return (
 						<div key={location.id} className="py-1 relative">
 							<div
-								className="flex w-full items-center space-x-4 rounded border border-gray-300 p-4 shadow-sm bg-white hover:bg-gray-100 cursor-pointer"
+								className="flex w-full items-center space-x-4 rounded border border-c-border-strong p-4 shadow-sm bg-white hover:bg-c-neutral-muted cursor-pointer"
 								onClick={() => handleLocationClick(location.id)}
 							>
 								{location.iconURL && location.iconURL !== "" && (
 									<Image src={location.iconURL} alt={""} width={48} height={48} />
 								)}
-								<span className="text-gray-800 flex-grow">{location.name}</span>
+								<span className="text-c-text-strong flex-grow">
+									{location.name}
+								</span>
 								{!location.defaultLocation && (
 									<IconOnlyButton
 										icon={<XMarkIcon className="h-3 w-3" />}
-										variant="x-mark"
 										onClick={e => {
 											e.stopPropagation();
 											deleteLearningLocationAsync(location.id);
 										}}
-										className="ml-auto text-red-500 hover:text-red-700"
+										className="btn-x-mark ml-auto text-c-danger hover:text-c-danger-strong"
 									/>
 								)}
 							</div>
@@ -245,7 +246,7 @@ export function LocationChooseDialog({
 						<input
 							ref={newLocationInputRef}
 							type="text"
-							className="w-full rounded border border-gray-300 p-4 shadow-sm"
+							className="w-full rounded border border-c-border-strong p-4 shadow-sm"
 							placeholder="Neuen Lernort hinzufügen... Drücke Enter zum Speichern"
 							// Erstellung ohne Buttons ermöglichen: Enter, oder verlassen des Feldes (onBlur)
 							onBlur={e => createNewLocation(e.target.value)}
@@ -395,7 +396,7 @@ export function LearningGoalInputTile({
 					{goals.entries().map(goal => (
 						<div
 							key={goal.id}
-							className="flex items-center p-2 border border-gray-300 rounded bg-gray-50 m-2"
+							className="flex items-center p-2 border border-c-border-strong rounded bg-c-surface-1 m-2"
 						>
 							<GoalStatusCheckbox goal={goal} editable={false} />
 							<span className="ml-2">{goal.description}</span>

@@ -5,7 +5,9 @@ import {
 	LoadingBox,
 	Table,
 	TableDataColumn,
-	TableHeaderColumn
+	TableHeaderColumn,
+	IconOnlyButton,
+	IconTextButton
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { AuthorGuard, useRequiredSession } from "@self-learning/ui/layouts";
@@ -58,7 +60,7 @@ export function SkillRepositoryOverview() {
 										<TableDataColumn>
 											<div className="flex flex-wrap gap-4">
 												<Link
-													className="text-sm font-medium hover:text-secondary"
+													className="text-sm font-medium hover:text-c-primary"
 													href={`/skills/repository/${id}`}
 												>
 													{name}
@@ -77,7 +79,7 @@ export function SkillRepositoryOverview() {
 								<tr key={"default:table"}>
 									<TableDataColumn>
 										<div className="flex flex-wrap gap-4">
-											<span className="text-sm font-medium hover:text-secondary">
+											<span className="text-sm font-medium hover:text-c-primary">
 												Keine Skillkarten vorhanden
 											</span>
 										</div>
@@ -99,13 +101,12 @@ function RepositoryTaskbar({ repositoryId }: { repositoryId: string }) {
 	return (
 		<div className="flex flex-row justify-end gap-4">
 			<Link href={`/skills/repository/${repositoryId}`}>
-				<button
-					type="button"
-					className="lg:flex rounded-lg lg:border lg:place-content-center lg:items-center border-gray-200 bg-white lg:w-fit lg:self-end p-2 lg:px-8 lg:py-2"
-				>
-					<PencilIcon className="icon" />
-					<span className="hidden lg:inline">Bearbeiten</span>
-				</button>
+				<IconTextButton
+					icon={<PencilIcon className="h-5 w-5" />}
+					text={"Bearbeiten"}
+					className="btn-stroked"
+					title="Repository bearbeiten"
+				/>
 			</Link>
 			<RepositoryDeleteOption repositoryId={repositoryId} />
 		</div>
@@ -131,19 +132,17 @@ function RepositoryDeleteOption({ repositoryId }: { repositoryId: string }) {
 
 	return (
 		<>
-			<button
-				className="rounded bg-red-500 font-medium text-white hover:bg-red-600"
+			<IconOnlyButton
+				icon={<TrashIcon className="h-5 w-5" />}
+				className="btn-danger"
 				onClick={() => setShowConfirmation(true)}
-			>
-				<div className="ml-4">
-					<TrashIcon className="icon " />
-				</div>
-			</button>
+				title={"Repository löschen"}
+			/>
 			{showConfirmation && (
 				<Dialog title={"Löschen"} onClose={handleCancel}>
 					Möchten Sie dieses Repository wirklich löschen?
 					<DialogActions onClose={handleCancel}>
-						<button className="btn-primary hover:bg-red-500" onClick={handleConfirm}>
+						<button className="btn-primary hover:bg-c-danger" onClick={handleConfirm}>
 							Löschen
 						</button>
 					</DialogActions>

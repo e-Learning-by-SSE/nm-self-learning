@@ -127,7 +127,7 @@ export function Question({
 			<article className="flex flex-col gap-8">
 				<div>
 					<div className="flex items-center justify-between">
-						<span className="font-semibold text-secondary" data-testid="questionType">
+						<span className="font-semibold text-c-primary" data-testid="questionType">
 							{QUESTION_TYPE_DISPLAY_NAMES[question.type]}
 						</span>
 						<div className="flex gap-4">
@@ -148,7 +148,7 @@ export function Question({
 							<MDXRemote {...markdown.questionsMd[question.questionId]} />
 						</MarkdownContainer>
 					) : (
-						<span className="text-red-500">Error: No markdown content found.</span>
+						<span className="text-c-danger">Error: No markdown content found.</span>
 					)}
 				</div>
 
@@ -182,7 +182,7 @@ function CheckResult({
 		//here?
 	}
 	if (!currentEvaluation) {
-		<span className="text-red-500">No question state found for this question.</span>;
+		<span className="text-c-danger">No question state found for this question.</span>;
 	}
 
 	const canGoToNextQuestion = !!currentEvaluation;
@@ -197,7 +197,7 @@ function CheckResult({
 	);
 
 	const renderFailedButton = () => (
-		<button className="btn bg-red-500" onClick={reload}>
+		<button className="btn bg-c-danger" onClick={reload}>
 			<span>Erneut probieren</span>
 			<ArrowPathIcon className="h-5" />
 		</button>
@@ -219,11 +219,11 @@ export function QuestionTab(props: { evaluation: { isCorrect: boolean } | null; 
 		<span className="flex items-center gap-4">
 			{isCorrect ? (
 				<QuestionTabIcon>
-					<CheckCircleIcon className="h-5 text-secondary" />
+					<CheckCircleIcon className="h-5 text-c-primary" />
 				</QuestionTabIcon>
 			) : isIncorrect ? (
 				<QuestionTabIcon>
-					<XCircleIcon className="h-5 text-red-500" />
+					<XCircleIcon className="h-5 text-c-danger" />
 				</QuestionTabIcon>
 			) : (
 				<QuestionTabIcon>

@@ -79,7 +79,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 		if (item) {
 			// render chapter content here
 		} else {
-			return <span className="text-red-500">Book is empty :(</span>;
+			return <span className="text-c-danger">Book is empty :(</span>;
 		}
 	}
 
