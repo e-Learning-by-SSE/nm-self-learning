@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 export function ProgressBar({
 	progressPercentage,
-	bgColor = "bg-secondary",
+	bgColor = "bg-c-primary",
 	text
 }: {
 	progressPercentage: number;
@@ -10,7 +10,7 @@ export function ProgressBar({
 	text?: string;
 }) {
 	return (
-		<div className="relative h-5 w-full rounded-lg bg-gray-200">
+		<div className="relative h-5 w-full rounded-lg bg-c-surface-3">
 			<motion.div
 				className={`absolute left-0 h-5 rounded-lg ${bgColor}`}
 				initial={{ width: 0 }}
@@ -21,7 +21,7 @@ export function ProgressBar({
 			/>
 			<div
 				className={`absolute top-0 w-full px-2 text-start text-sm font-semibold ${
-					progressPercentage === 0 ? "text-secondary" : "text-white"
+					progressPercentage === 0 ? "text-c-primary" : "text-white"
 				}`}
 				style={{ justifyContent: "flex-start" }}
 			>
@@ -34,9 +34,9 @@ export function ProgressBar({
 export function ProgressBarAnimated({ progressPercentage }: { progressPercentage: number }) {
 	return (
 		<div className="mt-3">
-			<div className="relative h-5 w-full rounded-lg bg-gray-200 overflow-hidden">
+			<div className="relative h-5 w-full rounded-lg bg-c-surface-3 overflow-hidden">
 				<motion.div
-					className="absolute left-0 h-5 rounded-lg bg-gradient-to-r from-emerald-400 to-emerald-600"
+					className="absolute left-0 h-5 rounded-lg bg-gradient-to-r from-c-primary-muted to-c-primary-strong"
 					initial={{ width: 0 }}
 					animate={{
 						width: `${progressPercentage}%`
@@ -64,7 +64,7 @@ export function ProgressBarAnimated({ progressPercentage }: { progressPercentage
 
 				<div
 					className={`absolute top-0 w-full px-2 text-start text-sm font-semibold flex items-center h-full ${
-						progressPercentage === 0 ? "text-emerald-600" : "text-white"
+						progressPercentage === 0 ? "text-c-primary-strong" : "text-white"
 					}`}
 				>
 					{Math.round(progressPercentage)}%
@@ -72,9 +72,9 @@ export function ProgressBarAnimated({ progressPercentage }: { progressPercentage
 			</div>
 
 			<div className="flex justify-between items-center mt-1">
-				<p className="text-xs text-gray-500">{progressPercentage}/100</p>
+				<p className="text-xs text-c-text-muted">{progressPercentage}/100</p>
 				{progressPercentage >= 100 && (
-					<span className="text-xs text-emerald-600 font-semibold animate-pulse">
+					<span className="text-xs text-c-primary-strong font-semibold animate-pulse">
 						Abgeschlossen!
 					</span>
 				)}

@@ -22,7 +22,7 @@ function QuestionLink({
 }) {
 	return (
 		<Link
-			className="text-secondary"
+			className="text-c-primary"
 			href={`${courseUrlPath}/quiz?index=${quizIndex}`}
 			target="_blank"
 		>
@@ -132,7 +132,7 @@ function SectionTitle({ slug, item }: { slug: string; item: IncompleteNanoModule
 	return (
 		<div className="flex">
 			<Link href={`/courses/${slug}/${item.nanomodule.slug}`} target="_blank">
-				<div className="text-lg text-secondary">{item.nanomodule.name}</div>
+				<div className="text-lg text-c-primary">{item.nanomodule.name}</div>
 			</Link>
 			<p className="ml-2 text-lg font-normal">{`(${item.missedElements.length} unvollständige Elemente)`}</p>
 		</div>

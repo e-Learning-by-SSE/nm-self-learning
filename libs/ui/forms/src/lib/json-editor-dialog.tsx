@@ -62,7 +62,7 @@ export function JsonEditorDialog<T>({
 
 						{error && (
 							<div className="mb-8 max-h-32 overflow-auto">
-								<pre className="rounded-lg bg-red-50 p-4 pb-4 text-xs text-red-500">
+								<pre className="rounded-lg bg-c-danger-subtle p-4 pb-4 text-xs text-c-danger">
 									{error}
 								</pre>
 							</div>
@@ -75,21 +75,21 @@ export function JsonEditorDialog<T>({
 							onChange={value => setJsonValue(value ?? "{}")}
 						/>
 
-						<div className="mt-8 flex gap-4">
-							<button
-								type="button"
-								className="btn-primary w-fit"
-								onClick={closeWithReturn}
-							>
-								{t("save")}
-							</button>
-
+						<div className="mt-8 flex gap-4 justify-end">
 							<button
 								type="button"
 								className="btn-stroked w-fit"
 								onClick={() => onClose(undefined)}
 							>
 								{t("Abort")}
+							</button>
+
+							<button
+								type="button"
+								className="btn-primary w-fit"
+								onClick={closeWithReturn}
+							>
+								{t("save")}
 							</button>
 						</div>
 					</DialogPanel>

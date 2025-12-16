@@ -109,7 +109,7 @@ export default function AuthorsPage() {
 										<TableDataColumn>
 											<div className="flex flex-wrap gap-4">
 												<Link
-													className="text-sm font-medium hover:text-secondary"
+													className="text-sm font-medium hover:text-c-primary"
 													href={`/authors/${author.slug}`}
 												>
 													{author.displayName}
@@ -118,7 +118,7 @@ export default function AuthorsPage() {
 													{author.subjectAdmin.map(({ subject }) => (
 														<span
 															key={subject.title}
-															className="rounded-full bg-secondary px-3 py-[2px] text-white"
+															className="rounded-full bg-c-primary px-3 py-[2px] text-white"
 														>
 															Admin: {subject.title}
 														</span>

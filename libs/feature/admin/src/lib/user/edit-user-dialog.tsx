@@ -95,11 +95,11 @@ function UserForm({
 				</div>
 
 				<div className="grid gap-4 overflow-y-auto pb-12 xl:grid-cols-[1fr_300px] xl:overflow-y-hidden">
-					<div className="rounded-lg border border-light-border p-6 xl:row-span-3">
+					<div className="rounded-lg border border-c-border p-6 xl:row-span-3">
 						<UserData />
 					</div>
-					<div className=" rounded-lg border border-red-300 bg-red-50 p-6">
-						<h2 className="text-lg font-bold text-red-700">
+					<div className=" rounded-lg border border-c-danger-muted bg-c-danger-subtle p-6">
+						<h2 className="text-lg font-bold text-c-danger-strong">
 							{" "}
 							<span role="img" aria-label="Warning">
 								⚠️
@@ -203,7 +203,7 @@ function UserData() {
 												className="mx-auto h-32 w-32 shrink-0 rounded-lg object-cover"
 											></img>
 										) : (
-											<div className="mx-auto h-32 w-32  shrink-0 rounded-lg bg-gray-200"></div>
+											<div className="mx-auto h-32 w-32  shrink-0 rounded-lg bg-c-surface-2"></div>
 										)}
 									</>
 								}
@@ -277,7 +277,7 @@ function ActionButtons({ username }: { username: string }) {
 		<div className="">
 			<button
 				type="button"
-				className="flex min-w-full justify-start gap-2 rounded-lg bg-red-500 px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600 disabled:bg-opacity-25"
+				className="flex min-w-full justify-start gap-2 rounded-lg bg-c-danger px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-c-danger-strong disabled:bg-opacity-25"
 				onClick={onDeleteUser}
 			>
 				{deleteData ? (
@@ -294,7 +294,7 @@ function ActionButtons({ username }: { username: string }) {
 			</button>
 			<button
 				type="button"
-				className="mt-4 flex min-w-full justify-start gap-2 rounded-lg bg-red-500 px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600 disabled:bg-opacity-25"
+				className="mt-4 flex min-w-full justify-start gap-2 rounded-lg bg-c-danger px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-c-danger-strong disabled:bg-opacity-25"
 				onClick={onDeleteAllData}
 			>
 				{deleteData ? (

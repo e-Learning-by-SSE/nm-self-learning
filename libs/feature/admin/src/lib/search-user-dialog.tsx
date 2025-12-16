@@ -52,7 +52,7 @@ export function SearchUserDialog({
 									type="button"
 									data-testid="author-option"
 									className={`flex items-center gap-4 rounded px-4 py-2 ${
-										focus ? "bg-secondary text-white" : ""
+										focus ? "bg-c-primary text-white" : ""
 									}`}
 									onClick={() => {
 										onClose(user.name);
@@ -66,7 +66,7 @@ export function SearchUserDialog({
 										<span className="text-sm font-medium">{user.name}</span>
 										<span
 											className={`text-start text-xs ${
-												focus ? "text-white" : "text-light"
+												focus ? "text-white" : "text-c-text-muted"
 											}`}
 										>
 											{user.email}

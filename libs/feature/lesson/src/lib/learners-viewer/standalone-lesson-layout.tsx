@@ -43,7 +43,7 @@ export function StandaloneLessonLayout(
 
 function StandaloneLessonPlaylistArea({ lesson }: StandaloneLessonLayoutProps) {
 	return (
-		<aside className="playlist-scroll sticky top-[61px] w-full overflow-auto border-t border-r-gray-200 pb-8 xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4">
+		<aside className="playlist-scroll sticky top-[61px] w-full overflow-auto border-t border-r-c-border pb-8 xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4">
 			{/** to be implemented */}
 		</aside>
 	);

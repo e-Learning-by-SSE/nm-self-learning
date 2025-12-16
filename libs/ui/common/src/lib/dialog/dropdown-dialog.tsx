@@ -43,8 +43,8 @@ export function SearchInput({
 	placeholder: string;
 }) {
 	return (
-		<span className="flex items-center border-b border-b-light-border py-1 px-4">
-			<MagnifyingGlassIcon className="h-6 px-2 text-light" />
+		<span className="flex items-center border-b border-b-c-border py-1 px-4">
+			<MagnifyingGlassIcon className="h-6 px-2 text-c-text-muted" />
 			<ComboboxInput
 				className="w-full border-none focus:ring-0"
 				placeholder={placeholder}
@@ -59,7 +59,7 @@ export function SearchInput({
 export function Options({ children }: { children: React.ReactNode }) {
 	return (
 		<div className="playlist-scroll overflow-auto">
-			<ComboboxOptions static={true} className="flex flex-col divide-y divide-light-border">
+			<ComboboxOptions static={true} className="flex flex-col divide-y divide-c-border">
 				{children}
 			</ComboboxOptions>
 		</div>
@@ -67,5 +67,5 @@ export function Options({ children }: { children: React.ReactNode }) {
 }
 
 export function PaginationContainer({ children }: { children: React.ReactNode }) {
-	return <span className="border-b border-light-border px-4">{children}</span>;
+	return <span className="border-b border-c-border px-4">{children}</span>;
 }
