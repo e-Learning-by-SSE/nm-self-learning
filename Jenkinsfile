@@ -99,7 +99,8 @@ pipeline {
                                     sh "env TZ=${env.TZ} npx nx affected --base=${lastSuccessSHA} -t lint build e2e-ci"
                                 }
 
-							build job: 'docs/sphinx',
+							def child = env.CHANGE_ID ? "PR-${env.CHANGE_ID}" : env.BRANCH_NAME.replace('/', '%2F')
+							build job: 'Teaching_NM-SelfLearn-Docs/${child}',
 								wait: true,
 								propagate: true,
 								parameters: [
@@ -143,7 +144,8 @@ pipeline {
                                 sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
                             }
 							
-							build job: 'docs/sphinx',
+							def child = env.CHANGE_ID ? "PR-${env.CHANGE_ID}" : env.BRANCH_NAME.replace('/', '%2F')
+							build job: 'Teaching_NM-SelfLearn-Docs/${child}',
 								wait: true,
 								propagate: true,
 								parameters: [
@@ -214,6 +216,7 @@ pipeline {
                             return params.RELEASE_LATEST_VERSION != ''
                         }
                     }
+					
                     steps {
                         script {
                             def newVersion = params.RELEASE_LATEST_VERSION
@@ -238,7 +241,8 @@ pipeline {
                                 sh "npm version ${newVersion}"
                             }
 
-							build job: 'docs/sphinx',
+							def child = env.CHANGE_ID ? "PR-${env.CHANGE_ID}" : env.BRANCH_NAME.replace('/', '%2F')
+							build job: 'Teaching_NM-SelfLearn-Docs/${child}',
 								wait: true,
 								propagate: true,
 								parameters: [
