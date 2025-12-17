@@ -7,6 +7,8 @@ def buildDocs(Map cfg = [:]) {
   def langs     = cfg.get('langs', ['de','en'])
   String releaseTag = latest ? 'latest' : version
 
+  def baseDir = pwd()
+
   for (l in langs) {
     stage("Build docs: ${l}") {
       sh """
