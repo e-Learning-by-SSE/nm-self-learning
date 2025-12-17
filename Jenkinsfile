@@ -98,7 +98,7 @@ pipeline {
                                     sh 'npm run seed' // this can be changed in the future to "npx prisma migrate reset" to test the migration files
                                     sh "env TZ=${env.TZ} npx nx affected --base=${lastSuccessSHA} -t lint build e2e-ci"
                                 }
-                            def buildDocs = load 'docs/online_documentation/build.groovy'
+                            def buildDocs = load 'docs/sphinx/build.groovy'
                             buildDocs.buildDocs(version: "unstable")
                         }
                         ssedocker {
@@ -137,7 +137,7 @@ pipeline {
                                 sh 'npm run seed'
                                 sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
                             }
-                            def buildDocs = load 'docs/online_documentation/build.groovy'
+                            def buildDocs = load 'docs/sphinx/build.groovy'
                             buildDocs.buildDocs(version: "${env.VERSION}")
                         }
                         ssedocker {
@@ -228,7 +228,7 @@ pipeline {
                                 sh "npm version ${newVersion}"
                             }
 
-                            def buildDocs = load 'docs/online_documentation/build.groovy'
+                            def buildDocs = load 'docs/sphinx/build.groovy'
                             buildDocs.buildDocs(version: "${params.RELEASE_LATEST_VERSION}", latest: true)
 
                             sshagent(['STM-SSH-DEMO']) {
