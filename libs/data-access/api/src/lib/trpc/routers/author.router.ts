@@ -1,4 +1,4 @@
-import { database, getCoursesAndSubjects } from "@self-learning/database";
+import { database, getAdministratedCourses } from "@self-learning/database";
 import { authorSchema } from "@self-learning/types";
 import { z } from "zod";
 import { adminProcedure, authorProcedure, authProcedure, t } from "../trpc";
@@ -69,8 +69,8 @@ export const authorRouter = t.router({
 				}
 			});
 		}),
-	getCoursesAndSubjects: authorProcedure.query(async ({ ctx }) => {
-		return getCoursesAndSubjects(ctx.user.name);
+	getAdministratedCourses: authorProcedure.query(async ({ ctx }) => {
+		return getAdministratedCourses(ctx.user.name);
 	}),
 	courseParticipation: authorProcedure.input(participantsInputSchema).query(async ({ input }) => {
 		return courseParticipation({

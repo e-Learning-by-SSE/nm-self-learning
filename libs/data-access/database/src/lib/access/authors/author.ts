@@ -2,7 +2,7 @@ import { database } from "@self-learning/database";
 import { ResolvedValue } from "@self-learning/types";
 
 // TODO move to database access layer
-export async function getCoursesAndSubjects(name: string) {
+export async function getAdministratedCourses(name: string) {
 	return await database.permission.findMany({
 		where: {
 			accessLevel: "FULL",
@@ -17,7 +17,7 @@ export async function getCoursesAndSubjects(name: string) {
 				}
 			}
 		},
-		distinct: ["courseId"], // now it works correctly
+		distinct: ["courseId"],
 		select: {
 			accessLevel: true,
 			course: { select: { courseId: true, title: true, slug: true } }
@@ -25,4 +25,4 @@ export async function getCoursesAndSubjects(name: string) {
 	});
 }
 
-export type AuthorCoursesAndSubjects = ResolvedValue<typeof getCoursesAndSubjects>;
+export type AdministratedCourses = ResolvedValue<typeof getAdministratedCourses>;

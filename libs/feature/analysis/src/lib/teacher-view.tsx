@@ -106,7 +106,7 @@ function CourseParticipation({
 export function TeacherView() {
 	const today = new Date();
 	const semester = getSemester(today);
-	const { data, isLoading } = trpc.author.getCoursesAndSubjects.useQuery();
+	const { data, isLoading } = trpc.author.getAdministratedCourses.useQuery();
 
 	if (isLoading) {
 		return <p>Loading...</p>;
