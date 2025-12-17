@@ -43,7 +43,6 @@ export const getServerSideProps = withTranslations(
 				permissions: {
 					select: {
 						accessLevel: true,
-						grantorId: true,
 						group: {
 							select: {
 								id: true,
@@ -103,8 +102,7 @@ export const getServerSideProps = withTranslations(
 			permissions: course.permissions.map(p => ({
 				accessLevel: p.accessLevel,
 				groupId: p.group.id,
-				groupName: p.group.name,
-				grantorId: p.grantorId
+				groupName: p.group.name
 			}))
 		};
 

@@ -17,10 +17,6 @@ export function GroupForm({ subtitle }: { subtitle: string }) {
 		name: "permissions"
 	});
 
-	const grantorGroup = useMemo(() => {
-		return permissions?.find(p => !p.grantorId) ?? null;
-	}, [permissions]);
-
 	return (
 		<Form.SidebarSection>
 			<Form.SidebarSectionTitle title="Gruppe" subtitle={subtitle}>
@@ -35,24 +31,10 @@ export function GroupForm({ subtitle }: { subtitle: string }) {
 				name="permissions"
 				control={control}
 				render={({ field, fieldState }) => {
-					const selectedGroupText = grantorGroup?.groupName ?? "Keine Gruppe gewählt";
 					const error = fieldState.error?.message;
 
 					return (
 						<>
-							{!grantorGroup && (
-								<p className="text-sm text-light">{selectedGroupText}</p>
-							)}
-							{grantorGroup && (
-								<Chip
-									onRemove={() => {
-										field.onChange([]);
-									}}
-									displayImage={false}
-								>
-									{selectedGroupText}
-								</Chip>
-							)}
 							{isGroupDialogOpen && (
 								<SearchGroupDialog
 									isOpen={isGroupDialogOpen}
@@ -96,9 +78,6 @@ export function ResourceAccessEditor({ subtitle }: { subtitle: string }) {
 		control,
 		name: "permissions"
 	});
-	const grantorGroup = useMemo(() => {
-		return permissions?.find(p => !p.grantorId) ?? null;
-	}, [permissions]);
 
 	return (
 		<Form.SidebarSection>
@@ -111,14 +90,11 @@ export function ResourceAccessEditor({ subtitle }: { subtitle: string }) {
 			</Form.SidebarSectionTitle>
 
 			<>
-				{grantorGroup && permissions.length <= 1 && (
+				{permissions.length === 0 ? (
 					<p className="text-sm text-light">Keine Gruppen</p>
-				)}
-				{!grantorGroup && <p className="text-sm text-light">Keine Hauptgruppe</p>}
-				{grantorGroup && (
+				) : (
 					<div className="flex flex-col gap-2">
 						{editor.fields.map((field, index) => {
-							if (!field.grantorId) return null;
 							return (
 								<Controller
 									key={field.id}
@@ -152,15 +128,13 @@ export function ResourceAccessEditor({ subtitle }: { subtitle: string }) {
 						})}
 					</div>
 				)}
-				{isGroupDialogOpen && grantorGroup && (
+				{isGroupDialogOpen && (
 					<SearchGroupDialog
 						isOpen={isGroupDialogOpen}
 						isGlobalSearch={true}
 						onClose={group => {
 							setGroupDialogOpen(false);
 							if (!group) return;
-							// check if the same as grantor
-							if (grantorGroup.groupId === group.groupId) return;
 							// check if already appended
 							const duplicate = editor.fields.find(u => u.groupId === group?.groupId);
 							if (duplicate) return;
@@ -168,8 +142,7 @@ export function ResourceAccessEditor({ subtitle }: { subtitle: string }) {
 							editor.append({
 								groupId: group.groupId,
 								accessLevel: AccessLevel.EDIT,
-								groupName: group.name,
-								grantorId: grantorGroup.groupId
+								groupName: group.name
 							});
 						}}
 					/>
@@ -186,18 +159,16 @@ export function GroupAccessEditor({ subtitle }: { subtitle: string }) {
 	// Admin can assign any group as main
 	const session = useRequiredSession();
 	const isAdmin = session.data?.user.role === "ADMIN";
+	const memberships = session.data?.user.memberships;
+
+	const mmbrSet = useMemo(() => new Set(memberships ?? []), [memberships]);
 
 	const editor = useFieldArray({
 		name: "permissions",
 		control
 	});
 
-	const permissions = useWatch({
-		control,
-		name: "permissions"
-	});
-
-	const grantorGroup = useMemo(() => permissions?.find(p => !p.grantorId) ?? null, [permissions]);
+	const isEmpty = editor.fields.length === 0;
 
 	const { errors } = useFormState({ control });
 	const error = errors.permissions?.message;
@@ -211,14 +182,13 @@ export function GroupAccessEditor({ subtitle }: { subtitle: string }) {
 	const handleAddGroup = (group?: GroupSearchEntry) => {
 		if (!group) return;
 
-		if (!grantorGroup) {
-			// first group becomes grantor
+		if (editor.fields.length === 0) {
+			// first group becomes has full
 			editor.replace([
 				{
 					groupId: group.groupId,
 					accessLevel: AccessLevel.FULL,
-					groupName: group.name,
-					grantorId: null
+					groupName: group.name
 				}
 			]);
 		} else {
@@ -229,52 +199,56 @@ export function GroupAccessEditor({ subtitle }: { subtitle: string }) {
 			editor.append({
 				groupId: group.groupId,
 				accessLevel: AccessLevel.EDIT,
-				groupName: group.name,
-				grantorId: grantorGroup.groupId
+				groupName: group.name
 			});
 		}
 	};
+
+	function handleRemoveGroup(index: number, value: LessonFormModel["permissions"][number]) {
+		// check if it is last group user has access to
+		const mmbrCnt = editor.fields.reduce(
+			(count, g) => count + (mmbrSet.has(g.groupId) ? 1 : 0),
+			0
+		);
+		if (
+			mmbrCnt === 1 &&
+			mmbrSet.has(value.groupId) &&
+			!window.confirm(
+				"Durch das Entfernen dieses Gruppenzugriffs verlieren Sie Ihren Zugriff. Fortfahren?"
+			)
+		)
+			return;
+		editor.remove(index);
+	}
 
 	return (
 		<Form.SidebarSection>
 			<Form.SidebarSectionTitle title="Gruppe & Zugriff" subtitle={subtitle}>
 				<IconButton
-					text={grantorGroup ? "Hinzufügen" : "Auswählen"}
-					icon={
-						grantorGroup ? (
-							<PlusIcon className="icon h-5" />
-						) : (
-							<ArrowsUpDownIcon className="icon h-5" />
-						)
-					}
+					text={"Hinzufügen"}
+					icon={<PlusIcon className="icon h-5" />}
 					onClick={() => setGroupDialogOpen(true)}
 				/>
 			</Form.SidebarSectionTitle>
 
-			{/* Grantor Group */}
-			{grantorGroup ? (
-				<Chip
-					displayImage={false}
-					onRemove={() => editor.replace([])} // clears everything
-				>
-					{grantorGroup.groupName}
-				</Chip>
-			) : (
-				<p className="text-sm text-light">Keine Hauptgruppe gewählt</p>
-			)}
+			{isEmpty && <p className="text-sm text-light">Keine Gruppen</p>}
 
-			{/* Additional Groups */}
 			<div className="flex flex-col gap-2 mt-2">
-				{editor.fields.map((field, index) => {
-					if (!field.grantorId) return null; // skip grantor
-					return (
-						<Controller
-							key={field.id}
-							name={`permissions.${index}`}
-							control={control}
-							render={({ field }) => (
-								<Chip displayImage={false} onRemove={() => editor.remove(index)}>
-									<span>{field.value?.groupName}</span>
+				{editor.fields.map((field, index) => (
+					<Controller
+						key={field.id}
+						name={`permissions.${index}`}
+						control={control}
+						render={({ field }) => {
+							const tmp = mmbrSet.has(field.value?.groupId);
+							return (
+								<Chip
+									displayImage={false}
+									onRemove={() => handleRemoveGroup(index, field.value)}
+								>
+									<span>
+										{field.value?.groupName} {tmp && <i>(Mitglied)</i>}
+									</span>
 									<LabeledField label="Zugriffsebene auswählen">
 										<GenericCombobox
 											value={field.value?.accessLevel ?? null}
@@ -289,17 +263,16 @@ export function GroupAccessEditor({ subtitle }: { subtitle: string }) {
 										/>
 									</LabeledField>
 								</Chip>
-							)}
-						/>
-					);
-				})}
+							);
+						}}
+					/>
+				))}
 			</div>
 
-			{/* Group Dialog */}
 			{isGroupDialogOpen && (
 				<SearchGroupDialog
 					isOpen={isGroupDialogOpen}
-					isGlobalSearch={!!grantorGroup || isAdmin}
+					isGlobalSearch={!isEmpty || isAdmin}
 					onClose={group => {
 						setGroupDialogOpen(false);
 						handleAddGroup(group);

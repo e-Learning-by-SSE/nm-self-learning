@@ -31,7 +31,6 @@ const selectStatement = {
 	permissions: {
 		select: {
 			accessLevel: true,
-			grantorId: true,
 			groupId: true
 		}
 	}

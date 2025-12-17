@@ -17,8 +17,7 @@ export const courseFormSchema = z.object({
 		.object({
 			accessLevel: z.nativeEnum(AccessLevel),
 			groupId: z.number(),
-			groupName: z.string(),
-			grantorId: z.number().nullable()
+			groupName: z.string()
 		})
 		.array()
 		.min(1, "At least one permission is required")
@@ -56,7 +55,6 @@ export function mapCourseFormToInsert(
 }
 
 export type CoursePermission = {
-	grantorId?: number | null;
 	groupId: number;
 	accessLevel: AccessLevel;
 };
@@ -87,8 +85,7 @@ export function mapCourseFormToUpdate(
 				},
 				create: p,
 				update: {
-					accessLevel: p.accessLevel,
-					grantorId: p.grantorId
+					accessLevel: p.accessLevel
 				}
 			}))
 		}

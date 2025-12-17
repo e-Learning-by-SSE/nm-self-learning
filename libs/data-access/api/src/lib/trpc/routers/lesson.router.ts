@@ -70,15 +70,20 @@ export const lessonRouter = t.router({
 			} satisfies Paginated<unknown>;
 		}),
 	create: authProcedure.input(lessonSchema).mutation(async ({ input, ctx }) => {
-		// make sure one permission is "original"
-		const grantorGroup = input.permissions.find(p => !p.grantorId);
-		if (input.permissions.filter(p => !p.grantorId).length !== 1 || !grantorGroup) {
+		// make sure at least one permission is FULL
+		if (input.permissions.filter(p => p.accessLevel === AccessLevel.FULL).length > 0) {
 			throw new TRPCError({
 				code: "BAD_REQUEST",
-				message: "requires exactly one permission not as a grant."
+				message: "requires at least one FULL permission."
 			});
 		}
-		if (!(await canCreate(ctx.user, grantorGroup.groupId))) {
+		// can create if user is a member of at least one group
+		const canCreate = await database.member.findFirst({
+			where: {
+				userId: ctx.user.id
+			}
+		});
+		if (!canCreate) {
 			throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
 		}
 		const createdLesson = await database.lesson.create({
@@ -95,8 +100,7 @@ export const lessonRouter = t.router({
 				permissions: {
 					create: input.permissions.map(p => ({
 						accessLevel: p.accessLevel,
-						groupId: p.groupId,
-						grantorId: p.grantorId ?? null
+						groupId: p.groupId
 					}))
 				}
 			},
@@ -121,30 +125,27 @@ export const lessonRouter = t.router({
 			const perms = input.lesson.permissions.map(p => {
 				return {
 					accessLevel: p.accessLevel,
-					groupId: p.groupId,
-					grantorId: p.grantorId ?? null
+					groupId: p.groupId
 				};
 			});
-			// check if grantor group is valid
-			const grantorGroup = perms.find(p => !p.grantorId);
-			if (perms.filter(p => !p.grantorId).length !== 1 || !grantorGroup) {
+			// make sure at least one permission is FULL
+			if (perms.filter(p => p.accessLevel === AccessLevel.FULL).length > 0) {
 				throw new TRPCError({
 					code: "BAD_REQUEST",
-					message: "requires exactly one permission not as a grant."
+					message: "requires at least one FULL permission."
 				});
 			}
 			// fetch existing permissions to delermine diffs
 			const existingPerms = await database.permission.findMany({
 				where: { lessonId: input.lessonId },
-				select: { groupId: true, grantorId: true, accessLevel: true }
+				select: { groupId: true, accessLevel: true }
 			});
 			// compute if premissions are equal
 			type Permission = {
-				grantorId?: number | null;
 				groupId: number;
 				accessLevel: AccessLevel;
 			};
-			const toKey = (p: Permission) => `${p.groupId}|${p.accessLevel}|${p.grantorId ?? "-"}`;
+			const toKey = (p: Permission) => `${p.groupId}|${p.accessLevel}`;
 			const keys = new Set(perms.map(toKey));
 			const equal =
 				existingPerms.length === perms.length &&
@@ -157,17 +158,6 @@ export const lessonRouter = t.router({
 						code: "FORBIDDEN",
 						message: "Insufficient permissions to update permissions"
 					});
-				}
-				// get old grantor group
-				const oldGrantor = existingPerms.find(p => !p.grantorId);
-				if ((oldGrantor && toKey(oldGrantor)) !== toKey(grantorGroup)) {
-					// changed grantor group
-					if (!(await canCreate(ctx.user, grantorGroup.groupId))) {
-						throw new TRPCError({
-							code: "FORBIDDEN",
-							message: "Insufficient permissions to change grantor group"
-						});
-					}
 				}
 			}
 			// update
@@ -192,8 +182,7 @@ export const lessonRouter = t.router({
 							},
 							create: p,
 							update: {
-								accessLevel: p.accessLevel,
-								grantorId: p.grantorId
+								accessLevel: p.accessLevel
 							}
 						}))
 					}

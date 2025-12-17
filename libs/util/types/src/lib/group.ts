@@ -100,7 +100,6 @@ export function createEmptyGroup(): Group {
 export type GroupAccess = {
 	groupId: number;
 	accessLevel: AccessLevel;
-	grantorId: number | null;
 };
 
 //

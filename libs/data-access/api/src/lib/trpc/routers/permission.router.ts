@@ -53,7 +53,6 @@ export type MembershipInput = z.infer<typeof MembershipInputSchema>;
 
 export type PermissionInput = {
 	groupId: number;
-	grantorId?: number | null;
 	accessLevel: AccessLevel;
 } & ResourceInput;
 
@@ -93,7 +92,7 @@ export async function getUserPermission({
 				members: {
 					some: {
 						userId: userId,
-						OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }]
+						OR: [{ expiresAt: null }, { expiresAt: { gt: date } }]
 					}
 				}
 			}
@@ -583,17 +582,15 @@ export const permissionRouter = t.router({
 			const userId = ctx.user.id; // grantor
 			// check if grantor has FULL access level to that resource (does not need to be in the group)
 			let hasAccess = ctx.user.role === "ADMIN";
-			let grantorId: number | null = null;
 			if (!hasAccess) {
-				const { accessLevel, groupId } = await getUserPermission({ userId, ...permission });
+				const { accessLevel } = await getUserPermission({ userId, ...permission });
 				hasAccess = !!accessLevel && greaterOrEqAccessLevel(accessLevel, AccessLevel.FULL);
-				grantorId = groupId;
 			}
 			if (!hasAccess) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 			}
 			// now create new permission
-			return await createGroupPermission({ groupId, grantorId, ...permission });
+			return await createGroupPermission({ groupId, ...permission });
 			// TODO make log of permission created
 		}),
 	// Done by resource owners, grantor group admins, group admins, or website admins
@@ -615,7 +612,6 @@ export const permissionRouter = t.router({
 			// can revoke if owner of resource or group editor
 			let hasAccess = ctx.user.role === "ADMIN";
 			if (!hasAccess) {
-				// Do not need to check grantorId as they must have FULL access
 				hasAccess = await anyTrue([
 					() => hasGroupRole(perm.groupId, userId, GroupRole.ADMIN),
 					() => hasResourceAccess({ userId, accessLevel: AccessLevel.FULL, ...data })

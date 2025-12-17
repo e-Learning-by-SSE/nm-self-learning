@@ -18,8 +18,7 @@ export const lessonSchema = z.object({
 		.object({
 			accessLevel: z.nativeEnum(AccessLevel),
 			groupId: z.number(),
-			groupName: z.string(),
-			grantorId: z.number().nullable()
+			groupName: z.string()
 		})
 		.array()
 		.min(1, "At least one permission is required"),
