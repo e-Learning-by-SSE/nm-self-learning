@@ -1,0 +1,92 @@
+@Library('web-service-helper-lib') _
+
+pipeline {
+  agent { label 'docker' }
+
+  options {
+    timestamps()
+    ansiColor('xterm')
+  }
+
+  environment {
+	DOCKER_IMAGE_NAME = 'ghcr.io/e-learning-by-sse/nm-self-learn-docs'
+  }
+  
+  parameters {
+    booleanParam(name: 'LATEST', defaultValue: false)
+    string(name: 'DOCKER_VERSION', defaultValue: '')
+  }
+
+  stages {
+    stage('Prepare') {
+		// Initialize Docker plugin for ssedocker cmd
+		agent {
+			docker {
+				image "node:21-bullseye"
+			}
+		}
+		steps {
+			sh '''
+				set -e
+				rm -rf "$WORKSPACE/build"
+				mkdir -p "$WORKSPACE/build"
+			'''
+		}
+    }
+
+    stage('Build docs: de') {
+		steps {
+			sh '''
+				set -e
+				uid="$(id -u)"; gid="$(id -g)"
+				docker run --rm \
+					--user "$uid:$gid" \
+					-v "$WORKSPACE/docs:/docs" \
+					-v "$WORKSPACE/build:/build" \
+					sphinxdoc/sphinx \
+					sphinx-build -b html /docs/de/source /build/de
+			'''
+		}
+    }
+
+    stage('Build docs: en') {
+		steps {
+			sh '''
+			set -e
+			uid="$(id -u)"; gid="$(id -g)"
+			docker run --rm \
+				--user "$uid:$gid" \
+				-v "$WORKSPACE/docs:/docs" \
+				-v "$WORKSPACE/build:/build" \
+				sphinxdoc/sphinx \
+				sphinx-build -b html /docs/en/source /build/en
+			'''
+		}
+    }
+
+    stage('Build Docker and publish') {
+		String releaseTag = params.LATEST ? 'latest' : params.DOCKER_VERSION
+		steps {
+			script {
+				ssedocker {
+					create {
+						target "${DOCKER_IMAGE_NAME}:${params.DOCKER_VERSION}"
+					}
+					publish {
+						tag "latest"
+					}
+				}
+			}
+		}
+    }
+  }
+
+  post {
+    success {
+		echo "Docs built into $WORKSPACE/build (de & en). Image: ${DOCKER_IMAGE_NAME}:${DOCKER_VERSION}"
+    }
+    failure {
+		echo 'Pipeline failed. Check the stage logs above.'
+    }
+  }
+}
