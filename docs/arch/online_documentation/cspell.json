@@ -1,0 +1,15 @@
+{
+    "version": "0.2",
+    "language": "de,de-DE,en",
+    "ignorePaths": [],
+    "dictionaryDefinitions": [],
+    "dictionaries": [],
+    "words": [
+        "Lernendenansicht",
+        "Skillkarte",
+        "Skillkarten",
+        "Teilnahmeübersicht"
+    ],
+    "ignoreWords": [],
+    "import": []
+}
