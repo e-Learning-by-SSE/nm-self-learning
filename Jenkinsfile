@@ -99,7 +99,7 @@ pipeline {
                                     sh "env TZ=${env.TZ} npx nx affected --base=${lastSuccessSHA} -t lint build e2e-ci"
                                 }
                             def buildDocs = load 'docs/online_documentation/build.groovy'
-                            buildDocs.run(version: "unstable")
+                            buildDocs.buildDocs(version: "unstable")
                         }
                         ssedocker {
                             create {
@@ -138,7 +138,7 @@ pipeline {
                                 sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
                             }
                             def buildDocs = load 'docs/online_documentation/build.groovy'
-                            buildDocs.run(version: "${env.VERSION}")
+                            buildDocs.buildDocs(version: "${env.VERSION}")
                         }
                         ssedocker {
                             create {
@@ -229,7 +229,7 @@ pipeline {
                             }
 
                             def buildDocs = load 'docs/online_documentation/build.groovy'
-                            buildDocs.run(version: "${params.RELEASE_LATEST_VERSION}", latest: true)
+                            buildDocs.buildDocs(version: "${params.RELEASE_LATEST_VERSION}", latest: true)
 
                             sshagent(['STM-SSH-DEMO']) {
                                  sh "GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=no' git push origin v${newVersion}"

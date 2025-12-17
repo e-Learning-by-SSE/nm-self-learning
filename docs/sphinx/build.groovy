@@ -1,4 +1,4 @@
-def run(Map cfg = [:]) {
+def buildDocs(Map cfg = [:]) {
   def imageName = cfg.get('dockerImageName', 'ghcr.io/e-learning-by-sse/nm-self-learn-docs')
   def version   = cfg.get('dockerVersion',   "1.0.${env.BUILD_NUMBER}")
   boolean latest = cfg.containsKey('latest')
