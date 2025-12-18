@@ -510,9 +510,8 @@ function ProgressFooter({ progress }: { progress: number }) {
 				style={{ width: `${progress}%` }}
 			></span>
 			<span
-				className={`absolute top-0 w-full px-2 text-start text-sm font-semibold ${
-					progress === 0 ? "text-c-primary" : "text-white"
-				}`}
+				className={`absolute top-0 w-full px-2 text-start text-sm font-semibold ${progress === 0 ? "text-c-primary" : "text-white"
+					}`}
 			>
 				{progress}%
 			</span>

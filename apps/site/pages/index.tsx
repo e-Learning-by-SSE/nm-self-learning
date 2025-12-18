@@ -1,34 +1,35 @@
 import { StudyingSvg } from "@self-learning/ui/static";
 import Link from "next/link";
 import { withTranslations } from "@self-learning/api";
-import { Trans, useTranslation } from "next-i18next";
+import { useTranslation } from "next-i18next";
+import { Trans } from "@self-learning/ui/common";
 
-export const getServerSideProps = withTranslations(["common", "platform-config"]);
+export const getServerSideProps = withTranslations(["common", "page-index"]);
 
 export function LandingPage() {
 
-	const { t } = useTranslation("platform-config");
+	const { t: t_common } = useTranslation("common")
+	const { t } = useTranslation("page-index");
 	return (
 		<div className="flex h-full flex-col gap-16 px-4">
 			<div className="relative z-10 mx-auto grid max-w-screen-2xl items-start gap-8 py-8 lg:py-32 xl:grid-cols-2">
 				<div className="flex flex-col">
 					<h1 className="whitespace-nowrap text-4xl sm:text-6xl lg:text-9xl">
-						{t("Platform_Name")}
+						{t_common("Platform_Name")}
 					</h1>
 					<h2 className="mt-4 text-2xl font-light text-slate-400 lg:text-3xl">
-						{t("Operator_Name")}
+						{t_common("Operator_Name")}
 					</h2>
 
 					<span className="mt-8 flex flex-col text-slate-600 md:text-xl">
 						<p className="mb-12 text-xl">
 							<Trans
-								t={t}
 								i18nKey="Welcome_Message"
-								ns="platform-config"
+								namespace="page-index"
 								components={{
 									a: (
 										<a
-											href={t("Operator_URL")}
+											href={t_common("Operator_URL")}
 											target="_blank"
 											rel="noreferrer"
 											className="font-semibold text-c-primary hover:underline"
@@ -48,9 +49,8 @@ export function LandingPage() {
 						></Image> */}
 
 						<Trans
-							t={t}
 							i18nKey="Platform_Description"
-							ns="platform-config"
+							namespace="page-index"
 							components={{
 								Link: (
 									<Link

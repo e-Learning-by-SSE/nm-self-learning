@@ -14,8 +14,8 @@ function FooterElement({
 	target?: string;
 	text: string;
 }) {
-	const { t, i18n } = useTranslation("platform-config");
-	if (!i18n.exists(href, { ns: "platform-config" })) {
+	const { t, i18n } = useTranslation("common");
+	if (!i18n.exists(href, { ns: "common" })) {
 		return null;
 	}
 	return (
@@ -26,7 +26,7 @@ function FooterElement({
 }
 
 export function Footer() {
-	const { t } = useTranslation("platform-config");
+	const { t } = useTranslation("common");
 	return (
 		<footer className="border-t-c-border border-t bg-white px-6 py-2 text-c-text-muted mt-auto">
 			<div
