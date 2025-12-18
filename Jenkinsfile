@@ -144,6 +144,16 @@ pipeline {
                                 sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
                             }
 							
+                            def prLib = load 'docs/sphinx/build.groovy'
+                            def ws  = pwd()
+                            def uid = sh(script: 'id -u', returnStdout: true).trim()
+                            def gid = sh(script: 'id -g', returnStdout: true).trim()
+                            docker.image("-u ${uid}:${gid} -v ${ws}/docs/sphinx/docs:/docs -v ${ws}/docs/sphinx/build:/build") {
+                                prLib.buildDocs(
+                                    dockerVersion: "${env.VERSION}",
+                                    latest: false,
+                                )
+                            }
 							def child = env.CHANGE_ID ? "PR-${env.CHANGE_ID}" : env.BRANCH_NAME.replace('/', '%2F')
 							build job: 'Teaching_NM-SelfLearn-Docs/${child}',
 								wait: true,

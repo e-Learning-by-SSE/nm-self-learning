@@ -11,16 +11,17 @@ def buildDocs(Map cfg = [:]) {
 
   for (l in langs) {
     stage("Build docs: ${l}") {
-      sh """
-        set -e
-        uid="\$(id -u)"; gid="\$(id -g)"
-        docker run --rm \
-          --user "\$uid:\$gid" \
-          -v "${baseDir}/docs:/docs" \
-          -v "${baseDir}/build:/build" \
-          sphinxdoc/sphinx \
-          sphinx-build -b html /docs/${l}/source /build/${l}
-      """
+    //   sh """
+    //     set -e
+    //     uid="\$(id -u)"; gid="\$(id -g)"
+    //     docker run --rm \
+    //       --user "\$uid:\$gid" \
+    //       -v "${baseDir}/docs:/docs" \
+    //       -v "${baseDir}/build:/build" \
+    //       sphinxdoc/sphinx \
+    //       sphinx-build -b html /docs/${l}/source /build/${l}
+    //   """
+        sh "sphinx-build -b html /docs/${l}/source /build/${l}"
     }
   }
 
