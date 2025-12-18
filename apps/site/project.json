@@ -18,10 +18,7 @@
         "development": {
           "outputPath": "apps/site"
         }
-      },
-      "dependsOn": [
-        "build-worker"
-      ]
+      }
     },
     "serve": {
       "executor": "@nx/next:server",
@@ -39,10 +36,7 @@
           "dev": true
         }
       },
-      "defaultConfiguration": "development",
-      "dependsOn": [
-        "build-worker"
-      ]
+      "defaultConfiguration": "development"
     },
     "export": {
       "executor": "@nx/next:export",
@@ -69,18 +63,6 @@
         "lintFilePatterns": [
           "apps/site/**/*.{ts,tsx,js,jsx}"
         ]
-      }
-    },
-    "build-worker": {
-      "executor": "@nx/js:tsc",
-      "outputs": [
-        "{options.outputPath}"
-      ],
-      "options": {
-        "outputPath": "dist/apps/site",
-        "main": "apps/site/workers/path_worker_thread.ts",
-        "tsConfig": "apps/site/workers/tsconfig.json",
-        "assets": []
       }
     }
   },
