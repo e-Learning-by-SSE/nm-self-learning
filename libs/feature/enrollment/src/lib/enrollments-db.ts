@@ -158,8 +158,9 @@ export async function enrollUser({ courseId, username }: { courseId?: string; us
 
 	const enrollmentData =
 		"dynCourseId" in data
-			? { ...data, courseId: "DYN_" + data.dynCourseId }
+			? { ...data, courseId: null }
 			: { ...data, dynCourseId: null };
+
 
 	const enrollment = await database.enrollment.create({
 		select: {
