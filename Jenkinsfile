@@ -144,7 +144,7 @@ pipeline {
                                 sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
                             }
 							
-                            def sphinxDoc = load 'docs/sphinx/build.groovy'
+                            //def sphinxDoc = load 'docs/sphinx/build.groovy'
                             def ws  = pwd()
                             def uid = sh(script: 'id -u', returnStdout: true).trim()
                             def gid = sh(script: 'id -g', returnStdout: true).trim()
@@ -153,11 +153,16 @@ pipeline {
                             sh "chmod -R u+rwX,g+rwX ${ws}/docs/sphinx/build || true"
                             docker.image('sphinxdoc/sphinx')
                                 .inside("-u ${uid}:${gid} -v ${ws}/docs/sphinx/docs:/docs -v ${ws}/docs/sphinx/build:/build") {
-                                    sphinxDoc.buildDocs(
-                                        dockerVersion: "${env.VERSION}",
-                                        latest: false,
-                                    )
+                                    for (l in ['de','en']) {
+                                        stage("Build docs: ${l}") {
+                                            sh "sphinx-build -b html /docs/${l}/source /build/${l}"
+                                        }
+                                    }
                                 }
+                            ssedocker {
+                                create { target "ghcr.io/e-learning-by-sse/nm-self-learn-docs:${env.VERSION}" }
+                                publish { tag "${env.VERSION}" }
+                            }
                             set +e
                             sh "rm -rf ${ws}/docs/sphinx/build"
                         }
