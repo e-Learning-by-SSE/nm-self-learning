@@ -3,6 +3,7 @@ import { LessonType } from "@prisma/client";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { SmallGradeBadge, useCourseCompletion } from "@self-learning/completion";
+import { CombinedCourseResult, getCombinedCourses } from "@self-learning/course";
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
@@ -13,7 +14,7 @@ import {
 	LessonInfo,
 	ResolvedValue
 } from "@self-learning/types";
-import { AuthorsList, Tooltip } from "@self-learning/ui/common";
+import { AuthorsList, ButtonActions, Dialog, OnDialogCloseFn, showToast, Tooltip } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection, useAuthentication } from "@self-learning/ui/layouts";
 import { handleEmailTracking } from "@self-learning/ui/notifications";
@@ -25,7 +26,8 @@ import { useSession } from "next-auth/react";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo } from "react";
+import { useRouter } from "next/router";
+import { useEffect, useMemo, useState } from "react";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -121,7 +123,9 @@ function createCourseSummary(content: ToC.Content): Summary {
 }
 
 type CourseProps = {
-	course: Course;
+	needsARefresh: boolean;
+	isGenerated: boolean;
+	course: CombinedCourseResult;
 	summary: Summary;
 	content: ToC.Content;
 	markdownDescription: CompiledMarkdown | null;
@@ -146,15 +150,41 @@ export const getServerSideProps = withTranslations(
 			};
 		}
 
-		const course = await getCourse(courseSlug);
+		let isGenerated = false;
+		let needsARefresh = false;
+
+		
+		const session = await getServerSession(req, res, authOptions);
+		const sessionUser = session?.user;
+
+		const courses = await getCombinedCourses({
+			slug: courseSlug,
+			username: sessionUser?.name,
+			includeContent: true
+		});	
+
+		let course = courses[0];
+
 		if (!course) {
 			return { notFound: true };
 		}
 
-		const session = await getServerSession(req, res, authOptions);
-		const sessionUser = session?.user;
+		if (
+			course.courseType === "DYNAMIC" &&
+			course.localCourseVersion !== undefined &&
+			course.globalCourseVersion !== undefined
+		) {
+			isGenerated = true;
+			needsARefresh = course?.localCourseVersion < course?.globalCourseVersion;
+			if (course.content === undefined) {
+				course = {
+					...course,
+					content: []
+				};
+			}
+		}
 
-		const content = await mapCourseContent(course.content as CourseContent, sessionUser?.name);
+		const content = await mapCourseContent(course.content as CourseContent);
 		let markdownDescription = null;
 
 		if (course.description && course.description.length > 0) {
@@ -166,6 +196,8 @@ export const getServerSideProps = withTranslations(
 
 		return {
 			props: {
+				needsARefresh,
+				isGenerated,
 				course: JSON.parse(JSON.stringify(course)) as Defined<typeof course>,
 				summary,
 				content,
@@ -173,6 +205,7 @@ export const getServerSideProps = withTranslations(
 			},
 			notFound: !course
 		};
+
 	})
 );
 
@@ -191,11 +224,25 @@ async function getCourse(courseSlug: string) {
 	});
 }
 
-export default function Course({ course, summary, content, markdownDescription }: CourseProps) {
+
+export default function Course({
+	needsARefresh,
+	course,
+	summary,
+	content,
+	markdownDescription,
+	isGenerated
+}: CourseProps) {
 	return (
 		<div className="bg-gray-50 pb-32">
 			<CenteredSection className="bg-gray-50">
-				<CourseHeader course={course} content={content} summary={summary} />
+				<CourseHeader
+					course={course}
+					content={content}
+					summary={summary}
+					needsARefresh={needsARefresh}
+					isGenerated={isGenerated}
+				/>
 			</CenteredSection>
 
 			{markdownDescription && (
@@ -207,17 +254,21 @@ export default function Course({ course, summary, content, markdownDescription }
 			)}
 
 			<CenteredSection className="bg-gray-50">
-				<TableOfContents content={content} course={course} />
+			<TableOfContents content={content} course={course} isGenerated={isGenerated} />
 			</CenteredSection>
 		</div>
 	);
 }
 
 function CourseHeader({
+	isGenerated,
+	needsARefresh,
 	course,
 	summary,
 	content
 }: {
+	isGenerated: boolean;
+	needsARefresh: boolean;
 	course: CourseProps["course"];
 	summary: CourseProps["summary"];
 	content: CourseProps["content"];
@@ -261,6 +312,12 @@ function CourseHeader({
 
 	const firstLessonFromChapter = content[0]?.content[0] ?? null;
 	const lessonCompletionCount = completion?.courseCompletion.completedLessonCount ?? 0;
+
+	const shouldShowStartButton =
+		isEnrolled &&
+		(!isGenerated ||
+			(isGenerated && Array.isArray(course.content) && course.content.length !== 0));
+
 
 	const avgScore = useMemo(() => {
 		const scores = content
@@ -347,7 +404,7 @@ function CourseHeader({
 						</ul>
 					</div>
 
-					{isEnrolled && (
+					{shouldShowStartButton && (
 						<Link
 							href={
 								firstLessonFromChapter
@@ -387,15 +444,24 @@ function CourseHeader({
 							{!isAuthenticated && <span>Lernplan nach Login verfügbar</span>}
 						</button>
 					)}
+					{isGenerated && <CoursePath course={course} needsARefresh={needsARefresh} />}
 				</div>
 			</div>
 		</section>
 	);
 }
 
-function TableOfContents({ content, course }: { content: ToC.Content; course: Course }) {
-	// const completion = useCourseCompletion(course.slug);
-	const completion: any = null;
+
+function TableOfContents({
+	content,
+	course,
+	isGenerated
+}: {
+	content: ToC.Content;
+	course: CombinedCourseResult;
+	isGenerated: boolean;
+}) {
+	const completion = useCourseCompletion(course.slug);
 	const hasContent = content.length > 0;
 
 	if (!hasContent) {
@@ -404,9 +470,20 @@ function TableOfContents({ content, course }: { content: ToC.Content; course: Co
 				<h3 className="heading flex gap-4 text-2xl">
 					<span className="text-secondary">Kein Inhalt verfügbar</span>
 				</h3>
-				<span className="mt-4 text-light">
-					Der Autor hat noch keine Lerneinheiten für diesen Kurs erstellt.
+			<span className="mt-4 text-light">
+					Du hast dir noch keinen Kurspfad generiert. Bitte wähle einen Kurspfad aus.
 				</span>
+			</div>
+		);
+	}
+
+	if (isGenerated && !hasContent) {
+		return (
+			<div className="flex flex-col gap-4 p-8 rounded-lg bg-gray-100">
+				<span className="text-secondary">Keine Inhalte verfügbar</span>
+				<span className="mt-4 text-light">
+					Du hast entweder alle Skills schon erreicht oder es sind keine Lerninhalte
+					verfügbar.</span>
 			</div>
 		);
 	}
@@ -417,11 +494,15 @@ function TableOfContents({ content, course }: { content: ToC.Content; course: Co
 			<ul className="flex flex-col gap-16">
 				{content.map((chapter, index) => (
 					<li key={index} className="flex flex-col rounded-lg bg-gray-100 p-8">
-						<h3 className="heading flex gap-4 text-2xl">
-							<span>{index + 1}.</span>
-							<span className="text-secondary">{chapter.title}</span>
-						</h3>
-						<span className="mt-4 text-light">{chapter.description}</span>
+						{content.length > 1 && (
+							<>
+								<h3 className="heading flex gap-4 text-2xl">
+									<span>{index + 1}.</span>
+									<span className="text-secondary">{chapter.title}</span>
+								</h3>
+								<span className="mt-4 text-light">{chapter.description}</span>
+							</>
+						)}
 
 						<ul className="mt-8 flex flex-col gap-1">
 							{chapter.content.map(lesson => (
@@ -508,5 +589,154 @@ function Description({ content }: { content: CompiledMarkdown }) {
 		<div className="prose prose-emerald max-w-full">
 			<MDXRemote {...content}></MDXRemote>
 		</div>
+	);
+}
+
+function RefreshGeneratedCourse({ onClick }: { onClick: () => void }) {
+	return (
+		<div className="flex flex-col gap-4 p-8 rounded-lg bg-gray-100">
+			<h3 className="heading flex gap-4 text-2xl">
+				<span className="text-secondary">Kurs aktualisieren</span>
+			</h3>
+			<span className="mt-4 text-light">
+				Der Kurs wurde aktualisiert. Du kannst den Kurs jetzt starten und dein Wissen
+				erweitern.
+			</span>
+			<button
+				className="btn-primary mt-4 w-full text-white p-3 rounded-lg flex items-center justify-center font-semibold"
+				onClick={onClick}
+			>
+				Kurs aktualisieren
+			</button>
+		</div>
+	);
+}
+
+function CoursePath({
+	course,
+	needsARefresh
+}: {
+	course: CombinedCourseResult;
+	needsARefresh: boolean;
+}) {
+	const { mutateAsync } = trpc.course.generateLessonPath.useMutation();
+	const router = useRouter();
+	const [isGenerating, setIsGenerating] = useState(false);
+	const [isComplete, setIsComplete] = useState(false);
+
+	const generateDynamicCourse = async () => {
+		try {
+			setIsGenerating(true);
+			setIsComplete(false);
+			await mutateAsync({
+				courseId: course.courseId,
+				knowledge: []
+			});
+			await new Promise(resolve => setTimeout(resolve, 1000));
+			setIsComplete(true);
+		} catch (error) {
+			setIsGenerating(false);
+			console.error("Error generating course preview:", error);
+			showToast({
+				type: "error",
+				title: "Fehler",
+				subtitle: "Der Kurs konnte nicht generiert werden."
+			});
+		}
+	};
+
+	if (Array.isArray(course.content) && course.content.length !== 0 && needsARefresh) {
+		return <RefreshGeneratedCourse onClick={generateDynamicCourse} />;
+	}
+
+	if (Array.isArray(course.content) && course.content.length !== 0) {
+		return null;
+	}
+
+	return (
+		<div>
+			{isGenerating && (
+				<GeneratingCourseDialog
+					isComplete={isComplete}
+					onClose={() => {
+						setIsGenerating(false);
+						if (isComplete) {
+							router.reload();
+						}
+					}}
+				/>
+			)}
+			<h3 className="font-semibold text-lg">Kurspfad generieren</h3>
+			<button
+				className="btn-primary mt-4 w-full text-white p-3 rounded-lg flex items-center justify-center font-semibold"
+				onClick={generateDynamicCourse}
+				disabled={isGenerating}
+			>
+				Generieren
+			</button>
+		</div>
+	);
+}
+
+function GeneratingCourseDialog({
+	onClose,
+	isComplete
+}: {
+	onClose: OnDialogCloseFn<string>;
+	isComplete: boolean;
+}) {
+	return (
+		<Dialog title="Kurspfad wird erstellt" onClose={onClose} style={{ minWidth: 480 }}>
+			<div className="flex flex-col items-center justify-center py-4">
+				{!isComplete ? (
+					<>
+						<div className="mb-6 relative">
+							<div className="w-24 h-24 rounded-full border-4 border-t-emerald-500 border-r-emerald-300 border-b-emerald-200 border-l-gray-200 animate-spin"></div>
+							<div className="absolute inset-0 flex items-center justify-center">
+								<div className="w-16 h-16 rounded-full bg-white flex items-center justify-center">
+									<div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 animate-pulse"></div>
+								</div>
+							</div>
+						</div>
+						<p className="text-center text-lg font-medium">
+							Dein individueller Kurspfad wird generiert...
+						</p>
+						<p className="text-center text-sm text-light mt-2">
+							KI erstellt deinen personalisierten Lerninhalt. Dies kann einen Moment
+							dauern.
+						</p>
+					</>
+				) : (
+					<>
+						<div className="mb-6 text-emerald-500">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								className="h-24 w-24"
+								viewBox="0 0 20 20"
+								fill="currentColor"
+							>
+								<path
+									fillRule="evenodd"
+									d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+									clipRule="evenodd"
+								/>
+							</svg>
+						</div>
+						<p className="text-center text-lg font-medium">
+							Dein Kurspfad wurde erfolgreich erstellt!
+						</p>
+						<p className="text-center text-sm text-light mt-2">
+							Klicke auf Schließen, um mit dem Kurs zu beginnen.
+						</p>
+						<button
+							className="btn-primary mt-6 px-8 py-2"
+							onClick={() => onClose(ButtonActions.OK)}
+						>
+							Schließen
+						</button>
+					</>
+				)}
+			</div>
+		</Dialog>
 	);
 }
