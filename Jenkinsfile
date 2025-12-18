@@ -148,12 +148,13 @@ pipeline {
                             def ws  = pwd()
                             def uid = sh(script: 'id -u', returnStdout: true).trim()
                             def gid = sh(script: 'id -g', returnStdout: true).trim()
-                            docker.image("-u ${uid}:${gid} -v ${ws}/docs/sphinx/docs:/docs -v ${ws}/docs/sphinx/build:/build") {
-                                sphinxDoc.buildDocs(
-                                    dockerVersion: "${env.VERSION}",
-                                    latest: false,
-                                )
-                            }
+                            docker.image('sphinxdoc/sphinx')
+                                .inside("-u ${uid}:${gid} -v ${ws}/docs/sphinx/docs:/docs -v ${ws}/docs/sphinx/build:/build") {
+                                    sphinxDoc.buildDocs(
+                                        dockerVersion: "${env.VERSION}",
+                                        latest: false,
+                                    )
+                                }
                         }
                         ssedocker {
                             create {
