@@ -148,6 +148,9 @@ pipeline {
                             def ws  = pwd()
                             def uid = sh(script: 'id -u', returnStdout: true).trim()
                             def gid = sh(script: 'id -g', returnStdout: true).trim()
+                            sh "mkdir -p ${ws}/docs/sphinx/build"
+                            sh "chown -R ${uid}:${gid} ${ws}/docs/sphinx/build || true"
+                            sh "chmod -R u+rwX,g+rwX ${ws}/docs/sphinx/build || true"
                             docker.image('sphinxdoc/sphinx')
                                 .inside("-u ${uid}:${gid} -v ${ws}/docs/sphinx/docs:/docs -v ${ws}/docs/sphinx/build:/build") {
                                     sphinxDoc.buildDocs(
@@ -155,6 +158,8 @@ pipeline {
                                         latest: false,
                                     )
                                 }
+                            set +e
+                            sh "rm -rf ${ws}/docs/sphinx/build"
                         }
                         ssedocker {
                             create {
