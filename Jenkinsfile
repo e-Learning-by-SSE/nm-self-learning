@@ -134,7 +134,7 @@ pipeline {
                                     sh "env TZ=${env.TZ} npx nx affected --base=${lastSuccessSHA} -t lint build e2e-ci"
                                 }
 			
-                            buildSphinxDocsAndImages(dockerTag: 'unstable')
+                            buildSphinxDocs(dockerTag: 'unstable')
                         }
                         ssedocker {
                             create {
@@ -173,7 +173,7 @@ pipeline {
                                 sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
                             }
 							
-                            buildSphinxDocsAndImages()
+                            buildSphinxDocs()
                         }
                         ssedocker {
                             create {
@@ -264,7 +264,7 @@ pipeline {
                                 sh "npm version ${newVersion}"
                             }
 
-							buildSphinxDocsAndImages(dockerTag: "latest")
+							buildSphinxDocs(dockerTag: "latest")
 
                             sshagent(['STM-SSH-DEMO']) {
                                  sh "GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=no' git push origin v${newVersion}"
