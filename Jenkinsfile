@@ -1,5 +1,40 @@
 @Library('web-service-helper-lib') _
 
+def buildSphinxDocs(Map cfg = [:]) {
+    // Function parameters
+    def dockerTag   = cfg.get('dockerTag', env.VERSION)
+
+    // Script parameters
+    def ws  = pwd()
+    def uid = sh(script: 'id -u', returnStdout: true).trim()
+    def gid = sh(script: 'id -g', returnStdout: true).trim()
+
+    // Create build directory
+    sh "mkdir -p ${ws}/docs/sphinx/build"
+    sh "chown -R ${uid}:${gid} ${ws}/docs/sphinx/build || true"
+    sh "chmod -R u+rwX,g+rwX ${ws}/docs/sphinx/build || true"
+    
+    // Build Sphinx documentation
+    docker.image('sphinxdoc/sphinx')
+        .inside("-u ${uid}:${gid} -v ${ws}/docs/sphinx/docs:/docs -v ${ws}/docs/sphinx/build:/build") {
+            for (l in ['de','en']) {
+                stage("Build docs: ${l}") {
+                    sh "sphinx-build -b html /docs/${l}/source /build/${l}"
+                }
+            }
+        }
+    
+    // Build and publish Docker image
+    ssedocker {
+        create { target "ghcr.io/e-learning-by-sse/nm-self-learn-docs:${env.VERSION}" }
+        publish { tag dockerTag }
+    }
+
+    // Clean up build directory
+    sh "set +e"
+    sh "rm -rf ${ws}/docs/sphinx/build"
+}
+
 pipeline {
     agent { label 'docker' }
     parameters {
@@ -98,14 +133,8 @@ pipeline {
                                     sh 'npm run seed' // this can be changed in the future to "npx prisma migrate reset" to test the migration files
                                     sh "env TZ=${env.TZ} npx nx affected --base=${lastSuccessSHA} -t lint build e2e-ci"
                                 }
-
-							def child = env.CHANGE_ID ? "PR-${env.CHANGE_ID}" : env.BRANCH_NAME.replace('/', '%2F')
-							build job: 'Teaching_NM-SelfLearn-Docs/${child}',
-								wait: true,
-								propagate: true,
-								parameters: [
-								  string(name: 'DOCKER_VERSION', value: "unstable")
-								]
+			
+                            buildSphinxDocsAndImages(dockerTag: 'unstable')
                         }
                         ssedocker {
                             create {
@@ -144,27 +173,7 @@ pipeline {
                                 sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
                             }
 							
-                            //def sphinxDoc = load 'docs/sphinx/build.groovy'
-                            def ws  = pwd()
-                            def uid = sh(script: 'id -u', returnStdout: true).trim()
-                            def gid = sh(script: 'id -g', returnStdout: true).trim()
-                            sh "mkdir -p ${ws}/docs/sphinx/build"
-                            sh "chown -R ${uid}:${gid} ${ws}/docs/sphinx/build || true"
-                            sh "chmod -R u+rwX,g+rwX ${ws}/docs/sphinx/build || true"
-                            docker.image('sphinxdoc/sphinx')
-                                .inside("-u ${uid}:${gid} -v ${ws}/docs/sphinx/docs:/docs -v ${ws}/docs/sphinx/build:/build") {
-                                    for (l in ['de','en']) {
-                                        stage("Build docs: ${l}") {
-                                            sh "sphinx-build -b html /docs/${l}/source /build/${l}"
-                                        }
-                                    }
-                                }
-                            ssedocker {
-                                create { target "ghcr.io/e-learning-by-sse/nm-self-learn-docs:${env.VERSION}" }
-                                publish { tag "${env.VERSION}" }
-                            }
-                            set +e
-                            sh "rm -rf ${ws}/docs/sphinx/build"
+                            buildSphinxDocsAndImages()
                         }
                         ssedocker {
                             create {
@@ -255,14 +264,7 @@ pipeline {
                                 sh "npm version ${newVersion}"
                             }
 
-							def child = env.CHANGE_ID ? "PR-${env.CHANGE_ID}" : env.BRANCH_NAME.replace('/', '%2F')
-							build job: 'Teaching_NM-SelfLearn-Docs/${child}',
-								wait: true,
-								propagate: true,
-								parameters: [
-								  string(name: 'DOCKER_VERSION', value: "${env.VERSION}"),
-								  booleanParam(name: 'LATEST', value: true),
-								]
+							buildSphinxDocsAndImages(dockerTag: "latest")
 
                             sshagent(['STM-SSH-DEMO']) {
                                  sh "GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=no' git push origin v${newVersion}"
