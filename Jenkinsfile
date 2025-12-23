@@ -259,6 +259,7 @@ pipeline {
                                 dbPassword: env.POSTGRES_PASSWORD,
                                 dbName: env.POSTGRES_DB
                             ]).insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
+                                sh 'rm -rf dist/apps/site/.next dist/apps/site/.next/export || true'
                                 sh 'npm run seed'
                                 sh "env TZ=${env.TZ} npx nx run-many --target=build --all --skip-nx-cache"
                                 sh "npm version ${newVersion}"

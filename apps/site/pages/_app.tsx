@@ -47,7 +47,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const Layout = (Component as any).getLayout
 		? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-			(Component as any).getLayout(Component, pageProps)
+		(Component as any).getLayout(Component, pageProps)
 		: null;
 
 	const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
@@ -124,4 +124,3 @@ function RootLayout({ children }: PropsWithChildren<unknown>) {
 	);
 }
 
-export const getServerSideProps = withTranslations(["common"]);
