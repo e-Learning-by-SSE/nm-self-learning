@@ -1,55 +1,55 @@
-Lernzieleditor
-==============
+Learning Goal Editor
+====================
 
-Der **Lernzieleditor** ist für Studierende verfügbar, sofern in den Einstellungen das *Lerntagebuch* aktiviert wurde. Im Profil erscheint dann die Kachel **„Meine Lernziele“**, die in den Editor weiterleitet.
+The **Learning Goal Editor** is available to students if the *Learning Diary* has been enabled in the settings. The profile then displays the tile **"My Learning Goals"**, which leads to the editor.
 
-Ansichten
+Views
 ---------
 
-Der Lernzieleditor bietet zwei verschiedene Ansichten zur Organisation der Lernziele. Der Reiter **„In Bearbeitung"** zeigt alle aktiven Ziele an, die noch nicht vollständig abgeschlossen sind. Der Reiter **„Abgeschlossen"** zeigt alle vollständig abgeschlossenen Grob- und Feinziele in einer separaten Übersicht.
+The Learning Goal Editor offers two different views for organizing learning goals. The tab **"In Progress"** shows all active goals that are not yet fully completed. The tab **"Completed"** displays all fully completed coarse and fine goals in a separate overview.
 
-Lernziele anlegen
------------------
+Creating Learning Goals
+-----------------------
 
-Über den Button **Lernziel erstellen** öffnet sich ein Eingabefeld für die Beschreibung des neuen Lernziels.
+Clicking the **Create Learning Goal** button opens an input field for describing the new learning goal.
 
-Grob- und Feinziele
+Coarse and Fine Goals
+~~~~~~~~~~~~~~~~~~~~~
+
+Learning goals are divided into coarse and fine goals:
+
+- **Coarse Goal**: overarching goal that can contain several more specific fine goals. 
+- **Fine Goal**: specific, detailed goal that is assigned to a coarse goal.
+
+When creating a learning goal, an optional parent goal can be selected from a dropdown menu. This creates a new fine goal under the parent goal. If no parent goal is selected, an independent coarse goal is created.
+
+Editing Status
+~~~~~~~~~~~~~~
+
+Each learning goal has three different editing statuses, which are indicated by different colors:
+
+- **Not Edited**: gray
+- **In Progress**: orange
+- **Completed**: green
+
+The status changes by clicking on the status indicator, which cycles through the three statuses.
+
+Rules for Coarse and Fine Goals
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If a coarse goal contains **at least one fine goal**, its status is also determined by the status of the fine goals:
+
+  - If a fine goal is *In Progress*, the coarse goal also receives the status *In Progress*
+  - If all fine goals are *Completed*, the coarse goal initially remains *In Progress*
+  - Coarse goals can only be marked as *Completed* after manual confirmation
+
+A fine goal marked as *Completed* can be reset to *Not Edited* by clicking again. This may also change the status of the parent coarse goal.
+
+Additional Features
 ~~~~~~~~~~~~~~~~~~~
 
-Lernziele sind in Grob- und Feinziele unterteilt:
+The following functions are available for managing learning goals:
 
-- **Grobziel**: übergeordnetes Ziel, das mehrere spezifischere Feinziele enthalten kann. 
-- **Feinziel**: spezifisches, detailliertes Ziel, das einem Grobziel zugeordnet ist.
-
-Bei der Erstellung eines Lernziels kann in einem Dropdown-Menü optional ein übergeordnetes Ziel ausgewählt werden. Dies erzeugt ein neues Feinziel unterhalb des übergeordneten Ziels. Wird kein übergeordnetes Ziel ausgewählt, entsteht ein eigenständiges Grobziel.
-
-Bearbeitungsstatus
-~~~~~~~~~~~~~~~~~~
-
-Jedes Lernziel verfügt über drei verschiedene Bearbeitungsstati, die durch unterschiedliche Farben gekennzeichnet sind:
-
-- **Nicht bearbeitet**: grau
-- **In Bearbeitung**: orange
-- **Abgeschlossen**: grün
-
-Der Statuswechsel erfolgt durch einen Klick auf den Statusindikator, wodurch zyklisch zwischen den drei Stati umgeschaltet wird.
-
-Regeln für Grob- und Feinziele
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Enthält ein Grobziel **mindestens ein Feinziel**, bestimmt dessen Status auch den Status des Grobziels:
-
-  - Ist ein Feinziel im Status *In Bearbeitung*, erhält auch das Grobziel den Status *In Bearbeitung*
-  - Sind alle Feinziel im Status *Abgeschlossen*, bleibt das Grobziel zunächst im Status *In Bearbeitung*
-  - Grobziele können erst nach manueller Bestätigung den Status *Abgeschlossen* erhalten
-
-Ein als *Abgeschlossen* markiertes Feinziel kann durch erneuten Klick wieder auf *Nicht bearbeitet* gesetzt werden. Dadurch ändert sich gegebenenfalls auch der Status des übergeordneten Grobziels.
-
-Weitere Funktionen
-~~~~~~~~~~~~~~~~~~
-
-Für die Verwaltung der Lernziele stehen folgende Funktionen zur Verfügung:
-
-- **Plus-Button**: fügt einem bestehenden Grobziel ein neues Feinziel hinzu
-- **Stift-Button**: Bearbeiten der Beschreibung eines Ziels
-- **Löschen-Button**: Entfernen eines Ziels aus der Liste
+- **Plus-Button**: adds a new fine goal to an existing coarse goal
+- **Pencil-Button**: edit the description of a goal
+- **Delete-Button**: remove a goal from the list

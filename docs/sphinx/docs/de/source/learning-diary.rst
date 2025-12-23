@@ -3,8 +3,6 @@
 Lerntagebuch
 ============
 
-Hello World
-
 .. icon:: arrow-up
 
 Das **Lerntagebuch** ist über das Profil erreichbar, sobald es in den Einstellungen aktiviert wurde. Nach der Aktivierung erscheinen auf der Profilseite neue Kacheln, über die das Lerntagebuch aufgerufen werden kann.

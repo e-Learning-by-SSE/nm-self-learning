@@ -83,7 +83,7 @@ Chapters can be populated with content in two ways. New nano modules can be crea
 
 **Create Nano Module:**
 
-Click “Create Nano Module” to create a new nano module. This opens the :doc:`Nano Module Editor <\nano-module-editor>` as a dialog over the course editor. You can open the editor in a separate browser tab by clicking “Open in separate editor.”
+Click “Create Nano Module” to create a new nano module. This opens the :doc:`Nano Module Editor </nano-module-editor>` as a dialog over the course editor. You can open the editor in a separate browser tab by clicking “Open in separate editor.”
 
 **Link Nano Module:**
 

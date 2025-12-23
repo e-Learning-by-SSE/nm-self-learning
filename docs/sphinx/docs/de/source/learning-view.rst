@@ -61,14 +61,14 @@ Für die Bearbeitung von Aufgaben stehen folgende Funktionen zur Verfügung:
 - "Überprüfen"-Button: dient der Abgabe der Aufgabe und zeigt an, ob die Antwort richtig oder falsch ist. Nach der Überprüfung wird die Eingabe gesperrt.
 - "Reset"-Button: wird verwendet um nach Überprüfung die Aufgabe zurückzusetzen und einen erneuten Versuch zu ermöglichen.
 
-Optional können Autor:innen im :doc:`Nanomodul-Editor <\nano-module-editor>` *Hinweise* für Aufgaben definieren. Der "Ich benötige einen Hinweis"-Button ermöglicht das Anfordern dieser Hinweise. Bei mehreren verfügbaren Hinweisen erfolgt die Anzeige sequentiell pro Klick.
+Optional können Autor:innen im :doc:`Nanomodul-Editor </nano-module-editor>` *Hinweise* für Aufgaben definieren. Der "Ich benötige einen Hinweis"-Button ermöglicht das Anfordern dieser Hinweise. Bei mehreren verfügbaren Hinweisen erfolgt die Anzeige sequentiell pro Klick.
 
 .. _self-regulated-learning:
 
 Spezialfall Selbstreguliertes Lernen
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Bei aktivem *Selbstreguliertem Lernen*, welches durch Autor:innen im :doc:`Kurseditor <\course-editor>` festgelegt wird, gelten folgende Besonderheiten:
+Bei aktivem *Selbstreguliertem Lernen*, welches durch Autor:innen im :doc:`Kurseditor </course-editor>` festgelegt wird, gelten folgende Besonderheiten:
 
 - Vor dem Lerninhalt erscheint eine *Aktivierungsfrage*
 

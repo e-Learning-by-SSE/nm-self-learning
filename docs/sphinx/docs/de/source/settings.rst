@@ -3,7 +3,7 @@
 Einstellungen
 =============
 
-Die **Einstellungen** lassen sich sowohl über das :doc:`Profil <\profile>` (Zahnrad-Icon) als auch über das Dropdown-Menü im Header erreichen. Hier können Nutzer:innen persönliche Angaben verwalten und wichtige Funktionen steuern.
+Die **Einstellungen** lassen sich sowohl über das :doc:`Profil </profile>` (Zahnrad-Icon) als auch über das Dropdown-Menü im Header erreichen. Hier können Nutzer:innen persönliche Angaben verwalten und wichtige Funktionen steuern.
 
 .. _profile-information:
 

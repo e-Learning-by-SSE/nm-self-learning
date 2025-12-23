@@ -1,7 +1,7 @@
 Settings
 =========
 
-The **Settings** can be accessed either via the :doc:`Profile <\profile>` (gear icon) or through the dropdown menu in the header. Here, users can manage personal information and control key functions.
+The **Settings** can be accessed either via the :doc:`Profile </profile>` (gear icon) or through the dropdown menu in the header. Here, users can manage personal information and control key functions.
 
 Profile Information
 -------------------

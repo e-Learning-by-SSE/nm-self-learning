@@ -21,14 +21,14 @@ Auf der Adminseite befinden sich verschiedene Kacheln, die einen bestimmten Bere
 Nanomodule verwalten
 --------------------
 
-Leitet zur Seite für die Verwaltung aller :doc:`Nanomodule <\nano-module-editor>` weiter. Bietet eine tabellarische Übersicht aller Nanomodule mit Such- und Filterfunktionen. Neue Nanomodule können über den "Nanomodul erstellen"-Button erstellt werden. Bestehende Nanomodule können durch Anklicken des Titels bearbeitet werden.
+Leitet zur Seite für die Verwaltung aller :doc:`Nanomodule </nano-module-editor>` weiter. Bietet eine tabellarische Übersicht aller Nanomodule mit Such- und Filterfunktionen. Neue Nanomodule können über den "Nanomodul erstellen"-Button erstellt werden. Bestehende Nanomodule können durch Anklicken des Titels bearbeitet werden.
 
 .. _manage-courses:
 
 Kurse verwalten
 ---------------
 
-Leitet zur Seite für die Verwaltung aller :doc:`Kurse <\course-editor>` weiter. Bietet eine tabellarische Übersicht aller Kurse mit Such- und Filterfunktionen. Neue Kurse können über den "Kurs erstellen"-Button erstellt werden. Bestehende Kurse können durch Anklicken des Titels bearbeitet werden.
+Leitet zur Seite für die Verwaltung aller :doc:`Kurse </course-editor>` weiter. Bietet eine tabellarische Übersicht aller Kurse mit Such- und Filterfunktionen. Neue Kurse können über den "Kurs erstellen"-Button erstellt werden. Bestehende Kurse können durch Anklicken des Titels bearbeitet werden.
 
 .. _manage-subject-areas:
 

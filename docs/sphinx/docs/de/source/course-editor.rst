@@ -98,7 +98,7 @@ Kapitel lassen sich auf zwei Arten mit Inhalten befüllen. Neue Nanomodule könn
 
 **Nanomodule erstellen:**
 
-Klicken Sie auf den "Nanomodul erstellen"-Button um ein neues Nanomodul zu erstellen. Daraufhin öffnet sich der :doc:`Nanomodul-Editor <\nano-module-editor>` als Dialog über dem Kurs-Editor. Der Editor lässt sich in einem separaten Browser-Tab öffnen indem Sie auf "Im separaten Editor öffnen" klicken.
+Klicken Sie auf den "Nanomodul erstellen"-Button um ein neues Nanomodul zu erstellen. Daraufhin öffnet sich der :doc:`Nanomodul-Editor </nano-module-editor>` als Dialog über dem Kurs-Editor. Der Editor lässt sich in einem separaten Browser-Tab öffnen indem Sie auf "Im separaten Editor öffnen" klicken.
 
 **Nanomodule verknüpfen:**
 
