@@ -15,7 +15,7 @@ def buildSphinxDocs(Map cfg = [:]) {
     sh "chmod -R u+rwX,g+rwX ${ws}/docs/sphinx/build || true"
     
     // Build Sphinx documentation
-    docker.image('sphinxdoc/sphinx')
+    docker.image('sphinxdoc/sphinx:8.2.3')
         .inside("-u ${uid}:${gid} -v ${ws}/docs/sphinx/docs:/docs -v ${ws}/docs/sphinx/build:/build") {
             for (l in ['de','en']) {
                 stage("Build docs: ${l}") {
