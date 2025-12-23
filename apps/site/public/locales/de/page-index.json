@@ -1,0 +1,4 @@
+{
+    "Welcome_Message": "Willkommen auf der Selbstlernplattform der <a>$t(common:Operator_Name)</a>!",
+    "Platform_Description": "<Link>Lerninhalte entdecken</Link><ul><li>Auf der Plattform werden dir studiengangsbezogene Lerninhalte in individualisierten und flexiblen Lernpfaden, bestehend aus kleinen Lerneinheiten, präsentiert.</li><li>Diese kannst du in deinem eigenen Tempo lernen und wiederholen.</li><li>Während du einen Lernpfad durchläufst, erhältst du Feedback zu deinem Lernfortschritt und Hinweise, wie du Lernstrategien anwenden kannst, um dein Lernen zu verbessern.</li><li>Unsere Mission ist, dass du durch die Plattform lernst, strategisch und nachhaltig zu lernen.</li></ul>"
+}
