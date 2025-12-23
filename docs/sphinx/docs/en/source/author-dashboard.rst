@@ -31,7 +31,7 @@ This section provides an overview of all personal courses, listed vertically. Cl
 The **Create Course** button opens the :doc:`Course Editor <\course-editor>` for creating a new course.
 
 My Nano Modules
---------------
+---------------
 
 .. figure:: /_static/screenshots/nano-modules-author-dashboard.png
    :alt: Screenshot of the Author Dashboard
