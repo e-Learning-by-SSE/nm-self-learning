@@ -1,3 +1,8 @@
+import os
+import sys
+
+sys.path.append(os.path.abspath("./_ext"))
+
 # Configuration file for the Sphinx documentation builder.
 #
 # For the full list of built-in configuration values, see the documentation:
