@@ -129,11 +129,10 @@ pipeline {
                                 returnStdout: true
                             ).trim()
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
-                             .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
+                                .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
                                     sh 'npm run seed' // this can be changed in the future to "npx prisma migrate reset" to test the migration files
                                     sh "env TZ=${env.TZ} npx nx affected --base=${lastSuccessSHA} -t lint build e2e-ci"
                                 }
-			
                             buildSphinxDocs(dockerTag: 'unstable')
                         }
                         ssedocker {
@@ -167,12 +166,11 @@ pipeline {
                     steps {
                         script {
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
-                             .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
-                                sh 'npm run format:check'
-                                sh 'npm run seed'
-                                sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
+                                .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
+                                    sh 'npm run format:check'
+                                    sh 'npm run seed'
+                                    sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
                             }
-							
                             buildSphinxDocs()
                         }
                         ssedocker {
@@ -239,7 +237,7 @@ pipeline {
                             return params.RELEASE_LATEST_VERSION != ''
                         }
                     }
-					
+
                     steps {
                         script {
                             def newVersion = params.RELEASE_LATEST_VERSION
@@ -249,7 +247,7 @@ pipeline {
                             sh 'git restore .'
                             sh 'git config user.name "ssejenkins"'
                             sh 'git config user.email "jenkins@sse.uni-hildesheim.de"'
-							// would be nicer if URL is not hardcoded here but comes directly from the checkout stage
+                            // would be nicer if URL is not hardcoded here but comes directly from the checkout stage
                             sh 'git remote set-url origin git@github.com:e-learning-by-sse/nm-self-learning.git'
 
 
@@ -264,8 +262,7 @@ pipeline {
                                 sh "env TZ=${env.TZ} npx nx run-many --target=build --all --skip-nx-cache"
                                 sh "npm version ${newVersion}"
                             }
-
-							buildSphinxDocs(dockerTag: "latest")
+                            buildSphinxDocs(dockerTag: "latest")
 
                             sshagent(['STM-SSH-DEMO']) {
                                  sh "GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=no' git push origin v${newVersion}"
