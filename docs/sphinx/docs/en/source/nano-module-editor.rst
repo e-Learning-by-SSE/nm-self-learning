@@ -160,7 +160,7 @@ Note: The selected PDF file must be publicly available.
 
 **File selection**
 
-1. Click on the :icon:`cloud-arrow-up`" button
+1. Click on the ":icon:`cloud-arrow-up`" button
 2. Select a PDF file from your uploaded files
 3. The preview of the PDF file is displayed automatically
 
