@@ -1,308 +1,333 @@
-Nanomodule erstellen und bearbeiten
-===================================
+Create and edit nano modules
+============================
 
-Der Editor für Nanomodule ist in drei Bereiche unterteilt. Die Erstellung eines Nanomoduls verlangt das Ausfüllen von :ref:`base-data-nano-module`, das Erstellen von :ref:`learning-content` und :ref:`learning-quiz`. Nachfolgend werden diese beschrieben.
+The nano module editor is divided into three sections. Creating a nano module requires filling out :ref:`base-data-nano-module`, creating :ref:`learning-content`, and :ref:`learning-quiz`. These are described below.
 
 .. _base-data-nano-module:
 
-Grunddaten
+Basic data
 ~~~~~~~~~~
 
-Jedes Nanomodul beinhaltet folgende Grundinformationen:
+Each nano module includes the following basic information:
 
 .. hlist::
    :columns: 2
 
-   * Titel
+   * Title
    * Slug
-   * Untertitel
-   * Beschreibung
-   * Selbstreguliertes Lernen
-   * Autoren
-   * Lizenz
+   * Subtitle
+   * Description
+   * Self-regulated learning
+   * Authors
+   * License
    * Skills
 
-Titel, Slug, Untertitel und Beschreibung
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. _title-slug-subtitle-description:
 
-Vergeben Sie für Ihr Nanomodul einen prägnanten, beschreibenden Titel. Ausgehend von diesem Titel wird automatisch ein Slug generiert. Dieser dient als Baustein für die URL der Lerneinheit und muss einzigartig sein. Für Ihr Nanomodul können Sie optional einen Untertitel und eine Beschreibung anlegen.
+Title, Slug, Subtitle, and Description
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Lizenz
-^^^^^^
+Assign a concise, descriptive title to your nano module. Based on this title, a slug is automatically generated. This serves as a unique identifier for the URL of the learning unit and must be unique. You can optionally provide a subtitle and a description for your nano module.
 
-Wählen Sie eine passende Lizenz für Ihr Nanomodul:
+.. _license:
 
-* CC BY 4.0: Freie Nutzung mit Namensnennung.
-* CC BY SA 4.0: Freie Nutzung mit Namensnennung und gleicher Lizenzierung.
+License
+^^^^^^^
 
-Selbstreguliertes Lernen
-^^^^^^^^^^^^^^^^^^^^^^^^
+Choose an appropriate license for your nano module from the following options:
 
-Aktivieren Sie die Checkbox "Aktivierungsfrage und sequenzielles Prüfen" um zusätzliche Funktionen zu aktivieren, welche das Selbstregulierte Lernen fördern.
+* CC BY 4.0: Free use with attribution.
+* CC BY SA 4.0: Free use with attribution and share alike.
+* Uni-intern: Internal use within the university only (no sharing permitted).
 
-Aktivierungsfrage
-"""""""""""""""""
+.. _self-regulated-learning:
 
-Aktivierungsfragen fördern die aktive Auseinandersetzung mit dem Lerninhalt vor der eigentlichen Bearbeitung. Sie aktivieren Vorwissen und schaffen mentale Anknüpfungspunkte.
+Self-regulated learning
+^^^^^^^^^^^^^^^^^^^^^^^
 
-**Funktionsweise:**
+Activate the checkbox "Activation question and sequential checking" to enable additional features that promote self-regulated learning.
 
-Nach Aktivierung erscheint ein zusätzliches Textfeld zur Eingabe der Aktivierungsfrage. Formulieren Sie eine kurze, anregende Frage. Die Frage wird Lernenden vor dem eigentlichen Lerninhalt angezeigt
+.. _activation-question:
 
-Sequentielles Prüfen
-""""""""""""""""""""
+Activation question
+"""""""""""""""""""
 
-**Funktionsweise:**
+Activation questions promote active engagement with the learning content before the actual processing. They activate prior knowledge and create mental anchor points.
 
-Nach Aktivierung wird Lernenden unterhalb jeder Antwort ein zusätzliches Textfeld angezeigt, in dem sie ihre Antwort-Entscheidung (korrekt/falsch) begründen können
+**Functionality:**
+
+After activation, an additional text field appears for entering the activation question. Formulate a short, stimulating question. The question is displayed to learners before the actual learning content.
+
+.. _sequential-checking:
+
+Sequential checking
+"""""""""""""""""""
+
+**Functionality:**
+
+After activation, learners are shown an additional text field below each answer where they can justify their answer decision (correct/incorrect).
+
+.. _skills:
 
 Skills
 ^^^^^^
 
-In einem Nanomodul kann angegeben werden, welche Skills durch den Lerninhalt vermittelt werden und welche Skills für das Verständnis vorausgesetzt werden.
+In a nano module, it can be specified which skills are conveyed through the learning content and which skills are required for understanding.
 
-**Skills hinzufügen:**
+**Add skills:**
 
-1. Klicken Sie auf "Hinzufügen"
-2. Markieren Sie einen oder mehrere Skills aus der Liste
-3. Klicken Sie auf "Speichern"
-4. Die ausgewählten Skills werden dem Nanomodul hinzugefügt
+1. Click on ":icon:`plus` Add"
+2. Select one or more skills from the list
+3. Click "Save"
+4. The selected skills are added to the nano module
 
-Neue Skills werden im Autor:innenbereich unter Meine Skillkarten angelegt.
+New skills are created in the author area under My Skill Cards.
 
 .. _learning-content:
 
-Lerninhalt
-~~~~~~~~~~
+Learning content
+~~~~~~~~~~~~~~~~
 
-In einem Nanomodul können verschiedene Präsentationsmedien miteinander kombiniert werden um Lerninhalte an Studierende zu vermitteln. Folgende Medien stehen zur Auswahl:
+In a nano module, various presentation media can be combined to convey learning content to students. The following media are available:
 
 .. hlist::
    :columns: 2
 
-   * Artikel
+   * Article
    * Video 
    * PDF
-   * Externe Webseite
+   * External website
 
-Artikel
+.. _article:
+
+Article
 ^^^^^^^
 
-1. Klicken Sie in das Textfeld oder auf "Bearbeiten"
-2. Es öffnet sich der Markdown-Editor
+1. Click in the text field or on ":icon:`pencil` Edit" button
+2. The Markdown editor opens
 
-Die rechte Bildschirmhälfte zeigt eine Live-Vorschau Ihres Artikels während der Bearbeitung.
+The right half of the screen shows a live preview of your article while editing.
+
+.. _video:
 
 Video
 ^^^^^
 
-Videos können auf drei Arten integriert werden: URL-Verlinkung, Datei-Auswahl, Datei-Upload
+Videos can be integrated in three ways: URL linking, file selection, file upload
 
-**URL-Verlinkung**
+**URL linking**
 
-1. Geben Sie die URL des gewünschten Videos ein
-2. Das Thumbnail des Videos wird automatisch angezeigt
+1. Enter the URL of the desired video
+2. The thumbnail of the video is displayed automatically
 
-Hinweis: Das ausgewählte Video muss öffentlich sichtbar sein.
+Note: The selected video must be publicly available.
 
-**Datei-Upload**
+**File upload**
 
-1. Klicken Sie auf "Video hochladen"
-2. Wählen Sie eine Videodatei in ihrem Datei-Explorer aus
-3. Klicken Sie auf "Öffnen"
-4. Es erscheint ein Dialog mit Fortschrittsanzeige
-5. Das Thumbnail des Videos wird nach erfolgreichem Upload angezeigt
+1. Click "Upload video"
+2. Select a video file from your file explorer
+3. Click "Open"
+4. A dialog with a progress bar appears
+5. The thumbnail of the video is displayed after a successful upload
 
-**Datei-Auswahl**
+**File selection**
 
-1. Klicken Sie auf das Icon neben "Video hochladen" (cloud-arrow-up)
-2. Wählen Sie eine Video-Datei aus ihren hochgeladenen Dateien aus
-3. Das Thumbnail des Videos wird automatisch angezeigt
+1. Click on the ":icon:`cloud-arrow-up`" button
+2. Select a video file from your uploaded files
+3. The thumbnail of the video is displayed automatically
+
+.. _pdf:
 
 PDF
 ^^^
 
-PDF-Dateien können auf drei Arten integriert werden: URL-Verlinkung, Datei-Auswahl, Datei-Upload
+PDF files can be integrated in three ways: URL linking, file selection, file upload
 
-**URL-Verlinkung**
+**URL linking**
 
-1. Geben Sie die URL der gewünschten PDF-Datei ein
-2. Die Vorschau der PDF-Datei wird automatisch angezeigt
+1. Enter the URL of the desired PDF file
+2. The preview of the PDF file is displayed automatically
 
-Hinweis: Die ausgewählte PDF-Datei muss öffentlich sichtbar sein.
+Note: The selected PDF file must be publicly available.
 
-**Datei-Upload**
+**File upload**
 
-1. Klicken Sie auf "Datei hochladen"
-2. Wählen Sie eine PDF-Datei in ihrem Datei-Explorer aus
-3. Klicken Sie auf "Öffnen"
-4. Es erscheint ein Dialog mit Fortschrittsanzeige
-5. Die Vorschau der PDF-Datei wird nach erfolgreichem Upload angezeigt
+1. Click "Upload file"
+2. Select a PDF file from your file explorer
+3. Click "Open"
+4. A dialog with a progress bar appears
+5. The preview of the PDF file is displayed after a successful upload
 
-**Datei-Auswahl**
+**File selection**
 
-1. Klicken Sie auf das Icon neben "Datei hochladen" (cloud-arrow-up)
-2. Wählen Sie eine PDF-Datei aus ihren hochgeladenen Dateien aus
-3. Die Vorschau der PDF-Datei wird automatisch angezeigt
+1. Click on the :icon:`cloud-arrow-up`" button
+2. Select a PDF file from your uploaded files
+3. The preview of the PDF file is displayed automatically
 
-Externe Webseite
+.. _external-website:
+
+External website
 ^^^^^^^^^^^^^^^^
 
-Die Integration externer Webseiten erfolgt über die Angabe einer URL und eignet sich für die direkte Einbettung von H5P-Inhalten in einem Nanomodul.
+The integration of external websites is done by specifying a URL and is suitable for the direct embedding of H5P content in a nano module.
 
 .. _learning-quiz:
 
-Lernkontrolle
+Learning quiz
 ~~~~~~~~~~~~~
 
-Der Editor besteht aus zwei Bereichen:
+The editor consists of two areas:
 
-- Aufgabenreiter: Hier sehen Sie alle Aufgaben als Registerkarten. Jede Karte zeigt den Aufgabentyp (z. B. Multiple-Choice, Freitext) und die Position an.
-- Aufgabenformular: In diesem Bereich bearbeiten Sie die ausgewählte Aufgabe. Hier können Sie Antworten definieren und Hinweise hinzufügen.
+- Task tabs: Here you see all tasks as tabs. Each card shows the task type (e.g., multiple choice, free text) and the position.
+- Task form: In this area, you edit the selected task. Here you can define answers and add hints.
 
-Aufgabe erstellen
-^^^^^^^^^^^^^^^^^
+.. _create-quiz-task:
 
-In einer Lernkontrolle können verschiedene Aufgabentypen miteinander kombiniert werden um das Wissen von Lernenden zu prüfen. 
+Create task
+^^^^^^^^^^^
 
-1. Klicken Sie auf "Aufgabe erstellen"
-2. Wählen Sie den gewünschten Aufgabentyp aus dem Dropdown-Menü aus
-3. Geben Sie im Textfeld "Aufgabe" die Aufgabenstellung oder Frage an
+In a learning quiz, different task types can be combined to test learners' knowledge.
 
-Folgende Aufgabentypen stehen zur Verfügung:
+1. Click on "Create task"
+2. Select the desired task type from the dropdown menu
+3. Enter the task or question in the "Task" text field
+The following task types are available:
 
 .. hlist::
    :columns: 2
 
-   * Multiple-Choice-Fragen
-   * Exakte Antwort-Fragen  
-   * Freitext-Aufgaben
-   * Lückentext-Aufgaben
-   * Ordnen-Aufgaben
-   * Programmieraufgaben
-   * Sprachbaum-Aufgaben
+   * Multiple-Choice questions
+   * Exact answer questions
+   * Free text tasks
+   * Cloze tasks
+   * Ordering tasks
+   * Programming tasks
+   * Language tree tasks
 
-Aufgaben sortieren
-^^^^^^^^^^^^^^^^^^
+.. _sort-quiz-tasks:
 
-Aufgaben lassen sich in ihrer Reihenfolge verändern. Um eine Aufgabe zu verschieben, klicken Sie auf die gewünschte Aufgabe im Aufgabenreiter und ziehen Sie diese mit gedrückter Maustaste nach links oder rechts. Die Aufgabe wird um eine Position verschoben.
+Task sorting
+^^^^^^^^^^^^
 
-Lernkontrolle konfigurieren
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Tasks can be reordered. To move a task, click on the desired task in the task tab and drag it left or right while holding down the mouse button. The task will be moved by one position.
 
-Oberhalb der Aufgabenreiter befindet sich die Konfiguration für Lernkontrollen.
+.. _configure-quiz:
 
-Standard-Konfiguration
+Configure learning quiz
+^^^^^^^^^^^^^^^^^^^^^^
+
+Above the task tabs is the configuration for learning quizzes.
+
+.. _default-quiz-configuration:
+
+Default configuration
+"""""""""""""""""""""
+
+The default configuration is:
+
+* All questions must be answered correctly to successfully complete the nano module
+* Solutions are not shown after an incorrect answer
+* Learners can access all hints without affecting success
+
+Advanced configuration
 """"""""""""""""""""""
 
-In der Standardeinstellung gilt:
+In the advanced settings, you can adjust the following options:
 
-* Alle Fragen müssen korrekt beantwortet werden, um das Nanomodul erfolgreich abzuschließen
-* Lösungen werden nach falscher Beantwortung nicht angezeigt
-* Lernende können alle Hinweise unbegrenzt abrufen, ohne dass dies den Erfolg beeinflusst
+* Show solutions after incorrect answers
+* Disable hints
+* Set the maximum number of allowed hints
+* Set the maximum number of allowed incorrect answers
 
-Erweiterte Konfiguration
-""""""""""""""""""""""""
-
-In den erweiterten Einstellungen können Sie folgende Optionen anpassen:
-
-* Lösungen nach Falschantworten anzeigen
-* Hinweise deaktivieren
-* Maximale Anzahl erlaubter Hinweise festlegen
-* Maximale Anzahl erlaubter Falschantworten festlegen
-
-Aufgabentypen
-^^^^^^^^^^^^^
+Task types
+^^^^^^^^^^
 
 Multiple-Choice
 """""""""""""""
 
-Bei Multiple-Choice-Aufgaben können Sie mehrere Antworten anlegen. Die Antworten unterstützen das Markdown-Format.
+In Multiple-Choice tasks, you can create multiple answers. The answers support Markdown format.
 
-**Antworten erstellen:**
+**Creating answers:**
 
-1. Klicken Sie auf "+" um eine neue Antwort hinzuzufügen
-2. Geben Sie die gewünschte Antwort ein
-3. Legen Sie für jede Antwort fest, ob diese korrekt ist
+1. Click ":icon:`plus`" to add a new answer
+2. Enter the desired answer
+3. Specify for each answer whether it is correct
 
-**Zufällige Anordnung:**
+**Random order:**
 
-Über den Schalter "Antworten dem Nutzer zufälllig anordnen" aktivieren Sie optional die zufällige Anordnung der Antworten. Ist die zufällige Anordnung aktiviert, werden die Antworten bei jedem Versuch neu gemischt. Standardmäßig ist die zufällige Antordnung deaktiviert.
+Use the switch "Randomly order answers for the user" to optionally enable the random ordering of answers. If random ordering is enabled, the answers are reshuffled with each attempt. By default, random ordering is disabled.
 
-Exakte Antwort
-""""""""""""""
+Exact answer
+""""""""""""
 
-Bei Aufgaben mit exakter Antwort definieren Sie akzeptierte Antworten, die Lernende eingeben müssen.
+In exact answer tasks, you define accepted answers that learners must enter.
 
-**Antworten hinzufügen:**
+**Adding answers:**
 
-1. Klicken Sie auf „+"
-2. Geben Sie die akzeptierte Antwort in das Textfeld ein
+1. Click ":icon:`plus`"
+2. Enter the accepted answer in the text field
 
-Markdown wird nicht unterstützt.
+Markdown is not supported.
 
-**Groß- und Kleinschreibung:**
+**Case sensitivity:**
 
-Über den Schalter "Groß-/Kleinschreibung berücksichtigen" legen Sie fest, ob die Groß- und Kleinschreibung bei der Validierung berücksichtigt wird. Standardmäßig wird diese ignoriert.
+Use the switch "Consider case sensitivity" to specify whether case sensitivity is considered during validation. By default, it is ignored.
 
-Lückentext
-""""""""""
+Cloze tasks
+"""""""""""
 
-Für Lückentextaufgaben verfassen Sie zunächst einen Text und bauen anschließend Lücken ein, die Lernende ausfüllen müssen.
+For cloze tasks, first write a text and then insert gaps that learners must fill.
 
-**Lückenformate:**
+**Gap formats:**
 
-Es stehen zwei Formate zur Verfügung:
+Two formats are available:
+* Text answers: Learners enter the answer freely
+* Single choice: Learners choose from predefined options
 
-* Textantworten: Lernende geben die Antwort frei ein
-* Single-Choice: Lernende wählen aus vorgegebenen Optionen
+**Syntax for text answers:**
 
-**Syntax für Textantworten:**
+Simple answer::
 
-Einfache Antwort::
+    {T: [Boat]}
 
-    {T: [Boot]}
+Multiple correct answers (comma-separated)::
+    {T: [Boat, Ship]}
 
-Mehrere korrekte Antworten (kommagetrennt)::
+Incorrect answers are marked with a hash::
 
-    {T: [Boot, Schiff]}
+    {T: [Boat, Ship, #Car]}
 
-Mit explizit falschen Antworten (mit Raute markiert)::
+**Syntax for Single choice:**
 
-    {T: [Boot, Schiff, #Auto]}
+Change the "T" to "C". Incorrect answers are marked with a hash::
 
-**Syntax für Single-Choice:**
+    {C: [Boat, Ship, #Car]}
 
-Ändern Sie das „T" in „C". Falsche Antworten werden mit einer Raute markiert::
+Ordering
+""""""""
 
-    {C: [Boot, Schiff, #Auto]}
+In ordering tasks, learners assign elements to the appropriate categories.
 
-Ordnen
-""""""
+**Creating categories:**
 
-Bei Ordnen-Aufgaben ordnen Lernende Elemente den passenden Kategorien zu.
+1. Click "Add category"
+2. Enter a title for the category
+3. Click "Add"
 
-**Kategorien erstellen:**
+**Adding elements:**
+1. Click ":icon:`plus`"
+2. Enter a label for the element
+3. Click "Save"
 
-1. Klicken Sie auf „Kategorie hinzufügen"
-2. Geben Sie einen Titel für die Kategorie ein
-3. Klicken Sie auf "Hinzufügen"
+**Moving elements:**
 
-**Elemente hinzufügen:**
+You can move elements by drag-and-drop within and between categories.
 
-1. Klicken Sie auf "+"
-2. Geben Sie eine Bezeichnung für das Element ein
-3. Klicken Sie auf "Speichern"
+**Random order:**
 
-**Elemente verschieben:**
+Use the switch "Randomly order answers for the user" to specify whether categories and elements should be randomly ordered. By default, random ordering is disabled.
 
-Sie können Elemente per Drag-and-Drop in und zwischen Kategorien verschieben.
+Creating hints
+^^^^^^^^^^^^^^
 
-**Zufällige Anordnung:**
-
-Über den Schalter "Antworten dem Nutzer zufällig anordnen" legen Sie fest, ob Kategorien und Elemente zufällig angeordnet werden sollen. Standardmäßig ist die zufällige Anordnung ausgeschaltet.
-
-Hinweise erstellen
-^^^^^^^^^^^^^^^^^^
-
-Aufgaben können über Hinweise verfügen. Klicken Sie auf "+" um einen neuen Hinweis zu erstellen.
+Tasks can have hints. Click ":icon:`plus`" to create a new hint.
