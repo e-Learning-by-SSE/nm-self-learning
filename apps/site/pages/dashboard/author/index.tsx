@@ -1,4 +1,4 @@
-import { ArrowDownTrayIcon, PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { ArrowDownTrayIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { TeacherView } from "@self-learning/analysis";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
