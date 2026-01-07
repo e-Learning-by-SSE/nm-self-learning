@@ -191,6 +191,7 @@ In a learning quiz, different task types can be combined to test learners' knowl
 1. Click on "Create task"
 2. Select the desired task type from the dropdown menu
 3. Enter the task or question in the "Task" text field
+
 The following task types are available:
 
 .. hlist::
@@ -214,7 +215,7 @@ Tasks can be reordered. To move a task, click on the desired task in the task ta
 .. _configure-quiz:
 
 Configure learning quiz
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
 
 Above the task tabs is the configuration for learning quizzes.
 

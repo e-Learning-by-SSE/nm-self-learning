@@ -1,5 +1,5 @@
 Learning Diary
-============
+==============
 
 The **Learning Diary** can be accessed via the profile once it has been enabled in the settings. After activation, new tiles appear on the profile page that allow access to the learning diary.
 
@@ -17,7 +17,7 @@ Clicking on a table row opens the corresponding entry, while clicking on the cou
 .. _page-structure:
 
 Page Structure
-------------
+--------------
 
 The learning diary page consists of three main sections:
 
@@ -41,7 +41,7 @@ A small legend of the status icons can be accessed via the *Info Icon* next to t
 .. _diary-navigation:
 
 Navigation in the Diary
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Above the actual entry is the navigation bar, which allows browsing through the entries.
 
@@ -68,7 +68,7 @@ The **user-defined data** must be filled out to complete an entry and reflect on
 .. _diary-auto-data:
 
 Automatically Collected Data
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In the upper area, the date, course, duration of learning, and the number of processed learning units are always visible.  
 Clicking the *Show More* button opens a table with detailed information about the individual learning units, including title, processing time, number of solved tasks, success rate, and hints used. The table can be collapsed again with *Show Less*.
@@ -76,7 +76,7 @@ Clicking the *Show More* button opens a table with detailed information about th
 .. _diary-user-data:
 
 User-Defined Data
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
 
 Below the automatically collected information are the fields that must be filled out by the learners themselves. These include learning goals, efforts, techniques used, learning location, distractions, and notes. It is possible to switch between a compact and a detailed view at any time. In the detailed view, short descriptions appear for each field, clarifying the purpose of the input.
 
@@ -89,6 +89,7 @@ Below the automatically collected information are the fields that must be filled
    * Distractions
    * Techniques Used
    * Notes
+
 The *Learning Goals* field opens a dialog with the learning goal editor. Users can mark existing goals as *in progress* or *completed* or create new learning goals. Every change is automatically documented in the diary entry.
 
 The *Learning Location* field opens a selection window with the options *Library*, *Cafe*, *Home*, and *University*. Additionally, a free text field is available for individual locations, such as *on the bus*.

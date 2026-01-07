@@ -6,7 +6,7 @@ The creation of new skills takes place in the authoring area. Skills are stored 
 .. _skill-editor-structure:
 
 Structure of the Editor
-------------------
+-----------------------
 
 The editor is divided into two views. On the left side, there is a form with the name and description of the skill card. If a skill has already been created and selected, information about the selected skill is displayed below this form: name, description (optional), and skill relationships. Skill relationships are the primary feature of the editor and are explained in detail below.
 
@@ -17,10 +17,11 @@ Using the "Create Skill" button in the header, a new skill is created. When hove
 * Clicking the :icon:`pencil` icon opens the skill focused in the table in the left view for editing
 * Clicking the :icon:`folder-plus` icon adds a child skill to the skill focused in the table
 * Clicking the :icon:`trash` icon deletes the skill focused in the table
+
 .. _skill-editor-linking:
 
 Linking Skills
-----------------------
+--------------
 
 Dependencies between skills can be modeled hierarchically by creating parent-child relationships. This allows for the representation of complex curricular structures. While the right tabular view provides an overview of the entire structure of the skill card, the left view illustrates the parent and child relationships of an individual skill.
 
