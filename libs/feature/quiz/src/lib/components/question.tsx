@@ -15,11 +15,11 @@ import { Hints } from "./hints";
 import { useQuiz } from "./quiz-context";
 import { LessonLayoutProps } from "@self-learning/lesson";
 import { useCookies } from "react-cookie";
-import { useEventLog } from "@self-learning/util/common";
 import {
 	CheckCircleIcon as CheckCircleIconOutline,
 	XCircleIcon
 } from "@heroicons/react/24/outline";
+import { useEventLog } from "@self-learning/util/eventlog";
 
 export type QuizSavedAnswers = { answers: unknown; lessonSlug: string };
 
@@ -38,9 +38,17 @@ export function Question({
 	lesson: LessonLayoutProps["lesson"];
 	courseId?: string;
 }) {
-	const { goToNextQuestion, answers, setAnswers, evaluations, setEvaluations, config } =
-		useQuiz();
-	const { newEvent: writeEvent } = useEventLog();
+	const {
+		goToNextQuestion,
+		answers,
+		setAnswers,
+		evaluations,
+		setEvaluations,
+		config,
+		setAttempts,
+		lessonAttemptId
+	} = useQuiz();
+	const { newEvent } = useEventLog();
 	const answer = answers[question.questionId];
 	const evaluation = evaluations[question.questionId];
 
@@ -48,7 +56,6 @@ export function Question({
 
 	function setAnswer(v: unknown) {
 		const value = typeof v === "function" ? v(answer) : v;
-
 		setAnswers(prev => {
 			const updatedAnswers = {
 				...prev,
@@ -69,20 +76,43 @@ export function Question({
 			[question.questionId]: e
 		}));
 
-		await writeEvent({
-			type: "LESSON_QUIZ_SUBMISSION",
+		// no event on "Reset" click
+		if (e) {
+			setAttempts(prev => {
+				const attempts = prev[question.questionId];
+				const newAttempts = attempts + 1;
+				void newEvent({
+					type: "LESSON_QUIZ_SUBMISSION",
+					resourceId: lesson.lessonId,
+					courseId: courseId,
+					payload: {
+						questionId: question.questionId,
+						totalQuestionPool: 1, // ATTENTION: for data anlaysis, it is currently unknown how many questions were available at the moment of submission
+						questionPoolIndex: 1,
+						type: question.type,
+						hintsUsed: question.hints?.map(hint => hint.hintId) ?? "",
+						attempts: newAttempts,
+						solved: e.isCorrect ?? false,
+						lessonAttemptId
+					}
+				});
+				return { ...prev, [question.questionId]: newAttempts };
+			});
+		}
+	}
+
+	function nextQuestionStep() {
+		void newEvent({
+			type: "LESSON_QUIZ_START",
 			resourceId: lesson.lessonId,
 			courseId: courseId,
 			payload: {
 				questionId: question.questionId,
-				totalQuestionPool: 1,
-				questionPoolIndex: 1,
 				type: question.type,
-				hintsUsed: question.hints?.map(hint => hint.hintId) ?? "",
-				attempts: 1,
-				solved: e?.isCorrect ?? false
+				lessonAttemptId
 			}
 		});
+		void goToNextQuestion();
 	}
 
 	return (
@@ -97,7 +127,7 @@ export function Question({
 			<article className="flex flex-col gap-8">
 				<div>
 					<div className="flex items-center justify-between">
-						<span className="font-semibold text-secondary" data-testid="questionType">
+						<span className="font-semibold text-c-primary" data-testid="questionType">
 							{QUESTION_TYPE_DISPLAY_NAMES[question.type]}
 						</span>
 						<div className="flex gap-4">
@@ -109,7 +139,7 @@ export function Question({
 							</button>
 							<CheckResult
 								setEvaluation={setEvaluation}
-								nextQuestionStep={goToNextQuestion}
+								nextQuestionStep={nextQuestionStep}
 							/>
 						</div>
 					</div>
@@ -118,7 +148,7 @@ export function Question({
 							<MDXRemote {...markdown.questionsMd[question.questionId]} />
 						</MarkdownContainer>
 					) : (
-						<span className="text-red-500">Error: No markdown content found.</span>
+						<span className="text-c-danger">Error: No markdown content found.</span>
 					)}
 				</div>
 
@@ -149,9 +179,10 @@ function CheckResult({
 		console.debug("checking...");
 		const evaluation = EVALUATION_FUNCTIONS[question.type](question, answer);
 		setEvaluation(evaluation);
+		//here?
 	}
 	if (!currentEvaluation) {
-		<span className="text-red-500">No question state found for this question.</span>;
+		<span className="text-c-danger">No question state found for this question.</span>;
 	}
 
 	const canGoToNextQuestion = !!currentEvaluation;
@@ -166,7 +197,7 @@ function CheckResult({
 	);
 
 	const renderFailedButton = () => (
-		<button className="btn bg-red-500" onClick={reload}>
+		<button className="btn bg-c-danger" onClick={reload}>
 			<span>Erneut probieren</span>
 			<ArrowPathIcon className="h-5" />
 		</button>
@@ -188,11 +219,11 @@ export function QuestionTab(props: { evaluation: { isCorrect: boolean } | null; 
 		<span className="flex items-center gap-4">
 			{isCorrect ? (
 				<QuestionTabIcon>
-					<CheckCircleIcon className="h-5 text-secondary" />
+					<CheckCircleIcon className="h-5 text-c-primary" />
 				</QuestionTabIcon>
 			) : isIncorrect ? (
 				<QuestionTabIcon>
-					<XCircleIcon className="h-5 text-red-500" />
+					<XCircleIcon className="h-5 text-c-danger" />
 				</QuestionTabIcon>
 			) : (
 				<QuestionTabIcon>

@@ -1,21 +1,31 @@
-import { createUserEvent, database } from "@self-learning/database";
+import { database } from "@self-learning/database";
 import { enrollUser } from "./enrollments-db";
 import { ApiError } from "@self-learning/util/http";
 
 jest.mock("@self-learning/database", () => ({
-	createUserEvent: jest.fn(),
 	database: {
 		course: {
 			findUniqueOrThrow: jest.fn()
 		},
 		enrollment: {
 			create: jest.fn()
+		},
+		features: {
+			findUnique: jest.fn()
+		},
+		eventLog: {
+			create: jest.fn()
 		}
 	}
 }));
 
+(database.features.findUnique as jest.Mock).mockResolvedValue({
+	learningStatistics: true
+});
+
 describe("enrollUser", () => {
 	const courseId = "course-id";
+	const eventLogMock = database.eventLog.create as jest.Mock;
 	const username = "test-user";
 
 	beforeEach(() => {
@@ -43,11 +53,13 @@ describe("enrollUser", () => {
 		const result = await enrollUser({ courseId, username });
 
 		expect(result).toEqual(mockEnrollment);
-		expect(createUserEvent).toHaveBeenCalledWith({
-			username,
-			type: "COURSE_ENROLL",
-			resourceId: courseId,
-			payload: undefined
+		expect(eventLogMock).toHaveBeenCalledWith({
+			data: {
+				username,
+				type: "COURSE_ENROLL",
+				resourceId: courseId,
+				payload: undefined
+			}
 		});
 	});
 
@@ -68,6 +80,6 @@ describe("enrollUser", () => {
 		}
 		// await expect(enrollUser({ courseId, username })).rejects.toBeInstanceOf(ApiError); // TODO this does not work in testing
 
-		expect(createUserEvent).not.toHaveBeenCalled();
+		expect(eventLogMock).not.toHaveBeenCalled();
 	});
 });

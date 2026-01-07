@@ -53,7 +53,7 @@ export function DropdownMenu({
 	return (
 		<Menu as="div" className="relative inline-block text-left w-fit">
 			<>
-				<MenuButton title={title} className="inline-flex items-center rounded-md px-4">
+				<MenuButton title={title} className="inline-flex items-center rounded-md">
 					<div ref={buttonRef}>{button}</div>
 				</MenuButton>
 
@@ -74,7 +74,7 @@ export function DropdownMenu({
 												customFocusStyle
 													? customFocusStyle(focus)
 													: focus
-														? "bg-emerald-500 text-white"
+														? "bg-c-primary text-white"
 														: ""
 											} flex items-center`}
 										>

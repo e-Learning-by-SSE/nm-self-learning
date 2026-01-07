@@ -1,12 +1,16 @@
 import { ArrowDownTrayIcon, PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { TeacherView } from "@self-learning/analysis";
-import { t, withAuth, withTranslations } from "@self-learning/api";
+import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { SkillRepositoryOverview } from "@self-learning/teaching";
+import { Specialization, Subject } from "@self-learning/types";
 import {
+	Dialog,
+	DialogActions,
 	Divider,
-	IconButton,
+	IconOnlyButton,
+	IconTextButton,
 	ImageChip,
 	ImageOrPlaceholder,
 	LoadingBox,
@@ -14,20 +18,19 @@ import {
 	SectionHeader,
 	Table,
 	TableDataColumn,
-	TableHeaderColumn,
-	Dialog,
-	DialogActions
+	TableHeaderColumn
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
+import { withAuth } from "@self-learning/util/auth";
 import { formatDateAgo } from "@self-learning/util/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { Specialization, Subject } from "@self-learning/types";
 import { LessonDeleteOption } from "@self-learning/ui/lesson";
 import { ExportCourseDialog } from "@self-learning/teaching";
+import { keepPreviousData } from "@tanstack/react-query";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
 
@@ -121,7 +124,7 @@ function AuthorDashboardPage({ author }: Props) {
 	const [viewExportDialog, setViewExportDialog] = useState(false);
 
 	return (
-		<div className="bg-gray-50">
+		<div>
 			<CenteredSection>
 				<div className="flex flex-col gap-10">
 					{author.subjectAdmin.length > 0 && (
@@ -140,7 +143,7 @@ function AuthorDashboardPage({ author }: Props) {
 										>
 											<Link
 												href={`/teaching/subjects/${subject.subjectId}`}
-												className="font-medium hover:text-secondary"
+												className="font-medium hover:text-c-primary"
 											>
 												{subject.title}
 											</Link>
@@ -168,7 +171,7 @@ function AuthorDashboardPage({ author }: Props) {
 										>
 											<Link
 												href={`/teaching/subjects/${specialization.subject.subjectId}/${specialization.specializationId}`}
-												className="font-medium hover:text-secondary"
+												className="font-medium hover:text-c-primary"
 											>
 												{specialization.title}
 											</Link>
@@ -188,11 +191,10 @@ function AuthorDashboardPage({ author }: Props) {
 								subtitle="Autor der folgenden Kurse:"
 							/>
 
-							<Link href="/teaching/courses/create">
-								<IconButton
-									text="Kurs erstellen"
-									icon={<PlusIcon className="icon h-5" />}
-								/>
+							<Link href="/teaching/courses/create" className="mt-4">
+								<button className="btn btn-primary" type="button">
+									<span>Kurs erstellen</span>
+								</button>
 							</Link>
 						</div>
 
@@ -202,13 +204,15 @@ function AuthorDashboardPage({ author }: Props) {
 									<div className="h-32 w-32">
 										<VoidSvg />
 									</div>
-									<p className="text-light">Du hast noch keine Kurse erstellt.</p>
+									<p className="text-c-text-muted">
+										Du hast noch keine Kurse erstellt.
+									</p>
 								</div>
 							) : (
 								author.courses.map(course => (
 									<li
 										key={course.courseId}
-										className="flex items-center rounded-lg border border-light-border bg-white"
+										className="flex items-center rounded-lg border border-c-border bg-white"
 									>
 										<ImageOrPlaceholder
 											src={course.imgUrl ?? undefined}
@@ -217,14 +221,14 @@ function AuthorDashboardPage({ author }: Props) {
 
 										<div className="flex w-full items-center justify-between px-4">
 											<div className="flex flex-col gap-1">
-												<span className="text-xs text-light">
+												<span className="text-xs text-c-text-muted">
 													{course.specializations
 														.map(s => s.title)
 														.join(" | ")}
 												</span>
 												<Link
 													href={`/courses/${course.slug}`}
-													className="text-sm font-medium hover:text-secondary"
+													className="text-sm font-medium hover:text-c-primary"
 												>
 													{course.title}
 												</Link>
@@ -233,21 +237,21 @@ function AuthorDashboardPage({ author }: Props) {
 											<div className="flex flex-wrap justify-end gap-4">
 												<Link
 													href={`/teaching/courses/edit/${course.courseId}`}
-													className="btn-stroked h-fit w-fit"
 												>
-													<PencilIcon className="icon" />
-													<span>Bearbeiten</span>
+													<IconTextButton
+														icon={<PencilIcon className="h-5 w-5" />}
+														text={"Bearbeiten"}
+														className="btn-stroked"
+														title="Kurs bearbeiten"
+													/>
 												</Link>
-												<div className="flex space-x-2">
-													<button
-														className="btn-stroked w-full text-right"
-														type="button"
-														onClick={() => setViewExportDialog(true)}
-													>
-														<ArrowDownTrayIcon className="w-5 h-5 icon" />
-														{"Export"}
-													</button>
-												</div>
+												<IconTextButton
+													icon={<ArrowDownTrayIcon className="h-5 w-5" />}
+													text={"Export"}
+													className="btn-stroked"
+													title="Kurs exportieren"
+													onClick={() => setViewExportDialog(true)}
+												/>
 												<CourseDeleteOption slug={course.slug} />
 											</div>
 										</div>
@@ -274,11 +278,10 @@ function AuthorDashboardPage({ author }: Props) {
 								subtitle="Autor der folgenden Lerneinheiten:"
 							/>
 
-							<Link href="/teaching/lessons/create">
-								<IconButton
-									text="Lerneinheit erstellen"
-									icon={<PlusIcon className="icon h-5" />}
-								/>
+							<Link href="/teaching/lessons/create" className="mt-4">
+								<button className="btn btn-primary" type="button">
+									<span>Lerneinheit erstellen</span>
+								</button>
 							</Link>
 						</div>
 
@@ -292,11 +295,10 @@ function AuthorDashboardPage({ author }: Props) {
 								title="Meine Skillkarten"
 								subtitle="Autor der folgenden Skillkarten:"
 							/>
-							<Link href="/skills/repository/create">
-								<IconButton
-									icon={<PlusIcon className="icon h-5" />}
-									text="Skillkarte erstellen"
-								/>
+							<Link href="/skills/repository/create" className="mt-4">
+								<button className="btn btn-primary" type="button">
+									<span>Skillkarte erstellen</span>
+								</button>
 							</Link>
 						</div>
 						<SkillRepositoryOverview />
@@ -347,14 +349,11 @@ function CourseDeleteOption({ slug }: { slug: string }) {
 
 	return (
 		<>
-			<button
-				className="rounded bg-red-500 font-medium text-white hover:bg-red-600"
+			<IconOnlyButton
+				icon={<TrashIcon className="h-5 w-5" />}
+				className="btn-danger"
 				onClick={() => setShowConfirmation(true)}
-			>
-				<div className="ml-4">
-					<TrashIcon className="icon " />
-				</div>
-			</button>
+			/>
 			{showConfirmation && (
 				<CourseDeletionDialog
 					onCancel={handleCancel}
@@ -390,7 +389,7 @@ function CourseDeletionDialog({
 						Er wird im folgenden Fachgebiet verwendet:{" "}
 						<Link
 							href={`/subjects/${linkedEntities.subject.slug}`}
-							className="hover:text-secondary"
+							className="hover:text-c-primary"
 						>
 							{linkedEntities.subject.title}
 						</Link>
@@ -403,7 +402,7 @@ function CourseDeletionDialog({
 						<li key={specialization.slug}>
 							<Link
 								href={`/subjects/${specialization.subject.slug}/${specialization.slug}`}
-								className="hover:text-secondary"
+								className="hover:text-c-primary"
 							>
 								{specialization.subject.title} / {specialization.title}
 							</Link>
@@ -419,7 +418,7 @@ function CourseDeletionDialog({
 		<Dialog title={"Löschen"} onClose={onCancel}>
 			Möchten Sie diesen Kurs wirklich löschen?
 			<DialogActions onClose={onCancel}>
-				<button className="btn-primary hover:bg-red-500" onClick={onSubmit}>
+				<button className="btn-primary hover:bg-c-danger" onClick={onSubmit}>
 					Löschen
 				</button>
 			</DialogActions>
@@ -431,11 +430,14 @@ function LessonTaskbar({ lessonId }: { lessonId: string }) {
 	return (
 		<div className="flex flex-wrap justify-end gap-4">
 			<Link href={`/teaching/lessons/edit/${lessonId}`}>
-				<button type="button" className="btn-stroked w-fit self-end">
-					<PencilIcon className="icon" />
-					<span>Bearbeiten</span>
-				</button>
+				<IconTextButton
+					icon={<PencilIcon className="h-5 w-5" />}
+					text={"Bearbeiten"}
+					className="btn-stroked"
+					title="Lerneinheit bearbeiten"
+				/>
 			</Link>
+
 			<LessonDeleteOption lessonId={lessonId} />
 		</div>
 	);
@@ -452,7 +454,7 @@ function Lessons({ authorName }: { authorName: string }) {
 			authorName
 		},
 		{
-			keepPreviousData: true,
+			placeholderData: keepPreviousData,
 			staleTime: 10_000
 		}
 	);
@@ -494,13 +496,13 @@ function Lessons({ authorName }: { authorName: string }) {
 								<TableDataColumn>
 									<Link
 										href={`/lessons/${lesson.slug}`}
-										className="font-medium hover:text-secondary"
+										className="font-medium hover:text-c-primary"
 									>
 										{lesson.title}
 									</Link>
 								</TableDataColumn>
 								<TableDataColumn>
-									<span className="text-light">
+									<span className="text-c-text-muted">
 										{formatDateAgo(lesson.updatedAt)}
 									</span>
 								</TableDataColumn>

@@ -54,8 +54,17 @@
 			"cache": true
 		},
 		"lint": {
-			"inputs": ["default", "{workspaceRoot}/.eslintrc.json"],
+			"inputs": [
+				"default",
+				"{workspaceRoot}/.eslintrc.json",
+				"{workspaceRoot}/eslint.config.mjs"
+			],
 			"cache": true
+		},
+		"@nx/esbuild:esbuild": {
+			"cache": true,
+			"dependsOn": ["^build"],
+			"inputs": ["production", "^production"]
 		}
 	},
 	"namedInputs": {
@@ -68,7 +77,8 @@
 			"!{projectRoot}/jest.config.[jt]s",
 			"!{projectRoot}/.eslintrc.json",
 			"!{projectRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)",
-			"!{projectRoot}/src/test-setup.[jt]s"
+			"!{projectRoot}/src/test-setup.[jt]s",
+			"!{projectRoot}/eslint.config.mjs"
 		]
 	},
 	"plugins": [

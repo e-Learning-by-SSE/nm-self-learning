@@ -2,19 +2,19 @@
 import { ArrowLeftIcon } from "@heroicons/react/24/solid";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { CenteredSection } from "./containers/centered-section";
-import { redirectToLogin } from "./redirect-to-login";
-import { useRouter } from "next/router";
 import { useCallback } from "react";
+import { CenteredSection } from "./containers/centered-section";
+import { useLoginRedirect } from "@self-learning/util/auth";
 
 /**
  * Wrapper for `useSession` from `next-auth` that redirects the user to the login page if they are not authenticated.
  * If this is running in a demo instance, users will be redirected to the demo login page, otherwise to the Keycloak login page.
  */
 export function useRequiredSession() {
+	const { loginRedirect } = useLoginRedirect();
 	const session = useSession({
 		required: true,
-		onUnauthenticated: redirectToLogin
+		onUnauthenticated: loginRedirect
 	});
 	return session;
 }
@@ -105,11 +105,11 @@ export function Unauthorized({ children }: { children?: React.ReactNode }) {
 		<CenteredSection>
 			<div className="flex flex-col gap-8">
 				<h1 className="text-5xl">Nicht autorisiert</h1>
-				<span className="text-light">
+				<span className="text-c-text-muted">
 					Diese Seite ist nur für Benutzer mit entsprechenden Rechten erreichbar.
 				</span>
 
-				{children && <div className="text-light">{children}</div>}
+				{children && <div className="text-c-text-muted">{children}</div>}
 
 				<Link href="/" className="btn-primary w-fit">
 					<ArrowLeftIcon className="icon" />
@@ -121,11 +121,7 @@ export function Unauthorized({ children }: { children?: React.ReactNode }) {
 }
 
 export function useAuthentication() {
-	const router = useRouter();
-	const callbackUrl = encodeURIComponent(router.asPath);
-	const redirectLogin = useCallback(() => {
-		router.push(`/api/auth/signin?callbackUrl=${callbackUrl}`);
-	}, [router, callbackUrl]);
+	const { loginRedirect } = useLoginRedirect();
 	const session = useSession({ required: false });
 	const isAuthenticated = session.data?.user != null;
 
@@ -134,10 +130,10 @@ export function useAuthentication() {
 			if (isAuthenticated) {
 				closure();
 			} else {
-				redirectLogin();
+				loginRedirect();
 			}
 		},
-		[isAuthenticated, redirectLogin]
+		[isAuthenticated, loginRedirect]
 	);
 
 	return { withAuth, isAuthenticated };

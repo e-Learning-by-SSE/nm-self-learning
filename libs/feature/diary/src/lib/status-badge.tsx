@@ -10,12 +10,12 @@ import { useState } from "react";
 function getIcon(hasRead: boolean, isDraft: boolean) {
 	if (isDraft) {
 		if (hasRead) {
-			return <EllipsisHorizontalCircleIcon className="fill-gray-400" />;
+			return <EllipsisHorizontalCircleIcon className="fill-c-info" />;
 		} else {
-			return <ExclamationCircleIcon className="fill-blue-400" />;
+			return <ExclamationCircleIcon className="fill-c-neutral" />;
 		}
 	} else {
-		return <CheckCircleIcon className="fill-green-500" />;
+		return <CheckCircleIcon className="fill-c-success" />;
 	}
 }
 
@@ -64,14 +64,14 @@ export function ExpandableDetailsSection({
 			<div className="flex justify-between">
 				<h2 className={`${headerStyles ?? "text-xl"}`}>{header}</h2>
 				<button
-					className="rounded-full p-1 hover:bg-gray-100"
+					className="rounded-full p-1 hover:bg-c-neutral-muted"
 					onClick={toggleExpanded}
 					aria-expanded={isExpanded}
 				>
 					{!isExpanded ? (
-						<InformationCircleIconOutline className="h-6 w-6 text-gray-500 transition-colors duration-200" />
+						<InformationCircleIconOutline className="h-6 w-6 text-c-text-muted transition-colors duration-200" />
 					) : (
-						<InformationCircleIcon className="h-6 w-6 text-emerald-500 transition-colors duration-200" />
+						<InformationCircleIcon className="h-6 w-6 text-c-primary transition-colors duration-200" />
 					)}
 				</button>
 			</div>

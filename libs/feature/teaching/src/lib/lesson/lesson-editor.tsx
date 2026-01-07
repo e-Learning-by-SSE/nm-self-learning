@@ -104,12 +104,12 @@ export function LessonEditor({
 			<form
 				id="lessonform"
 				onSubmit={form.handleSubmit(onSubmit, console.log)}
-				className="w-full bg-gray-100"
+				className="w-full"
 			>
 				<div className="flex flex-col px-4 max-w-screen-xl mx-auto">
 					<div className="flex justify-between mb-8">
 						<div className="flex flex-col gap-2">
-							<span className="font-semibold text-2xl text-secondary">
+							<span className="font-semibold text-2xl text-c-primary">
 								{initialLesson ? "Lerneinheit bearbeiten" : "Lerneinheit erstellen"}
 							</span>
 							<h1 className="text-4xl">{initialLesson?.title}</h1>

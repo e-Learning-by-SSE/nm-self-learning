@@ -39,6 +39,10 @@ export default function LicensesPage() {
 		setEditTarget(null);
 	}
 
+	const onLicenseDialogClose = () => {
+		setEditTarget(null);
+	};
+
 	return (
 		<AdminGuard>
 			<CenteredSection>
@@ -55,9 +59,7 @@ export default function LicensesPage() {
 					onChange={e => setDisplayName(e.target.value)}
 				/>
 
-				{editTarget === "new" && (
-					<CreateLicenseDialog onClose={() => setEditTarget(null)} />
-				)}
+				{editTarget === "new" && <CreateLicenseDialog onClose={onLicenseDialogClose} />}
 				{typeof editTarget === "number" && (
 					<EditLicenseDialog onClose={onEditDialogClose} licenseId={editTarget} />
 				)}
@@ -190,7 +192,7 @@ export function LicenseDetail({ license }: { license: License }) {
 			</div>
 			<div className="col-span-1">
 				{license.url ? (
-					<Link className="text-sm font-medium hover:text-secondary" href={license.url}>
+					<Link className="text-sm font-medium hover:text-c-primary" href={license.url}>
 						{shortenLongText(license.url)}
 					</Link>
 				) : (
@@ -198,7 +200,7 @@ export function LicenseDetail({ license }: { license: License }) {
 				)}
 				{license.licenseText ? (
 					<div
-						className="text-sm font-medium hover:text-secondary"
+						className="text-sm font-medium hover:text-c-primary"
 						style={{ cursor: "pointer" }}
 						onClick={() => setViewLicenseDialog(true)}
 					>

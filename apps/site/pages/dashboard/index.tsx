@@ -1,5 +1,5 @@
 import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
-import { getAuthenticatedUser, withTranslations } from "@self-learning/api";
+import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import {
@@ -17,6 +17,7 @@ import {
 } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { MarketingSvg, OverviewSvg, TargetSvg } from "@self-learning/ui/static";
+import { withAuth } from "@self-learning/util/auth";
 import {
 	formatDateAgo,
 	formatDateStringShort,
@@ -28,20 +29,18 @@ import { useReducer } from "react";
 
 type Student = Awaited<ReturnType<typeof getStudent>>;
 
-type LearningDiaryEntryLessonWithDetails = {
-	entryId: string;
-	lessonId: string;
+type RecentLesson = {
 	title: string;
 	slug: string;
-	courseImgUrl?: string;
 	courseSlug: string;
+	courseImgUrl?: string | null;
 	touchedAt: Date;
 	completed: boolean;
 };
 
 type Props = {
 	student: Student;
-	recentLessons: LearningDiaryEntryLessonWithDetails[];
+	recentLessons: RecentLesson[];
 };
 
 function getStudent(username: string) {
@@ -58,14 +57,14 @@ function getStudent(username: string) {
 					displayName: true,
 					name: true,
 					image: true,
-					enabledFeatureLearningDiary: true,
-					enabledLearningStatistics: true
+					featureFlags: true
 				}
 			},
 			completedLessons: {
 				take: 5,
 				orderBy: { createdAt: "desc" },
 				select: {
+					lessonId: true,
 					createdAt: true,
 					lesson: {
 						select: {
@@ -131,88 +130,106 @@ export type DiaryLessonSchema = {
 	createdAt: Date;
 };
 
+// Method 1: Get lessons from diary entries
+function getRecentLessonsFromDiary({
+	student,
+	lessonLimit
+}: {
+	student: Student;
+	lessonLimit: number;
+}): RecentLesson[] {
+	// Get recent diary lessons
+	const recentDiaryLessons = student.learningDiaryEntrys
+		.flatMap(entry =>
+			entry.lessonsLearned.map(lesson => ({
+				lessonId: lesson.lessonId,
+				courseSlug: entry.courseSlug,
+				courseImgUrl: entry.course?.imgUrl,
+				touchedAt: entry.createdAt
+			}))
+		)
+		.sort((a, b) => new Date(b.touchedAt).getTime() - new Date(a.touchedAt).getTime())
+		.slice(0, lessonLimit);
+
+	// Enrich with completion data
+	const completedLessonsMap = new Map(
+		student.completedLessons.map(lesson => [lesson.lessonId, lesson])
+	);
+
+	return recentDiaryLessons.map(diaryLesson => {
+		const completedLesson = completedLessonsMap.get(diaryLesson.lessonId);
+
+		return {
+			title: completedLesson?.lesson.title || "HALLO",
+			slug: completedLesson?.lesson.slug || "",
+			courseSlug: diaryLesson.courseSlug,
+			courseImgUrl: diaryLesson.courseImgUrl,
+			touchedAt: diaryLesson.touchedAt,
+			completed: !!completedLesson
+		};
+	});
+}
+
+// Method 2: Get lessons from completions only
+function getRecentLessonsFromCompletions({
+	student,
+	lessonLimit
+}: {
+	student: Student;
+	lessonLimit: number;
+}): RecentLesson[] {
+	return student.completedLessons
+		.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+		.slice(0, lessonLimit)
+		.map(completedLesson => ({
+			title: completedLesson.lesson.title,
+			slug: completedLesson.lesson.slug,
+			courseSlug: completedLesson.course?.slug || "",
+			courseImgUrl: completedLesson.course?.imgUrl,
+			touchedAt: completedLesson.createdAt,
+			completed: true
+		}));
+}
+
 async function loadMostRecentLessons({
 	student,
 	lessonLimit
 }: {
 	student: Student;
 	lessonLimit: number;
-}) {
-	const lessonsFromDiary: DiaryLessonSchema[] = student.learningDiaryEntrys.flatMap(entry =>
-		entry.lessonsLearned.map(lesson => ({
-			...lesson,
-			courseSlug: entry.courseSlug,
-			courseImgUrl: entry.course?.imgUrl,
-			entryId: lesson.id,
-			createdAt: entry.createdAt
-		}))
-	);
-
-	const sortedLessons = lessonsFromDiary.sort(
-		(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-	);
-
-	const newestLessons = sortedLessons.slice(0, lessonLimit);
-	const lessonIds = newestLessons.map(lesson => lesson.lessonId);
-
-	const lessonsArray = await database.lesson.findMany({
-		where: { lessonId: { in: lessonIds } },
-		select: {
-			lessonId: true,
-			title: true,
-			slug: true,
-			completions: true
-		}
-	});
-
-	const lessonDetailsMap = new Map(lessonsArray.map(detail => [detail.lessonId, detail]));
-	const lessonsWithDetails = newestLessons.map(lesson => {
-		const lessonDetails = lessonDetailsMap.get(lesson.lessonId);
-
-		return {
-			lessonId: lesson.lessonId,
-			title: lessonDetails?.title || "",
-			slug: lessonDetails?.slug || "",
-			courseImgUrl: lesson.courseImgUrl || "",
-			courseSlug: lesson.courseSlug || "",
-			touchedAt: lesson.createdAt || null,
-			entryId: lesson.entryId || "",
-			compeleted: false
-		};
-	});
-
-	const completedLessonsTitleSet = new Set(
-		student.completedLessons.map(lesson => lesson.lesson.title)
-	);
-
-	return lessonsWithDetails.map(lesson => ({
-		...lesson,
-		completed: completedLessonsTitleSet.has(lesson.title)
-	}));
+}): Promise<RecentLesson[]> {
+	if (student.user.featureFlags?.learningDiary ?? false) {
+		return getRecentLessonsFromDiary({ student, lessonLimit });
+	} else {
+		return getRecentLessonsFromCompletions({ student, lessonLimit });
+	}
 }
 
-export const getServerSideProps = withTranslations(["common"], async ctx => {
-	const user = await getAuthenticatedUser(ctx);
+export const getServerSideProps = withTranslations(
+	["common"],
+	withAuth<Props>(async (_, user) => {
+		// TODO: remove this when in case gamification is fully enabled
+		const isParticipant = user.featureFlags.experimental;
+		if (isParticipant) {
+			return {
+				redirect: {
+					destination: "/profile",
+					permanent: false
+				}
+			};
+		}
 
-	if (!user || !user.name) {
+		const student = await getStudent(user.name);
+		const recentLessons = await loadMostRecentLessons({ student, lessonLimit: 6 });
+
 		return {
-			redirect: {
-				destination: "/login",
-				permanent: false
+			props: {
+				student,
+				recentLessons
 			}
 		};
-	}
-
-	const student = await getStudent(user.name);
-	const recentLessons = await loadMostRecentLessons({ student, lessonLimit: 6 });
-
-	return {
-		props: {
-			student,
-			recentLessons
-		}
-	};
-});
+	})
+);
 
 export default function Start(props: Props) {
 	return <DashboardPage {...props} />;
@@ -242,11 +259,11 @@ function ltbReducer(state: LtbState, action: LtbFeatureAction): LtbState {
 }
 
 function DashboardPage(props: Props) {
-	const { mutateAsync: updateSettings } = trpc.me.updateSettings.useMutation();
+	const { mutateAsync: updateSettings } = trpc.me.updateFeatureFlags.useMutation();
 	const router = useRouter();
 	const [ltb, dispatch] = useReducer(ltbReducer, {
 		dialogOpen: false,
-		enabled: props.student.user.enabledFeatureLearningDiary
+		enabled: props.student.user.featureFlags?.learningDiary ?? false
 	});
 
 	const openSettings = () => {
@@ -255,7 +272,7 @@ function DashboardPage(props: Props) {
 
 	const handleClickLtbToggle = async () => {
 		if (ltb.enabled) {
-			await updateSettings({ user: { enabledFeatureLearningDiary: false } });
+			await updateSettings({ learningDiary: true });
 			dispatch({ type: "TOGGLE_LTB", enabled: false });
 		} else {
 			dispatch({ type: "OPEN_DIALOG" });
@@ -265,13 +282,14 @@ function DashboardPage(props: Props) {
 	const handleDialogSubmit: Parameters<
 		typeof EnableLearningDiaryDialog
 	>[0]["onSubmit"] = async update => {
-		await updateSettings({ user: { ...update } });
+		if (!update) return;
+		await updateSettings(update);
 		dispatch({ type: "TOGGLE_LTB", enabled: true });
 		dispatch({ type: "CLOSE_DIALOG" });
 	};
 
 	return (
-		<div className="bg-gray-50">
+		<div>
 			<CenteredSection>
 				<div className="grid grid-cols-1 gap-8 lg:pt-10 lg:grid-cols-[2fr_1fr]">
 					<section className="flex items-center">
@@ -285,7 +303,7 @@ function DashboardPage(props: Props) {
 							</h1>
 							<span>
 								Du hast bereits{" "}
-								<span className="mx-1 font-semibold text-secondary">
+								<span className="mx-1 font-semibold text-c-primary">
 									{props.student._count.completedLessons}
 								</span>{" "}
 								{props.student._count.completedLessons === 1
@@ -299,11 +317,11 @@ function DashboardPage(props: Props) {
 					<div className="grid grid-rows-2">
 						<div className="flex justify-end items-start">
 							<button
-								className="rounded-full p-2 hover:bg-gray-100"
+								className="rounded-full p-2 hover:bg-c-neutral-muted"
 								title="Bearbeiten"
 								onClick={openSettings}
 							>
-								<CogIcon className="h-6 text-gray-500" />
+								<CogIcon className="h-6 text-c-text-muted" />
 							</button>
 						</div>
 
@@ -320,7 +338,7 @@ function DashboardPage(props: Props) {
 				<div className="grid grid-cols-1 gap-8 pt-10 lg:grid-cols-2">
 					<div className="rounded bg-white p-4 shadow">
 						<h2 className="text-xl py-2 px-2">Letzter Kurs</h2>
-						<div className="mb-4 border-b border-light-border h-[6px]"></div>
+						<div className="mb-4 border-b border-c-border h-[6px]"></div>
 						<LastCourseProgress
 							lastEnrollment={
 								props.student.enrollments.sort(
@@ -346,7 +364,7 @@ function DashboardPage(props: Props) {
 								<h2 className="text-xl py-2 px-2">
 									Zuletzt bearbeitete Lerneinheiten
 								</h2>
-								<div className="mb-4 border-b border-light-border h-[6px]"></div>
+								<div className="mb-4 border-b border-c-border h-[6px]"></div>
 								<LessonList lessons={props.recentLessons} />
 							</>
 						)}
@@ -390,7 +408,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 	return (
 		<>
 			{pages.length == 0 ? (
-				<span className="text-sm text-light">
+				<span className="text-sm text-c-text-muted">
 					Keine Lerntagebucheinträge vorhanden. Einträge werden erstellt, wenn du mit dem
 					Lernen beginnst.
 				</span>
@@ -404,8 +422,8 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 								key={page.id}
 							>
 								<li
-									className="hover: flex items-center rounded-lg border border-light-border
-							p-3 transition-transform hover:bg-slate-100 hover:scale-105"
+									className="hover: flex items-center rounded-lg border border-c-border
+							p-3 transition-transform hover:bg-c-neutral-muted hover:scale-105"
 								>
 									<div className="flex w-full flex-col lg:flex-row items-center justify-between gap-2 pl-5 pr-2">
 										<div className="flex items-center gap-2">
@@ -425,7 +443,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 												</span>
 											</div>
 										</div>
-										<span className="hidden text-xs text-light md:block">
+										<span className="hidden text-xs text-c-text-muted md:block">
 											{formatDateStringShort(page.createdAt)}
 										</span>
 									</div>
@@ -439,11 +457,11 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 	);
 }
 
-function LessonList({ lessons }: { lessons: LearningDiaryEntryLessonWithDetails[] }) {
+function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 	return (
 		<>
 			{lessons.length === 0 ? (
-				<span className="text-sm text-light">
+				<span className="text-sm text-c-text-muted">
 					Du hast noch keine Lerneinheiten bearbeitet.
 				</span>
 			) : (
@@ -455,11 +473,11 @@ function LessonList({ lessons }: { lessons: LearningDiaryEntryLessonWithDetails[
 							key={"course-" + index}
 						>
 							<li
-								className="hover: flex items-center rounded-lg border border-light-border
-							px-3 transition-transform hover:bg-slate-100"
+								className="hover: flex items-center rounded-lg border border-c-border
+							px-3 transition-transform hover:bg-c-neutral-muted hover:scale-105"
 							>
 								<ImageOrPlaceholder
-									src={lesson.courseImgUrl}
+									src={lesson.courseImgUrl ?? undefined}
 									className="h-12 w-12 shrink-0 rounded-l-lg object-cover"
 								/>
 								<div className="flex w-full grid-rows-2 justify-between gap-2 px-4">
@@ -471,7 +489,7 @@ function LessonList({ lessons }: { lessons: LearningDiaryEntryLessonWithDetails[
 										)}
 									</span>
 
-									<span className="hidden text-xs text-light md:block">
+									<span className="hidden text-xs text-c-text-muted md:block">
 										{formatDateAgo(lesson.touchedAt)}
 									</span>
 								</div>
@@ -486,15 +504,14 @@ function LessonList({ lessons }: { lessons: LearningDiaryEntryLessonWithDetails[
 
 function ProgressFooter({ progress }: { progress: number }) {
 	return (
-		<span className="relative h-5 w-full rounded-lg bg-gray-200">
+		<span className="relative h-5 w-full rounded-lg bg-c-surface-3">
 			<span
-				className="absolute left-0 h-5 rounded-lg bg-secondary"
+				className="absolute left-0 h-5 rounded-lg bg-c-primary"
 				style={{ width: `${progress}%` }}
 			></span>
 			<span
-				className={`absolute top-0 w-full px-2 text-start text-sm font-semibold ${
-					progress === 0 ? "text-secondary" : "text-white"
-				}`}
+				className={`absolute top-0 w-full px-2 text-start text-sm font-semibold ${progress === 0 ? "text-c-primary" : "text-white"
+					}`}
 			>
 				{progress}%
 			</span>
@@ -506,12 +523,12 @@ function LastCourseProgress({ lastEnrollment }: { lastEnrollment?: Student["enro
 	if (!lastEnrollment) {
 		return (
 			<div>
-				<span className="text-sm text-light">
+				<span className="text-sm text-c-text-muted">
 					Du bist momentan in keinem Kurs eingeschrieben.
 				</span>
 				<Link
 					href="/subjects"
-					className="text-sm ml-1 text-light underline hover:text-secondary"
+					className="text-sm ml-1 text-c-text-muted underline hover:text-c-primary"
 				>
 					Leg los
 				</Link>
@@ -533,7 +550,7 @@ function LastCourseProgress({ lastEnrollment }: { lastEnrollment?: Student["enro
 						badge={
 							lastEnrollment.status === "COMPLETED" ? (
 								<ImageCardBadge
-									className="bg-emerald-500 text-white"
+									className="bg-c-primary text-white"
 									text="Abgeschlossen"
 								/>
 							) : (

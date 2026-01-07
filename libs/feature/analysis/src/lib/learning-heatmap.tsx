@@ -1,6 +1,6 @@
+"use client";
 import { trpc } from "@self-learning/api-client";
 import { Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
-import { UserEvent } from "@self-learning/database";
 import { useState } from "react";
 import { HeatMap } from "./components/learning-heatmap";
 import {
@@ -10,8 +10,12 @@ import {
 	eventsToIntervalls,
 	computeHeatmapData
 } from "./metrics";
+import { ResolvedValue } from "@self-learning/types";
+import { loadUserEventLogs } from "@self-learning/util/eventlog";
 
 const PreviewTypes = ["Table", "Chart"];
+
+type UserEvent = ResolvedValue<typeof loadUserEventLogs>[number];
 
 export function LearningHeatmap() {
 	const [previewSelection, setPreviewSelection] = useState("Table");
@@ -32,7 +36,7 @@ export function LearningHeatmap() {
 	return (
 		<>
 			<select
-				className="px-7 py-2 rounded  bg-rose-100"
+				className="px-7 py-2 rounded bg-rose-100"
 				onChange={e => setPreviewSelection(e.target.value)}
 				value={previewSelection}
 			>
