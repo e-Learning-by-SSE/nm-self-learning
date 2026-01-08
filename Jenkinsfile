@@ -2,7 +2,10 @@
 
 def buildSphinxDocs(Map cfg = [:]) {
     // Function parameters
-    def dockerTag   = cfg.get('dockerTag', env.VERSION)
+    // Mandatory: Version (version or unstable)
+    def version     = env.VERSION ?: "unstable"
+    // Optional: Additional Docker tag
+    def dockerTag   = cfg.get('dockerTag', version)
 
     // Script parameters
     def ws  = pwd()
@@ -26,7 +29,7 @@ def buildSphinxDocs(Map cfg = [:]) {
     
     // Build and publish Docker image
     ssedocker {
-        create { target "ghcr.io/e-learning-by-sse/nm-self-learn-docs:${env.VERSION}" }
+        create { target "ghcr.io/e-learning-by-sse/nm-self-learn-docs:${version}" }
         publish { tag dockerTag }
     }
 
