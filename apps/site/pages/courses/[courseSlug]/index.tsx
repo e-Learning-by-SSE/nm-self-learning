@@ -2,7 +2,7 @@ import { PlayIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
-import { SmallGradeBadge, useCourseCompletion } from "@self-learning/completion";
+import { SmallGradeBadge } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
@@ -13,7 +13,7 @@ import {
 	LessonInfo,
 	ResolvedValue
 } from "@self-learning/types";
-import { AuthorsList, Tooltip } from "@self-learning/ui/common";
+import { AuthorsList, OnlineHelpLink, Tooltip } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection, useAuthentication } from "@self-learning/ui/layouts";
 import { handleEmailTracking } from "@self-learning/ui/notifications";
@@ -279,14 +279,15 @@ function CourseHeader({
 			<div className="flex flex-wrap-reverse gap-12 md:flex-nowrap">
 				<div className="flex flex-col justify-between gap-12">
 					<div className="flex min-w-[50%] flex-col-reverse gap-12 md:flex-col">
-						<div>
+						<div className="flex items-center gap-2">
 							<h1 className="mb-12 text-4xl md:text-6xl">{course.title}</h1>
-							{course.subtitle && (
-								<div className="text-lg tracking-tight text-light">
-									{course.subtitle}
-								</div>
-							)}
+							<OnlineHelpLink relativePath="course-page.html#course-overview" />
 						</div>
+						{course.subtitle && (
+							<div className="text-lg tracking-tight text-light">
+								{course.subtitle}
+							</div>
+						)}
 					</div>
 
 					<div className="flex flex-col gap-4">
