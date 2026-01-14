@@ -1,25 +1,33 @@
-import { createHTTPServer } from "@trpc/server/adapters/standalone";
+import { createHTTPHandler } from "@trpc/server/adapters/standalone";
 import { applyWSSHandler } from "@trpc/server/adapters/ws";
+import { createServer } from "http";
 import { WebSocketServer } from "ws";
-import { JobRegistry } from "./lib/core/job-registry";
 import { WorkerHost } from "./lib/core/worker-host";
-import { registerAllJobs } from "./jobs";
+import { jobs } from "./jobs";
 import { appRouter } from "./router";
 
-const registry = new JobRegistry();
-registerAllJobs(registry);
-
-const workerHost = new WorkerHost(registry);
+const workerHost = new WorkerHost(jobs);
 
 const port = 4510;
 
-// HTTP Server
-const { server, listen } = createHTTPServer({
+const handler = createHTTPHandler({
 	router: appRouter,
-	createContext: () => ({
-		registry,
+	createContext: (opts) => ({
 		workerHost
 	})
+});
+
+const server = createServer((req, res) => {
+	// res.setHeader("Access-Control-Allow-Origin", "*");
+	// ...
+
+	if (req.method === "OPTIONS") {
+		// res.writeHead(200);
+		// res.end();
+		return;
+	}
+
+	handler(req, res);
 });
 
 // WebSocket Server
@@ -28,10 +36,10 @@ applyWSSHandler({
 	wss,
 	router: appRouter,
 	createContext: () => ({
-		registry,
 		workerHost
 	})
 });
 
-listen(port);
-console.log(`Worker service listening on port ${port}`);
+server.listen(port, () => {
+	console.log(`Worker service listening on port ${port}`);
+});

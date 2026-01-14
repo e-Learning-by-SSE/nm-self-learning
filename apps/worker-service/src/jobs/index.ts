@@ -1,6 +1,11 @@
-import { JobRegistry } from "../lib/core/job-registry";
+/**
+ * This file acts as the registry for all available background jobs.
+ *
+ * To add a new job:
+ * 1. Create a new job file (e.g., `my-new-job.job.ts`) that exports a `Job` definition.
+ * 2. Import the job definition in this file.
+ * 3. Add the imported job to the `jobs` array below.
+ */
 import { pathGenerationJob } from "./path-generation.job";
 
-export function registerAllJobs(registry: JobRegistry) {
-	registry.register(pathGenerationJob);
-}
+export const jobs = [pathGenerationJob];

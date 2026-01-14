@@ -1,6 +1,5 @@
-import { JobRegistry } from "../lib/core/job-registry";
 import { WorkerHost } from "../lib/core/worker-host";
-import { registerAllJobs } from "./index";
+import { jobs } from "./index";
 import { pathGenerationPayloadSchema } from "../lib/schema/path-generation.schema";
 import type { z } from "zod";
 
@@ -29,9 +28,7 @@ const runPathGeneration = async (payload: PathGenerationPayload) => {
 
 describe("pathGenerationJob", () => {
 	beforeAll(() => {
-		const registry = new JobRegistry();
-		registerAllJobs(registry);
-		workerHost = new WorkerHost(registry, { minThreads: 1, maxThreads: 1 });
+		workerHost = new WorkerHost(jobs, { minThreads: 1, maxThreads: 1 });
 	});
 
 	afterAll(async () => {

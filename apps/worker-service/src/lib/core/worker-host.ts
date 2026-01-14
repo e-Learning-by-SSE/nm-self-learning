@@ -1,4 +1,4 @@
-import { JobContext, JobRegistry } from "./job-registry";
+import { JobContext, JobDefinition } from "./job-registry";
 import { JobNotFoundError, JobValidationError } from "./errors";
 import { Worker } from "worker_threads";
 import * as path from "path";
@@ -32,11 +32,17 @@ export class WorkerHost {
 	private queue: JobRequest[] = [];
 	private pendingJobs = new Map<string, PendingJob>();
 	private isShuttingDown = false;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	private jobMap = new Map<string, JobDefinition<any, any>>();
 
 	constructor(
-		private registry: JobRegistry,
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		jobs: JobDefinition<any, any>[],
 		options: WorkerHostOptions = {}
 	) {
+		for (const job of jobs) {
+			this.jobMap.set(job.name, job);
+		}
 		this.minThreads = Math.max(1, options.minThreads ?? 2);
 		const requestedMax = options.maxThreads ?? 6;
 		this.maxThreads = Math.max(this.minThreads, requestedMax);
@@ -107,7 +113,7 @@ export class WorkerHost {
 	}
 
 	private makeWorkerIdle(worker: Worker) {
-		if (!this.workers.includes(worker)) return; 
+		if (!this.workers.includes(worker)) return;
 		this.idleWorkers.push(worker);
 		if (!this.isShuttingDown) {
 			this.processQueue();
@@ -136,7 +142,7 @@ export class WorkerHost {
 	}
 
 	async runJob(name: string, payload: unknown, _context: JobContext = {}) {
-		const job = this.registry.get(name);
+		const job = this.jobMap.get(name);
 
 		if (!job) {
 			throw new JobNotFoundError(`Job '${name}' not found`);

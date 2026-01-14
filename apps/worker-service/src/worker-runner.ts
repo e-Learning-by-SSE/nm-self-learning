@@ -1,9 +1,12 @@
 import { parentPort } from "worker_threads";
-import { JobRegistry } from "./lib/core/job-registry";
-import { registerAllJobs } from "./jobs";
+import { jobs } from "./jobs";
+import { JobDefinition } from "./lib/core/job-registry";
 
-const registry = new JobRegistry();
-registerAllJobs(registry);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const jobMap = new Map<string, JobDefinition<any, any>>();
+for (const job of jobs) {
+	jobMap.set(job.name, job);
+}
 
 if (!parentPort) {
 	throw new Error("Worker must be spawned with a parent port");
@@ -13,7 +16,7 @@ parentPort.on("message", async message => {
 	const { id, jobName, payload } = message;
 
 	try {
-		const job = registry.get(jobName);
+		const job = jobMap.get(jobName);
 
 		if (!job) {
 			throw new Error(`Job ${jobName} not found`);
