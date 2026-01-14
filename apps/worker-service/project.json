@@ -1,0 +1,66 @@
+{
+	"name": "worker-service",
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "apps/worker-service/src",
+	"projectType": "application",
+	"tags": [],
+	"targets": {
+		"build": {
+			"executor": "@nx/esbuild:esbuild",
+			"outputs": ["{options.outputPath}"],
+			"defaultConfiguration": "production",
+			"options": {
+				"platform": "node",
+				"outputPath": "dist/apps/worker-service",
+				"format": ["cjs"],
+				"bundle": false,
+				"main": "apps/worker-service/src/main.ts",
+				"tsConfig": "apps/worker-service/tsconfig.app.json",
+				"assets": ["apps/worker-service/src/assets"],
+				"generatePackageJson": true,
+				"esbuildOptions": {
+					"sourcemap": true,
+					"outExtension": {
+						".js": ".js"
+					}
+				}
+			},
+			"configurations": {
+				"development": {},
+				"production": {
+					"esbuildOptions": {
+						"sourcemap": false,
+						"outExtension": {
+							".js": ".js"
+						}
+					}
+				}
+			}
+		},
+		"test": {
+			"executor": "@nx/jest:jest",
+			"outputs": ["{workspaceRoot}/coverage/apps/worker-service"],
+			"options": {
+				"jestConfig": "apps/worker-service/jest.config.ts",
+				"passWithNoTests": true
+			}
+		},
+		"serve": {
+			"executor": "@nx/js:node",
+			"defaultConfiguration": "development",
+			"dependsOn": ["build"],
+			"options": {
+				"buildTarget": "worker-service:build",
+				"runBuildTargetDependencies": false
+			},
+			"configurations": {
+				"development": {
+					"buildTarget": "worker-service:build:development"
+				},
+				"production": {
+					"buildTarget": "worker-service:build:production"
+				}
+			}
+		}
+	}
+}

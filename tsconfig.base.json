@@ -50,7 +50,8 @@
 			"@self-learning/util/http": ["libs/util/http/src/index.ts"],
 			"@self-learning/util/testing": ["libs/util/testing/src/index.ts"],
 			"@self-learning/util/validate": ["libs/util/validation/src/index.ts"],
-			"@self-learning/webhooks": ["libs/feature/webhooks/src/index.ts"]
+			"@self-learning/webhooks": ["libs/feature/webhooks/src/index.ts"],
+			"@self-learning/worker-service": ["apps/worker-service/src/index.ts"]
 		}
 	},
     "files": ["./index.d.ts"],
