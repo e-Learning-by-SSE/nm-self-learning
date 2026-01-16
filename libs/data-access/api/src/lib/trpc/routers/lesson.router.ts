@@ -370,7 +370,9 @@ export const lessonRouter = t.router({
 					username: user.name,
 					progress: completedCount
 				};
-			}),
+			});
+		}),
+
 	validateAttempt: authProcedure
 		.input(
 			z.object({
