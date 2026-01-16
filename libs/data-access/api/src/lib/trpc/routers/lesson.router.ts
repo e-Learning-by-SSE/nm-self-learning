@@ -47,25 +47,59 @@ export const lessonRouter = t.router({
 		});
 	}),
 	findMany: authProcedure
+		.meta({
+			openapi: {
+				enabled: true,
+				method: "GET",
+				path: "/lessons",
+				tags: ["Lessons"],
+				protect: true,
+				summary: "Search available lessons"
+			}
+		})
 		.input(
 			paginationSchema.extend({
 				title: z.string().optional(),
-				authorName: z.string().optional()
+				authorName: z.string().optional(),
+				pageSize: z.number().optional()
 			})
 		)
-		.query(async ({ input: { title, page, authorName } }) => {
-			const pageSize = 15;
+		.output(
+			z.object({
+				result: z.array(
+					z.object({
+						lessonId: z.string(),
+						title: z.string(),
+						slug: z.string(),
+						updatedAt: z.date(),
+						authors: z.array(
+							z.object({
+								displayName: z.string(),
+								slug: z.string(),
+								imgUrl: z.string().nullable()
+							})
+						)
+					})
+				),
+				pageSize: z.number(),
+				page: z.number(),
+				totalCount: z.number()
+			})
+		)
+		.query(async ({ input: { title, page, authorName, pageSize } }) => {
+			const actualPageSize = pageSize ?? 15;
 			const { lessons, count } = await findLessons({
 				title,
 				authorName,
-				...paginate(pageSize, page)
+				...paginate(actualPageSize, page)
 			});
+
 			return {
 				result: lessons,
-				totalCount: count,
-				page,
-				pageSize
-			} satisfies Paginated<unknown>;
+				pageSize: actualPageSize,
+				page: page,
+				totalCount: count
+			};
 		}),
 	create: authProcedure.input(lessonSchema).mutation(async ({ input, ctx }) => {
 		const createdLesson = await database.lesson.create({
@@ -176,6 +210,169 @@ export const lessonRouter = t.router({
 				}
 			}
 		}),
+
+	findOneBySlug: authProcedure
+		.meta({
+			openapi: {
+				enabled: true,
+				method: "GET",
+				path: "/lessons/{slug}",
+				tags: ["Lessons"],
+				protect: true,
+				summary: "Get lesson description by slug"
+			}
+		})
+		.input(
+			z.object({
+				slug: z.string().describe("Unique slug of the lesson to get")
+			})
+		)
+		.output(
+			z.object({
+				title: z.string(),
+				slug: z.string(),
+				lessonId: z.string(),
+				description: z.string().nullable()
+			})
+		)
+		.query(async ({ input }) => {
+			const lesson = await database.lesson.findUnique({
+				where: {
+					slug: input.slug
+				},
+				select: {
+					lessonId: true,
+					title: true,
+					slug: true,
+					description: true
+				}
+			});
+
+			if (!lesson) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: `Lesson not found for slug: ${input.slug}`
+				});
+			}
+
+			return {
+				title: lesson.title,
+				slug: lesson.slug,
+				lessonId: lesson.lessonId,
+				description: lesson.description
+			};
+		}),
+
+	getProgress: authorProcedure
+		.meta({
+			openapi: {
+				enabled: true,
+				method: "GET",
+				path: "/lessons/{slug}/progress",
+				tags: ["Lessons"],
+				protect: true,
+				summary: "Get lesson progress for a list of students (teachers/admins only)"
+			}
+		})
+		.input(
+			z.object({
+				slug: z.string().describe("Unique slug of the lesson"),
+				usernames: z
+					.string()
+					.optional()
+					.describe(
+						"Comma separated list of student usernames to get progress for, e.g. 'user1,user2'"
+					)
+			})
+		)
+		.output(
+			z.array(
+				z.object({
+					username: z.string(),
+					progress: z.number().min(0).max(1)
+				})
+			)
+		)
+		.query(async ({ input, ctx }) => {
+			const usernames = input.usernames
+				? input.usernames
+						.split(",")
+						.map(u => u.trim())
+						.filter(Boolean)
+				: [];
+
+			if (usernames.length === 0) {
+				return [];
+			}
+
+			// Check if lesson exists (404 if not)
+			const lesson = await database.lesson.findUnique({
+				where: { slug: input.slug },
+				select: { lessonId: true }
+			});
+
+			if (!lesson) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: `Lesson not found for slug: ${input.slug}`
+				});
+			}
+
+			// Check if user is authorized (403 if not)
+			const userIsAuthor = await database.lesson.findFirst({
+				where: {
+					slug: input.slug,
+					authors: { some: { username: ctx.user.name } }
+				},
+				select: { lessonId: true }
+			});
+
+			if (!userIsAuthor) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "You are not an author of this lesson."
+				});
+			}
+
+			// Find valid users
+			const validUsers = await database.user.findMany({
+				where: {
+					name: { in: usernames }
+				},
+				select: {
+					name: true
+				}
+			});
+
+			if (validUsers.length === 0) {
+				return [];
+			}
+
+			// Get valid usernames
+			const validUsernames = validUsers.map(u => u.name);
+
+			// Find completed lessons for valid users only
+			const completedLessons = await database.completedLesson.findMany({
+				where: {
+					lessonId: lesson.lessonId,
+					username: { in: validUsernames }
+				},
+				select: {
+					username: true
+				}
+			});
+
+			return validUsers.map(user => {
+				const completedCount = completedLessons.find(cl => cl.username === user.name)
+					? 1
+					: 0;
+				return {
+					username: user.name,
+					progress: completedCount
+				};
+			});
+		}),
+
 	validateAttempt: authProcedure
 		.input(
 			z.object({
