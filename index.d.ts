@@ -9,6 +9,7 @@ declare global {
 			NEXT_PUBLIC_IS_DEMO_INSTANCE: string | undefined;
 			NEXT_PUBLIC_BASE_PATH: string | undefined;
 			NEXT_PUBLIC_ONLINE_HELP_BASE_URL: string | undefined;
+			NEXT_PUBLIC_ONLINE_HELP_LANGUAGES: string | undefined;
 			NEXT_TRAILING_SLASH: Boolean | undefined;
 			NEXT_PUBLIC_MATOMO_ULR: string | undefined;
 			NEXT_PUBLIC_MATOMO_SITE_ID: string | undefined;

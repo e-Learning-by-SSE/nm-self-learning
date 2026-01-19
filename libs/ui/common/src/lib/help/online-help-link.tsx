@@ -35,7 +35,7 @@ export type OnlineHelpLinkProps = { relativePath: string; children?: React.React
 
 export function OnlineHelpLink({ relativePath, children }: OnlineHelpLinkProps) {
 	const baseUrl = process.env["NEXT_PUBLIC_ONLINE_HELP_BASE_URL"];
-	const { i18n } = useTranslation("common");
+	const { t, i18n } = useTranslation("common");
 
 	if (!baseUrl || !relativePath) {
 		return null;
@@ -51,12 +51,12 @@ export function OnlineHelpLink({ relativePath, children }: OnlineHelpLinkProps) 
 	const helpUrl = buildHelpUrl(baseUrl, locale, sanitizedRelativePath);
 
 	return (
-		<Tooltip content={`Hilfe`} className="inline-flex z-40">
+		<Tooltip content={t("Help")} className="inline-flex z-40">
 			<a
 				href={helpUrl}
 				target="_blank"
 				rel="noreferrer"
-				aria-label={"Hilfe"}
+				aria-label={t("Help")}
 				className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-transparent text-slate-500 transition hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
 				data-testid="online-help-link"
 			>
