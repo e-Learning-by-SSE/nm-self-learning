@@ -71,7 +71,7 @@ export const lessonRouter = t.router({
 		}),
 	create: authProcedure.input(lessonSchema).mutation(async ({ input, ctx }) => {
 		// make sure at least one permission is FULL
-		if (input.permissions.filter(p => p.accessLevel === AccessLevel.FULL).length > 0) {
+		if (input.permissions.filter(p => p.accessLevel === AccessLevel.FULL).length === 0) {
 			throw new TRPCError({
 				code: "BAD_REQUEST",
 				message: "requires at least one FULL permission."
@@ -129,13 +129,13 @@ export const lessonRouter = t.router({
 				};
 			});
 			// make sure at least one permission is FULL
-			if (perms.filter(p => p.accessLevel === AccessLevel.FULL).length > 0) {
+			if (perms.filter(p => p.accessLevel === AccessLevel.FULL).length === 0) {
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message: "requires at least one FULL permission."
 				});
 			}
-			// fetch existing permissions to delermine diffs
+			// fetch existing permissions to determine diffs
 			const existingPerms = await database.permission.findMany({
 				where: { lessonId: input.lessonId },
 				select: { groupId: true, accessLevel: true }

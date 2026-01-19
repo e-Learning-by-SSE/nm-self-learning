@@ -19,7 +19,6 @@ import {
 	hasGroupRole,
 	hasResourceAccess
 } from "./permission.router";
-import { access } from "fs";
 
 export const courseRouter = t.router({
 	listAvailableCourses: authProcedure
@@ -223,7 +222,7 @@ export const courseRouter = t.router({
 			});
 		}
 		// make sure at least one permission is FULL
-		if (input.permissions.filter(p => p.accessLevel === AccessLevel.FULL).length > 0) {
+		if (input.permissions.filter(p => p.accessLevel === AccessLevel.FULL).length === 0) {
 			throw new TRPCError({
 				code: "BAD_REQUEST",
 				message: "requires at least one FULL permission."
@@ -269,13 +268,13 @@ export const courseRouter = t.router({
 				};
 			});
 			// make sure at least one permission is FULL
-			if (perms.filter(p => p.accessLevel === AccessLevel.FULL).length > 0) {
+			if (perms.filter(p => p.accessLevel === AccessLevel.FULL).length === 0) {
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message: "requires at least one FULL permission."
 				});
 			}
-			// fetch existing permissions to delermine diffs
+			// fetch existing permissions to determine diffs
 			const existingPerms = await database.permission.findMany({
 				where: { courseId: input.courseId },
 				select: { groupId: true, accessLevel: true }
