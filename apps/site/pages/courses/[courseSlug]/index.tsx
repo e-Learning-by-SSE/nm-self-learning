@@ -13,7 +13,7 @@ import {
 	LessonInfo,
 	ResolvedValue
 } from "@self-learning/types";
-import { AuthorsList, Tooltip } from "@self-learning/ui/common";
+import { AuthorsList, OnlineHelpLink, Tooltip } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection, useAuthentication } from "@self-learning/ui/layouts";
 import { handleEmailTracking } from "@self-learning/ui/notifications";
@@ -282,14 +282,20 @@ function CourseHeader({
 			<div className="flex flex-wrap-reverse gap-12 md:flex-nowrap">
 				<div className="flex flex-col justify-between gap-12">
 					<div className="flex min-w-[50%] flex-col-reverse gap-12 md:flex-col">
-						<div>
+						<div className="flex items-center gap-2">
 							<h1 className="mb-12 text-4xl md:text-6xl">{course.title}</h1>
+							<OnlineHelpLink relativePath="course-page.html#course-overview" />
 							{course.subtitle && (
 								<div className="text-lg tracking-tight text-c-text-muted">
 									{course.subtitle}
 								</div>
 							)}
 						</div>
+						{course.subtitle && (
+							<div className="text-lg tracking-tight text-light">
+								{course.subtitle}
+							</div>
+						)}
 					</div>
 
 					<div className="flex flex-col gap-4">
