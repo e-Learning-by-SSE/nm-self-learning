@@ -36,7 +36,7 @@ function GradeDisplay({
 		<div className="flex flex-col items-center gap-6 p-6">
 			{/* Header - wie in deiner Zeichnung */}
 			<div className="text-center">
-				<h2 className="text-2xl font-semibold text-gray-800 mb-2">
+				<h2 className="text-2xl font-semibold text-c-text-strong mb-2">
 					Gratulation toll gemacht!
 				</h2>
 				<p className="text-gray-600">
@@ -49,11 +49,11 @@ function GradeDisplay({
 			{/* Haupt-Display mit Zeit und Note - Layout wie in deiner Zeichnung */}
 			<div className="flex items-center gap-6">
 				{/* Zeit-Box (links) */}
-				<div className="bg-white border-2 border-gray-300 rounded-xl px-6 py-4 min-w-[100px] text-center shadow-lg">
-					<div className="text-xl font-mono text-gray-700 font-semibold">
+				<div className="bg-white border-2 border-c-border-strong rounded-xl px-6 py-4 min-w-[100px] text-center shadow-lg">
+					<div className="text-xl font-mono text-c-text font-semibold">
 						{durationFormatted}
 					</div>
-					<div className="text-xs text-gray-500 mt-1">Zeit</div>
+					<div className="text-xs text-c-text-muted mt-1">Zeit</div>
 				</div>
 
 				<GradeBadge rating={averageScore} />
@@ -71,7 +71,7 @@ function GradeDisplay({
 					</p>
 				)}
 				{grade !== "PERFECT" && (
-					<p className="mt-2 text-blue-600">
+					<p className="mt-2 text-c-info-strong">
 						Du kannst es noch einmal versuchen, um eine bessere Note zu erhalten!
 					</p>
 				)}
@@ -184,24 +184,24 @@ export function QuizGradeDialog({
 					)}
 
 					{/* Lesson completion text */}
-					<div className="flex flex-col text-sm text-light">
+					<div className="flex flex-col text-sm text-c-text-muted">
 						<p>
 							Du hast die Lerneinheit{" "}
-							<span className="font-semibold text-secondary">{lesson.title}</span>{" "}
+							<span className="font-semibold text-c-primary">{lesson.title}</span>{" "}
 							erfolgreich abgeschlossen.
 						</p>
 
 						{nextLesson ? (
 							<div className="flex flex-col">
 								<p>Die nächste Lerneinheit ist ...</p>
-								<span className="mt-4 self-center rounded-lg bg-gray-100 px-12 py-4 text-xl font-semibold tracking-tighter text-secondary">
+								<span className="mt-4 self-center rounded-lg bg-c-surface-2 px-12 py-4 text-xl font-semibold tracking-tighter text-c-primary">
 									{nextLesson.title}
 								</span>
 							</div>
 						) : (
 							<p>
 								Der Kurs{" "}
-								<span className="font-semibold text-secondary">{course.title}</span>{" "}
+								<span className="font-semibold text-c-primary">{course.title}</span>{" "}
 								enthält keine weiteren Lerneinheiten für dich.
 							</p>
 						)}
@@ -261,7 +261,7 @@ function GradeAchievementSection({
 	if (achievements.size === 0) return null;
 
 	return (
-		<div className="bg-gray-50 p-4 rounded-lg">
+		<div className="p-4 rounded-lg">
 			<h3 className="font-bold text-lg mb-4 flex items-center">
 				<TrophyIcon className="w-5 h-5 mr-2 text-yellow-500" />
 				{title}

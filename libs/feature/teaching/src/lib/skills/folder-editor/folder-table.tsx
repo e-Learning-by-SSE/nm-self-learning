@@ -58,11 +58,11 @@ export function SkillFolderTable({
 						<>
 							<th
 								className={
-									"font-semi-bold border-y border-light-border py-4 text-center text-sm"
+									"font-semi-bold border-y border-c-border py-4 text-center text-sm"
 								}
 							>
 								<input
-									className="secondary form-checkbox rounded text-secondary focus:ring-secondary"
+									className="secondary form-checkbox rounded text-c-primary focus:ring-c-primary"
 									type="checkbox"
 									onChange={() => {}}
 									checked={false}
@@ -115,7 +115,7 @@ function RepositoryInfo({ repository }: { repository: SkillRepository }) {
 	return (
 		<div>
 			<h1 className="text-5xl">{repository.name}</h1>
-			<div className="mt-2 text-gray-500" style={{ maxWidth: "700px" }}>
+			<div className="mt-2 text-c-text-muted" style={{ maxWidth: "700px" }}>
 				{displayedDescription}
 				{shouldShowMoreButton && (
 					<button

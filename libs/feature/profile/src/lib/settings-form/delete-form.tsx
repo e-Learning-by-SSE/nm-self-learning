@@ -89,7 +89,7 @@ export function DeleteMeForm() {
 										});
 									}
 									router.push("/");
-								} catch (error) {
+								} catch {
 									showToast({
 										type: "error",
 										title: t("The Account Could Not Be Deleted"),
@@ -198,15 +198,15 @@ function StudentDeleteInfoDialog({ onClose }: { onClose: (confirm: boolean) => v
 				onClose={() => onClose(false)}
 			>
 				<CenteredContainer className="overflow-auto">
-					<div className="flex min-h-screen flex-col items-center space-y-6 bg-gray-50 p-6">
-						<h2 className="text-xl font-semibold text-gray-800">
+					<div className="flex min-h-screen flex-col items-center space-y-6 bg-c-surface-1 p-6">
+						<h2 className="text-xl font-semibold text-c-text-strong">
 							{t("What will be deleted?")}
 						</h2>
 
 						<div className="relative flex w-full items-center">
 							<div className="flex w-full items-center">
 								<div className="flex-1 rounded-lg border bg-white p-4 shadow">
-									<p className="text-gray-700">
+									<p className="text-c-text">
 										<strong>
 											{t(
 												"After this action, no data can be traced back to your name."
@@ -217,11 +217,11 @@ function StudentDeleteInfoDialog({ onClose }: { onClose: (confirm: boolean) => v
 							</div>
 						</div>
 
-						<div className="h-10 border-l-2 border-gray-300"></div>
+						<div className="h-10 border-l-2 border-c-border-strong"></div>
 
 						<div className="relative flex w-full items-center">
 							<div className="flex w-full items-center">
-								<div className="mr-4 flex h-16 w-16 items-center justify-center rounded-full border border-gray-300 bg-gray-200">
+								<div className="mr-4 flex h-16 w-16 items-center justify-center rounded-full border border-c-border-strong bg-c-surface-3">
 									{user?.avatarUrl && (
 										<ImageOrPlaceholder
 											src={user.avatarUrl}
@@ -240,11 +240,11 @@ function StudentDeleteInfoDialog({ onClose }: { onClose: (confirm: boolean) => v
 							</div>
 						</div>
 
-						<div className="h-10 border-l-2 border-gray-300"></div>
+						<div className="h-10 border-l-2 border-c-border-strong"></div>
 
 						<div className="relative flex w-full items-center">
 							<div className="flex w-full items-center">
-								<div className="mr-4 flex h-16 w-16 items-center justify-center rounded-full border border-gray-300 bg-gray-200">
+								<div className="mr-4 flex h-16 w-16 items-center justify-center rounded-full border border-c-border-strong bg-c-surface-3">
 									<DiarySvg className="h-16 w-16 rounded-full" />
 								</div>
 								<div className="flex-1 rounded-lg border bg-white p-4 shadow">
@@ -255,11 +255,11 @@ function StudentDeleteInfoDialog({ onClose }: { onClose: (confirm: boolean) => v
 							</div>
 						</div>
 
-						<div className="h-10 border-l-2 border-gray-300"></div>
+						<div className="h-10 border-l-2 border-c-border-strong"></div>
 
 						<div className="relative flex w-full items-center">
 							<div className="flex w-full items-center">
-								<div className="mr-4 flex h-16 w-16 items-center justify-center rounded-full border border-gray-300 bg-gray-200">
+								<div className="mr-4 flex h-16 w-16 items-center justify-center rounded-full border border-c-border-strong bg-c-surface-3">
 									<StatisticSvg className="h-16 w-16 rounded-full" />
 								</div>
 								<div className="flex-1 rounded-lg border bg-white p-4 shadow">
@@ -270,15 +270,15 @@ function StudentDeleteInfoDialog({ onClose }: { onClose: (confirm: boolean) => v
 							</div>
 						</div>
 
-						<div className="h-10 border-l-2 border-gray-300"></div>
+						<div className="h-10 border-l-2 border-c-border-strong"></div>
 
-						<h2 className="text-xl font-semibold text-gray-800">
+						<h2 className="text-xl font-semibold text-c-text-strong">
 							{t("What will NOT be deleted?")}
 						</h2>
 
 						<div className="relative flex w-full items-center">
 							<div className="flex w-full items-center">
-								<div className="mr-4 flex h-16 w-16 items-center justify-center rounded-full border border-gray-300 bg-gray-200">
+								<div className="mr-4 flex h-16 w-16 items-center justify-center rounded-full border border-c-border-strong bg-c-surface-3">
 									<AuthorSvg className="h-16 w-16 rounded-full" />
 								</div>
 								<div className="flex-1 rounded-lg border bg-white p-4 shadow">
@@ -289,11 +289,11 @@ function StudentDeleteInfoDialog({ onClose }: { onClose: (confirm: boolean) => v
 							</div>
 						</div>
 
-						<div className="h-10 border-l-2 border-gray-300"></div>
+						<div className="h-10 border-l-2 border-c-border-strong"></div>
 
 						<div className="relative flex w-full items-center">
 							<div className="flex w-full items-center">
-								<div className="mr-4 flex h-16 w-16 items-center justify-center rounded-full border border-gray-300 bg-gray-200">
+								<div className="mr-4 flex h-16 w-16 items-center justify-center rounded-full border border-c-border-strong bg-c-surface-3">
 									<SoftwareEngineerSvg className="h-16 w-16 rounded-full" />
 								</div>
 								<div className="flex-1 rounded-lg border bg-white p-4 shadow">
@@ -304,11 +304,11 @@ function StudentDeleteInfoDialog({ onClose }: { onClose: (confirm: boolean) => v
 							</div>
 						</div>
 
-						<div className="h-10 border-l-2 border-gray-300"></div>
+						<div className="h-10 border-l-2 border-c-border-strong"></div>
 
 						<div className="relative flex w-full items-center">
-							<div className="flex-1 rounded-lg border bg-slate-200 p-4 shadow">
-								<span className="text-gray-700">
+							<div className="flex-1 rounded-lg border bg-c-surface-3 p-4 shadow">
+								<span className="text-c-text">
 									<strong>{t_common("Important")}!</strong> <br />
 									{t(
 										"Your author profile remains, press delete author profile if you want to delete this."
@@ -351,7 +351,7 @@ function AuthorDeleteDialog({ onClose }: { onClose: () => void }) {
 							i18nKey="All data, including the created courses and learning units, will be deleted."
 							components={{
 								strong: <p className="mb-4 text-lg font-semibold " />,
-								red: <p className="text-base text-red-300" />
+								red: <p className="text-base text-c-danger" />
 							}}
 						/>
 					</div>

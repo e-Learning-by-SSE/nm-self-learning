@@ -14,7 +14,7 @@ export type Context = {
  * or use the introspection endpoint to see the (and validate) the content of the token.
  * We used introspection endpoint here, because we don't have to add jwt decoding mechanisms.
  */
-async function introspectToken(token: string): Promise<any> {
+async function introspectToken(token: string) {
 	const response = await fetch(
 		`${process.env.KEYCLOAK_ISSUER_URL}/protocol/openid-connect/token/introspect`,
 		{

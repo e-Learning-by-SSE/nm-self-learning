@@ -67,13 +67,19 @@ export function DiarySidebarMobile({
 	const currentPageIndex = pages.findIndex(page => page.id === selectedPageId);
 
 	return (
-			<MobileSidebarNavigation
-				next={updateToNextId}
-				prev={updateToPreviousId}
-				hasNext={currentPageIndex < pages.length - 1}
-				hasPrev={currentPageIndex > 0}
-				content={(onSelect) => <SidebarContentMobile pages={pages} selectedPageId={selectedPageId} onSelect={onSelect} />}
-			/>
+		<MobileSidebarNavigation
+			next={updateToNextId}
+			prev={updateToPreviousId}
+			hasNext={currentPageIndex < pages.length - 1}
+			hasPrev={currentPageIndex > 0}
+			content={onSelect => (
+				<SidebarContentMobile
+					pages={pages}
+					selectedPageId={selectedPageId}
+					onSelect={onSelect}
+				/>
+			)}
+		/>
 	);
 }
 
@@ -90,20 +96,18 @@ function SidebarContentMobile({
 	const categorizedPages = categorizePagesIntoGroups(pages);
 	const myElementRef = useRef<HTMLLIElement>(null);
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            myElementRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-        }, 300); 
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			myElementRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+		}, 300);
 
-        return () => clearTimeout(timer);
-    }, []);
-
+		return () => clearTimeout(timer);
+	}, []);
 
 	const onSelectPage = (pageId: string) => {
 		changePage(pageId);
 		onSelect();
-	}
-
+	};
 
 	return (
 		<>
@@ -115,18 +119,29 @@ function SidebarContentMobile({
 							{label}
 						</div>
 						<div className="relative">
-							<div className="absolute top-0 left-0 h-full border-l-2 border-gray-300"></div>
+							<div className="absolute top-0 left-0 h-full border-l-2 border-c-border-strong"></div>
 							<ul className="pl-4">
 								{pages.map(page => (
-										<li className={`mb-1 rounded hover:bg-gray-100 ${selectedPageId === page.id ? "bg-gray-100" : ""}`} ref={selectedPageId === page.id ? myElementRef : null} key={page.id}>
-										<Link href={"/learning-diary/page/" + page.id} onClick={() => onSelectPage(page.id)}>
+									<li
+										className={`mb-1 rounded hover:bg-c-neutral-muted ${selectedPageId === page.id ? "bg-c-surface-2" : ""}`}
+										ref={selectedPageId === page.id ? myElementRef : null}
+										key={page.id}
+									>
+										<Link
+											href={"/learning-diary/page/" + page.id}
+											onClick={() => onSelectPage(page.id)}
+											className="block"
+										>
 											<div className="flex items-center justify-between p-2 rounded break-words whitespace-normal">
 												<span className="flex-grow">{`${pages.indexOf(page) + 1}: ${page.course.title}`}</span>
 												<span className="ml-4">
-													<LearningDiaryEntryStatusBadge {...page} className="top-2" />
+													<LearningDiaryEntryStatusBadge
+														{...page}
+														className="top-2"
+													/>
 												</span>
 											</div>
-											<span className="block p-1 rounded overflow-hidden text-ellipsis whitespace-nowrap text-sm text-light">
+											<span className="block p-1 rounded overflow-hidden text-ellipsis whitespace-nowrap text-sm text-c-text-muted">
 												Begonnen am: {formatDateStringFull(page.createdAt)}
 											</span>
 										</Link>
@@ -150,7 +165,7 @@ export function Sidebar({ pages, selectedPageId }: { pages: PagesMeta; selectedP
 				{label}
 			</div>
 			<div className="relative">
-				<div className="absolute top-0 left-0 h-full border-l-2 border-gray-300"></div>
+				<div className="absolute top-0 left-0 h-full border-l-2 border-c-border-strong"></div>
 				<ul className="pl-4">
 					{renderPages.map(page => (
 						<SideBarContent
@@ -171,14 +186,10 @@ export function Sidebar({ pages, selectedPageId }: { pages: PagesMeta; selectedP
 	return (
 		<aside
 			className="sticky py-4 flex flex-col overflow-hidden top-[61px]
-        w-full border-t border-r-gray-200
+        w-full border-t border-r-c-border
         xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4"
 		>
-			<StatusBadgeInfo
-				header="Lerntagebuch Seiten"
-				className="mb-2"
-				headerStyles="font-bold text-2xl"
-			/>
+			<StatusBadgeInfo header="Einträge" className="mb-2" headerStyles="font-bold text-2xl" />
 
 			<div className="max-h-full overflow-y-auto">
 				{Object.entries(categorizedPages).map(([label, pages]) => {
@@ -201,15 +212,15 @@ function SideBarContent({
 }) {
 	const { changePage } = useDiaryPageRouter();
 	return (
-		<li className={`mb-1 rounded hover:bg-gray-100 ${selected ? "bg-gray-100" : ""}`}>
+		<li className={`mb-1 rounded hover:bg-c-neutral-muted ${selected ? "bg-c-surface-2" : ""}`}>
 			<Link href={"/learning-diary/page/" + page.id} onClick={() => changePage(page.id)}>
-				<div className="flex items-center justify-between p-2 rounded break-words whitespace-normal">
-					<span className="flex-grow">{`${index}: ${page.course.title}`}</span>
-					<span className="ml-4">
+				<div className="flex items-center justify-between pt-2 pl-1 rounded break-words whitespace-normal">
+					<span className="flex-grow mr-1">{`${index}. ${page.course.title}`}</span>
+					<span className="ml-4 mr-1">
 						<LearningDiaryEntryStatusBadge {...page} className="top-2" />
 					</span>
 				</div>
-				<span className="block p-1 rounded overflow-hidden text-ellipsis whitespace-nowrap text-sm text-light">
+				<span className="block p-1 rounded overflow-hidden text-ellipsis whitespace-nowrap text-sm text-c-text-muted">
 					Begonnen am: {formatDateStringFull(page.createdAt)}
 				</span>
 			</Link>

@@ -6,7 +6,7 @@ function getErrors(value: unknown) {
 		courseFormSchema.parse(value);
 		throw Error("Expected validation error.");
 	} catch (error) {
-		return (error as ZodError).errors;
+		return (error as ZodError).issues;
 	}
 }
 
@@ -30,9 +30,8 @@ describe("courseFormSchema", () => {
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "object",
-			    "message": "Expected object, received null",
+			    "message": "Invalid input: expected object, received null",
 			    "path": Array [],
-			    "received": "null",
 			  },
 			]
 		`);
@@ -44,83 +43,74 @@ describe("courseFormSchema", () => {
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "string",
-			    "message": "Required",
+			    "message": "Invalid input: expected string, received undefined",
 			    "path": Array [
 			      "courseId",
 			    ],
-			    "received": "undefined",
 			  },
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "string",
-			    "message": "Required",
+			    "message": "Invalid input: expected string, received undefined",
 			    "path": Array [
 			      "subjectId",
 			    ],
-			    "received": "undefined",
 			  },
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "string",
-			    "message": "Required",
+			    "message": "Invalid input: expected string, received undefined",
 			    "path": Array [
 			      "slug",
 			    ],
-			    "received": "undefined",
 			  },
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "string",
-			    "message": "Required",
+			    "message": "Invalid input: expected string, received undefined",
 			    "path": Array [
 			      "title",
 			    ],
-			    "received": "undefined",
 			  },
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "string",
-			    "message": "Required",
+			    "message": "Invalid input: expected string, received undefined",
 			    "path": Array [
 			      "subtitle",
 			    ],
-			    "received": "undefined",
 			  },
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "string",
-			    "message": "Required",
+			    "message": "Invalid input: expected string, received undefined",
 			    "path": Array [
 			      "description",
 			    ],
-			    "received": "undefined",
 			  },
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "string",
-			    "message": "Required",
+			    "message": "Invalid input: expected string, received undefined",
 			    "path": Array [
 			      "imgUrl",
 			    ],
-			    "received": "undefined",
 			  },
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "array",
-			    "message": "Required",
+			    "message": "Invalid input: expected array, received undefined",
 			    "path": Array [
 			      "authors",
 			    ],
-			    "received": "undefined",
 			  },
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "array",
-			    "message": "Required",
+			    "message": "Invalid input: expected array, received undefined",
 			    "path": Array [
 			      "content",
 			    ],
-			    "received": "undefined",
 			  },
 			]
 		`);
@@ -137,11 +127,10 @@ describe("courseFormSchema", () => {
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "string",
-			    "message": "Required",
+			    "message": "Invalid input: expected string, received undefined",
 			    "path": Array [
 			      "title",
 			    ],
-			    "received": "undefined",
 			  },
 			]
 		`);
@@ -158,11 +147,10 @@ describe("courseFormSchema", () => {
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "string",
-			    "message": "Required",
+			    "message": "Invalid input: expected string, received undefined",
 			    "path": Array [
 			      "slug",
 			    ],
-			    "received": "undefined",
 			  },
 			]
 		`);
@@ -179,11 +167,10 @@ describe("courseFormSchema", () => {
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "array",
-			    "message": "Required",
+			    "message": "Invalid input: expected array, received undefined",
 			    "path": Array [
 			      "content",
 			    ],
-			    "received": "undefined",
 			  },
 			]
 		`);

@@ -12,6 +12,7 @@ import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";
 import { EditUserDialog } from "@self-learning/admin";
 import { withTranslations } from "@self-learning/api";
+import { keepPreviousData } from "@tanstack/react-query";
 
 export default function UsersPage() {
 	useRequiredSession();
@@ -26,7 +27,7 @@ export default function UsersPage() {
 		},
 		{
 			staleTime: 10_000,
-			keepPreviousData: true
+			placeholderData: keepPreviousData
 		}
 	);
 
@@ -111,10 +112,10 @@ export default function UsersPage() {
 function RoleLabel({ role }: { role: string }) {
 	if (role === "USER") return null;
 
-	let roleColor = "bg-secondary";
+	let roleColor = "bg-c-primary";
 
 	if (role === "ADMIN") {
-		roleColor = "bg-red-500";
+		roleColor = "bg-c-danger";
 	}
 
 	return <span className={`rounded-full ${roleColor} px-3 py-[2px] text-white`}>{role}</span>;

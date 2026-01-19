@@ -40,7 +40,7 @@ export default function SubjectCreatePage() {
 
 	return (
 		<AdminGuard error={t("Topics can only be created by administrators") + "."}>
-			<div className="flex flex-col bg-gray-50">
+			<div className="flex flex-col">
 				<SubjectEditor
 					initialSubject={{
 						subjectId: "",

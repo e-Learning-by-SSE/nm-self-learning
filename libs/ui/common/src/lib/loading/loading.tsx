@@ -11,7 +11,7 @@ export function LoadingBox({
 	return (
 		<div
 			style={{ height: height ?? 500 }}
-			className="h-full animate-pulse rounded-lg bg-gray-100"
+			className="h-full animate-pulse rounded-lg bg-c-surface-2"
 		>
 			{children ? (
 				children
@@ -64,7 +64,7 @@ export function BlockingLoadingCircle({
 
 	if (timeLeft < 0) return null;
 	return (
-		<div className="fixed top-0 left-0 z-50 flex h-full w-full items-center justify-center bg-gray-100 bg-opacity-75">
+		<div className="fixed top-0 left-0 z-50 flex h-full w-full items-center justify-center bg-c-surface-2 bg-opacity-75">
 			<LoadingCircle className="h-8 w-8" />
 			<span className="ml-2">Loading...</span>
 		</div>

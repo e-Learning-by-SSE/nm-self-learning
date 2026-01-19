@@ -29,18 +29,18 @@ export function GoalStatusCheckbox({
 	switch (goal.status) {
 		case "ACTIVE":
 			statusColorSettings = disabled
-				? "disabled:cursor-not-allowed text-orange-200 focus:ring-orange-100 dark:focus:ring-orange-200"
-				: "text-orange-400 focus:ring-orange-300 dark:focus:ring-orange-400";
+				? "disabled:cursor-not-allowed text-c-attention-muted focus:ring-c-attention-muted"
+				: "text-c-attention focus:ring-c-attention";
 			break;
 		case "COMPLETED":
 			statusColorSettings = disabled
-				? "disabled:cursor-not-allowed text-green-200 focus:ring-green-100 dark:focus:ring-green-200"
-				: "text-green-400 focus:ring-green-300 dark:focus:ring-green-400";
+				? "disabled:cursor-not-allowed text-c-success-muted focus:ring-c-success-muted"
+				: "text-c-success focus:ring-c-success";
 			break;
 		default:
 			statusColorSettings = disabled
-				? "disabled:cursor-not-allowed focus:ring-red-400 dark:focus:ring-red-400"
-				: "focus:ring-red-400 dark:focus:ring-red-400";
+				? "disabled:cursor-not-allowed focus:ring-c-neutral"
+				: "focus:ring-c-neutral";
 	}
 
 	const checked = goal.status === "COMPLETED" || goal.status === "ACTIVE";
@@ -50,7 +50,7 @@ export function GoalStatusCheckbox({
 				type="checkbox"
 				checked={checked}
 				disabled={disabled}
-				className={`flex flex-grow aspect-square bg-gray-100 border-gray-300 rounded dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 ${statusColorSettings}`}
+				className={`flex flex-grow aspect-square bg-c-surface-2 border-c-border-strong rounded dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 ${statusColorSettings}`}
 				onChange={() => onChange?.(goal)}
 				data-testid={`goal_status:${goal.id}`}
 			/>

@@ -62,7 +62,7 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 	return (
 		<section>
 			<div className="p-4">
-				<div className="flex flex-col bg-gray-50 p-4 mb-5 rounded-lg">
+				<div className="flex flex-col p-4 mb-5 rounded-lg">
 					<span className="text-lg font-medium mb-3">Einstellungen</span>
 					<div className="flex flex-row">
 						<Toggle
@@ -89,13 +89,12 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 					</div>
 				</div>
 
-				<div className="flex flex-col bg-gray-50 p-4 mb-5 rounded-lg">
+				<div className="flex flex-col p-4 mb-5 rounded-lg">
 					<div className="flex items-center gap-4 py-6">
 						<h5 className="text-xl font-semibold">Anfängliche Baumstruktur</h5>
 						<IconOnlyButton
-							icon={<PlusIcon className="h-5 w-5"/>}
-							variant = "primary"
-							className={`${initialTreeInput ? "invisible" : "visible"}`}
+							icon={<PlusIcon className="h-5 w-5" />}
+							className={`btn-primary ${initialTreeInput ? "invisible" : "visible"}`}
 							onClick={addInitialTree}
 							title={"Struktur Hinzufügen"}
 						/>
@@ -103,11 +102,11 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 					<div className="flex justify-center w-full h-[150px] p-4">
 						{initialTreeInput ? (
 							<li
-								className="flex items-center w-full rounded-lg border border-light-border h-10 bg-white  hover:cursor-pointer hover:bg-gray-100"
+								className="flex items-center w-full rounded-lg border border-c-border h-10 bg-white hover:cursor-pointer hover:bg-c-neutral-muted"
 								onClick={addInitialTree}
 							>
 								<div className="flex w-full items-center justify-between px-4">
-									<div className="flex flex-col gap-1 hover:text-secondary">
+									<div className="flex flex-col gap-1 hover:text-c-primary">
 										<span className="truncate overflow-hidden whitespace-nowrap text-ellipsis">
 											{initialTreeInput}
 										</span>
@@ -122,10 +121,15 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 						)}
 					</div>
 				</div>
-				<div className="flex flex-col bg-gray-50 p-4 mb-5 rounded-lg">
+				<div className="flex flex-col p-4 mb-5 rounded-lg">
 					<div className="flex items-center gap-4 py-6">
 						<h5 className="text-xl font-semibold">Antworten</h5>
-						<IconOnlyButton icon={<PlusIcon className="h-5 w-5"/>} variant = "primary" onClick={addAnswerTree} title={"Antwort Hinzufügen"} />
+						<IconOnlyButton
+							icon={<PlusIcon className="h-5 w-5" />}
+							className="btn-primary"
+							onClick={addAnswerTree}
+							title={"Antwort Hinzufügen"}
+						/>
 					</div>
 					<div className="flex justify-center w-full min-h-[150px] max-h-[300px] overflow-y-auto">
 						{answerTreeInput.length > 0 ? (
@@ -133,7 +137,7 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 								{answerTreeInput.map((answer, index) => (
 									<li
 										key={index}
-										className="flex items-start w-full justify-start rounded-lg border border-light-border bg-white p-2 hover:cursor-pointer hover:bg-gray-100"
+										className="flex items-start w-full justify-start rounded-lg border border-c-border bg-white p-2 hover:cursor-pointer hover:bg-c-neutral-muted"
 										onClick={e => {
 											// Prevent opening the dialog when clicking on the delete button
 											if ((e.target as HTMLElement).closest("button")) {
@@ -161,14 +165,14 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 										}}
 									>
 										<div className="flex w-full items-center justify-between px-4">
-											<div className="flex flex-col gap-1 hover:text-secondary">
+											<div className="flex flex-col gap-1 hover:text-c-primary">
 												<span className="truncate overflow-hidden whitespace-nowrap text-ellipsis">
 													{answer}
 												</span>
 											</div>
 											<div className="flex flex-wrap justify-end gap-4">
 												<button
-													className="rounded-lg bg-red-500 font-medium text-white p-1 hover:bg-red-600"
+													className="rounded-lg bg-c-danger font-medium text-white p-1 hover:bg-c-danger-strong"
 													onClick={() => removeAnswer(index)}
 												>
 													<div className="ml-4">
@@ -237,7 +241,7 @@ function TreeEditDialog({ value, onClose }: { value: string; onClose: (value?: s
 							root={initialTree}
 						/>
 					) : (
-						<div className="bg-gray-50 rounded-lg flex items-center justify-center w-full h-full">
+						<div className="bg-c-surface-1 rounded-lg flex items-center justify-center w-full h-full">
 							<FaceFrownIcon className="mx-2 h-7 w-7" />{" "}
 						</div>
 					)}
@@ -251,11 +255,11 @@ function TreeEditDialog({ value, onClose }: { value: string; onClose: (value?: s
 						setTreeValue(e.target.value);
 						handleInputChange(e.target.value, setInitialTree, setError);
 					}}
-					className="font-mono bg-gray-50 w-full"
+					className="font-mono bg-c-surface-1 w-full"
 					rows={1}
 					placeholder="Geben Sie hier Ihre Baumstruktur ein"
 				/>
-				{error && <p className="text-red-500 mt-2">{error}</p>}
+				{error && <p className="text-c-danger mt-2">{error}</p>}
 			</CenteredContainer>
 			<div className="mt-auto">
 				<DialogActions onClose={onClose}>
