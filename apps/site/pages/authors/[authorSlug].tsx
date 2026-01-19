@@ -63,6 +63,21 @@ function getAuthor(slug: string | undefined) {
 					subtitle: true,
 					imgUrl: true
 				}
+			},
+			user: {
+				select: {
+					memberships: {
+						select: {
+							role: true,
+							group: {
+								select: {
+									id: true,
+									name: true
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 	});

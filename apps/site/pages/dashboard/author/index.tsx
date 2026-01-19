@@ -7,7 +7,6 @@ import { SkillRepositoryOverview } from "@self-learning/teaching";
 import {
 	Divider,
 	IconButton,
-	ImageChip,
 	ImageOrPlaceholder,
 	LoadingBox,
 	Paginator,
@@ -25,7 +24,7 @@ import { formatDateAgo } from "@self-learning/util/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
-import { Specialization, Subject } from "@self-learning/types";
+import { greaterOrEqAccessLevel, Specialization, Subject } from "@self-learning/types";
 import { LessonDeleteOption } from "@self-learning/ui/lesson";
 import { ExportCourseDialog } from "@self-learning/teaching";
 import { AccessLevel } from "@prisma/client";
@@ -108,8 +107,9 @@ type Lesson = _Base & {
 };
 
 function AuthorDashboardPage({ author }: Props) {
-	// const session = useRequiredSession();
+	const session = useRequiredSession();
 	// const authorName = session.data?.user.name;
+	const isAdmin = session.data?.user.role === "ADMIN";
 
 	const [viewExportDialog, setViewExportDialog] = useState(false);
 
@@ -212,24 +212,38 @@ function AuthorDashboardPage({ author }: Props) {
 									<i>{course.accessLevel}</i>
 
 									<div className="flex flex-wrap justify-end gap-4">
-										<Link
-											href={`/teaching/courses/edit/${course.courseId}`}
-											className="btn-stroked h-fit w-fit"
-										>
-											<PencilIcon className="icon" />
-											<span>Bearbeiten</span>
-										</Link>
-										<div className="flex space-x-2">
-											<button
-												className="btn-stroked w-full text-right"
-												type="button"
-												onClick={() => setViewExportDialog(true)}
+										{(isAdmin ||
+											greaterOrEqAccessLevel(
+												course.accessLevel,
+												AccessLevel.EDIT
+											)) && (
+											<Link
+												href={`/teaching/courses/edit/${course.courseId}`}
+												className="btn-stroked h-fit w-fit"
 											>
-												<ArrowDownTrayIcon className="w-5 h-5 icon" />
-												{"Export"}
-											</button>
-										</div>
-										<CourseDeleteOption slug={course.slug} />
+												<PencilIcon className="icon" />
+												<span>Bearbeiten</span>
+											</Link>
+										)}
+										{(isAdmin ||
+											greaterOrEqAccessLevel(
+												course.accessLevel,
+												AccessLevel.FULL
+											)) && (
+											<>
+												<div className="flex space-x-2">
+													<button
+														className="btn-stroked w-full text-right"
+														type="button"
+														onClick={() => setViewExportDialog(true)}
+													>
+														<ArrowDownTrayIcon className="w-5 h-5 icon" />
+														{"Export"}
+													</button>
+												</div>
+												<CourseDeleteOption slug={course.slug} />
+											</>
+										)}
 									</div>
 								</div>
 								{viewExportDialog && (
@@ -284,7 +298,11 @@ function AuthorDashboardPage({ author }: Props) {
 									{lesson.title}
 								</Link>
 								<i>{lesson.accessLevel}</i>
-								<LessonTaskbar lessonId={lesson.lessonId} />
+								<LessonTaskbar
+									lessonId={lesson.lessonId}
+									accessLevel={lesson.accessLevel}
+									isAdmin={isAdmin}
+								/>
 							</li>
 						))
 					)}
@@ -431,16 +449,28 @@ function CourseDeletionDialog({
 	);
 }
 
-function LessonTaskbar({ lessonId }: { lessonId: string }) {
+function LessonTaskbar({
+	lessonId,
+	accessLevel,
+	isAdmin
+}: {
+	lessonId: string;
+	accessLevel: AccessLevel;
+	isAdmin: boolean;
+}) {
+	const canDelete = isAdmin || greaterOrEqAccessLevel(accessLevel, AccessLevel.FULL);
+	const canEdit = isAdmin || greaterOrEqAccessLevel(accessLevel, AccessLevel.EDIT);
 	return (
 		<div className="flex flex-wrap justify-end gap-4">
-			<Link href={`/teaching/lessons/edit/${lessonId}`}>
-				<button type="button" className="btn-stroked w-fit self-end">
-					<PencilIcon className="icon" />
-					<span>Bearbeiten</span>
-				</button>
-			</Link>
-			<LessonDeleteOption lessonId={lessonId} />
+			{canEdit && (
+				<Link href={`/teaching/lessons/edit/${lessonId}`}>
+					<button type="button" className="btn-stroked w-fit self-end">
+						<PencilIcon className="icon" />
+						<span>Bearbeiten</span>
+					</button>
+				</Link>
+			)}
+			{canDelete && <LessonDeleteOption lessonId={lessonId} />}
 		</div>
 	);
 }
