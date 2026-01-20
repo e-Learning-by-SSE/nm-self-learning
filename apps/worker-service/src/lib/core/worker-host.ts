@@ -32,8 +32,7 @@ export class WorkerHost {
 	private queue: JobRequest[] = [];
 	private pendingJobs = new Map<string, PendingJob>();
 	private isShuttingDown = false;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	private jobMap = new Map<string, JobDefinition<any, any>>();
+	private jobMap = new Map<string, JobDefinition>();
 
 	constructor(
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any

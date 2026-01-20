@@ -14,7 +14,10 @@ import { JobDefinition } from "../lib/core/job-registry";
 import { pathGenerationPayloadSchema } from "../lib/schema/path-generation.schema";
 import { z } from "zod";
 
-export const pathGenerationJob: JobDefinition<z.infer<typeof pathGenerationPayloadSchema>, any> = {
+export const pathGenerationJob: JobDefinition<
+	z.infer<typeof pathGenerationPayloadSchema>,
+	unknown
+> = {
 	name: "path-generation",
 	description: "Generates a learning path based on skills and goals",
 	schema: pathGenerationPayloadSchema,
@@ -29,24 +32,32 @@ export const pathGenerationJob: JobDefinition<z.infer<typeof pathGenerationPaylo
 
 		const { dbSkills, userGlobalKnowledge, course, lessons, knowledge } = payload;
 
-		const userGlobalKnowledgeIds = (userGlobalKnowledge?.received ?? []).map(
-			(skill: any) => skill.id
-		);
+		const userGlobalKnowledgeIds = (userGlobalKnowledge?.received ?? [])
+			.filter((skill): skill is { id: string } => typeof skill?.id === "string")
+			.map(skill => skill.id);
 
 		const userKnowledge = [...(knowledge ?? []), ...userGlobalKnowledgeIds];
 
-		const libSkills: LibSkill[] = (dbSkills ?? []).map((skill: any) => ({
+		// const libSkills: LibSkill[] = (dbSkills ?? []).map((skill: any) => ({
+		// 	id: skill.id,
+		// 	repositoryId: skill.repositoryId,
+		// 	children: (skill.children ?? []).map((child: any) => child.id)
+		// }));
+		const libSkills: LibSkill[] = dbSkills.map(skill => ({
 			id: skill.id,
-			repositoryId: skill.repositoryId,
-			children: (skill.children ?? []).map((child: any) => child.id)
+			children: (skill.children ?? []).map(child => child.id)
 		}));
 
 		const findSkill = (id: string) => libSkills.find(skill => skill.id === id);
 
-		const goalLibSkills: LibSkill[] = (course.teachingGoals ?? []).map((goal: any) => ({
+		// const goalLibSkills: LibSkill[] = (course.teachingGoals ?? []).map((goal: any) => ({
+		// 	id: goal.id,
+		// 	repositoryId: goal.repositoryId,
+		// 	children: (goal.children ?? []).map((child: any) => child.id)
+		// }));
+		const goalLibSkills: LibSkill[] = (course.teachingGoals ?? []).map(goal => ({
 			id: goal.id,
-			repositoryId: goal.repositoryId,
-			children: (goal.children ?? []).map((child: any) => child.id)
+			children: (goal.children ?? []).map(child => child.id)
 		}));
 
 		const knowledgeLibSkills: LibSkill[] = userKnowledge
@@ -68,11 +79,11 @@ export const pathGenerationJob: JobDefinition<z.infer<typeof pathGenerationPaylo
 			return new And(variables);
 		};
 
-		const learningUnits: LibLearningUnit[] = (lessons ?? []).map((lesson: any) => ({
+		const learningUnits: LibLearningUnit[] = (lessons ?? []).map(lesson => ({
 			id: lesson.lessonId,
-			requires: convertToExpression((lesson.requires ?? []).map((req: any) => req.id)),
+			requires: convertToExpression((lesson.requires ?? []).map(req => req.id)),
 			provides: (lesson.provides ?? [])
-				.map((tg: any) => findSkill(tg.id))
+				.map(tg => findSkill(tg.id))
 				.filter((s: LibSkill | undefined): s is LibSkill => s !== undefined),
 			suggestedSkills: []
 		}));

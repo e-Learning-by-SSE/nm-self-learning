@@ -5,7 +5,6 @@ export interface JobContext {
 	tags?: string[];
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface JobDefinition<TPayload = unknown, TResult = unknown> {
 	name: string;
 	description?: string;

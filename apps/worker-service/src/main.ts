@@ -12,7 +12,7 @@ const port = 4510;
 
 const handler = createHTTPHandler({
 	router: appRouter,
-	createContext: (opts) => ({
+	createContext: _opts => ({
 		workerHost
 	})
 });
