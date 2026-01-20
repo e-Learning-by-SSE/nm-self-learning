@@ -39,7 +39,7 @@ const authors = [
 		lessons: chapters,
 		courses: courses,
 		group: group.name,
-		role: GroupRole.OWNER
+		role: GroupRole.ADMIN
 	})
 ];
 

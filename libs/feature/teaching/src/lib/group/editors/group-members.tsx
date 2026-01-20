@@ -171,8 +171,7 @@ const membershipOptions = [
 
 const groupRoleOptions = [
 	{ label: "Administrator", value: GroupRole.ADMIN },
-	{ label: "Member", value: GroupRole.MEMBER },
-	{ label: "Owner", value: GroupRole.OWNER }
+	{ label: "Member", value: GroupRole.MEMBER }
 ];
 
 export function GroupMemberEditor({

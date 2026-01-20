@@ -427,7 +427,7 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 						name: softwareentwicklungDemoGroup.name
 					}
 				},
-				role: GroupRole.OWNER
+				role: GroupRole.ADMIN
 			}
 		}
 	},

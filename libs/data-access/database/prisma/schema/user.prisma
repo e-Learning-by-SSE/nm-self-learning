@@ -64,7 +64,6 @@ enum AccessLevel {
 enum GroupRole {
     MEMBER
     ADMIN
-    OWNER
 }
 
 model Member {

@@ -24,7 +24,7 @@ export function greaterOrEqAccessLevel(a: AccessLevel, b: AccessLevel): boolean 
 }
 
 export const GroupRoleEnum = z.nativeEnum(GroupRole);
-const groupRoleHierarchy: Record<GroupRole, number> = { MEMBER: 2, ADMIN: 3, OWNER: 4 };
+const groupRoleHierarchy: Record<GroupRole, number> = { MEMBER: 2, ADMIN: 3 };
 export function greaterOrEqGroupRole(a: GroupRole, b: GroupRole): boolean {
 	return groupRoleHierarchy[a] >= groupRoleHierarchy[b];
 }
@@ -248,12 +248,14 @@ export const permissionRouter = t.router({
 		.mutation(async ({ input, ctx }) => {
 			const { parent, name, permissions, members } = input;
 			const userId = ctx.user.id;
-			// check so members has no OWNER role
-			if (members?.some(m => m.role === GroupRole.OWNER)) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: "Cannot assign OWNER role when creating group"
-				});
+			// check if ADMIN has no limit
+			for (const m of members) {
+				if (m.role === GroupRole.ADMIN && !!m.expiresAt) {
+					throw new TRPCError({
+						code: "BAD_REQUEST",
+						message: "Group ADMIN role cannot expire"
+					});
+				}
 			}
 			// map permissions to drop display data
 			const perms = permissions.map(p => {
@@ -293,7 +295,7 @@ export const permissionRouter = t.router({
 					name,
 					parentId: parent?.id,
 					permissions: { create: perms },
-					members: { create: [...(membs ?? []), { userId, role: GroupRole.OWNER }] }
+					members: { create: [...(membs ?? []), { userId, role: GroupRole.ADMIN }] }
 				}
 			});
 		}),
@@ -318,7 +320,7 @@ export const permissionRouter = t.router({
 		// check if update name
 		if (name !== oldName) {
 			const hasAccess =
-				ctx.user.role === "ADMIN" || (await hasGroupRole(id, userId, GroupRole.OWNER));
+				ctx.user.role === "ADMIN" || (await hasGroupRole(id, userId, GroupRole.ADMIN));
 			if (!hasAccess) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
@@ -328,15 +330,24 @@ export const permissionRouter = t.router({
 		}
 
 		// 1. Members
-		// check one member has OWNER role
-		const ownerCount = members.filter(m => m.role === GroupRole.OWNER).length;
-		const validOwnerCount = members.filter(
-			m => m.role === GroupRole.OWNER && m.expiresAt === null
-		).length;
-		if (ownerCount !== 1 || validOwnerCount !== 1) {
+		// check if ADMIN has no limit
+		let adminCount = 0;
+		for (const m of members) {
+			if (m.role === GroupRole.ADMIN) {
+				if (m.expiresAt) {
+					throw new TRPCError({
+						code: "BAD_REQUEST",
+						message: "Group ADMIN role cannot expire"
+					});
+				}
+				adminCount++;
+			}
+		}
+		// check if at least one ADMIN remains
+		if (adminCount === 0) {
 			throw new TRPCError({
 				code: "BAD_REQUEST",
-				message: "Group must have exactly one OWNER without expiration"
+				message: "Group must have ADMIN without expiration"
 			});
 		}
 		// map members to drop display data
@@ -481,9 +492,9 @@ export const permissionRouter = t.router({
 		.mutation(async ({ input, ctx }) => {
 			const { groupId } = input;
 			const userId = ctx.user.id;
-			// check if user is owner of the group or admin
+			// check if user is group admin or website admin
 			const isOwner =
-				ctx.user.role === "ADMIN" || (await hasGroupRole(groupId, userId, GroupRole.OWNER));
+				ctx.user.role === "ADMIN" || (await hasGroupRole(groupId, userId, GroupRole.ADMIN));
 			if (!isOwner) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 			}
@@ -498,47 +509,7 @@ export const permissionRouter = t.router({
 		if (ctx.user.role === "ADMIN") return true;
 		return await hasResourceAccess({ userId: ctx.user.id, ...input });
 	}),
-	// Done by group owners or website admins
-	changeGroupOwner: authProcedure
-		.input(z.object({ groupId: z.number(), newOwnerId: z.string() }))
-		.mutation(async ({ input, ctx }) => {
-			const { groupId, newOwnerId } = input;
-			let userId: string;
-			if (ctx.user.role === "ADMIN") {
-				// find current owner
-				const owner = await database.member.findFirst({
-					where: { groupId, role: GroupRole.OWNER },
-					select: { userId: true }
-				});
-				if (!owner) {
-					throw new TRPCError({
-						code: "INTERNAL_SERVER_ERROR",
-						message: "No owner found for this group"
-					});
-				}
-				userId = owner.userId;
-			} else {
-				// check if user is current owner
-				userId = ctx.user.id;
-				const isOwner = await hasGroupRole(groupId, userId, GroupRole.OWNER);
-				if (!isOwner) {
-					throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
-				}
-			}
-			// change owner
-			return await database.$transaction([
-				database.member.updateMany({
-					where: { groupId, userId },
-					data: { role: GroupRole.ADMIN }
-				}),
-				database.member.upsert({
-					where: { userId_groupId: { groupId, userId: newOwnerId } },
-					create: { groupId, userId: newOwnerId, role: GroupRole.OWNER },
-					update: { role: GroupRole.OWNER }
-				})
-			]);
-		}),
-	// Done by group admins or website admins. Cannot grant OWNER role - use changeGroupOwner
+	// Done by group admins or website admins
 	grantGroupAccess: authProcedure
 		.input(
 			z.object({
@@ -551,12 +522,6 @@ export const permissionRouter = t.router({
 		.mutation(async ({ input, ctx }) => {
 			const { groupId, userId, role, durationMinutes } = input;
 			const grantorId = ctx.user.id; // grantor
-			if (role === GroupRole.OWNER) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: "Cannot directly grant OWNER role"
-				});
-			}
 			// first check if grantor has ADMIN permission
 			const hasAccess =
 				ctx.user.role === "ADMIN" ||
@@ -609,7 +574,7 @@ export const permissionRouter = t.router({
 			}
 			const data = ResourceInputSchema.parse(perm);
 
-			// can revoke if owner of resource or group editor
+			// can revoke if has full access to resource or group admin
 			let hasAccess = ctx.user.role === "ADMIN";
 			if (!hasAccess) {
 				hasAccess = await anyTrue([
@@ -621,7 +586,7 @@ export const permissionRouter = t.router({
 			return await database.permission.delete({ where: { id: permissionId } });
 			// TODO make log of permission revoked
 		}),
-	// Done by group admins or website admins. Cannot revoke OWNER role - use changeGroupOwner
+	// Done by group admins or website admins
 	revokeGroupAccess: authProcedure
 		.input(z.object({ userId: z.string(), groupId: z.number() }))
 		.mutation(async ({ input, ctx }) => {
@@ -633,9 +598,6 @@ export const permissionRouter = t.router({
 			});
 			if (!membership) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Invalid membership" });
-			}
-			if (membership.role === GroupRole.OWNER) {
-				throw new TRPCError({ code: "FORBIDDEN", message: "Cannot revoke OWNER role" });
 			}
 			// check if user has ADMIN role in that group
 			const hasAccess =
@@ -671,10 +633,7 @@ export const permissionRouter = t.router({
 		const [groupsRaw, count] = await database.$transaction([
 			database.group.findMany({
 				include: {
-					_count: { select: { members: true } },
 					members: {
-						where: { role: GroupRole.OWNER },
-						take: 1,
 						select: { user: { select: { name: true } } }
 					}
 				},
@@ -688,8 +647,7 @@ export const permissionRouter = t.router({
 		const result = groupsRaw.map(g => ({
 			groupId: g.id,
 			name: g.name,
-			memberCount: g._count.members,
-			ownerName: g.members[0]?.user.name || null
+			members: g.members.map(m => m.user.name)
 		}));
 
 		return {
@@ -726,10 +684,7 @@ export const permissionRouter = t.router({
 			const [groupsRaw, count] = await database.$transaction([
 				database.group.findMany({
 					include: {
-						_count: { select: { members: true } },
 						members: {
-							where: { role: GroupRole.OWNER },
-							take: 1,
 							select: { user: { select: { name: true } } }
 						}
 					},
@@ -743,8 +698,7 @@ export const permissionRouter = t.router({
 			const result = groupsRaw.map(g => ({
 				groupId: g.id,
 				name: g.name,
-				memberCount: g._count.members,
-				ownerName: g.members[0]?.user.name || null
+				members: g.members.map(m => m.user.name)
 			}));
 
 			return {
