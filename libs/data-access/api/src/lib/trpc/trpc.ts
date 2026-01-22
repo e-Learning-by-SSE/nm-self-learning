@@ -3,9 +3,16 @@ import { Context } from "./context";
 import superjson from "superjson";
 import { OpenApiMeta } from "trpc-to-openapi";
 
-export const t = initTRPC.context<Context>().meta<OpenApiMeta>().create({
-	transformer: superjson
-});
+export const t = initTRPC
+	.context<Context>()
+	.meta<OpenApiMeta>()
+	.create({
+		transformer: superjson,
+		sse: {
+			ping: { enabled: true, intervalMs: 15_000 }
+			// client: { reconnectAfterInactivityMs: 30_000 },
+		}
+	});
 
 const authMiddleware = t.middleware(async ({ ctx, next }) => {
 	if (!ctx?.user) {

@@ -1,6 +1,6 @@
 import { AppRouter, withTranslations } from "@self-learning/api";
 import { Footer, Navbar } from "@self-learning/ui/layouts";
-import { httpBatchLink } from "@trpc/client";
+import { httpBatchLink, httpSubscriptionLink, splitLink } from "@trpc/client";
 import { loggerLink } from "@trpc/client/links/loggerLink";
 import { withTRPC } from "@trpc/next";
 import "katex/dist/katex.css";
@@ -19,16 +19,40 @@ import "./styles.css";
 export default withTRPC<AppRouter>({
 	transformer: superjson,
 	config() {
+		const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+		const httpUrl = `${base}/api/trpc`;
+		const sseUrl = `${base}/api/trpc-sse`;
+
 		return {
+			// links: [
+			// 	loggerLink({
+			// 		enabled: opts =>
+			// 			process.env.NODE_ENV === "development" ||
+			// 			(opts.direction === "down" && opts.result instanceof Error)
+			// 	}),
+			// 	httpBatchLink({
+			// 		url: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/trpc`,
+			// 		transformer: superjson
+			// 	})
+			// ],
 			links: [
 				loggerLink({
 					enabled: opts =>
 						process.env.NODE_ENV === "development" ||
 						(opts.direction === "down" && opts.result instanceof Error)
 				}),
-				httpBatchLink({
-					url: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/trpc`,
-					transformer: superjson
+				splitLink({
+					condition(op) {
+						return op.type === "subscription";
+					},
+					true: httpSubscriptionLink({
+						url: sseUrl,
+						transformer: superjson
+					}),
+					false: httpBatchLink({
+						url: httpUrl,
+						transformer: superjson
+					})
 				})
 			],
 			queryClientConfig: {

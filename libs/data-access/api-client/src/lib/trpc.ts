@@ -1,7 +1,7 @@
 import { createTRPCNext } from "@trpc/next";
 import { AppRouter } from "@self-learning/api";
 import superjson from "superjson";
-import { httpBatchLink } from "@trpc/client";
+import { httpBatchLink, httpSubscriptionLink, splitLink } from "@trpc/client";
 
 function getBaseUrl() {
 	if (typeof window !== "undefined")
@@ -34,14 +34,25 @@ export const trpc = createTRPCNext<AppRouter>({
 		}
 	},
 	config() {
+		const url = `${getBaseUrl()}/api/trpc`;
+
 		return {
 			links: [
-				httpBatchLink({
-					url: `${getBaseUrl()}/api/trpc`,
-					transformer: superjson
+				splitLink({
+					condition(op) {
+						return op.type === "subscription";
+					},
+					true: httpSubscriptionLink({
+						url: url,
+						transformer: superjson
+					}),
+					false: httpBatchLink({
+						url: url,
+						transformer: superjson
+					})
 				})
 			],
-			url: `${getBaseUrl()}/api/trpc`,
+			// url: url,
 			queryClientConfig: {
 				defaultOptions: {
 					queries: {

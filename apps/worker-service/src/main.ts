@@ -10,6 +10,8 @@ const workerHost = new WorkerHost(jobs);
 
 const port = 4510;
 
+const TRPC_PREFIX = "/trpc";
+
 const handler = createHTTPHandler({
 	router: appRouter,
 	createContext: _opts => ({
@@ -26,8 +28,19 @@ const server = createServer((req, res) => {
 		// res.end();
 		return;
 	}
+	if (!req.url?.startsWith(TRPC_PREFIX)) {
+		res.statusCode = 404;
+		res.end("Not Found");
+		return;
+	}
 
-	handler(req, res);
+	// ✅ strip "/trpc" so tRPC sees "/reverse?batch=1"
+	req.url = req.url.slice(TRPC_PREFIX.length) || "/";
+
+	console.log(`Received request: ${req.method} ${req.url}`);
+	return handler(req, res);
+
+	// handler(req, res);
 });
 
 // WebSocket Server

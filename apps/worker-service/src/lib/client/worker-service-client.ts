@@ -1,5 +1,6 @@
 import { createTRPCProxyClient, httpBatchLink, splitLink, wsLink } from "@trpc/client";
 import type { AppRouter } from "../../router";
+// import superjson from "superjson";
 
 const wsClient =
 	typeof window !== "undefined"
@@ -17,9 +18,11 @@ export const workerServiceClient = createTRPCProxyClient<AppRouter>({
 			true: wsLink({
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				client: wsClient as any
+				// transformer: superjson
 			}),
 			false: httpBatchLink({
 				url: process.env["WORKER_SERVICE_URL"] || "http://localhost:4510",
+				// transformer: superjson,
 				headers: () => {
 					return {
 						"x-api-key": process.env["WORKER_SERVICE_SECRET"]

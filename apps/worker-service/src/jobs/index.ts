@@ -6,6 +6,7 @@
  * 2. Import the job definition in this file.
  * 3. Add the imported job to the `jobs` array below.
  */
+import { helloWorldJob } from "./hello-world.job";
 import { pathGenerationJob } from "./path-generation.job";
 
-export const jobs = [pathGenerationJob];
+export const jobs = [pathGenerationJob, helloWorldJob];
