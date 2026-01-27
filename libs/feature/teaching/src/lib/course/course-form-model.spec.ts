@@ -229,7 +229,8 @@ describe("courseFormSchema", () => {
 				imgUrl: "http://example.com/image.png",
 				subjectId: "subject-1",
 
-				authors: [{ username: "author-a" }, { username: "author-b" }]
+				authors: [{ username: "author-a" }, { username: "author-b" }],
+				permissions: []
 			};
 
 			expect(courseFormSchema.safeParse(course).success).toBeDefined();
