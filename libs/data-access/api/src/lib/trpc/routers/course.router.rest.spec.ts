@@ -412,7 +412,7 @@ describe("REST API of Course Router", () => {
 		});
 
 		it("should return 403 for admin users who are not course authors", async () => {
-			(canEditBySlug as jest.Mock).mockResolvedValue(true); // has access
+			(canEditBySlug as jest.Mock).mockResolvedValue(false); // has not access
 			const response = await restQuery({
 				method: "GET",
 				query: {
