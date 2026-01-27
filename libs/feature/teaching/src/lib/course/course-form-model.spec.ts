@@ -1,5 +1,6 @@
 import { ZodError } from "zod";
 import { CourseFormModel, courseFormSchema } from "./course-form-model";
+import { AccessLevel } from "@prisma/client";
 
 function getErrors(value: unknown) {
 	try {
@@ -19,7 +20,14 @@ const minValidCourse: CourseFormModel = {
 	description: null,
 	imgUrl: null,
 	subjectId: null,
-	authors: []
+	authors: [],
+	permissions: [
+		{
+			groupId: 1,
+			groupName: "Group 1",
+			accessLevel: AccessLevel.VIEW
+		}
+	]
 };
 
 describe("courseFormSchema", () => {
@@ -119,6 +127,15 @@ describe("courseFormSchema", () => {
 			    "message": "Required",
 			    "path": Array [
 			      "content",
+			    ],
+			    "received": "undefined",
+			  },
+			  Object {
+			    "code": "invalid_type",
+			    "expected": "array",
+			    "message": "Required",
+			    "path": Array [
+			      "permissions",
 			    ],
 			    "received": "undefined",
 			  },
