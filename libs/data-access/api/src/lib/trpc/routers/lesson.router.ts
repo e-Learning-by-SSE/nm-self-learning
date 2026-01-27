@@ -1,17 +1,13 @@
-import { AccessLevel, Course, GroupRole, Prisma } from "@prisma/client";
+import { AccessLevel, Course, Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import { createLessonMeta, lessonSchema } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
-import {
-	getUserPermission,
-	greaterOrEqAccessLevel,
-	hasGroupRole,
-	hasResourceAccess
-} from "./permission.router";
-import { UserFromSession } from "../context";
+import { greaterOrEqAccessLevel } from "../../permissions/permission.utils";
+import { getResourceAccess } from "../../permissions/permission.service";
+import { canEdit } from "../../permissions/lesson.utils";
 
 export const lessonRouter = t.router({
 	findOneAllProps: authProcedure.input(z.object({ lessonId: z.string() })).query(({ input }) => {
@@ -114,7 +110,7 @@ export const lessonRouter = t.router({
 		.input(z.object({ lessonId: z.string(), lesson: lessonSchema }))
 		.mutation(async ({ input, ctx }) => {
 			// get user access level to resource - must be at least EDIT
-			const { accessLevel: actualAccess } = await getUserPermission({
+			const { accessLevel: actualAccess } = await getResourceAccess({
 				userId: ctx.user.id,
 				lessonId: input.lessonId
 			});
@@ -253,14 +249,4 @@ export async function findLessons({
 	]);
 
 	return { lessons, count };
-}
-
-async function canCreate(user: UserFromSession, groupId: number): Promise<boolean> {
-	if (user.role === "ADMIN") return true;
-	return await hasGroupRole(groupId, user.id, GroupRole.MEMBER);
-}
-
-async function canEdit(user: UserFromSession, lessonId: string): Promise<boolean> {
-	if (user.role === "ADMIN") return true;
-	return await hasResourceAccess({ userId: user.id, lessonId, accessLevel: AccessLevel.EDIT });
 }

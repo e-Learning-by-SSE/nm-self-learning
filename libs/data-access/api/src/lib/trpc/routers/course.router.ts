@@ -1,4 +1,4 @@
-import { AccessLevel, GroupRole, Prisma } from "@prisma/client";
+import { AccessLevel, Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import {
 	courseFormSchema,
@@ -12,13 +12,9 @@ import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learni
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
-import { UserFromSession } from "../context";
-import {
-	getUserPermission,
-	greaterOrEqAccessLevel,
-	hasGroupRole,
-	hasResourceAccess
-} from "./permission.router";
+import { canEdit, canEditBySlug } from "../../permissions/course.utils";
+import { greaterOrEqAccessLevel } from "../../permissions/permission.utils";
+import { getResourceAccess } from "../../permissions/permission.service";
 
 export const courseRouter = t.router({
 	listAvailableCourses: authProcedure
@@ -253,7 +249,7 @@ export const courseRouter = t.router({
 		.mutation(async ({ input, ctx }) => {
 			// TODO similar to lessonRouter
 			// get user access level to resource - must be at least EDIT
-			const { accessLevel: actualAccess } = await getUserPermission({
+			const { accessLevel: actualAccess } = await getResourceAccess({
 				userId: ctx.user.id,
 				courseId: input.courseId
 			});
@@ -419,33 +415,3 @@ export const courseRouter = t.router({
 			});
 		})
 });
-
-async function canCreate(user: UserFromSession, groupId: number): Promise<boolean> {
-	if (user.role === "ADMIN") return true;
-	return await hasGroupRole(groupId, user.id, GroupRole.MEMBER);
-}
-
-// TODO for now all can read
-// async function canRead(user: UserFromSession, courseId: string): Promise<boolean> {
-// 	if (user.role === "ADMIN") return true;
-// 	return await hasAccessLevel(user, PermissionResourceEnum.Enum.SUBJECT, courseId, "VIEW");
-// }
-
-async function getIdBySlug(slug: string) {
-	const { courseId } = await database.course.findUniqueOrThrow({
-		where: { slug },
-		select: { courseId: true }
-	});
-	return courseId;
-}
-
-async function canEdit(user: UserFromSession, courseId: string): Promise<boolean> {
-	if (user.role === "ADMIN") return true;
-	return await hasResourceAccess({ userId: user.id, courseId, accessLevel: AccessLevel.EDIT });
-}
-
-async function canEditBySlug(user: UserFromSession, slug: string): Promise<boolean> {
-	if (user.role === "ADMIN") return true;
-	const courseId = await getIdBySlug(slug);
-	return await canEdit(user, courseId);
-}
