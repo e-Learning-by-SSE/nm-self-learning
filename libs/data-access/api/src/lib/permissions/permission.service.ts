@@ -113,6 +113,7 @@ export async function hasResourcesAccess(userId: string, checks: ResourceAccess[
 	});
 
 	// Aggregate best access level per resource
+	// separate to avoid id conflicts
 	const lessons: Record<string, AccessLevel> = {};
 	const courses: Record<string, AccessLevel> = {};
 

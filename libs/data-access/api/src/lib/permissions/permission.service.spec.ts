@@ -230,7 +230,7 @@ describe("permission.service", () => {
 
 	describe("getGroup", () => {
 		it("returns group details from database", async () => {
-			const group = { id: 7, name: "G", parent: null, permissions: [], members: [] };
+			const group = { id: 7, name: "Group", parent: null, permissions: [], members: [] };
 			(database.group.findUnique as jest.Mock).mockResolvedValue(group);
 
 			const res = await getGroup(7);
