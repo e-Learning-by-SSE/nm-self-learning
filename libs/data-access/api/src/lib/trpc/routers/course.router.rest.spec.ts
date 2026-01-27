@@ -1,6 +1,7 @@
 import { restQuery, createCourseMock } from "@self-learning/util/testing";
 import { database } from "@self-learning/database";
 import { UserFromSession } from "../context";
+import { canEditBySlug } from "../../permissions/course.utils";
 
 // Mock the database
 jest.mock("@self-learning/database", () => ({
@@ -20,6 +21,10 @@ jest.mock("@self-learning/database", () => ({
 	}
 }));
 
+jest.mock("../../permissions/course.utils", () => ({
+	canEditBySlug: jest.fn()
+}));
+
 describe("REST API of Course Router", () => {
 	const privilegedUser: UserFromSession = {
 		id: "1",
@@ -28,7 +33,8 @@ describe("REST API of Course Router", () => {
 		isAuthor: true,
 		avatarUrl: null,
 		enabledFeatureLearningDiary: false,
-		enabledLearningStatistics: false
+		enabledLearningStatistics: false,
+		memberships: []
 	};
 
 	describe("[GET]: /courses", () => {
@@ -240,7 +246,8 @@ describe("REST API of Course Router", () => {
 			isAuthor: true,
 			avatarUrl: null,
 			enabledFeatureLearningDiary: false,
-			enabledLearningStatistics: false
+			enabledLearningStatistics: false,
+			memberships: [1]
 		};
 
 		const courseAuthor2: UserFromSession = {
@@ -250,7 +257,8 @@ describe("REST API of Course Router", () => {
 			isAuthor: true,
 			avatarUrl: null,
 			enabledFeatureLearningDiary: false,
-			enabledLearningStatistics: false
+			enabledLearningStatistics: false,
+			memberships: [2]
 		};
 
 		const nonAuthor: UserFromSession = {
@@ -260,7 +268,8 @@ describe("REST API of Course Router", () => {
 			isAuthor: true,
 			avatarUrl: null,
 			enabledFeatureLearningDiary: false,
-			enabledLearningStatistics: false
+			enabledLearningStatistics: false,
+			memberships: []
 		};
 
 		const adminNonAuthor: UserFromSession = {
@@ -270,7 +279,8 @@ describe("REST API of Course Router", () => {
 			isAuthor: true,
 			avatarUrl: null,
 			enabledFeatureLearningDiary: false,
-			enabledLearningStatistics: false
+			enabledLearningStatistics: false,
+			memberships: []
 		};
 
 		beforeEach(() => {
@@ -331,6 +341,8 @@ describe("REST API of Course Router", () => {
 		});
 
 		it("should return progress for enrolled students only", async () => {
+			(canEditBySlug as jest.Mock).mockResolvedValue(true); // has access
+
 			const response = await restQuery({
 				method: "GET",
 				query: {
@@ -348,7 +360,9 @@ describe("REST API of Course Router", () => {
 			]);
 		});
 
-		it("should allow access for second course author", async () => {
+		it("should allow access for user with edit+ permissions", async () => {
+			(canEditBySlug as jest.Mock).mockResolvedValue(true); // has access
+
 			const response = await restQuery({
 				method: "GET",
 				query: {
@@ -380,6 +394,8 @@ describe("REST API of Course Router", () => {
 		});
 
 		it("should return 403 for non-author users", async () => {
+			(canEditBySlug as jest.Mock).mockResolvedValue(false); // has not access
+
 			const response = await restQuery({
 				method: "GET",
 				query: {
@@ -391,12 +407,12 @@ describe("REST API of Course Router", () => {
 
 			expect(response.statusCode).toBe(403);
 			expect(response.body).toMatchObject({
-				code: "FORBIDDEN",
-				message: "You are not an author of this course."
+				code: "FORBIDDEN"
 			});
 		});
 
 		it("should return 403 for admin users who are not course authors", async () => {
+			(canEditBySlug as jest.Mock).mockResolvedValue(true); // has access
 			const response = await restQuery({
 				method: "GET",
 				query: {
@@ -408,8 +424,7 @@ describe("REST API of Course Router", () => {
 
 			expect(response.statusCode).toBe(403);
 			expect(response.body).toMatchObject({
-				code: "FORBIDDEN",
-				message: "You are not an author of this course."
+				code: "FORBIDDEN"
 			});
 		});
 
@@ -427,6 +442,7 @@ describe("REST API of Course Router", () => {
 		});
 
 		it("should handle students with zero progress", async () => {
+			(canEditBySlug as jest.Mock).mockResolvedValue(true); // has access
 			// Override the completedLesson mock for this test
 			(database.completedLesson.groupBy as jest.Mock).mockImplementationOnce(async () => {
 				return []; // No completed lessons

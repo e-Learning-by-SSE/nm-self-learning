@@ -1,4 +1,4 @@
-import { Author, Course, Lesson, Prisma, Skill } from "@prisma/client";
+import { Author, Course, Group, Lesson, Permission, Prisma, Skill } from "@prisma/client";
 import { Quiz } from "@self-learning/quiz";
 import {
 	CourseContent,
@@ -52,7 +52,9 @@ export function createCourseMock({
 	subtitle?: string;
 	description?: string;
 	meta?: CourseMeta;
-}): Partial<Course> & { authors: Pick<Author, "username">[] } & { content: CourseContent } {
+}): Partial<Course> & { authors: Pick<Author, "username">[] } & { content: CourseContent } & {
+	permissions: Partial<Permission>[];
+} {
 	return {
 		courseId,
 		slug: slug ?? courseId,
@@ -66,7 +68,8 @@ export function createCourseMock({
 		})),
 		meta: meta ?? {
 			lessonCount: content.reduce((acc, chapter) => acc + chapter.lessons.length, 0)
-		}
+		},
+		permissions: []
 	};
 }
 
@@ -87,7 +90,7 @@ export function createLessonMock({
 }): Partial<Lesson> &
 	Pick<Lesson, "lessonId"> & { authors: Pick<Author, "username">[] } & {
 		requires: Skill[];
-	} & { provides: Skill[] } {
+	} & { provides: Skill[] } & { permissions: Partial<Permission>[] } {
 	const defaultSkill: Skill = {
 		id: "skill:1",
 		name: "Skill1",
@@ -113,7 +116,8 @@ export function createLessonMock({
 		requires: requires ?? [defaultSkill],
 		provides: provides ?? [defaultSkill],
 		authors: authors.map(author => ({ username: author })),
-		selfRegulatedQuestion: null
+		selfRegulatedQuestion: null,
+		permissions: []
 	};
 }
 

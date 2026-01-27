@@ -5,13 +5,19 @@ import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { TRPCError } from "@trpc/server";
 import { lessonRouter } from "./lesson.router";
 
+import { canEdit } from "../../permissions/lesson.utils";
+
 jest.mock("@self-learning/database", () => ({
 	__esModule: true,
 	database: {
 		lesson: {
-			deleteMany: jest.fn()
+			delete: jest.fn()
 		}
 	}
+}));
+
+jest.mock("../../permissions/lesson.utils", () => ({
+	canEdit: jest.fn()
 }));
 
 function prepare(user: Partial<UserFromSession>) {
@@ -23,6 +29,7 @@ function prepare(user: Partial<UserFromSession>) {
 			isAuthor: false,
 			enabledFeatureLearningDiary: false,
 			enabledLearningStatistics: false,
+			memberships: [],
 			...user
 		}
 	};
@@ -32,29 +39,23 @@ function prepare(user: Partial<UserFromSession>) {
 
 describe("tRPC API of Lesson Router", () => {
 	describe("deleteLesson", () => {
-		function assertWhereClause(lessonId: string, author: string) {
-			expect(database.lesson.deleteMany).toHaveBeenCalledTimes(1);
+		function assertWhereClause(lessonId: string) {
+			expect(database.lesson.delete).toHaveBeenCalledTimes(1);
 
-			const whereClause = (database.lesson.deleteMany as jest.Mock).mock.calls[0][0];
+			const whereClause = (database.lesson.delete as jest.Mock).mock.calls[0][0];
 
 			expect(whereClause).toEqual({
 				where: {
-					lessonId,
-					authors: { some: { username: author } }
+					lessonId
 				}
 			});
 		}
 		beforeEach(() => {
 			jest.clearAllMocks();
-			(database.lesson.deleteMany as jest.Mock).mockImplementation(({ where }) => {
+			(database.lesson.delete as jest.Mock).mockImplementation(({ where }) => {
 				// Require
 				// - lessonId: "test-lesson"
-				// - Authors: "author1" or "author2"
-				if (
-					where.lessonId === "test-lesson" &&
-					(where.authors.some.username === "author1" ||
-						where.authors.some.username === "author2")
-				) {
+				if (where.lessonId === "test-lesson") {
 					return Promise.resolve({
 						slug: "test-lessonId",
 						authors: [{ username: "author1" }]
@@ -68,53 +69,33 @@ describe("tRPC API of Lesson Router", () => {
 			});
 		});
 
-		it("should delete lesson if user is author", async () => {
+		it("should delete lesson if user can edit this lesson", async () => {
 			const { caller, ctx } = prepare({
 				isAuthor: true,
 				name: "author1"
 			});
 			const input = { lessonId: "test-lesson" };
 
-			// Lesson exists; user is author -> Success
+			(canEdit as jest.Mock).mockResolvedValue(true);
+
+			// Lesson exists; user can edit -> Success
 			await expect(caller.deleteLesson(input)).resolves.not.toThrow();
-			assertWhereClause(input.lessonId, ctx.user.name);
+			assertWhereClause(input.lessonId);
 		});
 
-		it("should delete a lesson if user second author", async () => {
-			const { caller, ctx } = prepare({
-				isAuthor: true,
-				name: "author2"
-			});
-			const input = { lessonId: "test-lesson" };
-
-			// Lesson exists; user is author -> Success
-			await expect(caller.deleteLesson(input)).resolves.not.toThrow();
-			assertWhereClause(input.lessonId, ctx.user.name);
-		});
-
-		it("should throw error if user is not author", async () => {
+		it("should throw error if if user cant edit this lesson", async () => {
 			const { caller } = prepare({
 				isAuthor: false,
 				name: "author1"
 			});
 			const input = { lessonId: "test-lesson" };
 
-			// Lesson exists; user is no author -> TRPCError
+			(canEdit as jest.Mock).mockResolvedValue(false);
+
+			// Lesson exists; user cant edit -> TRPCError
 			await expect(caller.deleteLesson(input)).rejects.toThrow(TRPCError);
 			// Author procedure should prevent the call to database
-			expect(database.lesson.deleteMany).not.toHaveBeenCalled();
-		});
-
-		it("should throw error if user is wrong author", async () => {
-			const { caller, ctx } = prepare({
-				isAuthor: true,
-				name: "author3"
-			});
-			const input = { lessonId: "test-lesson" };
-
-			// Lesson exists; user is foreign author -> TRPCError
-			await expect(caller.deleteLesson(input)).rejects.toThrow();
-			assertWhereClause(input.lessonId, ctx.user.name);
+			expect(database.lesson.delete).not.toHaveBeenCalled();
 		});
 
 		it("should throw error if lesson does not exist", async () => {
@@ -124,9 +105,11 @@ describe("tRPC API of Lesson Router", () => {
 			});
 			const input = { lessonId: "non-existing-lesson" };
 
-			// Lesson doesn't exists; user is author -> TRPCError
+			(canEdit as jest.Mock).mockResolvedValue(true);
+
+			// Lesson doesn't exists; user can edit -> TRPCError
 			await expect(caller.deleteLesson(input)).rejects.toThrow();
-			assertWhereClause(input.lessonId, ctx.user.name);
+			assertWhereClause(input.lessonId);
 		});
 	});
 });
