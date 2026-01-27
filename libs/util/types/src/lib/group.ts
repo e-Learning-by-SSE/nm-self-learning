@@ -79,7 +79,6 @@ export const GroupFormSchema = z.object({
 	name: z.string().min(3),
 	permissions: ResourceAccessFormSchema.array(),
 	members: MemberFormSchema.array()
-	// TODO: also grants
 });
 
 export type Group = z.infer<typeof GroupFormSchema>;
