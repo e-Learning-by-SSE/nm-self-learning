@@ -18,7 +18,7 @@ import {
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { MarketingSvg, OverviewSvg, TargetSvg } from "@self-learning/ui/static";
 import {
-	formatDateAgo,
+	formatDateDistanceToNow,
 	formatDateStringShort,
 	formatTimeIntervalToString
 } from "@self-learning/util/common";
@@ -472,7 +472,7 @@ function LessonList({ lessons }: { lessons: LearningDiaryEntryLessonWithDetails[
 									</span>
 
 									<span className="hidden text-xs text-light md:block">
-										{formatDateAgo(lesson.touchedAt)}
+										{formatDateDistanceToNow(lesson.touchedAt)}
 									</span>
 								</div>
 							</li>

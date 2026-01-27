@@ -12,7 +12,7 @@ import {
 } from "@self-learning/ui/common";
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
 import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
-import { formatDateAgo } from "@self-learning/util/common";
+import { formatDateDistanceToNow } from "@self-learning/util/common";
 import { withAuth, withTranslations } from "@self-learning/api";
 
 interface CourseOverviewProps {
@@ -286,7 +286,7 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 							/>
 						</TableDataColumn>
 						<TableDataColumn>
-							{formatDateAgo(enrollment.lastProgressUpdate)}
+							{formatDateDistanceToNow(enrollment.lastProgressUpdate)}
 						</TableDataColumn>
 					</tr>
 				))}

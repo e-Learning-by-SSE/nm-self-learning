@@ -3,7 +3,7 @@ import { trpc } from "@self-learning/api-client";
 import { Paginator, Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
-import { formatDateAgo } from "@self-learning/util/common";
+import { formatDateDistanceToNow } from "@self-learning/util/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -90,7 +90,7 @@ export default function LessonManagementPage() {
 									className="text-light"
 									title={new Date(lesson.updatedAt).toLocaleString()}
 								>
-									{formatDateAgo(lesson.updatedAt)}
+									{formatDateDistanceToNow(lesson.updatedAt)}
 								</span>
 								<LessonDeleteOption lessonId={lesson.lessonId} />
 							</div>

@@ -20,7 +20,7 @@ import {
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
-import { formatDateAgo } from "@self-learning/util/common";
+import { formatDateDistanceToNow } from "@self-learning/util/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
@@ -51,6 +51,7 @@ export function getAuthor(username: string) {
 					group: {
 						select: {
 							name: true,
+							id: true,
 							permissions: {
 								// where: {
 								// 	OR: [{ accessLevel: "FULL" }, { accessLevel: "EDIT" }]
@@ -162,9 +163,15 @@ function AuthorDashboardPage({ author }: Props) {
 						author.memberships.map(m => (
 							<li
 								key={m.group.name}
-								className="flex px-4 py-2 w-full items-center justify-between rounded-lg border border-light-border bg-white"
+								className="flex px-4 py-2 w-full items-center rounded-lg border border-light-border bg-white"
 							>
-								{m.group.name} als {m.role}
+								<Link
+									className="text-sm font-medium hover:text-secondary"
+									href={`/teaching/groups/${m.group.id}`}
+								>
+									{m.group.name}
+								</Link>
+								<span className="pl-2">als {m.role}</span>
 							</li>
 						))
 					)}
@@ -521,7 +528,7 @@ function Lessons({ authorName }: { authorName: string }) {
 								</TableDataColumn>
 								<TableDataColumn>
 									<span className="text-light">
-										{formatDateAgo(lesson.updatedAt)}
+										{formatDateDistanceToNow(lesson.updatedAt)}
 									</span>
 								</TableDataColumn>
 								<TableDataColumn>

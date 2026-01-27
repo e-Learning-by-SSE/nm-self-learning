@@ -14,7 +14,7 @@ import {
 import { AuthorsList } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection, useAuthentication } from "@self-learning/ui/layouts";
-import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
+import { formatDateDistanceToNow, formatSeconds } from "@self-learning/util/common";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
@@ -231,8 +231,8 @@ function CourseHeader({
 					<div className="flex flex-col gap-4">
 						<AuthorsList authors={course.authors} />
 						<CreatedUpdatedDates
-							createdAt={formatDateAgo(course.createdAt)}
-							updatedAt={formatDateAgo(course.updatedAt)}
+							createdAt={formatDateDistanceToNow(course.createdAt)}
+							updatedAt={formatDateDistanceToNow(course.updatedAt)}
 						/>
 					</div>
 				</div>

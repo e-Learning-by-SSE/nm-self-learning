@@ -16,7 +16,7 @@ import {
 import { LabeledField } from "@self-learning/ui/forms";
 import { useMemo, useState } from "react";
 import { add } from "date-fns";
-import { formatTimeIntervalToString } from "@self-learning/util/common";
+import { formatDateDistanceToNow, isInThePast } from "@self-learning/util/common";
 
 export type MemberFormModel = Member;
 
@@ -353,10 +353,10 @@ export function GroupMemberRow({
 			<TableDataColumn>
 				<span className="text-light">
 					{member.expiresAt ? (
-						member.expiresAt.getTime() - Date.now() < 0 ? (
+						isInThePast(member.expiresAt) ? (
 							<span className="text-red-500">Abgelaufen</span>
 						) : (
-							formatTimeIntervalToString(member.expiresAt.getTime() - Date.now())
+							formatDateDistanceToNow(member.expiresAt)
 						)
 					) : (
 						"Unbefristet"
