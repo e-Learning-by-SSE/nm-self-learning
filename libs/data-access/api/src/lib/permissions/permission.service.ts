@@ -12,6 +12,72 @@ import {
 	greaterOrEqGroupRole
 } from "./permission.utils";
 import { add } from "date-fns";
+import { UserFromSession } from "../trpc/context";
+
+/**
+ * "Effective" access means:
+ * - ADMIN users are treated as having FULL access
+ * - group-derived permissions are resolved
+ * - the highest applicable access level is returned
+ */
+
+/**
+ * A shortcut for @see hasResourceAccessBatch
+ * Checks if the user is a website admin or has defined access to all specified resources.
+ * @param ctx - trpc context with user information
+ * @param checks - Array of resource access checks
+ * @returns - `true` if user is website admin or has access to all resources at specified access levels
+ */
+export async function hasEffectiveResourceAccessBatch(
+	user: UserFromSession,
+	checks: ResourceAccess[]
+) {
+	if (user.role === "ADMIN") return true;
+	return await hasResourceAccessBatch(user.id, checks);
+}
+
+/**
+ * A shortcut for @see hasResourceAccess
+ * checks if the user is a website admin or has defined access to a specific resource.
+ * @param ctx - trpc context with user information
+ * @param input - resource access check
+ * @returns `true` if user is website admin or has access to the resource at specified access level
+ */
+export async function hasEffectiveResourceAccess(user: UserFromSession, input: ResourceAccess) {
+	if (user.role === "ADMIN") return true;
+	return await hasResourceAccess({ userId: user.id, ...input });
+}
+
+/**
+ * A shortcut for @see getResourceAccess
+ * Fetches the effective access level a user has for a given resource, or FULL if user is website admin.
+ * @param ctx - trpc context with user information
+ * @param input - resource to get access level for
+ * @returns the best access level the user has for the resource + groupId via which access is given;
+ * FULL level if user is admin + groupId = null
+ * null level if no access
+ */
+export async function getEffectiveAccess(user: UserFromSession, input: ResourceInput) {
+	if (user.role === "ADMIN") return { accessLevel: AccessLevel.FULL, groupId: null };
+	return await getResourceAccess({ userId: user.id, ...input });
+}
+
+/**
+ * A shortcut for @see hasGroupRole
+ * Checks if the user is a website admin or has at least the specified role within a group.
+ * @param ctx - trpc context with user information
+ * @param groupId - ID of the group where to check role
+ * @param role - minimum role required
+ * @returns true if user is website admin or has at least the specified role in the group
+ */
+export async function hasEffectiveGroupRole(
+	user: UserFromSession,
+	groupId: number,
+	role: GroupRole
+) {
+	if (user.role === "ADMIN") return true;
+	return await hasGroupRole(groupId, user.id, role);
+}
 
 /**
  * Creates a permission entry for a group on a specific resource.
@@ -32,7 +98,7 @@ export async function createResourceAccess(params: PermissionInput) {
  * @param userId - ID of the user to check access for
  * @param courseId - ID of the course resource
  * @param lessonId - ID of the lesson resource
- * @returns the best access level the user has for the resource, or null level if no access
+ * @returns the best access level + groupId via which access is given, or null level if no access
  */
 export async function getResourceAccess({
 	userId,
@@ -75,7 +141,7 @@ export async function getResourceAccess({
  * @param checks - Array of resource access checks
  * @returns `true` if user has access to all resources at specified access levels
  */
-export async function hasResourcesAccess(userId: string, checks: ResourceAccess[]) {
+export async function hasResourceAccessBatch(userId: string, checks: ResourceAccess[]) {
 	const courseIds = checks
 		.filter(
 			(r): r is { courseId: string; accessLevel: AccessLevel } =>

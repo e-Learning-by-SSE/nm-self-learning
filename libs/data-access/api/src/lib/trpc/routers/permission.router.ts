@@ -17,7 +17,7 @@ import {
 	getResourceAccess,
 	hasGroupRole,
 	hasResourceAccess,
-	hasResourcesAccess
+	hasResourceAccessBatch
 } from "../../permissions/permission.service";
 import { anyTrue } from "../../permissions/permission.utils";
 
@@ -174,7 +174,7 @@ export const permissionRouter = t.router({
 				// only website admins can create root groups
 				const [groupOk, resourceOk] = await Promise.all([
 					hasGroupRole(parent.id, userId, GroupRole.ADMIN),
-					hasResourcesAccess(userId, checks)
+					hasResourceAccessBatch(userId, checks)
 				]);
 				console.log("groupOk", groupOk, "resourceOk", resourceOk);
 				hasAccess = groupOk && resourceOk;
@@ -316,7 +316,7 @@ export const permissionRouter = t.router({
 				return { ...p, accessLevel: AccessLevel.FULL };
 			});
 			const hasAccess =
-				ctx.user.role === "ADMIN" || (await hasResourcesAccess(userId, checks));
+				ctx.user.role === "ADMIN" || (await hasResourceAccessBatch(userId, checks));
 
 			if (!hasAccess) {
 				throw new TRPCError({

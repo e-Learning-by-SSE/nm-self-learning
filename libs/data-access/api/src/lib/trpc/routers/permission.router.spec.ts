@@ -6,7 +6,7 @@ import { t } from "../trpc";
 import { Context, UserFromSession } from "../context";
 import {
 	hasGroupRole,
-	hasResourcesAccess,
+	hasResourceAccessBatch,
 	hasResourceAccess,
 	createGroupAccess,
 	getResourceAccess,
@@ -41,7 +41,7 @@ jest.mock("@self-learning/database", () => ({
 
 jest.mock("../../permissions/permission.service", () => ({
 	hasGroupRole: jest.fn(),
-	hasResourcesAccess: jest.fn(),
+	hasResourceAccessBatch: jest.fn(),
 	hasResourceAccess: jest.fn(),
 	createGroupAccess: jest.fn(),
 	getResourceAccess: jest.fn(),
@@ -114,7 +114,7 @@ describe("permissionRouter", () => {
 			const { caller, ctx } = prepare({});
 
 			(hasGroupRole as jest.Mock).mockResolvedValue(true);
-			(hasResourcesAccess as jest.Mock).mockResolvedValue(false);
+			(hasResourceAccessBatch as jest.Mock).mockResolvedValue(false);
 
 			const input = {
 				name: "Test Group",
@@ -136,7 +136,7 @@ describe("permissionRouter", () => {
 				code: "FORBIDDEN"
 			} as Partial<TRPCError>);
 
-			expect(hasResourcesAccess).toHaveBeenCalledWith(ctx.user.id, [
+			expect(hasResourceAccessBatch).toHaveBeenCalledWith(ctx.user.id, [
 				{
 					courseId: "c1",
 					accessLevel: AccessLevel.FULL
@@ -154,7 +154,7 @@ describe("permissionRouter", () => {
 			const { caller } = prepare({ role: "USER" });
 
 			(hasGroupRole as jest.Mock).mockResolvedValue(true);
-			(hasResourcesAccess as jest.Mock).mockResolvedValue(true);
+			(hasResourceAccessBatch as jest.Mock).mockResolvedValue(true);
 
 			const input = {
 				name: "Test Group",
@@ -168,13 +168,13 @@ describe("permissionRouter", () => {
 			} as Partial<TRPCError>);
 
 			expect(hasGroupRole).not.toHaveBeenCalled();
-			expect(hasResourcesAccess).not.toHaveBeenCalled();
+			expect(hasResourceAccessBatch).not.toHaveBeenCalled();
 			expect(database.group.create).not.toHaveBeenCalled();
 		});
 		it("throws FORBIDDEN if not admin creates group", async () => {
 			const { caller, ctx } = prepare({});
 			(hasGroupRole as jest.Mock).mockResolvedValue(false);
-			(hasResourcesAccess as jest.Mock).mockResolvedValue(true);
+			(hasResourceAccessBatch as jest.Mock).mockResolvedValue(true);
 
 			const input = {
 				name: "Test Group",
@@ -188,7 +188,7 @@ describe("permissionRouter", () => {
 			} as Partial<TRPCError>);
 
 			expect(hasGroupRole).toHaveBeenCalledWith(1, ctx.user.id, GroupRole.ADMIN);
-			expect(hasResourcesAccess).toHaveBeenCalled();
+			expect(hasResourceAccessBatch).toHaveBeenCalled();
 			expect(database.group.create).not.toHaveBeenCalled();
 		});
 
@@ -218,7 +218,7 @@ describe("permissionRouter", () => {
 				}
 			});
 			expect(hasGroupRole).not.toHaveBeenCalled();
-			expect(hasResourcesAccess).not.toHaveBeenCalled();
+			expect(hasResourceAccessBatch).not.toHaveBeenCalled();
 
 			expect(result).toEqual({ id: 1, name: "Test Group" });
 		});
@@ -265,7 +265,7 @@ describe("permissionRouter", () => {
 				}
 			});
 			expect(hasGroupRole).not.toHaveBeenCalled();
-			expect(hasResourcesAccess).not.toHaveBeenCalled();
+			expect(hasResourceAccessBatch).not.toHaveBeenCalled();
 
 			expect(result).toEqual({ id: 1, name: "Test Group" });
 		});
@@ -409,7 +409,7 @@ describe("permissionRouter", () => {
 			};
 
 			(hasGroupRole as jest.Mock).mockResolvedValue(false);
-			(hasResourcesAccess as jest.Mock).mockResolvedValue(true);
+			(hasResourceAccessBatch as jest.Mock).mockResolvedValue(true);
 
 			await expect(caller.updateGroup(input)).rejects.toMatchObject({
 				code: "FORBIDDEN"
@@ -440,7 +440,7 @@ describe("permissionRouter", () => {
 			};
 
 			(hasGroupRole as jest.Mock).mockResolvedValue(false);
-			(hasResourcesAccess as jest.Mock).mockResolvedValue(true);
+			(hasResourceAccessBatch as jest.Mock).mockResolvedValue(true);
 
 			await expect(caller.updateGroup(input)).rejects.toMatchObject({
 				code: "FORBIDDEN"
@@ -480,7 +480,7 @@ describe("permissionRouter", () => {
 				]
 			};
 
-			(hasResourcesAccess as jest.Mock).mockResolvedValue(false);
+			(hasResourceAccessBatch as jest.Mock).mockResolvedValue(false);
 			(hasGroupRole as jest.Mock).mockResolvedValue(true);
 
 			expect(database.group.update).not.toHaveBeenCalled();
@@ -531,7 +531,7 @@ describe("permissionRouter", () => {
 			};
 
 			(hasGroupRole as jest.Mock).mockResolvedValue(false);
-			(hasResourcesAccess as jest.Mock).mockResolvedValue(false);
+			(hasResourceAccessBatch as jest.Mock).mockResolvedValue(false);
 
 			const res = await caller.updateGroup(input);
 			expect(database.group.update).toHaveBeenCalled();
