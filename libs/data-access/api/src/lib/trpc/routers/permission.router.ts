@@ -400,7 +400,7 @@ export const permissionRouter = t.router({
 			// delete group
 			return await database.group.delete({ where: { id: groupId } });
 		}),
-	getResourceAccess: authProcedure.input(ResourceAccessSchema).query(async ({ input, ctx }) => {
+	getResourceAccess: authProcedure.input(ResourceInputSchema).query(async ({ input, ctx }) => {
 		const userId = ctx.user.id;
 		return await getResourceAccess({ userId, ...input });
 	}),

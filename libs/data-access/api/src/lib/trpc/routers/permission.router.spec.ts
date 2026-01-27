@@ -10,17 +10,21 @@ import {
 	hasResourceAccess,
 	createGroupAccess,
 	getResourceAccess,
-	createResourceAccess
+	createResourceAccess,
+	getGroup
 } from "../../permissions/permission.service";
 
 jest.mock("@self-learning/database", () => ({
 	__esModule: true,
 	database: {
+		$transaction: jest.fn(),
 		group: {
 			create: jest.fn(),
 			update: jest.fn(),
 			delete: jest.fn(),
-			findUniqueOrThrow: jest.fn()
+			findUniqueOrThrow: jest.fn(),
+			findMany: jest.fn(),
+			count: jest.fn()
 		},
 		member: {
 			findMany: jest.fn(),
@@ -41,7 +45,8 @@ jest.mock("../../permissions/permission.service", () => ({
 	hasResourceAccess: jest.fn(),
 	createGroupAccess: jest.fn(),
 	getResourceAccess: jest.fn(),
-	createResourceAccess: jest.fn()
+	createResourceAccess: jest.fn(),
+	getGroup: jest.fn()
 }));
 
 function prepare(user: Partial<UserFromSession>) {
@@ -75,6 +80,9 @@ describe("permissionRouter", () => {
 
 	describe("createGroup", () => {
 		it("throws BAD_REQUEST if group has admin member has defined expiresAt", async () => {
+			const date = new Date();
+			date.setDate(date.getDate() + 7); // date in future
+
 			const { caller } = prepare({ role: "ADMIN" });
 
 			const input = {
@@ -85,7 +93,7 @@ describe("permissionRouter", () => {
 					{
 						user: testUser,
 						role: GroupRole.ADMIN,
-						expiresAt: new Date()
+						expiresAt: date
 					}
 				]
 			};
@@ -96,7 +104,8 @@ describe("permissionRouter", () => {
 			});
 
 			await expect(caller.createGroup(input)).rejects.toMatchObject({
-				code: "BAD_REQUEST"
+				code: "BAD_REQUEST",
+				message: "Group ADMIN role cannot expire"
 			} as Partial<TRPCError>);
 
 			expect(database.group.create).not.toHaveBeenCalled();
@@ -324,29 +333,32 @@ describe("permissionRouter", () => {
 		});
 
 		it("throws BAD_REQUEST if ADMIN member has expiresAt defined", async () => {
+			const date = new Date();
+			date.setDate(date.getDate() + 7); // date in future
+
 			const { caller } = prepare({ role: "ADMIN" });
 
 			(database.group.findUniqueOrThrow as jest.Mock).mockResolvedValue({
-				name: "G",
+				name: "group",
 				parentId: null
 			});
 
 			const input = {
 				id: 8,
-				name: "G",
+				name: "group",
 				parent: null,
 				permissions: [],
 				members: [
 					{
 						user: { ...testUser, id: "u1" },
 						role: GroupRole.ADMIN,
-						expiresAt: new Date()
+						expiresAt: date
 					}
 				]
 			};
-
 			await expect(caller.updateGroup(input)).rejects.toMatchObject({
-				code: "BAD_REQUEST"
+				code: "BAD_REQUEST",
+				message: "Group ADMIN role cannot expire"
 			} as Partial<TRPCError>);
 			expect(database.group.update).not.toHaveBeenCalled();
 		});
@@ -355,13 +367,13 @@ describe("permissionRouter", () => {
 			const { caller } = prepare({ role: "ADMIN" });
 
 			(database.group.findUniqueOrThrow as jest.Mock).mockResolvedValue({
-				name: "G",
+				name: "Group",
 				parentId: null
 			});
 
 			const input = {
 				id: 9,
-				name: "G",
+				name: "Group",
 				parent: null,
 				permissions: [],
 				members: [
@@ -375,7 +387,7 @@ describe("permissionRouter", () => {
 			expect(database.group.update).not.toHaveBeenCalled();
 		});
 
-		it("throws FORBIDDEN when members changed and user is not group admin", async () => {
+		it("throws FORBIDDEN when members were changed and user is not group admin", async () => {
 			const { caller } = prepare({ role: "USER" });
 			(database.group.findUniqueOrThrow as jest.Mock).mockResolvedValue({
 				name: "Group",
@@ -383,6 +395,37 @@ describe("permissionRouter", () => {
 			});
 			(database.member.findMany as jest.Mock).mockResolvedValue([
 				{ userId: "a", role: GroupRole.MEMBER, expiresAt: null }
+			]);
+
+			// incoming members differ -> memberDiffs > 0
+			const input = {
+				id: 10,
+				name: "Group",
+				parent: null,
+				permissions: [],
+				members: [
+					{ user: { ...testUser, id: "b" }, role: GroupRole.ADMIN, expiresAt: null }
+				]
+			};
+
+			(hasGroupRole as jest.Mock).mockResolvedValue(false);
+			(hasResourcesAccess as jest.Mock).mockResolvedValue(true);
+
+			await expect(caller.updateGroup(input)).rejects.toMatchObject({
+				code: "FORBIDDEN"
+			} as Partial<TRPCError>);
+			expect(database.group.update).not.toHaveBeenCalled();
+		});
+
+		it("throws FORBIDDEN when member was deleted and user is not group admin", async () => {
+			const { caller } = prepare({ role: "USER" });
+			(database.group.findUniqueOrThrow as jest.Mock).mockResolvedValue({
+				name: "Group",
+				parentId: null
+			});
+			(database.member.findMany as jest.Mock).mockResolvedValue([
+				{ userId: "a", role: GroupRole.MEMBER, expiresAt: null }, // removed
+				{ userId: "b", role: GroupRole.ADMIN, expiresAt: null } // unchanged
 			]);
 
 			// incoming members differ -> memberDiffs > 0
@@ -413,7 +456,9 @@ describe("permissionRouter", () => {
 			});
 			(database.member.findMany as jest.Mock).mockResolvedValue([]);
 			(database.permission.findMany as jest.Mock).mockResolvedValue([
-				{ courseId: "c1", accessLevel: AccessLevel.EDIT }
+				{ courseId: "c1", accessLevel: AccessLevel.EDIT }, // changed
+				{ courseId: "c2", accessLevel: AccessLevel.EDIT }, // removed
+				{ courseId: "c3", accessLevel: AccessLevel.VIEW } // unchanged
 			]);
 
 			const input = {
@@ -424,6 +469,10 @@ describe("permissionRouter", () => {
 					{
 						course: { courseId: "c1", slug: "c1", title: "c1" },
 						accessLevel: AccessLevel.FULL
+					},
+					{
+						course: { courseId: "c3", slug: "c3", title: "c3" },
+						accessLevel: AccessLevel.VIEW
 					}
 				],
 				members: [
@@ -441,13 +490,23 @@ describe("permissionRouter", () => {
 		});
 
 		it("updates group when user is admin", async () => {
+			const date = new Date();
+			date.setDate(date.getDate() + 7); // date in future
+
 			const { caller } = prepare({ role: "ADMIN" });
 			(database.group.findUniqueOrThrow as jest.Mock).mockResolvedValue({
 				name: "Group",
 				parentId: null
 			});
-			(database.member.findMany as jest.Mock).mockResolvedValue([]);
-			(database.permission.findMany as jest.Mock).mockResolvedValue([]);
+			// cover changed and unchanged members
+			(database.member.findMany as jest.Mock).mockResolvedValue([
+				{ userId: "b", role: GroupRole.MEMBER, expiresAt: date }
+			]);
+			// cover changed and unchanged permissions
+			(database.permission.findMany as jest.Mock).mockResolvedValue([
+				{ courseId: "c1", accessLevel: AccessLevel.EDIT },
+				{ lessonId: "l1", accessLevel: AccessLevel.VIEW }
+			]);
 
 			(database.group.update as jest.Mock).mockResolvedValue({ id: 12, name: "Group" });
 
@@ -455,9 +514,19 @@ describe("permissionRouter", () => {
 				id: 12,
 				name: "Group",
 				parent: null,
-				permissions: [],
+				permissions: [
+					{
+						course: { courseId: "c1", slug: "c1", title: "c1" },
+						accessLevel: AccessLevel.FULL
+					},
+					{
+						lesson: { lessonId: "l1", slug: "l1", title: "l1" },
+						accessLevel: AccessLevel.FULL
+					}
+				],
 				members: [
-					{ user: { ...testUser, id: "a" }, role: GroupRole.ADMIN, expiresAt: null }
+					{ user: { ...testUser, id: "a" }, role: GroupRole.ADMIN, expiresAt: null },
+					{ user: { ...testUser, id: "b" }, role: GroupRole.MEMBER, expiresAt: date }
 				]
 			};
 
@@ -505,6 +574,53 @@ describe("permissionRouter", () => {
 			expect(hasGroupRole).toHaveBeenCalledWith(99, ctx.user.id, GroupRole.ADMIN);
 			expect(database.group.delete).toHaveBeenCalledWith({ where: { id: 99 } });
 			expect(res).toEqual({ id: 99 });
+		});
+	});
+
+	describe("getResourceAccess", () => {
+		it("returns resource access from service", async () => {
+			const { caller } = prepare({ role: "USER" });
+			(getResourceAccess as jest.Mock).mockResolvedValue([
+				{ courseId: "c1", accessLevel: AccessLevel.VIEW }
+			]);
+
+			const res = await caller.getResourceAccess({ courseId: "c1" });
+
+			expect(getResourceAccess).toHaveBeenCalledWith({
+				userId: "user-id",
+				courseId: "c1",
+				lessonId: undefined
+			});
+			expect(res).toEqual([{ courseId: "c1", accessLevel: AccessLevel.VIEW }]);
+		});
+	});
+
+	describe("hasResourceAccess", () => {
+		it("returns resource access check from service", async () => {
+			const { caller } = prepare({ role: "USER" });
+			(hasResourceAccess as jest.Mock).mockResolvedValue(true);
+
+			const res = await caller.hasResourceAccess({
+				courseId: "c2",
+				accessLevel: AccessLevel.EDIT
+			});
+			expect(hasResourceAccess).toHaveBeenCalledWith({
+				courseId: "c2",
+				lessonId: undefined,
+				userId: "user-id",
+				accessLevel: AccessLevel.EDIT
+			});
+			expect(res).toEqual(true);
+		});
+
+		it("returns true when user is ADMIN", async () => {
+			const { caller } = prepare({ role: "ADMIN" });
+			const res = await caller.hasResourceAccess({
+				courseId: "c2",
+				accessLevel: AccessLevel.FULL
+			});
+			expect(hasResourceAccess).not.toHaveBeenCalled();
+			expect(res).toEqual(true);
 		});
 	});
 
@@ -615,6 +731,30 @@ describe("permissionRouter", () => {
 				code: "FORBIDDEN"
 			} as Partial<TRPCError>);
 			expect(database.member.delete).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("hasGroupRole", () => {
+		it("returns resource role check from service", async () => {
+			const { caller, ctx } = prepare({ role: "USER" });
+			(hasGroupRole as jest.Mock).mockResolvedValue(true);
+
+			const res = await caller.hasGroupRole({
+				groupId: 1,
+				role: GroupRole.MEMBER
+			});
+			expect(hasGroupRole).toHaveBeenCalledWith(1, ctx.user.id, GroupRole.MEMBER);
+			expect(res).toEqual(true);
+		});
+
+		it("returns true when user is ADMIN", async () => {
+			const { caller } = prepare({ role: "ADMIN" });
+			const res = await caller.hasGroupRole({
+				groupId: 1,
+				role: GroupRole.ADMIN
+			});
+			expect(hasGroupRole).not.toHaveBeenCalled();
+			expect(res).toEqual(true);
 		});
 	});
 
@@ -745,6 +885,161 @@ describe("permissionRouter", () => {
 			await expect(
 				caller.revokeGroupPermission({ permissionId: "p4" })
 			).rejects.toMatchObject({ code: "FORBIDDEN" } as Partial<TRPCError>);
+		});
+	});
+
+	describe("getGroup", () => {
+		it("returns group when user is ADMIN", async () => {
+			const { caller } = prepare({ role: "ADMIN" });
+			(getGroup as jest.Mock).mockResolvedValue({ id: 1, name: "Group" });
+
+			const result = await caller.getGroup({ id: 1 });
+
+			expect(getGroup).toHaveBeenCalledWith(1);
+			expect(result).toEqual({ id: 1, name: "Group" });
+		});
+
+		it("returns group when user has MEMBER role", async () => {
+			const { caller, ctx } = prepare({ role: "USER" });
+			(hasGroupRole as jest.Mock).mockResolvedValue(true);
+			(getGroup as jest.Mock).mockResolvedValue({ id: 1, name: "Group" });
+
+			const result = await caller.getGroup({ id: 1 });
+
+			expect(hasGroupRole).toHaveBeenCalledWith(1, ctx.user.id, GroupRole.MEMBER);
+			expect(getGroup).toHaveBeenCalledWith(1);
+			expect(result).toEqual({ id: 1, name: "Group" });
+		});
+
+		it("returns null when user lacks access", async () => {
+			const { caller, ctx } = prepare({ role: "USER" });
+			(hasGroupRole as jest.Mock).mockResolvedValue(false);
+
+			const result = await caller.getGroup({ id: 1 });
+
+			expect(hasGroupRole).toHaveBeenCalledWith(1, ctx.user.id, GroupRole.MEMBER);
+			expect(getGroup).not.toHaveBeenCalled();
+			expect(result).toBeNull();
+		});
+	});
+
+	describe("findMyGroups", () => {
+		it("returns paginated groups for user", async () => {
+			const { caller, ctx } = prepare({});
+			const mockGroups = [
+				{ id: 1, name: "Group1", members: [{ user: { name: "User1" } }] },
+				{ id: 2, name: "Group2", members: [{ user: { name: "User2" } }] }
+			];
+			(database.$transaction as jest.Mock).mockResolvedValue([mockGroups, 2]);
+
+			const result = await caller.findMyGroups({ page: 1 });
+
+			expect(database.$transaction).toHaveBeenCalledWith([
+				database.group.findMany({
+					include: {
+						members: {
+							select: { user: { select: { name: true } } }
+						}
+					},
+					skip: 0,
+					take: 15,
+					orderBy: { name: "asc" },
+					where: { members: { some: { userId: ctx.user.id } } }
+				}),
+				database.group.count({
+					where: { members: { some: { userId: ctx.user.id } } }
+				})
+			]);
+			expect(result).toEqual({
+				result: [
+					{ groupId: 1, name: "Group1", members: ["User1"] },
+					{ groupId: 2, name: "Group2", members: ["User2"] }
+				],
+				pageSize: 15,
+				page: 1,
+				totalCount: 2
+			});
+		});
+	});
+
+	describe("findGroups", () => {
+		it("returns all groups without filters", async () => {
+			const caller = t.createCallerFactory(permissionRouter)({});
+			const mockGroups = [{ id: 1, name: "Group1", members: [{ user: { name: "User1" } }] }];
+			(database.$transaction as jest.Mock).mockResolvedValue([mockGroups, 1]);
+
+			const result = await caller.findGroups({ page: 1 });
+
+			expect(database.$transaction).toHaveBeenCalledWith([
+				database.group.findMany({
+					include: {
+						members: {
+							select: { user: { select: { name: true } } }
+						}
+					},
+					skip: 0,
+					take: 15,
+					orderBy: { name: "asc" },
+					where: {}
+				}),
+				database.group.count({
+					where: {}
+				})
+			]);
+			expect(result).toEqual({
+				result: [{ groupId: 1, name: "Group1", members: ["User1"] }],
+				pageSize: 15,
+				page: 1,
+				totalCount: 1
+			});
+		});
+
+		it("filters by name", async () => {
+			const caller = t.createCallerFactory(permissionRouter)({});
+			(database.$transaction as jest.Mock).mockResolvedValue([[], 0]);
+
+			await caller.findGroups({ page: 1, name: "Test" });
+
+			expect(database.$transaction).toHaveBeenCalledWith([
+				database.group.findMany({
+					where: {
+						name: { contains: "Test", mode: "insensitive" }
+					}
+				}),
+				database.group.count({
+					where: {
+						name: { contains: "Test", mode: "insensitive" }
+					}
+				})
+			]);
+		});
+
+		it("filters by authorName", async () => {
+			const caller = t.createCallerFactory(permissionRouter)({});
+			(database.$transaction as jest.Mock).mockResolvedValue([[], 0]);
+
+			await caller.findGroups({ page: 1, authorName: "Author" });
+
+			expect(database.$transaction).toHaveBeenCalledWith([
+				database.group.findMany({
+					where: {
+						members: {
+							some: {
+								user: { name: { contains: "Author", mode: "insensitive" } }
+							}
+						}
+					}
+				}),
+				database.group.count({
+					where: {
+						members: {
+							some: {
+								user: { name: { contains: "Author", mode: "insensitive" } }
+							}
+						}
+					}
+				})
+			]);
 		});
 	});
 });
