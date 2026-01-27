@@ -9,10 +9,28 @@ import { AccessLevel } from "@prisma/client";
 // 	return await hasAccessLevel(user, PermissionResourceEnum.Enum.SUBJECT, courseId, "VIEW");
 // }
 
-// async function canCreate(user: UserFromSession, groupId: number): Promise<boolean> {
-// 	if (user.role === "ADMIN") return true;
-// 	return await hasGroupRole(groupId, user.id, GroupRole.MEMBER);
-// }
+export async function canDelete(user: UserFromSession, courseId: string): Promise<boolean> {
+	if (user.role === "ADMIN") return true;
+	return await hasResourceAccess({ userId: user.id, courseId, accessLevel: AccessLevel.FULL });
+}
+
+export async function canDeleteBySlug(user: UserFromSession, slug: string): Promise<boolean> {
+	if (user.role === "ADMIN") return true;
+	const courseId = await getIdBySlug(slug);
+	return await canDelete(user, courseId);
+}
+
+// any group user can create courses
+export async function canCreate(user: UserFromSession): Promise<boolean> {
+	if (user.role === "ADMIN") return true;
+	const canCreate = await database.member.findFirst({
+		where: {
+			userId: user.id
+		},
+		select: { userId: true } // do not select unnecessary data
+	});
+	return !!canCreate;
+}
 
 export async function getIdBySlug(slug: string) {
 	const { courseId } = await database.course.findUniqueOrThrow({

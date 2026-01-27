@@ -1,6 +1,13 @@
 import { database } from "@self-learning/database";
 import { hasGroupRole, hasResourceAccess } from "./permission.service";
-import { getIdBySlug, canEdit, canEditBySlug } from "./course.utils";
+import {
+	getIdBySlug,
+	canEdit,
+	canEditBySlug,
+	canDelete,
+	canDeleteBySlug,
+	canCreate
+} from "./course.utils";
 import { AccessLevel } from "@prisma/client";
 import { UserFromSession } from "../trpc/context";
 
@@ -9,6 +16,9 @@ jest.mock("@self-learning/database", () => ({
 	database: {
 		course: {
 			findUniqueOrThrow: jest.fn()
+		},
+		member: {
+			findFirst: jest.fn()
 		}
 	}
 }));
@@ -106,6 +116,129 @@ describe("course permission utils", () => {
 				courseId: "courseId",
 				accessLevel: AccessLevel.EDIT
 			});
+		});
+	});
+
+	describe("canDelete", () => {
+		beforeEach(() => {
+			jest.clearAllMocks();
+		});
+
+		it("should return true for ADMIN", async () => {
+			const user = { role: "ADMIN" } as UserFromSession;
+
+			const result = await canDelete(user, "courseId");
+
+			expect(result).toBe(true);
+		});
+
+		it("should call hasResourceAccess with FULL access level for non-admin", async () => {
+			const user = { role: "USER", id: "userId" } as UserFromSession;
+			(hasResourceAccess as jest.Mock).mockResolvedValue(true);
+
+			const result = await canDelete(user, "courseId");
+
+			expect(result).toBe(true);
+			expect(hasResourceAccess).toHaveBeenCalledWith({
+				userId: "userId",
+				courseId: "courseId",
+				accessLevel: AccessLevel.FULL
+			});
+		});
+
+		it("should return false if user lacks FULL access", async () => {
+			const user = { role: "USER", id: "userId" } as UserFromSession;
+			(hasResourceAccess as jest.Mock).mockResolvedValue(false);
+
+			const result = await canDelete(user, "courseId");
+
+			expect(result).toBe(false);
+		});
+	});
+
+	describe("canDeleteBySlug", () => {
+		beforeEach(() => {
+			jest.clearAllMocks();
+		});
+
+		it("should return true for ADMIN", async () => {
+			const user = { role: "ADMIN" } as UserFromSession;
+
+			const result = await canDeleteBySlug(user, "slug");
+
+			expect(result).toBe(true);
+		});
+
+		it("should call getIdBySlug and canDelete", async () => {
+			const user = { role: "USER", id: "userId" } as UserFromSession;
+			(database.course.findUniqueOrThrow as jest.Mock).mockResolvedValue({
+				courseId: "courseId"
+			});
+			(hasResourceAccess as jest.Mock).mockResolvedValue(true);
+
+			const result = await canDeleteBySlug(user, "slug");
+
+			expect(result).toBe(true);
+			expect(database.course.findUniqueOrThrow).toHaveBeenCalledWith({
+				where: { slug: "slug" },
+				select: { courseId: true }
+			});
+			expect(hasResourceAccess).toHaveBeenCalledWith({
+				userId: "userId",
+				courseId: "courseId",
+				accessLevel: AccessLevel.FULL
+			});
+		});
+
+		it("should return false if user lacks FULL access", async () => {
+			const user = { role: "USER", id: "userId" } as UserFromSession;
+			(database.course.findUniqueOrThrow as jest.Mock).mockResolvedValue({
+				courseId: "courseId"
+			});
+			(hasResourceAccess as jest.Mock).mockResolvedValue(false);
+
+			const result = await canDeleteBySlug(user, "slug");
+
+			expect(result).toBe(false);
+		});
+	});
+
+	describe("canCreate", () => {
+		beforeEach(() => {
+			jest.clearAllMocks();
+		});
+
+		it("should return true for ADMIN", async () => {
+			const user = { role: "ADMIN" } as UserFromSession;
+
+			const result = await canCreate(user);
+
+			expect(result).toBe(true);
+		});
+
+		it("should return true if user is a group member", async () => {
+			const user = { role: "USER", id: "userId" } as UserFromSession;
+			const mockMember = { userId: "userId" };
+			(database.member.findFirst as jest.Mock).mockResolvedValue(mockMember);
+
+			const result = await canCreate(user);
+
+			expect(result).toBe(true);
+			expect(database.member.findFirst).toHaveBeenCalledWith({
+				where: {
+					userId: "userId"
+				},
+				select: { userId: true }
+			});
+		});
+
+		it("should return false if user is not a group member", async () => {
+			const user = { role: "USER", id: "userId" } as UserFromSession;
+			(database.member.findFirst as jest.Mock).mockResolvedValue(null);
+
+			const result = await canCreate(user);
+
+			expect(result).toBe(false);
 		});
 	});
 });

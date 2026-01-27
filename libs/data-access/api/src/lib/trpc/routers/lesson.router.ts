@@ -6,8 +6,8 @@ import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import { greaterOrEqAccessLevel } from "../../permissions/permission.utils";
-import { getResourceAccess } from "../../permissions/permission.service";
-import { canEdit } from "../../permissions/lesson.utils";
+import { getEffectiveAccess } from "../../permissions/permission.service";
+import { canCreate, canDelete } from "../../permissions/lesson.utils";
 
 export const lessonRouter = t.router({
 	findOneAllProps: authProcedure.input(z.object({ lessonId: z.string() })).query(({ input }) => {
@@ -74,12 +74,7 @@ export const lessonRouter = t.router({
 			});
 		}
 		// can create if user is a member of at least one group
-		const canCreate = await database.member.findFirst({
-			where: {
-				userId: ctx.user.id
-			}
-		});
-		if (!canCreate) {
+		if (!(await canCreate(ctx.user))) {
 			throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
 		}
 		const createdLesson = await database.lesson.create({
@@ -110,8 +105,7 @@ export const lessonRouter = t.router({
 		.input(z.object({ lessonId: z.string(), lesson: lessonSchema }))
 		.mutation(async ({ input, ctx }) => {
 			// get user access level to resource - must be at least EDIT
-			const { accessLevel: actualAccess } = await getResourceAccess({
-				userId: ctx.user.id,
+			const { accessLevel: actualAccess } = await getEffectiveAccess(ctx.user, {
 				lessonId: input.lessonId
 			});
 			if (!actualAccess || !greaterOrEqAccessLevel(actualAccess, AccessLevel.EDIT)) {
@@ -205,7 +199,7 @@ export const lessonRouter = t.router({
 	deleteLesson: authProcedure
 		.input(z.object({ lessonId: z.string() }))
 		.mutation(async ({ input, ctx }) => {
-			if (!(await canEdit(ctx.user, input.lessonId))) {
+			if (!(await canDelete(ctx.user, input.lessonId))) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
 			}
 			return await database.lesson.delete({ where: { lessonId: input.lessonId } });

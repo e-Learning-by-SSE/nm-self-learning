@@ -12,9 +12,9 @@ import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learni
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
-import { canEdit, canEditBySlug } from "../../permissions/course.utils";
+import { canCreate, canDeleteBySlug, canEdit, canEditBySlug } from "../../permissions/course.utils";
 import { greaterOrEqAccessLevel } from "../../permissions/permission.utils";
-import { getResourceAccess } from "../../permissions/permission.service";
+import { getEffectiveAccess } from "../../permissions/permission.service";
 
 export const courseRouter = t.router({
 	listAvailableCourses: authProcedure
@@ -210,7 +210,7 @@ export const courseRouter = t.router({
 		return fullExport;
 	}),
 	create: authProcedure.input(courseFormSchema).mutation(async ({ input, ctx }) => {
-		if (input.authors.length <= 0 && ctx.user.role != "ADMIN") {
+		if (input.authors.length <= 0 && ctx.user.role !== "ADMIN") {
 			throw new TRPCError({
 				code: "FORBIDDEN",
 				message:
@@ -225,12 +225,7 @@ export const courseRouter = t.router({
 			});
 		}
 		// can create if user is a member of at least one group
-		const canCreate = await database.member.findFirst({
-			where: {
-				userId: ctx.user.id
-			}
-		});
-		if (!canCreate) {
+		if (!(await canCreate(ctx.user))) {
 			throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
 		}
 
@@ -249,8 +244,7 @@ export const courseRouter = t.router({
 		.mutation(async ({ input, ctx }) => {
 			// TODO similar to lessonRouter
 			// get user access level to resource - must be at least EDIT
-			const { accessLevel: actualAccess } = await getResourceAccess({
-				userId: ctx.user.id,
+			const { accessLevel: actualAccess } = await getEffectiveAccess(ctx.user, {
 				courseId: input.courseId
 			});
 			if (!actualAccess || !greaterOrEqAccessLevel(actualAccess, AccessLevel.EDIT)) {
@@ -294,9 +288,6 @@ export const courseRouter = t.router({
 
 			const courseForDb = mapCourseFormToUpdate(input.course, input.courseId, perms);
 
-			if (!(await canEdit(ctx.user, input.courseId))) {
-				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
-			}
 			return await database.course.update({
 				where: { courseId: input.courseId },
 				data: courseForDb,
@@ -306,7 +297,7 @@ export const courseRouter = t.router({
 	deleteCourse: authProcedure
 		.input(z.object({ slug: z.string() }))
 		.mutation(async ({ input, ctx }) => {
-			if (!(await canEditBySlug(ctx.user, input.slug))) {
+			if (!(await canDeleteBySlug(ctx.user, input.slug))) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 			}
 			return database.course.delete({
