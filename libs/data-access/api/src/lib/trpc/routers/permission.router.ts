@@ -1,247 +1,141 @@
 import { database } from "@self-learning/database";
 import { z } from "zod";
 import { adminProcedure, authProcedure, t } from "../trpc";
-import { add } from "date-fns";
 import { TRPCError } from "@trpc/server";
 import { AccessLevel, GroupRole, Prisma } from "@prisma/client";
 import { paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { GroupFormSchema } from "@self-learning/types";
+import {
+	GroupRoleEnum,
+	ResourceAccessSchema,
+	ResourceInputSchema
+} from "../../permissions/permission.types";
+import {
+	createGroupAccess,
+	createResourceAccess,
+	getGroup,
+	getResourceAccess,
+	hasGroupRole,
+	hasResourceAccess,
+	hasResourcesAccess
+} from "../../permissions/permission.service";
+import { anyTrue } from "../../permissions/permission.utils";
 
-async function anyTrue(promises: (() => Promise<boolean>)[]) {
-	for (const fn of promises) {
-		if (await fn()) return true;
-	}
-	return false;
-}
+// function forbidden(message = "Insufficient permissions"): never {
+// 	throw new TRPCError({ code: "FORBIDDEN", message });
+// }
+// function badRequest(message: string): never {
+// 	throw new TRPCError({ code: "BAD_REQUEST", message });
+// }
 
-export const AccessLevelEnum = z.nativeEnum(AccessLevel);
-const accessLevelHierarchy: Record<AccessLevel, number> = { VIEW: 1, EDIT: 2, FULL: 3 };
-export function greaterAccessLevel(a: AccessLevel, b: AccessLevel): boolean {
-	return accessLevelHierarchy[a] > accessLevelHierarchy[b];
-}
-export function greaterOrEqAccessLevel(a: AccessLevel, b: AccessLevel): boolean {
-	return accessLevelHierarchy[a] >= accessLevelHierarchy[b];
-}
-
-export const GroupRoleEnum = z.nativeEnum(GroupRole);
-const groupRoleHierarchy: Record<GroupRole, number> = { MEMBER: 2, ADMIN: 3 };
-export function greaterOrEqGroupRole(a: GroupRole, b: GroupRole): boolean {
-	return groupRoleHierarchy[a] >= groupRoleHierarchy[b];
-}
-
-export const ResourceInputSchema = z.union([
-	z.object({ courseId: z.string(), lessonId: z.never().optional() }),
-	z.object({ lessonId: z.string(), courseId: z.never().optional() })
-]);
-
-export type ResourceInput = z.infer<typeof ResourceInputSchema>;
-
-export const ResourceAccessSchema = z.union([
-	ResourceInputSchema.options[0].extend({ accessLevel: AccessLevelEnum }),
-	ResourceInputSchema.options[1].extend({ accessLevel: AccessLevelEnum })
-]);
-
-export type ResourceAccess = z.infer<typeof ResourceAccessSchema>;
-
-export const MembershipInputSchema = z.object({
-	groupId: z.number(),
-	expiresAt: z.date().nullable(),
-	userId: z.string(),
-	role: GroupRoleEnum
-});
-export type MembershipInput = z.infer<typeof MembershipInputSchema>;
-
-export type PermissionInput = {
-	groupId: number;
-	accessLevel: AccessLevel;
-} & ResourceInput;
-
-export async function getUserPermission({
-	userId,
-	courseId,
-	lessonId
-}: { userId: string } & ResourceInput) {
-	const date = new Date();
-	// Find membership
-	/* TODO cover isWildcard and isPublic
-	OR: [
-      // User is member (direct or wildcard permission)
-      {
-        group: { members: { some: { userId, expiresAt: { gt: date } } } },
-        OR: [
-          { courseId, lessonId }, // specific resource
-          { isWildcart: true }    // wildcard permission
-        ]
-      },
-
-      // Public permissions (no membership required)
-      {
-        isPublic: true,
-        OR: [
-          { courseId, lessonId }, // public specific resource
-          { isWildcart: true }    // public wildcard
-        ]
-      }
-    ]
-	*/
-	const perms = await database.permission.findMany({
-		where: {
-			courseId,
-			lessonId,
-			group: {
-				members: {
-					some: {
-						userId: userId,
-						OR: [{ expiresAt: null }, { expiresAt: { gt: date } }]
-					}
-				}
-			}
-		},
-		select: { accessLevel: true, groupId: true }
-	});
-
-	// get best access level
-	return perms.reduce(
-		(prev, curr) => {
-			if (!prev.accessLevel || greaterAccessLevel(curr.accessLevel, prev.accessLevel)) {
-				return curr;
-			}
-			return prev;
-		},
-		{ accessLevel: null as AccessLevel | null, groupId: null as number | null }
-	);
-}
-
-export async function hasResourcesAccess(userId: string, checks: ResourceAccess[]) {
-	const courseIds = checks
-		.filter(
-			(r): r is { courseId: string; accessLevel: AccessLevel } =>
-				"courseId" in r && !!r.courseId
-		)
-		.map(r => r.courseId);
-	const lessonIds = checks
-		.filter(
-			(r): r is { lessonId: string; accessLevel: AccessLevel } =>
-				"lessonId" in r && !!r.lessonId
-		)
-		.map(r => r.lessonId);
-	const perms = await database.permission.findMany({
-		where: {
-			OR: [
-				{
-					courseId: { in: courseIds },
-					lessonId: null
-				},
-				{
-					lessonId: { in: lessonIds },
-					courseId: null
-				}
-			],
-			group: {
-				members: {
-					some: {
-						userId: userId,
-						OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }]
-					}
-				}
-			}
-		},
-		select: { accessLevel: true, courseId: true, lessonId: true }
-	});
-
-	// Aggregate best access level per resource
-	const result: Record<string, AccessLevel> = {};
-
-	// Compute best access per resource
-	for (const perm of perms) {
-		const key = perm.courseId ?? perm.lessonId!;
-
-		if (!result[key] || greaterAccessLevel(perm.accessLevel, result[key])) {
-			result[key] = perm.accessLevel;
-		}
-	}
-	// Run checks
-	return checks.every(check => {
-		const key = check.courseId ?? check.lessonId!;
-		return !!result[key] && greaterOrEqAccessLevel(result[key], check.accessLevel);
-	});
-}
-
-export async function createGroupAccess(
-	groupId: number,
-	userId: string,
-	role: GroupRole,
-	durationMinutes?: number
-) {
-	const now = new Date();
-	const expiresAt =
-		typeof durationMinutes === "number" ? add(now, { minutes: durationMinutes }) : null;
-
-	// build data object
-	const data: MembershipInput = { groupId, userId, role, expiresAt };
-	return await database.member.create({ data });
-}
-
-export async function hasResourceAccess(
-	params: { userId: string; accessLevel: AccessLevel } & ResourceInput
-) {
-	const { accessLevel: actualLevel } = await getUserPermission(params);
-	if (!actualLevel) return false;
-	return accessLevelHierarchy[actualLevel] >= accessLevelHierarchy[params.accessLevel];
-}
-
-export async function getGroupRole(groupId: number, userId: string) {
-	const access = await database.member.findFirst({
-		where: { userId, groupId, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
-		select: { role: true }
-	});
-	return access?.role ?? null;
-}
-
-export async function hasGroupRole(groupId: number, userId: string, role: GroupRole) {
-	const groupRole = await getGroupRole(groupId, userId);
-	return !!groupRole && greaterOrEqGroupRole(groupRole, role);
-}
-
-export async function createGroupPermission(params: PermissionInput) {
-	// TODO make log of permission created
-	return await database.permission.create({ data: params });
-}
-
-export async function getGroup(groupId: number) {
-	return await database.group.findUnique({
-		where: { id: groupId },
-		select: {
-			id: true,
-			parent: { select: { id: true, name: true } },
-			name: true,
-			permissions: {
-				select: {
-					accessLevel: true,
-					course: { select: { courseId: true, title: true, slug: true } },
-					lesson: { select: { lessonId: true, title: true, slug: true } }
-				}
-			},
-			members: {
-				select: {
-					role: true,
-					expiresAt: true,
-					createdAt: true,
-					user: {
-						select: {
-							id: true,
-							displayName: true,
-							email: true,
-							author: { select: { id: true } }
-						}
-					}
-				}
-			}
-		}
-	});
-}
+// async function testMigration() {
+// 	type AuthorCollab = {
+// 		userNames: string[];
+// 		userIds: string[];
+// 		courseIds: string[];
+// 		lessonIds: string[];
+// 	};
+// 	// create a map of unique authors collaborations
+// 	const authorCollabs = new Map<string, AuthorCollab>();
+// 	// Go for each resource (course & lesson) and get authors
+// 	const courses = await database.course.findMany({
+// 		select: {
+// 			courseId: true,
+// 			authors: { select: { user: { select: { id: true, name: true } } } }
+// 		}
+// 	});
+// 	// For each course, build the author collaboration map
+// 	for (const course of courses) {
+// 		const userNames = course.authors.map(a => a.user.name);
+// 		const userIds = course.authors.map(a => a.user.id);
+// 		const key = "group-" + (userNames.sort().join("-") || "empty");
+// 		const collab = authorCollabs.get(key);
+// 		if (!collab) {
+// 			// create
+// 			authorCollabs.set(key, {
+// 				userNames,
+// 				userIds,
+// 				courseIds: [course.courseId],
+// 				lessonIds: []
+// 			});
+// 		} else {
+// 			// update
+// 			collab.courseIds.push(course.courseId);
+// 		}
+// 	}
+// 	// Same for lessons
+// 	const lessons = await database.lesson.findMany({
+// 		select: {
+// 			lessonId: true,
+// 			authors: { select: { user: { select: { id: true, name: true } } } }
+// 		}
+// 	});
+// 	for (const lesson of lessons) {
+// 		const userNames = lesson.authors.map(a => a.user.name);
+// 		const userIds = lesson.authors.map(a => a.user.id);
+// 		const key = "group-" + (userNames.sort().join("-") || "empty");
+// 		const collab = authorCollabs.get(key);
+// 		if (!collab) {
+// 			// create
+// 			authorCollabs.set(key, {
+// 				userIds,
+// 				userNames,
+// 				courseIds: [],
+// 				lessonIds: [lesson.lessonId]
+// 			});
+// 		} else {
+// 			// update
+// 			collab.lessonIds.push(lesson.lessonId);
+// 		}
+// 	}
+// 	// Log total amount of collabs and members
+// 	console.log(`Total unique author collaborations: ${authorCollabs.size}`);
+// 	for (const [key, collab] of authorCollabs) {
+// 		console.log(
+// 			`Collab ${key}: ${collab.userNames.join(", ")} - #Courses: ${collab.courseIds.length}, #Lessons: ${collab.lessonIds.length}`
+// 		);
+// 	}
+// 	// For each author collaboration, create group and permissions
+// 	const groups: Prisma.GroupCreateInput[] = [];
+// 	for (const [key, collab] of authorCollabs) {
+// 		// if no authors, skip
+// 		if (collab.userIds.length === 0) continue;
+// 		// Must create at least one ADMIN - how?
+// 		//
+// 		groups.push({
+// 			name: key,
+// 			members: { create: collab.userIds.map(userId => ({ userId, role: GroupRole.ADMIN })) },
+// 			permissions: {
+// 				create: [
+// 					...collab.courseIds.map(courseId => ({
+// 						courseId,
+// 						accessLevel: AccessLevel.FULL
+// 					})),
+// 					...collab.lessonIds.map(lessonId => ({
+// 						lessonId,
+// 						accessLevel: AccessLevel.FULL
+// 					}))
+// 				]
+// 			}
+// 		});
+// 	}
+// 	console.log(JSON.stringify(groups));
+// 	// Bulk create groups
+// 	// Clean db
+// 	await database.$transaction(async tx => {
+// 		await tx.group.deleteMany();
+// 		for (const group of groups) {
+// 			await tx.group.create({
+// 				data: group
+// 			});
+// 		}
+// 	});
+// }
 
 export const permissionRouter = t.router({
+	// testMigration: t.procedure.mutation(async () => {
+	// 	testMigration();
+	// }),
 	// Can be done by "parent" group admins or website admins
 	createGroup: authProcedure
 		.input(GroupFormSchema.omit({ id: true }))
@@ -289,13 +183,18 @@ export const permissionRouter = t.router({
 			if (!hasAccess) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 			}
+			// find if already self added
+			const idx = membs.findIndex(m => m.userId === userId);
+			if (idx === -1) {
+				membs.push({ userId, role: GroupRole.ADMIN, expiresAt: null });
+			}
 			// create
 			return database.group.create({
 				data: {
 					name,
 					parentId: parent?.id,
 					permissions: { create: perms },
-					members: { create: [...(membs ?? []), { userId, role: GroupRole.ADMIN }] }
+					members: { create: membs }
 				}
 			});
 		}),
@@ -503,7 +402,7 @@ export const permissionRouter = t.router({
 		}),
 	getResourceAccess: authProcedure.input(ResourceAccessSchema).query(async ({ input, ctx }) => {
 		const userId = ctx.user.id;
-		return await getUserPermission({ userId, ...input });
+		return await getResourceAccess({ userId, ...input });
 	}),
 	hasResourceAccess: authProcedure.input(ResourceAccessSchema).query(async ({ input, ctx }) => {
 		if (ctx.user.role === "ADMIN") return true;
@@ -546,16 +445,14 @@ export const permissionRouter = t.router({
 			const { groupId, permission } = input;
 			const userId = ctx.user.id; // grantor
 			// check if grantor has FULL access level to that resource (does not need to be in the group)
-			let hasAccess = ctx.user.role === "ADMIN";
-			if (!hasAccess) {
-				const { accessLevel } = await getUserPermission({ userId, ...permission });
-				hasAccess = !!accessLevel && greaterOrEqAccessLevel(accessLevel, AccessLevel.FULL);
-			}
+			const hasAccess =
+				ctx.user.role === "ADMIN" ||
+				(await hasResourceAccess({ userId, ...permission, accessLevel: AccessLevel.FULL }));
 			if (!hasAccess) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 			}
 			// now create new permission
-			return await createGroupPermission({ groupId, ...permission });
+			return await createResourceAccess({ groupId, ...permission });
 			// TODO make log of permission created
 		}),
 	// Done by resource owners, grantor group admins, group admins, or website admins
@@ -581,6 +478,9 @@ export const permissionRouter = t.router({
 					() => hasGroupRole(perm.groupId, userId, GroupRole.ADMIN),
 					() => hasResourceAccess({ userId, accessLevel: AccessLevel.FULL, ...data })
 				]);
+			}
+			if (!hasAccess) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 			}
 			// delete permission
 			return await database.permission.delete({ where: { id: permissionId } });
@@ -610,12 +510,12 @@ export const permissionRouter = t.router({
 			return await database.member.delete({ where: { userId_groupId: input } });
 			// TODO make log of access revoked
 		}),
-	deletePermission: adminProcedure
-		.input(z.object({ permissionId: z.string() }))
-		.mutation(async ({ input }) => {
-			const { permissionId } = input;
-			return await database.permission.delete({ where: { id: permissionId } });
-		}),
+	// deletePermission: adminProcedure
+	// 	.input(z.object({ permissionId: z.string() }))
+	// 	.mutation(async ({ input }) => {
+	// 		const { permissionId } = input;
+	// 		return await database.permission.delete({ where: { id: permissionId } });
+	// 	}),
 	getGroup: authProcedure.input(z.object({ id: z.number() })).query(async ({ input, ctx }) => {
 		const hasAccess =
 			ctx.user.role === "ADMIN" ||

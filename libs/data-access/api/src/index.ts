@@ -7,4 +7,3 @@ export * from "./lib/trpc/rest-api.handler";
 export type { UserFromSession } from "./lib/trpc/context";
 export * from "./lib/auth/data-access";
 export * from "./lib/internationalization/withTranslation";
-export { getGroup, hasGroupRole } from "./lib/trpc/routers/permission.router";
