@@ -6,7 +6,7 @@ import { LessonContent } from "@self-learning/types";
 import { OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";
-import { ResourceGuard } from "@self-learning/ui/layouts";
+import { ResourceGuard, testResourceGuard } from "@self-learning/ui/layouts";
 import { AccessLevel } from "@prisma/client";
 
 type EditLessonProps = {
@@ -59,14 +59,19 @@ export const getServerSideProps = withTranslations(
 			return { notFound: true };
 		}
 
-		// if (!hasAuthorPermission({ user, permittedAuthors: lesson.authors.map(a => a.username) })) {
-		// 	return {
-		// 		redirect: {
-		// 			destination: "/403",
-		// 			permanent: false
-		// 		}
-		// 	};
-		// }
+		const hasAccess = testResourceGuard(
+			AccessLevel.EDIT,
+			lesson.permissions.map(p => ({ accessLevel: p.accessLevel, groupId: p.group.id })),
+			new Set(user.memberships)
+		);
+		if (!hasAccess) {
+			return {
+				redirect: {
+					destination: "/403",
+					permanent: false
+				}
+			};
+		}
 
 		const lessonForm: LessonFormModel = {
 			courseId: lesson.courseId,

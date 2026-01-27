@@ -7,7 +7,7 @@ import { CourseContent, extractLessonIds } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { useRef } from "react";
-import { ResourceGuard } from "@self-learning/ui/layouts";
+import { ResourceGuard, testResourceGuard } from "@self-learning/ui/layouts";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
 type EditCourseProps = {
@@ -60,14 +60,19 @@ export const getServerSideProps = withTranslations(
 			};
 		}
 
-		// if (!hasAuthorPermission({ user, permittedAuthors: course.authors.map(a => a.username) })) {
-		// 	return {
-		// 		redirect: {
-		// 			destination: "/403",
-		// 			permanent: false
-		// 		}
-		// 	};
-		// }
+		const hasAccess = testResourceGuard(
+			AccessLevel.EDIT,
+			course.permissions.map(p => ({ accessLevel: p.accessLevel, groupId: p.group.id })),
+			new Set(user.memberships)
+		);
+		if (!hasAccess) {
+			return {
+				redirect: {
+					destination: "/403",
+					permanent: false
+				}
+			};
+		}
 
 		const content = course.content as CourseContent;
 
