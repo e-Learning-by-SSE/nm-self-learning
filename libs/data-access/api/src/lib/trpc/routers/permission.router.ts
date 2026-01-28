@@ -338,14 +338,18 @@ export const permissionRouter = t.router({
 							// delete course permissions not present in new request
 							{
 								courseId: {
-									notIn: perms.filter(p => p.courseId).map(p => p.courseId!)
+									notIn: perms
+										.filter(p => p.courseId)
+										.map(p => p.courseId) as string[]
 								},
 								lessonId: null
 							},
 							// delete lesson permissions not present in new request
 							{
 								lessonId: {
-									notIn: perms.filter(p => p.lessonId).map(p => p.lessonId!)
+									notIn: perms
+										.filter(p => p.lessonId)
+										.map(p => p.lessonId) as string[]
 								},
 								courseId: null
 							}
@@ -365,11 +369,14 @@ export const permissionRouter = t.router({
 								}
 							: {
 									where: {
-										groupId_lessonId: { groupId: id, lessonId: p.lessonId! }
+										groupId_lessonId: {
+											groupId: id,
+											lessonId: p.lessonId as string
+										}
 									},
 									update: { accessLevel: p.accessLevel },
 									create: {
-										lessonId: p.lessonId!,
+										lessonId: p.lessonId as string,
 										accessLevel: p.accessLevel
 									}
 								}

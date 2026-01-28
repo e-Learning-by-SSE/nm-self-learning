@@ -10,6 +10,7 @@ import {
 } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
+import { keepPreviousData } from "@tanstack/react-query";
 import { inferProcedureOutput } from "@trpc/server";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -24,7 +25,7 @@ export default function GroupsPage() {
 		{ /*title: titleFilter as string,*/ page: Number(page) },
 		{
 			staleTime: 10_000,
-			keepPreviousData: true
+			placeholderData: keepPreviousData
 		}
 	);
 
@@ -32,7 +33,7 @@ export default function GroupsPage() {
 		{ /*title: titleFilter as string,*/ page: Number(page) },
 		{
 			staleTime: 10_000,
-			keepPreviousData: true
+			placeholderData: keepPreviousData
 		}
 	);
 
