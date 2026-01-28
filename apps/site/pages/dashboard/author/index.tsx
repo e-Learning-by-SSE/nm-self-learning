@@ -1,30 +1,21 @@
-import { ArrowDownTrayIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { ArrowDownTrayIcon, PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { TeacherView } from "@self-learning/analysis";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { SkillRepositoryOverview } from "@self-learning/teaching";
-import { Specialization, Subject } from "@self-learning/types";
 import {
 	Dialog,
 	DialogActions,
 	Divider,
 	IconOnlyButton,
 	IconTextButton,
-	ImageChip,
 	ImageOrPlaceholder,
-	LoadingBox,
-	Paginator,
-	SectionHeader,
-	Table,
-	TableDataColumn,
-	TableHeaderColumn
+	SectionHeader
 } from "@self-learning/ui/common";
-import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
 import { withAuth } from "@self-learning/util/auth";
-import { formatDateDistanceToNow } from "@self-learning/util/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
@@ -32,7 +23,6 @@ import { greaterOrEqAccessLevel, Specialization, Subject } from "@self-learning/
 import { LessonDeleteOption } from "@self-learning/ui/lesson";
 import { ExportCourseDialog } from "@self-learning/teaching";
 import { AccessLevel } from "@prisma/client";
-import { keepPreviousData } from "@tanstack/react-query";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
 
@@ -150,7 +140,7 @@ function AuthorDashboardPage({ author }: Props) {
 					/>
 
 					<Link href="/teaching/groups/create">
-						<IconButton
+						<IconTextButton
 							text="Group erstellen"
 							icon={<PlusIcon className="icon h-5" />}
 						/>
@@ -188,7 +178,7 @@ function AuthorDashboardPage({ author }: Props) {
 					<SectionHeader title="Meine Kurse" subtitle="Autor der folgenden Kurse:" />
 
 					<Link href="/teaching/courses/create" className="mt-4">
-						<IconButton
+						<IconTextButton
 							text="Kurs erstellen"
 							icon={<PlusIcon className="icon h-5" />}
 						/>
@@ -283,7 +273,7 @@ function AuthorDashboardPage({ author }: Props) {
 					/>
 
 					<Link href="/teaching/lessons/create" className="mt-4">
-						<IconButton
+						<IconTextButton
 							text="Lerneinheit erstellen"
 							icon={<PlusIcon className="icon h-5" />}
 						/>
@@ -330,7 +320,7 @@ function AuthorDashboardPage({ author }: Props) {
 						subtitle="Autor der folgenden Skillkarten:"
 					/>
 					<Link href="/skills/repository/create" className="mt-4">
-						<IconButton
+						<IconTextButton
 							icon={<PlusIcon className="icon h-5" />}
 							text="Skillkarte erstellen"
 						/>
@@ -483,76 +473,6 @@ function LessonTaskbar({
 				</Link>
 			)}
 			{canDelete && <LessonDeleteOption lessonId={lessonId} />}
-		</div>
-	);
-}
-
-function Lessons({ authorName }: { authorName: string }) {
-	const router = useRouter();
-	const { title = "", page = 1 } = router.query;
-
-	const { data: lessons } = trpc.lesson.findMany.useQuery(
-		{
-			page: Number(page),
-			title: title as string,
-			authorName
-		},
-		{
-			placeholderData: keepPreviousData,
-			staleTime: 10_000
-		}
-	);
-
-	return (
-		<div className="flex min-h-[200px] flex-col">
-			{!lessons ? (
-				<LoadingBox />
-			) : (
-				<>
-					<SearchField
-						placeholder="Suche nach Lerneinheiten"
-						value={title}
-						onChange={e => {
-							router.push({ query: { title: e.target.value, page: 1 } }, undefined, {
-								shallow: true
-							});
-						}}
-					/>
-
-					<Table
-						head={
-							<>
-								<TableHeaderColumn>Titel</TableHeaderColumn>
-								<TableHeaderColumn>Letzte Änderung</TableHeaderColumn>
-								<TableHeaderColumn></TableHeaderColumn>
-							</>
-						}
-					>
-						{lessons.result.map(lesson => (
-							<tr key={lesson.lessonId}>
-								<TableDataColumn>
-									<Link
-										href={`/lessons/${lesson.slug}`}
-										className="font-medium hover:text-c-primary"
-									>
-										{lesson.title}
-									</Link>
-								</TableDataColumn>
-								<TableDataColumn>
-									<span className="text-c-text-muted">
-										{formatDateDistanceToNow(lesson.updatedAt)}
-									</span>
-								</TableDataColumn>
-								<TableDataColumn>
-									<LessonTaskbar lessonId={lesson.lessonId} />
-								</TableDataColumn>
-							</tr>
-						))}
-					</Table>
-
-					<Paginator pagination={lessons} url={`${router.route}?title=${title}`} />
-				</>
-			)}
 		</div>
 	);
 }

@@ -35,15 +35,15 @@ function normalizePermission(perm: ResourceAccessFormType) {
 			}
 		: {
 				type: "Lerninhalt",
-				title: perm.lesson!.title,
-				id: "l:" + perm.lesson!.lessonId,
-				slug: perm.lesson!.slug,
+				title: perm.lesson.title,
+				id: "l:" + perm.lesson.lessonId,
+				slug: perm.lesson.slug,
 				accessLevel: perm.accessLevel
 			};
 }
 
 export function getPermKey(perm: ResourceAccessFormType) {
-	return perm.course ? "c:" + perm.course.courseId : "l:" + perm.lesson!.lessonId;
+	return perm.course ? "c:" + perm.course.courseId : "l:" + perm.lesson.lessonId;
 }
 
 export function usePermissionEditor(
@@ -185,7 +185,7 @@ export function GroupPermissionRowEditor({
 			<TableDataColumn>
 				<IconOnlyButton
 					icon={<TrashIcon className="h-4 w-4" />}
-					variant="x-mark"
+					className="btn-x-mark"
 					onClick={() => onDelete && onDelete(permission)}
 				/>
 			</TableDataColumn>
@@ -245,7 +245,7 @@ export function GroupPermissionRow({
 				/>
 				<IconOnlyButton
 					icon={<TrashIcon className="h-4 w-4" />}
-					variant="x-mark"
+					className="btn-x-mark"
 					onClick={() => onDelete && onDelete(permission)}
 				/>
 			</TableDataColumn>
