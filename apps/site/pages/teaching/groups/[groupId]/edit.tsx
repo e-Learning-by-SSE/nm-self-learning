@@ -1,4 +1,4 @@
-import { getGroup, hasGroupRole, withAuth, withTranslations } from "@self-learning/api";
+import { getGroup, hasEffectiveGroupRole, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { GroupEditor, GroupFormModel } from "@self-learning/teaching";
 import { OnDialogCloseFn, showToast } from "@self-learning/ui/common";
@@ -7,6 +7,7 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { ResourceAccessFormSchema } from "@self-learning/types";
 import { GroupRole } from "@prisma/client";
 import { MemberGuard } from "@self-learning/ui/layouts";
+import { withAuth } from "@self-learning/util/auth";
 
 type EditGroupProps = {
 	group: GroupFormModel;
@@ -25,7 +26,7 @@ export const getServerSideProps = withTranslations(
 		const { locale } = ctx;
 
 		// verify if can edit this group
-		if (!(user.role === "ADMIN") && !(await hasGroupRole(groupId, user.id, GroupRole.MEMBER))) {
+		if (!(await hasEffectiveGroupRole(user, groupId, GroupRole.MEMBER))) {
 			return {
 				redirect: {
 					destination: "/403",

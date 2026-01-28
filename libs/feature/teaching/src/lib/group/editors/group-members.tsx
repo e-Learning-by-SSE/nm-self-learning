@@ -6,7 +6,7 @@ import { Member } from "@self-learning/types";
 import {
 	Chip,
 	DialogActions,
-	IconButton,
+	IconTextButton,
 	IconOnlyButton,
 	OnDialogCloseFn,
 	Table,
@@ -129,7 +129,9 @@ export function GenericCombobox<T>({
 	return (
 		<Combobox
 			value={value}
-			onChange={onChange}
+			onChange={v => {
+				v && onChange(v);
+			}}
 			as="div"
 			className="relative inline-block w-full text-left bg-white textfield"
 			by={compare}
@@ -205,7 +207,7 @@ export function GroupMemberEditor({
 			{canEditUser && (
 				<div className="mb-16 flex items-center justify-between gap-4">
 					<h1 className="text-5xl">Mitglieder*in</h1>
-					<IconButton
+					<IconTextButton
 						text="Mitglieder*in auswählen"
 						icon={<ArrowsUpDownIcon className="icon h-5" />}
 						onClick={() => setSelectUserActive(true)}
@@ -324,7 +326,7 @@ export function GroupMemberRowEditor({
 			<TableDataColumn>
 				<IconOnlyButton
 					icon={<TrashIcon className="h-4 w-4" />}
-					variant="x-mark"
+					className="btn-x-mark"
 					onClick={() => onDelete && onDelete(member)}
 				/>
 			</TableDataColumn>
@@ -370,7 +372,7 @@ export function GroupMemberRow({
 				/>
 				<IconOnlyButton
 					icon={<TrashIcon className="h-4 w-4" />}
-					variant="x-mark"
+					className="btn-x-mark"
 					onClick={() => onDelete && onDelete(member)}
 				/>
 			</TableDataColumn>

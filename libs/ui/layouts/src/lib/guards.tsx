@@ -5,9 +5,10 @@ import Link from "next/link";
 import { useCallback } from "react";
 import { CenteredSection } from "./containers/centered-section";
 import { useLoginRedirect } from "@self-learning/util/auth";
-import { IconButton, LoadingBox } from "@self-learning/ui/common";
+import { IconTextButton, LoadingBox } from "@self-learning/ui/common";
 import { greaterAccessLevel, greaterOrEqAccessLevel, GroupAccess } from "@self-learning/types";
 import { AccessLevel, GroupRole } from "@prisma/client";
+import { useRouter } from "next/router";
 
 /**
  * Wrapper for `useSession` from `next-auth` that redirects the user to the login page if they are not authenticated.
@@ -204,11 +205,10 @@ export function Unauthorized({ children }: { children?: React.ReactNode }) {
 					<span>Zurück zur Startseite</span>
 				</Link>
 
-				<IconButton
+				<IconTextButton
 					text="Zurück zur vorherigen Seite"
 					icon={<ArrowLeftIcon className="icon h-5" />}
-					variant="secondary"
-					className="w-fit"
+					className="w-fit btn-secondary"
 					onClick={() => router.back()}
 				/>
 			</div>

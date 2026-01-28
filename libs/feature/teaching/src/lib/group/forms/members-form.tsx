@@ -1,4 +1,4 @@
-import { IconButton, SectionHeader } from "@self-learning/ui/common";
+import { IconTextButton, SectionHeader } from "@self-learning/ui/common";
 import { Controller, useFieldArray, useFormContext, useFormState } from "react-hook-form";
 import { GroupFormModel } from "../group-editor";
 import { CenteredSection } from "@self-learning/ui/layouts";
@@ -43,7 +43,7 @@ export function GroupMembersEditor() {
 				title="Mitglieder*in"
 				subtitle="Alle Mitglieder*innen dieser Gruppe."
 				button={
-					<IconButton
+					<IconTextButton
 						text="Mitglieder*in hinzufügen"
 						icon={<PlusIcon className="icon w-5" />}
 						onClick={() => setSearchUserActive(true)}

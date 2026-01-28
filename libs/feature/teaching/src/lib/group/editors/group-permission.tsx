@@ -5,7 +5,7 @@ import { ResourceAccessFormSchema, ResourceAccessFormType } from "@self-learning
 import {
 	Chip,
 	DialogActions,
-	IconButton,
+	IconTextButton,
 	IconOnlyButton,
 	OnDialogCloseFn,
 	Table,
@@ -101,7 +101,7 @@ export function GroupPermissionEditor({
 			{canEditResource && (
 				<div className="mb-16 flex items-center justify-between gap-4">
 					<h1 className="text-5xl">{permission?.course ? "Kurs" : "Lerneinheit"}</h1>
-					<IconButton
+					<IconTextButton
 						text="Kurs auswählen"
 						icon={<ArrowsUpDownIcon className="icon h-5" />}
 						onClick={() => setSearchCourseActive(true)}

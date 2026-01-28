@@ -1,4 +1,4 @@
-import { Chip, IconButton, SectionHeader } from "@self-learning/ui/common";
+import { Chip, IconTextButton, SectionHeader } from "@self-learning/ui/common";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { Controller, useFormContext } from "react-hook-form";
 import { GroupFormModel } from "../group-editor";
@@ -31,7 +31,7 @@ export function GroupInfoEditor() {
 					/>
 				</LabeledField>
 				<LabeledField label="Hauptgruppe auswählen">
-					<IconButton
+					<IconTextButton
 						text="Auswählen"
 						icon={<ArrowsUpDownIcon className="icon h-5" />}
 						onClick={() => setGroupDialogOpen(true)}

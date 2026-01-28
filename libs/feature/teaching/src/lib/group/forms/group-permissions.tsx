@@ -1,4 +1,4 @@
-import { IconButton, SectionHeader } from "@self-learning/ui/common";
+import { IconTextButton, SectionHeader } from "@self-learning/ui/common";
 import { Controller, useFieldArray, useFormContext, useFormState } from "react-hook-form";
 import { GroupFormModel } from "../group-editor";
 import { CenteredSection } from "@self-learning/ui/layouts";
@@ -56,12 +56,12 @@ export function GroupPermissionsEditor() {
 				subtitle="Alle Ressourcen dieser Gruppe."
 				button={
 					<>
-						<IconButton
+						<IconTextButton
 							text="Kurs hinzufügen"
 							icon={<PlusIcon className="icon w-5" />}
 							onClick={() => setSearchCourseActive(true)}
 						/>
-						<IconButton
+						<IconTextButton
 							text="Lerneinheit hinzufügen"
 							icon={<PlusIcon className="icon w-5" />}
 							onClick={() => setSearchLessonActive(true)}

@@ -11,7 +11,7 @@ import {
 } from "@self-learning/ui/common";
 import { DashboardSidebarLayout, UniversalSearchBar } from "@self-learning/ui/layouts";
 import { withAuth } from "@self-learning/util/auth";
-import { formatDateAgo } from "@self-learning/util/common";
+import { formatDateDistanceToNow } from "@self-learning/util/common";
 import { NextComponentType, NextPageContext } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -301,7 +301,7 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 							/>
 						</TableDataColumn>
 						<TableDataColumn>
-							{formatDateAgo(enrollment.lastProgressUpdate)}
+							{formatDateDistanceToNow(enrollment.lastProgressUpdate)}
 						</TableDataColumn>
 					</tr>
 				))}

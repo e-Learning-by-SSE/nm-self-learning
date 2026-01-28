@@ -2,6 +2,7 @@
 import { Combobox, ComboboxOption } from "@headlessui/react";
 import { trpc } from "@self-learning/api-client";
 import { DropdownDialog, OnDialogCloseFn, Paginator } from "@self-learning/ui/common";
+import { keepPreviousData } from "@tanstack/react-query";
 import { Fragment, useState } from "react";
 
 export type LessonSearchEntry = { lessonId: string; title: string; slug: string };
@@ -22,7 +23,7 @@ export function SearchLessonDialog({
 		},
 		{
 			staleTime: 10_000,
-			keepPreviousData: true
+			placeholderData: keepPreviousData
 		}
 	);
 

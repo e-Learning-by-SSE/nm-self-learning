@@ -36,7 +36,8 @@ import {
 	MarkdownContainer,
 	NavigableContentViewer,
 	useNavigableContent,
-	ResourceGuard
+	ResourceGuard,
+	useRequiredSession
 } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
 import { useEventLog } from "@self-learning/util/eventlog";

@@ -2,13 +2,13 @@
 import { Combobox, ComboboxOption } from "@headlessui/react";
 import { trpc } from "@self-learning/api-client";
 import { DropdownDialog, OnDialogCloseFn, Paginator } from "@self-learning/ui/common";
+import { keepPreviousData } from "@tanstack/react-query";
 import { Fragment, useState } from "react";
 
 export type GroupSearchEntry = {
 	groupId: number;
 	name: string;
-	memberCount: number;
-	ownerName: string | null;
+	members: string[];
 };
 
 export function SearchGroupDialog({
@@ -29,7 +29,7 @@ export function SearchGroupDialog({
 		},
 		{
 			staleTime: 10_000,
-			keepPreviousData: true,
+			placeholderData: keepPreviousData,
 			enabled: isGlobalSearch
 		}
 	);
@@ -39,7 +39,7 @@ export function SearchGroupDialog({
 		},
 		{
 			staleTime: 10_000,
-			keepPreviousData: true,
+			placeholderData: keepPreviousData,
 			enabled: !isGlobalSearch
 		}
 	);
@@ -76,12 +76,7 @@ export function SearchGroupDialog({
 										<span className="text-light">{group.name}</span>
 									</div>
 									<div className="flex-1 text-left">
-										<span className="text-light">{group.memberCount}</span>
-									</div>
-									<div className="flex-1 text-left">
-										<span className="text-light">
-											{group.ownerName ?? "Unbekannte"}
-										</span>
+										<span className="text-light">{group.members.length}</span>
 									</div>
 								</button>
 							)}

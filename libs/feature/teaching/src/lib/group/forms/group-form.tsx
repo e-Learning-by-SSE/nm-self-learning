@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Controller, useFieldArray, useFormContext, useFormState, useWatch } from "react-hook-form";
 import { LessonFormModel } from "../../lesson/lesson-form-model";
 import { Form, LabeledField } from "@self-learning/ui/forms";
-import { Chip, IconButton } from "@self-learning/ui/common";
+import { Chip, IconTextButton } from "@self-learning/ui/common";
 import { ArrowsUpDownIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { GroupSearchEntry, SearchGroupDialog } from "../dialogs/search-group-dialog";
 import { AccessLevel } from "@prisma/client";
@@ -12,15 +12,11 @@ import { useRequiredSession } from "@self-learning/ui/layouts";
 export function GroupForm({ subtitle }: { subtitle: string }) {
 	const [isGroupDialogOpen, setGroupDialogOpen] = useState(false);
 	const { control } = useFormContext<{ permissions: LessonFormModel["permissions"] }>();
-	const permissions = useWatch({
-		control,
-		name: "permissions"
-	});
 
 	return (
 		<Form.SidebarSection>
 			<Form.SidebarSectionTitle title="Gruppe" subtitle={subtitle}>
-				<IconButton
+				<IconTextButton
 					text="Auswählen"
 					icon={<ArrowsUpDownIcon className="icon h-5" />}
 					onClick={() => setGroupDialogOpen(true)}
@@ -82,7 +78,7 @@ export function ResourceAccessEditor({ subtitle }: { subtitle: string }) {
 	return (
 		<Form.SidebarSection>
 			<Form.SidebarSectionTitle title="Gruppen" subtitle={subtitle}>
-				<IconButton
+				<IconTextButton
 					text="Hinzufugen"
 					icon={<PlusIcon className="icon h-5" />}
 					onClick={() => setGroupDialogOpen(true)}
@@ -224,7 +220,7 @@ export function GroupAccessEditor({ subtitle }: { subtitle: string }) {
 	return (
 		<Form.SidebarSection>
 			<Form.SidebarSectionTitle title="Gruppe & Zugriff" subtitle={subtitle}>
-				<IconButton
+				<IconTextButton
 					text={"Hinzufügen"}
 					icon={<PlusIcon className="icon h-5" />}
 					onClick={() => setGroupDialogOpen(true)}

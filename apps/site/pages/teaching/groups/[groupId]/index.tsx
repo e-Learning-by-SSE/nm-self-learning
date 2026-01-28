@@ -2,7 +2,7 @@ import { PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { SearchUserDialog } from "@self-learning/admin";
 import { trpc } from "@self-learning/api-client";
 import {
-	IconButton,
+	IconTextButton,
 	LoadingBox,
 	OnDialogCloseFn,
 	SectionHeader,
@@ -115,7 +115,7 @@ export default function GroupPage() {
 							title="Mitglieder*innen"
 							subtitle="Alle Mitglieder*innen dieser Gruppe."
 							button={
-								<IconButton
+								<IconTextButton
 									text="Mitglieder*in hinzufügen"
 									icon={<PlusIcon className="icon w-5" />}
 									onClick={() => setGrantGroupAccessDialog(true)}
@@ -123,12 +123,12 @@ export default function GroupPage() {
 							}
 						/>
 
-						{grantGroupAccessDialog && (
+						{/* TODO not in this PR {grantGroupAccessDialog && (
 							<SearchUserDialog
 								open={grantGroupAccessDialog}
 								onClose={handleGrantGroupAccess}
 							/>
-						)}
+						)} */}
 
 						<SearchField
 							placeholder="Suche nach Mitglieder*in"

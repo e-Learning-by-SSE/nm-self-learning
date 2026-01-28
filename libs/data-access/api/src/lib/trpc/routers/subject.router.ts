@@ -2,6 +2,7 @@ import { database } from "@self-learning/database";
 import { subjectSchema } from "@self-learning/types";
 import { z } from "zod";
 import { adminProcedure, authProcedure, t } from "../trpc";
+import { TRPCError } from "@trpc/server";
 
 export const subjectRouter = t.router({
 	getAllWithSpecializations: t.procedure.query(() => {
@@ -102,15 +103,15 @@ export const subjectRouter = t.router({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
-			// TODO
-			const canEdit = await canEditSubject(input.subjectId, ctx.user);
+			// TODO everyone can do this for now
+			// const canEdit = await canEditSubject(input.subjectId, ctx.user);
 
-			if (!canEdit) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: `Requires ADMIN role or subjectAdmin in ${input.subjectId}.`
-				});
-			}
+			// if (!canEdit) {
+			// 	throw new TRPCError({
+			// 		code: "FORBIDDEN",
+			// 		message: `Requires ADMIN role or subjectAdmin in ${input.subjectId}.`
+			// 	});
+			// }
 
 			const specIds = Object.keys(input.specMap);
 
