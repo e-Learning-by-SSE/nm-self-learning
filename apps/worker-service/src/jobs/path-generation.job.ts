@@ -11,14 +11,14 @@ import {
 	Variable
 } from "@e-learning-by-sse/nm-skill-lib";
 import { JobDefinition } from "../lib/core/job-registry";
-import { pathGenerationPayloadSchema } from "../lib/schema/path-generation.schema";
+import { pathGenerationPayloadSchema } from "@self-learning/worker-api";
 import { z } from "zod";
 
 export const pathGenerationJob: JobDefinition<
 	z.infer<typeof pathGenerationPayloadSchema>,
 	unknown
 > = {
-	name: "path-generation",
+	name: "pathGeneration",
 	description: "Generates a learning path based on skills and goals",
 	schema: pathGenerationPayloadSchema,
 	run: async payload => {

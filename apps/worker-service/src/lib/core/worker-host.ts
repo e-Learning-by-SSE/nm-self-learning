@@ -1,9 +1,10 @@
-import { JobContext, JobDefinition } from "./job-registry";
+import { JobDefinition } from "./job-registry";
 import { JobNotFoundError, JobValidationError } from "./errors";
 import { Worker } from "worker_threads";
 import * as path from "path";
-import { randomUUID } from "crypto";
+import { jobEvents } from "../../event-bus";
 import { existsSync } from "fs";
+import { JobContext, JobRunner } from "@self-learning/worker-api";
 
 interface WorkerHostOptions {
 	minThreads?: number;
@@ -24,7 +25,7 @@ interface PendingJob {
 	timeout: NodeJS.Timeout;
 }
 
-export class WorkerHost {
+export class WorkerHost implements JobRunner {
 	private minThreads: number;
 	private maxThreads: number;
 	private workers: Worker[] = [];
@@ -32,16 +33,12 @@ export class WorkerHost {
 	private queue: JobRequest[] = [];
 	private pendingJobs = new Map<string, PendingJob>();
 	private isShuttingDown = false;
-	private jobMap = new Map<string, JobDefinition>();
 
 	constructor(
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		jobs: JobDefinition<any, any>[],
+		private jobs: Record<string, JobDefinition<any, any>>,
 		options: WorkerHostOptions = {}
 	) {
-		for (const job of jobs) {
-			this.jobMap.set(job.name, job);
-		}
 		this.minThreads = Math.max(1, options.minThreads ?? 2);
 		const requestedMax = options.maxThreads ?? 6;
 		this.maxThreads = Math.max(this.minThreads, requestedMax);
@@ -140,8 +137,13 @@ export class WorkerHost {
 		}
 	}
 
-	async runJob(name: string, payload: unknown, _context: JobContext = {}) {
-		const job = this.jobMap.get(name);
+	async runJob<TResult>(
+		jobId: string,
+		name: string,
+		payload: unknown,
+		_context: JobContext = {}
+	): Promise<{ result: TResult; duration: number }> {
+		const job = this.jobs[name];
 
 		if (!job) {
 			throw new JobNotFoundError(`Job '${name}' not found`);
@@ -160,15 +162,14 @@ export class WorkerHost {
 		const startTime = Date.now();
 
 		const result = await new Promise((resolve, reject) => {
-			const id = randomUUID();
-			this.queue.push({ id, name, payload: validatedPayload, resolve, reject });
+			this.queue.push({ id: jobId, name, payload: validatedPayload, resolve, reject });
 			this.processQueue();
 		});
 
 		const duration = Date.now() - startTime;
 
 		return {
-			result,
+			result: result as TResult,
 			duration
 		};
 	}
@@ -205,6 +206,7 @@ export class WorkerHost {
 		if (this.isShuttingDown) {
 			return;
 		}
+		jobEvents.emitJobEvent(job.id, { type: "started" });
 		const timeout = setTimeout(() => {
 			const pending = this.pendingJobs.get(job.id);
 			if (pending) {
@@ -232,11 +234,23 @@ export class WorkerHost {
 
 		const tsPath = path.join(__dirname, "../../worker-runner.ts");
 		const tsLoader = "ts-node/register/transpile-only";
+
+		const execArgv = ["-r", tsLoader];
+		// Testing requires tsconfig-paths to resolve path aliases
+		// In production, tsconfig.base.json is not available, so we skip it there
+		const useTsPaths =
+			process.env.NODE_ENV !== "production" || Boolean(process.env.JEST_WORKER_ID);
+		if (useTsPaths) {
+			execArgv.push("-r", "tsconfig-paths/register");
+		}
+
+		// Remove non string types from env, which are not needed anyway by the worker
+		const { NEXT_TRAILING_SLASH: _NEXT_TRAILING_SLASH, ...env } = process.env;
 		return {
 			filePath: tsPath,
-			execArgv: ["-r", tsLoader],
+			execArgv,
 			env: {
-				...process.env,
+				...env,
 				TS_NODE_COMPILER_OPTIONS: JSON.stringify({
 					moduleResolution: "NodeNext",
 					module: "NodeNext"

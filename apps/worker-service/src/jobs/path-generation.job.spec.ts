@@ -20,7 +20,8 @@ const runPathGeneration = async (payload: PathGenerationPayload) => {
 	if (!workerHost) {
 		throw new Error("WorkerHost not initialized");
 	}
-	const { result } = await workerHost.runJob("path-generation", payload, {
+	const jobId = crypto.randomUUID();
+	const { result } = await workerHost.runJob(jobId, "pathGeneration", payload, {
 		requestedBy: "path-generation-job-spec"
 	});
 	return result as GeneratedPathResult;

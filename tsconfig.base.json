@@ -51,9 +51,9 @@
 			"@self-learning/util/testing": ["libs/util/testing/src/index.ts"],
 			"@self-learning/util/validate": ["libs/util/validation/src/index.ts"],
 			"@self-learning/webhooks": ["libs/feature/webhooks/src/index.ts"],
-			"@self-learning/worker-service": ["apps/worker-service/src/index.ts"]
+			"@self-learning/worker-api": ["libs/data-access/worker/src/index.ts"],
 		}
 	},
-    "files": ["./index.d.ts"],
+	"files": ["./index.d.ts"],
 	"exclude": ["node_modules", "tmp"]
 }

@@ -1,5 +1,5 @@
 import { createTRPCProxyClient, httpBatchLink, splitLink, wsLink } from "@trpc/client";
-import type { AppRouter } from "../../router";
+import type { WorkerAppRouterType } from "../../../../../libs/data-access/worker/src/lib/core/router";
 
 const wsClient =
 	typeof window !== "undefined"
@@ -8,7 +8,7 @@ const wsClient =
 			)
 		: null;
 
-export const workerServiceClient = createTRPCProxyClient<AppRouter>({
+export const workerServiceClient = createTRPCProxyClient<WorkerAppRouterType>({
 	links: [
 		splitLink({
 			condition(op) {

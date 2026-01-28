@@ -1,0 +1,20 @@
+{
+	"name": "@self-learning/worker-api",
+	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "libs/data-access/worker/src",
+	"projectType": "library",
+	"tags": [],
+	"// targets": "to see all targets run: nx show project worker-api --web",
+	"targets": {
+        "build": {
+            "executor": "@nx/js:tsc",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "outputPath": "dist/libs/@self-learning/worker-api",
+                "main": "libs/data-access/worker/src/index.ts",
+                "tsConfig": "libs/data-access/worker/tsconfig.lib.json",
+                "generatePackageJson": true
+            }
+        }
+    }
+}

@@ -42,7 +42,10 @@
 			"outputs": ["{workspaceRoot}/coverage/apps/worker-service"],
 			"options": {
 				"jestConfig": "apps/worker-service/jest.config.ts",
-				"passWithNoTests": true
+				"passWithNoTests": true,
+                "runBuildTargetDependencies": true,
+                "command": "NODE_PATH=dist/libs jest --config apps/worker-service/jest.config.ts",
+        "cwd": "."
 			}
 		},
 		"serve": {
