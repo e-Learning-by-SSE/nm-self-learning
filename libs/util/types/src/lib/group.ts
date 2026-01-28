@@ -28,7 +28,7 @@ export const MemberFormSchema = z.object({
 		.nullable()
 		.refine(date => !date || date > new Date(), {
 			message: "Expiration date must be in the future"
-		}),
+		}) as z.ZodNullable<z.ZodDate>,
 	user: z.object({
 		id: z.string(),
 		displayName: z.string().nullable(),
