@@ -1,5 +1,5 @@
 import { createTRPCProxyClient, httpBatchLink, splitLink, wsLink } from "@trpc/client";
-import type { WorkerAppRouterType } from "../../../../../libs/data-access/worker/src/lib/core/router";
+import type { WorkerAppRouterType } from "@self-learning/worker-api";
 
 const wsClient =
 	typeof window !== "undefined"

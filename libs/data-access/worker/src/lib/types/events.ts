@@ -27,5 +27,5 @@ export type JobEvent = z.infer<typeof JobEventSchema>;
  */
 export type JobEventBusType = {
 	emitJobEvent(jobId: string, evt: JobEvent): void;
-	onJobEvent(jobId: string, opts: { signal: AbortSignal }): AsyncIterable<JobEvent>;
+	onJobEvent(jobId: string, opts: { signal: AbortSignal | undefined }): AsyncIterable<JobEvent>;
 };

@@ -15,7 +15,7 @@ class JobEventBus implements JobEventBusType {
 	}
 
 	// Exposes the event stream to subscribers
-	onJobEvent(jobId: string, opts: { signal: AbortSignal }): AsyncIterable<JobEvent> {
+	onJobEvent(jobId: string, opts: { signal: AbortSignal | undefined }): AsyncIterable<JobEvent> {
 		const iterator = on(this.ee, jobId, { signal: opts.signal });
 		return (async function* () {
 			// Required to signal that the subscription is ready
