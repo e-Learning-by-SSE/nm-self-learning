@@ -85,7 +85,6 @@ function GroupsPaginatedView({ data }: { data?: FindGroupsData }) {
 					<>
 						<TableHeaderColumn>Name</TableHeaderColumn>
 						<TableHeaderColumn>Anzahl Mitglieder</TableHeaderColumn>
-						<TableHeaderColumn>Gruppeninhaber</TableHeaderColumn>
 					</>
 				}
 			>
@@ -101,11 +100,7 @@ function GroupsPaginatedView({ data }: { data?: FindGroupsData }) {
 						</TableDataColumn>
 
 						<TableDataColumn>
-							<span className="text-light">{group.memberCount}</span>
-						</TableDataColumn>
-
-						<TableDataColumn>
-							<span className="text-light">{group.ownerName}</span>
+							<span className="text-light">{group.members.length}</span>
 						</TableDataColumn>
 					</tr>
 				))}
