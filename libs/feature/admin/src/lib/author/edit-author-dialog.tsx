@@ -113,7 +113,7 @@ function AuthorData() {
 	const errors = formState.errors;
 
 	return (
-		<section className="flex flex-col rounded-lg border border-light-border p-4">
+		<section className="flex flex-col rounded-lg border border-c-border p-4">
 			<h2 className="mb-4 text-2xl">Daten</h2>
 			<div className="flex flex-col gap-4">
 				<LabeledField label="Name" error={errors.displayName?.message}>
@@ -143,7 +143,7 @@ function AuthorData() {
 												className="mx-auto h-32 w-32 shrink-0 rounded-lg object-cover"
 											></img>
 										) : (
-											<div className="mx-auto h-32 w-32  shrink-0 rounded-lg bg-gray-200"></div>
+											<div className="mx-auto h-32 w-32  shrink-0 rounded-lg bg-c-surface-3"></div>
 										)}
 									</>
 								}

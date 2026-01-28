@@ -1,4 +1,3 @@
-
 model Account {
     id                String  @id @default(cuid())
     userId            String
@@ -26,25 +25,34 @@ model Session {
 }
 
 model User {
-    id                String            @id @default(cuid())
-    name              String            @unique
-    displayName       String
-    email             String?           @unique
-    emailVerified     DateTime?
-    image             String?
-    role              UserRole          @default(USER)
-    accounts          Account[]
-    author            Author?
-    sessions          Session[]
-    student           Student?
-    uploadedAssets    UploadedAssets[]
-    skillRepositories SkillRepository[]
+    id                   String                    @id @default(cuid())
+    name                 String                    @unique
+    displayName          String
+    email                String?                   @unique
+    emailVerified        DateTime?
+    image                String?
+    role                 UserRole                  @default(USER)
+    accounts             Account[]
+    author               Author?
+    sessions             Session[]
+    student              Student?
+    gamificationProfile  GamificationProfile?
+    uploadedAssets       UploadedAssets[]
+    skillRepositories    SkillRepository[]
+    notifications        NotificationUser[]
+    reminders            ReminderLog[]
+    notificationSettings UserNotificationSetting[]
+    featureFlags         Features?
+    memberships          Member[]
 
-    enabledLearningStatistics Boolean @default(false)
-    enabledFeatureLearningDiary  Boolean  @default(false)
-    registrationCompleted      Boolean  @default(false)
+    registrationCompleted   Boolean   @default(false)
+    acceptedExperimentTerms DateTime?
+    declinedExperimentTerms DateTime?
+}
 
-    memberships        Member[]
+enum UserRole {
+    USER
+    ADMIN
 }
 
 model VerificationToken {
@@ -56,9 +64,9 @@ model VerificationToken {
 }
 
 enum AccessLevel {
-    VIEW            
-    EDIT            // can edit 
-    FULL            // can edit and grant editing away (only on the same level)
+    VIEW
+    EDIT // can edit 
+    FULL // can edit and grant editing away (only on the same level)
 }
 
 enum GroupRole {
@@ -67,20 +75,21 @@ enum GroupRole {
 }
 
 model Member {
-    role        GroupRole
-    createdAt   DateTime    @default(now())
-    expiresAt   DateTime?
+    role      GroupRole
+    createdAt DateTime  @default(now())
+    expiresAt DateTime?
 
-    userId      String
-    groupId     Int
-    user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-    group       Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+    userId  String
+    groupId Int
+    user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
     @@unique([userId, groupId])
 }
 
 model Group {
-    id          Int         @id @default(autoincrement())
-    name        String      @unique
+    id          Int          @id @default(autoincrement())
+    name        String       @unique
     members     Member[]
     // lessons     Lesson[]    // this are ownerships
     // courses     Course[]    // this are ownerships
@@ -88,29 +97,38 @@ model Group {
     // skills      SkillRepository
 
     // This is NOT used to inherit permissions but to differentiate between root and user-created groups
-    parentId    Int?
-    parent      Group?      @relation("ParentGroup", fields: [parentId], references: [id], onDelete: Restrict)
-    children    Group[]     @relation("ParentGroup")  
+    parentId Int?
+    parent   Group?  @relation("ParentGroup", fields: [parentId], references: [id], onDelete: Restrict)
+    children Group[] @relation("ParentGroup")
 }
 
-
 model Permission {
-    id          String      @id @default(uuid())
-    groupId     Int
+    id      String @id @default(uuid())
+    groupId Int
 
-    courseId    String?
-    lessonId    String?
+    courseId String?
+    lessonId String?
 
     accessLevel AccessLevel
 
-    isPublic    Boolean  @default(false) // this permission applies to all groups
+    isPublic Boolean @default(false) // this permission applies to all groups
 
-    group       Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
-    course      Course?     @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
-    lesson      Lesson?     @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
+    group  Group   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+    course Course? @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
+    lesson Lesson? @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
 
     // Prohibit multiple permissions per one content
     @@unique([groupId, courseId])
     @@unique([groupId, lessonId])
 }
 
+model Features {
+    userId   String @id
+    username String @unique
+
+    learningStatistics Boolean @default(true)
+    learningDiary      Boolean @default(false)
+    experimental       Boolean @default(false)
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

@@ -1,6 +1,6 @@
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { SkillFormModel } from "@self-learning/types";
-import { IconButton, IconOnlyButton } from "@self-learning/ui/common";
+import { IconTextButton, IconOnlyButton } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { useState } from "react";
 import { SelectSkillDialog } from "./select-skill-dialog";
@@ -24,9 +24,10 @@ export function LabeledFieldSelectSkillsView({
 		<LabeledField
 			label={label}
 			button={
-				<IconButton
+				<IconTextButton
 					text="Hinzufügen"
 					icon={<PlusIcon className="h-5 w-5" />}
+					className="btn-secondary"
 					onClick={() => setSelectSkillModal(true)}
 					title={"Hinzufügen"}
 					data-testid="BenoetigteSkills-add"
@@ -61,9 +62,10 @@ export function SelectSkillsView({
 
 	return (
 		<>
-			<IconButton
+			<IconTextButton
 				text="Hinzufügen"
 				icon={<PlusIcon className="h-5 w-5" />}
+				className="btn-secondary"
 				onClick={() => setSelectSkillModal(true)}
 				title={"Hinzufügen"}
 				data-testid="BenoetigteSkills-add"
@@ -98,7 +100,7 @@ function SkillManagementComponent({
 	return (
 		<div className="flex flex-col">
 			{skills.length === 0 && (
-				<div className="mt-3 text-sm text-gray-500">Keine Skills vorhanden</div>
+				<div className="mt-3 text-sm text-c-text-muted">Keine Skills vorhanden</div>
 			)}
 			<div className="mt-3 max-h-40 overflow-auto">
 				{skills.map((skill, index) => (
@@ -134,15 +136,20 @@ function InlineRemoveButton({
 }) {
 	return (
 		<div className="inline-block">
-			<div className="flex items-center rounded-lg border border-light-border bg-white text-sm">
+			<div className="flex items-center rounded-lg border border-c-border bg-white text-sm">
 				<button
-					className="flex flex-grow cursor-pointer flex-col px-4 hover:text-secondary"
+					className="flex flex-grow cursor-pointer flex-col px-4 hover:text-c-primary"
 					onClick={onClick}
 					type="button"
 				>
 					{label}
 				</button>
-				<IconOnlyButton onClick={onRemove} title={"Skill entfernen"} icon={<XMarkIcon className="h-5 w-5" />} variant="x-mark" className="p-2 mr-2" />
+				<IconOnlyButton
+					onClick={onRemove}
+					title={"Skill entfernen"}
+					icon={<XMarkIcon className="h-5 w-5" />}
+					className="btn-x-mark p-2 mr-2"
+				/>
 			</div>
 		</div>
 	);

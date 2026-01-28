@@ -50,4 +50,16 @@ export async function getLessons(lessonIds: string[]): Promise<LessonData[]> {
 	});
 }
 
+export function getCourse(slug: string) {
+	return database.course.findUnique({
+		where: { slug },
+		select: {
+			courseId: true,
+			title: true,
+			slug: true
+		}
+	});
+}
+
 export type LessonData = ResolvedValue<typeof getLesson>;
+export type LessonCourseData = ResolvedValue<typeof getCourse>;

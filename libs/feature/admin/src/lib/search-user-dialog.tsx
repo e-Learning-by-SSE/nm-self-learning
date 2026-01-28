@@ -9,6 +9,7 @@ import {
 	Paginator
 } from "@self-learning/ui/common";
 import { Fragment, useState } from "react";
+import { keepPreviousData } from "@tanstack/react-query";
 
 export type UserSearchEntry = {
 	id: string;
@@ -36,7 +37,7 @@ export function SearchUserDialog({
 		},
 		{
 			staleTime: 10_000,
-			keepPreviousData: true
+			placeholderData: keepPreviousData
 		}
 	);
 
@@ -61,7 +62,7 @@ export function SearchUserDialog({
 									type="button"
 									data-testid="author-option"
 									className={`flex items-center gap-4 rounded px-4 py-2 ${
-										focus ? "bg-secondary text-white" : ""
+										focus ? "bg-c-primary text-white" : ""
 									}`}
 									onClick={() => {
 										onClose(user);
@@ -77,7 +78,7 @@ export function SearchUserDialog({
 										</span>
 										<span
 											className={`text-start text-xs ${
-												focus ? "text-white" : "text-light"
+												focus ? "text-white" : "text-c-text-muted"
 											}`}
 										>
 											{user.email}

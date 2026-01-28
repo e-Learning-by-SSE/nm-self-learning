@@ -111,7 +111,6 @@ export function CourseContentForm() {
 				className="btn-primary mt-4"
 				onClick={() => setOpenNewChapterDialog(true)}
 			>
-				<PlusIcon className="mr-2 h-5" />
 				<span>Kapitel erstellen</span>
 			</button>
 
@@ -139,7 +138,7 @@ function LessonNode({
 					<button
 						type="button"
 						title="Nach oben"
-						className="rounded p-1 hover:bg-gray-200"
+						className="rounded p-1 hover:bg-c-neutral"
 						onClick={() => moveLesson(lesson.lessonId, "up")}
 					>
 						<ArrowUpIcon className="h-3" />
@@ -147,7 +146,7 @@ function LessonNode({
 					<button
 						type="button"
 						title="Nach unten"
-						className="rounded p-1 hover:bg-gray-200"
+						className="rounded p-1 hover:bg-c-neutral"
 						onClick={() => moveLesson(lesson.lessonId, "down")}
 					>
 						<ArrowDownIcon className="h-3" />
@@ -156,7 +155,7 @@ function LessonNode({
 
 				<button
 					type="button"
-					className="flex items-center whitespace-nowrap hover:text-secondary"
+					className="flex items-center whitespace-nowrap hover:text-c-primary"
 					onClick={() => setLessonEditorDialogOpen(true)}
 				>
 					<span className="text-sm">{data ? data.title : "Loading..."}</span>
@@ -172,14 +171,14 @@ function LessonNode({
 
 			<div className="flex gap-4">
 				{(data?.meta as LessonMeta)?.hasQuiz && (
-					<span className="flex items-center justify-center rounded-full bg-secondary px-3 py-1 text-xs font-medium text-white min-h-[2rem]">
+					<span className="flex items-center justify-center rounded-full bg-c-primary px-3 py-1 text-xs font-medium text-white min-h-[2rem]">
 						Lernkontrolle
 					</span>
 				)}
 				<IconOnlyButton
 					onClick={onRemove}
 					icon={<XMarkIcon className="h-5 w-5" />}
-					variant="x-mark"
+					className="btn-x-mark"
 					title="Entfernen"
 				/>
 			</div>
@@ -243,49 +242,38 @@ function ChapterNode({
 	}
 
 	return (
-		<li className="flex flex-col gap-2 rounded-lg bg-gray-100 p-4">
+		<li className="flex flex-col gap-2 rounded-lg bg-c-surface-2 p-4">
 			<span className="flex items-center justify-between gap-4">
 				<span className="flex items-center gap-4 whitespace-nowrap text-xl font-semibold ">
 					<span className="w-fit min-w-[24px] text-center text-gray-400">
 						{index + 1}.
 					</span>
-					<span className="tracking-tight text-secondary">{chapter.title}</span>
+					<span className="tracking-tight text-c-primary">{chapter.title}</span>
 				</span>
 
 				<div className="flex items-center gap-2">
 					{/* Chapter-Management Icons */}
-					<button
-						type="button"
+					<IconOnlyButton
 						title="Nach oben"
-						className="rounded p-1 hover:bg-gray-300 text-gray-500"
+						icon={<ArrowUpIcon className="h-4 w-4" />}
 						onClick={() => moveChapter(index, "up")}
-					>
-						<ArrowUpIcon className="h-4 w-4" />
-					</button>
-					<button
-						type="button"
+					/>
+					<IconOnlyButton
 						title="Nach unten"
-						className="rounded p-1 hover:bg-gray-300 text-gray-500"
+						icon={<ArrowDownIcon className="h-4 w-4" />}
 						onClick={() => moveChapter(index, "down")}
-					>
-						<ArrowDownIcon className="h-4 w-4" />
-					</button>
-					<button
-						type="button"
+					/>
+					<IconOnlyButton
 						title="Beschreibung bearbeiten"
-						className="rounded p-1 hover:bg-gray-300 text-gray-500"
+						icon={<PencilIcon className="h-4 w-4" />}
 						onClick={() => setEditChapterDialogOpen(true)}
-					>
-						<PencilIcon className="h-4 w-4" />
-					</button>
-					<button
-						type="button"
+					/>
+					<IconOnlyButton
 						title="Kapitel entfernen"
-						className="rounded p-1 hover:bg-red-100 text-red-500"
+						icon={<TrashIcon className="h-4 w-4 text-c-danger" />}
+						className="hover:bg-c-danger-subtle"
 						onClick={onRemove}
-					>
-						<TrashIcon className="h-4 w-4" />
-					</button>
+					/>
 
 					{/* Expand/Collapse Button */}
 					<button
@@ -305,7 +293,7 @@ function ChapterNode({
 			{expanded && (
 				<>
 					{chapter.description && chapter.description.length > 0 && (
-						<p className="pb-4 text-sm text-light">{chapter.description}</p>
+						<p className="pb-4 text-sm text-c-text-muted">{chapter.description}</p>
 					)}
 
 					<ul className="flex flex-col gap-1">

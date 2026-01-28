@@ -78,13 +78,12 @@ describe("lessonSchema", () => {
 			Object {
 			  "error": [ZodError: [
 			  {
-			    "code": "invalid_type",
 			    "expected": "array",
-			    "received": "null",
+			    "code": "invalid_type",
 			    "path": [
 			      "content"
 			    ],
-			    "message": "Expected array, received null"
+			    "message": "Invalid input: expected array, received null"
 			  }
 			]],
 			  "success": false,

@@ -92,5 +92,44 @@ export const subjectRouter = t.router({
 				imgUrlBanner: input.imgUrlBanner
 			}
 		});
-	})
+	}),
+	setSpecializationPermissions: authProcedure
+		.input(
+			z.object({
+				subjectId: z.string(),
+				/** `{ [specializationId]: { [username]: boolean } }` */
+				specMap: z.record(z.string(), z.record(z.string(), z.boolean()))
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			// TODO
+			const canEdit = await canEditSubject(input.subjectId, ctx.user);
+
+			if (!canEdit) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: `Requires ADMIN role or subjectAdmin in ${input.subjectId}.`
+				});
+			}
+
+			const specIds = Object.keys(input.specMap);
+
+			const assigned: { username: string; specializationId: string }[] = specIds.flatMap(
+				specializationId =>
+					Object.entries(input.specMap[specializationId])
+						.filter(([_username, isChecked]) => isChecked)
+						.map(([username]) => ({ username, specializationId }))
+			);
+
+			await database.$transaction([
+				database.specializationAdmin.deleteMany({
+					where: {
+						OR: specIds.map(specializationId => ({ specializationId }))
+					}
+				}),
+				database.specializationAdmin.createMany({
+					data: assigned
+				})
+			]);
+		})
 });

@@ -49,7 +49,7 @@ export function AddAuthorDialog({
 									onClick={() => onClose(author)}
 									data-testid="author-option"
 									className={`flex items-center gap-4 rounded px-4 py-2 ${
-										focus ? "bg-secondary text-white" : ""
+										focus ? "bg-c-primary text-white" : ""
 									}`}
 								>
 									<ImageOrPlaceholder
@@ -62,7 +62,7 @@ export function AddAuthorDialog({
 										</span>
 										<span
 											className={`text-start text-xs ${
-												focus ? "text-white" : "text-light"
+												focus ? "text-white" : "text-c-text-muted"
 											}`}
 										>
 											{author.username}

@@ -152,11 +152,11 @@ export default function ProgrammingForm({ index }: { index: number }) {
 function Explainer() {
 	return (
 		<div className="flex flex-col gap-4">
-			<p className="text-sm text-light">
+			<p className="text-sm text-c-text-muted">
 				Programmieraufaben können in den folgenden Modi konfiguriert werden:
 			</p>
 
-			<ul className="text-sm text-light">
+			<ul className="text-sm text-c-text-muted">
 				<li>
 					<span className="font-bold">standalone</span>: Der Student entwickelt das
 					vollstände Programm. Die Ausgabe des Programms wird mit einer vom Autor

@@ -8,6 +8,7 @@ import {
 	Paginator
 } from "@self-learning/ui/common";
 import { Fragment, useState } from "react";
+import { keepPreviousData } from "@tanstack/react-query";
 
 export type CourseSearchEntry = { courseId: string; title: string; slug: string };
 
@@ -27,7 +28,7 @@ export function SearchCourseDialog({
 		},
 		{
 			staleTime: 10_000,
-			keepPreviousData: true
+			placeholderData: keepPreviousData
 		}
 	);
 
@@ -53,7 +54,7 @@ export function SearchCourseDialog({
 									onClick={() => onClose(course)}
 									data-testid="course-option"
 									className={`flex items-center gap-4 rounded px-4 py-2 ${
-										focus ? "bg-secondary text-white" : ""
+										focus ? "bg-c-primary text-white" : ""
 									}`}
 								>
 									<ImageOrPlaceholder
@@ -64,7 +65,7 @@ export function SearchCourseDialog({
 										<span className="text-sm font-medium">{course.title}</span>
 										<span
 											className={`text-start text-xs ${
-												focus ? "text-white" : "text-light"
+												focus ? "text-white" : "text-c-text-muted"
 											}`}
 										>
 											{course.authors.map(a => a.displayName).join(", ")}

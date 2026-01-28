@@ -20,14 +20,16 @@ export function SearchSection({
 	const showEmptySpace = results.length === 0;
 	return (
 		<>
-			<div className="bg-gray-200 p-2">{title}</div>
+			<div className="bg-c-surface-3 p-2">{title}</div>
 			<div className="w-full overflow-hidden text-ellipsis">
 				{showEmptySpace && (
-					<div className="block w-full p-2 italic text-gray-500">Keine Ergebnisse</div>
+					<div className="block w-full p-2 italic text-c-text-muted">
+						Keine Ergebnisse
+					</div>
 				)}
 				{results.slice(searchResultOffset, maxDisplayedSearchResults).map(result => (
 					<Link
-						className="block w-full overflow-hidden text-ellipsis p-2 hover:bg-emerald-500 hover:text-white"
+						className="block w-full overflow-hidden text-ellipsis p-2 hover:bg-c-primary hover:text-white"
 						key={result.title}
 						onClick={onClick}
 						href={`/${baseLink}/${result.slug}`}

@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { withTranslations } from "@self-learning/api";
+import { keepPreviousData } from "@tanstack/react-query";
 
 export default function CoursesPage() {
 	const router = useRouter();
@@ -22,7 +23,7 @@ export default function CoursesPage() {
 		{ title: titleFilter as string, page: Number(page) },
 		{
 			staleTime: 10_000,
-			keepPreviousData: true
+			placeholderData: keepPreviousData
 		}
 	);
 
@@ -37,7 +38,7 @@ export default function CoursesPage() {
 	}
 
 	return (
-		<CenteredSection className="bg-gray-50">
+		<CenteredSection>
 			<div className="mb-16 flex items-center justify-between gap-4">
 				<h1 className="text-5xl">Kurse</h1>
 
@@ -69,7 +70,7 @@ export default function CoursesPage() {
 
 						<TableDataColumn>
 							<Link
-								className="text-sm font-medium hover:text-secondary"
+								className="text-sm font-medium hover:text-c-primary"
 								href={`/teaching/courses/edit/${course.courseId}`}
 							>
 								{course.title}
@@ -77,7 +78,7 @@ export default function CoursesPage() {
 						</TableDataColumn>
 
 						<TableDataColumn>
-							<span className="text-light">
+							<span className="text-c-text-muted">
 								{course.authors.map(a => a.displayName).join(", ")}
 							</span>
 						</TableDataColumn>

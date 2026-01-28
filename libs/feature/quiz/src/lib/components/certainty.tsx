@@ -17,8 +17,8 @@ export function Certainty() {
 					className="w-full"
 				/>
 				<span className="mt-1 text-right text-slate-400">
-					Ich bin mir{" "}
-					<span className="font-semibold text-slate-700">{certaintyPhrase}</span>.
+					Ich bin mir <span className="font-semibold text-c-text">{certaintyPhrase}</span>
+					.
 				</span>
 			</div>
 		</div>

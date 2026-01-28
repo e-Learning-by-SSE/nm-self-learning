@@ -19,6 +19,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { withTranslations } from "@self-learning/api";
+import { keepPreviousData } from "@tanstack/react-query";
 
 export default function SpecializationManagementPage() {
 	const router = useRouter();
@@ -42,7 +43,7 @@ export default function SpecializationManagementPage() {
 		{
 			enabled: !!specialization?.specializationId,
 			staleTime: 10_000,
-			keepPreviousData: true
+			placeholderData: keepPreviousData
 		}
 	);
 
@@ -111,16 +112,16 @@ export default function SpecializationManagementPage() {
 		return (
 			<Unauthorized>
 				<ul className="list-inside list-disc">
-					<li>Admininstratoren</li>
-					<li>Admininstratoren für Fachbereich ({router.query.subjectId})</li>
-					<li>Admininstratoren für Spezialisierung ({router.query.specializationId})</li>
+					<li>Administratoren</li>
+					<li>Administratoren für Fachbereich ({router.query.subjectId})</li>
+					<li>Administratoren für Spezialisierung ({router.query.specializationId})</li>
 				</ul>
 			</Unauthorized>
 		);
 	}
 
 	return (
-		<div className="flex flex-col gap-8 bg-gray-50 pb-32">
+		<div className="flex flex-col gap-8 pb-32">
 			<TopicHeader
 				imgUrlBanner={specialization.imgUrlBanner}
 				parentLink="/subjects"
@@ -192,7 +193,7 @@ export default function SpecializationManagementPage() {
 
 									<TableDataColumn>
 										<Link
-											className="text-sm font-medium hover:text-secondary"
+											className="text-sm font-medium hover:text-c-primary"
 											href={`/courses/${course.slug}`}
 										>
 											{course.title}
@@ -200,14 +201,14 @@ export default function SpecializationManagementPage() {
 									</TableDataColumn>
 
 									<TableDataColumn>
-										<span className="text-light">
+										<span className="text-c-text-muted">
 											{course.authors.map(a => a.displayName).join(", ")}
 										</span>
 									</TableDataColumn>
 									<TableDataColumn>
 										<div className="flex justify-end">
 											<button
-												className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-red-500"
+												className="rounded-full p-2 text-gray-400 hover:bg-c-neutral-muted hover:text-c-danger"
 												title="Aus Spezialisierung entfernen"
 												onClick={() => handleRemoveCourse(course)}
 											>

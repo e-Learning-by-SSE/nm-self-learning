@@ -35,7 +35,6 @@ describe("getServerSideProps", () => {
 		});
 
 		const courseMock = createCourseMock({
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			courseId: mockCtx.params!.courseId as string,
 			authors: ["Author1"],
 			content: [

@@ -24,10 +24,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
  *   - targetIndex - used to trigger scroll on click on the desired content.
  *   - set `resetTargetIndex` to `() => setTargetIndex(nullptr)`
  * - RenderContent for Viewer is a view for each T.
- *   - it receives T item and desides how to render it
+ *   - it receives T item and decides how to render it
  *   - if supplied item is undefined => there is no items in T[] - you can render some placeholder
  * - RenderContent for Outline/Selector is a view for each T. 
- * 	 - it receives T item and desides how to render it
+ * 	 - it receives T item and decides how to render it
  *   - if supplied item is undefined => there is no items in T[] - you can render some placeholder
  * @important look carefully which ids have T[]! Can cause nasty errors!
  * 
@@ -79,7 +79,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 		if (item) {
 			// render chapter content here
 		} else {
-			return <span className="text-red-500">Book is empty :(</span>;
+			return <span className="text-c-danger">Book is empty :(</span>;
 		}
 	}
 
@@ -236,7 +236,9 @@ export function NavigableContentViewer<
 	const contentRefs = useRef<(HTMLDivElement | null)[]>([]);
 	const visibleItemsRef = useRef<Set<number>>(new Set());
 	const isAutoScrollRef = useRef<boolean>(false);
-	// scroll into selected
+	// Scroll into selected (targetIndex)
+	// We intentionally only depend on targetIndex.
+	// Content changes (e.g., on delete) should NOT retrigger scrolling.
 	useEffect(() => {
 		if (targetIndex !== undefined && content[targetIndex] && contentRefs.current[targetIndex]) {
 			isAutoScrollRef.current = true;
@@ -255,7 +257,8 @@ export function NavigableContentViewer<
 				}
 			}, 300);
 		}
-	}, [targetIndex]); // Deliberately avoid update on content to avoid scroll on delete, on swap, .... Allow only on click
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [targetIndex]);
 	useEffect(() => {
 		const handleScrollEnd = () => {
 			if (isAutoScrollRef.current) {

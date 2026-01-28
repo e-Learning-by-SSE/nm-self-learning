@@ -1,4 +1,4 @@
-import { withAuth, withTranslations } from "@self-learning/api";
+import { withTranslations } from "@self-learning/api";
 import { database } from "@self-learning/database";
 import { Quiz } from "@self-learning/quiz";
 import { LessonEditor, LessonFormModel, onLessonEditorSubmit } from "@self-learning/teaching";
@@ -8,6 +8,7 @@ import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";
 import { ResourceGuard, testResourceGuard } from "@self-learning/ui/layouts";
 import { AccessLevel } from "@prisma/client";
+import { withAuth } from "@self-learning/util/auth";
 
 type EditLessonProps = {
 	lesson: LessonFormModel;
@@ -17,7 +18,6 @@ export const getServerSideProps = withTranslations(
 	["common"],
 	withAuth<EditLessonProps>(async (ctx, user) => {
 		const lessonId = ctx.params?.lessonId;
-		const { locale } = ctx;
 
 		if (typeof lessonId !== "string") {
 			throw new Error("No [lessonId] provided.");

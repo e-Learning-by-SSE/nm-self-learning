@@ -1,6 +1,14 @@
 /* eslint-disable quotes */
 import { faker } from "@faker-js/faker";
-import { AccessLevel, GroupRole, LessonType, Prisma, PrismaClient } from "@prisma/client";
+import {
+	AccessLevel,
+	GroupRole,
+	LessonType,
+	NotificationChannel,
+	NotificationType,
+	Prisma,
+	PrismaClient
+} from "@prisma/client";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
 import {
 	createCourseContent,
@@ -210,7 +218,8 @@ export function createMultipleChoice({
 		withCertainty: false,
 		answers: answers.map(answer => ({ answerId: faker.string.alphanumeric(8), ...answer })),
 		questionStep: 1,
-		hints: hintsData
+		hints: hintsData,
+		randomizeAnswers: false
 	};
 }
 
@@ -313,6 +322,9 @@ export async function seedCaseStudy(
 		select: { licenseId: true }
 	});
 
+	// Add questionOrder to each lesson's quiz based on the questions array, if it was not set already
+	generateMissingQuestionOrders(chapters);
+
 	await prisma.lesson.createMany({
 		data: chapters.flatMap(chapter =>
 			chapter.content.map(lesson => ({
@@ -371,8 +383,46 @@ export async function seedCaseStudy(
 	console.log("\x1b[94m%s\x1b[32m ✔\x1b[0m", name + " Example");
 }
 
+/**
+ * Adds missing questionOrder to old quiz seeds, which miss that mandatory field.
+ * Only adds them if missing.
+ * @param chapters Will be changed as side-effect
+ */
+function generateMissingQuestionOrders(chapters: Chapters) {
+	chapters.forEach(chapter => {
+		for (const lesson of chapter.content) {
+			const quiz = lesson.quiz;
+
+			if (
+				quiz &&
+				quiz !== Prisma.DbNull &&
+				typeof quiz === "object" &&
+				!Array.isArray(quiz) &&
+				!("questionOrder" in quiz)
+			) {
+				const questions = (quiz as Record<string, unknown>)["questions"];
+				if (
+					Array.isArray(questions) &&
+					questions.every(
+						item => item && typeof item === "object" && "questionId" in item
+					)
+				) {
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					const order = (questions as Record<string, any>[]).map(
+						q => q["questionId"] as string
+					);
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					(lesson.quiz as Record<string, any>)["questionOrder"] = order;
+				}
+			}
+		}
+	});
+}
+
 export async function createUsers(users: Prisma.UserCreateInput[]): Promise<void> {
 	for (const user of users) {
+		console.log("Creating user:", user.name);
+		// Check if user already exists
 		await prisma.user.create({ data: user });
 	}
 }
@@ -486,4 +536,16 @@ export function getRandomElementFromArray<T>(arr: T[]): T {
 	}
 	const randomIndex = faker.number.int({ min: 0, max: arr.length - 1 });
 	return arr[randomIndex];
+}
+
+export function getDefaultNotificationData(defaultValue?: boolean) {
+	const types = Object.values(NotificationType);
+	const channels = Object.values(NotificationChannel);
+	return types.flatMap(type =>
+		channels.map(channel => ({
+			type,
+			channel,
+			enabled: defaultValue // if undefined -> prisma default
+		}))
+	);
 }

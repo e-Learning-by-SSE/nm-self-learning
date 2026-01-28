@@ -56,9 +56,12 @@ function prepare(user: Partial<UserFromSession>) {
 			name: "john",
 			role: "USER",
 			isAuthor: false,
-			enabledFeatureLearningDiary: false,
-			enabledLearningStatistics: false,
 			memberships: [],
+			featureFlags: {
+				learningDiary: false,
+				learningStatistics: false,
+				experimental: false
+			},
 			...user
 		}
 	};

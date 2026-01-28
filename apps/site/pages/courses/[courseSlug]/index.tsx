@@ -1,6 +1,8 @@
 import { PlayIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
-import { useCourseCompletion } from "@self-learning/completion";
+import { withTranslations } from "@self-learning/api";
+import { trpc } from "@self-learning/api-client";
+import { SmallGradeBadge } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
@@ -11,15 +13,19 @@ import {
 	LessonInfo,
 	ResolvedValue
 } from "@self-learning/types";
-import { AuthorsList } from "@self-learning/ui/common";
+import { AuthorsList, OnlineHelpLink, Tooltip } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection, useAuthentication } from "@self-learning/ui/layouts";
+import { handleEmailTracking } from "@self-learning/ui/notifications";
+import { withAuth } from "@self-learning/util/auth";
+import { authOptions } from "@self-learning/util/auth/server";
 import { formatDateDistanceToNow, formatSeconds } from "@self-learning/util/common";
+import { getServerSession } from "next-auth";
+import { useSession } from "next-auth/react";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
-import { withTranslations } from "@self-learning/api";
+import { useEffect, useMemo } from "react";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -44,6 +50,7 @@ function mapToTocContent(
 						meta: { hasQuiz: false, mediaTypes: {} },
 						title: "Removed",
 						lessonType: LessonType.TRADITIONAL,
+						performanceScore: null,
 						lessonNr: -1
 					};
 
@@ -52,8 +59,9 @@ function mapToTocContent(
 	}));
 }
 
-async function mapCourseContent(content: CourseContent): Promise<ToC.Content> {
+async function mapCourseContent(content: CourseContent, username?: string): Promise<ToC.Content> {
 	const lessonIds = extractLessonIds(content);
+	console.log("LessonIDs", lessonIds);
 
 	const lessons = await database.lesson.findMany({
 		where: { lessonId: { in: lessonIds } },
@@ -61,14 +69,28 @@ async function mapCourseContent(content: CourseContent): Promise<ToC.Content> {
 			lessonId: true,
 			slug: true,
 			title: true,
-			meta: true
+			meta: true,
+			completions: {
+				where: { username },
+				orderBy: { performanceScore: "desc" },
+				take: 1, // Nur den höchsten Score nehmen
+				select: {
+					performanceScore: true,
+					username: true
+				}
+			}
 		}
 	});
+
+	console.log("lessons", lessons);
 
 	const map = new Map<string, LessonInfo>();
 
 	for (const lesson of lessons) {
-		map.set(lesson.lessonId, lesson as LessonInfo);
+		const { completions, ...rest } = lesson;
+		const performanceScore = completions.length > 0 ? completions[0].performanceScore : null;
+		const mappedLesson = { ...rest, performanceScore } as LessonInfo;
+		map.set(lesson.lessonId, mappedLesson);
 	}
 
 	return mapToTocContent(content, map);
@@ -108,37 +130,54 @@ type CourseProps = {
 	markdownDescription: CompiledMarkdown | null;
 };
 
-export const getServerSideProps = withTranslations(["common"], async ({ params }) => {
-	const courseSlug = params?.courseSlug as string | undefined;
-	if (!courseSlug) {
-		throw new Error("No slug provided.");
-	}
+export const getServerSideProps = withTranslations(
+	["common"],
+	withAuth(async context => {
+		const { req, res, params } = context;
+		const courseSlug = params?.courseSlug as string | undefined;
+		if (!courseSlug) {
+			throw new Error("No slug provided.");
+		}
 
-	const course = await getCourse(courseSlug);
-	if (!course) {
-		return { notFound: true };
-	}
+		const trackingResult = await handleEmailTracking(context);
+		if (trackingResult.shouldRedirect) {
+			return {
+				redirect: {
+					destination: `/courses/${courseSlug}`,
+					permanent: false
+				}
+			};
+		}
 
-	const content = await mapCourseContent(course.content as CourseContent);
-	let markdownDescription = null;
+		const course = await getCourse(courseSlug);
+		if (!course) {
+			return { notFound: true };
+		}
 
-	if (course.description && course.description.length > 0) {
-		markdownDescription = await compileMarkdown(course.description);
-		course.description = null;
-	}
+		const session = await getServerSession(req, res, authOptions);
+		const sessionUser = session?.user;
 
-	const summary = createCourseSummary(content);
+		const content = await mapCourseContent(course.content as CourseContent, sessionUser?.name);
+		let markdownDescription = null;
 
-	return {
-		props: {
-			course: JSON.parse(JSON.stringify(course)) as Defined<typeof course>,
-			summary,
-			content,
-			markdownDescription
-		},
-		notFound: !course
-	};
-});
+		if (course.description && course.description.length > 0) {
+			markdownDescription = await compileMarkdown(course.description);
+			course.description = null;
+		}
+
+		const summary = createCourseSummary(content);
+
+		return {
+			props: {
+				course: JSON.parse(JSON.stringify(course)) as Defined<typeof course>,
+				summary,
+				content,
+				markdownDescription
+			},
+			notFound: !course
+		};
+	})
+);
 
 async function getCourse(courseSlug: string) {
 	return database.course.findUnique({
@@ -157,8 +196,8 @@ async function getCourse(courseSlug: string) {
 
 export default function Course({ course, summary, content, markdownDescription }: CourseProps) {
 	return (
-		<div className="bg-gray-50 pb-32">
-			<CenteredSection className="bg-gray-50">
+		<div className="pb-32">
+			<CenteredSection>
 				<CourseHeader course={course} content={content} summary={summary} />
 			</CenteredSection>
 
@@ -170,7 +209,7 @@ export default function Course({ course, summary, content, markdownDescription }
 				</section>
 			)}
 
-			<CenteredSection className="bg-gray-50">
+			<CenteredSection>
 				<TableOfContents content={content} course={course} />
 			</CenteredSection>
 		</div>
@@ -190,7 +229,19 @@ function CourseHeader({
 
 	const enrollments = useEnrollments();
 	const { enroll } = useEnrollmentMutations();
-	const completion = useCourseCompletion(course.slug);
+	const { data: completion, refetch: fetchCourseCompletion } =
+		trpc.completion.getCourseCompletion.useQuery(
+			{ courseSlug: course.slug },
+			{ enabled: false }
+		);
+
+	const session = useSession();
+
+	useEffect(() => {
+		if (session.status === "authenticated" && !completion) {
+			fetchCourseCompletion();
+		}
+	}, [session.status, fetchCourseCompletion, completion]);
 
 	const isEnrolled = useMemo(() => {
 		if (!enrollments) return false;
@@ -213,19 +264,38 @@ function CourseHeader({
 
 	const firstLessonFromChapter = content[0]?.content[0] ?? null;
 	const lessonCompletionCount = completion?.courseCompletion.completedLessonCount ?? 0;
+
+	const avgScore = useMemo(() => {
+		const scores = content
+			.flatMap(chapter => chapter.content.map(lesson => lesson.performanceScore))
+			.filter(score => score != null);
+
+		const sumScore = scores.reduce((acc, score) => acc + (score ?? 0), 0);
+		if (scores.length === 0) return null;
+		else return sumScore / scores.length;
+	}, [content]);
+
+	const isParticipant = session.data?.user.featureFlags.experimental ?? false;
+
 	return (
 		<section className="flex flex-col gap-16">
 			<div className="flex flex-wrap-reverse gap-12 md:flex-nowrap">
 				<div className="flex flex-col justify-between gap-12">
 					<div className="flex min-w-[50%] flex-col-reverse gap-12 md:flex-col">
-						<div>
+						<div className="flex items-center gap-2">
 							<h1 className="mb-12 text-4xl md:text-6xl">{course.title}</h1>
+							<OnlineHelpLink relativePath="course-page.html#course-overview" />
 							{course.subtitle && (
-								<div className="text-lg tracking-tight text-light">
+								<div className="text-lg tracking-tight text-c-text-muted">
 									{course.subtitle}
 								</div>
 							)}
 						</div>
+						{course.subtitle && (
+							<div className="text-lg tracking-tight text-light">
+								{course.subtitle}
+							</div>
+						)}
 					</div>
 
 					<div className="flex flex-col gap-4">
@@ -250,21 +320,39 @@ function CourseHeader({
 							></Image>
 						)}
 
-						<ul className="absolute bottom-0 grid w-full grid-cols-3 divide-x divide-secondary rounded-b-lg border border-light-border border-t-transparent bg-white bg-opacity-80 p-2 text-center">
+						<ul
+							className={`absolute bottom-0 grid w-full ${
+								isParticipant ? "grid-cols-4" : "grid-cols-3"
+							} divide-x divide-c-primary rounded-b-lg border border-c-border border-t-transparent bg-white bg-opacity-80 p-2 text-center`}
+						>
 							<li className="flex flex-col">
-								<span className="font-semibold text-secondary">Lerneinheiten</span>
-								<span className="text-light">{summary.lessons}</span>
+								<span className="font-semibold text-c-primary">Lerneinheiten</span>
+								<span className="text-c-text-muted">{summary.lessons}</span>
 							</li>
 							<li className="flex flex-col">
-								<span className="font-semibold text-secondary">Kapitel</span>
-								<span className="text-light">{summary.chapters}</span>
+								<span className="font-semibold text-c-primary">Kapitel</span>
+								<span className="text-c-text-muted">{summary.chapters}</span>
 							</li>
 							<li className="flex flex-col">
-								<span className="font-semibold text-secondary">Dauer</span>
-								<span className="text-light">
+								<span className="font-semibold text-c-primary">Dauer</span>
+								<span className="text-c-text-muted">
 									{formatSeconds(summary.duration)}
 								</span>
 							</li>
+							{isParticipant && (
+								<li className="flex flex-col items-center">
+									<span className="font-semibold text-c-primary">
+										Mein Score{" "}
+									</span>
+									{avgScore != null ? (
+										<div className="flex justify-center">
+											<SmallGradeBadge rating={avgScore} />
+										</div>
+									) : (
+										<span>Keine</span>
+									)}
+								</li>
+							)}
 						</ul>
 					</div>
 
@@ -315,16 +403,17 @@ function CourseHeader({
 }
 
 function TableOfContents({ content, course }: { content: ToC.Content; course: Course }) {
-	const completion = useCourseCompletion(course.slug);
+	// const completion = useCourseCompletion(course.slug);
+	const completion: any = null;
 	const hasContent = content.length > 0;
 
 	if (!hasContent) {
 		return (
-			<div className="flex flex-col gap-4 p-8 rounded-lg bg-gray-100">
+			<div className="flex flex-col gap-4 p-8 rounded-lg bg-c-surface-2">
 				<h3 className="heading flex gap-4 text-2xl">
-					<span className="text-secondary">Kein Inhalt verfügbar</span>
+					<span className="text-c-primary">Kein Inhalt verfügbar</span>
 				</h3>
-				<span className="mt-4 text-light">
+				<span className="mt-4 text-c-text-muted">
 					Der Autor hat noch keine Lerneinheiten für diesen Kurs erstellt.
 				</span>
 			</div>
@@ -336,12 +425,12 @@ function TableOfContents({ content, course }: { content: ToC.Content; course: Co
 			<h2 className="mb-4 text-4xl">Inhalt</h2>
 			<ul className="flex flex-col gap-16">
 				{content.map((chapter, index) => (
-					<li key={index} className="flex flex-col rounded-lg bg-gray-100 p-8">
+					<li key={index} className="flex flex-col rounded-lg bg-c-surface-2 p-8">
 						<h3 className="heading flex gap-4 text-2xl">
 							<span>{index + 1}.</span>
-							<span className="text-secondary">{chapter.title}</span>
+							<span className="text-c-primary">{chapter.title}</span>
 						</h3>
-						<span className="mt-4 text-light">{chapter.description}</span>
+						<span className="mt-4 text-c-text-muted">{chapter.description}</span>
 
 						<ul className="mt-8 flex flex-col gap-1">
 							{chapter.content.map(lesson => (
@@ -373,7 +462,7 @@ function Lesson({
 
 	if (!isAuthenticated) {
 		return (
-			<div className="flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm border-gray-300">
+			<div className="flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm border-c-border-strong">
 				<LessonEntry lesson={lesson} />
 			</div>
 		);
@@ -382,7 +471,7 @@ function Lesson({
 		<Link
 			href={href}
 			className={`flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm ${
-				isCompleted ? "border-emerald-500" : "border-gray-300"
+				isCompleted ? "border-c-primary" : "border-c-border-strong"
 			}`}
 		>
 			<LessonEntry lesson={lesson} />
@@ -392,18 +481,26 @@ function Lesson({
 
 function LessonEntry({ lesson }: { lesson: ToC.Content[0]["content"][0] }) {
 	return (
-		<span className="flex">
-			<span className="w-8 shrink-0 self-center font-medium text-secondary">
-				{lesson.lessonNr}
+		<span className="flex items-center justify-between w-full">
+			<span className="flex items-center">
+				<span className="w-8 shrink-0 self-center font-medium text-c-primary">
+					{lesson.lessonNr}
+				</span>
+				<span>{lesson.title}</span>
 			</span>
-			<span>{lesson.title}</span>
+			{/* Grade badge - klein und konsistent mit GradeDisplay */}
+			{lesson.performanceScore != null && (
+				<Tooltip content="Deine bisherige beste Bewertung für dieses Nanomodul.">
+					<SmallGradeBadge rating={lesson.performanceScore} />
+				</Tooltip>
+			)}
 		</span>
 	);
 }
 
 function CreatedUpdatedDates({ createdAt, updatedAt }: { createdAt: string; updatedAt: string }) {
 	return (
-		<div className="flex flex-wrap gap-2 text-xs text-light">
+		<div className="flex flex-wrap gap-2 text-xs text-c-text-muted">
 			<span>
 				Erstellt: <span>{createdAt}</span>
 			</span>

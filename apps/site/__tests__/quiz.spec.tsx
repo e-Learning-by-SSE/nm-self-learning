@@ -1,23 +1,30 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useLessonContext } from "@self-learning/lesson";
-import { useEventLog } from "@self-learning/util/common";
+import { useEventLog } from "@self-learning/util/eventlog";
 import { render, screen, waitFor } from "@testing-library/react";
-import { QuizHeader} from "@self-learning/quiz";
+import { QuizHeader } from "@self-learning/quiz";
 import "@testing-library/jest-dom";
 import userEvent from "@testing-library/user-event";
 
 const defaultUseQuizReturn = {
-    evaluations: {},
-    completionState: "incomplete" 
+	evaluations: {},
+	completionState: "incomplete"
 };
 
-jest.mock("@self-learning/util/common");
-jest.mock("@self-learning/quiz", 
-	jest.fn(() => ({
-		...jest.requireActual("@self-learning/quiz"),
-		useQuiz: jest.fn(() => defaultUseQuizReturn)
-	}))
-);
+jest.mock("@self-learning/util/eventlog");
+jest.mock("@self-learning/quiz", () => {
+	const actual = jest.requireActual("@self-learning/quiz");
+	return {
+		...actual,
+		useQuiz: jest.fn(() => defaultUseQuizReturn),
+
+		QuestionTab: ({ children, ...props }: any) => (
+			<div data-testid="question-tab-mock" {...props}>
+				{children}
+			</div>
+		)
+	};
+});
 jest.mock("@self-learning/lesson");
 jest.mock("@self-learning/api", () => ({
 	withAuth: jest.fn()

@@ -11,13 +11,13 @@ export function Table({
 }) {
 	return (
 		<div
-			className={`overflow-${overflow ?? "auto"} rounded-lg border-x border-b border-light-border bg-white`}
+			className={`overflow-${overflow ?? "auto"} rounded-lg border-x border-b border-c-border bg-white`}
 		>
 			<table className="w-full table-auto">
-				<thead className="sticky top-0 z-10 rounded-lg border-y border-light-border bg-gray-100">
+				<thead className="sticky top-0 z-10 rounded-lg border-y border-c-border bg-c-surface-2">
 					<tr>{head}</tr>
 				</thead>
-				<tbody className="divide-y divide-light-border">{children}</tbody>
+				<tbody className="divide-y divide-c-border">{children}</tbody>
 			</table>
 		</div>
 	);
@@ -66,7 +66,7 @@ export function TableHeaderColumn({
 }) {
 	return (
 		<th
-			className="border-y border-light-border py-4 px-8 text-start text-sm font-semibold"
+			className="border-y border-c-border py-4 px-4 text-start text-sm font-semibold"
 			onClick={onClick}
 		>
 			{children}
@@ -81,5 +81,5 @@ export function TableDataColumn({
 	children?: React.ReactNode;
 	className?: string;
 }) {
-	return <td className={className ?? "py-2 px-8 text-sm"}>{children}</td>;
+	return <td className={className ?? "bg-c-surface-0 py-2 px-4 text-sm"}>{children}</td>;
 }
