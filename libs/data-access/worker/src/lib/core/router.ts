@@ -9,9 +9,10 @@ const t = initTRPC.context<Context>().create();
  * The tRPC router for the worker service.
  *
  * Use this router to expose jobs to clients (e.g., the Next.js app).
+ * New job definitions will automatically be handled if registered in the job registry.
  * Methods should generally:
  * 1. Define an input schema (shared with the job definition).
- * 2. Call `ctx.workerHost.runJob("job-name", input)` to dispatch the work.
+ * 2. Call `ctx.workerHost.runJob(jobId, jobType, input)` to dispatch the work.
  * 3. Return the result.
  *
  * You can also define subscriptions for real-time updates if needed.

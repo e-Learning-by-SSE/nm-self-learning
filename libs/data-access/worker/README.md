@@ -11,6 +11,7 @@ Shared Library to be used by `site` (as client) and `worker-service` (as server)
     - Add them together with a unique `jobType`identifier to `SubmitJobInput`.
 2. Write `JobDefinition` in `apps/worker-service/src/jobs`:
     - Name it as `<your-job-name>.job.ts
+    - Add this to the `JobRegistry` of `apps/worker-service/src/jobs/index.ts`
     - Write tests
 3. Writer `router` in `libs/data-access/api/` to receive user input from pages
    and forward this as a job request to the `worker-service`:
