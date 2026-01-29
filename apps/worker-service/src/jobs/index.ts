@@ -12,11 +12,11 @@ import { pathGenerationJob } from "./path-generation.job";
 import { JobKey, PayloadFor } from "@self-learning/worker-api";
 
 export type JobRegistry = {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	[K in JobKey]: JobDefinition<PayloadFor<K>, any>;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const jobs: Record<string, JobDefinition<any, any>> = {
+export const jobs: JobRegistry = {
 	pathGeneration: pathGenerationJob,
 	HelloWorld: helloWorldJob
-} satisfies JobRegistry;
+};

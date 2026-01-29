@@ -1,10 +1,10 @@
-import { JobDefinition } from "./job-registry";
 import { JobNotFoundError, JobValidationError } from "./errors";
 import { Worker } from "worker_threads";
 import * as path from "path";
 import { jobEvents } from "../../event-bus";
 import { existsSync } from "fs";
 import { JobContext, JobRunner } from "@self-learning/worker-api";
+import { JobRegistry } from "../../jobs";
 
 interface WorkerHostOptions {
 	minThreads?: number;
@@ -35,8 +35,7 @@ export class WorkerHost implements JobRunner {
 	private isShuttingDown = false;
 
 	constructor(
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		private jobs: Record<string, JobDefinition<any, any>>,
+		private jobs: JobRegistry,
 		options: WorkerHostOptions = {}
 	) {
 		this.minThreads = Math.max(1, options.minThreads ?? 2);
