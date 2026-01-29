@@ -38,10 +38,7 @@ const server = createServer((req, res) => {
 	// ✅ strip "/trpc" so tRPC sees "/reverse?batch=1"
 	req.url = req.url.slice(TRPC_PREFIX.length) || "/";
 
-	console.log(`Received request: ${req.method} ${req.url}`);
 	return handler(req, res);
-
-	// handler(req, res);
 });
 
 // WebSocket Server
