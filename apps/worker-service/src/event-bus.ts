@@ -1,4 +1,3 @@
-// eventBus.ts
 import { EventEmitter, on } from "events";
 import { JobEvent, JobEventBusType } from "@self-learning/worker-api";
 

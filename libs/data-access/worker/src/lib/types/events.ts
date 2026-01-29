@@ -16,7 +16,7 @@ export const JobEventSchema = z.discriminatedUnion("type", [
 	}),
 	z.object({
 		type: z.literal("finished"),
-		result: z.unknown()
+		result: z.unknown().optional()
 	})
 ]);
 
