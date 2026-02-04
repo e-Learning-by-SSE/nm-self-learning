@@ -1,8 +1,5 @@
 import "dotenv/config";
 import cron from "node-cron";
-import "@self-learning/database";
-import { database } from "@self-learning/database";
-import { subDays } from "date-fns";
 
 const API_SECRET = process.env.SCHEDULER_SECRET;
 const API_URL = process.env.NEXT_PUBLIC_SITE_BASE_URL;
