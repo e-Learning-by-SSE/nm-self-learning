@@ -7,8 +7,11 @@ Shared Library to be used by `site` (as client) and `worker-service` (as server)
 1. Write `schema` definitions, to define data types for data exchange in
    `libs/data-access/worker/src/lib/job-definitions`:
     - `payload`: A schema to define what data is send to the `worker-service`
-    - Currently, there is no return type definition
-    - Add them together with a unique `jobType`identifier to `SubmitJobInput`.
+    - `returns`: A schema to define the result type. Through the event system,
+      you will receive a response of type `any`, but this can safely be casted to
+      the `ResponseType` defined in `returns`
+    - Add them together with a unique `jobType`identifier to `SubmitJobInput`
+      and `JobResponse`.
 2. Write `JobDefinition` in `apps/worker-service/src/jobs`:
     - Name it as `<your-job-name>.job.ts
     - Add this to the `JobRegistry` of `apps/worker-service/src/jobs/index.ts`
@@ -27,8 +30,11 @@ Shared Library to be used by `site` (as client) and `worker-service` (as server)
     - Don't forget to unsubscribe on `finished`, `aborted` and
       caught `Error`s.
     - Log events as follows:
-        ```
+        ```ts
         import { logJobProgress } from "@self-learning/database";
         logJobProgress(jobId, data);
         ```
-    - Submit your job, via `workerServiceClient.submitJob.mutate`
+    - Submit your job, via `workerServiceClient.submitJob.mutate`,
+      this should be the last step to avoid that the `worker-service`
+      sends a response before the observer is attached to the
+      event emitter.

@@ -9,11 +9,10 @@
 import { JobDefinition } from "../lib/core/job-registry";
 import { helloWorldJob } from "./hello-world.job";
 import { pathGenerationJob } from "./path-generation.job";
-import { JobKey, PayloadFor } from "@self-learning/worker-api";
+import { JobKey } from "@self-learning/worker-api";
 
 export type JobRegistry = {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	[K in JobKey]: JobDefinition<PayloadFor<K>, any>;
+	[K in JobKey]: JobDefinition<K>;
 };
 
 export const jobs: JobRegistry = {

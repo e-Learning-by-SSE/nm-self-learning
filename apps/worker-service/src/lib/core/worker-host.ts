@@ -226,16 +226,6 @@ export class WorkerHost implements JobRunner {
 	}
 
 	private resolveWorkerEntry() {
-		// const jsPath = path.join(__dirname, "../../worker-runner.js");
-
-		// const jsPath = path.join(__dirname, "./worker-runner.js");
-		// if (!existsSync(jsPath)) {
-		// 	throw new Error(
-		// 		`worker-runner.js not found at ${jsPath}. Did you build with additionalEntryPoints?`
-		// 	);
-		// }
-		// return { filePath: jsPath, execArgv: undefined, env: undefined };
-
 		const nearMain = path.join(__dirname, "./worker-runner.js");
 		if (existsSync(nearMain)) {
 			return { filePath: nearMain, execArgv: undefined, env: undefined };

@@ -1,9 +1,8 @@
-import { z } from "zod";
 import { JobDefinition } from "../lib/core/job-registry";
 import { HelloWorldSchema } from "@self-learning/worker-api";
 
-export const helloWorldJob: JobDefinition<z.infer<typeof HelloWorldSchema>, string> = {
-	name: "hello-world",
+export const helloWorldJob: JobDefinition<"HelloWorld"> = {
+	name: "HelloWorld",
 	description: "A simple job that reverses a message",
 	schema: HelloWorldSchema,
 	run: async payload => {
