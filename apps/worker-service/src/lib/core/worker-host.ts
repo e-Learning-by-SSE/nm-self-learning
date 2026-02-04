@@ -226,36 +226,30 @@ export class WorkerHost implements JobRunner {
 	}
 
 	private resolveWorkerEntry() {
-		const jsPath = path.join(__dirname, "../../worker-runner.js");
-		if (existsSync(jsPath)) {
-			return { filePath: jsPath, execArgv: undefined, env: undefined };
+		// const jsPath = path.join(__dirname, "../../worker-runner.js");
+
+		// const jsPath = path.join(__dirname, "./worker-runner.js");
+		// if (!existsSync(jsPath)) {
+		// 	throw new Error(
+		// 		`worker-runner.js not found at ${jsPath}. Did you build with additionalEntryPoints?`
+		// 	);
+		// }
+		// return { filePath: jsPath, execArgv: undefined, env: undefined };
+
+		const nearMain = path.join(__dirname, "./worker-runner.js");
+		if (existsSync(nearMain)) {
+			return { filePath: nearMain, execArgv: undefined, env: undefined };
 		}
 
-		const tsPath = path.join(__dirname, "../../worker-runner.ts");
-		const tsLoader = "ts-node/register/transpile-only";
-
-		const execArgv = ["-r", tsLoader];
-		// Testing requires tsconfig-paths to resolve path aliases
-		// In production, tsconfig.base.json is not available, so we skip it there
-		const useTsPaths =
-			process.env.NODE_ENV !== "production" || Boolean(process.env.JEST_WORKER_ID);
-		if (useTsPaths) {
-			execArgv.push("-r", "tsconfig-paths/register");
+		// Fallback for execution in dist (i.e., Jest/ts-node)
+		const distWorker = path.resolve(process.cwd(), "dist/apps/worker-service/worker-runner.js");
+		if (existsSync(distWorker)) {
+			return { filePath: distWorker, execArgv: undefined, env: undefined };
 		}
 
-		// Remove non string types from env, which are not needed anyway by the worker
-		const { NEXT_TRAILING_SLASH: _NEXT_TRAILING_SLASH, ...env } = process.env;
-		return {
-			filePath: tsPath,
-			execArgv,
-			env: {
-				...env,
-				TS_NODE_COMPILER_OPTIONS: JSON.stringify({
-					moduleResolution: "NodeNext",
-					module: "NodeNext"
-				})
-			}
-		};
+		throw new Error(
+			`worker-runner.js not found. Tried:\n- ${nearMain}\n- ${distWorker}\nDid you run "nx build worker-service"?`
+		);
 	}
 
 	public async shutdown(): Promise<void> {

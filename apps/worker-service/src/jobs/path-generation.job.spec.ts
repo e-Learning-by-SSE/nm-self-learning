@@ -1,6 +1,6 @@
 import { WorkerHost } from "../lib/core/worker-host";
 import { jobs } from "./index";
-import { pathGenerationPayloadSchema } from "../lib/schema/path-generation.schema";
+import { pathGenerationPayloadSchema } from "@self-learning/worker-api";
 import type { z } from "zod";
 
 type PathGenerationPayload = z.infer<typeof pathGenerationPayloadSchema>;

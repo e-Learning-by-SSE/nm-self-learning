@@ -13,9 +13,10 @@
 				"platform": "node",
 				"outputPath": "dist/apps/worker-service",
 				"format": ["cjs"],
-				"bundle": false,
+				"bundle": true,
 				"main": "apps/worker-service/src/main.ts",
-				"tsConfig": "apps/worker-service/tsconfig.app.json",
+				"additionalEntryPoints": ["apps/worker-service/src/worker-runner.ts"],
+                "tsConfig": "apps/worker-service/tsconfig.app.json",
 				"assets": ["apps/worker-service/src/assets"],
 				"generatePackageJson": true,
 				"esbuildOptions": {
@@ -40,12 +41,10 @@
 		"test": {
 			"executor": "@nx/jest:jest",
 			"outputs": ["{workspaceRoot}/coverage/apps/worker-service"],
+            "dependsOn": ["build"],
 			"options": {
 				"jestConfig": "apps/worker-service/jest.config.ts",
-				"passWithNoTests": true,
-                "runBuildTargetDependencies": true,
-                "command": "NODE_PATH=dist/libs jest --config apps/worker-service/jest.config.ts",
-        "cwd": "."
+				"passWithNoTests": true
 			}
 		},
 		"serve": {

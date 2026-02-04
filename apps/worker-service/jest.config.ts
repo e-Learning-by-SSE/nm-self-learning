@@ -18,6 +18,11 @@ export default {
 		prefix: "<rootDir>/../../"
 	}),
 
-	// for ts-node at runtime (Worker/Jobs)
-	setupFiles: ["<rootDir>/jest.setup.ts"]
+	// Setup global setup to use NX way to run tests in VS Code
+	// This will build the worker-service before running tests
+	globalSetup: "<rootDir>/jest.global-setup.ts",
+
+	// Close open handles (e.g., Worker threads) after tests
+	detectOpenHandles: true,
+	forceExit: true
 };

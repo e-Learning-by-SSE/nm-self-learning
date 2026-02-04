@@ -45,6 +45,5 @@
 		".next": true,
 		"*.log": true,
 		"*.lock": true,
-	},
-    "jest.nodeEnv": { "TS_NODE_PROJECT": "/code/tsconfig.base.json", "NODE_OPTIONS": "-r tsconfig-paths/register" }
+	}
 }
