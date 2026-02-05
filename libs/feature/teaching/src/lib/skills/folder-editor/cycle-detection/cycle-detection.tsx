@@ -50,7 +50,7 @@ function CycleComponents<S extends { name: string }>({ cycles }: { cycles: S[] }
 		<>
 			{cycles.map((cycle, index) => {
 				return (
-					<button key={index} className="m-5 rounded-md bg-gray-200 p-5">
+					<button key={index} className="m-5 rounded-md bg-c-surface-3 p-5">
 						{cycle.name}
 					</button>
 				);

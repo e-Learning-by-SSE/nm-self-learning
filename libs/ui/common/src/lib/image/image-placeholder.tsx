@@ -7,5 +7,5 @@ export function ImageOrPlaceholder(
 		return <img {...props} alt={props.alt} />;
 	}
 
-	return <div className={`bg-gray-200 ${props.className}`}></div>;
+	return <div className={`bg-c-surface-3 ${props.className}`}></div>;
 }

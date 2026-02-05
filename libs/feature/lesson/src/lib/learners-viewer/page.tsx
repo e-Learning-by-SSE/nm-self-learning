@@ -369,7 +369,7 @@ function LessonArticle({ article }: { article: Article }) {
 function ContentInfo({ text, error }: { text: string; error?: boolean }) {
 	return (
 		<SectionCard>
-			<span className={`text-light text-center ${error && "text-red-500"}`}>
+			<span className={`text-c-text-muted text-center ${error && "text-c-danger"}`}>
 				{error && "Error: "}
 				{text}
 			</span>
@@ -417,7 +417,7 @@ function LessonNavigation({
 			<button
 				onClick={() => previous && navigateToLesson(previous)}
 				disabled={!previous}
-				className="rounded-lg bg-white hidden lg:flex items-center gap-4 border border-light-border px-4 py-2 disabled:text-gray-300"
+				className="rounded-lg bg-white flex items-center  gap-4 border border-c-border px-4 py-2 disabled:text-gray-300 rounded-lg bg-white hidden"
 				title="Vorherige Lerneinheit"
 				data-testid="previousLessonButton"
 			>
@@ -428,7 +428,7 @@ function LessonNavigation({
 			<button
 				onClick={() => next && navigateToLesson(next)}
 				disabled={!next}
-				className="rounded-lg bg-white hidden lg:flex items-center gap-4 border border-light-border px-4 py-2 disabled:text-gray-300"
+				className="rounded-lg bg-white hidden lg:flex items-center gap-4 border border-c-border px-4 py-2 disabled:text-gray-300"
 				title="Nächste Lerneinheit"
 				data-testid="nextLessonButton"
 			>
@@ -462,7 +462,7 @@ function LessonHeader({
 					<span className="flex flex-wrap-reverse justify-between gap-4">
 						<span className="flex flex-col gap-2">
 							<h1 className="text-4xl">{lesson.title}</h1>
-							<div className="font-semibold text-secondary min-h-[24px]">
+							<div className="font-semibold text-c-primary min-h-[24px]">
 								{!isStandalone && <ChapterName course={course} lesson={lesson} />}
 							</div>
 						</span>
@@ -474,7 +474,7 @@ function LessonHeader({
 						)}
 					</span>
 					{mdSubtitle && (
-						<MarkdownContainer className="mt-2 text-light">
+						<MarkdownContainer className="mt-2 text-c-text-muted">
 							<MDXRemote {...mdSubtitle} />
 						</MarkdownContainer>
 					)}
@@ -498,7 +498,7 @@ function LessonHeader({
 						</div>
 						{isExperimentParticipant && (
 							<div className="flex flex-col items-center">
-								<span className="mb-1 text-xs text-gray-500 text-center font-semibold">
+								<span className="mb-1 text-xs text-c-text-muted text-center font-semibold">
 									Bisherige Bewertung
 								</span>
 								{lesson.performanceScore ? (
@@ -507,7 +507,7 @@ function LessonHeader({
 										sizeClassName="px-4 py-2"
 									/>
 								) : (
-									<span className="text-gray-500 text-sm">Keine</span>
+									<span className="text-c-text-muted text-sm">Keine</span>
 								)}
 							</div>
 						)}

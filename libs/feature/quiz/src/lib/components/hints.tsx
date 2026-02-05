@@ -73,7 +73,7 @@ export function Hints() {
 				</button>
 
 				{hintsRemainingTotal > 0 ? (
-					<span className="text-sm text-light">
+					<span className="text-sm text-c-text-muted">
 						Du hast noch {hintsRemainingTotal}{" "}
 						{hintsRemainingTotal === 1 ? "Hinweis" : "Hinweise"} für diese Lernkontrolle
 						zur Verfügung.

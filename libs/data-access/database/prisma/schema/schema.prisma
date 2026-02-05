@@ -179,3 +179,19 @@ model AiTutorProfile {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }
+enum JobStatus {
+    QUEUED
+    STARTED
+    ABORTED
+    FINISHED
+}
+
+// Stored progress of jobs, may be deleted after a while (e.g. 1 day); can be used to watch if job is still running
+model JobQueue {
+    id        String    @id
+    jobType   String
+    status    JobStatus
+    // Only to report errors when job is aborted
+    cause     String?
+    updatedAt DateTime  @updatedAt
+}

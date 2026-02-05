@@ -13,7 +13,7 @@ export default function AdminPage() {
 
 	return (
 		<AdminGuard>
-			<CenteredSection className="bg-gray-50">
+			<CenteredSection>
 				<h1 className="mb-16 text-5xl">{t("Management")}</h1>
 
 				<div className="grid grid-cols-2 gap-8">
@@ -66,7 +66,7 @@ export default function AdminPage() {
 						title={t("AI Tutor Profile")}
 					/>
 				</div>
-				<div className="text-center text-sm text-gray-500 mt-8">
+				<div className="text-center text-sm text-c-text-muted mt-8">
 					{t("App Version: {{version}}", { version: appVersion })}
 				</div>
 			</CenteredSection>

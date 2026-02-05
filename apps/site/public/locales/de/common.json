@@ -1,4 +1,18 @@
 {
+    "Platform_Name": "SELF-le@rning",
+    "Operator_Name": "Universität Hildesheim",
+    "Operator_URL": "https://www.uni-hildesheim.de",
+    "COPYRIGHT_URL": "https://sse.uni-hildesheim.de",
+    "COPYRIGHT_Label": "© 2023 Universität Hildesheim. Hosted by SSE",
+    "ABOUT_URL": "https://www.uni-hildesheim.de/digital-campus-learning/self-learning/",
+    "ABOUT_Label": "About",
+    "BLOG_URL": "https://hilnet.uni-hildesheim.de/s/self-le-at-rning-development-blog/",
+    "BLOG_Label": "Blog",
+    "PRIVACY_NOTICE_URL": "https://uni-hildesheim.de/datenschutz",
+    "PRIVACY_NOTICE_Label": "Datenschutz",
+    "IMPRINT_URL": "https://www.uni-hildesheim.de/impressum/",
+    "IMPRINT_Label": "Impressum",
+
 	"Author": "Autor:in",
 	"Author_other": "Autor:innen",
 	"Admin": "Admin",
@@ -63,6 +77,6 @@
     "Name": "Name",
     "Information Updated": "Informationen aktualisiert",
     "Settings Could not be Saved!": "Einstellungen konnten nicht gespeichert werden!",
-    "Close": "Schließen"
-
+    "Close": "Schließen",
+    "Help": "Hilfe"
 }

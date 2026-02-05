@@ -30,7 +30,7 @@ export function Navbar() {
 	return (
 		<Disclosure
 			as="nav"
-			className="sticky top-0 z-30 w-full border-b border-b-gray-200 bg-white"
+			className="sticky top-0 z-30 w-full border-b border-b-c-border bg-white"
 		>
 			{({ open }) => (
 				<>
@@ -38,7 +38,7 @@ export function Navbar() {
 						<div className="relative flex h-16 items-center justify-between">
 							<div className="absolute inset-y-0 left-0 flex items-center lg:hidden">
 								{/* Mobile dropdown-menu button*/}
-								<DisclosureButton className="inline-flex items-center justify-center rounded-md p-2 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+								<DisclosureButton className="inline-flex items-center justify-center rounded-md p-2 py-2 text-c-text-muted hover:bg-c-neutral hover:text-c-text focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
 									<span className="sr-only">Menü Öffnen</span>
 									{open ? (
 										<XMarkIcon className="block h-6 w-6" aria-hidden="true" />
@@ -50,14 +50,14 @@ export function Navbar() {
 							<div className="flex flex-1 items-center justify-center lg:items-stretch lg:justify-start">
 								<div className="flex flex-shrink-0 items-center">
 									<Link href="/" className="flex items-center gap-4">
-										<div className="rounded-full bg-secondary p-1">
+										<div className="rounded-full bg-c-primary p-1">
 											<AcademicCapIcon className="h-8 shrink-0 text-white" />
 										</div>
 										<div className="hidden w-0 flex-col lg:flex lg:w-fit">
-											<span className="whitespace-nowrap text-sm text-light">
+											<span className="whitespace-nowrap text-sm text-c-text-muted">
 												Universität Hildesheim
 											</span>
-											<span className="whitespace-nowrap font-bold text-secondary">
+											<span className="whitespace-nowrap font-bold text-c-primary">
 												SELF-le@rning
 											</span>
 										</div>
@@ -72,7 +72,7 @@ export function Navbar() {
 								{/* Profile dropdown */}
 								{!user ? (
 									<button
-										className="text-w rounded-lg bg-emerald-500 px-8 py-2 font-semibold text-white"
+										className="text-w rounded-lg bg-c-primary px-8 py-2 font-semibold text-white"
 										onClick={() => loginRedirect()}
 									>
 										Login
@@ -81,7 +81,7 @@ export function Navbar() {
 									<div className="flex items-center gap-1 xl:gap-4">
 										{user.role === "ADMIN" && (
 											<span title="Admin">
-												<StarIcon className="h-5 text-secondary" />
+												<StarIcon className="h-5 text-c-primary" />
 											</span>
 										)}
 										<Link href="/dashboard">
@@ -106,7 +106,7 @@ export function Navbar() {
 							<DisclosureButton
 								as="a"
 								href="subjects"
-								className="block rounded-md px-3 py-2 text-base font-medium hover:text-gray-500"
+								className="block rounded-md px-3 py-2 text-base font-medium hover:text-c-text-muted"
 							>
 								Fachgebiete
 							</DisclosureButton>
@@ -165,13 +165,15 @@ function NavbarNavigationLink() {
 			{navigation.map((item, index) => (
 				<div key={item.name + index} className="flex items-center">
 					<Link
-						className={`hover:text-gray-500 ${index === navigation.length - 1 ? "text-gray-700 font-semibold" : ""}`}
+						className={`hover:text-c-text-muted ${index === navigation.length - 1 ? "text-c-text font-semibold" : ""}`}
 						key={item.name + index}
 						href={item.href}
 					>
 						{item.name}
 					</Link>
-					{index < navigation.length - 1 && <span className="mx-2 text-gray-400">/</span>}
+					{index < navigation.length - 1 && (
+						<span className="mx-2 text-c-text-muted">/</span>
+					)}
 				</div>
 			))}
 		</div>
@@ -206,9 +208,9 @@ export function NavbarDropdownMenu({
 							height={42}
 						/>
 					) : (
-						<div className="h-[42px] w-[42px] rounded-full bg-gray-200"></div>
+						<div className="h-[42px] w-[42px] rounded-full bg-c-surface-3"></div>
 					)}
-					<ChevronDownIcon className="h-6 w-6 text-gray-400" />
+					<ChevronDownIcon className="h-6 w-6 text-c-text-muted" />
 				</div>
 			}
 		>
