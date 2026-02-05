@@ -37,7 +37,7 @@ export function SearchInput({
 				autoComplete="off"
 				id="search"
 				name="search"
-				className="block w-full rounded-md border-0 bg-white py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-emerald-500 lg:text-sm lg:leading-6"
+				className="block w-full rounded-md border-0 bg-white py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-c-primary lg:text-sm lg:leading-6"
 				placeholder={placeHolder}
 				type="search"
 				value={searchQuery}
@@ -56,8 +56,8 @@ function NoResults() {
 		<div className="px-4 py-8 text-center text-sm sm:px-8">
 			<FaceFrownIcon className="mx-auto h-7 w-7 text-gray-400" />
 			<p className="mt-4 font-semibold text-gray-900">Nichts hier</p>
-			<p className="mt-2 text-gray-500">Leider konnten wir nichts finden was</p>
-			<p className="text-gray-500">deiner Suchanfrage entspricht</p>
+			<p className="mt-2 text-c-text-muted">Leider konnten wir nichts finden was</p>
+			<p className="text-c-text-muted">deiner Suchanfrage entspricht</p>
 		</div>
 	);
 }
@@ -214,7 +214,7 @@ export function SearchBar() {
 				<ComboboxInput
 					autoComplete="off"
 					placeholder={t("search")}
-					className="block w-full rounded-md border-0 bg-white py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-emerald-500 lg:text-sm lg:leading-6"
+					className="block w-full rounded-md border-0 bg-white py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-c-primary lg:text-sm lg:leading-6"
 					value={filterText}
 					onChange={e => setFilterText(e.target.value)}
 					onFocus={handleFocus}
@@ -242,7 +242,7 @@ export function SearchBar() {
 								value={result}
 								className={({ focus }) =>
 									`flex flex-col items-start w-full overflow-hidden text-ellipsis p-2 cursor-pointer ${
-										focus ? "bg-emerald-500 text-white " : "text-gray-900"
+										focus ? "bg-c-primary text-white " : "text-gray-900"
 									}`
 								}
 							>

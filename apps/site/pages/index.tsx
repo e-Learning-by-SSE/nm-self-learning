@@ -4,34 +4,33 @@ import { withTranslations } from "@self-learning/api";
 import { useTranslation } from "next-i18next";
 import { Trans } from "@self-learning/ui/common";
 
-export const getServerSideProps = withTranslations(["common"]);
+export const getServerSideProps = withTranslations(["common", "page-index"]);
 
 export function LandingPage() {
-	const { t } = useTranslation("common");
-
+	const { t: t_common } = useTranslation("common");
 	return (
 		<div className="flex h-full flex-col gap-16 px-4">
 			<div className="relative z-10 mx-auto grid max-w-screen-2xl items-start gap-8 py-8 lg:py-32 xl:grid-cols-2">
 				<div className="flex flex-col">
 					<h1 className="whitespace-nowrap text-4xl sm:text-6xl lg:text-9xl">
-						SELF-le@rning
+						{t_common("Platform_Name")}
 					</h1>
 					<h2 className="mt-4 text-2xl font-light text-slate-400 lg:text-3xl">
-						Universität Hildesheim
+						{t_common("Operator_Name")}
 					</h2>
 
 					<span className="mt-8 flex flex-col text-slate-600 md:text-xl">
 						<p className="mb-12 text-xl">
 							<Trans
 								i18nKey="Welcome_Message"
-								namespace="platform-config"
+								namespace="page-index"
 								components={{
 									a: (
 										<a
-											href={t("Operator_URL")}
+											href={t_common("Operator_URL")}
 											target="_blank"
 											rel="noreferrer"
-											className="font-semibold text-secondary hover:underline"
+											className="font-semibold text-c-primary hover:underline"
 										/>
 									)
 								}}
@@ -49,17 +48,18 @@ export function LandingPage() {
 
 						<Trans
 							i18nKey="Platform_Description"
-							namespace="platform-config"
+							namespace="page-index"
 							components={{
 								Link: (
 									<Link
 										href="/subjects"
-										className="w-fit rounded-lg bg-secondary px-16 py-6 text-center text-lg font-semibold text-white"
+										className="w-fit rounded-lg bg-c-primary hover:bg-c-primary-strong px-16 py-6 text-center text-lg font-semibold text-white"
 									/>
 								),
 								ul: (
 									<ul className="text-md mt-12 flex list-inside list-disc flex-col gap-6" />
-								)
+								),
+								li: <li />
 							}}
 						/>
 					</span>
@@ -72,7 +72,7 @@ export function LandingPage() {
 
 				<div
 					style={{ height: "384px", width: "384px" }}
-					className="animate-blob animation-delay-3000 absolute right-48 top-64 hidden rounded-full bg-secondary bg-pink-300 opacity-80 mix-blend-multiply blur-xl filter xl:block"
+					className="animate-blob animation-delay-3000 absolute right-48 top-64 hidden rounded-full bg-c-primary bg-pink-300 opacity-80 mix-blend-multiply blur-xl filter xl:block"
 				></div>
 
 				<div

@@ -13,10 +13,72 @@
 }
 
 :root {
-	--color-secondary: theme("colors.emerald.500");
-	--color-light: theme("colors.slate.500");
-	--color-light-border: theme("colors.slate.200");
+	--color-secondary: theme("colors.emerald.500"); /* DEPRECATED */
+	--color-light: theme("colors.slate.500"); /* DEPRECATED */
+	--color-light-border: theme("colors.slate.200"); /* DEPRECATED */
 	--gradient: linear-gradient(62deg, #c2dbf3, #d7b6f5);
+
+	--c-neutral-0: theme("colors.white");
+	--c-neutral-50: theme("colors.gray.50");
+	--c-neutral-100: theme("colors.gray.100");
+	--c-neutral-200: theme("colors.gray.200");
+	--c-neutral-300: theme("colors.gray.300");
+	--c-neutral-400: theme("colors.gray.400");
+	--c-neutral-500: theme("colors.gray.500");
+	--c-neutral-600: theme("colors.gray.600");
+	--c-neutral-700: theme("colors.gray.700");
+	--c-neutral-800: theme("colors.gray.800");
+	--c-neutral-900: theme("colors.gray.900");
+
+	/* Background / surface */
+	--c-surface-0: var(--c-neutral-0);
+	--c-surface-1: var(--c-neutral-50);
+	--c-surface-2: var(--c-neutral-100);
+	--c-surface-3: var(--c-neutral-200);
+
+	/* Text */
+	--c-text: var(--c-neutral-700);
+	--c-text-strong: var(--c-neutral-800);
+	--c-text-muted: var(--c-neutral-500);
+	--c-text-inverted: var(--c-neutral-0);
+
+	/* Borders */
+	--c-border: var(--c-neutral-200);
+	--c-border-strong: var(--c-neutral-300);
+	--c-border-muted: var(--c-neutral-100);
+
+	/* Primary */
+	--c-primary: theme("colors.emerald.500");
+	--c-primary-strong: theme("colors.emerald.600");
+	--c-primary-muted: theme("colors.emerald.400");
+	--c-primary-subtle: theme("colors.emerald.50");
+
+	/* Accent */
+	--c-accent: theme("colors.purple.500");
+	--c-accent-strong: theme("colors.purple.600");
+	--c-accent-muted: theme("colors.purple.400");
+
+	/* Semantic Colors */
+	--c-neutral: var(--c-neutral-200);
+	--c-neutral-strong: var(--c-neutral-300);
+	--c-neutral-muted: var(--c-neutral-100);
+	--c-neutral-subtle: var(--c-neutral-50);
+
+	--c-success: theme("colors.green.500");
+	--c-success-muted: theme("colors.green.200");
+
+	--c-danger: theme("colors.red.500");
+	--c-danger-strong: theme("colors.red.600");
+	--c-danger-muted: theme("colors.red.400");
+	--c-danger-subtle: theme("colors.red.100");
+
+	--c-info: theme("colors.blue.500");
+	--c-info-strong: theme("colors.blue.600");
+	--c-info-muted: theme("colors.blue.400");
+	--c-info-subtle: theme("colors.blue.50");
+
+	--c-attention: theme("colors.orange.500");
+	--c-attention-muted: theme("colors.orange.400");
 }
 
 @font-face {
@@ -72,12 +134,12 @@ html {
 	-moz-osx-font-smoothing: auto;
 	background-repeat: no-repeat;
 	background-attachment: fixed;
-	color: theme("colors.slate.700");
-	accent-color: var(--color-secondary);
+	color: var(--c-text);
+	accent-color: var(--c-primary);
 }
 
 #__next {
-	@apply flex h-full min-h-screen flex-col bg-white;
+	@apply flex h-full min-h-screen flex-col bg-c-surface-1;
 }
 
 h1,
@@ -85,7 +147,7 @@ h2,
 h3 {
 	font-weight: 700;
 	letter-spacing: -0.05em;
-	color: theme("colors.slate.800");
+	color: var(--c-text-strong);
 }
 
 video {
@@ -95,7 +157,7 @@ video {
 .heading {
 	font-weight: 700;
 	letter-spacing: -0.05em;
-	color: theme("colors.slate.800");
+	color: var(--c-text-strong);
 }
 
 /* Base button styles that all button variants inherit */
@@ -105,12 +167,12 @@ video {
 .btn-danger,
 .btn-tertiary,
 .btn-stroked {
-	@apply flex place-content-center items-center rounded-lg gap-2 px-8 py-2 text-sm font-semibold transition-colors disabled:opacity-25;
+	@apply flex place-content-center items-center rounded-lg gap-2 px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-25 hover:bg-gray-50;
 }
 
 /* Primary button: green background, white text */
 .btn-primary {
-	@apply bg-emerald-500 text-white hover:bg-emerald-600;
+	@apply bg-c-primary text-c-text-inverted hover:bg-c-primary-strong;
 }
 
 .hover-highlight-scale {
@@ -149,12 +211,12 @@ video {
 
 /* Secondary button: green outline, green text */
 .btn-secondary {
-	@apply border border-emerald-500 bg-transparent text-emerald-600 hover:bg-emerald-50;
+	@apply border border-c-primary bg-transparent text-c-primary-strong hover:bg-c-primary-subtle;
 }
 
 /* Danger button: red background, white text */
 .btn-danger {
-	@apply bg-red-500 text-white hover:bg-red-600;
+	@apply bg-c-danger text-white hover:bg-c-danger-strong;
 }
 
 /* Tertiary button: gray outline, gray text (previously border button) */
@@ -164,12 +226,17 @@ video {
 
 /* Stroked button: Gray outline, white background, black text  */
 .btn-stroked {
-	@apply border border-gray-200 bg-white px-8 py-2 text-sm font-medium hover:bg-gray-200 disabled:opacity-25;
+	@apply border border-c-border bg-white px-8 py-2 text-sm font-medium hover:bg-c-neutral-muted;
+}
+
+/* Show more / Show less button: Blue border, blue text, white background  */
+.btn-info {
+	@apply mt-4 border border-c-info text-c-info bg-white rounded hover:bg-c-info-subtle;
 }
 
 /* X Mark Button: Text Gray, Hover Gray  */
 .btn-x-mark {
-	@apply rounded-full text-gray-400 hover:bg-gray-50 hover:text-red-500 p-1;
+	@apply rounded-full text-gray-400 hover:bg-c-neutral-subtle hover:text-c-danger p-1;
 }
 
 /* Icon button with text that can be hidden on mobile */
@@ -179,7 +246,7 @@ video {
 
 /* Icon-only buttons (no border when only icon is shown) */
 .btn-icon-only {
-	@apply border-0 p-2;
+	@apply inline-flex border-0 p-2 rounded hover:bg-c-neutral-strong;
 }
 
 .icon {
@@ -187,11 +254,11 @@ video {
 }
 
 .checkbox {
-	@apply rounded text-secondary accent-secondary focus:ring-secondary;
+	@apply rounded text-c-primary accent-c-primary focus:ring-c-primary;
 }
 
 .select {
-	@apply h-fit rounded-lg border border-light-border py-2  text-sm placeholder:text-slate-400 focus:border-secondary focus:ring-secondary disabled:bg-gray-100;
+	@apply h-fit rounded-lg border border-light-border py-2  text-sm placeholder:text-slate-400 focus:border-secondary focus:ring-secondary bg-c-surface-0 disabled:bg-gray-100;
 }
 
 input,
@@ -199,7 +266,7 @@ textarea,
 select,
 .textfield {
 	@apply h-fit rounded-lg border border-light-border p-2 text-sm 
-	placeholder:text-slate-400 focus:border-secondary focus:ring-secondary disabled:bg-gray-100;
+	placeholder:text-slate-400 focus:border-secondary focus:ring-secondary bg-c-surface-0 disabled:bg-gray-100;
 }
 
 .glass {
@@ -215,7 +282,7 @@ select,
 }
 
 .card {
-	@apply rounded-lg p-8;
+	@apply rounded-lg p-6;
 }
 
 .gradient {

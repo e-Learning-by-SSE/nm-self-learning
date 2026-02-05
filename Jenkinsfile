@@ -1,5 +1,43 @@
 @Library('web-service-helper-lib') _
 
+def buildSphinxDocs(Map cfg = [:]) {
+    // Function parameters
+    // Mandatory: Version (version or unstable)
+    def version     = env.VERSION ?: "unstable"
+    // Optional: Additional Docker tag
+    def dockerTag   = cfg.get('dockerTag', version)
+
+    // Script parameters
+    def ws  = pwd()
+    def uid = sh(script: 'id -u', returnStdout: true).trim()
+    def gid = sh(script: 'id -g', returnStdout: true).trim()
+
+    // Create build directory
+    sh "mkdir -p ${ws}/docs/sphinx/build"
+    sh "chown -R ${uid}:${gid} ${ws}/docs/sphinx/build || true"
+    sh "chmod -R u+rwX,g+rwX ${ws}/docs/sphinx/build || true"
+    
+    // Build Sphinx documentation
+    docker.image('sphinxdoc/sphinx:8.2.3')
+        .inside("-u ${uid}:${gid} -v ${ws}/docs/sphinx/docs:/docs -v ${ws}/docs/sphinx/build:/build") {
+            for (l in ['de','en']) {
+                stage("Build docs: ${l}") {
+                    sh "sphinx-build -b html /docs/${l}/source /build/${l}"
+                }
+            }
+        }
+    
+    // Build and publish Docker image
+    ssedocker {
+        create { target "ghcr.io/e-learning-by-sse/nm-self-learn-docs:${version}" }
+        publish { tag dockerTag }
+    }
+
+    // Clean up build directory
+    sh "set +e"
+    sh "rm -rf ${ws}/docs/sphinx/build"
+}
+
 pipeline {
     agent { label 'docker' }
     parameters {
@@ -94,10 +132,11 @@ pipeline {
                                 returnStdout: true
                             ).trim()
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
-                             .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
+                                .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
                                     sh 'npm run seed' // this can be changed in the future to "npx prisma migrate reset" to test the migration files
                                     sh "env TZ=${env.TZ} npx nx affected --base=${lastSuccessSHA} -t lint build e2e-ci"
                                 }
+                            buildSphinxDocs(dockerTag: 'unstable')
                         }
                         ssedocker {
                             create {
@@ -130,11 +169,12 @@ pipeline {
                     steps {
                         script {
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
-                             .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
-                                sh 'npm run format:check'
-                                sh 'npm run seed'
-                                sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
+                                .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
+                                    sh 'npm run format:check'
+                                    sh 'npm run seed'
+                                    sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
                             }
+                            buildSphinxDocs()
                         }
                         ssedocker {
                             create {
@@ -200,6 +240,7 @@ pipeline {
                             return params.RELEASE_LATEST_VERSION != ''
                         }
                     }
+
                     steps {
                         script {
                             def newVersion = params.RELEASE_LATEST_VERSION
@@ -209,7 +250,7 @@ pipeline {
                             sh 'git restore .'
                             sh 'git config user.name "ssejenkins"'
                             sh 'git config user.email "jenkins@sse.uni-hildesheim.de"'
-							// would be nicer if URL is not hardcoded here but comes directly from the checkout stage
+                            // would be nicer if URL is not hardcoded here but comes directly from the checkout stage
                             sh 'git remote set-url origin git@github.com:e-learning-by-sse/nm-self-learning.git'
 
 
@@ -219,10 +260,12 @@ pipeline {
                                 dbPassword: env.POSTGRES_PASSWORD,
                                 dbName: env.POSTGRES_DB
                             ]).insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
+                                sh 'rm -rf dist/apps/site/.next dist/apps/site/.next/export || true'
                                 sh 'npm run seed'
                                 sh "env TZ=${env.TZ} npx nx run-many --target=build --all --skip-nx-cache"
                                 sh "npm version ${newVersion}"
                             }
+                            buildSphinxDocs(dockerTag: "latest")
 
                             sshagent(['STM-SSH-DEMO']) {
                                  sh "GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=no' git push origin v${newVersion}"
@@ -238,7 +281,6 @@ pipeline {
                                 }
                             }
                         }
-
                     }
                 }
             }

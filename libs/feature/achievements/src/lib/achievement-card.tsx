@@ -20,7 +20,7 @@ function DefaultAchievementProgressBar({
 				// text={`${achievement.progressValue}/${achievement.requiredValue}`}
 				bgColor="bg-blue-500"
 			/>
-			<p className="text-xs text-gray-500 mt-1">
+			<p className="text-xs text-c-text-muted mt-1">
 				{achievement.progressValue}/{achievement.requiredValue}
 			</p>
 		</div>
@@ -57,7 +57,7 @@ export function AchievementCard({
 	} else if (isEarnedNotRedeemed) {
 		cardClassName = "border-purple-200 bg-purple-100";
 	} else {
-		cardClassName = "border-gray-200 bg-gray-100 opacity-70";
+		cardClassName = "border-c-border bg-c-surface-2 opacity-70";
 	}
 
 	// Use custom progress bar if provided, otherwise use default
