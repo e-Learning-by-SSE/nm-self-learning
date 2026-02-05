@@ -25,6 +25,14 @@ const BaseJobSchema = z.object({
 });
 
 /******************************************************************************
+ ***************************** HelloWorld Example *****************************
+ ******************************************************************************/
+
+export const HelloWorldSchema = z.object({ msg: z.string() });
+export const HelloWorldResponseSchema = z.string();
+export type HelloWorldResultType = z.infer<typeof HelloWorldResponseSchema>;
+
+/******************************************************************************
  ******************************  Path Generation ******************************
  ******************************************************************************/
 
@@ -56,12 +64,20 @@ export const pathGenerationPayloadSchema = z.object({
 
 export const SubmitJobInput = z.discriminatedUnion("jobType", [
 	BaseJobSchema.extend({
+		jobType: z.literal("HelloWorld"),
+		payload: HelloWorldSchema
+	}),
+	BaseJobSchema.extend({
 		jobType: z.literal("pathGeneration"),
 		payload: pathGenerationPayloadSchema
 	})
 ]);
 
 export const JobResponse = z.discriminatedUnion("jobType", [
+	BaseJobSchema.extend({
+		jobType: z.literal("HelloWorld"),
+		response: HelloWorldResponseSchema
+	}),
 	BaseJobSchema.extend({
 		jobType: z.literal("pathGeneration"),
 		response: unknown()

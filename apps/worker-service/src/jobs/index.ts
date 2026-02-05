@@ -7,6 +7,7 @@
  * 3. Add the imported job to the `jobs` record below.
  */
 import { JobDefinition } from "../lib/core/job-registry";
+import { helloWorldJob } from "./hello-world.job";
 import { pathGenerationJob } from "./path-generation.job";
 import { JobKey } from "@self-learning/worker-api";
 
@@ -15,5 +16,6 @@ export type JobRegistry = {
 };
 
 export const jobs: JobRegistry = {
+	HelloWorld: helloWorldJob,
 	pathGeneration: pathGenerationJob
 };

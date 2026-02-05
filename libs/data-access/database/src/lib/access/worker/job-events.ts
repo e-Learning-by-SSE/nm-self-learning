@@ -14,7 +14,10 @@ const jobStatusMap: Record<JobEventType, JobStatus> = {
 
 export async function logJobProgress(jobId: string, event: JobEvent) {
 	if (event.status !== "ready") {
-		const cause = event.status === "aborted" ? event.cause : undefined;
+		let cause = event.status === "aborted" ? event.cause : undefined;
+		// !!! Only for demonstration / testing to avoid additional table !!!
+		// !!! This won't be accepted in productive code !!!
+		cause = event.status === "finished" && event.result ? JSON.stringify(event.result) : "";
 
 		// Always upsert without checking existing status
 		// Better would be to check if state is newer than before, but this requires transactions,
