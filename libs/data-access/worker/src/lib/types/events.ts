@@ -1,21 +1,25 @@
 import { z } from "zod";
 
-export const JobEventSchema = z.discriminatedUnion("type", [
-	z.object({
-		type: z.literal("ready")
+const BaseEventSchema = z.object({
+	type: z.string()
+});
+
+export const JobEventSchema = z.discriminatedUnion("status", [
+	BaseEventSchema.extend({
+		status: z.literal("ready")
 	}),
-	z.object({
-		type: z.literal("queued")
+	BaseEventSchema.extend({
+		status: z.literal("queued")
 	}),
-	z.object({
-		type: z.literal("started")
+	BaseEventSchema.extend({
+		status: z.literal("started")
 	}),
-	z.object({
-		type: z.literal("aborted"),
+	BaseEventSchema.extend({
+		status: z.literal("aborted"),
 		cause: z.string()
 	}),
-	z.object({
-		type: z.literal("finished"),
+	BaseEventSchema.extend({
+		status: z.literal("finished"),
 		result: z.unknown().optional()
 	})
 ]);

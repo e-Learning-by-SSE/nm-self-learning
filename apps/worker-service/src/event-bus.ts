@@ -18,7 +18,7 @@ class JobEventBus implements JobEventBusType {
 		const iterator = on(this.ee, jobId, { signal: opts.signal });
 		return (async function* () {
 			// Required to signal that the subscription is ready
-			yield { type: "ready" } as const;
+			yield { status: "ready", type: "" } as const;
 
 			// The actual events of type JobEvent
 			for await (const [evt] of iterator) {

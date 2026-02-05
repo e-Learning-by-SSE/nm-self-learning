@@ -22,7 +22,6 @@ import { llmConfigRouter } from "./routers/llm-config.router";
 import { userEventRouter } from "./routers/event-log.router";
 import { notificationRouter } from "./routers/notification.router";
 import { gamificationRouter } from "./routers/achievement.router";
-import { textRouter } from "./routers/text.router";
 
 export const appRouter = t.router({
 	admin: adminRouter,
@@ -45,8 +44,7 @@ export const appRouter = t.router({
 	skill: skillRouter,
 	events: userEventRouter,
 	notification: notificationRouter,
-	llmConfig: llmConfigRouter,
-	textRouter: textRouter
+	llmConfig: llmConfigRouter
 });
 
 // export type definition of API

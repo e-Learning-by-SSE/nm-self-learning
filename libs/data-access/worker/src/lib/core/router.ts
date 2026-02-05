@@ -20,16 +20,24 @@ const t = initTRPC.context<Context>().create();
 export const appRouter = t.router({
 	submitJob: t.procedure.input(SubmitJobInput).mutation(async ({ input, ctx }) => {
 		// Notify job queued
-		ctx.events.emitJobEvent(input.jobId, { type: "queued" });
+		ctx.events.emitJobEvent(input.jobId, { type: input.jobType, status: "queued" });
 
 		// Run the job async
 		void ctx.workerHost
 			.runJob(input.jobId, input.jobType, input.payload)
 			.then(result =>
-				ctx.events.emitJobEvent(input.jobId, { type: "finished", result: result.result })
+				ctx.events.emitJobEvent(input.jobId, {
+					type: input.jobType,
+					status: "finished",
+					result: result.result
+				})
 			)
 			.catch(err =>
-				ctx.events.emitJobEvent(input.jobId, { type: "aborted", cause: String(err) })
+				ctx.events.emitJobEvent(input.jobId, {
+					type: input.jobType,
+					status: "aborted",
+					cause: String(err)
+				})
 			);
 	}),
 	jobQueue: t.procedure

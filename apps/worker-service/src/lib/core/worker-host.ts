@@ -205,7 +205,7 @@ export class WorkerHost implements JobRunner {
 		if (this.isShuttingDown) {
 			return;
 		}
-		jobEvents.emitJobEvent(job.id, { type: "started" });
+		jobEvents.emitJobEvent(job.id, { status: "started", type: job.name });
 		const timeout = setTimeout(() => {
 			const pending = this.pendingJobs.get(job.id);
 			if (pending) {
