@@ -45,5 +45,5 @@
 		".next": true,
 		"*.log": true,
 		"*.lock": true,
-	},
+	}
 }
