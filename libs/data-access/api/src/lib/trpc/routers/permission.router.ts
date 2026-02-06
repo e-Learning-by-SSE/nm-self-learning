@@ -1,6 +1,6 @@
 import { database } from "@self-learning/database";
 import { z } from "zod";
-import { adminProcedure, authProcedure, t } from "../trpc";
+import { authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import { AccessLevel, GroupRole, Prisma } from "@prisma/client";
 import { paginate, Paginated, paginationSchema } from "@self-learning/util/common";
@@ -21,121 +21,7 @@ import {
 } from "../../permissions/permission.service";
 import { anyTrue } from "../../permissions/permission.utils";
 
-// function forbidden(message = "Insufficient permissions"): never {
-// 	throw new TRPCError({ code: "FORBIDDEN", message });
-// }
-// function badRequest(message: string): never {
-// 	throw new TRPCError({ code: "BAD_REQUEST", message });
-// }
-
-// async function testMigration() {
-// 	type AuthorCollab = {
-// 		userNames: string[];
-// 		userIds: string[];
-// 		courseIds: string[];
-// 		lessonIds: string[];
-// 	};
-// 	// create a map of unique authors collaborations
-// 	const authorCollabs = new Map<string, AuthorCollab>();
-// 	// Go for each resource (course & lesson) and get authors
-// 	const courses = await database.course.findMany({
-// 		select: {
-// 			courseId: true,
-// 			authors: { select: { user: { select: { id: true, name: true } } } }
-// 		}
-// 	});
-// 	// For each course, build the author collaboration map
-// 	for (const course of courses) {
-// 		const userNames = course.authors.map(a => a.user.name);
-// 		const userIds = course.authors.map(a => a.user.id);
-// 		const key = "group-" + (userNames.sort().join("-") || "empty");
-// 		const collab = authorCollabs.get(key);
-// 		if (!collab) {
-// 			// create
-// 			authorCollabs.set(key, {
-// 				userNames,
-// 				userIds,
-// 				courseIds: [course.courseId],
-// 				lessonIds: []
-// 			});
-// 		} else {
-// 			// update
-// 			collab.courseIds.push(course.courseId);
-// 		}
-// 	}
-// 	// Same for lessons
-// 	const lessons = await database.lesson.findMany({
-// 		select: {
-// 			lessonId: true,
-// 			authors: { select: { user: { select: { id: true, name: true } } } }
-// 		}
-// 	});
-// 	for (const lesson of lessons) {
-// 		const userNames = lesson.authors.map(a => a.user.name);
-// 		const userIds = lesson.authors.map(a => a.user.id);
-// 		const key = "group-" + (userNames.sort().join("-") || "empty");
-// 		const collab = authorCollabs.get(key);
-// 		if (!collab) {
-// 			// create
-// 			authorCollabs.set(key, {
-// 				userIds,
-// 				userNames,
-// 				courseIds: [],
-// 				lessonIds: [lesson.lessonId]
-// 			});
-// 		} else {
-// 			// update
-// 			collab.lessonIds.push(lesson.lessonId);
-// 		}
-// 	}
-// 	// Log total amount of collabs and members
-// 	console.log(`Total unique author collaborations: ${authorCollabs.size}`);
-// 	for (const [key, collab] of authorCollabs) {
-// 		console.log(
-// 			`Collab ${key}: ${collab.userNames.join(", ")} - #Courses: ${collab.courseIds.length}, #Lessons: ${collab.lessonIds.length}`
-// 		);
-// 	}
-// 	// For each author collaboration, create group and permissions
-// 	const groups: Prisma.GroupCreateInput[] = [];
-// 	for (const [key, collab] of authorCollabs) {
-// 		// if no authors, skip
-// 		if (collab.userIds.length === 0) continue;
-// 		// Must create at least one ADMIN - how?
-// 		//
-// 		groups.push({
-// 			name: key,
-// 			members: { create: collab.userIds.map(userId => ({ userId, role: GroupRole.ADMIN })) },
-// 			permissions: {
-// 				create: [
-// 					...collab.courseIds.map(courseId => ({
-// 						courseId,
-// 						accessLevel: AccessLevel.FULL
-// 					})),
-// 					...collab.lessonIds.map(lessonId => ({
-// 						lessonId,
-// 						accessLevel: AccessLevel.FULL
-// 					}))
-// 				]
-// 			}
-// 		});
-// 	}
-// 	console.log(JSON.stringify(groups));
-// 	// Bulk create groups
-// 	// Clean db
-// 	await database.$transaction(async tx => {
-// 		await tx.group.deleteMany();
-// 		for (const group of groups) {
-// 			await tx.group.create({
-// 				data: group
-// 			});
-// 		}
-// 	});
-// }
-
 export const permissionRouter = t.router({
-	// testMigration: t.procedure.mutation(async () => {
-	// 	testMigration();
-	// }),
 	// Can be done by "parent" group admins or website admins
 	createGroup: authProcedure
 		.input(GroupFormSchema.omit({ id: true }))
@@ -290,7 +176,7 @@ export const permissionRouter = t.router({
 				lessonId: p.lesson?.lessonId
 			});
 		});
-		// fetch existing permissions to delermine diffs
+		// fetch existing permissions to determine diffs
 		const existingPerms = await database.permission.findMany({
 			where: { groupId: id },
 			select: { lessonId: true, courseId: true, accessLevel: true }
