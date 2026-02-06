@@ -5,8 +5,8 @@ export const AccessLevelEnum = z.nativeEnum(AccessLevel);
 export const GroupRoleEnum = z.nativeEnum(GroupRole);
 
 export const ResourceInputSchema = z.union([
-	z.object({ courseId: z.string(), lessonId: z.never().optional() }),
-	z.object({ lessonId: z.string(), courseId: z.never().optional() })
+	z.object({ courseId: z.string(), lessonId: z.never().optional().nullable() }),
+	z.object({ lessonId: z.string(), courseId: z.never().optional().nullable() })
 ]);
 
 export type ResourceInput = z.infer<typeof ResourceInputSchema>;
