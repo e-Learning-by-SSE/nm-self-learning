@@ -130,6 +130,8 @@ function AuthorDashboardPage({ author }: Props) {
 		};
 	}, [author.memberships]);
 
+	const canCreate = author.memberships.length > 0;
+
 	return (
 		<CenteredSection className="bg-gray-50">
 			<section>
@@ -142,6 +144,7 @@ function AuthorDashboardPage({ author }: Props) {
 					<Link href="/teaching/groups/create">
 						<IconTextButton
 							text="Group erstellen"
+							className="btn-secondary"
 							icon={<PlusIcon className="icon h-5" />}
 						/>
 					</Link>
@@ -152,7 +155,13 @@ function AuthorDashboardPage({ author }: Props) {
 							<div className="h-32 w-32">
 								<VoidSvg />
 							</div>
-							<p className="text-light">Sie sind Mitglied keiner Gruppe.</p>
+							<div>
+								<p className="text-light">Sie sind Mitglied keiner Gruppe.</p>
+								<p>
+									Um Inhalte zu erstellen, müssen Sie Mitglied von mindestens
+									einer Gruppe sein.
+								</p>
+							</div>
 						</div>
 					) : (
 						author.memberships.map(m => (
@@ -173,173 +182,193 @@ function AuthorDashboardPage({ author }: Props) {
 				</ul>
 			</section>
 
-			<section>
-				<div className="flex justify-between gap-4">
-					<SectionHeader title="Meine Kurse" subtitle="Autor der folgenden Kurse:" />
+			{canCreate && (
+				<>
+					<Divider />
+					<section>
+						<div className="flex justify-between gap-4">
+							<SectionHeader
+								title="Meine Kurse"
+								subtitle="Berechtigungen in den folgenden Kurse:"
+							/>
 
-					<Link href="/teaching/courses/create" className="mt-4">
-						<IconTextButton
-							text="Kurs erstellen"
-							icon={<PlusIcon className="icon h-5" />}
-						/>
-					</Link>
-				</div>
-
-				<ul className="flex flex-col gap-4 py-4">
-					{courses.length === 0 ? (
-						<div className="mx-auto flex items-center gap-8">
-							<div className="h-32 w-32">
-								<VoidSvg />
-							</div>
-							<p className="text-c-text-muted">Du hast noch keine Kurse erstellt.</p>
-						</div>
-					) : (
-						courses.map(course => (
-							<li
-								key={course.courseId}
-								className="flex items-center rounded-lg border border-c-border bg-white"
-							>
-								<ImageOrPlaceholder
-									src={course.imgUrl ?? undefined}
-									className="h-16 w-16 rounded-l-lg object-cover"
+							<Link href="/teaching/courses/create" className="mt-4">
+								<IconTextButton
+									className="btn-secondary"
+									text="Kurs erstellen"
+									icon={<PlusIcon className="icon h-5" />}
 								/>
+							</Link>
+						</div>
 
-								<div className="flex w-full items-center justify-between px-4">
-									<Link
-										href={`/courses/${course.slug}`}
-										className="text-sm font-medium hover:text-c-primary"
-									>
-										{course.title}
-									</Link>
-									<i>{course.accessLevel}</i>
-
-									<div className="flex flex-wrap justify-end gap-4">
-										{(isAdmin ||
-											greaterOrEqAccessLevel(
-												course.accessLevel,
-												AccessLevel.EDIT
-											)) && (
-											<Link
-												href={`/teaching/courses/edit/${course.courseId}`}
-												className="btn-stroked h-fit w-fit"
-											>
-												<IconTextButton
-													icon={<PencilIcon className="h-5 w-5" />}
-													text={"Bearbeiten"}
-													className="btn-stroked"
-													title="Kurs bearbeiten"
-												/>
-											</Link>
-										)}
-										{(isAdmin ||
-											greaterOrEqAccessLevel(
-												course.accessLevel,
-												AccessLevel.FULL
-											)) && (
-											<>
-												<IconTextButton
-													icon={<ArrowDownTrayIcon className="h-5 w-5" />}
-													text={"Export"}
-													className="btn-stroked"
-													title="Kurs exportieren"
-													onClick={() => setViewExportDialog(true)}
-												/>
-												<CourseDeleteOption slug={course.slug} />
-											</>
-										)}
+						<ul className="flex flex-col gap-4 py-4">
+							{courses.length === 0 ? (
+								<div className="mx-auto flex items-center gap-8">
+									<div className="h-32 w-32">
+										<VoidSvg />
 									</div>
+									<p className="text-c-text-muted">
+										Du hast noch keine Kurse erstellt.
+									</p>
 								</div>
-								{viewExportDialog && (
-									<ExportCourseDialog
-										course={course}
-										onClose={() => {
-											setViewExportDialog(false);
-										}}
-									/>
-								)}
-							</li>
-						))
-					)}
-				</ul>
-			</section>
+							) : (
+								courses.map(course => (
+									<li
+										key={course.courseId}
+										className="flex items-center rounded-lg border border-c-border bg-white"
+									>
+										<ImageOrPlaceholder
+											src={course.imgUrl ?? undefined}
+											className="h-16 w-16 rounded-l-lg object-cover"
+										/>
 
-			<Divider />
+										<div className="flex w-full items-center justify-between px-4">
+											<Link
+												href={`/courses/${course.slug}`}
+												className="text-sm font-medium hover:text-c-primary"
+											>
+												{course.title}
+											</Link>
+											<i>{course.accessLevel}</i>
 
-			<section>
-				<div className="flex justify-between gap-4">
-					<SectionHeader
-						title="Meine Lerneinheiten"
-						subtitle="Berechtigungen in den folgenden Lerneinheiten:"
-					/>
+											<div className="flex flex-wrap justify-end gap-4">
+												{(isAdmin ||
+													greaterOrEqAccessLevel(
+														course.accessLevel,
+														AccessLevel.EDIT
+													)) && (
+													<Link
+														href={`/teaching/courses/edit/${course.courseId}`}
+													>
+														<IconTextButton
+															icon={
+																<PencilIcon className="h-5 w-5" />
+															}
+															text={"Bearbeiten"}
+															className="btn-stroked"
+															title="Kurs bearbeiten"
+														/>
+													</Link>
+												)}
+												{(isAdmin ||
+													greaterOrEqAccessLevel(
+														course.accessLevel,
+														AccessLevel.FULL
+													)) && (
+													<>
+														<IconTextButton
+															icon={
+																<ArrowDownTrayIcon className="h-5 w-5" />
+															}
+															text={"Export"}
+															className="btn-stroked"
+															title="Kurs exportieren"
+															onClick={() =>
+																setViewExportDialog(true)
+															}
+														/>
+														<CourseDeleteOption slug={course.slug} />
+													</>
+												)}
+											</div>
+										</div>
+										{viewExportDialog && (
+											<ExportCourseDialog
+												course={course}
+												onClose={() => {
+													setViewExportDialog(false);
+												}}
+											/>
+										)}
+									</li>
+								))
+							)}
+						</ul>
+					</section>
 
-					<Link href="/teaching/lessons/create" className="mt-4">
-						<IconTextButton
-							text="Lerneinheit erstellen"
-							icon={<PlusIcon className="icon h-5" />}
-						/>
-					</Link>
-				</div>
+					<Divider />
 
-				<ul className="flex flex-col gap-4 py-4">
-					{lessons.length === 0 ? (
-						<div className="mx-auto flex items-center gap-8">
-							<div className="h-32 w-32">
-								<VoidSvg />
-							</div>
-							<p className="text-light">Du hast noch keine Lerneinheiten erstellt.</p>
-						</div>
-					) : (
-						lessons.map(lesson => (
-							<li
-								key={lesson.lessonId}
-								className="flex w-full py-2 items-center justify-between px-4 rounded-lg border border-light-border bg-white"
-							>
-								<Link
-									href={`/lessons/${lesson.slug}`}
-									className="font-medium hover:text-secondary"
-								>
-									{lesson.title}
-								</Link>
-								<i>{lesson.accessLevel}</i>
-								<LessonTaskbar
-									lessonId={lesson.lessonId}
-									accessLevel={lesson.accessLevel}
-									isAdmin={isAdmin}
+					<section>
+						<div className="flex justify-between gap-4">
+							<SectionHeader
+								title="Meine Lerneinheiten"
+								subtitle="Berechtigungen in den folgenden Lerneinheiten:"
+							/>
+
+							<Link href="/teaching/lessons/create" className="mt-4">
+								<IconTextButton
+									text="Lerneinheit erstellen"
+									className="btn-secondary"
+									icon={<PlusIcon className="icon h-5" />}
 								/>
-							</li>
-						))
-					)}
-				</ul>
-			</section>
+							</Link>
+						</div>
 
-			<Divider />
-			<section>
-				<div className="flex justify-between gap-4">
-					<SectionHeader
-						title="Meine Skillkarten"
-						subtitle="Autor der folgenden Skillkarten:"
-					/>
-					<Link href="/skills/repository/create" className="mt-4">
-						<IconTextButton
-							icon={<PlusIcon className="icon h-5" />}
-							text="Skillkarte erstellen"
-						/>
-					</Link>
-				</div>
-				<SkillRepositoryOverview />
-			</section>
+						<ul className="flex flex-col gap-4 py-4">
+							{lessons.length === 0 ? (
+								<div className="mx-auto flex items-center gap-8">
+									<div className="h-32 w-32">
+										<VoidSvg />
+									</div>
+									<p className="text-light">
+										Du hast noch keine Lerneinheiten erstellt.
+									</p>
+								</div>
+							) : (
+								lessons.map(lesson => (
+									<li
+										key={lesson.lessonId}
+										className="flex w-full py-2 items-center justify-between px-4 rounded-lg border border-light-border bg-white"
+									>
+										<Link
+											href={`/lessons/${lesson.slug}`}
+											className="font-medium hover:text-secondary"
+										>
+											{lesson.title}
+										</Link>
+										<i>{lesson.accessLevel}</i>
+										<LessonTaskbar
+											lessonId={lesson.lessonId}
+											accessLevel={lesson.accessLevel}
+											isAdmin={isAdmin}
+										/>
+									</li>
+								))
+							)}
+						</ul>
+					</section>
 
-			<Divider />
-			<section>
-				<div className="flex justify-between gap-4">
-					<SectionHeader
-						title="Teilnahmeübersicht"
-						subtitle="Es werden aus datenschutzgründen nur Angaben bei mindestens 10
+					<Divider />
+					<section>
+						<div className="flex justify-between gap-4">
+							<SectionHeader
+								title="Meine Skillkarten"
+								subtitle="Autor der folgenden Skillkarten:"
+							/>
+							<Link href="/skills/repository/create" className="mt-4">
+								<IconTextButton
+									icon={<PlusIcon className="icon h-5" />}
+									className="btn-secondary"
+									text="Skillkarte erstellen"
+								/>
+							</Link>
+						</div>
+						<SkillRepositoryOverview />
+					</section>
+
+					<Divider />
+					<section>
+						<div className="flex justify-between gap-4">
+							<SectionHeader
+								title="Teilnahmeübersicht"
+								subtitle="Es werden aus datenschutzgründen nur Angaben bei mindestens 10
 			teilnehmenden Studierenden angezeigt."
-					/>
-				</div>
-				<TeacherView />
-			</section>
+							/>
+						</div>
+						<TeacherView />
+					</section>
+				</>
+			)}
 		</CenteredSection>
 	);
 }
