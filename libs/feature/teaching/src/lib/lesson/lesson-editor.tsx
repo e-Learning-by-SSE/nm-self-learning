@@ -129,7 +129,7 @@ export function LessonEditor({
 							<Tab>Lerninhalt</Tab>
 							<Tab>Lernkontrolle</Tab>
 						</Tabs>
-						{selectedTab === 0 && <LessonInfoEditor />}
+						{selectedTab === 0 && <LessonInfoEditor isNew={isNew} />}
 						{selectedTab === 1 && <LessonContentEditor />}
 						{selectedTab === 2 && <QuizEditor />}
 					</div>

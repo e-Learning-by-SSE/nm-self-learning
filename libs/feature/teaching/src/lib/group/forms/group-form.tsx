@@ -1,10 +1,14 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useFieldArray, useFormContext, useFormState, useWatch } from "react-hook-form";
 import { LessonFormModel } from "../../lesson/lesson-form-model";
 import { Form, LabeledField } from "@self-learning/ui/forms";
 import { Chip, IconTextButton } from "@self-learning/ui/common";
 import { ArrowsUpDownIcon, PlusIcon } from "@heroicons/react/24/solid";
-import { GroupSearchEntry, SearchGroupDialog } from "../dialogs/search-group-dialog";
+import {
+	GroupSearchEntry,
+	SearchGroupDialog,
+	useSingleMembership
+} from "../dialogs/search-group-dialog";
 import { AccessLevel } from "@prisma/client";
 import { GenericCombobox } from "../editors/group-members";
 import { useRequiredSession } from "@self-learning/ui/layouts";
@@ -80,6 +84,7 @@ export function ResourceAccessEditor({ subtitle }: { subtitle: string }) {
 			<Form.SidebarSectionTitle title="Gruppen" subtitle={subtitle}>
 				<IconTextButton
 					text="Hinzufugen"
+					className="btn-secondary"
 					icon={<PlusIcon className="icon h-5" />}
 					onClick={() => setGroupDialogOpen(true)}
 				/>
@@ -148,7 +153,13 @@ export function ResourceAccessEditor({ subtitle }: { subtitle: string }) {
 	);
 }
 
-export function GroupAccessEditor({ subtitle }: { subtitle: string }) {
+export function GroupAccessEditor({
+	subtitle,
+	fillInSingleGroup
+}: {
+	subtitle: string;
+	fillInSingleGroup: boolean;
+}) {
 	const [isGroupDialogOpen, setGroupDialogOpen] = useState(false);
 	const { control } = useFormContext<{ permissions: LessonFormModel["permissions"] }>();
 
@@ -175,30 +186,33 @@ export function GroupAccessEditor({ subtitle }: { subtitle: string }) {
 		{ label: "View", value: AccessLevel.VIEW }
 	];
 
-	const handleAddGroup = (group?: GroupSearchEntry) => {
-		if (!group) return;
+	const handleAddGroup = useCallback(
+		(group?: GroupSearchEntry) => {
+			if (!group) return;
 
-		if (editor.fields.length === 0) {
-			// first group becomes has full
-			editor.replace([
-				{
+			if (editor.fields.length === 0) {
+				// first group becomes has full
+				editor.replace([
+					{
+						groupId: group.groupId,
+						accessLevel: AccessLevel.FULL,
+						groupName: group.name
+					}
+				]);
+			} else {
+				// check duplicates
+				const exists = editor.fields.find(f => f.groupId === group.groupId);
+				if (exists) return;
+
+				editor.append({
 					groupId: group.groupId,
-					accessLevel: AccessLevel.FULL,
+					accessLevel: AccessLevel.EDIT,
 					groupName: group.name
-				}
-			]);
-		} else {
-			// check duplicates
-			const exists = editor.fields.find(f => f.groupId === group.groupId);
-			if (exists) return;
-
-			editor.append({
-				groupId: group.groupId,
-				accessLevel: AccessLevel.EDIT,
-				groupName: group.name
-			});
-		}
-	};
+				});
+			}
+		},
+		[editor]
+	);
 
 	function handleRemoveGroup(index: number, value: LessonFormModel["permissions"][number]) {
 		// check if it is last group user has access to
@@ -217,12 +231,31 @@ export function GroupAccessEditor({ subtitle }: { subtitle: string }) {
 		editor.remove(index);
 	}
 
+	// If user creates a group, not an admin, and has single membership - preset group parent (once)
+	const hasSetSingleGroup = useRef(false);
+	const singleGroup = useSingleMembership({
+		userGroups: session.data?.user.memberships,
+		enabled:
+			fillInSingleGroup &&
+			editor.fields.length === 0 &&
+			!hasSetSingleGroup.current &&
+			!isAdmin
+	});
+	useEffect(() => {
+		if (hasSetSingleGroup.current) return;
+		if (!singleGroup) return;
+		handleAddGroup(singleGroup);
+
+		hasSetSingleGroup.current = true;
+	}, [singleGroup, handleAddGroup]);
+
 	return (
 		<Form.SidebarSection>
 			<Form.SidebarSectionTitle title="Gruppe & Zugriff" subtitle={subtitle}>
 				<IconTextButton
 					text={"Hinzufügen"}
 					icon={<PlusIcon className="icon h-5" />}
+					className="btn-secondary"
 					onClick={() => setGroupDialogOpen(true)}
 				/>
 			</Form.SidebarSectionTitle>

@@ -124,7 +124,7 @@ export function GroupEditor({
 							<Tab>Mitglieder</Tab>
 							<Tab>Berechtigungen</Tab>
 						</Tabs>
-						{selectedTab === 0 && <GroupInfoEditor />}
+						{selectedTab === 0 && <GroupInfoEditor fillInSingleGroup={isNew} />}
 						{selectedTab === 1 && <GroupMembersEditor />}
 						{selectedTab === 2 && <GroupPermissionsEditor />}
 						{/*{selectedTab === 3 && <GroupGrantsEditor />} */}
