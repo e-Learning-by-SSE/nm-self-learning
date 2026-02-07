@@ -17,10 +17,7 @@ import { useMemo } from "react";
 import { MobileSidebarNavigation } from "@self-learning/ui/layouts";
 import Head from "next/head";
 
-export type LessonLayoutProps = {
-	lesson: LessonData;
-	course: ResolvedValue<typeof getCourse>;
-};
+export type LessonLayoutProps = { lesson: LessonData; course: ResolvedValue<typeof getCourse> };
 
 export async function getSSpLessonCourseLayout(
 	params?: ParsedUrlQuery | undefined

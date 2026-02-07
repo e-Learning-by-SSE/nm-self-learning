@@ -118,8 +118,8 @@ enum LessonType {
 }
 
 model Lesson {
-    lessonId              String            @id
-    slug                  String            @unique
+    lessonId              String                        @id
+    slug                  String                        @unique
     title                 String
     subtitle              String?
     description           String?
@@ -127,19 +127,20 @@ model Lesson {
     content               Json
     quiz                  Json?
     meta                  Json
-    createdAt             DateTime          @default(now())
-    updatedAt             DateTime          @updatedAt
+    createdAt             DateTime                      @default(now())
+    updatedAt             DateTime                      @updatedAt
     completions           CompletedLesson[]
     quizAttempts          QuizAttempt[]
-    authors               Author[]          @relation("AuthorToLesson")
-    license               License?          @relation(fields: [licenseId], references: [licenseId], onDelete: Restrict, onUpdate: Restrict)
+    authors               Author[]                      @relation("AuthorToLesson")
+    license               License?                      @relation(fields: [licenseId], references: [licenseId], onDelete: Restrict, onUpdate: Restrict)
     licenseId             Int?
-    lessonType            LessonType        @default(TRADITIONAL)
+    lessonType            LessonType                    @default(TRADITIONAL)
     selfRegulatedQuestion String?
-    requires              Skill[]           @relation("requiredSkills")
-    provides              Skill[]           @relation("providedSkills")
-
-    lessonStart LearningDiaryLearnedLessons[]
+    requires              Skill[]                       @relation("requiredSkills")
+    provides              Skill[]                       @relation("providedSkills")
+    lessonStart           LearningDiaryLearnedLessons[]
+    ragEnabled            Boolean                       @default(false)
+    ragVersionHash        String?                       @db.VarChar(128)
 }
 
 model CompletedLesson {

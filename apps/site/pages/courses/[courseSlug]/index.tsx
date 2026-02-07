@@ -25,8 +25,7 @@ import { useSession } from "next-auth/react";
 import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
-import { withTranslations } from "@self-learning/api";
+import { useEffect, useMemo } from "react";
 import { FloatingTutorButton } from "@self-learning/ai-tutor";
 
 type Course = ResolvedValue<typeof getCourse>;
@@ -126,11 +125,13 @@ type CourseProps = {
 	markdownDescription: CompiledMarkdown | null;
 };
 
-export const getServerSideProps = withTranslations(["common", "ai-tutor"], async ({ params }) => {
-	const courseSlug = params?.courseSlug as string | undefined;
-	if (!courseSlug) {
-		throw new Error("No slug provided.");
-	}
+export const getServerSideProps = withTranslations(
+	["common", "ai-tutor"],
+	async ({ params, req, res }) => {
+		const courseSlug = params?.courseSlug as string | undefined;
+		if (!courseSlug) {
+			throw new Error("No slug provided.");
+		}
 
 		const course = await getCourse(courseSlug);
 		if (!course) {
@@ -159,7 +160,7 @@ export const getServerSideProps = withTranslations(["common", "ai-tutor"], async
 			},
 			notFound: !course
 		};
-	})
+	}
 );
 
 async function getCourse(courseSlug: string) {

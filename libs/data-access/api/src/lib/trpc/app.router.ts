@@ -21,6 +21,7 @@ import { subjectRouter } from "./routers/subject.router";
 import { llmConfigRouter } from "./routers/llm-config.router";
 import { userEventRouter } from "./routers/event-log.router";
 import { aiTutorRouter } from "./routers/ai-tutor.router";
+import { gamificationRouter } from "./routers/achievement.router";
 
 export const appRouter = t.router({
 	admin: adminRouter,

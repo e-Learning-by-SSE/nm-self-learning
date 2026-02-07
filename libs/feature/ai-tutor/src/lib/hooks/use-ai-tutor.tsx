@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { trpc } from "@self-learning/api-client";
 import { showToast } from "@self-learning/ui/common";
-import { Message } from "@self-learning/types";
+import { Message, PageContext } from "@self-learning/types";
 import { useTranslation } from "react-i18next";
 
 export function useAiTutor() {
@@ -10,10 +10,30 @@ export function useAiTutor() {
 	const [loading, setLoading] = useState(false);
 	const [isTutorOpen, setIsTutorOpen] = useState(false);
 	const [isAnimating, setIsAnimating] = useState(false);
+	const [pageContext, setPageContext] = useState<PageContext | null>(null);
 	const { t } = useTranslation("ai-tutor");
 
 	const { data: config } = trpc.llmConfig.get.useQuery();
 	const aiResponse = trpc.aiTutor.sendMessage.useMutation();
+
+	const detectPageContext = useCallback(() => {
+		if (typeof window === "undefined") return null;
+		const pathParts = window.location.pathname.split("/").filter(Boolean);
+		const coursesIndex = pathParts.indexOf("courses");
+		if (coursesIndex === -1) {
+			setPageContext(null);
+			return;
+		}
+
+		const courseSlug = pathParts[coursesIndex + 1];
+		const maybeLessonSlug = pathParts[coursesIndex + 2];
+
+		if (maybeLessonSlug) {
+			setPageContext({ type: "lesson", lessonSlug: maybeLessonSlug, courseSlug });
+		} else {
+			setPageContext({ type: "course", courseSlug });
+		}
+	}, []);
 
 	const sendMessage = useCallback(async () => {
 		if (!input.trim()) return;
@@ -27,7 +47,8 @@ export function useAiTutor() {
 
 		try {
 			const data = await aiResponse.mutateAsync({
-				messages: updatedMessages
+				messages: updatedMessages,
+				pageContext: pageContext
 			});
 			if (data.valid) {
 				const aiMessage = { role: "assistant", content: data.response };
@@ -42,7 +63,7 @@ export function useAiTutor() {
 		} finally {
 			setLoading(false);
 		}
-	}, [input, aiResponse, messages, t]);
+	}, [input, aiResponse, messages, t, pageContext]);
 
 	// Keyboard handling
 	const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -54,6 +75,7 @@ export function useAiTutor() {
 
 	// Panel toggle
 	const toggleTutor = () => {
+		detectPageContext();
 		setIsAnimating(true);
 		setTimeout(() => {
 			setIsTutorOpen(prev => !prev);
@@ -81,6 +103,7 @@ export function useAiTutor() {
 		handleKeyDown,
 		toggleTutor,
 		closeTutor,
-		clearChat
+		clearChat,
+		pageContext
 	};
 }

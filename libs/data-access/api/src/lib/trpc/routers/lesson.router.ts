@@ -6,17 +6,15 @@ import { differenceInHours } from "date-fns";
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
+import { getRagVersionHash } from "@self-learning/rag-processing";
+import { ragService } from "../../services/rag-services";
 
 export const lessonRouter = t.router({
 	findOneAllProps: authProcedure.input(z.object({ lessonId: z.string() })).query(({ input }) => {
 		return database.lesson.findUniqueOrThrow({
 			where: { lessonId: input.lessonId },
 			include: {
-				authors: {
-					select: {
-						username: true
-					}
-				},
+				authors: { select: { username: true } },
 				requires: {
 					select: {
 						id: true,
@@ -68,42 +66,50 @@ export const lessonRouter = t.router({
 			} satisfies Paginated<unknown>;
 		}),
 	create: authProcedure.input(lessonSchema).mutation(async ({ input, ctx }) => {
+		const ragCheck = input.ragEnabled ?? false;
+		let hash: string | null = null;
+		if (ragCheck && input.content.length) {
+			hash = getRagVersionHash(JSON.stringify(input.content));
+		}
 		const createdLesson = await database.lesson.create({
 			data: {
 				...input,
 				quiz: input.quiz ? (input.quiz as Prisma.JsonObject) : Prisma.JsonNull,
-				authors: {
-					connect: input.authors.map(a => ({ username: a.username }))
-				},
+				authors: { connect: input.authors.map(a => ({ username: a.username })) },
 				licenseId: input.licenseId,
-				requires: {
-					connect: input.requires.map(r => ({ id: r.id }))
-				},
-				provides: {
-					connect: input.provides.map(r => ({ id: r.id }))
-				},
+				requires: { connect: input.requires.map(r => ({ id: r.id })) },
+				provides: { connect: input.provides.map(r => ({ id: r.id })) },
 				content: input.content as Prisma.InputJsonArray,
 				lessonId: getRandomId(),
-				meta: createLessonMeta(input) as unknown as Prisma.JsonObject
+				meta: createLessonMeta(input) as unknown as Prisma.JsonObject,
+				ragVersionHash: hash,
+				ragEnabled: input.ragEnabled ?? false
 			},
-			select: {
-				lessonId: true,
-				slug: true,
-				title: true
-			}
+			select: { lessonId: true, slug: true, title: true, ragEnabled: true }
 		});
+
+		if (createdLesson.ragEnabled && hash) {
+			ragService.enqueueEmbedJob(createdLesson.lessonId);
+		}
 
 		console.log("[lessonRouter.create]: Lesson created by", ctx.user.name, createdLesson);
 		return createdLesson;
 	}),
 	edit: authProcedure
-		.input(
-			z.object({
-				lessonId: z.string(),
-				lesson: lessonSchema
-			})
-		)
+		.input(z.object({ lessonId: z.string(), lesson: lessonSchema }))
 		.mutation(async ({ input, ctx }) => {
+			const ragCheck = input.lesson.ragEnabled ?? false;
+			let hash: string | null = null;
+			if (ragCheck && input.lesson.content.length) {
+				hash = getRagVersionHash(JSON.stringify(input.lesson.content));
+			}
+			const existing = await database.lesson.findUnique({
+				where: { lessonId: input.lessonId },
+				select: { ragVersionHash: true, ragEnabled: true }
+			});
+
+			const changed = !existing || existing.ragVersionHash !== hash;
+
 			const updatedLesson = await database.lesson.update({
 				where: { lessonId: input.lessonId },
 				data: {
@@ -112,24 +118,27 @@ export const lessonRouter = t.router({
 						? (input.lesson.quiz as Prisma.JsonObject)
 						: Prisma.JsonNull,
 					lessonId: input.lessonId,
-					authors: {
-						set: input.lesson.authors.map(a => ({ username: a.username }))
-					},
+					authors: { set: input.lesson.authors.map(a => ({ username: a.username })) },
 					licenseId: input.lesson.licenseId,
-					requires: {
-						set: input.lesson.requires.map(r => ({ id: r.id }))
-					},
-					provides: {
-						set: input.lesson.provides.map(r => ({ id: r.id }))
-					},
-					meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject
+					requires: { set: input.lesson.requires.map(r => ({ id: r.id })) },
+					provides: { set: input.lesson.provides.map(r => ({ id: r.id })) },
+					meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject,
+					ragVersionHash: hash,
+					ragEnabled: input.lesson.ragEnabled ?? false
 				},
-				select: {
-					lessonId: true,
-					slug: true,
-					title: true
-				}
+				select: { lessonId: true, slug: true, title: true, ragEnabled: true }
 			});
+
+			if (updatedLesson.ragEnabled && hash) {
+				if (!existing?.ragEnabled) {
+					ragService.enqueueEmbedJob(updatedLesson.lessonId);
+				} else {
+					await ragService.deleteLesson(updatedLesson.lessonId);
+					ragService.enqueueEmbedJob(updatedLesson.lessonId);
+				}
+			} else if (!updatedLesson.ragEnabled && existing?.ragEnabled) {
+				await ragService.deleteLesson(updatedLesson.lessonId);
+			}
 
 			console.log("[lessonRouter.edit]: Lesson updated by", ctx.user.name, updatedLesson);
 			return updatedLesson;
@@ -151,20 +160,13 @@ export const lessonRouter = t.router({
 		.input(z.object({ lessonId: z.string() }))
 		.mutation(async ({ input, ctx }) => {
 			if (ctx.user?.role === "ADMIN") {
-				await database.lesson.deleteMany({
-					where: {
-						lessonId: input.lessonId
-					}
-				});
+				await database.lesson.deleteMany({ where: { lessonId: input.lessonId } });
+				await ragService.deleteLesson(input.lessonId);
 			} else {
 				const deleted = await database.lesson.deleteMany({
 					where: {
 						lessonId: input.lessonId,
-						authors: {
-							some: {
-								username: ctx.user?.name
-							}
-						}
+						authors: { some: { username: ctx.user?.name } }
 					}
 				});
 
@@ -173,23 +175,16 @@ export const lessonRouter = t.router({
 						code: "FORBIDDEN",
 						message: "User is not an author of this lesson or lesson does not exist."
 					});
+				} else {
+					await ragService.deleteLesson(input.lessonId);
 				}
 			}
 		}),
 	validateAttempt: authProcedure
-		.input(
-			z.object({
-				lessonId: z.string(),
-				lessonAttemptId: z.string()
-			})
-		)
+		.input(z.object({ lessonId: z.string(), lessonAttemptId: z.string() }))
 		.query(async ({ input, ctx }) => {
 			const data = await database.eventLog.findFirst({
-				where: {
-					username: ctx.user.name,
-					type: "LESSON_OPEN",
-					resourceId: input.lessonId
-				},
+				where: { username: ctx.user.name, type: "LESSON_OPEN", resourceId: input.lessonId },
 				orderBy: { createdAt: "desc" },
 				select: { createdAt: true, payload: true }
 			});
@@ -236,13 +231,7 @@ export async function findLessons({
 			typeof title === "string" && title.length > 0
 				? { contains: title, mode: "insensitive" }
 				: undefined,
-		authors: authorName
-			? {
-					some: {
-						username: authorName
-					}
-				}
-			: undefined
+		authors: authorName ? { some: { username: authorName } } : undefined
 	};
 
 	const [lessons, count] = await database.$transaction([
@@ -252,13 +241,7 @@ export async function findLessons({
 				title: true,
 				slug: true,
 				updatedAt: true,
-				authors: {
-					select: {
-						displayName: true,
-						slug: true,
-						imgUrl: true
-					}
-				}
+				authors: { select: { displayName: true, slug: true, imgUrl: true } }
 			},
 			orderBy: { updatedAt: "desc" },
 			where,
