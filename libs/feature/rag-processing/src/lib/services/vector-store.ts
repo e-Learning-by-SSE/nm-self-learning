@@ -39,7 +39,7 @@ export class VectorStore {
 	/**
 	 * Initialize connection to ChromaDB
 	 */
-	async initialize(): Promise<void> {
+	async initialize(onlyChroma: boolean): Promise<void> {
 		if (this.initialized) {
 			console.log("[VectorStore] VectorStore already initialized");
 			return;
@@ -57,8 +57,9 @@ export class VectorStore {
 				ssl: RAG_CONFIG.VECTOR_STORE.USE_SSL
 			});
 
-			// Initialize embedding service as well
-			await embeddingService.initialize();
+			if (!onlyChroma) {
+				await embeddingService.initialize();
+			}
 
 			this.initialized = true;
 			console.log("[VectorStore] VectorStore initialized successfully");
@@ -140,7 +141,7 @@ export class VectorStore {
 		this.checkCircuitBreaker();
 
 		try {
-			await this.initialize();
+			await this.initialize(false);
 
 			console.log("[VectorStore] Adding documents to vector store", {
 				lessonId,
@@ -192,7 +193,7 @@ export class VectorStore {
 	 * Search for relevant documents
 	 */
 	async search(lessonId: string, query: string, topK = 5): Promise<RetrievalResult[]> {
-		await this.initialize();
+		await this.initialize(false);
 
 		const actualTopK = Math.min(topK, RAG_CONFIG.RETRIEVAL.MAX_TOP_K);
 
@@ -258,7 +259,7 @@ export class VectorStore {
 	 * Delete a lesson's collection
 	 */
 	async deleteLesson(lessonId: string): Promise<void> {
-		await this.initialize();
+		await this.initialize(true);
 
 		const collectionName = `${RAG_CONFIG.VECTOR_STORE.COLLECTION_PREFIX}${lessonId}`;
 
@@ -277,7 +278,7 @@ export class VectorStore {
 	 * Check if lesson collection exists
 	 */
 	async lessonExists(lessonId: string): Promise<boolean> {
-		await this.initialize();
+		await this.initialize(true);
 
 		const collectionName = `${RAG_CONFIG.VECTOR_STORE.COLLECTION_PREFIX}${lessonId}`;
 

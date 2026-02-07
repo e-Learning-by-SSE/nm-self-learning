@@ -1,5 +1,4 @@
 import { unknown, z } from "zod";
-import { lessonContentSchema } from "@self-learning/types";
 
 /**
  * Definition of supported worker jobs.
@@ -73,28 +72,6 @@ export const ragEmbedResponseSchema = z.object({
 });
 
 /******************************************************************************
- ******************************  RAG Retrieval ******************************
- ******************************************************************************/
-
-export const ragRetrievePayloadSchema = z.object({
-	lessonId: z.string(),
-	question: z.string(),
-	topK: z.number().default(5)
-});
-
-export const ragRetrievalResponseSchema = z.object({
-	context: z.string(),
-	sources: z.array(
-		z.object({
-			lessonName: z.string(),
-			pageNumber: z.number().optional(),
-			sourceType: z.enum(["pdf", "article", "video"]).optional(),
-			score: z.number()
-		})
-	)
-});
-
-/******************************************************************************
  ******************************  Job Unions ******************************
  ******************************************************************************/
 
@@ -103,17 +80,12 @@ export const SubmitJobInput = z.discriminatedUnion("jobType", [
 		jobType: z.literal("pathGeneration"),
 		payload: pathGenerationPayloadSchema
 	}),
-	BaseJobSchema.extend({ jobType: z.literal("ragEmbed"), payload: ragEmbedPayloadSchema }),
-	BaseJobSchema.extend({ jobType: z.literal("ragRetrieve"), payload: ragRetrievePayloadSchema })
+	BaseJobSchema.extend({ jobType: z.literal("ragEmbed"), payload: ragEmbedPayloadSchema })
 ]);
 
 export const JobResponse = z.discriminatedUnion("jobType", [
 	BaseJobSchema.extend({ jobType: z.literal("pathGeneration"), response: unknown() }),
-	BaseJobSchema.extend({ jobType: z.literal("ragEmbed"), response: ragEmbedResponseSchema }),
-	BaseJobSchema.extend({
-		jobType: z.literal("ragRetrieve"),
-		response: ragRetrievalResponseSchema
-	})
+	BaseJobSchema.extend({ jobType: z.literal("ragEmbed"), response: ragEmbedResponseSchema })
 ]);
 
 export type JobKey = z.infer<typeof SubmitJobInput>["jobType"];

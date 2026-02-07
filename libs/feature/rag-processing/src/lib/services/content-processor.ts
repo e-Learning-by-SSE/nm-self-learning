@@ -1,5 +1,6 @@
 import { PDFChunk, ArticleChunk, VideoChunk, ChunkOptions } from "../types/chunk";
 import { chunkText } from "../utils/chunking";
+declare const require: any;
 
 /**
  * Service for processing various content types into chunks
@@ -14,7 +15,7 @@ export class ContentProcessor {
 	 */
 	private async loadPDFParse(): Promise<any> {
 		if (!this.PDFParse) {
-			const module = await import("pdf-parse");
+			const module = require("pdf-parse");
 			this.PDFParse = module.PDFParse || module.default || module;
 			console.log("[ContentProcessor] PDF parser loaded");
 		}

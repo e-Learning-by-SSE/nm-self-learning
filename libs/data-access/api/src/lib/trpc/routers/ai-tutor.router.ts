@@ -1,12 +1,73 @@
 import { TRPCError } from "@trpc/server";
 import { authProcedure, t } from "../trpc";
 import { database } from "@self-learning/database";
-import { tutorInputSchema } from "@self-learning/types";
-import { statusToTRPCError, Payload, ServerConfig, PageContext } from "@self-learning/types";
-import { ragService } from "../../services/rag-services";
+import { tutorInputSchema, Message } from "@self-learning/types";
+import { statusToTRPCError, Payload, PageContext } from "@self-learning/types";
 import { fetchLlmConfig } from "./llm-config.router";
+import { vectorStore } from "@self-learning/rag-processing";
 
-const defaultPrompt = `You are an excellent tutor. An excellent tutor is a guide and an educator.
+export const aiTutorRouter = t.router({
+	sendMessage: authProcedure.input(tutorInputSchema).mutation(async ({ input }) => {
+		try {
+			const config = await fetchLlmConfig();
+			const question = extractQuestion(input.messages);
+			const payload = await fetchTutorContext(input.pageContext);
+			const { systemPrompt, sources } = await createPromptWithRag(payload, question);
+
+			if (!input.messages.find(msg => msg.role === "system")) {
+				input.messages.unshift({ role: "system", content: systemPrompt });
+			}
+
+			const response = await fetch(config.serverUrl + "/chat", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: config.apiKey ? `Bearer ${config.apiKey}` : ""
+				},
+				body: JSON.stringify({
+					messages: input.messages,
+					model: config.defaultModel,
+					stream: false
+				})
+			});
+
+			const aiResponse = await response.json();
+			if (!response.ok) {
+				const error = statusToTRPCError[response.status] || statusToTRPCError[500];
+				throw new TRPCError({
+					code: error.code,
+					message: error.message
+				});
+			}
+
+			const cleaned = cleanLlmResponse(aiResponse.message.content);
+
+			return {
+				response: cleaned,
+				sources: sources.map(s => ({
+					lessonName: s.metadata.lessonName,
+					pageNumber: s.metadata.pageNumber
+				})),
+				valid: true
+			};
+		} catch (error) {
+			if (error instanceof TRPCError) {
+				console.error("[AI Tutor] TRPC Error", error);
+				throw error;
+			} else {
+				console.error("[AI Tutor] Unexpected Error", error);
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Failed to communicate with LLM server"
+				});
+			}
+		}
+	})
+});
+
+// ==================== Helper Functions ====================
+
+const DEFAULT_SYSTEM_PROMPT = `You are an excellent tutor. An excellent tutor is a guide and an educator.
 Your main goal is to teach students problem-solving skills while they work on an exercise.
 An excellent tutor never under any circumstances responds with a direct solution for a problem.
 An excellent tutor never under any circumstances tells instructions that contain concrete steps to solve a problem.
@@ -19,121 +80,189 @@ Course consist of multiple lessons. Each lesson has a title and content. Content
 If lesson title is provided, means student is studing that specific lesson.
 Important: Base your answers on the provided course and lesson details below. Student will learn from content and you will help if he has any questions.`;
 
-async function fetchLessonOrCourse(pageContext: PageContext | null): Promise<Payload | null> {
+function extractQuestion(messages: Message[]): string {
+	const userMessage = messages
+		.slice()
+		.reverse()
+		.find(msg => msg.role === "user");
+	if (!userMessage) {
+		throw new TRPCError({ code: "BAD_REQUEST", message: "No question provided" });
+	}
+	return userMessage.content;
+}
+
+async function fetchTutorContext(pageContext: PageContext | null): Promise<Payload | null> {
 	if (!pageContext) {
+		console.log("[AiTutor] No page context provided");
 		return null;
 	}
+
 	const { type, courseSlug, lessonSlug } = pageContext;
 
-	const course = await database.course.findUnique({
-		where: { slug: courseSlug },
-		select: { title: true, description: true }
+	console.log("[AiTutor] Fetching content context", {
+		type,
+		courseSlug,
+		lessonSlug
 	});
 
-	const courseDescription: string | undefined =
-		course?.description === null ? undefined : course?.description;
-
-	if (lessonSlug) {
-		const lesson = await database.lesson.findUnique({
-			where: { slug: lessonSlug },
-			select: { lessonId: true, title: true }
+	try {
+		const course = await database.course.findUnique({
+			where: { slug: courseSlug },
+			select: { title: true, description: true }
 		});
-		if (lesson && course) {
+
+		if (!course) {
+			console.log("[AiTutor] Course not found", { courseSlug });
+			return null;
+		}
+
+		if (type === "lesson" && lessonSlug) {
+			const lesson = await database.lesson.findUnique({
+				where: { slug: lessonSlug },
+				select: { lessonId: true, title: true }
+			});
+
+			if (!lesson) {
+				console.log("[AiTutor] Lesson not found", { lessonSlug });
+				return {
+					type: "course",
+					courseTitle: course.title,
+					courseDescription: course.description ?? undefined
+				};
+			}
+
 			return {
-				type: type,
+				type: "lesson",
 				courseTitle: course.title,
-				courseDescription: courseDescription,
-				...lesson
+				courseDescription: course.description ?? undefined,
+				lessonId: lesson.lessonId,
+				title: lesson.title
 			};
 		}
-	} else if (course) {
-		return { type: type, courseTitle: course.title, courseDescription: courseDescription };
-	}
-	return null;
-}
 
-async function createPrompt(payload: Payload | null, question: string) {
-	if (payload?.type === "lesson" && payload.lessonId) {
-		const { context } = await ragService.retrieveContext(payload.lessonId, question, 5);
-		const prompt = `${defaultPrompt}
-Course Title: ${payload.courseTitle}
-Course Description: ${payload.courseDescription}
-Lesson Title: ${payload.title}
-Relevant Lesson Content:
-${context}`;
-
-		return prompt;
-	} else if (payload?.type === "course") {
-		const prompt = `${defaultPrompt}
-		Course Title: ${payload.courseTitle}
-		Course Description: ${payload.courseDescription}`;
-		return prompt;
-	} else {
-		return defaultPrompt;
+		return {
+			type: "course",
+			courseTitle: course.title,
+			courseDescription: course.description ?? undefined
+		};
+	} catch (error) {
+		console.error("[AiTutor] Failed to fetch content context", error, {
+			pageContext
+		});
+		throw new TRPCError({
+			code: "INTERNAL_SERVER_ERROR",
+			message: "Failed to fetch course/lesson context"
+		});
 	}
 }
 
-export const aiTutorRouter = t.router({
-	sendMessage: authProcedure.input(tutorInputSchema).mutation(async ({ input }) => {
+async function createPromptWithRag(
+	payload: Payload | null,
+	question: string
+): Promise<{ systemPrompt: string; sources: any[] }> {
+	const basePrompt = DEFAULT_SYSTEM_PROMPT;
+
+	if (!payload) {
+		console.log("[AiTutor] Creating prompt without context");
+		return {
+			systemPrompt: basePrompt,
+			sources: []
+		};
+	}
+
+	if (payload.type === "course") {
+		console.log("[AiTutor] Creating course-level prompt");
+		return buildCoursePrompt(basePrompt, payload);
+	}
+
+	if (payload.type === "lesson" && payload.lessonId) {
+		console.log("[AiTutor] Creating lesson-level prompt with RAG", {
+			lessonId: payload.lessonId
+		});
+
 		try {
-			const config: ServerConfig = await fetchLlmConfig();
-			const question = input.messages
-				.slice()
-				.reverse()
-				.find(msg => msg.role === "user")?.content;
-
-			if (!question) {
-				throw new TRPCError({ code: "BAD_REQUEST", message: "No question provided" });
+			const exists = await vectorStore.lessonExists(payload.lessonId);
+			if (!exists) {
+				console.log("[AiTutor] No vector store for lesson, falling back to course prompt", {
+					lessonId: payload.lessonId
+				});
+				return buildCoursePrompt(basePrompt, payload);
 			}
-			const payload = await fetchLessonOrCourse(input.pageContext);
-			const prompt = await createPrompt(payload, question);
+			const results = await vectorStore.search(payload.lessonId, question, 5);
 
-			const messages = [...input.messages];
-
-			if (!messages.find(msg => msg.role === "system")) {
-				messages.unshift({ role: "system", content: prompt });
+			if (results.length === 0) {
+				console.log("[AiTutor] No RAG results found");
+				const prompt = buildLessonPrompt(
+					basePrompt,
+					payload,
+					"No relevant lesson content found."
+				);
+				return {
+					systemPrompt: prompt,
+					sources: []
+				};
 			}
-			console.log("[AI Tutor] Sending message to LLM server", {
-				question: question.substring(0, 50),
-				pageContext: input.pageContext,
-				Prompt: messages
-			});
-			const response = await fetch(config.serverUrl + "/chat", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: config.apiKey ? `Bearer ${config.apiKey}` : ""
-				},
-				body: JSON.stringify({
-					messages: messages,
-					model: config.defaultModel,
-					stream: false,
-					max_tokens: 2000,
-					temperature: 0.7
+
+			const context = results
+				.map((result, idx) => {
+					const source = result.metadata.lessonName;
+					const page = result.metadata.pageNumber
+						? ` (Page ${result.metadata.pageNumber})`
+						: "";
+					return `[Source ${idx + 1}: ${source}${page}]\n${result.text}`;
 				})
-			});
+				.join("\n\n---\n\n");
 
-			const aiResponse = await response.json();
-			if (!response.ok) {
-				const error = statusToTRPCError[response.status] || statusToTRPCError[500];
-				throw new TRPCError({ code: error.code, message: error.message });
-			}
-			const responseMessage = aiResponse.message.content;
-			const cleaned = responseMessage.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+			const prompt = buildLessonPrompt(basePrompt, payload, context);
 
-			return { response: cleaned, valid: true };
+			return {
+				systemPrompt: prompt,
+				sources: results.map(s => ({
+					lessonName: s.metadata.lessonName,
+					pageNumber: s.metadata.pageNumber
+				}))
+			};
 		} catch (error) {
-			if (error instanceof TRPCError) {
-				console.error("[AI Tutor] TRPC Error", error);
-				throw error;
-			} else {
-				console.error("[AI Tutor] Unexpected Error", error);
-				throw error;
-			}
-			// throw new TRPCError({
-			// 	code: "INTERNAL_SERVER_ERROR",
-			// 	message: "Failed to communicate with LLM server"
-			// });
+			console.error("[AiTutor] RAG retrieval failed, using course prompt", error);
+			return buildCoursePrompt(basePrompt, payload);
 		}
-	})
-});
+	}
+
+	return {
+		systemPrompt: basePrompt,
+		sources: []
+	};
+}
+
+function buildCoursePrompt(
+	basePrompt: string,
+	payload: Payload
+): { systemPrompt: string; sources: any[] } {
+	const prompt = `${basePrompt}
+
+Course Title: ${payload.courseTitle}
+${payload.courseDescription ? `Course Description: ${payload.courseDescription}` : ""}
+
+Remember to base your answers on the course information provided above.`;
+	return {
+		systemPrompt: prompt,
+		sources: []
+	};
+}
+
+function buildLessonPrompt(basePrompt: string, payload: Payload, ragContext: string): string {
+	return `${basePrompt}
+
+Course Title: ${payload.courseTitle}
+${payload.courseDescription ? `Course Description: ${payload.courseDescription}` : ""}
+Lesson Title: ${payload.title}
+
+Relevant Lesson Content:
+${ragContext}
+
+Remember to cite the sources when answering questions. Base your answers on the provided lesson content.`;
+}
+
+function cleanLlmResponse(response: string): string {
+	return response.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+}

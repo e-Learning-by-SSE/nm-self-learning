@@ -1,13 +1,20 @@
 import { Course, Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
-import { createLessonMeta, EventTypeMap, lessonSchema } from "@self-learning/types";
+import {
+	createLessonMeta,
+	EventTypeMap,
+	LessonContentType,
+	lessonSchema
+} from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { differenceInHours } from "date-fns";
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
-import { getRagVersionHash } from "@self-learning/rag-processing";
-import { ragService } from "../../services/rag-services";
+import { getRagVersionHash, prepareRagContent, vectorStore } from "@self-learning/rag-processing";
+import { workerServiceClient } from "@self-learning/worker-api";
+import { logJobProgress } from "@self-learning/database";
+import crypto from "crypto";
 
 export const lessonRouter = t.router({
 	findOneAllProps: authProcedure.input(z.object({ lessonId: z.string() })).query(({ input }) => {
@@ -89,7 +96,7 @@ export const lessonRouter = t.router({
 		});
 
 		if (createdLesson.ragEnabled && hash) {
-			ragService.enqueueEmbedJob(createdLesson.lessonId);
+			await enqueueRagEmbedJob(createdLesson.lessonId, createdLesson.title, input.content);
 		}
 
 		console.log("[lessonRouter.create]: Lesson created by", ctx.user.name, createdLesson);
@@ -107,8 +114,6 @@ export const lessonRouter = t.router({
 				where: { lessonId: input.lessonId },
 				select: { ragVersionHash: true, ragEnabled: true }
 			});
-
-			const changed = !existing || existing.ragVersionHash !== hash;
 
 			const updatedLesson = await database.lesson.update({
 				where: { lessonId: input.lessonId },
@@ -131,13 +136,21 @@ export const lessonRouter = t.router({
 
 			if (updatedLesson.ragEnabled && hash) {
 				if (!existing?.ragEnabled) {
-					ragService.enqueueEmbedJob(updatedLesson.lessonId);
+					await enqueueRagEmbedJob(
+						updatedLesson.lessonId,
+						updatedLesson.title,
+						input.lesson.content
+					);
 				} else {
-					await ragService.deleteLesson(updatedLesson.lessonId);
-					ragService.enqueueEmbedJob(updatedLesson.lessonId);
+					await deleteEmbedding(updatedLesson.lessonId);
+					await enqueueRagEmbedJob(
+						updatedLesson.lessonId,
+						updatedLesson.title,
+						input.lesson.content
+					);
 				}
 			} else if (!updatedLesson.ragEnabled && existing?.ragEnabled) {
-				await ragService.deleteLesson(updatedLesson.lessonId);
+				await deleteEmbedding(updatedLesson.lessonId);
 			}
 
 			console.log("[lessonRouter.edit]: Lesson updated by", ctx.user.name, updatedLesson);
@@ -161,7 +174,7 @@ export const lessonRouter = t.router({
 		.mutation(async ({ input, ctx }) => {
 			if (ctx.user?.role === "ADMIN") {
 				await database.lesson.deleteMany({ where: { lessonId: input.lessonId } });
-				await ragService.deleteLesson(input.lessonId);
+				await deleteEmbedding(input.lessonId);
 			} else {
 				const deleted = await database.lesson.deleteMany({
 					where: {
@@ -176,7 +189,7 @@ export const lessonRouter = t.router({
 						message: "User is not an author of this lesson or lesson does not exist."
 					});
 				} else {
-					await ragService.deleteLesson(input.lessonId);
+					await deleteEmbedding(input.lessonId);
 				}
 			}
 		}),
@@ -252,4 +265,91 @@ export async function findLessons({
 	]);
 
 	return { lessons, count };
+}
+
+// ==================== Helper Functions ====================
+
+/**
+ * Enqueue RAG embedding job
+ */
+async function enqueueRagEmbedJob(
+	lessonId: string,
+	lessonTitle: string,
+	lessonContent: LessonContentType[]
+): Promise<string> {
+	console.log("[LessonRouter] Enqueueing RAG embed job", { lessonId });
+
+	try {
+		const preparedContent = await prepareRagContent(lessonContent);
+		const jobId = crypto.randomUUID();
+
+		await workerServiceClient.submitJob.mutate({
+			jobId,
+			jobType: "ragEmbed",
+			payload: {
+				lessonId,
+				lessonTitle,
+				pdfBuffers: preparedContent.pdfBuffers,
+				articleTexts: preparedContent.articleTexts,
+				transcriptTexts: preparedContent.transcriptTexts
+			}
+		});
+
+		console.log("[LessonRouter] RAG job submitted", { jobId, lessonId });
+
+		subscribeToRagJobEvents(jobId, lessonId).catch(err => {
+			console.error("[LessonRouter] Subscription error", err, { jobId });
+		});
+
+		return jobId;
+	} catch (error) {
+		console.error("[LessonRouter] Failed to enqueue RAG job", error, { lessonId });
+		throw error;
+	}
+}
+
+async function subscribeToRagJobEvents(jobId: string, lessonId: string): Promise<void> {
+	try {
+		workerServiceClient.jobQueue.subscribe(
+			{ jobId },
+			{
+				onData: async event => {
+					console.log("[LessonRouter] RAG job event", { jobId, status: event.status });
+					await logJobProgress(jobId, event);
+
+					if (event.status === "finished") {
+						console.log("[LessonRouter] RAG job completed", { jobId, lessonId });
+					} else if (event.status === "aborted") {
+						console.error("[LessonRouter] RAG job aborted", new Error(event.cause));
+					}
+				},
+				onError: error => {
+					console.error("[LessonRouter] RAG subscription error", error, { jobId });
+				}
+			}
+		);
+	} catch (error) {
+		console.error("[LessonRouter] Failed to subscribe to RAG events", error, { jobId });
+	}
+}
+
+/**
+ * Delete lesson from vector store
+ */
+async function deleteEmbedding(lessonId: string): Promise<void> {
+	console.log("[LessonRouter] Deleting lesson from vector store", { lessonId });
+
+	try {
+		const exists = await vectorStore.lessonExists(lessonId);
+
+		if (exists) {
+			await vectorStore.deleteLesson(lessonId);
+			console.log("[LessonRouter] Lesson deleted from vector store", { lessonId });
+		} else {
+			console.log("[LessonRouter] Lesson not found in vector store", { lessonId });
+		}
+	} catch (error) {
+		console.error("[LessonRouter] Failed to delete lesson", error, { lessonId });
+		throw error;
+	}
 }
