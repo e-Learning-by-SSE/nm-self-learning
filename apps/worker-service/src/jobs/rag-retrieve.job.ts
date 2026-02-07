@@ -1,22 +1,11 @@
 import { JobDefinition } from "../lib/core/job-registry";
 import { vectorStore } from "@self-learning/rag-processing";
-import { z } from "zod";
-
-/**
- * Payload schema for RAG retrieval
- */
-export const ragRetrievePayloadSchema = z.object({
-	lessonId: z.string(),
-	question: z.string(),
-	topK: z.number().default(5)
-});
+import { ragRetrievePayloadSchema } from "@self-learning/worker-api";
 
 /**
  * RAG Retrieval Job
  *
  * Performs vector similarity search in worker thread.
- * This is necessary because embedding generation requires
- * heavy computation that doesn't work in Next.js API routes.
  */
 export const ragRetrieveJob: JobDefinition<"ragRetrieve"> = {
 	name: "ragRetrieve",

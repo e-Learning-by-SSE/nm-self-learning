@@ -182,60 +182,8 @@ export class RagService {
 
 	/**
 	 * Retrieve context for a question (used by AI tutor)
+	 * This method submits a retrieval job to the worker and waits for the result synchronously.
 	 */
-	// async retrieveContext(
-	// 	lessonId: string,
-	// 	question: string,
-	// 	topK = 5
-	// ): Promise<{ context: string; sources: any[] }> {
-	// 	console.log("[RagService] Retrieving context", {
-	// 		lessonId,
-	// 		question: question.substring(0, 50),
-	// 		topK
-	// 	});
-
-	// 	try {
-	// 		const exists = await vectorStore.lessonExists(lessonId);
-
-	// 		if (!exists) {
-	// 			console.log("[RagService] Lesson not found in vector store", { lessonId });
-	// 			return { context: "No relevant content found for lesson data.", sources: [] };
-	// 		}
-
-	// 		const results = await vectorStore.search(lessonId, question, topK);
-
-	// 		if (results.length === 0) {
-	// 			console.log("[RagService] No relevant results found", {
-	// 				lessonId,
-	// 				question: question.substring(0, 50)
-	// 			});
-	// 			return { context: "No relevant content found for this question.", sources: [] };
-	// 		}
-
-	// 		// Format context
-	// 		const context = results
-	// 			.map((result, idx) => {
-	// 				const source = result.metadata.lessonName;
-	// 				const page = result.metadata.pageNumber
-	// 					? ` (Page ${result.metadata.pageNumber})`
-	// 					: "";
-	// 				return `[Source ${idx + 1}: ${source}${page}]\n${result.text}`;
-	// 			})
-	// 			.join("\n\n---\n\n");
-
-	// 		console.log("[RagService] Context retrieved successfully", {
-	// 			lessonId,
-	// 			resultsCount: results.length
-	// 		});
-
-	// 		return { context, sources: results };
-	// 	} catch (error) {
-	// 		console.error("[RagService] Failed to retrieve context", error, { lessonId });
-	// 		throw error;
-	// 	}
-	// }
-
-	// This submits a job to worker thread instead of running embeddings in the API route.
 
 	async retrieveContext(
 		lessonId: string,

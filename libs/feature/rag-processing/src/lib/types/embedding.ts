@@ -1,6 +1,3 @@
-/**
- * Configuration for embedding model
- */
 export interface EmbeddingConfig {
 	modelName: string;
 	quantized: boolean;
@@ -8,26 +5,17 @@ export interface EmbeddingConfig {
 	normalize: boolean;
 }
 
-/**
- * Result of embedding generation
- */
 export interface EmbeddingResult {
 	embedding: number[];
 	text: string;
 }
 
-/**
- * Batch embedding result
- */
 export interface BatchEmbeddingResult {
 	embeddings: number[][];
 	texts: string[];
 	duration: number;
 }
 
-/**
- * Embedding service interface
- */
 export interface IEmbeddingService {
 	initialize(): Promise<void>;
 	generateEmbedding(text: string): Promise<number[]>;

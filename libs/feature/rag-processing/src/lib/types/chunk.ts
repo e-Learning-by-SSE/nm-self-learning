@@ -1,31 +1,19 @@
-/**
- * Base metadata shared by all chunk types
- */
 export interface BaseChunkMetadata {
 	lessonId: string;
 	lessonName: string;
 	chunkIndex: number;
 }
 
-/**
- * Metadata specific to PDF document chunks
- */
 export interface PDFChunkMetadata extends BaseChunkMetadata {
 	pageNumber: number;
 	sourceType: "pdf";
 }
 
-/**
- * Metadata specific to article chunks
- */
 export interface ArticleChunkMetadata extends BaseChunkMetadata {
 	articleIndex: number;
 	sourceType: "article";
 }
 
-/**
- * Metadata specific to video transcript chunks
- */
 export interface VideoChunkMetadata extends BaseChunkMetadata {
 	videoIndex: number;
 	sourceType: "video";
@@ -45,19 +33,10 @@ export interface DocumentChunk<T extends ChunkMetadata = ChunkMetadata> {
 	metadata: T;
 }
 
-/**
- * PDF-specific chunk
- */
 export type PDFChunk = DocumentChunk<PDFChunkMetadata>;
 
-/**
- * Article-specific chunk
- */
 export type ArticleChunk = DocumentChunk<ArticleChunkMetadata>;
 
-/**
- * Video transcript-specific chunk
- */
 export type VideoChunk = DocumentChunk<VideoChunkMetadata>;
 
 /**
@@ -76,4 +55,13 @@ export interface RetrievalResult {
 	text: string;
 	score: number;
 	metadata: { lessonName: string; pageNumber?: number; sourceType?: "pdf" | "article" | "video" };
+}
+
+/**
+ * Circuit breaker state
+ */
+export interface CircuitBreakerState {
+	failureCount: number;
+	isOpen: boolean;
+	lastFailure?: Date;
 }

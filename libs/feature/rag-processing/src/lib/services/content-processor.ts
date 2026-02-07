@@ -197,7 +197,4 @@ export class ContentProcessor {
 	}
 }
 
-/**
- * Singleton instance
- */
 export const contentProcessor = new ContentProcessor();

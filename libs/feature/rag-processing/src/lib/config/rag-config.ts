@@ -1,8 +1,5 @@
 /**
  * RAG System Configuration
- *
- * Centralized configuration for all RAG-related operations.
- * Modify these values to tune the system behavior.
  */
 
 export const RAG_CONFIG = {

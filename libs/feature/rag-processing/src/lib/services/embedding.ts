@@ -152,10 +152,4 @@ export class EmbeddingService implements IEmbeddingService {
 	}
 }
 
-/**
- * Singleton instance for use across the application
- *
- * Note: While this is a singleton, the class itself is stateless
- * after initialization. The model loading is the only stateful operation.
- */
 export const embeddingService = new EmbeddingService();

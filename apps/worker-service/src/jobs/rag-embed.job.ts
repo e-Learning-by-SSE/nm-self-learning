@@ -13,8 +13,7 @@ import { contentProcessor, vectorStore, IngestionResult } from "@self-learning/r
  * - Embedding generation
  * - Vector store operations
  *
- * Note: All I/O operations (PDF downloads, database queries) are done
- * in the API layer before this job runs.
+ * Note: All I/O operations (PDF downloads, database queries) are done in the API layer.
  */
 export const ragEmbedJob: JobDefinition<"ragEmbed"> = {
 	name: "ragEmbed",

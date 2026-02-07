@@ -1,16 +1,10 @@
 import { ChromaClient, Collection } from "chromadb";
 import { RAG_CONFIG } from "../config/rag-config";
-import { DocumentChunk, RetrievalResult } from "../types/chunk";
+import { DocumentChunk, RetrievalResult, CircuitBreakerState } from "../types/chunk";
 import { embeddingService } from "./embedding";
 
-/**
- * Chromadb metadata must be flat key-value pairs
- */
 type ChromaMetadata = Record<string, string | number | boolean>;
 
-/**
- * Convert chunk metadata to ChromaDB-compatible format
- */
 function toChromaMetadata(metadata: DocumentChunk["metadata"]): ChromaMetadata {
 	const base: ChromaMetadata = {
 		lessonId: metadata.lessonId,
@@ -32,15 +26,6 @@ function toChromaMetadata(metadata: DocumentChunk["metadata"]): ChromaMetadata {
 	}
 
 	return base;
-}
-
-/**
- * Circuit breaker state
- */
-interface CircuitBreakerState {
-	failureCount: number;
-	isOpen: boolean;
-	lastFailure?: Date;
 }
 
 /**
@@ -67,7 +52,9 @@ export class VectorStore {
 
 		try {
 			this.client = new ChromaClient({
-				path: `http://${RAG_CONFIG.VECTOR_STORE.HOST}:${RAG_CONFIG.VECTOR_STORE.PORT}`
+				host: RAG_CONFIG.VECTOR_STORE.HOST,
+				port: RAG_CONFIG.VECTOR_STORE.PORT,
+				ssl: RAG_CONFIG.VECTOR_STORE.USE_SSL
 			});
 
 			// Initialize embedding service as well
