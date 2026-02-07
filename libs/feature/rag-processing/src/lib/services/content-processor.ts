@@ -12,10 +12,9 @@ export class ContentProcessor {
 	/**
 	 * Lazy-load PDF parsing library
 	 */
-	private loadPDFParse(): any {
+	private async loadPDFParse(): Promise<any> {
 		if (!this.PDFParse) {
-			// eslint-disable-next-line @typescript-eslint/no-var-requires
-			const module = require("pdf-parse");
+			const module = await import("pdf-parse");
 			this.PDFParse = module.PDFParse || module.default || module;
 			console.log("[ContentProcessor] PDF parser loaded");
 		}
@@ -27,7 +26,7 @@ export class ContentProcessor {
 	 */
 	async extractTextFromPDF(buffer: Uint8Array): Promise<string> {
 		try {
-			const PDFParse = this.loadPDFParse();
+			const PDFParse = await this.loadPDFParse();
 			const parser = new PDFParse(buffer);
 			const data = await parser.getText();
 
