@@ -4,6 +4,8 @@ import { t } from "../trpc";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { TRPCError } from "@trpc/server";
 import { lessonRouter } from "./lesson.router";
+// We must mock heavy/ESM modules (rag-processing -> @xenova/transformers)
+// before importing the router to avoid Jest parsing errors from those deps.
 
 jest.mock("@self-learning/database", () => ({
 	__esModule: true,
@@ -13,6 +15,26 @@ jest.mock("@self-learning/database", () => ({
 		}
 	}
 }));
+
+// Mock the rag-processing module which imports @xenova/transformers
+// (causes Jest parse errors when loaded). Keep the mocked API surface
+// used by the router (functions + vectorStore).
+jest.mock("@self-learning/rag-processing", () => ({
+	__esModule: true,
+	getRagVersionHash: jest.fn(() => "mock-hash"),
+	prepareRagContent: jest.fn().mockResolvedValue({
+		pdfBuffers: [],
+		articleTexts: [],
+		transcriptTexts: []
+	}),
+	vectorStore: {
+		lessonExists: jest.fn().mockResolvedValue(false),
+		deleteLesson: jest.fn().mockResolvedValue(undefined)
+	}
+}));
+
+// Import the router after mocks to prevent importing the real rag-processing
+// (which pulls in ESM/native deps that break Jest transform).
 
 function prepare(user: Partial<UserFromSession>) {
 	const ctx: Context & { user: UserFromSession } = {
