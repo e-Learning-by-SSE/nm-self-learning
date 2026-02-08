@@ -68,7 +68,7 @@ Configuration is managed via `src/lib/config/rag-config.ts`:
     HOST: "localhost",
     PORT: 8000,
     USE_SSL: false,
-    COLLECTION_PREFIX: "col_",
+    COLLECTION_PREFIX: "lesson_",
     MAX_FAILURES: 3
   },
   EMBEDDING: {
@@ -76,7 +76,7 @@ Configuration is managed via `src/lib/config/rag-config.ts`:
     QUANTIZED: true,
     POOLING: "mean",
     NORMALIZE: true,
-    BATCH_SIZE: 32
+    BATCH_SIZE: 10
   },
   RETRIEVAL: {
     MIN_SIMILARITY_SCORE: 0.5,
