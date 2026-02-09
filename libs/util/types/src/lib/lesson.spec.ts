@@ -13,8 +13,7 @@ const minValidLesson: Lesson = {
 	selfRegulatedQuestion: null,
 	requires: [],
 	provides: [],
-	ragEnabled: false,
-	ragVersionHash: null
+	ragEnabled: true
 };
 
 describe("lessonSchema", () => {
@@ -100,12 +99,11 @@ describe("lessonSchema", () => {
 			    "licenseId": 1,
 			    "provides": Array [],
 			    "quiz": null,
+			    "ragEnabled": true,
 			    "requires": Array [],
 			    "selfRegulatedQuestion": null,
 			    "slug": "slug-1",
 			    "title": "The Title",
-				"ragEnabled": false,
-				"ragVersionHash": null,
 			  },
 			  "success": true,
 			}

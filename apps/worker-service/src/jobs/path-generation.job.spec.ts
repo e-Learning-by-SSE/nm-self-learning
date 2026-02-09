@@ -2,9 +2,6 @@ import { WorkerHost } from "../lib/core/worker-host";
 import { jobs } from "./index";
 import { pathGenerationPayloadSchema } from "@self-learning/worker-api";
 import type { z } from "zod";
-jest.mock("@xenova/transformers", () => ({
-	pipeline: jest.fn()
-}));
 
 type PathGenerationPayload = z.infer<typeof pathGenerationPayloadSchema>;
 

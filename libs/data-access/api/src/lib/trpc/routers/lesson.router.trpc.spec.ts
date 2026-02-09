@@ -27,6 +27,7 @@ jest.mock("@self-learning/rag-processing", () => ({
 		articleTexts: [],
 		transcriptTexts: []
 	}),
+	deleteEmbedding: jest.fn().mockResolvedValue(undefined),
 	vectorStore: {
 		lessonExists: jest.fn().mockResolvedValue(false),
 		deleteLesson: jest.fn().mockResolvedValue(undefined)
