@@ -91,21 +91,17 @@ export function SearchGroupDialog({
 // if user has single membership, fetches the group
 export function useSingleMembership({
 	userGroups,
-	enabled = false
+	enabled: shouldFetch = false
 }: {
 	userGroups?: number[];
 	enabled?: boolean;
 }) {
 	const hasSingleGroup = userGroups?.length === 1;
 	const groupId = userGroups?.[0];
-	const query = trpc.permission.getGroup.useQuery(
-		{ id: groupId ?? 0 },
-		{
-			enabled: hasSingleGroup && enabled
-		}
-	);
+	const enabled = hasSingleGroup && shouldFetch;
+	const query = trpc.permission.getGroup.useQuery({ id: groupId ?? 0 }, { enabled });
 
-	return query.data
+	return enabled && query.data
 		? {
 				groupId: query.data.id,
 				name: query.data.name,
