@@ -152,6 +152,7 @@ pipeline {
                             }
                         }
                         always {
+                            sh "for f in output/test/junit-*.xml; do echo '---' $f; grep -c '<testcase' $f || true; done | head -n 80"
                             junit testResults: 'output/test/junit*.xml', allowEmptyResults: true
                         }
                     }
@@ -176,9 +177,9 @@ pipeline {
                                     sh 'npm run format:check'
                                     sh 'npm run seed'
                                     sh "env TZ=${env.TZ} npm run test"
+                                    sh "for f in output/test/junit-*.xml; do echo '---' $f; grep -c '<testcase' $f || true; done | head -n 80"
                                     sh "pwd; ls -la output/test || true"
                                     sh "env TZ=${env.TZ} npx nx --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
-                                    sh "pwd; ls -la output/test || true"
                             }
                             // buildSphinxDocs()
                         }
@@ -198,6 +199,7 @@ pipeline {
                             }
                         }
                         always {
+                            sh "for f in output/test/junit-*.xml; do echo '---' $f; grep -c '<testcase' $f || true; done | head -n 80"
                             junit testResults: "${env.WORKSPACE}/output/test/junit*.xml", allowEmptyResults: true
                         }
                     }
@@ -218,6 +220,7 @@ pipeline {
                                 sh 'npm run seed'
                                 sh "env TZ=${env.TZ} npx nx run-many --target=build  --all --skip-nx-cache"
                                 sh "pwd; ls -la output/test || true"
+                                sh "for f in output/test/junit-*.xml; do echo '---' $f; grep -c '<testcase' $f || true; done | head -n 80"
                                 sh "env TZ=${env.TZ} npm run test"
                                 sh "pwd; ls -la output/test || true"
                             }
@@ -247,6 +250,7 @@ pipeline {
                     }
                     post {
                         always {
+                            sh "for f in output/test/junit-*.xml; do echo '---' $f; grep -c '<testcase' $f || true; done | head -n 80"
                             junit testResults: "output/test/junit*.xml", allowEmptyResults: true
                         }
                     }
