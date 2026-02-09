@@ -229,36 +229,6 @@ pipeline {
                                 staging02ssh "python3 /opt/selflearn-branches/demo-manager.py new-container:${env.VERSION}:${env.BRANCH_NAME} generate-html"
                             }
                         }
-                        always {
-                           //junit testResults: 'output/test/junit*.xml', allowEmptyResults: false
-                           script {
-  sh '''
-    set -e
-    mkdir -p output/test/valid
-    rm -f output/test/valid/*.xml || true
-
-    python3 - <<'PY'
-import glob, shutil
-import xml.etree.ElementTree as ET
-import os
-
-os.makedirs("output/test/valid", exist_ok=True)
-
-ok=0
-bad=0
-for f in glob.glob("output/test/junit*.xml"):
-    try:
-        ET.parse(f)          # prüft, ob XML wohlgeformt ist
-        shutil.copy2(f, "output/test/valid/")
-        ok += 1
-    except Exception as e:
-        bad += 1
-print("Valid XML:", ok, "Invalid XML:", bad)
-PY
-  '''
-  junit testResults: 'output/test/valid/junit*.xml', allowEmptyResults: true, keepLongStdio: true
-}
-                        }
                      }
                 }
                 stage('Full build') {
@@ -367,6 +337,38 @@ PY
                     }
                 }
             }
+        }
+        post{
+            always {
+                        //junit testResults: 'output/test/junit*.xml', allowEmptyResults: false
+                        script {
+                            sh '''
+                                set -e
+                                mkdir -p output/test/valid
+                                rm -f output/test/valid/*.xml || true
+
+                                python3 - <<'PY'
+                            import glob, shutil
+                            import xml.etree.ElementTree as ET
+                            import os
+
+                            os.makedirs("output/test/valid", exist_ok=True)
+
+                            ok=0
+                            bad=0
+                            for f in glob.glob("output/test/junit*.xml"):
+                                try:
+                                    ET.parse(f)          # prüft, ob XML wohlgeformt ist
+                                    shutil.copy2(f, "output/test/valid/")
+                                    ok += 1
+                                except Exception as e:
+                                    bad += 1
+                            print("Valid XML:", ok, "Invalid XML:", bad)
+                            PY
+                            '''
+                            junit testResults: 'output/test/valid/junit*.xml', allowEmptyResults: true, keepLongStdio: true
+                        }
+                    }
         }
     }
 }
