@@ -256,7 +256,7 @@ for f in glob.glob("output/test/junit*.xml"):
 print("Valid XML:", ok, "Invalid XML:", bad)
 PY
   '''
-  junit testResults: 'output/test/valid/junit*.xml', allowEmptyResults: true
+  junit testResults: 'output/test/valid/junit*.xml', allowEmptyResults: true, keepLongStdio: true
 }
                         }
                      }
