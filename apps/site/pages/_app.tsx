@@ -15,7 +15,7 @@ import { PropsWithChildren } from "react";
 import superjson from "superjson";
 import { GlobalFeatures } from "../_features";
 import "./styles.css";
-import { AiTutor, AiTutorProvider } from "@self-learning/ai-tutor";
+import { AiTutor, AiTutorProvider, useAiTutor } from "@self-learning/ai-tutor";
 
 export default withTRPC<AppRouter>({
 	transformer: superjson,
@@ -47,7 +47,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 		: null;
 
 	const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-
+	const tutorState = useAiTutor();
 	return (
 		<>
 			{process.env.NODE_ENV === "development" && (
@@ -96,7 +96,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 						<main className="grid grow">
 							{Layout ? <>{Layout}</> : <Component {...pageProps} />}
 						</main>
-						<AiTutor />
+						<AiTutor tutorState={tutorState} />
 						<Footer />
 					</AiTutorProvider>
 				</SessionProvider>
