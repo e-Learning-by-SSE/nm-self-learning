@@ -175,7 +175,9 @@ pipeline {
                                 .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
                                     sh 'npm run format:check'
                                     sh 'npm run seed'
-                                    sh "env TZ=${env.TZ} npm run test || true"
+                                    catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                                        sh "env TZ=${env.TZ} npm run test"
+                                    }
                                     sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
                             }
                             // buildSphinxDocs()
@@ -214,7 +216,9 @@ pipeline {
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
                              .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
                                 sh 'npm run seed'
-                                sh "env TZ=${env.TZ} npm run test"
+                                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                                    sh "env TZ=${env.TZ} npm run test"
+                                }
                                 sh "env TZ=${env.TZ} npx nx run-many --target=build  --all --skip-nx-cache"
                             }
                             if (params.PUBLISH) {
