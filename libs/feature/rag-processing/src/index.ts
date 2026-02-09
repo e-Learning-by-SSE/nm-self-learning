@@ -9,3 +9,4 @@ export * from "./lib/services/embedding";
 export * from "./lib/utils/download";
 export * from "./lib/types/content";
 export * from "./lib/utils/content-preparation";
+export * from "./lib/utils/delete-embed";

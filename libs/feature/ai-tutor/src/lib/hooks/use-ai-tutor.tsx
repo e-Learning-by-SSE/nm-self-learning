@@ -4,22 +4,34 @@ import { showToast } from "@self-learning/ui/common";
 import { Message, PageContext } from "@self-learning/types";
 import { useTranslation } from "react-i18next";
 
+/**
+ * Hook for AI tutor UI state management
+ *
+ * Responsibilities:
+ * - Message state management
+ * - UI state (open/closed, loading, animation)
+ * - Page context detection
+ * - User interactions (send, clear, toggle)
+ */
 export function useAiTutor() {
+	const { t } = useTranslation("ai-tutor");
 	const [messages, setMessages] = useState<Message[]>([]);
 	const [input, setInput] = useState("");
-	const [loading, setLoading] = useState(false);
 	const [isTutorOpen, setIsTutorOpen] = useState(false);
 	const [isAnimating, setIsAnimating] = useState(false);
 	const [pageContext, setPageContext] = useState<PageContext | null>(null);
-	const { t } = useTranslation("ai-tutor");
-
 	const { data: config } = trpc.llmConfig.get.useQuery();
-	const aiResponse = trpc.aiTutor.sendMessage.useMutation();
+	const sendMessageMutation = trpc.aiTutor.sendMessage.useMutation();
 
 	const detectPageContext = useCallback(() => {
-		if (typeof window === "undefined") return null;
+		if (typeof window === "undefined") {
+			setPageContext(null);
+			return;
+		}
+
 		const pathParts = window.location.pathname.split("/").filter(Boolean);
 		const coursesIndex = pathParts.indexOf("courses");
+
 		if (coursesIndex === -1) {
 			setPageContext(null);
 			return;
@@ -29,81 +41,104 @@ export function useAiTutor() {
 		const maybeLessonSlug = pathParts[coursesIndex + 2];
 
 		if (maybeLessonSlug) {
-			setPageContext({ type: "lesson", lessonSlug: maybeLessonSlug, courseSlug });
+			setPageContext({
+				type: "lesson",
+				lessonSlug: maybeLessonSlug,
+				courseSlug
+			});
 		} else {
-			setPageContext({ type: "course", courseSlug });
+			setPageContext({
+				type: "course",
+				courseSlug
+			});
 		}
 	}, []);
 
 	const sendMessage = useCallback(async () => {
-		if (!input.trim()) return;
+		const trimmedInput = input.trim();
 
-		const newMessage = { role: "user", content: input };
+		if (!trimmedInput) {
+			return;
+		}
+
+		const userMessage: Message = {
+			role: "user",
+			content: trimmedInput
+		};
+
+		setMessages(prev => [...prev, userMessage]);
 		setInput("");
-		setLoading(true);
-
-		const updatedMessages = [...messages, newMessage];
-		setMessages(updatedMessages);
 
 		try {
-			const data = await aiResponse.mutateAsync({
-				messages: updatedMessages,
-				pageContext: pageContext
+			const response = await sendMessageMutation.mutateAsync({
+				messages: [...messages, userMessage],
+				pageContext
 			});
-			if (data.valid) {
-				const aiMessage = { role: "assistant", content: data.response };
-				setMessages(prev => [...prev, aiMessage]);
-			}
-		} catch (err) {
+
+			const assistantMessage: Message = {
+				role: "assistant",
+				content: response.content
+			};
+
+			setMessages(prev => [...prev, assistantMessage]);
+		} catch (error) {
+			setMessages(prev => prev.slice(0, -1));
+			setInput(trimmedInput);
+
 			showToast({
 				type: "error",
 				title: t("Message Failed"),
-				subtitle: err instanceof Error ? t(err.message) : t("Unknown error")
+				subtitle: error instanceof Error ? t(error.message) : t("Unknown error")
 			});
-		} finally {
-			setLoading(false);
 		}
-	}, [input, aiResponse, messages, t, pageContext]);
+	}, [input, messages, pageContext, sendMessageMutation, t]);
 
-	// Keyboard handling
-	const handleKeyDown = (e: React.KeyboardEvent) => {
-		if (e.key === "Enter" && !e.shiftKey) {
-			e.preventDefault();
-			sendMessage();
-		}
-	};
+	const handleKeyDown = useCallback(
+		(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+			if (e.key === "Enter" && !e.shiftKey) {
+				e.preventDefault();
+				sendMessage();
+			}
+		},
+		[sendMessage]
+	);
 
-	// Panel toggle
-	const toggleTutor = () => {
+	const toggleTutor = useCallback(() => {
 		detectPageContext();
 		setIsAnimating(true);
+
 		setTimeout(() => {
 			setIsTutorOpen(prev => !prev);
 			setIsAnimating(false);
 		}, 400);
-	};
+	}, [detectPageContext]);
 
-	const closeTutor = () => {
+	const closeTutor = useCallback(() => {
 		setIsTutorOpen(false);
-	};
+	}, []);
 
-	const clearChat = () => {
+	const clearChat = useCallback(() => {
 		setMessages([]);
-	};
+		setInput("");
+	}, []);
+
+	const isLoading = sendMessageMutation.isPending;
 
 	return {
-		config,
 		messages,
 		input,
-		loading,
 		isTutorOpen,
 		isAnimating,
+		pageContext,
+		config,
+		isLoading,
 		setInput,
 		sendMessage,
 		handleKeyDown,
 		toggleTutor,
 		closeTutor,
-		clearChat,
-		pageContext
+		clearChat
 	};
 }
+
+export type UseAiTutorReturn = ReturnType<typeof useAiTutor>;

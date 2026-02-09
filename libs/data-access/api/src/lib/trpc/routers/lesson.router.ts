@@ -11,7 +11,11 @@ import { differenceInHours } from "date-fns";
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
-import { getRagVersionHash, prepareRagContent, vectorStore } from "@self-learning/rag-processing";
+import {
+	getRagVersionHash,
+	prepareRagContent,
+	deleteEmbedding
+} from "@self-learning/rag-processing";
 import { workerServiceClient } from "@self-learning/worker-api";
 import { logJobProgress } from "@self-learning/database";
 import crypto from "crypto";
@@ -267,8 +271,6 @@ export async function findLessons({
 	return { lessons, count };
 }
 
-// ==================== Helper Functions ====================
-
 /**
  * Enqueue RAG embedding job
  */
@@ -330,26 +332,5 @@ async function subscribeToRagJobEvents(jobId: string, lessonId: string): Promise
 		);
 	} catch (error) {
 		console.error("[LessonRouter] Failed to subscribe to RAG events", error, { jobId });
-	}
-}
-
-/**
- * Delete lesson from vector store
- */
-async function deleteEmbedding(lessonId: string): Promise<void> {
-	console.log("[LessonRouter] Deleting lesson from vector store", { lessonId });
-
-	try {
-		const exists = await vectorStore.lessonExists(lessonId);
-
-		if (exists) {
-			await vectorStore.deleteLesson(lessonId);
-			console.log("[LessonRouter] Lesson deleted from vector store", { lessonId });
-		} else {
-			console.log("[LessonRouter] Lesson not found in vector store", { lessonId });
-		}
-	} catch (error) {
-		console.error("[LessonRouter] Failed to delete lesson", error, { lessonId });
-		throw error;
 	}
 }

@@ -12,7 +12,6 @@ export type LessonInfo = {
 	meta: LessonMeta;
 	lessonType: string;
 	performanceScore: number | null;
-	ragEnabled: boolean;
 };
 
 export const lessonSchema = z.object({

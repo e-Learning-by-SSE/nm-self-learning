@@ -7,7 +7,7 @@ export class DownloadError extends Error {
 	constructor(
 		message: string,
 		public url: string,
-		public override cause?: Error
+		public cause?: Error
 	) {
 		super(message);
 		this.name = "DownloadError";
