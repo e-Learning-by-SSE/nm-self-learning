@@ -196,7 +196,7 @@ pipeline {
                             }
                         }
                         always {
-                            junit testResults: 'output/test/junit*.xml', allowEmptyResults: true
+                            junit testResults: '${env.WORKSPACE}/output/test/junit*.xml', allowEmptyResults: true
                         }
                     }
                 }
