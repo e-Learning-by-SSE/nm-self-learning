@@ -152,8 +152,7 @@ pipeline {
                             }
                         }
                         always {
-                            sh "for f in output/test/junit-*.xml; do echo '---' $f; grep -c '<testcase' $f || true; done | head -n 80"
-                            junit testResults: 'output/test/junit*.xml', allowEmptyResults: true
+                            junit testResults: 'output/test/junit*.xml', allowEmptyResults: true, skipPublishingChecks: true
                         }
                     }
                 }
@@ -177,8 +176,7 @@ pipeline {
                                     sh 'npm run format:check'
                                     sh 'npm run seed'
                                     sh "env TZ=${env.TZ} npm run test || true"
-                                    sh "pwd; ls -la output/test || true"
-                                    //sh "env TZ=${env.TZ} npx nx --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
+                                    sh "env TZ=${env.TZ} npx nx --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
                             }
                             // buildSphinxDocs()
                         }
@@ -216,11 +214,8 @@ pipeline {
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
                              .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
                                 sh 'npm run seed'
-                                sh "env TZ=${env.TZ} npx nx run-many --target=build  --all --skip-nx-cache"
-                                sh "pwd; ls -la output/test || true"
-                                sh "for f in output/test/junit-*.xml; do echo '---' $f; grep -c '<testcase' $f || true; done | head -n 80"
                                 sh "env TZ=${env.TZ} npm run test"
-                                sh "pwd; ls -la output/test || true"
+                                sh "env TZ=${env.TZ} npx nx run-many --target=build  --all --skip-nx-cache"
                             }
                             if (params.PUBLISH) {
                                 def apiVersion = ''
@@ -248,8 +243,7 @@ pipeline {
                     }
                     post {
                         always {
-                            sh "for f in output/test/junit-*.xml; do echo '---' $f; grep -c '<testcase' $f || true; done | head -n 80"
-                            junit testResults: "output/test/junit*.xml", allowEmptyResults: true
+                            junit testResults: "output/test/junit*.xml", allowEmptyResults: true, skipPublishingChecks: true
                         }
                     }
                 }
@@ -300,23 +294,9 @@ pipeline {
                                 }
                             }
                         }
-                        post {
-                            always {
-                                junit testResults: "output/test/junit*.xml", allowEmptyResults: true
-                            }
-                        }
                     }
                 }
             }
         }
-        // stage('Gather JUnit Reports') {
-        //     steps{
-        //         //junit testResults: 'output/test/junit*.xml', allowEmptyResults: false
-        //         script {
-
-        //             junit testResults: 'output/test/junit*.xml', allowEmptyResults: true, skipPublishingChecks: true
-        //         }
-        //     }
-        // }
     }
 }
