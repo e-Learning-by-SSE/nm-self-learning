@@ -38,6 +38,26 @@ def buildSphinxDocs(Map cfg = [:]) {
     sh "rm -rf ${ws}/docs/sphinx/build"
 }
 
+def gatherJUnitReports(Map cfg = [:]) {
+    sh '''#!/bin/bash
+    set -e
+    OUT=output/test/jenkins-junit.xml
+    mkdir -p output/test
+
+    echo '<?xml version="1.0" encoding="UTF-8"?>' > "$OUT"
+    echo '<testsuite name="all-tests">' >> "$OUT"
+
+    for f in output/test/junit-*.xml; do
+      grep -q "<testcase" "$f" || continue
+      # komplette testcase-blöcke übernehmen
+      sed -n '/<testcase /,/<\\/testcase>/p' "$f" >> "$OUT"
+    done
+
+    echo '</testsuite>' >> "$OUT"
+    echo "Merged testcases:" $(grep -c "<testcase" "$OUT" || true)
+  '''
+}
+
 pipeline {
     agent { label 'docker' }
     parameters {
@@ -198,14 +218,8 @@ pipeline {
                             }
                         }
                         always {
-                            sh "pwd; ls -la output/test || true"
-                            sh '''
-                                for f in output/test/junit-*.xml; do
-                                echo "--- $f"
-                                grep -c "<testcase" "$f" || true
-                                done | head -n 80
-                            '''
-                            junit testResults: "${env.WORKSPACE}/output/test/junit*.xml", allowEmptyResults: true
+                            gatherJUnitReports
+                            junit testResults: "${env.WORKSPACE}/output/test/jenkins-junit.xml", allowEmptyResults: true
                         }
                     }
                 }
