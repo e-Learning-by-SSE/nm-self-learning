@@ -37,6 +37,10 @@ export default function GroupsPage() {
 		}
 	);
 
+	if (!router.isReady) {
+		return <LoadingBox />;
+	}
+
 	return (
 		<CenteredSection className="bg-gray-50">
 			<div className="mb-16 flex items-center justify-between gap-4">
@@ -48,7 +52,20 @@ export default function GroupsPage() {
 				</Link>
 			</div>
 
-			{!myGroups ? <LoadingBox /> : <GroupsPaginatedView data={myGroups} />}
+			{!myGroups && <LoadingBox />}
+			{myGroups?.totalCount === 0 ? (
+				<div className="mx-auto flex items-center gap-8 pb-8">
+					<div className="h-32 w-32">
+						<VoidSvg />
+					</div>
+					<div>
+						<p className="text-light">Sie sind Mitglied keiner Gruppe.</p>
+						<u>Become a member</u>
+					</div>
+				</div>
+			) : (
+				<GroupsPaginatedView data={myGroups} />
+			)}
 
 			<div className="mb-16 flex items-center justify-between gap-4">
 				<h1 className="text-5xl">Alle Gruppen</h1>
@@ -105,7 +122,7 @@ function GroupsPaginatedView({ data }: { data?: FindGroupsData }) {
 					</tr>
 				))}
 			</Table>
-			{data?.result && <Paginator pagination={data} url={`/admin/groups`} />}
+			{data?.result && <Paginator pagination={data} url={`/admin/groups?title=`} />}
 		</>
 	);
 }

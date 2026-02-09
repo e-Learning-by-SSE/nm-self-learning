@@ -6,6 +6,7 @@ import {
 	ArrowRightStartOnRectangleIcon,
 	Bars4Icon,
 	PencilSquareIcon,
+	UserGroupIcon,
 	UserIcon,
 	WrenchIcon,
 	XMarkIcon
@@ -228,6 +229,11 @@ export function NavbarDropdownMenu({
 			>
 				<AdjustmentsHorizontalIcon className="h-5" />
 				<span>{t("Settings")}</span>
+			</Link>
+
+			<Link href="/groups" className={` flex w-full items-center gap-2 rounded-md px-3 py-3`}>
+				<UserGroupIcon className="h-5" />
+				<span>{t("Memberships")}</span>
 			</Link>
 
 			{isAuthor && (
