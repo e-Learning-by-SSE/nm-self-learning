@@ -230,13 +230,7 @@ pipeline {
                             }
                         }
                         always {
-                           script {
-                                gatherJUnitReports(
-                                    inputGlob: 'output/test/junit-*.xml',
-                                    mergedFile: 'output/test/jenkins-junit.xml',
-                                    suiteName: "PR-${env.CHANGE_ID ?: 'unknown'}"
-                                )
-                            }
+                           junit testResults: 'output/test/junit*.xml', allowEmptyResults: false
                         }
                      }
                 }
