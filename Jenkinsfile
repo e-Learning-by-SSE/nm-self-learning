@@ -39,24 +39,36 @@ def buildSphinxDocs(Map cfg = [:]) {
 }
 
 def gatherJUnitReports(Map cfg = [:]) {
-    sh '''#!/bin/bash
-    set -e
-    OUT=output/test/jenkins-junit.xml
-    mkdir -p output/test
+  def inputGlob  = cfg.get('inputGlob', 'output/test/junit-*.xml')
+  def mergedFile = cfg.get('mergedFile', 'output/test/jenkins-junit.xml')
+  def suiteName  = cfg.get('suiteName', 'all-tests')
 
-    echo '<?xml version="1.0" encoding="UTF-8"?>' > "$OUT"
-    echo '<testsuite name="all-tests">' >> "$OUT"
+  sh """#!/bin/bash
+set -euo pipefail
+OUT='${mergedFile}'
+mkdir -p "\$(dirname "\$OUT")"
 
-    for f in output/test/junit-*.xml; do
-      grep -q "<testcase" "$f" || continue
-      # komplette testcase-blöcke übernehmen
-      sed -n '/<testcase /,/<\\/testcase>/p' "$f" >> "$OUT"
-    done
+echo '<?xml version="1.0" encoding="UTF-8"?>' > "\$OUT"
+echo '<testsuite name="${suiteName}">' >> "\$OUT"
 
-    echo '</testsuite>' >> "$OUT"
-    echo "Merged testcases:" $(grep -c "<testcase" "$OUT" || true)
-  '''
+shopt -s nullglob
+files=(${inputGlob})
+shopt -u nullglob
+
+for f in "\${files[@]}"; do
+  grep -q "<testcase" "\$f" || continue
+  sed -n '/<testcase /,/<\\/testcase>/p' "\$f" >> "\$OUT"
+done
+
+echo '</testsuite>' >> "\$OUT"
+echo "Merged testcase count: \$(grep -c '<testcase' "\$OUT" || true)"
+ls -la "\$OUT" || true
+"""
+
+  // Jenkins Report veröffentlichen
+  junit testResults: mergedFile, allowEmptyResults: true
 }
+
 
 pipeline {
     agent { label 'docker' }
@@ -218,10 +230,15 @@ pipeline {
                             }
                         }
                         always {
-                            gatherJUnitReports
-                            junit testResults: "${env.WORKSPACE}/output/test/jenkins-junit.xml", allowEmptyResults: true
+                           script {
+                                gatherJUnitReports(
+                                    inputGlob: 'output/test/junit-*.xml',
+                                    mergedFile: 'output/test/jenkins-junit.xml',
+                                    suiteName: "PR-${env.CHANGE_ID ?: 'unknown'}"
+                                )
+                            }
                         }
-                    }
+                     }
                 }
                 stage('Full build') {
                     when {
