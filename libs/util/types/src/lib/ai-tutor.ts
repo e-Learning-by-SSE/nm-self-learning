@@ -64,14 +64,14 @@ export type ContextPayload =
 			type: "course";
 			courseTitle: string;
 			courseDescription?: string;
-	  }
+	}
 	| {
 			type: "lesson";
 			courseTitle: string;
 			courseDescription?: string;
 			lessonId: string;
 			title: string;
-	  };
+	};
 
 export const llmApiResponseSchema = z.object({
 	message: z.object({
