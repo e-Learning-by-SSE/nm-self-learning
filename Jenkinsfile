@@ -175,7 +175,7 @@ pipeline {
                                 .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
                                     sh 'npm run format:check'
                                     sh 'npm run seed'
-                                    sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
+                                    sh "env TZ=${env.TZ} npx nx --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci --skip-nx-cache"
                             }
                             // buildSphinxDocs()
                         }
@@ -214,6 +214,7 @@ pipeline {
                              .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
                                 sh 'npm run seed'
                                 sh "env TZ=${env.TZ} npx nx run-many --target=build  --all --skip-nx-cache"
+                                sh "env TZ=${env.TZ} npx nx run-many -t test --all --skip-nx-cache --parallel=3 --codeCoverage"
                             }
                             if (params.PUBLISH) {
                                 def apiVersion = ''
