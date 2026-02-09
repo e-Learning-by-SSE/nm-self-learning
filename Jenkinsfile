@@ -177,6 +177,7 @@ pipeline {
                                     sh 'npm run seed'
                                     sh "env TZ=${env.TZ} npm run test"
                                     sh "env TZ=${env.TZ} npx nx --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
+                                    sh "pwd; ls -la output/test || true"
                             }
                             // buildSphinxDocs()
                         }
