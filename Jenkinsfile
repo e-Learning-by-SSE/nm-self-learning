@@ -311,7 +311,7 @@ pipeline {
                 //junit testResults: 'output/test/junit*.xml', allowEmptyResults: false
                 script {
 
-                    junit testResults: 'output/test/junit*.xml', allowEmptyResults: false
+                    junit testResults: 'output/test/junit*.xml', allowEmptyResults: false, skipPublishingChecks: true
                 }
             }
         }
