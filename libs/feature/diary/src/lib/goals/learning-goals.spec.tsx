@@ -4,7 +4,6 @@ import "@testing-library/jest-dom";
 import { LearningGoals } from "./learning-goals";
 import { IdSet } from "@self-learning/util/common";
 import { GoalFormModel } from "../util/types";
-import { IconOnlyButton } from "@self-learning/ui/common";
 
 // Initial state: Parent goal with two sub goals
 const subGoal1 = {
