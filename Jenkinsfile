@@ -176,9 +176,13 @@ pipeline {
                                     sh 'npm run format:check'
                                     sh 'npm run seed'
                                     catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                                        sh '''
+                                            set -e
+                                            rm -f output/test/junit-*.xml || true
+                                        '''
                                         sh "env TZ=${env.TZ} npm run test"
+                                        sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
                                     }
-                                    sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
                             }
                             // buildSphinxDocs()
                         }
@@ -217,6 +221,10 @@ pipeline {
                              .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
                                 sh 'npm run seed'
                                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                                    sh '''
+                                        set -e
+                                        rm -f output/test/junit-*.xml || true
+                                    '''
                                     sh "env TZ=${env.TZ} npm run test"
                                 }
                                 sh "env TZ=${env.TZ} npx nx run-many --target=build  --all --skip-nx-cache"
