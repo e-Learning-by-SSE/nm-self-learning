@@ -182,11 +182,11 @@ pipeline {
                             }
                             // buildSphinxDocs()
                         }
-                        // ssedocker {
-                        //     create {
-                        //         target "${env.TARGET_PREFIX}:${env.VERSION}"
-                        //     }
-                        // }
+                        ssedocker {
+                            create {
+                                target "${env.TARGET_PREFIX}:${env.VERSION}"
+                            }
+                        }
                     }
                     post {
                         success {
@@ -196,6 +196,9 @@ pipeline {
                                 }
                                 staging02ssh "python3 /opt/selflearn-branches/demo-manager.py new-container:${env.VERSION}:${env.BRANCH_NAME} generate-html"
                             }
+                        }
+                        always {
+                            junit testResults: 'output/test/junit*.xml', allowEmptyResults: true, skipPublishingChecks: true
                         }
                      }
                 }
@@ -306,14 +309,14 @@ pipeline {
                 }
             }
         }
-        stage('Gather JUnit Reports') {
-            steps{
-                //junit testResults: 'output/test/junit*.xml', allowEmptyResults: false
-                script {
+        // stage('Gather JUnit Reports') {
+        //     steps{
+        //         //junit testResults: 'output/test/junit*.xml', allowEmptyResults: false
+        //         script {
 
-                    junit testResults: 'output/test/junit*.xml', allowEmptyResults: false, skipPublishingChecks: true
-                }
-            }
-        }
+        //             junit testResults: 'output/test/junit*.xml', allowEmptyResults: true, skipPublishingChecks: true
+        //         }
+        //     }
+        // }
     }
 }
