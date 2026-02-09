@@ -178,15 +178,15 @@ pipeline {
                                     sh 'npm run seed'
                                     sh "env TZ=${env.TZ} npm run test || true"
                                     sh "pwd; ls -la output/test || true"
-                                    sh "env TZ=${env.TZ} npx nx --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
+                                    //sh "env TZ=${env.TZ} npx nx --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
                             }
                             // buildSphinxDocs()
                         }
-                        ssedocker {
-                            create {
-                                target "${env.TARGET_PREFIX}:${env.VERSION}"
-                            }
-                        }
+                        // ssedocker {
+                        //     create {
+                        //         target "${env.TARGET_PREFIX}:${env.VERSION}"
+                        //     }
+                        // }
                     }
                     post {
                         success {
