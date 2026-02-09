@@ -29,7 +29,7 @@ module.exports = {
 	reporters: [
 		"default",
 		[
-			"jest-reporter",
+			"jest-junit",
 			{
 				outputName: `junit-${new Date().getTime()}.xml`, // Setzt einen Zeitstempel, um Überschreiben zu vermeiden
 				outputDirectory: "output/test",
