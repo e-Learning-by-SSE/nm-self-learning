@@ -150,6 +150,9 @@ pipeline {
                             catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                 staging02ssh "bash /opt/update-compose-project.sh selflearn-unstable"
                             }
+                        },
+                        always {
+                            junit testResults: 'output/test/junit*.xml', allowEmptyResults: true
                         }
                     }
                 }
@@ -190,6 +193,9 @@ pipeline {
                                 }
                                 staging02ssh "python3 /opt/selflearn-branches/demo-manager.py new-container:${env.VERSION}:${env.BRANCH_NAME} generate-html"
                             }
+                        },
+                        always {
+                            junit testResults: 'output/test/junit*.xml', allowEmptyResults: true
                         }
                     }
                 }
@@ -231,6 +237,11 @@ pipeline {
                                     }
                                 }
                             }
+                        }
+                    }
+                    post {
+                        always {
+                            junit testResults: 'output/test/junit*.xml', allowEmptyResults: true
                         }
                     }
                 }
