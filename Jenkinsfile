@@ -292,6 +292,11 @@ pipeline {
                                 }
                             }
                         }
+                        post {
+                            always {
+                                junit testResults: 'output/test/junit*.xml', allowEmptyResults: true
+                            }
+                        }
                     }
                 }
             }
