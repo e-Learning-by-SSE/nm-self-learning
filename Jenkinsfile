@@ -217,7 +217,9 @@ pipeline {
                              .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
                                 sh 'npm run seed'
                                 sh "env TZ=${env.TZ} npx nx run-many --target=build  --all --skip-nx-cache"
-                                sh "env TZ=${env.TZ} npx nx run-many -t test --all --skip-nx-cache --parallel=3 --codeCoverage"
+                                sh "pwd; ls -la output/test || true"
+                                sh "env TZ=${env.TZ} npm run test"
+                                sh "pwd; ls -la output/test || true"
                             }
                             if (params.PUBLISH) {
                                 def apiVersion = ''
@@ -245,7 +247,7 @@ pipeline {
                     }
                     post {
                         always {
-                            junit testResults: 'output/test/junit*.xml', allowEmptyResults: true
+                            junit testResults: "output/test/junit*.xml", allowEmptyResults: true
                         }
                     }
                 }
@@ -298,7 +300,7 @@ pipeline {
                         }
                         post {
                             always {
-                                junit testResults: 'output/test/junit*.xml', allowEmptyResults: true
+                                junit testResults: "output/test/junit*.xml", allowEmptyResults: true
                             }
                         }
                     }
