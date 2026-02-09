@@ -175,8 +175,8 @@ pipeline {
                                 .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
                                     sh 'npm run format:check'
                                     sh 'npm run seed'
-                                    sh "env TZ=${env.TZ} npx nx --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
                                     sh "env TZ=${env.TZ} npm run test"
+                                    sh "env TZ=${env.TZ} npx nx --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
                             }
                             // buildSphinxDocs()
                         }
