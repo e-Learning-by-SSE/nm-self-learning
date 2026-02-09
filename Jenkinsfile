@@ -176,7 +176,7 @@ pipeline {
                                     sh 'npm run format:check'
                                     sh 'npm run seed'
                                     sh "env TZ=${env.TZ} npm run test || true"
-                                    sh "env TZ=${env.TZ} npx nx --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
+                                    sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
                             }
                             // buildSphinxDocs()
                         }
