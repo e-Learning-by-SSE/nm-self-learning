@@ -1,0 +1,25 @@
+{
+	"name": "@self-learning/worker-api",
+	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "libs/data-access/worker/src",
+	"projectType": "library",
+	"tags": [],
+	"// targets": "to see all targets run: nx show project worker-api --web",
+	"targets": {
+		"lint": {
+			"executor": "@nx/eslint:lint",
+			"outputs": ["{options.outputFile}"],
+			"options": {
+				"lintFilePatterns": ["libs/data-access/local-storage/**/*.ts"]
+			}
+		},
+		"test": {
+			"executor": "@nx/jest:jest",
+			"outputs": ["{workspaceRoot}/coverage/libs/data-access/local-storage"],
+			"options": {
+				"jestConfig": "libs/data-access/local-storage/jest.config.ts",
+				"passWithNoTests": true
+			}
+		}
+	}
+}
