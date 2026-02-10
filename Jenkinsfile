@@ -38,6 +38,19 @@ def buildSphinxDocs(Map cfg = [:]) {
     sh "rm -rf ${ws}/docs/sphinx/build"
 }
 
+def fullTest(Map cfg = [:]) {
+    def resultDir = cfg.get('resultDir', 'output/test')
+    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+        sh """
+            set -e
+            rm -f ${resultDir}/junit-*.xml || true
+            npm run test
+        """
+        junit testResults: "${resultDir}/junit*.xml", allowEmptyResults: true, skipPublishingChecks: true
+    }
+
+}
+
 pipeline {
     agent { label 'docker' }
     parameters {
@@ -133,6 +146,7 @@ pipeline {
                             ).trim()
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
                                 .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
+                                    fullTest()
                                     sh 'npm run seed' // this can be changed in the future to "npx prisma migrate reset" to test the migration files
                                     sh "env TZ=${env.TZ} npx nx affected --base=${lastSuccessSHA} -t lint build e2e-ci"
                                 }
@@ -171,6 +185,7 @@ pipeline {
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
                                 .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
                                     sh 'npm run format:check'
+                                    fullTest()
                                     sh 'npm run seed'
                                     sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
                             }
@@ -206,6 +221,7 @@ pipeline {
                         script {
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
                              .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
+                                fullTest()
                                 sh 'npm run seed'
                                 sh "env TZ=${env.TZ} npx nx run-many --target=build  --all --skip-nx-cache"
                             }
@@ -246,7 +262,7 @@ pipeline {
                             def newVersion = params.RELEASE_LATEST_VERSION
                             currentBuild.displayName = "Release ${newVersion}"
 
-                            // Git vorbereiten
+                            // PRepare GIT for tagging and pushing
                             sh 'git restore .'
                             sh 'git config user.name "ssejenkins"'
                             sh 'git config user.email "jenkins@sse.uni-hildesheim.de"'
@@ -254,7 +270,7 @@ pipeline {
                             sh 'git remote set-url origin git@github.com:e-learning-by-sse/nm-self-learning.git'
 
 
-                            // Postgres + Sidecar für Build und Tests
+                            // Postgres + Sidecar for Build and Tests
                             withPostgres([
                                 dbUser: env.POSTGRES_USER,
                                 dbPassword: env.POSTGRES_PASSWORD,
