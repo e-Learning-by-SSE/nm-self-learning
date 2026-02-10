@@ -11,7 +11,9 @@ import { llmConfigSchema, llmConfigSchemaForFetching, ollamaModelList } from "@s
  * @param timeoutSeconds Optional timeout in seconds (default: 10).
  */
 async function fetchAvailableModels(serverUrl: string, apiKey?: string, timeoutSeconds = 10) {
-	const headers: Record<string, string> = { "Content-Type": "application/json" };
+	const headers: Record<string, string> = {
+		"Content-Type": "application/json" 
+	};
 
 	if (apiKey) {
 		headers["Authorization"] = `Bearer ${apiKey}`;
@@ -26,7 +28,10 @@ async function fetchAvailableModels(serverUrl: string, apiKey?: string, timeoutS
 	});
 	clearTimeout(timeoutId);
 	if (!response.ok) {
-		throw new TRPCError({ code: "BAD_REQUEST", message: `${response.statusText}` });
+		throw new TRPCError({ 
+			code: "BAD_REQUEST",
+			message: `${response.statusText}`
+		});
 	}
 
 	const data = await response.json();
@@ -36,13 +41,24 @@ async function fetchAvailableModels(serverUrl: string, apiKey?: string, timeoutS
 export async function fetchLlmConfig() {
 	const config = await database.llmConfiguration.findFirst({
 		where: { isActive: true },
-		select: { serverUrl: true, defaultModel: true, updatedAt: true, apiKey: true }
+		select: {
+			serverUrl: true,
+			defaultModel: true,
+			updatedAt: true,
+			apiKey: true
+		}
 	});
 
 	if (config) {
-		return { ...config, apiKey: config?.apiKey ?? undefined };
+		return {
+			...config,
+			apiKey: config?.apiKey ?? undefined
+		};
 	} else {
-		throw new TRPCError({ code: "BAD_REQUEST", message: "No configuration data found." });
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "No configuration data found."
+		});
 	}
 }
 
@@ -50,7 +66,12 @@ export const llmConfigRouter = t.router({
 	get: authProcedure.query(async () => {
 		const config = await database.llmConfiguration.findFirst({
 			where: { isActive: true },
-			select: { serverUrl: true, defaultModel: true, updatedAt: true, apiKey: true }
+			select: {
+				serverUrl: true,
+				defaultModel: true,
+				updatedAt: true,
+				apiKey: true
+			}
 		});
 
 		if (!config) {
@@ -59,7 +80,10 @@ export const llmConfigRouter = t.router({
 
 		const { apiKey, ...rest } = config;
 
-		return { ...rest, hasApiKey: !!apiKey };
+		return { 
+			...rest,
+			hasApiKey: !!apiKey
+		};
 	}),
 
 	save: adminProcedure.input(llmConfigSchema).mutation(async ({ input }) => {
@@ -94,12 +118,30 @@ export const llmConfigRouter = t.router({
 
 			const config = await database.llmConfiguration.upsert({
 				where: { id: existingConfig?.id || crypto.randomUUID() },
-				update: { serverUrl, apiKey: apiKey || null, defaultModel, updatedAt: new Date() },
-				create: { serverUrl, apiKey: apiKey || null, defaultModel, isActive: true },
-				select: { id: true, serverUrl: true, defaultModel: true, updatedAt: true }
+				update: {
+					serverUrl,
+					apiKey: apiKey || null,
+					defaultModel,
+					updatedAt: new Date()
+				},
+				create: {
+					serverUrl,
+					apiKey: apiKey || null,
+					defaultModel,
+					isActive: true
+				},
+				select: {
+					id: true,
+					serverUrl: true,
+					defaultModel: true,
+					updatedAt: true
+				}
 			});
 
-			return { ...config, hasApiKey: !!apiKey };
+			return {
+				...config,
+				hasApiKey: !!apiKey
+			};
 		} catch (error) {
 			if (error instanceof TRPCError) {
 				throw error;
@@ -118,7 +160,10 @@ export const llmConfigRouter = t.router({
 			try {
 				const { serverUrl, apiKey } = input;
 				const availableModels = await fetchAvailableModels(serverUrl, apiKey);
-				return { valid: true, availableModels: availableModels.models.map(m => m.name) };
+				return { 
+					valid: true,
+					availableModels: availableModels.models.map(m => m.name)
+				};
 			} catch (error) {
 				if (error instanceof TRPCError) {
 					throw error;

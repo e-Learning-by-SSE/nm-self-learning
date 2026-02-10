@@ -15,7 +15,6 @@ import { PropsWithChildren } from "react";
 import superjson from "superjson";
 import { GlobalFeatures } from "../_features";
 import "./styles.css";
-import { AiTutor, AiTutorProvider, useAiTutor } from "@self-learning/ai-tutor";
 
 export default withTRPC<AppRouter>({
 	transformer: superjson,
@@ -33,7 +32,12 @@ export default withTRPC<AppRouter>({
 				})
 			],
 			queryClientConfig: {
-				defaultOptions: { queries: { retry: false, staleTime: Infinity } }
+				defaultOptions: { 
+					queries: { 
+						retry: false,
+						staleTime: Infinity 
+					}
+				}
 			}
 		};
 	}
@@ -47,7 +51,6 @@ function CustomApp({ Component, pageProps }: AppProps) {
 		: null;
 
 	const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-	const tutorState = useAiTutor();
 	return (
 		<>
 			{process.env.NODE_ENV === "development" && (
@@ -62,43 +65,45 @@ function CustomApp({ Component, pageProps }: AppProps) {
 				trackLocalhost={process.env.NODE_ENV === "development"}
 			>
 				<SessionProvider session={pageProps.session} basePath={basePath + "/api/auth"}>
-					<AiTutorProvider>
-						<Head>
-							<title>Self-Learning</title>
-							{/* Favicon setup based on recommendation of:
-							 *  - https://evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs
-							 *  - https://favicon.io/
-							 */}
-							<link
-								rel="apple-touch-icon"
-								sizes="180x180"
-								href={basePath + "/apple-touch-icon.png"}
-							/>
-							<link rel="icon" sizes="48x48" href={basePath + "/favicon.ico"} />
-							<link rel="icon" type="image/svg+xml" href={basePath + "/icon.svg"} />
-							<link
-								rel="icon"
-								type="image/png"
-								sizes="32x32"
-								href={basePath + "/favicon-32x32.png"}
-							/>
-							<link
-								rel="icon"
-								type="image/png"
-								sizes="16x16"
-								href={basePath + "/favicon-16x16.png"}
-							/>
-							{/* Only required for /pages, /app will handle this automatically */}
-							<link rel="manifest" href={basePath + "/api/manifest"} />
-						</Head>
-						<GlobalFeatures />
-						<Navbar />
-						<main className="grid grow">
-							{Layout ? <>{Layout}</> : <Component {...pageProps} />}
-						</main>
-						<AiTutor tutorState={tutorState} />
-						<Footer />
-					</AiTutorProvider>
+					<Head>
+						<title>Self-Learning</title>
+						{/* Favicon setup based on recommendation of:
+						 *  - https://evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs
+						 *  - https://favicon.io/
+						 */}
+						<link
+							rel="apple-touch-icon"
+							sizes="180x180"
+							href={basePath + "/apple-touch-icon.png"}
+						/>
+						<link rel="icon" sizes="48x48" href={basePath + "/favicon.ico"} />
+						<link rel="icon" type="image/svg+xml" href={basePath + "/icon.svg"} />
+						<link
+							rel="icon"
+							type="image/png"
+							sizes="32x32"
+							href={basePath + "/favicon-32x32.png"}
+						/>
+						<link
+							rel="icon"
+							type="image/png"
+							sizes="16x16"
+							href={basePath + "/favicon-16x16.png"}
+						/>
+						{/* Only required for /pages, /app will handle this automatically */}
+						<link rel="manifest" href={basePath + "/api/manifest"} />
+					</Head>
+					<GlobalFeatures />
+					<RootLayout>
+						{Layout ? (
+							// Layouts can define their own main-area and sidebars
+							<>{Layout}</>
+						) : (
+							<main className="grid grow">
+								<Component {...pageProps} />{" "}
+							</main>
+						)}
+					</RootLayout>
 				</SessionProvider>
 			</PlausibleProvider>
 		</>

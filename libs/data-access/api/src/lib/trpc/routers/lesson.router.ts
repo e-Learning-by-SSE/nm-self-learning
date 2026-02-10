@@ -25,7 +25,11 @@ export const lessonRouter = t.router({
 		return database.lesson.findUniqueOrThrow({
 			where: { lessonId: input.lessonId },
 			include: {
-				authors: { select: { username: true } },
+				authors: {
+					select: { 
+						username: true
+					}
+				},
 				requires: {
 					select: {
 						id: true,
@@ -86,17 +90,28 @@ export const lessonRouter = t.router({
 			data: {
 				...input,
 				quiz: input.quiz ? (input.quiz as Prisma.JsonObject) : Prisma.JsonNull,
-				authors: { connect: input.authors.map(a => ({ username: a.username })) },
+				authors: { 
+					connect: input.authors.map(a => ({ username: a.username }))
+				},
 				licenseId: input.licenseId,
-				requires: { connect: input.requires.map(r => ({ id: r.id })) },
-				provides: { connect: input.provides.map(r => ({ id: r.id })) },
+				requires: {
+					connect: input.requires.map(r => ({ id: r.id }))
+				},
+				provides: {
+					connect: input.provides.map(r => ({ id: r.id }))
+				},
 				content: input.content as Prisma.InputJsonArray,
 				lessonId: getRandomId(),
 				meta: createLessonMeta(input) as unknown as Prisma.JsonObject,
 				ragVersionHash: hash,
 				ragEnabled: input.ragEnabled ?? false
 			},
-			select: { lessonId: true, slug: true, title: true, ragEnabled: true }
+			select: { 
+				lessonId: true,
+				slug: true,
+				title: true,
+				ragEnabled: true
+			}
 		});
 
 		if (createdLesson.ragEnabled && hash) {
@@ -107,7 +122,12 @@ export const lessonRouter = t.router({
 		return createdLesson;
 	}),
 	edit: authProcedure
-		.input(z.object({ lessonId: z.string(), lesson: lessonSchema }))
+		.input(
+			z.object({
+				lessonId: z.string(),
+				lesson: lessonSchema
+			})
+		)
 		.mutation(async ({ input, ctx }) => {
 			const ragCheck = input.lesson.ragEnabled ?? false;
 			let hash: string | null = null;
@@ -127,15 +147,26 @@ export const lessonRouter = t.router({
 						? (input.lesson.quiz as Prisma.JsonObject)
 						: Prisma.JsonNull,
 					lessonId: input.lessonId,
-					authors: { set: input.lesson.authors.map(a => ({ username: a.username })) },
+					authors: {
+						set: input.lesson.authors.map(a => ({ username: a.username }))
+					},
 					licenseId: input.lesson.licenseId,
-					requires: { set: input.lesson.requires.map(r => ({ id: r.id })) },
-					provides: { set: input.lesson.provides.map(r => ({ id: r.id })) },
+					requires: {
+						set: input.lesson.requires.map(r => ({ id: r.id }))
+					},
+					provides: {
+						set: input.lesson.provides.map(r => ({ id: r.id }))
+					},
 					meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject,
 					ragVersionHash: hash,
 					ragEnabled: input.lesson.ragEnabled ?? false
 				},
-				select: { lessonId: true, slug: true, title: true, ragEnabled: true }
+				select: {
+					lessonId: true,
+					slug: true,
+					title: true,
+					ragEnabled: true
+				}
 			});
 
 			if (updatedLesson.ragEnabled && hash) {
@@ -177,13 +208,17 @@ export const lessonRouter = t.router({
 		.input(z.object({ lessonId: z.string() }))
 		.mutation(async ({ input, ctx }) => {
 			if (ctx.user?.role === "ADMIN") {
-				await database.lesson.deleteMany({ where: { lessonId: input.lessonId } });
+				await database.lesson.deleteMany({
+					where: { lessonId: input.lessonId }
+				});
 				await deleteEmbedding(input.lessonId);
 			} else {
 				const deleted = await database.lesson.deleteMany({
 					where: {
 						lessonId: input.lessonId,
-						authors: { some: { username: ctx.user?.name } }
+						authors: {
+							some: { username: ctx.user?.name}
+						}
 					}
 				});
 
@@ -201,7 +236,11 @@ export const lessonRouter = t.router({
 		.input(z.object({ lessonId: z.string(), lessonAttemptId: z.string() }))
 		.query(async ({ input, ctx }) => {
 			const data = await database.eventLog.findFirst({
-				where: { username: ctx.user.name, type: "LESSON_OPEN", resourceId: input.lessonId },
+				where: {
+					username: ctx.user.name,
+					type: "LESSON_OPEN",
+					resourceId: input.lessonId
+				},
 				orderBy: { createdAt: "desc" },
 				select: { createdAt: true, payload: true }
 			});
@@ -248,7 +287,13 @@ export async function findLessons({
 			typeof title === "string" && title.length > 0
 				? { contains: title, mode: "insensitive" }
 				: undefined,
-		authors: authorName ? { some: { username: authorName } } : undefined
+		authors: authorName 
+			? { 
+				some: { 
+					username: authorName 
+				} 
+			} 
+		: undefined
 	};
 
 	const [lessons, count] = await database.$transaction([
@@ -258,7 +303,13 @@ export async function findLessons({
 				title: true,
 				slug: true,
 				updatedAt: true,
-				authors: { select: { displayName: true, slug: true, imgUrl: true } }
+				authors: {
+					select: { 
+						displayName: true,
+						slug: true,
+						imgUrl: true
+					}
+				}
 			},
 			orderBy: { updatedAt: "desc" },
 			where,
@@ -316,11 +367,17 @@ async function subscribeToRagJobEvents(jobId: string, lessonId: string): Promise
 			{ jobId },
 			{
 				onData: async event => {
-					console.log("[LessonRouter] RAG job event", { jobId, status: event.status });
+					console.log("[LessonRouter] RAG job event", { 
+						jobId,
+						status: event.status
+					});
 					await logJobProgress(jobId, event);
 
 					if (event.status === "finished") {
-						console.log("[LessonRouter] RAG job completed", { jobId, lessonId });
+						console.log("[LessonRouter] RAG job completed", { 
+							jobId, 
+							lessonId
+						});
 					} else if (event.status === "aborted") {
 						console.error("[LessonRouter] RAG job aborted", new Error(event.cause));
 					}

@@ -11,7 +11,13 @@ export const llmConfigSchemaForFetching = z.object({
 	apiKey: z.string().optional()
 });
 
-export const ollamaModelList = z.object({ models: z.array(z.object({ name: z.string() })) });
+export const ollamaModelList = z.object({
+	models: z.array(
+		z.object({
+			name: z.string()
+		})
+	)
+});
 
 export interface ServerConfig {
 	serverUrl: string;

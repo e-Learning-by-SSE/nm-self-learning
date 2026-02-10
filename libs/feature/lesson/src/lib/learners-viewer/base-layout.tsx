@@ -19,7 +19,11 @@ export function BaseLessonLayout({ lesson, title, playlistArea, children }: Base
 	const [targetIndex, setTargetIndex] = useState<number | undefined>(undefined);
 	const ctx = useNavigableContent(lessonContent, false, false);
 
-	const contextValue = { ...ctx, targetIndex, setTargetIndex };
+	const contextValue = {
+		...ctx,
+		targetIndex,
+		setTargetIndex
+	};
 	const tutorState = useAiTutor();
 	return (
 		<LessonOutlineContext.Provider value={contextValue}>

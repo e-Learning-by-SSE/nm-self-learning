@@ -90,7 +90,13 @@ function prepareMessages(messages: Message[], systemPrompt: string): Message[] {
 		);
 	}
 
-	return [{ role: "system" as const, content: systemPrompt }, ...messages];
+	return [
+		{ 
+			role: "system" as const,
+			content: systemPrompt
+		},
+		...messages
+	];
 }
 
 async function retrieveContext(

@@ -41,7 +41,10 @@ function mapToTocContent(
 		description: chapter.description,
 		content: chapter.content.map(({ lessonId }) => {
 			const lesson: ToC.Content[0]["content"][0] = lessonIdMap.has(lessonId)
-				? { ...(lessonIdMap.get(lessonId) as LessonInfo), lessonNr: lessonNr++ }
+				? {
+						...(lessonIdMap.get(lessonId) as LessonInfo),
+						lessonNr: lessonNr++
+					}
 				: {
 						lessonId: "removed",
 						slug: "removed",
@@ -72,7 +75,10 @@ async function mapCourseContent(content: CourseContent, username?: string): Prom
 				where: { username },
 				orderBy: { performanceScore: "desc" },
 				take: 1, // Nur den höchsten Score nehmen
-				select: { performanceScore: true, username: true }
+				select: {
+					performanceScore: true,
+					username: true
+				}
 			}
 		}
 	});
@@ -127,10 +133,21 @@ type CourseProps = {
 
 export const getServerSideProps = withTranslations(
 	["common", "ai-tutor"],
-	async ({ params, req, res }) => {
+	withAuth(async context => {
+		const { req, res, params } = context;
 		const courseSlug = params?.courseSlug as string | undefined;
 		if (!courseSlug) {
 			throw new Error("No slug provided.");
+		}
+
+		const trackingResult = await handleEmailTracking(context);
+		if (trackingResult.shouldRedirect) {
+			return {
+				redirect: {
+					destination: `/courses/${courseSlug}`,
+					permanent: false
+				}
+			};
 		}
 
 		const course = await getCourse(courseSlug);
@@ -160,13 +177,21 @@ export const getServerSideProps = withTranslations(
 			},
 			notFound: !course
 		};
-	}
+	})
 );
 
 async function getCourse(courseSlug: string) {
 	return database.course.findUnique({
 		where: { slug: courseSlug },
-		include: { authors: { select: { slug: true, displayName: true, imgUrl: true } } }
+		include: {
+			authors: {
+				select: {
+					slug: true,
+					displayName: true,
+					imgUrl: true
+				}
+			}
+		}
 	});
 }
 

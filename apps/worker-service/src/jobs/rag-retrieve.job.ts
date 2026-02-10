@@ -27,13 +27,19 @@ export const ragRetrieveJob: JobDefinition<"ragRetrieve"> = {
 			const exists = await vectorStore.lessonExists(lessonId);
 			if (!exists) {
 				console.log("[RagRetrieve] Lesson not found in vector store", { lessonId });
-				return { context: "No relevant content found for lesson data.", sources: [] };
+				return { 
+					context: "No relevant content found for lesson data.",
+					sources: []
+				};
 			}
 			// Perform vector search (generates embeddings internally)
 			const results = await vectorStore.search(lessonId, question, topK);
 			if (results.length === 0) {
 				console.log("[RagRetrieve] No relevant results found", { lessonId });
-				return { context: "No relevant content found for this question.", sources: [] };
+				return { 
+					context: "No relevant content found for this question.",
+					sources: []
+				};
 			}
 			// Format context
 			const context = results

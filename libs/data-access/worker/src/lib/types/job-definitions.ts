@@ -20,7 +20,9 @@ import { unknown, z } from "zod";
  * }
  * ```
  */
-const BaseJobSchema = z.object({ jobId: z.string() });
+const BaseJobSchema = z.object({
+	jobId: z.string()
+});
 
 /******************************************************************************
  ******************************  Path Generation ******************************
@@ -41,9 +43,13 @@ const learningUnitSchema = z.object({
 export const pathGenerationPayloadSchema = z.object({
 	dbSkills: z.array(skillSchema),
 	userGlobalKnowledge: z
-		.object({ received: z.array(z.object({ id: z.string() })).optional() })
+		.object({
+			received: z.array(z.object({ id: z.string() })).optional()
+		})
 		.optional(),
-	course: z.object({ teachingGoals: z.array(skillSchema).optional() }),
+	course: z.object({
+		teachingGoals: z.array(skillSchema).optional()
+	}),
 	lessons: z.array(learningUnitSchema),
 	knowledge: z.array(z.string()).optional()
 });
@@ -55,7 +61,12 @@ export const pathGenerationPayloadSchema = z.object({
 export const ragEmbedPayloadSchema = z.object({
 	lessonId: z.string(),
 	lessonTitle: z.string(),
-	pdfBuffers: z.array(z.object({ data: z.string(), url: z.string().url() })),
+	pdfBuffers: z.array(
+		z.object({ 
+			data: z.string(),
+			url: z.string().url()
+		})
+	),
 	articleTexts: z.array(z.string()),
 	transcriptTexts: z.array(z.string())
 });
@@ -102,23 +113,35 @@ export const SubmitJobInput = z.discriminatedUnion("jobType", [
 		jobType: z.literal("pathGeneration"),
 		payload: pathGenerationPayloadSchema
 	}),
-	BaseJobSchema.extend({ jobType: z.literal("ragEmbed"), payload: ragEmbedPayloadSchema }),
-	BaseJobSchema.extend({ jobType: z.literal("ragRetrieve"), payload: ragRetrievePayloadSchema })
+	BaseJobSchema.extend({
+		jobType: z.literal("ragEmbed"), payload: ragEmbedPayloadSchema
+	}),
+	BaseJobSchema.extend({
+		jobType: z.literal("ragRetrieve"),
+		payload: ragRetrievePayloadSchema
+	})
 ]);
 
 export const JobResponse = z.discriminatedUnion("jobType", [
-	BaseJobSchema.extend({ jobType: z.literal("pathGeneration"), response: unknown() }),
-	BaseJobSchema.extend({ jobType: z.literal("ragEmbed"), response: ragEmbedResponseSchema }),
-	BaseJobSchema.extend({ jobType: z.literal("ragRetrieve"), response: ragRetrieveResponseSchema })
+	BaseJobSchema.extend({
+		jobType: z.literal("pathGeneration"),
+		response: unknown()
+	}),
+	BaseJobSchema.extend({
+		jobType: z.literal("ragEmbed"),
+		response: ragEmbedResponseSchema
+	}),
+	BaseJobSchema.extend({
+		jobType: z.literal("ragRetrieve"),
+		response: ragRetrieveResponseSchema
+	})
 ]);
 
 export type JobKey = z.infer<typeof SubmitJobInput>["jobType"];
-
 export type PayloadFor<K extends JobKey> = Extract<
 	z.infer<typeof SubmitJobInput>,
 	{ jobType: K }
 >["payload"];
-
 export type ReturnTypeOf<K extends JobKey> = Extract<
 	z.infer<typeof JobResponse>,
 	{ jobType: K }

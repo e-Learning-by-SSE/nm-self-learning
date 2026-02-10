@@ -15,7 +15,9 @@ export default {
 
 	// for Jest (transform imports)
 	moduleNameMapper: {
-		...pathsToModuleNameMapper(compilerOptions.paths, { prefix: "<rootDir>/../../" }),
+		...pathsToModuleNameMapper(compilerOptions.paths ?? {}, {
+			prefix: "<rootDir>/../../"
+		}),
 		"^@xenova/transformers$": "<rootDir>/src/__mocks__/@xenova/transformers.ts"
 	},
 

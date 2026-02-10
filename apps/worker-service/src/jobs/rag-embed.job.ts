@@ -1,6 +1,10 @@
 import { JobDefinition } from "../lib/core/job-registry";
 import { ragEmbedPayloadSchema } from "@self-learning/worker-api";
-import { contentProcessor, vectorStore, IngestionResult } from "@self-learning/rag-processing";
+import { 
+	contentProcessor,
+	vectorStore,
+	IngestionResult 
+} from "@self-learning/rag-processing";
 
 /**
  * RAG Embedding Job
@@ -96,7 +100,11 @@ export const ragEmbedJob: JobDefinition<"ragEmbed"> = {
 			const result: IngestionResult = {
 				success: true,
 				chunksCreated: totalChunks,
-				breakdown: { pdfChunks, articleChunks, videoChunks },
+				breakdown: { 
+					pdfChunks, 
+					articleChunks, 
+					videoChunks 
+				},
 				message: `Successfully ingested lesson with ${totalChunks} chunks`
 			};
 
