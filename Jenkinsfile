@@ -46,6 +46,8 @@ def fullTest(Map cfg = [:]) {
             rm -f ${resultDir}/junit-*.xml || true
             npm run test:full
         """
+    }
+    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
         junit testResults: "${resultDir}/junit*.xml", allowEmptyResults: true, skipPublishingChecks: true
     }
 
