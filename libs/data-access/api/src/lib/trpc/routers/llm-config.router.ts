@@ -64,23 +64,14 @@ export async function fetchLlmConfig() {
 
 export const llmConfigRouter = t.router({
 	get: authProcedure.query(async () => {
-		const config = await database.llmConfiguration.findFirst({
-			where: { isActive: true },
-			select: {
-				serverUrl: true,
-				defaultModel: true,
-				updatedAt: true,
-				apiKey: true
-			}
-		});
-
+		const config = await fetchLlmConfig();
 		if (!config) {
 			return null;
 		}
 
 		const { apiKey, ...rest } = config;
 
-		return { 
+		return {
 			...rest,
 			hasApiKey: !!apiKey
 		};
@@ -160,7 +151,7 @@ export const llmConfigRouter = t.router({
 			try {
 				const { serverUrl, apiKey } = input;
 				const availableModels = await fetchAvailableModels(serverUrl, apiKey);
-				return { 
+				return {
 					valid: true,
 					availableModels: availableModels.models.map(m => m.name)
 				};

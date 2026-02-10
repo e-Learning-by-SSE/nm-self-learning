@@ -3,8 +3,8 @@ import { database } from "@self-learning/database";
 import {
 	createLessonMeta,
 	EventTypeMap,
-	LessonContentType,
-	lessonSchema
+	lessonSchema,
+	LessonContentType
 } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { differenceInHours } from "date-fns";
@@ -26,7 +26,7 @@ export const lessonRouter = t.router({
 			where: { lessonId: input.lessonId },
 			include: {
 				authors: {
-					select: { 
+					select: {
 						username: true
 					}
 				},
@@ -90,7 +90,7 @@ export const lessonRouter = t.router({
 			data: {
 				...input,
 				quiz: input.quiz ? (input.quiz as Prisma.JsonObject) : Prisma.JsonNull,
-				authors: { 
+				authors: {
 					connect: input.authors.map(a => ({ username: a.username }))
 				},
 				licenseId: input.licenseId,
@@ -106,7 +106,7 @@ export const lessonRouter = t.router({
 				ragVersionHash: hash,
 				ragEnabled: input.ragEnabled ?? false
 			},
-			select: { 
+			select: {
 				lessonId: true,
 				slug: true,
 				title: true,
@@ -138,7 +138,6 @@ export const lessonRouter = t.router({
 				where: { lessonId: input.lessonId },
 				select: { ragVersionHash: true, ragEnabled: true }
 			});
-
 			const updatedLesson = await database.lesson.update({
 				where: { lessonId: input.lessonId },
 				data: {
@@ -209,7 +208,9 @@ export const lessonRouter = t.router({
 		.mutation(async ({ input, ctx }) => {
 			if (ctx.user?.role === "ADMIN") {
 				await database.lesson.deleteMany({
-					where: { lessonId: input.lessonId }
+					where: {
+						lessonId: input.lessonId
+					}
 				});
 				await deleteEmbedding(input.lessonId);
 			} else {
@@ -217,7 +218,9 @@ export const lessonRouter = t.router({
 					where: {
 						lessonId: input.lessonId,
 						authors: {
-							some: { username: ctx.user?.name}
+							some: {
+								username: ctx.user?.name
+							}
 						}
 					}
 				});
@@ -233,7 +236,12 @@ export const lessonRouter = t.router({
 			}
 		}),
 	validateAttempt: authProcedure
-		.input(z.object({ lessonId: z.string(), lessonAttemptId: z.string() }))
+		.input(
+			z.object({
+				lessonId: z.string(),
+				lessonAttemptId: z.string()
+			})
+		)
 		.query(async ({ input, ctx }) => {
 			const data = await database.eventLog.findFirst({
 				where: {
@@ -288,11 +296,11 @@ export async function findLessons({
 				? { contains: title, mode: "insensitive" }
 				: undefined,
 		authors: authorName 
-			? { 
-				some: { 
-					username: authorName 
-				} 
-			} 
+			? {
+					some: {
+						username: authorName
+					}
+				}
 		: undefined
 	};
 
@@ -304,7 +312,7 @@ export async function findLessons({
 				slug: true,
 				updatedAt: true,
 				authors: {
-					select: { 
+					select: {
 						displayName: true,
 						slug: true,
 						imgUrl: true

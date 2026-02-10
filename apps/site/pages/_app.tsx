@@ -32,10 +32,10 @@ export default withTRPC<AppRouter>({
 				})
 			],
 			queryClientConfig: {
-				defaultOptions: { 
-					queries: { 
+				defaultOptions: {
+					queries: {
 						retry: false,
-						staleTime: Infinity 
+						staleTime: Infinity
 					}
 				}
 			}
@@ -51,6 +51,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 		: null;
 
 	const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+	
 	return (
 		<>
 			{process.env.NODE_ENV === "development" && (
