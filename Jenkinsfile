@@ -174,7 +174,7 @@ pipeline {
                                     sh 'npm run seed'
                                     sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
                             }
-                            buildSphinxDocs()
+                            //buildSphinxDocs()
                         }
                         ssedocker {
                             create {
