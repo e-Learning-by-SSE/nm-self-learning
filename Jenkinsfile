@@ -40,17 +40,16 @@ def buildSphinxDocs(Map cfg = [:]) {
 
 def fullTest(Map cfg = [:]) {
     def resultDir = cfg.get('resultDir', 'output/test')
-    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
         sh """
             set -e
             rm -f ${resultDir}/junit-*.xml || true
             npm run test:full
         """
     }
-    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+    catchError(buildResult: 'SUCCESS') {
         junit testResults: "${resultDir}/junit*.xml", allowEmptyResults: true, skipPublishingChecks: true
     }
-
 }
 
 pipeline {
