@@ -44,7 +44,7 @@ def fullTest(Map cfg = [:]) {
         sh """
             set -e
             rm -f ${resultDir}/junit-*.xml || true
-            npm run test
+            npm run test:full
         """
         junit testResults: "${resultDir}/junit*.xml", allowEmptyResults: true, skipPublishingChecks: true
     }
