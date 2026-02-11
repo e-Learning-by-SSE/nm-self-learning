@@ -4,7 +4,6 @@ import "@testing-library/jest-dom";
 import { LearningGoals } from "./learning-goals";
 import { IdSet } from "@self-learning/util/common";
 import { GoalFormModel } from "../util/types";
-import { IconOnlyButton } from "@self-learning/ui/common";
 
 // Initial state: Parent goal with two sub goals
 const subGoal1 = {
@@ -91,7 +90,7 @@ const mockShowToast = jest.fn();
 
 jest.mock("@self-learning/ui/common", () => {
 	// require only stuff which does not trigger circular dependency error
-	const { Tab, Tabs } = jest.requireActual("@self-learning/ui/common");
+	const { Tab, Tabs, SectionHeader } = jest.requireActual("@self-learning/ui/common");
 
 	return {
 		showToast: jest.fn(args => mockShowToast(args)),
@@ -104,7 +103,8 @@ jest.mock("@self-learning/ui/common", () => {
 		IconOnlyButton: jest.fn(() => null),
 		SimpleDialog: jest.fn(() => null),
 		Tab,
-		Tabs
+		Tabs,
+		SectionHeader
 	};
 });
 
