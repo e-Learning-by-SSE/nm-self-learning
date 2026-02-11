@@ -28,7 +28,7 @@ module.exports = {
 		"!<rootDir>/node_modules/"
 	],
 	coverageReporters: ["cobertura", "text", "html"],
-	coverageDirectory: "output/test/coverage",
+	coverageDirectory: `output/test/coverage/${project}`,
 	reporters: [
 		"default",
 		[

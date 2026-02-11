@@ -10,6 +10,8 @@ bak
 /tmp
 /out-tsc
 /output
+/coverage
+/libs/coverage
 
 # dependencies
 /node_modules
