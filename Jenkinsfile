@@ -40,14 +40,25 @@ def buildSphinxDocs(Map cfg = [:]) {
 
 def fullTest(Map cfg = [:]) {
     def resultDir = cfg.get('resultDir', 'output/test')
+    def coverageDir = cfg.get('coverageDir', 'coverage')
+    
+    // JUnit reports
     catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
         sh """
             set -e
-            rm -f ${resultDir}/junit-*.xml || true
+            rm -rf ${resultDir}/* || true
+            rm -rf ${coverageDir}/* || true
             npm run test:ci
         """
     }
-    junit testResults: "${resultDir}/junit*.xml", allowEmptyResults: true, skipPublishingChecks: true, skipMarkingBuildUnstable : true
+    junit testResults: "${resultDir}/**/junit*.xml", allowEmptyResults: true, skipPublishingChecks: true, skipMarkingBuildUnstable : true
+
+    // Coverage reports
+    recordCoverage(tools: [[parser: 'LCOV', pattern: 'coverage/**/lcov.info']],
+        id: 'LCOV', name: 'LCOV Coverage',
+        sourceCodeRetention: 'EVERY_BUILD',
+        failOnError: false
+    )
 }
 
 pipeline {
@@ -280,7 +291,7 @@ pipeline {
                             def newVersion = params.RELEASE_LATEST_VERSION
                             currentBuild.displayName = "Release ${newVersion}"
 
-                            // Prepare GIT for tagging and pushing
+                            // Prepare Git for tagging and pushing
                             sh 'git restore .'
                             sh 'git config user.name "ssejenkins"'
                             sh 'git config user.email "jenkins@sse.uni-hildesheim.de"'
