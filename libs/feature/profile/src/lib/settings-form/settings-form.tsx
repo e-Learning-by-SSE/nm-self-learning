@@ -88,8 +88,9 @@ export function FeatureSettingsForm({
 	const onChangeLtb = (value: boolean) => {
 		if (value) {
 			onChange({ learningDiary: true, learningStatistics: true });
+		} else {
+			onChange({ learningDiary: value });
 		}
-		onChange({ learningDiary: value });
 	};
 
 	const onChangeStatistics = (value: boolean) => {
