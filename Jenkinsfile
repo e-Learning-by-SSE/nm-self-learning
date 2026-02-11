@@ -50,8 +50,8 @@ def fullTest(Map cfg = [:]) {
         """
     }
     junit testResults: "${resultDir}/**/junit*.xml", allowEmptyResults: true, skipPublishingChecks: true, skipMarkingBuildUnstable : true
-    recordCoverage(tools: [[parser: 'Cobertura']],
-        id: 'jacoco', name: 'Cobertura Coverage',
+    recordCoverage(tools: [[parser: 'COBERTURA']],
+        id: 'Cobertura', name: 'Cobertura Coverage',
         sourceCodeRetention: 'EVERY_BUILD',
         qualityGates: [
                 [threshold: 1.0, metric: 'LINE', baseline: 'PROJECT', unstable: false],
