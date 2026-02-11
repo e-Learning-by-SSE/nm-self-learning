@@ -291,7 +291,7 @@ pipeline {
                             def newVersion = params.RELEASE_LATEST_VERSION
                             currentBuild.displayName = "Release ${newVersion}"
 
-                            // Prepare GIT for tagging and pushing
+                            // Prepare Git for tagging and pushing
                             sh 'git restore .'
                             sh 'git config user.name "ssejenkins"'
                             sh 'git config user.email "jenkins@sse.uni-hildesheim.de"'
