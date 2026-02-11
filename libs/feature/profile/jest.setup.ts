@@ -10,7 +10,9 @@ jest.mock("react-i18next", () => ({
 		t: (key: string) => key,
 		i18n: { language: "en", changeLanguage: async () => {} }
 	}),
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	Trans: ({ i18nKey }: any) => i18nKey,
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	I18nextProvider: ({ children }: any) => children,
 	initReactI18next: { type: "3rdParty", init: () => {} }
 }));
