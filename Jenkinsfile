@@ -124,6 +124,18 @@ pipeline {
                 POSTGRES_PASSWORD = 'password'
                 DATABASE_URL = "postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@db:5432/${env.POSTGRES_DB}"
             }
+            stage('Test') {
+                script {
+                     steps {
+                        script {
+                            withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
+                                .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
+                                    fullTest()
+                            }
+                        }
+                    }
+                }
+            }
             parallel {
                 stage('Master') {
                     when {
@@ -145,7 +157,7 @@ pipeline {
                             ).trim()
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
                                 .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
-                                    fullTest()
+                                    // fullTest()
                                     sh 'npm run seed' // this can be changed in the future to "npx prisma migrate reset" to test the migration files
                                     sh "env TZ=${env.TZ} npx nx affected --base=${lastSuccessSHA} -t lint build e2e-ci"
                                 }
@@ -184,7 +196,7 @@ pipeline {
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
                                 .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
                                     sh 'npm run format:check'
-                                    fullTest()
+                                    //fullTest()
                                     sh 'npm run seed'
                                     sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
                             }
