@@ -36,11 +36,11 @@ module.exports = {
 			{
 				outputName: `junit-${project}-${taskHash}-${Date.now()}.xml`, // Uses timestamp to avoid overwriting test results from parallel test runs
 				outputDirectory: "output/test",
-				suiteName: "Test Suite",
 				classNameTemplate: "{classname}",
 				titleTemplate: "{title}",
 				ancestorSeparator: " › ",
-				usePathForSuiteName: true
+				suiteName: project,
+				usePathForSuiteName: false
 			}
 		]
 	],
