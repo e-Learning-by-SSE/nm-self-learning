@@ -117,15 +117,31 @@ pipeline {
             }
         }
 
-        stage('Test') {
+        // stage('Test') {
+        //     environment {
+        //         POSTGRES_DB = 'SelfLearningDb'
+        //         POSTGRES_USER = 'username'
+        //         POSTGRES_PASSWORD = 'password'
+        //         DATABASE_URL = "postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@db:5432/${env.POSTGRES_DB}"
+        //     }
+        //             steps {
+        //             script {
+        //                 withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
+        //                     .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
+        //                         fullTest()
+        //                 }
+        //             }
+        //         }
+        // }
+        stage('Pipeline') {
             environment {
                 POSTGRES_DB = 'SelfLearningDb'
                 POSTGRES_USER = 'username'
                 POSTGRES_PASSWORD = 'password'
                 DATABASE_URL = "postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@db:5432/${env.POSTGRES_DB}"
             }
-            script {
-                    steps {
+            stage('Test') {
+                steps {
                     script {
                         withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
                             .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
@@ -133,14 +149,6 @@ pipeline {
                         }
                     }
                 }
-            }
-        }
-        stage('Pipeline') {
-            environment {
-                POSTGRES_DB = 'SelfLearningDb'
-                POSTGRES_USER = 'username'
-                POSTGRES_PASSWORD = 'password'
-                DATABASE_URL = "postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@db:5432/${env.POSTGRES_DB}"
             }
             parallel {
                 stage('Master') {
