@@ -57,15 +57,6 @@ describe("Skill-Lib", () => {
 				costOptions: DefaultCostParameter
 			});
 
-			console.log(
-				"Arbitrary Path:",
-
-				path?.path
-					.map(segment => segment.origin)
-					.filter(unit => unit != null)
-					.map(unit => unit.id)
-			);
-
 			expect(path).not.toBeNull();
 			// Example 1, Variation A has 26 NMs
 			// Example 1, Variation B has 10 NMs
@@ -96,14 +87,6 @@ describe("Skill-Lib", () => {
 				costOptions: DefaultCostParameter,
 				selectors: [selector]
 			});
-
-			console.log(
-				"Path A:",
-				path?.path
-					.map(segment => segment.origin)
-					.filter(unit => unit != null)
-					.map(unit => unit.id)
-			);
 
 			expect(path).not.toBeNull();
 			// Example 1, Variation A has 26 NMs
@@ -136,14 +119,6 @@ describe("Skill-Lib", () => {
 				costOptions: DefaultCostParameter,
 				selectors: [selector]
 			});
-
-			console.log(
-				"Path with background knowledge:",
-				path?.path
-					.map(segment => segment.origin)
-					.filter(unit => unit != null)
-					.map(unit => unit.id)
-			);
 
 			expect(path).not.toBeNull();
 			// Example 1, Variation A has 26 NMs (2 Skills <-> NMs already known)
