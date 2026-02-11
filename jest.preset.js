@@ -39,8 +39,8 @@ module.exports = {
 				ancestorSeparator: " › ",
 				suiteName: project,
 				usePathForSuiteName: false,
-				classNameTemplate: `${project}.{filepath}`,
-				titleTemplate: "{classname} › {title}"
+				classNameTemplate: `${project}.{classname}`,
+				titleTemplate: "{title}"
 			}
 		]
 	],
