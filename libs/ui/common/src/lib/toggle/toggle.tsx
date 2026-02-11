@@ -15,7 +15,7 @@ export function Toggle({
 }) {
 	return (
 		<Field>
-			<div className="inline-flex cursor-pointer items-center" data-testid={testid}>
+			<div className="inline-flex cursor-pointer items-center">
 				<Switch
 					checked={value}
 					onChange={onChange}
@@ -25,6 +25,7 @@ export function Toggle({
 						focus:ring-c-primary focus:ring-offset-2
 						disabled:cursor-not-allowed disabled:opacity-50
 						${value ? "bg-c-primary" : "bg-c-surface-3 dark:bg-gray-700"}`}
+					data-testid={testid}
 				>
 					<span
 						className={`inline-block h-5 w-5 transform rounded-full

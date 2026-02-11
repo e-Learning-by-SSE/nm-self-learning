@@ -31,13 +31,13 @@ module.exports = {
 		[
 			"jest-junit",
 			{
-				outputName: `junit-${new Date().getTime()}.xml`, // Setzt einen Zeitstempel, um Überschreiben zu vermeiden
+				outputName: `junit-${new Date().getTime()}.xml`, // Uses timestamp to avoid overwriting test results from parallel test runs
 				outputDirectory: "output/test",
 				suiteName: "Test Suite",
 				classNameTemplate: "{classname}",
 				titleTemplate: "{title}",
 				ancestorSeparator: " › ",
-				usePathForSuiteName: "true"
+				usePathForSuiteName: true
 			}
 		]
 	],
