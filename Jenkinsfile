@@ -63,8 +63,8 @@ def fullTest(Map cfg = [:]) {
             ' sh {}
         exit 0
     '''
-    recordCoverage(tools: [[parser: 'COBERTURA', pattern: 'coverage/**/cobertura-coverage.xml']],
-        id: 'Cobertura', name: 'Cobertura Coverage',
+    recordCoverage(tools: [[parser: 'LCOV', pattern: 'coverage/**/lcov.info']],
+        id: 'LCOV', name: 'LCOV Coverage',
         sourceCodeRetention: 'EVERY_BUILD',
         failOnError: false
     )

@@ -33,7 +33,7 @@ module.exports = {
 	],
 	coverageProvider: "v8",
 	coverageDirectory: path.join(workspaceRoot, "coverage", project),
-	coverageReporters: ["cobertura"],
+	coverageReporters: ["lcov"],
 	reporters: [
 		"default",
 		[
