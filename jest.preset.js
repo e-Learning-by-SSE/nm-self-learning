@@ -1,3 +1,4 @@
+/* eslint-disable */
 const nxPreset = require("@nx/jest/preset").default;
 
 const path = require("path");
@@ -7,6 +8,8 @@ process.env.TZ = "Europe/Berlin";
 
 const project = process.env.NX_TASK_TARGET_PROJECT || "unknown";
 const taskHash = process.env.NX_TASK_HASH || process.pid;
+
+const workspaceRoot = process.cwd();
 
 module.exports = {
 	...nxPreset,
@@ -23,12 +26,14 @@ module.exports = {
 	 */
 	snapshotFormat: { escapeString: true, printBasicPrototype: true },
 	collectCoverageFrom: [
-		"src/**/*.{js,jsx,ts,tsx}",
-		"libs/**/*.{js,jsx,ts,tsx}",
-		"!<rootDir>/node_modules/"
+		"<rootDir>/src/**/*.{js,jsx,ts,tsx}",
+		"!<rootDir>/**/?(*.)+(spec|test).{js,jsx,ts,tsx}",
+		"!<rootDir>/**/jest.config.*",
+		"!<rootDir>/**/jest.setup.*"
 	],
-	coverageReporters: ["cobertura", "text", "html"],
-	coverageDirectory: `output/test/coverage/${project}`,
+	coverageProvider: "v8",
+	coverageDirectory: path.join(workspaceRoot, "coverage", project),
+	coverageReporters: ["cobertura"],
 	reporters: [
 		"default",
 		[

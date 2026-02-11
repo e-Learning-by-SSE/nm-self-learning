@@ -52,12 +52,15 @@ def fullTest(Map cfg = [:]) {
     junit testResults: "${resultDir}/**/junit*.xml", allowEmptyResults: true, skipPublishingChecks: true, skipMarkingBuildUnstable : true
     sh '''
         set +e
-        for f in $(ls coverage/**/cobertura-coverage.xml 2>/dev/null || true); do
-            if grep -q 'lines-valid="0"' "$f"; then
-            echo "Removing empty cobertura report: $f"
-            rm -f "$f"
+        find coverage -type f -name "cobertura-coverage.xml" -print0 2>/dev/null | \
+            xargs -0 -I{} sh -c '
+            f="$1"
+            # delete empty cobertura reports (no data)
+            if grep -q "lines-valid=\\"0\\"" "$f"; then
+                echo "Removing empty cobertura report: $f"
+                rm -f "$f"
             fi
-        done
+            ' sh {}
         exit 0
     '''
     recordCoverage(tools: [[parser: 'COBERTURA', pattern: 'coverage/**/cobertura-coverage.xml']],
