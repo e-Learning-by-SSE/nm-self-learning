@@ -41,6 +41,8 @@ def buildSphinxDocs(Map cfg = [:]) {
 def fullTest(Map cfg = [:]) {
     def resultDir = cfg.get('resultDir', 'output/test')
     def coverageDir = cfg.get('coverageDir', 'coverage')
+    
+    // JUnit reports
     catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
         sh """
             set -e
@@ -50,19 +52,8 @@ def fullTest(Map cfg = [:]) {
         """
     }
     junit testResults: "${resultDir}/**/junit*.xml", allowEmptyResults: true, skipPublishingChecks: true, skipMarkingBuildUnstable : true
-    sh '''
-        set +e
-        find coverage -type f -name "cobertura-coverage.xml" -print0 2>/dev/null | \
-            xargs -0 -I{} sh -c '
-            f="$1"
-            # delete empty cobertura reports (no data)
-            if grep -q "lines-valid=\\"0\\"" "$f"; then
-                echo "Removing empty cobertura report: $f"
-                rm -f "$f"
-            fi
-            ' sh {}
-        exit 0
-    '''
+
+    // Coverage reports
     recordCoverage(tools: [[parser: 'LCOV', pattern: 'coverage/**/lcov.info']],
         id: 'LCOV', name: 'LCOV Coverage',
         sourceCodeRetention: 'EVERY_BUILD',
