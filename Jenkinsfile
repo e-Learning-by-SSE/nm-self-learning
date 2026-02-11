@@ -50,6 +50,16 @@ def fullTest(Map cfg = [:]) {
         """
     }
     junit testResults: "${resultDir}/**/junit*.xml", allowEmptyResults: true, skipPublishingChecks: true, skipMarkingBuildUnstable : true
+    sh '''
+        set +e
+        for f in $(ls coverage/**/cobertura-coverage.xml 2>/dev/null || true); do
+            if grep -q 'lines-valid="0"' "$f"; then
+            echo "Removing empty cobertura report: $f"
+            rm -f "$f"
+            fi
+        done
+        exit 0
+    '''
     recordCoverage(tools: [[parser: 'COBERTURA', pattern: 'coverage/**/cobertura-coverage.xml']],
         id: 'Cobertura', name: 'Cobertura Coverage',
         sourceCodeRetention: 'EVERY_BUILD',
