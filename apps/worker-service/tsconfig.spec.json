@@ -11,5 +11,5 @@
 		"src/**/*.test.ts",
 		"src/**/*.d.ts",
 		"../../index.d.ts"
-	]
+, "src/__mocks__/@xenova/transformers.ts"	]
 }

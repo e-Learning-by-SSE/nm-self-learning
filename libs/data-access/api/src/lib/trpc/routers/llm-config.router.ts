@@ -1,4 +1,4 @@
-import { adminProcedure, t } from "../trpc";
+import { adminProcedure, authProcedure, t } from "../trpc";
 import { database } from "@self-learning/database";
 import { TRPCError } from "@trpc/server";
 import { secondsToMilliseconds } from "date-fns";
@@ -12,7 +12,7 @@ import { llmConfigSchema, llmConfigSchemaForFetching, ollamaModelList } from "@s
  */
 async function fetchAvailableModels(serverUrl: string, apiKey?: string, timeoutSeconds = 10) {
 	const headers: Record<string, string> = {
-		"Content-Type": "application/json"
+		"Content-Type": "application/json" 
 	};
 
 	if (apiKey) {
@@ -28,7 +28,7 @@ async function fetchAvailableModels(serverUrl: string, apiKey?: string, timeoutS
 	});
 	clearTimeout(timeoutId);
 	if (!response.ok) {
-		throw new TRPCError({
+		throw new TRPCError({ 
 			code: "BAD_REQUEST",
 			message: `${response.statusText}`
 		});
@@ -49,11 +49,21 @@ export async function fetchLlmConfig() {
 		}
 	});
 
-	return config;
+	if (config) {
+		return {
+			...config,
+			apiKey: config?.apiKey ?? undefined
+		};
+	} else {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "No configuration data found."
+		});
+	}
 }
 
 export const llmConfigRouter = t.router({
-	get: adminProcedure.query(async () => {
+	get: authProcedure.query(async () => {
 		const config = await fetchLlmConfig();
 		if (!config) {
 			return null;

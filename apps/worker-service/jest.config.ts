@@ -14,9 +14,12 @@ export default {
 	preset: "../../jest.preset.js",
 
 	// for Jest (transform imports)
-	moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths ?? {}, {
-		prefix: "<rootDir>/../../"
-	}),
+	moduleNameMapper: {
+		...pathsToModuleNameMapper(compilerOptions.paths ?? {}, {
+			prefix: "<rootDir>/../../"
+		}),
+		"^@xenova/transformers$": "<rootDir>/src/__mocks__/@xenova/transformers.ts"
+	},
 
 	// Setup global setup to use NX way to run tests in VS Code
 	// This will build the worker-service before running tests
@@ -24,5 +27,6 @@ export default {
 
 	// Close open handles (e.g., Worker threads) after tests
 	detectOpenHandles: true,
-	forceExit: true
+	forceExit: true,
+	transformIgnorePatterns: ["node_modules/(?!(@xenova/transformers|sharp|onnxruntime-node)/)"]
 };

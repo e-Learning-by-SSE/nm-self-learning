@@ -4,6 +4,7 @@ import { getCourse, LessonData } from "../lesson-data-access";
 import { LessonOutlineContext } from "../lesson-outline-context";
 import { useNavigableContent } from "@self-learning/ui/layouts";
 import { useState } from "react";
+import { useAiTutor, AiTutor, FloatingTutorButton } from "@self-learning/ai-tutor";
 
 export type BaseLessonLayoutProps = {
 	title: string;
@@ -23,6 +24,7 @@ export function BaseLessonLayout({ lesson, title, playlistArea, children }: Base
 		targetIndex,
 		setTargetIndex
 	};
+	const tutorState = useAiTutor();
 	return (
 		<LessonOutlineContext.Provider value={contextValue}>
 			<Head>
@@ -35,6 +37,12 @@ export function BaseLessonLayout({ lesson, title, playlistArea, children }: Base
 					<div className="w-full pt-8 pb-16">{children}</div>
 				</div>
 			</div>
+			<FloatingTutorButton
+				onToggle={tutorState.toggleTutor}
+				disabled={tutorState.isAnimating}
+			/>
+
+			<AiTutor tutorState={tutorState} />
 		</LessonOutlineContext.Provider>
 	);
 }

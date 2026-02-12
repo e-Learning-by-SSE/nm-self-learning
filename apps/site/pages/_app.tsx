@@ -51,7 +51,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 		: null;
 
 	const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-
+	
 	return (
 		<>
 			{process.env.NODE_ENV === "development" && (
