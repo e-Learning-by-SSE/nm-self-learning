@@ -1,6 +1,6 @@
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
-import { AuthorChip, ImageOrPlaceholder, LoadingBox } from "@self-learning/ui/common";
+import { ImageOrPlaceholder, LoadingBox } from "@self-learning/ui/common";
 import { AdminGuard, CenteredSection } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { withTranslations } from "@self-learning/api";
@@ -48,9 +48,9 @@ export default function SubjectsPage() {
 											{subject.subtitle}
 										</p>
 									</div>
-
+									{/* TODO who created subject - do we care
 									<ul className="flex flex-wrap gap-4">
-										{subject.subjectAdmin.map(admin => (
+										{subject.permissions.map(admin => (
 											<AuthorChip
 												key={admin.author.slug}
 												imgUrl={admin.author.imgUrl}
@@ -59,6 +59,7 @@ export default function SubjectsPage() {
 											/>
 										))}
 									</ul>
+									*/}
 								</div>
 							</li>
 						))}

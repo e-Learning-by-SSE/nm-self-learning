@@ -94,14 +94,14 @@ jest.mock("@self-learning/ui/common", () => {
 
 	return {
 		showToast: jest.fn(args => mockShowToast(args)),
-		ButtonActions: jest.fn(() => null),
-		Dialog: jest.fn(() => null),
-		DialogHandler: jest.fn(() => null),
+		ButtonActions: () => <div data-testid="button-actions" />,
+		Dialog: () => <div data-testid="dialog" />,
+		IconOnlyButton: () => <button data-testid="icon-only-button" />,
+		LoadingBox: () => <div data-testid="loading-box" />,
+		DialogHandler: () => <div data-testid="dialog-handler" />,
 		dispatchDialog: jest.fn(),
 		freeDialog: jest.fn(),
-		LoadingBox: jest.fn(() => null),
-		IconOnlyButton: jest.fn(() => null),
-		SimpleDialog: jest.fn(() => null),
+		SimpleDialog: () => <div data-testid="simple-dialog" />,
 		Tab,
 		Tabs,
 		SectionHeader

@@ -61,6 +61,7 @@
 	"Open User Menu": "Open User Menu",
 	"Profile": "Profile",
 	"Settings": "Settings",
+	"Memberships": "Memberships",
 	"Author Dashboard": "$t(common:Author) Dashboard",
 	"Admin Dashboard": "$t(common:Admin) Dashboard",
 	"Logout": "Logout",

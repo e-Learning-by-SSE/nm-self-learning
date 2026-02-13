@@ -19,7 +19,7 @@ import { CenteredSection } from "@self-learning/ui/layouts";
 import { MarketingSvg, OverviewSvg, TargetSvg } from "@self-learning/ui/static";
 import { withAuth } from "@self-learning/util/auth";
 import {
-	formatDateAgo,
+	formatDateDistanceToNow,
 	formatDateStringShort,
 	formatTimeIntervalToString
 } from "@self-learning/util/common";
@@ -490,7 +490,7 @@ function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 									</span>
 
 									<span className="hidden text-xs text-c-text-muted md:block">
-										{formatDateAgo(lesson.touchedAt)}
+										{formatDateDistanceToNow(lesson.touchedAt)}
 									</span>
 								</div>
 							</li>
@@ -510,8 +510,9 @@ function ProgressFooter({ progress }: { progress: number }) {
 				style={{ width: `${progress}%` }}
 			></span>
 			<span
-				className={`absolute top-0 w-full px-2 text-start text-sm font-semibold ${progress === 0 ? "text-c-primary" : "text-white"
-					}`}
+				className={`absolute top-0 w-full px-2 text-start text-sm font-semibold ${
+					progress === 0 ? "text-c-primary" : "text-white"
+				}`}
 			>
 				{progress}%
 			</span>

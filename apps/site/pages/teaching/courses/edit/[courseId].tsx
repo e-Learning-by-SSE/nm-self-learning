@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { AccessLevel, Prisma } from "@prisma/client";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
@@ -7,7 +7,7 @@ import { CourseContent, extractLessonIds } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { useRef } from "react";
-import { hasAuthorPermission } from "@self-learning/ui/layouts";
+import { ResourceGuard, testResourceGuard } from "@self-learning/ui/layouts";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { withAuth } from "@self-learning/util/auth";
 
@@ -40,6 +40,17 @@ export const getServerSideProps = withTranslations(
 						subjectId: true,
 						title: true
 					}
+				},
+				permissions: {
+					select: {
+						accessLevel: true,
+						group: {
+							select: {
+								id: true,
+								name: true
+							}
+						}
+					}
 				}
 			}
 		});
@@ -50,7 +61,12 @@ export const getServerSideProps = withTranslations(
 			};
 		}
 
-		if (!hasAuthorPermission({ user, permittedAuthors: course.authors.map(a => a.username) })) {
+		const hasAccess = testResourceGuard(
+			AccessLevel.EDIT,
+			course.permissions.map(p => ({ accessLevel: p.accessLevel, groupId: p.group.id })),
+			new Set(user.memberships)
+		);
+		if (!hasAccess) {
 			return {
 				redirect: {
 					destination: "/403",
@@ -88,7 +104,12 @@ export const getServerSideProps = withTranslations(
 			slug: course.slug,
 			subjectId: course.subject?.subjectId ?? null,
 			authors: course.authors.map(author => ({ username: author.username })),
-			content: content
+			content: content,
+			permissions: course.permissions.map(p => ({
+				accessLevel: p.accessLevel,
+				groupId: p.group.id,
+				groupName: p.group.name
+			}))
 		};
 
 		return {
@@ -139,5 +160,13 @@ export default function EditCoursePage({ course, lessons }: EditCourseProps) {
 		update();
 	}
 
-	return <CourseEditor course={course} onConfirm={onConfirm} />;
+	return (
+		<ResourceGuard
+			mode="fallback"
+			accessLevel={AccessLevel.EDIT}
+			allowedGroups={course.permissions}
+		>
+			<CourseEditor course={course} onConfirm={onConfirm} />
+		</ResourceGuard>
+	);
 }

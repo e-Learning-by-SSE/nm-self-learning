@@ -1,90 +1,71 @@
-import { ArrowDownTrayIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { ArrowDownTrayIcon, PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { TeacherView } from "@self-learning/analysis";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { SkillRepositoryOverview } from "@self-learning/teaching";
-import { Specialization, Subject } from "@self-learning/types";
 import {
 	Dialog,
 	DialogActions,
 	Divider,
 	IconOnlyButton,
 	IconTextButton,
-	ImageChip,
 	ImageOrPlaceholder,
-	LoadingBox,
-	Paginator,
-	SectionHeader,
-	Table,
-	TableDataColumn,
-	TableHeaderColumn
+	SectionHeader
 } from "@self-learning/ui/common";
-import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
 import { withAuth } from "@self-learning/util/auth";
-import { formatDateAgo } from "@self-learning/util/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { greaterOrEqAccessLevel, Specialization, Subject } from "@self-learning/types";
 import { LessonDeleteOption } from "@self-learning/ui/lesson";
 import { ExportCourseDialog } from "@self-learning/teaching";
-import { keepPreviousData } from "@tanstack/react-query";
+import { AccessLevel } from "@prisma/client";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
 
-type Props = {
-	author: Author;
-};
+type Props = { author: Author };
 
+// TODO MOVE OUT
 export function getAuthor(username: string) {
-	return database.author.findUniqueOrThrow({
-		where: { username },
+	return database.user.findUniqueOrThrow({
+		where: { name: username },
 		select: {
-			slug: true,
-			displayName: true,
-			imgUrl: true,
-			subjectAdmin: {
-				orderBy: { subject: { title: "asc" } },
+			author: {
 				select: {
-					subject: {
-						select: {
-							subjectId: true,
-							title: true,
-							cardImgUrl: true
-						}
-					}
+					slug: true,
+					displayName: true,
+					imgUrl: true
 				}
-			},
-			specializationAdmin: {
-				orderBy: { specialization: { title: "asc" } },
+			}, // TODO we want pagination
+			memberships: {
 				select: {
-					specialization: {
+					role: true,
+					group: {
 						select: {
-							specializationId: true,
-							title: true,
-							cardImgUrl: true,
-							subject: {
+							name: true,
+							id: true,
+							permissions: {
+								// where: {
+								// 	OR: [{ accessLevel: "FULL" }, { accessLevel: "EDIT" }]
+								// },
 								select: {
-									subjectId: true,
-									title: true
+									accessLevel: true,
+									course: {
+										select: {
+											courseId: true,
+											title: true,
+											slug: true,
+											imgUrl: true
+										}
+									},
+									lesson: {
+										select: { lessonId: true, title: true, slug: true }
+									}
 								}
 							}
-						}
-					}
-				}
-			},
-			courses: {
-				orderBy: { title: "asc" },
-				select: {
-					courseId: true,
-					slug: true,
-					title: true,
-					imgUrl: true,
-					specializations: {
-						select: {
-							title: true
 						}
 					}
 				}
@@ -97,19 +78,10 @@ export const getServerSideProps = withTranslations(
 	["common"],
 	withAuth<Props>(async (context, user) => {
 		if (user.isAuthor) {
-			return {
-				props: {
-					author: await getAuthor(user.name)
-				}
-			};
+			return { props: { author: await getAuthor(user.name) } };
 		}
 
-		return {
-			redirect: {
-				destination: "/",
-				permanent: false
-			}
-		};
+		return { redirect: { destination: "/", permanent: false } };
 	})
 );
 
@@ -117,89 +89,120 @@ export default function Start(props: Props) {
 	return <AuthorDashboardPage {...props} />;
 }
 
+type _Base = {
+	title: string;
+	slug: string;
+	accessLevel: AccessLevel;
+};
+type Course = _Base & {
+	courseId: string;
+	imgUrl: string | null;
+};
+type Lesson = _Base & {
+	lessonId: string;
+};
+
 function AuthorDashboardPage({ author }: Props) {
 	const session = useRequiredSession();
-	const authorName = session.data?.user.name;
+	// const authorName = session.data?.user.name;
+	const isAdmin = session.data?.user.role === "ADMIN";
 
 	const [viewExportDialog, setViewExportDialog] = useState(false);
 
+	// separate permissions into lessons & courses and get distincts
+	const { courses, lessons } = useMemo(() => {
+		const courseMap = new Map<string, Course>();
+		const lessonMap = new Map<string, Lesson>();
+		for (const m of author.memberships) {
+			for (const p of m.group.permissions) {
+				const accessLevel = p.accessLevel;
+				if (p.course) {
+					courseMap.set(p.course.courseId, { ...p.course, accessLevel });
+				}
+				if (p.lesson) {
+					lessonMap.set(p.lesson.lessonId, { ...p.lesson, accessLevel });
+				}
+			}
+		}
+		return {
+			courses: Array.from(courseMap.values()),
+			lessons: Array.from(lessonMap.values())
+		};
+	}, [author.memberships]);
+
+	const canCreate = author.memberships.length > 0;
+
 	return (
-		<div>
-			<CenteredSection>
-				<div className="flex flex-col gap-10">
-					{author.subjectAdmin.length > 0 && (
-						<>
-							<section>
-								<SectionHeader
-									title="Fachgebiete"
-									subtitle="Administrator der folgenden Fachgebiete:"
-								/>
+		<CenteredSection className="bg-gray-50">
+			<section>
+				<div className="flex justify-between gap-4">
+					<SectionHeader
+						title="Meine Gruppen"
+						subtitle="Mitglied der folgenden Gruppen:"
+					/>
 
-								<ul className="flex flex-wrap gap-4">
-									{author.subjectAdmin.map(({ subject }) => (
-										<ImageChip
-											key={subject.subjectId}
-											imgUrl={subject.cardImgUrl}
-										>
-											<Link
-												href={`/teaching/subjects/${subject.subjectId}`}
-												className="font-medium hover:text-c-primary"
-											>
-												{subject.title}
-											</Link>
-										</ImageChip>
-									))}
-								</ul>
-							</section>
-						</>
+					<Link href="/teaching/groups/create">
+						<IconTextButton
+							text="Group erstellen"
+							className="btn-secondary"
+							icon={<PlusIcon className="icon h-5" />}
+						/>
+					</Link>
+				</div>
+				<ul className="flex flex-col gap-4 py-4">
+					{author.memberships.length === 0 ? (
+						<div className="mx-auto flex items-center gap-8">
+							<div className="h-32 w-32">
+								<VoidSvg />
+							</div>
+							<div>
+								<p className="text-light">Sie sind Mitglied keiner Gruppe.</p>
+								<p>
+									Um Inhalte zu erstellen, müssen Sie Mitglied von mindestens
+									einer Gruppe sein.
+								</p>
+							</div>
+						</div>
+					) : (
+						author.memberships.map(m => (
+							<li
+								key={m.group.name}
+								className="flex px-4 py-2 w-full items-center rounded-lg border border-light-border bg-white"
+							>
+								<Link
+									className="text-sm font-medium hover:text-c-primary"
+									href={`/teaching/groups/${m.group.id}`}
+								>
+									{m.group.name}
+								</Link>
+								<span className="pl-2">als {m.role}</span>
+							</li>
+						))
 					)}
+				</ul>
+			</section>
 
-					{author.specializationAdmin.length > 0 && (
-						<>
-							<Divider />
-							<section>
-								<SectionHeader
-									title="Spezialisierungen"
-									subtitle="Administrator der folgenden Spezialisierungen:"
-								/>
-
-								<ul className="flex flex-wrap gap-4">
-									{author.specializationAdmin.map(({ specialization }) => (
-										<ImageChip
-											key={specialization.specializationId}
-											imgUrl={specialization.cardImgUrl}
-										>
-											<Link
-												href={`/teaching/subjects/${specialization.subject.subjectId}/${specialization.specializationId}`}
-												className="font-medium hover:text-c-primary"
-											>
-												{specialization.title}
-											</Link>
-										</ImageChip>
-									))}
-								</ul>
-							</section>
-						</>
-					)}
-
+			{canCreate && (
+				<>
 					<Divider />
-
 					<section>
 						<div className="flex justify-between gap-4">
 							<SectionHeader
 								title="Meine Kurse"
-								subtitle="Autor der folgenden Kurse:"
+								subtitle="Berechtigungen in den folgenden Kurse:"
 							/>
 
 							<Link href="/teaching/courses/create" className="mt-4">
-								<button className="btn btn-primary" type="button">
-									<span>Kurs erstellen</span>
-								</button>
+								<IconTextButton
+									className="btn-secondary"
+									text="Kurs erstellen"
+									icon={<PlusIcon className="icon h-5" />}
+								/>
 							</Link>
 						</div>
 
 						<ul className="flex flex-col gap-4 py-4">
-							{author.courses.length === 0 ? (
+							{courses.length === 0 ? (
 								<div className="mx-auto flex items-center gap-8">
 									<div className="h-32 w-32">
 										<VoidSvg />
@@ -209,7 +212,7 @@ function AuthorDashboardPage({ author }: Props) {
 									</p>
 								</div>
 							) : (
-								author.courses.map(course => (
+								courses.map(course => (
 									<li
 										key={course.courseId}
 										className="flex items-center rounded-lg border border-c-border bg-white"
@@ -220,39 +223,53 @@ function AuthorDashboardPage({ author }: Props) {
 										/>
 
 										<div className="flex w-full items-center justify-between px-4">
-											<div className="flex flex-col gap-1">
-												<span className="text-xs text-c-text-muted">
-													{course.specializations
-														.map(s => s.title)
-														.join(" | ")}
-												</span>
-												<Link
-													href={`/courses/${course.slug}`}
-													className="text-sm font-medium hover:text-c-primary"
-												>
-													{course.title}
-												</Link>
-											</div>
+											<Link
+												href={`/courses/${course.slug}`}
+												className="text-sm font-medium hover:text-c-primary"
+											>
+												{course.title}
+											</Link>
+											<i>{course.accessLevel}</i>
 
 											<div className="flex flex-wrap justify-end gap-4">
-												<Link
-													href={`/teaching/courses/edit/${course.courseId}`}
-												>
-													<IconTextButton
-														icon={<PencilIcon className="h-5 w-5" />}
-														text={"Bearbeiten"}
-														className="btn-stroked"
-														title="Kurs bearbeiten"
-													/>
-												</Link>
-												<IconTextButton
-													icon={<ArrowDownTrayIcon className="h-5 w-5" />}
-													text={"Export"}
-													className="btn-stroked"
-													title="Kurs exportieren"
-													onClick={() => setViewExportDialog(true)}
-												/>
-												<CourseDeleteOption slug={course.slug} />
+												{(isAdmin ||
+													greaterOrEqAccessLevel(
+														course.accessLevel,
+														AccessLevel.EDIT
+													)) && (
+													<Link
+														href={`/teaching/courses/edit/${course.courseId}`}
+													>
+														<IconTextButton
+															icon={
+																<PencilIcon className="h-5 w-5" />
+															}
+															text={"Bearbeiten"}
+															className="btn-stroked"
+															title="Kurs bearbeiten"
+														/>
+													</Link>
+												)}
+												{(isAdmin ||
+													greaterOrEqAccessLevel(
+														course.accessLevel,
+														AccessLevel.FULL
+													)) && (
+													<>
+														<IconTextButton
+															icon={
+																<ArrowDownTrayIcon className="h-5 w-5" />
+															}
+															text={"Export"}
+															className="btn-stroked"
+															title="Kurs exportieren"
+															onClick={() =>
+																setViewExportDialog(true)
+															}
+														/>
+														<CourseDeleteOption slug={course.slug} />
+													</>
+												)}
 											</div>
 										</div>
 										{viewExportDialog && (
@@ -275,17 +292,50 @@ function AuthorDashboardPage({ author }: Props) {
 						<div className="flex justify-between gap-4">
 							<SectionHeader
 								title="Meine Lerneinheiten"
-								subtitle="Autor der folgenden Lerneinheiten:"
+								subtitle="Berechtigungen in den folgenden Lerneinheiten:"
 							/>
 
 							<Link href="/teaching/lessons/create" className="mt-4">
-								<button className="btn btn-primary" type="button">
-									<span>Lerneinheit erstellen</span>
-								</button>
+								<IconTextButton
+									text="Lerneinheit erstellen"
+									className="btn-secondary"
+									icon={<PlusIcon className="icon h-5" />}
+								/>
 							</Link>
 						</div>
 
-						{authorName && <Lessons authorName={authorName} />}
+						<ul className="flex flex-col gap-4 py-4">
+							{lessons.length === 0 ? (
+								<div className="mx-auto flex items-center gap-8">
+									<div className="h-32 w-32">
+										<VoidSvg />
+									</div>
+									<p className="text-light">
+										Du hast noch keine Lerneinheiten erstellt.
+									</p>
+								</div>
+							) : (
+								lessons.map(lesson => (
+									<li
+										key={lesson.lessonId}
+										className="flex w-full py-2 items-center justify-between px-4 rounded-lg border border-light-border bg-white"
+									>
+										<Link
+											href={`/lessons/${lesson.slug}`}
+											className="font-medium hover:text-secondary"
+										>
+											{lesson.title}
+										</Link>
+										<i>{lesson.accessLevel}</i>
+										<LessonTaskbar
+											lessonId={lesson.lessonId}
+											accessLevel={lesson.accessLevel}
+											isAdmin={isAdmin}
+										/>
+									</li>
+								))
+							)}
+						</ul>
 					</section>
 
 					<Divider />
@@ -296,9 +346,11 @@ function AuthorDashboardPage({ author }: Props) {
 								subtitle="Autor der folgenden Skillkarten:"
 							/>
 							<Link href="/skills/repository/create" className="mt-4">
-								<button className="btn btn-primary" type="button">
-									<span>Skillkarte erstellen</span>
-								</button>
+								<IconTextButton
+									icon={<PlusIcon className="icon h-5" />}
+									className="btn-secondary"
+									text="Skillkarte erstellen"
+								/>
 							</Link>
 						</div>
 						<SkillRepositoryOverview />
@@ -310,14 +362,14 @@ function AuthorDashboardPage({ author }: Props) {
 							<SectionHeader
 								title="Teilnahmeübersicht"
 								subtitle="Es werden aus datenschutzgründen nur Angaben bei mindestens 10
-				teilnehmenden Studierenden angezeigt."
+			teilnehmenden Studierenden angezeigt."
 							/>
 						</div>
 						<TeacherView />
 					</section>
-				</div>
-			</CenteredSection>
-		</div>
+				</>
+			)}
+		</CenteredSection>
 	);
 }
 
@@ -426,96 +478,30 @@ function CourseDeletionDialog({
 	);
 }
 
-function LessonTaskbar({ lessonId }: { lessonId: string }) {
+function LessonTaskbar({
+	lessonId,
+	accessLevel,
+	isAdmin
+}: {
+	lessonId: string;
+	accessLevel: AccessLevel;
+	isAdmin: boolean;
+}) {
+	const canDelete = isAdmin || greaterOrEqAccessLevel(accessLevel, AccessLevel.FULL);
+	const canEdit = isAdmin || greaterOrEqAccessLevel(accessLevel, AccessLevel.EDIT);
 	return (
 		<div className="flex flex-wrap justify-end gap-4">
-			<Link href={`/teaching/lessons/edit/${lessonId}`}>
-				<IconTextButton
-					icon={<PencilIcon className="h-5 w-5" />}
-					text={"Bearbeiten"}
-					className="btn-stroked"
-					title="Lerneinheit bearbeiten"
-				/>
-			</Link>
-
-			<LessonDeleteOption lessonId={lessonId} />
-		</div>
-	);
-}
-
-function Lessons({ authorName }: { authorName: string }) {
-	const router = useRouter();
-	const { title = "", page = 1 } = router.query;
-
-	const { data: lessons } = trpc.lesson.findMany.useQuery(
-		{
-			page: Number(page),
-			title: title as string,
-			authorName
-		},
-		{
-			placeholderData: keepPreviousData,
-			staleTime: 10_000
-		}
-	);
-
-	return (
-		<div className="flex min-h-[200px] flex-col">
-			{!lessons ? (
-				<LoadingBox />
-			) : (
-				<>
-					<SearchField
-						placeholder="Suche nach Lerneinheiten"
-						value={title}
-						onChange={e => {
-							router.push(
-								{
-									query: {
-										title: e.target.value,
-										page: 1
-									}
-								},
-								undefined,
-								{ shallow: true }
-							);
-						}}
+			{canEdit && (
+				<Link href={`/teaching/lessons/edit/${lessonId}`}>
+					<IconTextButton
+						icon={<PencilIcon className="h-5 w-5" />}
+						text={"Bearbeiten"}
+						className="btn-stroked"
+						title="Lerneinheit bearbeiten"
 					/>
-
-					<Table
-						head={
-							<>
-								<TableHeaderColumn>Titel</TableHeaderColumn>
-								<TableHeaderColumn>Letzte Änderung</TableHeaderColumn>
-								<TableHeaderColumn></TableHeaderColumn>
-							</>
-						}
-					>
-						{lessons.result.map(lesson => (
-							<tr key={lesson.lessonId}>
-								<TableDataColumn>
-									<Link
-										href={`/lessons/${lesson.slug}`}
-										className="font-medium hover:text-c-primary"
-									>
-										{lesson.title}
-									</Link>
-								</TableDataColumn>
-								<TableDataColumn>
-									<span className="text-c-text-muted">
-										{formatDateAgo(lesson.updatedAt)}
-									</span>
-								</TableDataColumn>
-								<TableDataColumn>
-									<LessonTaskbar lessonId={lesson.lessonId} />
-								</TableDataColumn>
-							</tr>
-						))}
-					</Table>
-
-					<Paginator pagination={lessons} url={`${router.route}?title=${title}`} />
-				</>
+				</Link>
 			)}
+			{canDelete && <LessonDeleteOption lessonId={lessonId} />}
 		</div>
 	);
 }

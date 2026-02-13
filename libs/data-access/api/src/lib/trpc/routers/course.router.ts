@@ -1,7 +1,8 @@
-import { Prisma } from "@prisma/client";
+import { AccessLevel, Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import {
 	courseFormSchema,
+	CoursePermission,
 	getFullCourseExport,
 	mapCourseFormToInsert,
 	mapCourseFormToUpdate
@@ -10,8 +11,10 @@ import { CourseContent, CourseMeta, extractLessonIds, LessonMeta } from "@self-l
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { authorProcedure, authProcedure, t } from "../trpc";
-import { UserFromSession } from "../context";
+import { authProcedure, t } from "../trpc";
+import { canCreate, canDeleteBySlug, canEdit, canEditBySlug } from "../../permissions/course.utils";
+import { greaterOrEqAccessLevel } from "../../permissions/permission.utils";
+import { getEffectiveAccess } from "../../permissions/permission.service";
 
 export const courseRouter = t.router({
 	listAvailableCourses: authProcedure
@@ -64,10 +67,7 @@ export const courseRouter = t.router({
 			};
 
 			const result = await database.course.findMany({
-				select: {
-					slug: true,
-					title: true
-				},
+				select: { slug: true, title: true },
 				...paginate(pageSize, input.page),
 				orderBy: { title: "asc" },
 				where
@@ -91,11 +91,7 @@ export const courseRouter = t.router({
 				summary: "Get course description by slug"
 			}
 		})
-		.input(
-			z.object({
-				slug: z.string().describe("Unique slug of the course to get")
-			})
-		)
+		.input(z.object({ slug: z.string().describe("Unique slug of the course to get") }))
 		.output(
 			z.object({
 				title: z.string(),
@@ -106,11 +102,7 @@ export const courseRouter = t.router({
 			})
 		)
 		.query(async ({ input }) => {
-			const course = await database.course.findUnique({
-				where: {
-					slug: input.slug
-				}
-			});
+			const course = await database.course.findUnique({ where: { slug: input.slug } });
 
 			if (!course) {
 				throw new TRPCError({
@@ -143,11 +135,7 @@ export const courseRouter = t.router({
 						? { contains: input.title, mode: "insensitive" }
 						: undefined,
 				specializations: input.specializationId
-					? {
-							some: {
-								specializationId: input.specializationId
-							}
-						}
+					? { some: { specializationId: input.specializationId } }
 					: undefined
 			};
 
@@ -158,17 +146,8 @@ export const courseRouter = t.router({
 						slug: true,
 						imgUrl: true,
 						title: true,
-						authors: {
-							select: {
-								displayName: true
-							}
-						},
-						subject: {
-							select: {
-								subjectId: true,
-								title: true
-							}
-						}
+						authors: { select: { displayName: true } },
+						subject: { select: { subjectId: true, title: true } }
 					},
 					...paginate(pageSize, input.page),
 					orderBy: { title: "asc" },
@@ -187,9 +166,7 @@ export const courseRouter = t.router({
 	getContent: t.procedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
 		const course = await database.course.findUniqueOrThrow({
 			where: { slug: input.slug },
-			select: {
-				content: true
-			}
+			select: { content: true }
 		});
 
 		const content = (course.content ?? []) as CourseContent;
@@ -197,12 +174,7 @@ export const courseRouter = t.router({
 
 		const lessons = await database.lesson.findMany({
 			where: { lessonId: { in: lessonIds } },
-			select: {
-				lessonId: true,
-				slug: true,
-				title: true,
-				meta: true
-			}
+			select: { lessonId: true, slug: true, title: true, meta: true }
 		});
 
 		const lessonMap: {
@@ -223,115 +195,128 @@ export const courseRouter = t.router({
 			lesson => lesson.license?.oerCompatible !== false
 		);
 
-		// OER-compatible or ADMIN / AUTHOR of the course
-		if (!isOERCompatible && !(await authorizedUserForExport(ctx.user, input.slug))) {
+		// OER-compatible or ADMIN / AUTHOR of the course TODO can edit or FULL?
+		if (
+			!isOERCompatible &&
+			!(ctx.user && (await canEdit(ctx.user, fullExport.course.courseId)))
+		) {
 			throw new TRPCError({
 				code: "FORBIDDEN",
 				message:
-					"Content is neither OER-compatible nor is the user an author of the course. Export not allowed."
+					"Content is neither OER-compatible nor the user has edit permission. Export not allowed."
 			});
 		}
 
 		return fullExport;
 	}),
 	create: authProcedure.input(courseFormSchema).mutation(async ({ input, ctx }) => {
-		if (!canCreate(ctx.user)) {
-			throw new TRPCError({
-				code: "FORBIDDEN",
-				message:
-					"Creating a course requires either: admin role | admin of all related subjects | admin of all related specializations"
-			});
-		} else if (input.authors.length <= 0 && ctx.user.role != "ADMIN") {
+		if (input.authors.length <= 0 && ctx.user.role !== "ADMIN") {
 			throw new TRPCError({
 				code: "FORBIDDEN",
 				message:
 					"Deleting the last author as is not allowed, except for Admin Users. Contact the side administrator for more information. "
 			});
 		}
+		// make sure at least one permission is FULL
+		if (input.permissions.filter(p => p.accessLevel === AccessLevel.FULL).length === 0) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: "requires at least one FULL permission."
+			});
+		}
+		// can create if user is a member of at least one group
+		if (!(await canCreate(ctx.user))) {
+			throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
+		}
 
 		const courseForDb = mapCourseFormToInsert(input, getRandomId());
 
 		const created = await database.course.create({
 			data: courseForDb,
-			select: {
-				title: true,
-				slug: true,
-				courseId: true
-			}
+			select: { title: true, slug: true, courseId: true }
 		});
 
 		console.log("[courseRouter.create]: Course created by", ctx.user.name, created);
 		return created;
 	}),
-	edit: authorProcedure
-		.input(
-			z.object({
-				courseId: z.string(),
-				course: courseFormSchema
-			})
-		)
+	edit: authProcedure
+		.input(z.object({ courseId: z.string(), course: courseFormSchema }))
 		.mutation(async ({ input, ctx }) => {
-			const courseForDb = mapCourseFormToUpdate(input.course, input.courseId);
-
-			if (ctx.user.role === "ADMIN") {
-				return await database.course.update({
-					where: {
-						courseId: input.courseId
-					},
-					data: courseForDb,
-					select: {
-						title: true,
-						slug: true,
-						courseId: true
-					}
+			// TODO similar to lessonRouter
+			// get user access level to resource - must be at least EDIT
+			const { accessLevel: actualAccess } = await getEffectiveAccess(ctx.user, {
+				courseId: input.courseId
+			});
+			if (!actualAccess || !greaterOrEqAccessLevel(actualAccess, AccessLevel.EDIT)) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
+			// drop display fields
+			const perms = input.course.permissions.map(p => {
+				return {
+					accessLevel: p.accessLevel,
+					groupId: p.groupId
+				};
+			});
+			// make sure at least one permission is FULL
+			if (perms.filter(p => p.accessLevel === AccessLevel.FULL).length === 0) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "requires at least one FULL permission."
 				});
 			}
-			return await database.course.update({
-				where: {
-					courseId: input.courseId,
-					authors: {
-						some: {
-							username: ctx.user.name
-						}
-					}
-				},
-				data: courseForDb,
-				select: {
-					title: true,
-					slug: true,
-					courseId: true
+			// fetch existing permissions to determine diffs
+			const existingPerms = await database.permission.findMany({
+				where: { courseId: input.courseId },
+				select: { groupId: true, accessLevel: true }
+			});
+			// compute if premissions are equal
+			const toKey = (p: CoursePermission) => `${p.groupId}|${p.accessLevel} ?? "-"}`;
+			const keys = new Set(perms.map(toKey));
+			const equal =
+				existingPerms.length === perms.length &&
+				existingPerms.every(ep => keys.has(toKey(ep)));
+			//
+			if (!equal) {
+				// must have FULL access in the resource to change permissions
+				if (!greaterOrEqAccessLevel(actualAccess, AccessLevel.FULL)) {
+					throw new TRPCError({
+						code: "FORBIDDEN",
+						message: "Insufficient permissions to update permissions"
+					});
 				}
+			}
+
+			const courseForDb = mapCourseFormToUpdate(input.course, input.courseId, perms);
+
+			return await database.course.update({
+				where: { courseId: input.courseId },
+				data: courseForDb,
+				select: { title: true, slug: true, courseId: true }
 			});
 		}),
-	deleteCourse: authorProcedure
+	deleteCourse: authProcedure
 		.input(z.object({ slug: z.string() }))
 		.mutation(async ({ input, ctx }) => {
+			if (!(await canDeleteBySlug(ctx.user, input.slug))) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
 			return database.course.delete({
-				where: {
-					slug: input.slug,
-					authors: { some: { username: ctx.user.name } }
-				}
+				where: { slug: input.slug, authors: { some: { username: ctx.user.name } } }
 			});
 		}),
-	findLinkedEntities: authorProcedure
+	findLinkedEntities: authProcedure
 		.input(z.object({ slug: z.string() }))
-		.query(async ({ input }) => {
+		.query(async ({ input, ctx }) => {
+			if (!(await canEditBySlug(ctx.user, input.slug))) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
 			return database.course.findUnique({
-				where: {
-					slug: input.slug
-				},
-				select: {
-					subject: true,
-					specializations: {
-						include: {
-							subject: true
-						}
-					}
-				}
+				where: { slug: input.slug },
+				select: { subject: true, specializations: { include: { subject: true } } }
 			});
 		}),
 
-	getProgress: authorProcedure
+	getProgress: authProcedure
 		.meta({
 			openapi: {
 				enabled: true,
@@ -355,13 +340,14 @@ export const courseRouter = t.router({
 		)
 		.output(
 			z.array(
-				z.object({
-					username: z.string(),
-					progress: z.number().min(0).max(100).nullable()
-				})
+				z.object({ username: z.string(), progress: z.number().min(0).max(100).nullable() })
 			)
 		)
 		.query(async ({ input, ctx }) => {
+			if (!(await canEditBySlug(ctx.user, input.slug))) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
+
 			const usernames = input.usernames
 				? input.usernames
 						.split(",")
@@ -382,42 +368,18 @@ export const courseRouter = t.router({
 				});
 			}
 
-			// check if user is authorized (403 if not)
-			const userIsAuthor = await database.course.findFirst({
-				where: {
-					slug: input.slug,
-					authors: { some: { username: ctx.user.name } }
-				},
-				select: { courseId: true }
-			});
-
-			if (!userIsAuthor) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: "You are not an author of this course."
-				});
-			}
-
 			const content = (course.content ?? []) as CourseContent;
 			const lessonIds = extractLessonIds(content);
 			const totalLessons = lessonIds.length;
 
 			if (totalLessons === 0) {
-				return usernames.map(username => ({
-					username,
-					progress: null
-				}));
+				return usernames.map(username => ({ username, progress: null }));
 			}
 
 			// Find enrolled students from input usernames in this course
 			const enrollments = await database.enrollment.findMany({
-				where: {
-					courseId: course.courseId,
-					username: { in: usernames }
-				},
-				select: {
-					username: true
-				}
+				where: { courseId: course.courseId, username: { in: usernames } },
+				select: { username: true }
 			});
 
 			if (enrollments.length === 0) {
@@ -432,9 +394,7 @@ export const courseRouter = t.router({
 					lessonId: { in: lessonIds },
 					username: { in: enrollments.map(e => e.username) }
 				},
-				_count: {
-					lessonId: true
-				}
+				_count: { lessonId: true }
 			});
 
 			return enrollments.map(enrollment => {
@@ -442,56 +402,7 @@ export const courseRouter = t.router({
 					completedLessons.find(c => c.username === enrollment.username)?._count
 						.lessonId ?? 0;
 				const progressPercent = Math.round((completedCount / totalLessons) * 100);
-				return {
-					username: enrollment.username,
-					progress: progressPercent
-				};
+				return { username: enrollment.username, progress: progressPercent };
 			});
 		})
 });
-
-function canCreate(user: UserFromSession): boolean {
-	return user.role === "ADMIN" || user.isAuthor;
-}
-
-/**
- * Guard (pre-check) that checks if a user is allowed to export a course based on its role.
- * These are:
- * - ADMIN: always allowed
- * - AUTHOR: allowed if the user is an author of the course
- *
- * Further, users of other roles may also export a course, if all content is public (OER-compatible).
- * However, this is not checked here, as this requires the full course data and, thus, is done during the export.
- * @param user The user which requests the export
- * @param slug The course to export (by slug)
- * @returns true if the user is allowed to export the course, false requires to check all licenses
- */
-async function authorizedUserForExport(
-	user: UserFromSession | undefined,
-	slug: string
-): Promise<boolean> {
-	if (!user) {
-		return false;
-	}
-
-	if (user.role === "ADMIN") {
-		return true;
-	}
-
-	const beforeExport = await database.course.findUniqueOrThrow({
-		where: { slug },
-		select: {
-			authors: {
-				select: {
-					username: true
-				}
-			}
-		}
-	});
-
-	if (beforeExport.authors.some(author => author.username === user.name)) {
-		return true;
-	}
-
-	return false;
-}

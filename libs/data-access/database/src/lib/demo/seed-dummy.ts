@@ -1,4 +1,8 @@
 import { createCourse, createLesson, createMultipleChoice, seedCaseStudy } from "../seed-functions";
+import { faker } from "@faker-js/faker";
+import { softwareentwicklungDemoGroup } from "../seedSpecializations";
+
+const courseId = faker.string.alphanumeric(8);
 
 const chapters = [
 	{
@@ -38,10 +42,11 @@ const courses = [
 		subtitle: "Untertitel",
 		description: "Beschreibung",
 		imgUrl: "",
-		chapters
+		chapters,
+		courseId
 	})
 ];
 
 export async function seedDummy(): Promise<void> {
-	await seedCaseStudy("Dummy", courses, chapters, []);
+	await seedCaseStudy("Dummy", courses, chapters, softwareentwicklungDemoGroup, []);
 }

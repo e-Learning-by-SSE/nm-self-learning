@@ -96,6 +96,8 @@ model Course {
     authors              Author[]            @relation("AuthorToCourse")
     specializations      Specialization[]    @relation("CourseToSpecialization")
     learningDiaryEntries LearningDiaryPage[]
+    lessons              Lesson[]
+    permissions          Permission[]
 }
 
 model Enrollment {
@@ -138,6 +140,9 @@ model Lesson {
     selfRegulatedQuestion String?
     requires              Skill[]           @relation("requiredSkills")
     provides              Skill[]           @relation("providedSkills")
+    courseId              String?
+    course                Course?           @relation(fields: [courseId], references: [courseId])
+    permissions           Permission[]
 
     lessonStart LearningDiaryLearnedLessons[]
 }

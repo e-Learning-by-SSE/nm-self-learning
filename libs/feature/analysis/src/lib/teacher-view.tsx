@@ -4,12 +4,9 @@ import { Table, TableDataColumn, TableHeaderColumn, SortIndicator } from "@self-
 import { getSemester } from "./aggregation-functions";
 import Link from "next/link";
 import { useState } from "react";
+import { AccessLevel } from "@prisma/client";
 
-type Course = {
-	slug: string;
-	title: string;
-	courseId: string;
-};
+type Course = { slug: string; title: string; courseId: string };
 
 type ParticipationData = Course & {
 	participants?: number | null | undefined;
@@ -87,11 +84,7 @@ function CourseParticipation({
 	semester: { start: Date; end: Date };
 }) {
 	const { data, isLoading } = trpc.author.courseParticipation.useQuery(
-		{
-			courseId: courses.map(c => c.courseId),
-			start: semester.start,
-			end: semester.end
-		},
+		{ courseId: courses.map(c => c.courseId), start: semester.start, end: semester.end },
 		{ enabled: courses.length > 0 }
 	);
 
@@ -104,10 +97,7 @@ function CourseParticipation({
 
 	const merged = courses.map(course => {
 		const participationData = data.find(p => p.courseId === course.courseId);
-		return {
-			...course,
-			...(participationData || {})
-		};
+		return { ...course, ...(participationData || {}) };
 	});
 
 	return <SortedTable participationData={merged} />;
@@ -116,7 +106,7 @@ function CourseParticipation({
 export function TeacherView() {
 	const today = new Date();
 	const semester = getSemester(today);
-	const { data, isLoading } = trpc.author.getCoursesAndSubjects.useQuery();
+	const { data, isLoading } = trpc.author.getAdministratedCourses.useQuery();
 
 	if (isLoading) {
 		return <p>Loading...</p>;
@@ -125,16 +115,9 @@ export function TeacherView() {
 	if (!data) {
 		return <p>Keine administrierten Kurse vorhanden.</p>;
 	}
+	const adrministratedCourses = data
+		.filter((p): p is typeof p & { course: Course } => p.course !== null)
+		.map(p => p.course);
 
-	const authoredCourses = data.subjectAdmin.map(subject => subject.subject.courses).flat();
-
-	data.specializationAdmin.forEach(specialization => {
-		specialization.specialization.courses.forEach(course => {
-			if (!authoredCourses.find(c => c.courseId === course.courseId)) {
-				authoredCourses.push(course);
-			}
-		});
-	});
-
-	return <CourseParticipation courses={authoredCourses} semester={semester} />;
+	return <CourseParticipation courses={adrministratedCourses} semester={semester} />;
 }

@@ -7,7 +7,7 @@ import {
 	PencilIcon,
 	QuestionMarkCircleIcon
 } from "@heroicons/react/24/solid";
-import { LessonType } from "@prisma/client";
+import { AccessLevel, LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import {
 	SmallGradeBadge,
@@ -36,6 +36,7 @@ import {
 	MarkdownContainer,
 	NavigableContentViewer,
 	useNavigableContent,
+	ResourceGuard,
 	useRequiredSession
 } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
@@ -233,10 +234,7 @@ function extractNavigationInfo(
 ): LessonNavigationData {
 	const tmp = courseContent.map(chapter => ({
 		content: chapter.content.map(lesson => {
-			const lessonInfo = lessons[lesson.lessonId] ?? {
-				slug: undefined,
-				lessonId: undefined
-			};
+			const lessonInfo = lessons[lesson.lessonId] ?? { slug: undefined, lessonId: undefined };
 			return lessonInfo;
 		})
 	}));
@@ -287,10 +285,7 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonLearnersV
 	const INITIAL_PDF: OpenedMediaInfo[] = useMemo(
 		() =>
 			lessonContent
-				.map((m, idx) => ({
-					...m,
-					content_id: idx
-				}))
+				.map((m, idx) => ({ ...m, content_id: idx }))
 				.filter(m => m.type === "pdf") as OpenedMediaInfo[],
 		[lessonContent]
 	);
@@ -302,9 +297,7 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonLearnersV
 
 	const handleCloseDialog = () => {
 		setShowDialog(false);
-		router.push({ pathname: path, query: { modal: "closed" } }, undefined, {
-			shallow: true
-		});
+		router.push({ pathname: path, query: { modal: "closed" } }, undefined, { shallow: true });
 	};
 
 	if (showDialog && markdown.preQuestion) {
@@ -525,20 +518,20 @@ function LessonHeader({
 }
 
 function AuthorEditButton({ lesson }: { lesson: LessonLearnersViewProps["lesson"] }) {
-	const session = useRequiredSession();
-
-	if (session.data?.user.isAuthor || session.data?.user.role === "ADMIN") {
-		return (
+	return (
+		<ResourceGuard
+			mode="hide"
+			accessLevel={AccessLevel.EDIT}
+			allowedGroups={lesson.permissions}
+		>
 			<Link
 				href={`/teaching/lessons/edit/${lesson.lessonId}`}
 				className="btn-stroked h-fit xl:w-fit"
 			>
 				<PencilIcon className="h-6" />
 			</Link>
-		);
-	}
-
-	return null;
+		</ResourceGuard>
+	);
 }
 
 function LessonControls({

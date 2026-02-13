@@ -1,7 +1,12 @@
 import { PencilIcon, PlusIcon, UserGroupIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { SpecializationPermissionsDialog } from "@self-learning/teaching";
-import { AuthorChip, ImageOrPlaceholder, SectionHeader } from "@self-learning/ui/common";
+import {
+	AuthorChip,
+	ImageOrPlaceholder,
+	LoadingBox,
+	SectionHeader
+} from "@self-learning/ui/common";
 import { CenteredContainerXL, TopicHeader, Unauthorized } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -12,23 +17,17 @@ export default function SubjectManagementPage() {
 	const router = useRouter();
 
 	const [openPermissionDialog, setOpenPermissionDialog] = useState(false);
-	const { data: permissions } = trpc.me.permissions.useQuery();
-	const { data: subject } = trpc.subject.getForEdit.useQuery(
-		{
-			subjectId: router.query.subjectId as string
-		},
-		{
-			enabled: !!router.query.subjectId
-		}
+	const { data: subject, isLoading } = trpc.subject.getForEdit.useQuery(
+		{ subjectId: router.query.subjectId as string },
+		{ enabled: !!router.query.subjectId }
 	);
 
-	const canView =
-		!!subject &&
-		!!permissions &&
-		(permissions.role === "ADMIN" ||
-			permissions.author?.subjectAdmin.find(s => s.subjectId === subject.subjectId));
-
-	if (!canView) {
+	if (isLoading) {
+		return <LoadingBox />;
+	}
+	// TODO everybody can do it for now
+	// typescript is angry if I ignore !subject
+	if (!subject) {
 		return (
 			<Unauthorized>
 				<ul className="list-inside list-disc">
@@ -42,7 +41,7 @@ export default function SubjectManagementPage() {
 	return (
 		<div className="flex flex-col gap-8 pb-32">
 			<TopicHeader
-				imgUrlBanner={subject?.imgUrlBanner}
+				imgUrlBanner={subject.imgUrlBanner}
 				parentLink="/subjects"
 				parentTitle="Fachgebiet"
 				title={subject.title}

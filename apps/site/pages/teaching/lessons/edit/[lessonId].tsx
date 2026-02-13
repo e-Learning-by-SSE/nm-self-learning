@@ -6,7 +6,8 @@ import { LessonContent } from "@self-learning/types";
 import { OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";
-import { hasAuthorPermission } from "@self-learning/ui/layouts";
+import { ResourceGuard, testResourceGuard } from "@self-learning/ui/layouts";
+import { AccessLevel } from "@prisma/client";
 import { withAuth } from "@self-learning/util/auth";
 
 type EditLessonProps = {
@@ -26,6 +27,7 @@ export const getServerSideProps = withTranslations(
 			where: { lessonId },
 			select: {
 				lessonId: true,
+				courseId: true,
 				slug: true,
 				title: true,
 				subtitle: true,
@@ -38,7 +40,18 @@ export const getServerSideProps = withTranslations(
 				provides: true,
 				authors: true,
 				lessonType: true,
-				selfRegulatedQuestion: true
+				selfRegulatedQuestion: true,
+				permissions: {
+					select: {
+						accessLevel: true,
+						group: {
+							select: {
+								id: true,
+								name: true
+							}
+						}
+					}
+				}
 			}
 		});
 
@@ -46,7 +59,12 @@ export const getServerSideProps = withTranslations(
 			return { notFound: true };
 		}
 
-		if (!hasAuthorPermission({ user, permittedAuthors: lesson.authors.map(a => a.username) })) {
+		const hasAccess = testResourceGuard(
+			AccessLevel.EDIT,
+			lesson.permissions.map(p => ({ accessLevel: p.accessLevel, groupId: p.group.id })),
+			new Set(user.memberships)
+		);
+		if (!hasAccess) {
 			return {
 				redirect: {
 					destination: "/403",
@@ -56,6 +74,7 @@ export const getServerSideProps = withTranslations(
 		}
 
 		const lessonForm: LessonFormModel = {
+			courseId: lesson.courseId,
 			lessonId: lesson.lessonId,
 			slug: lesson.slug,
 			title: lesson.title,
@@ -78,7 +97,12 @@ export const getServerSideProps = withTranslations(
 			content: (lesson.content ?? []) as LessonContent,
 			quiz: lesson.quiz as Quiz,
 			lessonType: lesson.lessonType,
-			selfRegulatedQuestion: lesson.selfRegulatedQuestion
+			selfRegulatedQuestion: lesson.selfRegulatedQuestion,
+			permissions: lesson.permissions.map(p => ({
+				accessLevel: p.accessLevel,
+				groupId: p.group.id,
+				groupName: p.group.name
+			}))
 		};
 
 		return {
@@ -102,5 +126,13 @@ export default function EditLessonPage({ lesson }: EditLessonProps) {
 		);
 	};
 
-	return <LessonEditor initialLesson={lesson} onSubmit={handleEditClose} isFullScreen={true} />;
+	return (
+		<ResourceGuard
+			mode="fallback"
+			accessLevel={AccessLevel.EDIT}
+			allowedGroups={lesson.permissions}
+		>
+			<LessonEditor initialLesson={lesson} onSubmit={handleEditClose} isFullScreen={true} />
+		</ResourceGuard>
+	);
 }

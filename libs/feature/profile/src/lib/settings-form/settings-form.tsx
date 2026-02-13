@@ -96,8 +96,9 @@ export function FeatureSettingsForm({
 	const onChangeStatistics = (value: boolean) => {
 		if (!value) {
 			onChange({ learningStatistics: false, learningDiary: false });
+		} else {
+			onChange({ learningStatistics: value });
 		}
-		onChange({ learningStatistics: value });
 	};
 
 	const { t: t_common } = useTranslation("common");

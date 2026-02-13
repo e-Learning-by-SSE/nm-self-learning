@@ -61,6 +61,7 @@
 	"Open User Menu": "$t(common:User Menu) Öffnen",
 	"Profile": "Profil",
 	"Settings": "Einstellungen",
+	"Memberships": "Mitgliedschaften",
 	"Author Dashboard": "$t(common:Author_other)bereich",
 	"Admin Dashboard": "$t(common:Admin)bereich",
 	"Logout": "Abmelden",

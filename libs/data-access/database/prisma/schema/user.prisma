@@ -43,6 +43,7 @@ model User {
     reminders            ReminderLog[]
     notificationSettings UserNotificationSetting[]
     featureFlags         Features?
+    memberships          Member[]
 
     registrationCompleted   Boolean   @default(false)
     acceptedExperimentTerms DateTime?
@@ -60,6 +61,65 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+enum AccessLevel {
+    VIEW
+    EDIT // can edit 
+    FULL // can edit and grant editing away (only on the same level)
+}
+
+enum GroupRole {
+    MEMBER
+    ADMIN
+}
+
+model Member {
+    role      GroupRole
+    createdAt DateTime  @default(now())
+    expiresAt DateTime?
+
+    userId  String
+    groupId Int
+    user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, groupId])
+}
+
+model Group {
+    id          Int          @id @default(autoincrement())
+    name        String       @unique
+    members     Member[]
+    // lessons     Lesson[]    // this are ownerships
+    // courses     Course[]    // this are ownerships
+    permissions Permission[]
+    // skills      SkillRepository
+
+    // This is NOT used to inherit permissions but to differentiate between root and user-created groups
+    parentId Int?
+    parent   Group?  @relation("ParentGroup", fields: [parentId], references: [id], onDelete: Restrict)
+    children Group[] @relation("ParentGroup")
+}
+
+model Permission {
+    id      String @id @default(uuid())
+    groupId Int
+
+    courseId String?
+    lessonId String?
+
+    accessLevel AccessLevel
+
+    isPublic Boolean @default(false) // this permission applies to all groups
+
+    group  Group   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+    course Course? @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
+    lesson Lesson? @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
+
+    // Prohibit multiple permissions per one content
+    @@unique([groupId, courseId])
+    @@unique([groupId, lessonId])
 }
 
 model Features {

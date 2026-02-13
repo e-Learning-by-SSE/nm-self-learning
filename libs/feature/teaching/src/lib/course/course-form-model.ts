@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { AccessLevel, Prisma } from "@prisma/client";
 import { authorsRelationSchema, courseContentSchema, createCourseMeta } from "@self-learning/types";
 import { stringOrNull } from "@self-learning/util/common";
 import { z } from "zod";
@@ -12,7 +12,15 @@ export const courseFormSchema = z.object({
 	description: z.string().nullable(),
 	imgUrl: z.string().nullable(),
 	authors: authorsRelationSchema,
-	content: courseContentSchema
+	content: courseContentSchema,
+	permissions: z
+		.object({
+			accessLevel: z.nativeEnum(AccessLevel),
+			groupId: z.number(),
+			groupName: z.string()
+		})
+		.array()
+		.min(1, "At least one permission is required")
 });
 
 export type CourseFormModel = z.infer<typeof courseFormSchema>;
@@ -21,7 +29,8 @@ export function mapCourseFormToInsert(
 	course: CourseFormModel,
 	courseId: string
 ): Prisma.CourseCreateInput {
-	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors } = course;
+	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors, permissions } =
+		course;
 
 	const courseForDb: Prisma.CourseCreateInput = {
 		courseId,
@@ -32,18 +41,28 @@ export function mapCourseFormToInsert(
 		imgUrl: stringOrNull(imgUrl),
 		description: stringOrNull(description),
 		meta: createCourseMeta(course),
-		authors: {
-			connect: authors.map(author => ({ username: author.username }))
-		},
-		subject: subjectId ? { connect: { subjectId } } : undefined
+		authors: { connect: authors.map(author => ({ username: author.username })) },
+		subject: subjectId ? { connect: { subjectId } } : undefined,
+		permissions: {
+			create: permissions.map(p => ({
+				accessLevel: p.accessLevel,
+				groupId: p.groupId
+			}))
+		}
 	};
 
 	return courseForDb;
 }
 
+export type CoursePermission = {
+	groupId: number;
+	accessLevel: AccessLevel;
+};
+
 export function mapCourseFormToUpdate(
 	course: CourseFormModel,
-	courseId: string
+	courseId: string,
+	perms: CoursePermission[]
 ): Prisma.CourseUpdateInput {
 	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors } = course;
 
@@ -56,10 +75,20 @@ export function mapCourseFormToUpdate(
 		imgUrl: stringOrNull(imgUrl),
 		description: stringOrNull(description),
 		meta: createCourseMeta(course),
-		authors: {
-			set: authors.map(author => ({ username: author.username }))
-		},
-		subject: subjectId ? { connect: { subjectId } } : undefined
+		authors: { set: authors.map(author => ({ username: author.username })) },
+		subject: subjectId ? { connect: { subjectId } } : undefined,
+		permissions: {
+			deleteMany: { groupId: { notIn: perms.map(p => p.groupId) } },
+			upsert: perms.map(p => ({
+				where: {
+					groupId_courseId: { courseId, groupId: p.groupId }
+				},
+				create: p,
+				update: {
+					accessLevel: p.accessLevel
+				}
+			}))
+		}
 	};
 
 	return courseForDb;

@@ -19,7 +19,7 @@ import { CenteredContainer, CenteredSection, useAuthentication } from "@self-lea
 import { handleEmailTracking } from "@self-learning/ui/notifications";
 import { withAuth } from "@self-learning/util/auth";
 import { authOptions } from "@self-learning/util/auth/server";
-import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
+import { formatDateDistanceToNow, formatSeconds } from "@self-learning/util/common";
 import { getServerSession } from "next-auth";
 import { useSession } from "next-auth/react";
 import { MDXRemote } from "next-mdx-remote";
@@ -301,8 +301,8 @@ function CourseHeader({
 					<div className="flex flex-col gap-4">
 						<AuthorsList authors={course.authors} />
 						<CreatedUpdatedDates
-							createdAt={formatDateAgo(course.createdAt)}
-							updatedAt={formatDateAgo(course.updatedAt)}
+							createdAt={formatDateDistanceToNow(course.createdAt)}
+							updatedAt={formatDateDistanceToNow(course.updatedAt)}
 						/>
 					</div>
 				</div>

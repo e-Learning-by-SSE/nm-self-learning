@@ -1,45 +1,28 @@
 import { database } from "@self-learning/database";
 import { ResolvedValue } from "@self-learning/types";
 
-export async function getCoursesAndSubjects(username: string) {
-	return await database.author.findUnique({
-		where: { username },
-		select: {
-			subjectAdmin: {
-				select: {
-					subject: {
-						select: {
-							title: true,
-							slug: true,
-							courses: {
-								select: {
-									title: true,
-									slug: true,
-									courseId: true
-								}
-							}
-						}
-					}
-				}
-			},
-			specializationAdmin: {
-				select: {
-					specialization: {
-						select: {
-							title: true,
-							courses: {
-								select: {
-									title: true,
-									slug: true,
-									courseId: true
-								}
-							}
+// TODO move to database access layer
+export async function getAdministratedCourses(name: string) {
+	return await database.permission.findMany({
+		where: {
+			accessLevel: "FULL",
+			courseId: { not: null },
+			group: {
+				members: {
+					some: {
+						user: {
+							name
 						}
 					}
 				}
 			}
+		},
+		distinct: ["courseId"],
+		select: {
+			accessLevel: true,
+			course: { select: { courseId: true, title: true, slug: true } }
 		}
 	});
 }
 
-export type AuthorCoursesAndSubjects = ResolvedValue<typeof getCoursesAndSubjects>;
+export type AdministratedCourses = ResolvedValue<typeof getAdministratedCourses>;

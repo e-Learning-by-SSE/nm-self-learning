@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 import {
 	createCourse,
 	createLesson,
@@ -6,6 +7,8 @@ import {
 	createVideo
 } from "../seed-functions";
 
+const courseId = faker.string.alphanumeric(8);
+
 export const chapters = [
 	{
 		title: "Bewusstsein (*consciousness*)",
@@ -13,6 +16,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Definition(en) von Bewusstsein",
 				subtitle: "Aktivierungsfrage: Welche Definition(en) von Bewusstsein gibt es?",
 				description:
@@ -68,6 +72,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Bewusstseinszustände",
 				subtitle: "Welche qualitativ unterschiedlichen Zustände des Bewusstseins gibt es?",
 				description:
@@ -120,6 +125,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Bewusstsein und physiologische Aktivation",
 				subtitle: "Aktivierungsfrage: Was beschreibt die **Yerkes-Dodson'sche Regel**?",
 				description:
@@ -175,6 +181,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Grenzprozesse des Bewusstseins",
 				subtitle: "Aktivierungsfrage: Was beschreibt das *Tip-of-the-tongue*-Phänomen?",
 				description:
@@ -235,6 +242,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Arbeitsgedächtnismodell (Baddeley, 1986)",
 				subtitle:
 					"Wie definiert Baddeley (1986) die im Gehirn ablaufenden **exekutiven Funktionen**?",
@@ -289,6 +297,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Evolutionäre Ansätze zur Erklärung des Bewusstseins",
 				subtitle:
 					"Wovon geht Donald (1995) in seinem evolutionären Ansatz zum Bewusstsein aus?",
@@ -342,6 +351,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Neurowissenschaftliche Ansätze des Bewusstseins",
 				subtitle:
 					"Aktivierungsfrage: Was versteht man unter ereigniskorrelierten Potentialen (ERP)?",
@@ -395,6 +405,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Philosophische Ansätze des Bewusstseins",
 				subtitle:
 					"Was beschreibt das Leib-Seele-Problem (*mind body problem*)(Decartes, 17. Jh.) des Bewusstseins?",
@@ -455,6 +466,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Bewusste und unbewusste Wahrnehmung",
 				subtitle: "Aktivierungsfrage zu bewusster und unbewusster Wahrnehmung?",
 				description:
@@ -506,6 +518,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Funktionen des Bewusstseins - Selektion ",
 				subtitle: "Aktivierungsfrage zu Funktionen des Bewusstseins - Selektion?",
 				description:
@@ -557,6 +570,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Störungen des visuellen Bewusstseins beim hirnverletzten Patienten",
 				subtitle:
 					"Aktivierungsfrage zu Störungen des visuellen Bewusstseins beim hirnverletzten Patienten?",
@@ -610,6 +624,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Das neuronale Korrelat des visuellen Bewusstseins",
 				subtitle: "Aktivierungsfrage zum neuronalen Korrelat des visuellen Bewusstseins?",
 				description:
@@ -661,6 +676,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Bewusstsein und höhere kognitive Funktionen",
 				subtitle: "Aktivierungsfrage zu Bewusstsein und höhere kognitive Funktionen?",
 				description:
@@ -719,6 +735,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Bewusstsein als Überlebenshilfe",
 				subtitle: "Aktivierungsfrage zu Bewusstsein als Überlebenshilfe?",
 				description:
@@ -770,6 +787,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Einflüsse des Bewusstseins auf Kultur und Umwelt",
 				subtitle: "Aktivierungsfrage zu Einflüsse des Bewusstseins auf Kultur und Umwelt?",
 				description:
@@ -821,6 +839,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Der wissenschaftliche Status des Bewusstseins",
 				subtitle: "Aktivierungsfrage zum wissenschaftlichen Status des Bewusstseins?",
 				description:
@@ -872,6 +891,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Bewusstsein und Aufmerksamkeit ",
 				subtitle: "Aktivierungsfrage zu Bewusstsein und Aufmerksamkeit?",
 				description:
@@ -923,6 +943,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Nicht bewusste Verarbeitungsprozesse",
 				subtitle: "Aktivierungsfrage zu nicht bewusste Verarbeitungsprozesse?",
 				description:
@@ -974,6 +995,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Funktionen und Limitationen des Bewusstseins",
 				subtitle: "Aktivierungsfrage zu Funktionen und Limitationen des Bewusstseins",
 				description:
@@ -1025,6 +1047,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Bewusstseinsphänomene - Methoden unbewusster Präsentation - Gorilla (Simons & Chabris, 1999)",
 				subtitle:
 					"Aktivierungsfrage zu Bewusstseinsphänomene - Methoden unbewusster Präsentation - Gorilla (Simons & Chabris, 1999)",
@@ -1078,6 +1101,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Bewusstseinsphänomene - Methoden unbewusster Präsentation - Inattentional Blindness",
 				subtitle:
 					"Aktivierungsfrage zu Bewusstseinsphänomene - Methoden unbewusster Präsentation - Inattentional Blindness",
@@ -1138,6 +1162,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Zerebrale Dominanz",
 				subtitle: "Aktivierungsfrage zu zerebraler Dominanz?",
 				description:
@@ -1189,6 +1214,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Komplementäre Zugangsweise zur Welt?",
 				subtitle: "Aktivierungsfrage zu komplementäre Zugangsweise zur Welt?",
 				description:
@@ -1240,6 +1266,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Bewusstseinsveränderung im Alltag",
 				subtitle: "Aktivierungsfrage zu Bewusstseinsveränderung im Alltag?",
 				description:
@@ -1291,6 +1318,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Tagträume und Phantasien",
 				subtitle: "Aktivierungsfrage zu Tagträume und Phantasien?",
 				description:
@@ -1349,6 +1377,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Krankhafte Bewusstseinsveränderungen",
 				subtitle: "Aktivierungsfrage zu krankhaften Bewusstseinsveränderungen?",
 				description:
@@ -1400,6 +1429,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Halluzinationen",
 				subtitle: "Aktivierungsfrage zu Halluzinationen?",
 				description:
@@ -1451,6 +1481,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Hypnose",
 				subtitle: "Aktivierungsfrage zu Hypnose?",
 				description:
@@ -1502,6 +1533,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Bewusstseinsveränderung durch Drogen",
 				subtitle: "Aktivierungsfrage zu Bewusstseinsveränderung durch Drogen?",
 				description:
@@ -1560,6 +1592,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Schlafphasen und -rhythmik",
 				subtitle: "Aktivierungsfrage zu Schlafphasen und -rhythmik?",
 				description:
@@ -1611,6 +1644,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Zirkadiane Periodik und innere Uhren",
 				subtitle: "Aktivierungsfrage zu zirkadiane Periodik und innere Uhren?",
 				description:
@@ -1662,6 +1696,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Schlaftheorien",
 				subtitle: "Aktivierungsfrage zu Schlaftheorien?",
 				description:
@@ -1713,6 +1748,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Träumen, Traumtheorien und REM-Schlaf",
 				subtitle: "Aktivierungsfrage zu Träumen, Traumtheorien und REM-Schlaf?",
 				description:
@@ -1764,6 +1800,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Schlafentzug und seine Auswirkung",
 				subtitle: "Aktivierungsfrage zu Schlafentzug und seine Auswirkung?",
 				description:
@@ -1822,6 +1859,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Experiment - Einfluss unbewusster Reize - Response Priming (Vorberg, Mattler, Heinecke, Schmidt & Schwarzbach, 2003)",
 				subtitle: "Aktivierungsfrage zu Response Priming?",
 				description:
@@ -1873,6 +1911,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Das James Vicary-Experiment - Iss-Popcorn-trink-Cola-Studie",
 				subtitle:
 					"Aktivierungsfrage zum James Vicary-Experiment - Iss-Popcorn-trink-Cola-Studie?",
@@ -1926,6 +1965,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Experiment von Boris Sidis (1898)",
 				subtitle: "Aktivierungsfrage zu Bewusstseinsveränderung im Alltag?",
 				description:
@@ -1980,6 +2020,7 @@ export const chapters = [
 	}
 ];
 export const course = createCourse({
+	courseId,
 	subjectId: "psychologie",
 	specializationId: "bewusstsein",
 	title: "Bewusstsein",

@@ -45,6 +45,7 @@ declare module "next-auth" {
 			role: UserRole;
 			isAuthor: boolean;
 			avatarUrl?: string | null;
+			memberships: number[];
 			featureFlags: {
 				learningDiary: boolean;
 				learningStatistics: boolean;

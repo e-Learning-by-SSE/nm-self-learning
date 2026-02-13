@@ -1,19 +1,20 @@
+import { GroupRole } from "@prisma/client";
 import { z } from "zod";
 
-const subjectAdminSchema = z.object({
-	subjectId: z.string()
-});
+export const GroupRoleEnum = z.nativeEnum(GroupRole);
 
-const specializationSchema = z.object({
-	specializationId: z.string()
+export const membershipSchema = z.object({
+	groupId: z.number(),
+	expiresAt: z.date().nullable(),
+	userId: z.string(),
+	role: GroupRoleEnum
 });
 
 export const authorSchema = z.object({
 	displayName: z.string().min(3),
 	slug: z.string().min(3),
 	imgUrl: z.string().url().nullable(),
-	subjectAdmin: z.array(subjectAdminSchema),
-	specializationAdmin: z.array(specializationSchema)
+	memberships: z.array(membershipSchema)
 });
 
 /**
@@ -27,10 +28,6 @@ export const authorSchema = z.object({
  *		authors: authorsRelationSchema,
  * });
  */
-export const authorsRelationSchema = z.array(
-	z.object({
-		username: z.string()
-	})
-);
+export const authorsRelationSchema = z.array(z.object({ username: z.string() }));
 
 export type Author = z.infer<typeof authorSchema>;

@@ -15,7 +15,7 @@ import {
 	TableDataColumn,
 	TableHeaderColumn
 } from "@self-learning/ui/common";
-import { formatDateAgo } from "@self-learning/util/common";
+import { formatDateDistanceToNow } from "@self-learning/util/common";
 import { TRPCClientError } from "@trpc/client";
 import { inferRouterOutputs } from "@trpc/server";
 import { ReactElement, useId, useMemo, useState } from "react";
@@ -383,7 +383,7 @@ function AssetPickerDialog({
 											<TableDataColumn>{asset.fileType}</TableDataColumn>
 											<TableDataColumn>
 												<span title={asset.createdAt.toLocaleString()}>
-													{formatDateAgo(asset.createdAt)}
+													{formatDateDistanceToNow(asset.createdAt)}
 												</span>
 											</TableDataColumn>
 											<TableDataColumn>

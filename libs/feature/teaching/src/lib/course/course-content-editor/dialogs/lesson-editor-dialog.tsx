@@ -1,6 +1,7 @@
+import { AccessLevel } from "@prisma/client";
 import { LessonEditor, LessonFormModel } from "@self-learning/teaching";
 import { Dialog, OnDialogCloseFn } from "@self-learning/ui/common";
-import { Unauthorized, useRequiredSession } from "@self-learning/ui/layouts";
+import { ResourceGuard } from "@self-learning/ui/layouts";
 import Link from "next/link";
 
 export function LessonEditorDialogWithGuard({
@@ -10,25 +11,14 @@ export function LessonEditorDialogWithGuard({
 	onClose: OnDialogCloseFn<LessonFormModel>;
 	initialLesson?: LessonFormModel;
 }) {
-	const session = useRequiredSession();
-	// Admins can edit everything
-	const isAdmin = session.data?.user.role === "ADMIN";
-	// All Authors can edit new lessons
-	const isAuthorOfNewLesson = initialLesson === undefined && session.data?.user.isAuthor;
-	// Authors can edit their own lessons
-	const isAuthorOfLesson = initialLesson?.authors.some(
-		a => a.username === session.data?.user.name
-	);
-	const canEdit = isAdmin || isAuthorOfNewLesson || isAuthorOfLesson;
-
 	return (
-		<div>
-			{canEdit ? (
-				<LessonEditorDialog initialLesson={initialLesson} onClose={onClose} />
-			) : (
-				<Unauthorized />
-			)}
-		</div>
+		<ResourceGuard
+			mode="fallback"
+			accessLevel={AccessLevel.EDIT}
+			allowedGroups={initialLesson?.permissions}
+		>
+			<LessonEditorDialog initialLesson={initialLesson} onClose={onClose} />
+		</ResourceGuard>
 	);
 }
 

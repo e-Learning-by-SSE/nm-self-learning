@@ -59,16 +59,19 @@ export const meRouter = t.router({
 			where: { name: ctx.user.name },
 			select: {
 				role: true,
-				author: {
+				memberships: {
 					select: {
-						subjectAdmin: {
+						role: true,
+						group: {
 							select: {
-								subjectId: true
-							}
-						},
-						specializationAdmin: {
-							select: {
-								specializationId: true
+								name: true,
+								permissions: {
+									select: {
+										accessLevel: true,
+										course: { select: { courseId: true, title: true } },
+										lesson: { select: { lessonId: true, title: true } }
+									}
+								}
 							}
 						}
 					}
@@ -80,9 +83,7 @@ export const meRouter = t.router({
 		return await database.$transaction(async tx => {
 			const user = await tx.user.findUnique({
 				where: { name: ctx.user.name },
-				include: {
-					author: true
-				}
+				include: { author: true }
 			});
 
 			if (!user) {
@@ -92,46 +93,27 @@ export const meRouter = t.router({
 			const anonymousUsername = "anonymous-" + randomUUID();
 
 			await tx.user.create({
-				data: {
-					name: anonymousUsername,
-					displayName: "Deleted User",
-					role: "USER"
-				}
+				data: { name: anonymousUsername, displayName: "Deleted User", role: "USER" }
 			});
 
 			if (user.author) {
 				await tx.author.update({
-					where: {
-						username: user.name
-					},
-					data: {
-						username: anonymousUsername,
-						slug: anonymousUsername
-					}
+					where: { username: user.name },
+					data: { username: anonymousUsername, slug: anonymousUsername }
 				});
 			}
 
 			await tx.skillRepository.updateMany({
-				where: {
-					ownerName: user.name
-				},
-				data: {
-					ownerName: anonymousUsername
-				}
+				where: { ownerName: user.name },
+				data: { ownerName: anonymousUsername }
 			});
 
 			await tx.eventLog.updateMany({
-				where: {
-					username: user.name
-				},
-				data: {
-					username: anonymousUsername
-				}
+				where: { username: user.name },
+				data: { username: anonymousUsername }
 			});
 
-			await tx.user.delete({
-				where: { name: ctx.user.name }
-			});
+			await tx.user.delete({ where: { name: ctx.user.name } });
 
 			return true;
 		});
@@ -143,12 +125,7 @@ export const meRouter = t.router({
 			);
 			console.warn("Updating user settings", updateData);
 
-			return await tx.user.update({
-				where: {
-					name: ctx.user.name
-				},
-				data: updateData
-			});
+			return await tx.user.update({ where: { name: ctx.user.name }, data: updateData });
 		});
 	}),
 

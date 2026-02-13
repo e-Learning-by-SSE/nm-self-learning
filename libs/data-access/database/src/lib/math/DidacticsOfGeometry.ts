@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 import {
 	createArticle,
 	createCourse,
@@ -7,11 +8,14 @@ import {
 	createVideo
 } from "../seed-functions";
 
+const courseId = faker.string.alphanumeric(8);
+
 const ch_Begriffslernen = {
 	title: "Begriffslernen in der Grundschule",
 	description: "Begriffslernen in der Grundschule.",
 	content: [
 		createLesson({
+			courseId,
 			title: "Räumliche Orientierung",
 			subtitle: null,
 			description: "Räumliche Orientierung in der Grundschule",
@@ -89,6 +93,7 @@ const ch_Groessen = {
 	description: "Größen und Maße in der Sekundarstufe",
 	content: [
 		createLesson({
+			courseId,
 			title: "Einheitsquadrate und Einheitswürfel",
 			subtitle: "",
 			description: "Einheitsquadrate und Einheitswürfel",
@@ -133,6 +138,7 @@ const ch_Groessen = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Flächenformel",
 			subtitle: "",
 			description: "Herleitung Flächenformel",
@@ -176,6 +182,7 @@ const ch_Figuren = {
 	description: "Figuren in der Grundschule",
 	content: [
 		createLesson({
+			courseId,
 			title: "ebene Figuren - Ziele in der Grundschule",
 			subtitle: null,
 			description: "ebene Figuren - Ziele in der Grundschule",
@@ -242,6 +249,7 @@ const ch_Symmetrien = {
 	description: "Symmetrien in der Grundschule",
 	content: [
 		createLesson({
+			courseId,
 			title: "Symmetrie als fundamentale Idee",
 			subtitle: "",
 			description: "Symmetrie als fundamentale Idee",
@@ -299,6 +307,7 @@ const ch_Symmetrien = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Kongruenzabbildungen durch Handlungen",
 			subtitle: "",
 			description: "Kongruenzabbildungen durch Handlungen ",
@@ -370,6 +379,7 @@ const ch_Muster = {
 	description: "Muster, Ornamente, Parkettierungen in der Grundschule",
 	content: [
 		createLesson({
+			courseId,
 			title: "Grundlagen",
 			subtitle: "",
 			description: "Grundlagen",
@@ -405,6 +415,7 @@ const ch_Muster = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Ornamente",
 			subtitle: "",
 			description: "Ornamente",
@@ -446,6 +457,7 @@ const ch_Konstruieren = {
 	description: "Begriffslernen in der Grundschule.",
 	content: [
 		createLesson({
+			courseId,
 			title: "Konstruktionswerkzeuge - Allgemein",
 			subtitle: "",
 			description: "Konstruktionswerkzeuge - Allgemein",
@@ -532,6 +544,7 @@ const ch_Konstruieren = {
 		}),
 
 		createLesson({
+			courseId,
 			title: "Historischer Hintergrund von Konstruktionswerkzeugen",
 			subtitle: "",
 			description: "Historischer Hintergrund von Konstruktionswerkzeugen",
@@ -566,6 +579,7 @@ const ch_Konstruieren = {
 			]
 		}),
 		createLesson({
+			courseId,
 			title: "Doppelfunktion von Konstruktion",
 			subtitle: "",
 			description: "Doppelfunktion von Konstruktion",
@@ -643,6 +657,7 @@ export const chapters = [
 ];
 
 export const course = createCourse({
+	courseId,
 	subjectId: "mathematik",
 	specializationId: "didaktik-der-geometrie",
 	title: "Didaktik der Geometrie",
