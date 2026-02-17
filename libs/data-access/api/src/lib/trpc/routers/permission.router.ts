@@ -2,7 +2,7 @@ import { database } from "@self-learning/database";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
-import { AccessLevel, GroupRole, Prisma } from "@prisma/client";
+import { AccessLevel, Group, GroupRole, Member, Permission, Prisma } from "@prisma/client";
 import { paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { GroupFormSchema } from "@self-learning/types";
 import {
@@ -19,7 +19,7 @@ import {
 	hasResourceAccess,
 	hasResourceAccessBatch
 } from "../../permissions/permission.service";
-import { anyTrue } from "../../permissions/permission.utils";
+import { anyTrue, greaterAccessLevel, greaterGroupRole } from "../../permissions/permission.utils";
 
 export const permissionRouter = t.router({
 	// Can be done by "parent" group admins or website admins
@@ -279,6 +279,119 @@ export const permissionRouter = t.router({
 			}
 		});
 	}),
+	mergeGroup: authProcedure
+		.input(
+			z.object({
+				groupIds: z.number().array(),
+				strategy: z.enum(["first", "highest", "lowest"])
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const { groupIds, strategy } = input;
+			const { id: userId } = ctx.user;
+
+			// Must be website admin or have ADMIN role in all merging groups
+			const hasAccess =
+				ctx.user.role === "ADMIN" ||
+				(
+					await Promise.all(
+						groupIds.map(groupId => hasGroupRole(groupId, userId, GroupRole.ADMIN))
+					)
+				).every(v => v);
+			if (!hasAccess) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Insufficient permissions to merge groups"
+				});
+			}
+
+			let base: Group | null = null;
+			const childrenSet = new Set<number>();
+			const memberSet = new Map<string, Member>();
+			const permissionSet = new Map<string, Permission>();
+
+			// Merge members and permissions
+			const groups = await Promise.all(
+				groupIds.map(id =>
+					database.group.findUnique({
+						where: { id },
+						select: {
+							id: true,
+							name: true,
+							parentId: true,
+							members: true,
+							permissions: true,
+							children: true
+						}
+					})
+				)
+			);
+			for (const group of groups) {
+				if (group === null) continue;
+				//
+				if (base === null) {
+					base = group; // take first group name, id, and parent
+				}
+				group.members.forEach(m => {
+					const o = memberSet.get(m.userId);
+					if (
+						!o ||
+						(strategy === "highest" && greaterGroupRole(m.role, o.role)) ||
+						(strategy === "lowest" && greaterGroupRole(o.role, m.role))
+					) {
+						memberSet.set(m.userId, m);
+					}
+				});
+				group.permissions.forEach(p => {
+					const o = permissionSet.get(p.id);
+					// to prevent access loss, always use highest access level
+					if (!o || greaterAccessLevel(p.accessLevel, o.accessLevel)) {
+						permissionSet.set(p.id, p);
+					}
+				});
+				group.children.forEach(c => {
+					if (!childrenSet.has(c.id)) {
+						childrenSet.add(c.id);
+					}
+				});
+			}
+			//
+			if (!base) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "No valid groups found"
+				});
+			}
+			// remove groups stated for deletion from children
+			groupIds.forEach(id => childrenSet.delete(id));
+			// upsert
+			await database.$transaction(async tx => {
+				await tx.group.deleteMany({
+					where: {
+						id: { in: groupIds.filter(id => id !== base?.id) }
+					}
+				});
+				await tx.group.update({
+					where: {
+						id: base?.id
+					},
+					data: {
+						...base,
+						permissions: {
+							set: Array.from(permissionSet.keys(), id => ({ id }))
+						},
+						children: {
+							set: Array.from(childrenSet.keys(), id => ({ id }))
+						},
+						members: {
+							// as it has compound key - must recreate
+							deleteMany: {},
+							create: Array.from(memberSet.values())
+						}
+					}
+				});
+			});
+		}),
 	deleteGroup: authProcedure
 		.input(z.object({ groupId: z.number() }))
 		.mutation(async ({ input, ctx }) => {

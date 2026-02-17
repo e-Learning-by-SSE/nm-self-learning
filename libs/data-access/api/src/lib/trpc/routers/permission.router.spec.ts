@@ -22,6 +22,7 @@ jest.mock("@self-learning/database", () => ({
 			create: jest.fn(),
 			update: jest.fn(),
 			delete: jest.fn(),
+			findUnique: jest.fn(),
 			findUniqueOrThrow: jest.fn(),
 			findMany: jest.fn(),
 			count: jest.fn()
@@ -539,6 +540,187 @@ describe("permissionRouter", () => {
 			const res = await caller.updateGroup(input);
 			expect(database.group.update).toHaveBeenCalled();
 			expect(res).toEqual({ id: 12, name: "Group" });
+		});
+	});
+
+	describe("mergeGroup", () => {
+		it("throws BAD_REQUEST when no valid groups found", async () => {
+			const { caller } = prepare({ role: "ADMIN" });
+
+			// all groups missing
+			(database.group.findUnique as jest.Mock).mockResolvedValue(null);
+
+			await expect(
+				caller.mergeGroup({ groupIds: [100, 101], strategy: "first" })
+			).rejects.toMatchObject({
+				code: "BAD_REQUEST",
+				message: "No valid groups found"
+			} as Partial<TRPCError>);
+		});
+		it("throws FORBIDDEN if user is not admin and not admin in all groups", async () => {
+			const { caller, ctx } = prepare({ role: "USER" });
+
+			// user lacks admin in provided groups
+			(hasGroupRole as jest.Mock).mockResolvedValue(false);
+
+			await expect(
+				caller.mergeGroup({ groupIds: [1, 2], strategy: "first" })
+			).rejects.toMatchObject({ code: "FORBIDDEN" } as Partial<TRPCError>);
+
+			expect(hasGroupRole).toHaveBeenCalledWith(1, ctx.user.id, GroupRole.ADMIN);
+			expect(hasGroupRole).toHaveBeenCalledWith(2, ctx.user.id, GroupRole.ADMIN);
+		});
+
+		it("merges groups with strategy 'first' when user is ADMIN and skips null groups", async () => {
+			const { caller } = prepare({ role: "ADMIN" });
+
+			const g1 = {
+				id: 1,
+				name: "G1",
+				parentId: 10,
+				members: [
+					{ userId: "u1", role: GroupRole.MEMBER, expiresAt: null },
+					{ userId: "u2", role: GroupRole.ADMIN, expiresAt: null }
+				],
+				permissions: [
+					{ id: "p1", courseId: "c1", lessonId: null, accessLevel: AccessLevel.EDIT },
+					{ id: "p2", courseId: "c2", lessonId: null, accessLevel: AccessLevel.VIEW }
+				],
+				children: [{ id: 4 }, { id: 2 }]
+			};
+			const g2 = {
+				id: 2,
+				name: "G2",
+				parentId: 10,
+				members: [
+					{ userId: "u1", role: GroupRole.ADMIN, expiresAt: null },
+					{ userId: "u3", role: GroupRole.MEMBER, expiresAt: null }
+				],
+				permissions: [
+					{ id: "p3", courseId: null, lessonId: "l1", accessLevel: AccessLevel.FULL },
+					{ id: "p1", courseId: "c1", lessonId: null, accessLevel: AccessLevel.FULL }
+				],
+				children: [{ id: 5 }]
+			};
+			const g3 = null; // simulate missing group
+
+			(database.group.findUnique as jest.Mock).mockImplementation(
+				async ({ where: { id } }) => {
+					if (id === 1) return g1;
+					if (id === 2) return g2;
+					return null;
+				}
+			);
+
+			const txMock = { group: { deleteMany: jest.fn(), update: jest.fn() } } as any;
+			(database.$transaction as jest.Mock).mockImplementation(async fn => await fn(txMock));
+
+			await caller.mergeGroup({ groupIds: [1, 2, 3], strategy: "first" });
+
+			expect(database.$transaction).toHaveBeenCalled();
+			expect(txMock.group.deleteMany).toHaveBeenCalled();
+			expect(txMock.group.update).toHaveBeenCalledTimes(1);
+
+			// inspect update data
+			const updateArg = (txMock.group.update as jest.Mock).mock.calls[0][0];
+			expect(updateArg.where).toEqual({ id: 1 });
+
+			// members: first strategy => first occurrence of u1 remains (MEMBER), plus u2 and u3
+			expect(updateArg.data.members.create).toEqual(
+				expect.arrayContaining([
+					{ userId: "u1", role: GroupRole.MEMBER, expiresAt: null },
+					{ userId: "u2", role: GroupRole.ADMIN, expiresAt: null },
+					{ userId: "u3", role: GroupRole.MEMBER, expiresAt: null }
+				])
+			);
+
+			// permissions: keys should include p1,p2,p3 and p1 should be the highest (FULL)
+			const permSet = updateArg.data.permissions.set.map((p: any) => p.id).sort();
+			expect(permSet).toEqual(["p1", "p2", "p3"].sort());
+
+			// children: original children were 4,2 and 5; groupIds [1,2,3] removed => expect 4 and 5
+			const children = updateArg.data.children.set.map((c: any) => c.id).sort();
+			expect(children).toEqual([4, 5].sort());
+		});
+
+		it("chooses highest member role when strategy is 'highest'", async () => {
+			const { caller } = prepare({ role: "ADMIN" });
+
+			const a = {
+				id: 10,
+				name: "A",
+				parentId: null,
+				members: [{ userId: "x", role: GroupRole.MEMBER, expiresAt: null }],
+				permissions: [],
+				children: []
+			};
+			const b = {
+				id: 11,
+				name: "B",
+				parentId: null,
+				members: [{ userId: "x", role: GroupRole.ADMIN, expiresAt: null }],
+				permissions: [],
+				children: []
+			};
+
+			(database.group.findUnique as jest.Mock).mockImplementation(
+				async ({ where: { id } }) => {
+					if (id === 10) return a;
+					if (id === 11) return b;
+					return null;
+				}
+			);
+
+			const txMock = { group: { deleteMany: jest.fn(), update: jest.fn() } } as any;
+			(database.$transaction as jest.Mock).mockImplementation(async fn => await fn(txMock));
+
+			await caller.mergeGroup({ groupIds: [10, 11], strategy: "highest" });
+
+			const updateArg = (txMock.group.update as jest.Mock).mock.calls[0][0];
+			// x should be ADMIN (highest)
+			expect(updateArg.data.members.create).toEqual(
+				expect.arrayContaining([{ userId: "x", role: GroupRole.ADMIN, expiresAt: null }])
+			);
+		});
+
+		it("chooses lowest member role when strategy is 'lowest'", async () => {
+			const { caller } = prepare({ role: "ADMIN" });
+
+			const a = {
+				id: 20,
+				name: "A",
+				parentId: null,
+				members: [{ userId: "y", role: GroupRole.ADMIN, expiresAt: null }],
+				permissions: [],
+				children: []
+			};
+			const b = {
+				id: 21,
+				name: "B",
+				parentId: null,
+				members: [{ userId: "y", role: GroupRole.MEMBER, expiresAt: null }],
+				permissions: [],
+				children: []
+			};
+
+			(database.group.findUnique as jest.Mock).mockImplementation(
+				async ({ where: { id } }) => {
+					if (id === 20) return a;
+					if (id === 21) return b;
+					return null;
+				}
+			);
+
+			const txMock = { group: { deleteMany: jest.fn(), update: jest.fn() } } as any;
+			(database.$transaction as jest.Mock).mockImplementation(async fn => await fn(txMock));
+
+			await caller.mergeGroup({ groupIds: [20, 21], strategy: "lowest" });
+
+			const updateArg = (txMock.group.update as jest.Mock).mock.calls[0][0];
+			// y should be MEMBER (lowest)
+			expect(updateArg.data.members.create).toEqual(
+				expect.arrayContaining([{ userId: "y", role: GroupRole.MEMBER, expiresAt: null }])
+			);
 		});
 	});
 

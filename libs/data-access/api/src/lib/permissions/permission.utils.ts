@@ -54,3 +54,23 @@ const groupRoleHierarchy: Record<GroupRole, number> = {
 export function greaterOrEqGroupRole(a: GroupRole, b: GroupRole): boolean {
 	return groupRoleHierarchy[a] >= groupRoleHierarchy[b];
 }
+
+export function greaterGroupRole(a: GroupRole, b: GroupRole): boolean {
+	return groupRoleHierarchy[a] > groupRoleHierarchy[b];
+}
+
+export function bestAccessLevel(a: AccessLevel, b: AccessLevel): AccessLevel {
+	return greaterAccessLevel(a, b) ? a : b;
+}
+
+export function worstAccessLevel(a: AccessLevel, b: AccessLevel): AccessLevel {
+	return greaterAccessLevel(a, b) ? b : a;
+}
+
+export function bestGroupRole(a: GroupRole, b: GroupRole): GroupRole {
+	return greaterGroupRole(a, b) ? a : b;
+}
+
+export function worstGroupRole(a: GroupRole, b: GroupRole): GroupRole {
+	return greaterGroupRole(a, b) ? b : a;
+}
