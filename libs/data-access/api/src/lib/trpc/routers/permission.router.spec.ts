@@ -1,7 +1,7 @@
 import { database } from "@self-learning/database";
 import { permissionRouter } from "./permission.router";
 import { TRPCError } from "@trpc/server";
-import { AccessLevel, GroupRole } from "@prisma/client";
+import { AccessLevel, GroupRole, Prisma } from "@prisma/client";
 import { t } from "../trpc";
 import { Context, UserFromSession } from "../context";
 import {
@@ -13,6 +13,7 @@ import {
 	createResourceAccess,
 	getGroup
 } from "../../permissions/permission.service";
+import { connect } from "http2";
 
 jest.mock("@self-learning/database", () => ({
 	__esModule: true,
@@ -558,7 +559,7 @@ describe("permissionRouter", () => {
 		});
 	});
 
-	describe("mergeGroup", () => {
+	describe("mergeGroups", () => {
 		it("throws BAD_REQUEST when no valid groups found", async () => {
 			const { caller } = prepare({ role: "ADMIN" });
 
@@ -566,7 +567,12 @@ describe("permissionRouter", () => {
 			(database.group.findUnique as jest.Mock).mockResolvedValue(null);
 
 			await expect(
-				caller.mergeGroup({ groupIds: [100, 101], strategy: "first" })
+				caller.mergeGroups({
+					name: "Merged",
+					slug: "merged",
+					groupIds: [100, 101],
+					strategy: "first"
+				})
 			).rejects.toMatchObject({
 				code: "BAD_REQUEST",
 				message: "No valid groups found"
@@ -579,11 +585,44 @@ describe("permissionRouter", () => {
 			(hasGroupRole as jest.Mock).mockResolvedValue(false);
 
 			await expect(
-				caller.mergeGroup({ groupIds: [1, 2], strategy: "first" })
+				caller.mergeGroups({
+					name: "Merged",
+					slug: "merged",
+					groupIds: [1, 2],
+					strategy: "first"
+				})
 			).rejects.toMatchObject({ code: "FORBIDDEN" } as Partial<TRPCError>);
 
 			expect(hasGroupRole).toHaveBeenCalledWith(1, ctx.user.id, GroupRole.ADMIN);
 			expect(hasGroupRole).toHaveBeenCalledWith(2, ctx.user.id, GroupRole.ADMIN);
+		});
+
+		it("merges groups when user has admin role in all groups", async () => {
+			const { caller, ctx } = prepare({ role: "USER" });
+
+			(hasGroupRole as jest.Mock).mockResolvedValue(true);
+
+			const g1 = {
+				id: 1,
+				name: "G1",
+				parentId: null,
+				members: [{ userId: "u1", role: GroupRole.ADMIN, expiresAt: null }],
+				permissions: [],
+				children: []
+			};
+
+			(database.group.findUnique as jest.Mock).mockResolvedValue(g1);
+			(database.group.create as jest.Mock).mockResolvedValue({ id: 1, name: "Merged" });
+
+			await caller.mergeGroups({
+				name: "Merged",
+				slug: "merged",
+				groupIds: [1],
+				strategy: "first"
+			});
+
+			expect(hasGroupRole).toHaveBeenCalledWith(1, ctx.user.id, GroupRole.ADMIN);
+			expect(database.group.create).toHaveBeenCalled();
 		});
 
 		it("merges groups with strategy 'first' when user is ADMIN and skips null groups", async () => {
@@ -594,12 +633,34 @@ describe("permissionRouter", () => {
 				name: "G1",
 				parentId: 10,
 				members: [
-					{ userId: "u1", role: GroupRole.MEMBER, expiresAt: null },
-					{ userId: "u2", role: GroupRole.ADMIN, expiresAt: null }
+					{
+						userId: "u1",
+						role: GroupRole.MEMBER,
+						expiresAt: null,
+						createdAt: new Date("2023-01-01")
+					},
+					{
+						userId: "u2",
+						role: GroupRole.ADMIN,
+						expiresAt: null,
+						createdAt: new Date("2023-01-02")
+					}
 				],
 				permissions: [
-					{ id: "p1", courseId: "c1", lessonId: null, accessLevel: AccessLevel.EDIT },
-					{ id: "p2", courseId: "c2", lessonId: null, accessLevel: AccessLevel.VIEW }
+					{
+						id: "p1",
+						courseId: "c1",
+						lessonId: null,
+						accessLevel: AccessLevel.EDIT,
+						isPublic: false
+					},
+					{
+						id: "p2",
+						courseId: "c2",
+						lessonId: null,
+						accessLevel: AccessLevel.VIEW,
+						isPublic: true
+					}
 				],
 				children: [{ id: 4 }, { id: 2 }]
 			};
@@ -608,12 +669,34 @@ describe("permissionRouter", () => {
 				name: "G2",
 				parentId: 10,
 				members: [
-					{ userId: "u1", role: GroupRole.ADMIN, expiresAt: null },
-					{ userId: "u3", role: GroupRole.MEMBER, expiresAt: null }
+					{
+						userId: "u1",
+						role: GroupRole.ADMIN,
+						expiresAt: null,
+						createdAt: new Date("2023-01-03")
+					},
+					{
+						userId: "u3",
+						role: GroupRole.MEMBER,
+						expiresAt: null,
+						createdAt: new Date("2023-01-04")
+					}
 				],
 				permissions: [
-					{ id: "p3", courseId: null, lessonId: "l1", accessLevel: AccessLevel.FULL },
-					{ id: "p1", courseId: "c1", lessonId: null, accessLevel: AccessLevel.FULL }
+					{
+						id: "p3",
+						courseId: null,
+						lessonId: "l1",
+						accessLevel: AccessLevel.FULL,
+						isPublic: false
+					},
+					{
+						id: "p1",
+						courseId: "c1",
+						lessonId: null,
+						accessLevel: AccessLevel.FULL,
+						isPublic: false
+					}
 				],
 				children: [{ id: 5 }]
 			};
@@ -626,35 +709,59 @@ describe("permissionRouter", () => {
 				}
 			);
 
-			const txMock = { group: { deleteMany: jest.fn(), update: jest.fn() } };
-			(database.$transaction as jest.Mock).mockImplementation(async fn => await fn(txMock));
+			(database.group.create as jest.Mock).mockResolvedValue({ id: 1, name: "Merged Group" });
 
-			await caller.mergeGroup({ groupIds: [1, 2, 3], strategy: "first" });
+			await caller.mergeGroups({
+				name: "Merged Group",
+				slug: "merged-group",
+				groupIds: [1, 2, 3],
+				strategy: "first"
+			});
 
-			expect(database.$transaction).toHaveBeenCalled();
-			expect(txMock.group.deleteMany).toHaveBeenCalled();
-			expect(txMock.group.update).toHaveBeenCalledTimes(1);
+			expect(database.group.create).toHaveBeenCalledTimes(1);
 
-			// inspect update data
-			const updateArg = (txMock.group.update as jest.Mock).mock.calls[0][0];
-			expect(updateArg.where).toEqual({ id: 1 });
+			// inspect create data
+			const createArg = (database.group.create as jest.Mock).mock.calls[0][0];
+			expect(createArg.data.name).toBe("Merged Group");
+			expect(createArg.data.slug).toBe("merged-group");
+			expect(createArg.data.parent).toStrictEqual({ connect: { id: 10 } }); // first non-null parentId
 
 			// members: first strategy => first occurrence of u1 remains (MEMBER), plus u2 and u3
-			expect(updateArg.data.members.create).toEqual(
+			expect(createArg.data.members.create).toEqual(
 				expect.arrayContaining([
-					{ userId: "u1", role: GroupRole.MEMBER, expiresAt: null },
-					{ userId: "u2", role: GroupRole.ADMIN, expiresAt: null },
-					{ userId: "u3", role: GroupRole.MEMBER, expiresAt: null }
+					{
+						user: { connect: { id: "u1" } },
+						role: GroupRole.MEMBER,
+						expiresAt: null,
+						createdAt: expect.any(Date)
+					},
+					{
+						user: { connect: { id: "u2" } },
+						role: GroupRole.ADMIN,
+						expiresAt: null,
+						createdAt: expect.any(Date)
+					},
+					{
+						user: { connect: { id: "u3" } },
+						role: GroupRole.MEMBER,
+						expiresAt: null,
+						createdAt: expect.any(Date)
+					}
 				])
 			);
 
-			// permissions: keys should include p1,p2,p3 and p1 should be the highest (FULL)
-			const permSet = updateArg.data.permissions.set.map((p: { id: string }) => p.id).sort();
-			expect(permSet).toEqual(["p1", "p2", "p3"].sort());
+			// permissions: should include p1 (highest FULL), p2, p3
+			expect(createArg.data.permissions.create).toHaveLength(3);
+			const p1Perm = createArg.data.permissions.create.find(
+				(p: any) => p.course?.connect?.courseId === "c1"
+			);
+			expect(p1Perm.accessLevel).toBe(AccessLevel.FULL);
 
 			// children: original children were 4,2 and 5; groupIds [1,2,3] removed => expect 4 and 5
-			const children = updateArg.data.children.set.map((c: { id: number }) => c.id).sort();
-			expect(children).toEqual([4, 5].sort());
+			const childrenIds = createArg.data.children.connect
+				.map((c: { id: number }) => c.id)
+				.sort();
+			expect(childrenIds).toEqual([4, 5].sort());
 		});
 
 		it("chooses highest member role when strategy is 'highest'", async () => {
@@ -664,7 +771,14 @@ describe("permissionRouter", () => {
 				id: 10,
 				name: "A",
 				parentId: null,
-				members: [{ userId: "x", role: GroupRole.MEMBER, expiresAt: null }],
+				members: [
+					{
+						userId: "x",
+						role: GroupRole.MEMBER,
+						expiresAt: null,
+						createdAt: new Date("2023-01-05")
+					}
+				],
 				permissions: [],
 				children: []
 			};
@@ -672,7 +786,14 @@ describe("permissionRouter", () => {
 				id: 11,
 				name: "B",
 				parentId: null,
-				members: [{ userId: "x", role: GroupRole.ADMIN, expiresAt: null }],
+				members: [
+					{
+						userId: "x",
+						role: GroupRole.ADMIN,
+						expiresAt: null,
+						createdAt: new Date("2023-01-06")
+					}
+				],
 				permissions: [],
 				children: []
 			};
@@ -685,15 +806,26 @@ describe("permissionRouter", () => {
 				}
 			);
 
-			const txMock = { group: { deleteMany: jest.fn(), update: jest.fn() } };
-			(database.$transaction as jest.Mock).mockImplementation(async fn => await fn(txMock));
+			(database.group.create as jest.Mock).mockResolvedValue({ id: 1, name: "Merged" });
 
-			await caller.mergeGroup({ groupIds: [10, 11], strategy: "highest" });
+			await caller.mergeGroups({
+				name: "Merged",
+				slug: "merged",
+				groupIds: [10, 11],
+				strategy: "highest"
+			});
 
-			const updateArg = (txMock.group.update as jest.Mock).mock.calls[0][0];
+			const createArg = (database.group.create as jest.Mock).mock.calls[0][0];
 			// x should be ADMIN (highest)
-			expect(updateArg.data.members.create).toEqual(
-				expect.arrayContaining([{ userId: "x", role: GroupRole.ADMIN, expiresAt: null }])
+			expect(createArg.data.members.create).toEqual(
+				expect.arrayContaining([
+					{
+						user: { connect: { id: "x" } },
+						role: GroupRole.ADMIN,
+						expiresAt: null,
+						createdAt: expect.any(Date)
+					}
+				])
 			);
 		});
 
@@ -704,7 +836,14 @@ describe("permissionRouter", () => {
 				id: 20,
 				name: "A",
 				parentId: null,
-				members: [{ userId: "y", role: GroupRole.ADMIN, expiresAt: null }],
+				members: [
+					{
+						userId: "y",
+						role: GroupRole.ADMIN,
+						expiresAt: null,
+						createdAt: new Date("2023-01-07")
+					}
+				],
 				permissions: [],
 				children: []
 			};
@@ -712,7 +851,14 @@ describe("permissionRouter", () => {
 				id: 21,
 				name: "B",
 				parentId: null,
-				members: [{ userId: "y", role: GroupRole.MEMBER, expiresAt: null }],
+				members: [
+					{
+						userId: "y",
+						role: GroupRole.MEMBER,
+						expiresAt: null,
+						createdAt: new Date("2023-01-08")
+					}
+				],
 				permissions: [],
 				children: []
 			};
@@ -725,16 +871,103 @@ describe("permissionRouter", () => {
 				}
 			);
 
-			const txMock = { group: { deleteMany: jest.fn(), update: jest.fn() } };
-			(database.$transaction as jest.Mock).mockImplementation(async fn => await fn(txMock));
+			(database.group.create as jest.Mock).mockResolvedValue({ id: 1, name: "Merged" });
 
-			await caller.mergeGroup({ groupIds: [20, 21], strategy: "lowest" });
+			await caller.mergeGroups({
+				name: "Merged",
+				slug: "merged",
+				groupIds: [20, 21],
+				strategy: "lowest"
+			});
 
-			const updateArg = (txMock.group.update as jest.Mock).mock.calls[0][0];
+			const createArg = (database.group.create as jest.Mock).mock.calls[0][0];
 			// y should be MEMBER (lowest)
-			expect(updateArg.data.members.create).toEqual(
-				expect.arrayContaining([{ userId: "y", role: GroupRole.MEMBER, expiresAt: null }])
+			expect(createArg.data.members.create).toEqual(
+				expect.arrayContaining([
+					{
+						user: { connect: { id: "y" } },
+						role: GroupRole.MEMBER,
+						expiresAt: null,
+						createdAt: expect.any(Date)
+					}
+				])
 			);
+		});
+
+		it("throws BAD_REQUEST on database constraint error", async () => {
+			const { caller } = prepare({ role: "ADMIN" });
+
+			const g1 = {
+				id: 1,
+				name: "G1",
+				parentId: null,
+				members: [
+					{
+						userId: "u1",
+						role: GroupRole.ADMIN,
+						expiresAt: null,
+						createdAt: new Date("2023-01-09")
+					}
+				],
+				permissions: [],
+				children: []
+			};
+
+			(database.group.findUnique as jest.Mock).mockResolvedValue(g1);
+
+			const error = new Prisma.PrismaClientKnownRequestError("Unique constraint failed", {
+				code: "P2002",
+				clientVersion: "4.0.0"
+			});
+			(database.group.create as jest.Mock).mockRejectedValue(error);
+
+			await expect(
+				caller.mergeGroups({
+					name: "Merged",
+					slug: "merged",
+					groupIds: [1],
+					strategy: "first"
+				})
+			).rejects.toMatchObject({
+				code: "BAD_REQUEST",
+				message: "Database error: Unique constraint failed"
+			} as Partial<TRPCError>);
+		});
+
+		it("throws INTERNAL_SERVER_ERROR on other database errors", async () => {
+			const { caller } = prepare({ role: "ADMIN" });
+
+			const g1 = {
+				id: 1,
+				name: "G1",
+				parentId: null,
+				members: [
+					{
+						userId: "u1",
+						role: GroupRole.ADMIN,
+						expiresAt: null,
+						createdAt: new Date("2023-01-10")
+					}
+				],
+				permissions: [],
+				children: []
+			};
+
+			(database.group.findUnique as jest.Mock).mockResolvedValue(g1);
+
+			(database.group.create as jest.Mock).mockRejectedValue(new Error("Some other error"));
+
+			await expect(
+				caller.mergeGroups({
+					name: "Merged",
+					slug: "merged",
+					groupIds: [1],
+					strategy: "first"
+				})
+			).rejects.toMatchObject({
+				code: "INTERNAL_SERVER_ERROR",
+				message: "Failed to merge groups"
+			} as Partial<TRPCError>);
 		});
 	});
 

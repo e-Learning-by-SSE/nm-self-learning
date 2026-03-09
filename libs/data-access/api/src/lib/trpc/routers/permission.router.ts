@@ -279,9 +279,11 @@ export const permissionRouter = t.router({
 			}
 		});
 	}),
-	mergeGroup: authProcedure
+	mergeGroups: authProcedure
 		.input(
 			z.object({
+				name: z.string().min(3),
+				slug: z.string().nullable(),
 				groupIds: z.number().array(),
 				strategy: z.enum(["first", "highest", "lowest"])
 			})
@@ -365,33 +367,47 @@ export const permissionRouter = t.router({
 			}
 			// remove groups stated for deletion from children
 			groupIds.forEach(id => childrenSet.delete(id));
-			// upsert
-			await database.$transaction(async tx => {
-				await tx.group.deleteMany({
-					where: {
-						id: { in: groupIds.filter(id => id !== base?.id) }
-					}
+			// create
+			const data: Prisma.GroupCreateInput = {
+				name: input.name,
+				slug: input.slug,
+				permissions: {
+					create: Array.from(permissionSet.values(), v => ({
+						accessLevel: v.accessLevel,
+						isPublic: v.isPublic,
+						lesson: v.lessonId ? { connect: { lessonId: v.lessonId } } : undefined,
+						course: v.courseId ? { connect: { courseId: v.courseId } } : undefined
+					}))
+				},
+				children: {
+					connect: Array.from(childrenSet).map(id => ({ id }))
+				},
+				members: {
+					create: Array.from(memberSet.values(), v => ({
+						role: v.role,
+						expiresAt: v.expiresAt,
+						createdAt: v.createdAt,
+						user: { connect: { id: v.userId } }
+					}))
+				}
+			};
+			if (base.parentId) {
+				data.parent = { connect: { id: base.parentId } };
+			}
+			try {
+				return await database.group.create({ data });
+			} catch (error) {
+				if (error instanceof Prisma.PrismaClientKnownRequestError) {
+					throw new TRPCError({
+						code: "BAD_REQUEST",
+						message: `Database error: ${error.message}`
+					});
+				}
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Failed to merge groups"
 				});
-				await tx.group.update({
-					where: {
-						id: base?.id
-					},
-					data: {
-						...base,
-						permissions: {
-							set: Array.from(permissionSet.keys(), id => ({ id }))
-						},
-						children: {
-							set: Array.from(childrenSet.keys(), id => ({ id }))
-						},
-						members: {
-							// as it has compound key - must recreate
-							deleteMany: {},
-							create: Array.from(memberSet.values())
-						}
-					}
-				});
-			});
+			}
 		}),
 	deleteGroup: authProcedure
 		.input(z.object({ groupId: z.number() }))
@@ -582,6 +598,7 @@ export const permissionRouter = t.router({
 			const result = groupsRaw.map(g => ({
 				groupId: g.id,
 				name: g.name,
+				slug: g.slug,
 				members: g.members.map(m => m.user.name)
 			}));
 
