@@ -16,6 +16,7 @@ import { Fragment, useState } from "react";
 export type GroupSearchEntry = {
 	groupId: number;
 	name: string;
+	slug: string | null;
 	members: string[];
 };
 

@@ -40,7 +40,7 @@ export function GroupInfoEditor({ fillInSingleGroup }: { fillInSingleGroup: bool
 		<CenteredSection>
 			<SectionHeader title="Grunddaten" subtitle="Grunddaten dieser Gruppe." />
 			<div className="flex flex-col gap-4">
-				<LabeledField label="Titel" error={errors.name?.message}>
+				<LabeledField label="Name" error={errors.name?.message}>
 					<input
 						{...register("name")}
 						type="text"
