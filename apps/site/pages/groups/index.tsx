@@ -12,6 +12,7 @@ import {
 	TableDataColumn,
 	TableHeaderColumn
 } from "@self-learning/ui/common";
+import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
 import { keepPreviousData } from "@tanstack/react-query";
@@ -26,8 +27,12 @@ type FindGroupsData = inferProcedureOutput<AppRouter["permission"]["findGroups"]
 export default function GroupsPage() {
 	const router = useRouter();
 	const { page = 1 } = router.query;
+
+	const [myGroupNameFilter, setMyGroupNameFilter] = useState("");
+	const [groupNameFilter, setGroupNameFilter] = useState("");
+
 	const { data: allGroups } = trpc.permission.findGroups.useQuery(
-		{ page: Number(page), isGlobal: true },
+		{ page: Number(page), isGlobal: true, name: groupNameFilter },
 		{
 			staleTime: 10_000,
 			placeholderData: keepPreviousData
@@ -35,7 +40,7 @@ export default function GroupsPage() {
 	);
 
 	const { data: myGroups } = trpc.permission.findGroups.useQuery(
-		{ page: Number(page), isGlobal: false },
+		{ page: Number(page), isGlobal: false, name: myGroupNameFilter },
 		{
 			staleTime: 10_000,
 			placeholderData: keepPreviousData
@@ -109,20 +114,27 @@ export default function GroupsPage() {
 				/>
 			)}
 
+			<SearchField
+				placeholder="Suche nach Gruppe"
+				onChange={e => setMyGroupNameFilter(e.target.value)}
+			/>
+
 			{!myGroups && <LoadingBox />}
-			{myGroups?.totalCount === 0 ? (
-				<div className="mx-auto flex items-center gap-8 pb-8">
-					<div className="h-32 w-32">
-						<VoidSvg />
+			{myGroups && myGroups.totalCount > 0 && <GroupsPaginatedView data={myGroups} />}
+			{myGroups?.totalCount === 0 &&
+				(myGroupNameFilter === "" ? (
+					<div className="mx-auto flex items-center gap-8 pb-8">
+						<div className="h-32 w-32">
+							<VoidSvg />
+						</div>
+						<div>
+							<p className="text-light">Sie sind Mitglied keiner Gruppe.</p>
+							<u>Become a member</u>
+						</div>
 					</div>
-					<div>
-						<p className="text-light">Sie sind Mitglied keiner Gruppe.</p>
-						<u>Become a member</u>
-					</div>
-				</div>
-			) : (
-				<GroupsPaginatedView data={myGroups} />
-			)}
+				) : (
+					<p className="text-light mb-8">Gruppen nicht gefunden.</p>
+				))}
 
 			<div className="mb-16 flex items-center justify-between gap-4">
 				<h1 className="text-5xl">Alle Gruppen</h1>
@@ -133,7 +145,10 @@ export default function GroupsPage() {
 				</Link>
 			</div>
 
-			{/* <SearchField placeholder="Suche nach Name" onChange={e => setTitle(e.target.value)} /> */}
+			<SearchField
+				placeholder="Suche nach Gruppe"
+				onChange={e => setGroupNameFilter(e.target.value)}
+			/>
 
 			{!myGroups ? <LoadingBox /> : <GroupsPaginatedView data={allGroups} />}
 		</CenteredSection>
