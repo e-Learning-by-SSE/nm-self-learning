@@ -87,16 +87,19 @@ export default function GroupsPage() {
 			<div className="mb-16 flex items-center justify-between gap-4">
 				<h1 className="text-5xl">Meine Gruppen</h1>
 
-				<Link href="/teaching/groups/create" className="btn-primary flex w-fit">
-					<PlusIcon className="h-5" />
-					<span>Gruppe erstellen</span>
-				</Link>
+				<div className="flex flex-col gap-2">
+					<Link href="/teaching/groups/create" className="btn-primary flex">
+						<PlusIcon className="h-5" />
+						<span>Gruppe erstellen</span>
+					</Link>
 
-				<IconTextButton
-					text="Gruppen zusammenführen"
-					icon={<PlusIcon className="icon w-5" />}
-					onClick={() => setMergeDialogOpen(true)}
-				/>
+					<IconTextButton
+						text="Gruppen zusammenführen"
+						icon={<PlusIcon className="icon w-5" />}
+						onClick={() => setMergeDialogOpen(true)}
+						className="btn-primary"
+					/>
+				</div>
 			</div>
 			{mergeDialogOpen && (
 				<MergeGroupsDialog

@@ -33,7 +33,10 @@ export function MergeGroupsDialog({
 	const [isGroupDialogOpen, setGroupDialogOpen] = useState(false);
 
 	const form = useForm<MergeGroupsType>({
-		resolver: zodResolver(MergeGroupsSchema)
+		resolver: zodResolver(MergeGroupsSchema),
+		defaultValues: {
+			strategy: MergeStrategy.First
+		}
 	});
 	const editor = useFieldArray({
 		name: "groups",
