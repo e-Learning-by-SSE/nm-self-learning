@@ -26,7 +26,7 @@ export const permissionRouter = t.router({
 	createGroup: authProcedure
 		.input(GroupFormSchema.omit({ id: true }))
 		.mutation(async ({ input, ctx }) => {
-			const { parent, name, permissions, members } = input;
+			const { parent, name, slug, permissions, members } = input;
 			const userId = ctx.user.id;
 			// check if ADMIN has no limit
 			for (const m of members) {
@@ -78,6 +78,7 @@ export const permissionRouter = t.router({
 			return database.group.create({
 				data: {
 					name,
+					slug,
 					parentId: parent?.id,
 					permissions: { create: perms },
 					members: { create: membs }
@@ -85,15 +86,19 @@ export const permissionRouter = t.router({
 			});
 		}),
 	updateGroup: authProcedure.input(GroupFormSchema).mutation(async ({ input, ctx }) => {
-		const { id, permissions, members, name, parent } = input;
+		const { id, permissions, members, name, parent, slug } = input;
 		const userId = ctx.user.id;
 		if (!id) {
 			throw new TRPCError({ code: "BAD_REQUEST", message: "Group id is required" });
 		}
 		// 3. Group name update
-		const { name: oldName, parentId: oldParentId } = await database.group.findUniqueOrThrow({
+		const {
+			name: oldName,
+			parentId: oldParentId,
+			slug: oldSlug
+		} = await database.group.findUniqueOrThrow({
 			where: { id },
-			select: { name: true, parentId: true }
+			select: { name: true, parentId: true, slug: true }
 		});
 		// restrict changing parentId (parent?.id produces undefined !== null)
 		if ((parent && parent.id) !== oldParentId) {
@@ -102,8 +107,8 @@ export const permissionRouter = t.router({
 				message: "Cannot change parentId of the group"
 			});
 		}
-		// check if update name
-		if (name !== oldName) {
+		// check if update name or slug
+		if (name !== oldName || slug !== oldSlug) {
 			const hasAccess =
 				ctx.user.role === "ADMIN" || (await hasGroupRole(id, userId, GroupRole.ADMIN));
 			if (!hasAccess) {
@@ -217,6 +222,7 @@ export const permissionRouter = t.router({
 			where: { id },
 			data: {
 				name,
+				slug,
 				parentId: parent?.id,
 				permissions: {
 					deleteMany: {

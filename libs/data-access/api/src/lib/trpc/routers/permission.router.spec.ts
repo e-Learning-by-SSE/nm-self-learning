@@ -221,6 +221,7 @@ describe("permissionRouter", () => {
 			expect(database.group.create).toHaveBeenCalledWith({
 				data: {
 					name: "Test Group",
+					slug: "test-group",
 					permissions: { create: [] },
 					members: {
 						create: [{ userId: ctx.user.id, role: GroupRole.ADMIN, expiresAt: null }]
@@ -266,6 +267,7 @@ describe("permissionRouter", () => {
 			expect(database.group.create).toHaveBeenCalledWith({
 				data: {
 					name: "Test Group",
+					slug: "test-group",
 					permissions: { create: [] },
 					members: {
 						create: [
@@ -305,7 +307,8 @@ describe("permissionRouter", () => {
 
 			(database.group.findUniqueOrThrow as jest.Mock).mockResolvedValue({
 				name: "Old",
-				parentId: 1
+				parentId: 1,
+				slug: "old"
 			});
 
 			const input = {
@@ -327,7 +330,8 @@ describe("permissionRouter", () => {
 			const { caller } = prepare({ role: "USER" });
 			(database.group.findUniqueOrThrow as jest.Mock).mockResolvedValue({
 				name: "Old",
-				parentId: null
+				parentId: null,
+				slug: "old"
 			});
 			(hasGroupRole as jest.Mock).mockResolvedValue(false);
 
@@ -335,6 +339,30 @@ describe("permissionRouter", () => {
 				id: 7,
 				name: "NewName",
 				slug: "new-name",
+				parent: null,
+				permissions: [],
+				members: []
+			};
+
+			await expect(caller.updateGroup(input)).rejects.toMatchObject({
+				code: "FORBIDDEN"
+			} as Partial<TRPCError>);
+			expect(database.group.update).not.toHaveBeenCalled();
+		});
+
+		it("throws FORBIDDEN when changing slug without admin/group-admin", async () => {
+			const { caller } = prepare({ role: "USER" });
+			(database.group.findUniqueOrThrow as jest.Mock).mockResolvedValue({
+				name: "Group",
+				parentId: null,
+				slug: "old-slug"
+			});
+			(hasGroupRole as jest.Mock).mockResolvedValue(false);
+
+			const input = {
+				id: 7,
+				name: "Group",
+				slug: "new-slug",
 				parent: null,
 				permissions: [],
 				members: []
@@ -354,7 +382,8 @@ describe("permissionRouter", () => {
 
 			(database.group.findUniqueOrThrow as jest.Mock).mockResolvedValue({
 				name: "group",
-				parentId: null
+				parentId: null,
+				slug: "group"
 			});
 
 			const input = {
@@ -383,7 +412,8 @@ describe("permissionRouter", () => {
 
 			(database.group.findUniqueOrThrow as jest.Mock).mockResolvedValue({
 				name: "Group",
-				parentId: null
+				parentId: null,
+				slug: "group"
 			});
 
 			const input = {
@@ -407,7 +437,8 @@ describe("permissionRouter", () => {
 			const { caller } = prepare({ role: "USER" });
 			(database.group.findUniqueOrThrow as jest.Mock).mockResolvedValue({
 				name: "Group",
-				parentId: null
+				parentId: null,
+				slug: "group"
 			});
 			(database.member.findMany as jest.Mock).mockResolvedValue([
 				{ userId: "a", role: GroupRole.MEMBER, expiresAt: null }
@@ -438,7 +469,8 @@ describe("permissionRouter", () => {
 			const { caller } = prepare({ role: "USER" });
 			(database.group.findUniqueOrThrow as jest.Mock).mockResolvedValue({
 				name: "Group",
-				parentId: null
+				parentId: null,
+				slug: "group"
 			});
 			(database.member.findMany as jest.Mock).mockResolvedValue([
 				{ userId: "a", role: GroupRole.MEMBER, expiresAt: null }, // removed
@@ -470,7 +502,8 @@ describe("permissionRouter", () => {
 			const { caller } = prepare({ role: "USER" });
 			(database.group.findUniqueOrThrow as jest.Mock).mockResolvedValue({
 				name: "Group",
-				parentId: null
+				parentId: null,
+				slug: "group"
 			});
 			(database.member.findMany as jest.Mock).mockResolvedValue([]);
 			(database.permission.findMany as jest.Mock).mockResolvedValue([
@@ -515,7 +548,8 @@ describe("permissionRouter", () => {
 			const { caller } = prepare({ role: "ADMIN" });
 			(database.group.findUniqueOrThrow as jest.Mock).mockResolvedValue({
 				name: "Group",
-				parentId: null
+				parentId: null,
+				slug: "group"
 			});
 			// cover changed and unchanged members
 			(database.member.findMany as jest.Mock).mockResolvedValue([
