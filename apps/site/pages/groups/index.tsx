@@ -1,19 +1,25 @@
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { AppRouter, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
+import { MergeGroupsDialog } from "@self-learning/teaching";
+import { MergeGroupsType } from "@self-learning/types";
 import {
+	IconTextButton,
 	LoadingBox,
 	Paginator,
+	showToast,
 	Table,
 	TableDataColumn,
 	TableHeaderColumn
 } from "@self-learning/ui/common";
-import { CenteredSection } from "@self-learning/ui/layouts";
+import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
 import { keepPreviousData } from "@tanstack/react-query";
+import { TRPCClientError } from "@trpc/client";
 import { inferProcedureOutput } from "@trpc/server";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useState } from "react";
 
 type FindGroupsData = inferProcedureOutput<AppRouter["permission"]["findGroups"]>;
 
@@ -36,8 +42,44 @@ export default function GroupsPage() {
 		}
 	);
 
+	const { mutateAsync: mergeGroups } = trpc.permission.mergeGroups.useMutation();
+
+	const session = useRequiredSession();
+	const isAdmin = session.data?.user.role === "ADMIN";
+
+	const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
+
 	if (!router.isReady) {
 		return <LoadingBox />;
+	}
+
+	async function onMergeGroups(result?: MergeGroupsType) {
+		setMergeDialogOpen(false);
+
+		if (result && result.groups.length > 1) {
+			try {
+				const res = {
+					name: result.name,
+					slug: result.slug,
+					strategy: result.strategy,
+					groupIds: result.groups.map(g => g.groupId)
+				};
+				await mergeGroups(res);
+				showToast({
+					type: "success",
+					title: "Gruppen zusammengeführt",
+					subtitle: `Die ausgewählten Gruppen (${result.groups.length}) wurden erfolgreich zusammengeführt.`
+				});
+			} catch (error) {
+				if (error instanceof TRPCClientError) {
+					showToast({
+						type: "error",
+						title: "Fehler",
+						subtitle: "Die Gruppen konnten nicht zusammengeführt werden."
+					});
+				}
+			}
+		}
 	}
 
 	return (
@@ -49,7 +91,20 @@ export default function GroupsPage() {
 					<PlusIcon className="h-5" />
 					<span>Gruppe erstellen</span>
 				</Link>
+
+				<IconTextButton
+					text="Gruppen zusammenführen"
+					icon={<PlusIcon className="icon w-5" />}
+					onClick={() => setMergeDialogOpen(true)}
+				/>
 			</div>
+			{mergeDialogOpen && (
+				<MergeGroupsDialog
+					isOpen={mergeDialogOpen}
+					onClose={onMergeGroups}
+					isGlobal={isAdmin}
+				/>
+			)}
 
 			{!myGroups && <LoadingBox />}
 			{myGroups?.totalCount === 0 ? (

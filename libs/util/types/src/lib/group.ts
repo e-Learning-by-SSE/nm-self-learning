@@ -3,6 +3,27 @@ import { z } from "zod";
 import { GroupRoleEnum } from "./author";
 import { add } from "date-fns";
 
+export enum MergeStrategy {
+	First = "first",
+	Highest = "highest",
+	Lowest = "lowest"
+}
+
+const MergeGroupEntrySchema = z.object({
+	groupId: z.number(),
+	name: z.string(),
+	slug: z.string().nullable()
+});
+
+export const MergeGroupsSchema = z.object({
+	name: z.string().min(3),
+	slug: z.string().min(3),
+	groups: z.array(MergeGroupEntrySchema).min(2),
+	strategy: z.enum(MergeStrategy)
+});
+
+export type MergeGroupsType = z.infer<typeof MergeGroupsSchema>;
+
 // TODO copied from permission.router.ts
 export const AccessLevelEnum = z.enum(AccessLevel);
 export const ResourceAccessFormSchema = z.union([
