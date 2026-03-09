@@ -1,5 +1,4 @@
 import { PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
-import { SearchUserDialog } from "@self-learning/admin";
 import { trpc } from "@self-learning/api-client";
 import {
 	IconTextButton,
@@ -92,10 +91,10 @@ export default function GroupPage() {
 	return (
 		<div className="flex flex-col gap-8 bg-gray-50 pb-32">
 			<TopicHeader
-				parentLink="/admin/groups"
+				parentLink="/groups"
 				parentTitle="Gruppen"
 				title={group.name}
-				subtitle={"<placeholder>"}
+				subtitle={group.slug || ""}
 			>
 				<Link
 					href={`/teaching/groups/${groupId}/edit`}

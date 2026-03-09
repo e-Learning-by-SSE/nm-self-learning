@@ -281,6 +281,7 @@ export async function getGroup(groupId: number) {
 			id: true,
 			parent: { select: { id: true, name: true } },
 			name: true,
+			slug: true,
 			permissions: {
 				select: {
 					accessLevel: true,

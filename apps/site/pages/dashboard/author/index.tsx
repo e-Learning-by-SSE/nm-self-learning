@@ -134,57 +134,8 @@ function AuthorDashboardPage({ author }: Props) {
 
 	return (
 		<CenteredSection className="bg-gray-50">
-			<section>
-				<div className="flex justify-between gap-4">
-					<SectionHeader
-						title="Meine Gruppen"
-						subtitle="Mitglied der folgenden Gruppen:"
-					/>
-
-					<Link href="/teaching/groups/create">
-						<IconTextButton
-							text="Group erstellen"
-							className="btn-secondary"
-							icon={<PlusIcon className="icon h-5" />}
-						/>
-					</Link>
-				</div>
-				<ul className="flex flex-col gap-4 py-4">
-					{author.memberships.length === 0 ? (
-						<div className="mx-auto flex items-center gap-8">
-							<div className="h-32 w-32">
-								<VoidSvg />
-							</div>
-							<div>
-								<p className="text-light">Sie sind Mitglied keiner Gruppe.</p>
-								<p>
-									Um Inhalte zu erstellen, müssen Sie Mitglied von mindestens
-									einer Gruppe sein.
-								</p>
-							</div>
-						</div>
-					) : (
-						author.memberships.map(m => (
-							<li
-								key={m.group.name}
-								className="flex px-4 py-2 w-full items-center rounded-lg border border-light-border bg-white"
-							>
-								<Link
-									className="text-sm font-medium hover:text-c-primary"
-									href={`/teaching/groups/${m.group.id}`}
-								>
-									{m.group.name}
-								</Link>
-								<span className="pl-2">als {m.role}</span>
-							</li>
-						))
-					)}
-				</ul>
-			</section>
-
 			{canCreate && (
 				<>
-					<Divider />
 					<section>
 						<div className="flex justify-between gap-4">
 							<SectionHeader
@@ -201,14 +152,14 @@ function AuthorDashboardPage({ author }: Props) {
 							</Link>
 						</div>
 
-						<ul className="flex flex-col gap-4 py-4">
+						<ul className="flex flex-col gap-1 py-4">
 							{courses.length === 0 ? (
 								<div className="mx-auto flex items-center gap-8">
 									<div className="h-32 w-32">
 										<VoidSvg />
 									</div>
 									<p className="text-c-text-muted">
-										Du hast noch keine Kurse erstellt.
+										Sie haben derzeit keine Kurse, auf die Sie Zugriff haben.
 									</p>
 								</div>
 							) : (
@@ -229,9 +180,11 @@ function AuthorDashboardPage({ author }: Props) {
 											>
 												{course.title}
 											</Link>
-											<i>{course.accessLevel}</i>
 
 											<div className="flex flex-wrap justify-end gap-4">
+												<i className="flex items-center">
+													{course.accessLevel}
+												</i>
 												{(isAdmin ||
 													greaterOrEqAccessLevel(
 														course.accessLevel,
@@ -304,14 +257,15 @@ function AuthorDashboardPage({ author }: Props) {
 							</Link>
 						</div>
 
-						<ul className="flex flex-col gap-4 py-4">
+						<ul className="flex flex-col gap-1 py-4">
 							{lessons.length === 0 ? (
 								<div className="mx-auto flex items-center gap-8">
 									<div className="h-32 w-32">
 										<VoidSvg />
 									</div>
 									<p className="text-light">
-										Du hast noch keine Lerneinheiten erstellt.
+										Sie haben derzeit keine Lerneinheiten, auf die Sie Zugriff
+										haben
 									</p>
 								</div>
 							) : (
@@ -326,7 +280,6 @@ function AuthorDashboardPage({ author }: Props) {
 										>
 											{lesson.title}
 										</Link>
-										<i>{lesson.accessLevel}</i>
 										<LessonTaskbar
 											lessonId={lesson.lessonId}
 											accessLevel={lesson.accessLevel}
@@ -366,9 +319,59 @@ function AuthorDashboardPage({ author }: Props) {
 							/>
 						</div>
 						<TeacherView />
+						<div className="mb-4" />
 					</section>
+
+					<Divider />
 				</>
 			)}
+
+			<section>
+				<div className="flex justify-between gap-4">
+					<SectionHeader
+						title="Meine Gruppen"
+						subtitle="Mitglied der folgenden Gruppen:"
+					/>
+					<Link href="/teaching/groups/create" className="mt-4">
+						<IconTextButton
+							text="Gruppe erstellen"
+							className="btn-secondary"
+							icon={<PlusIcon className="icon h-5" />}
+						/>
+					</Link>
+				</div>
+				<ul className="flex flex-col gap-1 py-4">
+					{author.memberships.length === 0 ? (
+						<div className="mx-auto flex items-center gap-8">
+							<div className="h-32 w-32">
+								<VoidSvg />
+							</div>
+							<div>
+								<p className="text-light">Sie sind Mitglied keiner Gruppe.</p>
+								<p>
+									Um Inhalte zu erstellen, müssen Sie Mitglied von mindestens
+									einer Gruppe sein.
+								</p>
+							</div>
+						</div>
+					) : (
+						author.memberships.map(m => (
+							<li
+								key={m.group.name}
+								className="flex px-4 py-2 w-full items-center rounded-lg border border-light-border bg-white"
+							>
+								<Link
+									className="text-sm font-medium hover:text-c-primary"
+									href={`/teaching/groups/${m.group.id}`}
+								>
+									{m.group.name}
+								</Link>
+								<span className="pl-2">als {m.role}</span>
+							</li>
+						))
+					)}
+				</ul>
+			</section>
 		</CenteredSection>
 	);
 }
@@ -491,6 +494,7 @@ function LessonTaskbar({
 	const canEdit = isAdmin || greaterOrEqAccessLevel(accessLevel, AccessLevel.EDIT);
 	return (
 		<div className="flex flex-wrap justify-end gap-4">
+			<i className="flex items-center">{accessLevel}</i>
 			{canEdit && (
 				<Link href={`/teaching/lessons/edit/${lessonId}`}>
 					<IconTextButton
