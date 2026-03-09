@@ -234,7 +234,7 @@ export function NavbarDropdownMenu({
 				<span>{t("Settings")}</span>
 			</Link>
 
-			{(isMember || isAdmin) && (
+			{(isMember || isAdmin || isAuthor) && (
 				<Link
 					href="/groups"
 					className={` flex w-full items-center gap-2 rounded-md px-3 py-3`}
