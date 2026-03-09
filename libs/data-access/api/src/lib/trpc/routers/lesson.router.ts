@@ -46,6 +46,57 @@ export const lessonRouter = t.router({
 			select: { lessonId: true, title: true, slug: true, meta: true }
 		});
 	}),
+	findOneBySlug: authProcedure
+		.meta({
+			openapi: {
+				enabled: true,
+				method: "GET",
+				path: "/lessons/{slug}",
+				tags: ["Lessons"],
+				protect: true,
+				summary: "Get lesson description by slug"
+			}
+		})
+		.input(
+			z.object({
+				slug: z.string().describe("Unique slug of the lesson to get")
+			})
+		)
+		.output(
+			z.object({
+				title: z.string(),
+				slug: z.string(),
+				lessonId: z.string(),
+				description: z.string().nullable()
+			})
+		)
+		.query(async ({ input }) => {
+			const lesson = await database.lesson.findUnique({
+				where: {
+					slug: input.slug
+				},
+				select: {
+					lessonId: true,
+					title: true,
+					slug: true,
+					description: true
+				}
+			});
+
+			if (!lesson) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: `Lesson not found for slug: ${input.slug}`
+				});
+			}
+
+			return {
+				title: lesson.title,
+				slug: lesson.slug,
+				lessonId: lesson.lessonId,
+				description: lesson.description
+			};
+		}),
 	findMany: authProcedure
 		.meta({
 			openapi: {
@@ -209,58 +260,6 @@ export const lessonRouter = t.router({
 					});
 				}
 			}
-		}),
-
-	findOneBySlug: authProcedure
-		.meta({
-			openapi: {
-				enabled: true,
-				method: "GET",
-				path: "/lessons/{slug}",
-				tags: ["Lessons"],
-				protect: true,
-				summary: "Get lesson description by slug"
-			}
-		})
-		.input(
-			z.object({
-				slug: z.string().describe("Unique slug of the lesson to get")
-			})
-		)
-		.output(
-			z.object({
-				title: z.string(),
-				slug: z.string(),
-				lessonId: z.string(),
-				description: z.string().nullable()
-			})
-		)
-		.query(async ({ input }) => {
-			const lesson = await database.lesson.findUnique({
-				where: {
-					slug: input.slug
-				},
-				select: {
-					lessonId: true,
-					title: true,
-					slug: true,
-					description: true
-				}
-			});
-
-			if (!lesson) {
-				throw new TRPCError({
-					code: "NOT_FOUND",
-					message: `Lesson not found for slug: ${input.slug}`
-				});
-			}
-
-			return {
-				title: lesson.title,
-				slug: lesson.slug,
-				lessonId: lesson.lessonId,
-				description: lesson.description
-			};
 		}),
 
 	getProgress: authorProcedure
