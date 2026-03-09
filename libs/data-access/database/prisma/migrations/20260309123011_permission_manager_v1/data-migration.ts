@@ -86,6 +86,7 @@ export async function migrateAutorsToGroups(tx: Prisma.TransactionClient): Promi
 		//
 		groups.push({
 			name: key,
+			slug: key,
 			members: { create: collab.userIds.map(userId => ({ userId, role: GroupRole.ADMIN })) },
 			permissions: {
 				create: [

@@ -318,6 +318,7 @@ export const permissionRouter = t.router({
 						select: {
 							id: true,
 							name: true,
+							slug: true,
 							parentId: true,
 							members: true,
 							permissions: true,

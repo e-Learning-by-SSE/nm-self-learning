@@ -2,7 +2,7 @@ import { Chip, IconTextButton, SectionHeader } from "@self-learning/ui/common";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { Controller, useFormContext } from "react-hook-form";
 import { GroupFormModel } from "../group-editor";
-import { LabeledField } from "@self-learning/ui/forms";
+import { InputWithButton, LabeledField, useSlugify } from "@self-learning/ui/forms";
 import { SearchGroupDialog, useSingleMembership } from "../dialogs/search-group-dialog";
 import { useEffect, useRef, useState } from "react";
 import { ArrowsUpDownIcon } from "@heroicons/react/24/solid";
@@ -18,6 +18,8 @@ export function GroupInfoEditor({ fillInSingleGroup }: { fillInSingleGroup: bool
 
 	const session = useRequiredSession();
 	const isAdmin = session.data?.user.role === "ADMIN";
+
+	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "name", "slug");
 
 	// If user creates a group, not an admin, and has single membership - preset group parent (once)
 	const hasSetSingleGroup = useRef(false);
@@ -44,6 +46,24 @@ export function GroupInfoEditor({ fillInSingleGroup }: { fillInSingleGroup: bool
 						type="text"
 						className="textfield"
 						placeholder="Name der neuen Gruppe"
+					/>
+				</LabeledField>
+				<LabeledField label="Slug" error={errors.slug?.message}>
+					<InputWithButton
+						input={
+							<input
+								{...form.register("slug")}
+								onBlur={slugifyIfEmpty}
+								type="text"
+								className="textfield"
+								autoComplete="off"
+							/>
+						}
+						button={
+							<button type="button" className="btn-stroked" onClick={slugifyField}>
+								Generieren
+							</button>
+						}
 					/>
 				</LabeledField>
 				<LabeledField label="Hauptgruppe auswählen">

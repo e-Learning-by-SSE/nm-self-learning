@@ -3,12 +3,8 @@ import { z } from "zod";
 import { GroupRoleEnum } from "./author";
 import { add } from "date-fns";
 
-export const test = z.object({
-	id: z.string().uuid().optional()
-});
-
 // TODO copied from permission.router.ts
-export const AccessLevelEnum = z.nativeEnum(AccessLevel);
+export const AccessLevelEnum = z.enum(AccessLevel);
 export const ResourceAccessFormSchema = z.union([
 	z.object({
 		accessLevel: AccessLevelEnum,
@@ -77,6 +73,7 @@ export const GroupFormSchema = z.object({
 		})
 		.nullable(),
 	name: z.string().min(3),
+	slug: z.string().min(3),
 	permissions: ResourceAccessFormSchema.array(),
 	members: MemberFormSchema.array()
 });
@@ -90,6 +87,7 @@ export function createEmptyGroup(): Group {
 		id: null,
 		parent: null,
 		name: "",
+		slug: "",
 		permissions: [],
 		members: []
 	};

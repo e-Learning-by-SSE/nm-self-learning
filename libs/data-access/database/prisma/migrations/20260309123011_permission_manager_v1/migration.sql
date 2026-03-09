@@ -4,9 +4,6 @@ CREATE TYPE "AccessLevel" AS ENUM ('VIEW', 'EDIT', 'FULL');
 -- CreateEnum
 CREATE TYPE "GroupRole" AS ENUM ('MEMBER', 'ADMIN');
 
--- AlterTable
-ALTER TABLE "Lesson" ADD COLUMN     "courseId" TEXT;
-
 -- CreateTable
 CREATE TABLE "Member" (
     "role" "GroupRole" NOT NULL,
@@ -20,6 +17,7 @@ CREATE TABLE "Member" (
 CREATE TABLE "Group" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
+    "slug" TEXT,
     "parentId" INTEGER,
 
     CONSTRAINT "Group_pkey" PRIMARY KEY ("id")
@@ -44,13 +42,13 @@ CREATE UNIQUE INDEX "Member_userId_groupId_key" ON "Member"("userId", "groupId")
 CREATE UNIQUE INDEX "Group_name_key" ON "Group"("name");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Group_slug_key" ON "Group"("slug");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Permission_groupId_courseId_key" ON "Permission"("groupId", "courseId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Permission_groupId_lessonId_key" ON "Permission"("groupId", "lessonId");
-
--- AddForeignKey
-ALTER TABLE "Lesson" ADD CONSTRAINT "Lesson_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course"("courseId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Member" ADD CONSTRAINT "Member_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

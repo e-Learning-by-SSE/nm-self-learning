@@ -90,9 +90,8 @@ model Member {
 model Group {
     id          Int          @id @default(autoincrement())
     name        String       @unique
+    slug        String?      @unique
     members     Member[]
-    // lessons     Lesson[]    // this are ownerships
-    // courses     Course[]    // this are ownerships
     permissions Permission[]
     // skills      SkillRepository
 
