@@ -94,6 +94,7 @@ export function Navbar() {
 											avatarUrl={user.avatarUrl}
 											isAuthor={user.isAuthor}
 											isAdmin={user.role === "ADMIN"}
+											isMember={user.memberships.length > 0}
 											signOut={() => logoutRedirect("/")}
 										/>
 									</div>
@@ -185,11 +186,13 @@ export function NavbarDropdownMenu({
 	signOut,
 	isAuthor,
 	isAdmin,
+	isMember,
 	avatarUrl
 }: {
 	avatarUrl?: string | null;
 	isAuthor: boolean;
 	isAdmin: boolean;
+	isMember: boolean;
 	signOut: () => void;
 }) {
 	const { t } = useTranslation("common");
@@ -231,10 +234,15 @@ export function NavbarDropdownMenu({
 				<span>{t("Settings")}</span>
 			</Link>
 
-			<Link href="/groups" className={` flex w-full items-center gap-2 rounded-md px-3 py-3`}>
-				<UserGroupIcon className="h-5" />
-				<span>{t("Memberships")}</span>
-			</Link>
+			{(isMember || isAdmin) && (
+				<Link
+					href="/groups"
+					className={` flex w-full items-center gap-2 rounded-md px-3 py-3`}
+				>
+					<UserGroupIcon className="h-5" />
+					<span>{t("Groups")}</span>
+				</Link>
+			)}
 
 			{isAuthor && (
 				<Link
