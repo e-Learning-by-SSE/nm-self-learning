@@ -39,6 +39,7 @@ export function GroupForm({ subtitle }: { subtitle: string }) {
 								<SearchGroupDialog
 									isOpen={isGroupDialogOpen}
 									isGlobalSearch={false}
+									exclude={field.value.map(f => f.groupId)}
 									onClose={group => {
 										setGroupDialogOpen(false);
 										if (!group) return;
@@ -146,6 +147,7 @@ export function ResourceAccessEditor({ subtitle }: { subtitle: string }) {
 								groupName: group.name
 							});
 						}}
+						exclude={editor.fields.map(f => f.groupId)}
 					/>
 				)}
 			</>
@@ -306,6 +308,7 @@ export function GroupAccessEditor({
 						setGroupDialogOpen(false);
 						handleAddGroup(group);
 					}}
+					exclude={editor.fields.map(f => f.groupId)}
 				/>
 			)}
 

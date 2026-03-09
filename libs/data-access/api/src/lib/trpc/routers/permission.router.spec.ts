@@ -91,6 +91,7 @@ describe("permissionRouter", () => {
 
 			const input = {
 				name: "Test Group",
+				slug: "test-group",
 				parent: null,
 				permissions: [],
 				members: [
@@ -122,6 +123,7 @@ describe("permissionRouter", () => {
 
 			const input = {
 				name: "Test Group",
+				slug: "test-group",
 				parent: { name: "Parent Group", id: 1 },
 				permissions: [
 					{
@@ -162,6 +164,7 @@ describe("permissionRouter", () => {
 
 			const input = {
 				name: "Test Group",
+				slug: "test-group",
 				parent: null,
 				permissions: [],
 				members: []
@@ -182,6 +185,7 @@ describe("permissionRouter", () => {
 
 			const input = {
 				name: "Test Group",
+				slug: "test-group",
 				parent: { name: "Parent Group", id: 1 },
 				permissions: [],
 				members: []
@@ -200,6 +204,7 @@ describe("permissionRouter", () => {
 			const { caller, ctx } = prepare({ role: "ADMIN" });
 			const input = {
 				name: "Test Group",
+				slug: "test-group",
 				parent: null,
 				permissions: [],
 				members: []
@@ -233,6 +238,7 @@ describe("permissionRouter", () => {
 			date.setDate(date.getDate() + 7); // date in future
 			const input = {
 				name: "Test Group",
+				slug: "test-group",
 				parent: null,
 				permissions: [],
 				members: [
@@ -280,6 +286,7 @@ describe("permissionRouter", () => {
 			const input = {
 				id: null,
 				name: "Test Group",
+				slug: "test-group",
 				parent: null,
 				permissions: [],
 				members: []
@@ -303,6 +310,7 @@ describe("permissionRouter", () => {
 			const input = {
 				id: 5,
 				name: "Old",
+				slug: "old",
 				parent: { id: 2, name: "New Parent" },
 				permissions: [],
 				members: []
@@ -325,6 +333,7 @@ describe("permissionRouter", () => {
 			const input = {
 				id: 7,
 				name: "NewName",
+				slug: "new-name",
 				parent: null,
 				permissions: [],
 				members: []
@@ -350,6 +359,7 @@ describe("permissionRouter", () => {
 			const input = {
 				id: 8,
 				name: "group",
+				slug: "group",
 				parent: null,
 				permissions: [],
 				members: [
@@ -378,6 +388,7 @@ describe("permissionRouter", () => {
 			const input = {
 				id: 9,
 				name: "Group",
+				slug: "group",
 				parent: null,
 				permissions: [],
 				members: [
@@ -405,6 +416,7 @@ describe("permissionRouter", () => {
 			const input = {
 				id: 10,
 				name: "Group",
+				slug: "group",
 				parent: null,
 				permissions: [],
 				members: [
@@ -436,6 +448,7 @@ describe("permissionRouter", () => {
 			const input = {
 				id: 10,
 				name: "Group",
+				slug: "group",
 				parent: null,
 				permissions: [],
 				members: [
@@ -468,6 +481,7 @@ describe("permissionRouter", () => {
 			const input = {
 				id: 11,
 				name: "Group",
+				slug: "group",
 				parent: null,
 				permissions: [
 					{
@@ -517,6 +531,7 @@ describe("permissionRouter", () => {
 			const input = {
 				id: 12,
 				name: "Group",
+				slug: "group",
 				parent: null,
 				permissions: [
 					{
@@ -602,7 +617,6 @@ describe("permissionRouter", () => {
 				],
 				children: [{ id: 5 }]
 			};
-			const g3 = null; // simulate missing group
 
 			(database.group.findUnique as jest.Mock).mockImplementation(
 				async ({ where: { id } }) => {
@@ -612,7 +626,7 @@ describe("permissionRouter", () => {
 				}
 			);
 
-			const txMock = { group: { deleteMany: jest.fn(), update: jest.fn() } } as any;
+			const txMock = { group: { deleteMany: jest.fn(), update: jest.fn() } };
 			(database.$transaction as jest.Mock).mockImplementation(async fn => await fn(txMock));
 
 			await caller.mergeGroup({ groupIds: [1, 2, 3], strategy: "first" });
@@ -635,11 +649,11 @@ describe("permissionRouter", () => {
 			);
 
 			// permissions: keys should include p1,p2,p3 and p1 should be the highest (FULL)
-			const permSet = updateArg.data.permissions.set.map((p: any) => p.id).sort();
+			const permSet = updateArg.data.permissions.set.map((p: { id: string }) => p.id).sort();
 			expect(permSet).toEqual(["p1", "p2", "p3"].sort());
 
 			// children: original children were 4,2 and 5; groupIds [1,2,3] removed => expect 4 and 5
-			const children = updateArg.data.children.set.map((c: any) => c.id).sort();
+			const children = updateArg.data.children.set.map((c: { id: number }) => c.id).sort();
 			expect(children).toEqual([4, 5].sort());
 		});
 
@@ -671,7 +685,7 @@ describe("permissionRouter", () => {
 				}
 			);
 
-			const txMock = { group: { deleteMany: jest.fn(), update: jest.fn() } } as any;
+			const txMock = { group: { deleteMany: jest.fn(), update: jest.fn() } };
 			(database.$transaction as jest.Mock).mockImplementation(async fn => await fn(txMock));
 
 			await caller.mergeGroup({ groupIds: [10, 11], strategy: "highest" });
@@ -711,7 +725,7 @@ describe("permissionRouter", () => {
 				}
 			);
 
-			const txMock = { group: { deleteMany: jest.fn(), update: jest.fn() } } as any;
+			const txMock = { group: { deleteMany: jest.fn(), update: jest.fn() } };
 			(database.$transaction as jest.Mock).mockImplementation(async fn => await fn(txMock));
 
 			await caller.mergeGroup({ groupIds: [20, 21], strategy: "lowest" });
@@ -1108,52 +1122,13 @@ describe("permissionRouter", () => {
 		});
 	});
 
-	describe("findMyGroups", () => {
-		it("returns paginated groups for user", async () => {
-			const { caller, ctx } = prepare({});
-			const mockGroups = [
-				{ id: 1, name: "Group1", members: [{ user: { name: "User1" } }] },
-				{ id: 2, name: "Group2", members: [{ user: { name: "User2" } }] }
-			];
-			(database.$transaction as jest.Mock).mockResolvedValue([mockGroups, 2]);
-
-			const result = await caller.findMyGroups({ page: 1 });
-
-			expect(database.$transaction).toHaveBeenCalledWith([
-				database.group.findMany({
-					include: {
-						members: {
-							select: { user: { select: { name: true } } }
-						}
-					},
-					skip: 0,
-					take: 15,
-					orderBy: { name: "asc" },
-					where: { members: { some: { userId: ctx.user.id } } }
-				}),
-				database.group.count({
-					where: { members: { some: { userId: ctx.user.id } } }
-				})
-			]);
-			expect(result).toEqual({
-				result: [
-					{ groupId: 1, name: "Group1", members: ["User1"] },
-					{ groupId: 2, name: "Group2", members: ["User2"] }
-				],
-				pageSize: 15,
-				page: 1,
-				totalCount: 2
-			});
-		});
-	});
-
 	describe("findGroups", () => {
-		it("returns all groups without filters", async () => {
+		it("returns all groups for global query", async () => {
 			const caller = t.createCallerFactory(permissionRouter)({});
 			const mockGroups = [{ id: 1, name: "Group1", members: [{ user: { name: "User1" } }] }];
 			(database.$transaction as jest.Mock).mockResolvedValue([mockGroups, 1]);
 
-			const result = await caller.findGroups({ page: 1 });
+			const result = await caller.findGroups({ page: 1, isGlobal: true });
 
 			expect(database.$transaction).toHaveBeenCalledWith([
 				database.group.findMany({
@@ -1179,14 +1154,65 @@ describe("permissionRouter", () => {
 			});
 		});
 
+		it("returns groups for user in non-global query", async () => {
+			const { caller } = prepare({ id: "user-id" });
+			const mockGroups = [{ id: 1, name: "Group1", members: [{ user: { name: "User1" } }] }];
+			(database.$transaction as jest.Mock).mockResolvedValue([mockGroups, 1]);
+
+			const result = await caller.findGroups({ page: 1, isGlobal: false });
+
+			expect(database.$transaction).toHaveBeenCalledWith([
+				database.group.findMany({
+					include: {
+						members: {
+							select: { user: { select: { name: true } } }
+						}
+					},
+					skip: 0,
+					take: 15,
+					orderBy: { name: "asc" },
+					where: {
+						AND: [{ members: { some: { userId: "user-id" } } }]
+					}
+				}),
+				database.group.count({
+					where: {
+						AND: [{ members: { some: { userId: "user-id" } } }]
+					}
+				})
+			]);
+			expect(result).toEqual({
+				result: [{ groupId: 1, name: "Group1", members: ["User1"] }],
+				pageSize: 15,
+				page: 1,
+				totalCount: 1
+			});
+		});
+
+		it("throws UNAUTHORIZED for non-global query without user", async () => {
+			const caller = t.createCallerFactory(permissionRouter)({});
+
+			await expect(caller.findGroups({ page: 1, isGlobal: false })).rejects.toMatchObject({
+				code: "UNAUTHORIZED"
+			} as Partial<TRPCError>);
+		});
+
 		it("filters by name", async () => {
 			const caller = t.createCallerFactory(permissionRouter)({});
 			(database.$transaction as jest.Mock).mockResolvedValue([[], 0]);
 
-			await caller.findGroups({ page: 1, name: "Test" });
+			await caller.findGroups({ page: 1, isGlobal: true, name: "Test" });
 
 			expect(database.$transaction).toHaveBeenCalledWith([
 				database.group.findMany({
+					include: {
+						members: {
+							select: { user: { select: { name: true } } }
+						}
+					},
+					skip: 0,
+					take: 15,
+					orderBy: { name: "asc" },
 					where: {
 						name: { contains: "Test", mode: "insensitive" }
 					}
@@ -1199,29 +1225,101 @@ describe("permissionRouter", () => {
 			]);
 		});
 
-		it("filters by authorName", async () => {
+		it("filters by members", async () => {
 			const caller = t.createCallerFactory(permissionRouter)({});
 			(database.$transaction as jest.Mock).mockResolvedValue([[], 0]);
 
-			await caller.findGroups({ page: 1, authorName: "Author" });
+			await caller.findGroups({ page: 1, isGlobal: true, members: ["user1", "user2"] });
 
 			expect(database.$transaction).toHaveBeenCalledWith([
 				database.group.findMany({
-					where: {
+					include: {
 						members: {
-							some: {
-								user: { name: { contains: "Author", mode: "insensitive" } }
-							}
+							select: { user: { select: { name: true } } }
 						}
+					},
+					skip: 0,
+					take: 15,
+					orderBy: { name: "asc" },
+					where: {
+						AND: [
+							{ members: { some: { userId: "user1" } } },
+							{ members: { some: { userId: "user2" } } }
+						]
 					}
 				}),
 				database.group.count({
 					where: {
+						AND: [
+							{ members: { some: { userId: "user1" } } },
+							{ members: { some: { userId: "user2" } } }
+						]
+					}
+				})
+			]);
+		});
+
+		it("filters by excluded groups", async () => {
+			const caller = t.createCallerFactory(permissionRouter)({});
+			(database.$transaction as jest.Mock).mockResolvedValue([[], 0]);
+
+			await caller.findGroups({ page: 1, isGlobal: true, exclude: [1, 2] });
+
+			expect(database.$transaction).toHaveBeenCalledWith([
+				database.group.findMany({
+					include: {
 						members: {
-							some: {
-								user: { name: { contains: "Author", mode: "insensitive" } }
-							}
+							select: { user: { select: { name: true } } }
 						}
+					},
+					skip: 0,
+					take: 15,
+					orderBy: { name: "asc" },
+					where: {
+						id: { notIn: [1, 2] }
+					}
+				}),
+				database.group.count({
+					where: {
+						id: { notIn: [1, 2] }
+					}
+				})
+			]);
+		});
+
+		it("combines filters", async () => {
+			const caller = t.createCallerFactory(permissionRouter)({});
+			(database.$transaction as jest.Mock).mockResolvedValue([[], 0]);
+
+			await caller.findGroups({
+				page: 1,
+				isGlobal: true,
+				name: "Test",
+				members: ["user1"],
+				exclude: [1]
+			});
+
+			expect(database.$transaction).toHaveBeenCalledWith([
+				database.group.findMany({
+					include: {
+						members: {
+							select: { user: { select: { name: true } } }
+						}
+					},
+					skip: 0,
+					take: 15,
+					orderBy: { name: "asc" },
+					where: {
+						name: { contains: "Test", mode: "insensitive" },
+						AND: [{ members: { some: { userId: "user1" } } }],
+						id: { notIn: [1] }
+					}
+				}),
+				database.group.count({
+					where: {
+						name: { contains: "Test", mode: "insensitive" },
+						AND: [{ members: { some: { userId: "user1" } } }],
+						id: { notIn: [1] }
 					}
 				})
 			]);

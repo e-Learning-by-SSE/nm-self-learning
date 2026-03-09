@@ -1,7 +1,15 @@
 "use client";
 import { Combobox, ComboboxOption } from "@headlessui/react";
+import { PlusIcon } from "@heroicons/react/24/solid";
+import { SearchUserDialog, UserSearchEntry } from "@self-learning/admin";
 import { trpc } from "@self-learning/api-client";
-import { DropdownDialog, OnDialogCloseFn, Paginator } from "@self-learning/ui/common";
+import {
+	Chip,
+	DropdownDialog,
+	IconTextButton,
+	OnDialogCloseFn,
+	Paginator
+} from "@self-learning/ui/common";
 import { keepPreviousData } from "@tanstack/react-query";
 import { Fragment, useState } from "react";
 
@@ -14,36 +22,46 @@ export type GroupSearchEntry = {
 export function SearchGroupDialog({
 	isOpen,
 	isGlobalSearch,
+	exclude,
 	onClose
 }: {
 	isOpen: boolean;
 	isGlobalSearch: boolean;
+	exclude?: number[];
 	onClose: OnDialogCloseFn<GroupSearchEntry>;
 }) {
 	const [filterName, setFilterName] = useState("");
+	// const [filterSlug, setFilterSlug] = useState("");
 	const [page, setPage] = useState(1);
-	const { data: allGroups } = trpc.permission.findGroups.useQuery(
+	const [addMemberDialog, setMemberDialog] = useState(false);
+	const [selectedUsers, setSelectedUsers] = useState<UserSearchEntry[]>([]);
+	const members = selectedUsers.map(u => u.id);
+
+	function onAddMember(user?: UserSearchEntry): void {
+		setMemberDialog(false);
+
+		if (user && !selectedUsers.find(u => u.id === user.id)) {
+			setSelectedUsers(prev => [...prev, user]);
+		}
+	}
+
+	function onRemoveMember(userId: string): void {
+		setSelectedUsers(prev => prev.filter(u => u.id !== userId));
+	}
+
+	const { data: groups } = trpc.permission.findGroups.useQuery(
 		{
 			page,
-			name: filterName
+			name: filterName,
+			members,
+			exclude,
+			isGlobal: isGlobalSearch
 		},
 		{
 			staleTime: 10_000,
-			placeholderData: keepPreviousData,
-			enabled: isGlobalSearch
+			placeholderData: keepPreviousData
 		}
 	);
-	const { data: myGroups } = trpc.permission.findMyGroups.useQuery(
-		{
-			page
-		},
-		{
-			staleTime: 10_000,
-			placeholderData: keepPreviousData,
-			enabled: !isGlobalSearch
-		}
-	);
-	const groups = isGlobalSearch ? allGroups : myGroups;
 
 	return (
 		<DropdownDialog.Dialog open={isOpen} onClose={onClose}>
@@ -55,6 +73,29 @@ export function SearchGroupDialog({
 						placeholder="Suche nach Gruppe"
 					/>
 				)}
+				<div className="mt-4 flex items-center flex-wrap gap-2 px-4">
+					{selectedUsers.map(user => (
+						<Chip
+							key={user.id}
+							onRemove={() => onRemoveMember(user.id)}
+							displayImage={false}
+							// imgUrl={user.image}
+						>
+							{user.displayName}
+							<span className="text-sm text-light">{user.email}</span>
+						</Chip>
+					))}
+					<IconTextButton
+						icon={<PlusIcon className="icon h-5" />}
+						text={"Add member to search"}
+						className="btn-primary"
+						title="Add member to search1"
+						onClick={() => setMemberDialog(true)}
+					/>
+					{addMemberDialog && (
+						<SearchUserDialog open={addMemberDialog} onClose={onAddMember} />
+					)}
+				</div>
 
 				<DropdownDialog.PaginationContainer>
 					{groups && <Paginator pagination={groups} url="#" onPageChange={setPage} />}

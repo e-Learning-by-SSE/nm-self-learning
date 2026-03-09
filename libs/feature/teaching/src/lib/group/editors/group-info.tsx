@@ -98,6 +98,7 @@ export function GroupInfoEditor({ fillInSingleGroup }: { fillInSingleGroup: bool
 										<SearchGroupDialog
 											isOpen={isGroupDialogOpen}
 											isGlobalSearch={isAdmin}
+											exclude={field.value ? [field.value.id] : undefined}
 											onClose={group => {
 												setGroupDialogOpen(false);
 												if (!group) return;

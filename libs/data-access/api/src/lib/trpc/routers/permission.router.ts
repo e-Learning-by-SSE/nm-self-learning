@@ -529,64 +529,41 @@ export const permissionRouter = t.router({
 			(await hasGroupRole(input.id, ctx.user.id, GroupRole.MEMBER));
 		return hasAccess ? await getGroup(input.id) : null;
 	}),
-	findMyGroups: authProcedure.input(paginationSchema).query(async ({ input, ctx }) => {
-		const pageSize = 15;
-		const userId = ctx.user.id;
-
-		const where: Prisma.GroupWhereInput = {
-			members: { some: { userId } }
-		};
-
-		const [groupsRaw, count] = await database.$transaction([
-			database.group.findMany({
-				include: {
-					members: {
-						select: { user: { select: { name: true } } }
-					}
-				},
-				...paginate(pageSize, input.page),
-				orderBy: { name: "asc" },
-				where
-			}),
-			database.group.count({ where })
-		]);
-		// flatten result
-		const result = groupsRaw.map(g => ({
-			groupId: g.id,
-			name: g.name,
-			members: g.members.map(m => m.user.name)
-		}));
-
-		return {
-			result,
-			pageSize: pageSize,
-			page: input.page,
-			totalCount: count
-		} satisfies Paginated<unknown>;
-	}),
 	findGroups: t.procedure
 		.input(
 			paginationSchema.extend({
 				name: z.string().optional(),
-				authorName: z.string().optional()
+				slug: z.string().optional(),
+				exclude: z.number().array().optional(),
+				members: z.string().array().optional(),
+				isGlobal: z.boolean()
 			})
 		)
-		.query(async ({ input }) => {
+		.query(async ({ ctx, input }) => {
+			// if local query, require user
+			const userId = !input.isGlobal && ctx?.user?.id;
+			if (userId === undefined) {
+				throw new TRPCError({ code: "UNAUTHORIZED" });
+			}
+			if (userId) {
+				input.members = input.members || [];
+				input.members.push(userId);
+			}
+			//
 			const pageSize = 15;
 
-			const where: Prisma.GroupWhereInput = {
-				name:
-					input.name && input.name.length > 0
-						? { contains: input.name, mode: "insensitive" }
-						: undefined,
-				members: input.authorName
-					? {
-							some: {
-								user: { name: { contains: input.authorName, mode: "insensitive" } }
-							}
-						}
-					: undefined
-			};
+			const where: Prisma.GroupWhereInput = {};
+			if (input.name && input.name.length > 0) {
+				where.name = { contains: input.name, mode: "insensitive" };
+			}
+			if (input.members && input.members.length > 0) {
+				where.AND = input.members.map(id => ({
+					members: { some: { userId: id } }
+				}));
+			}
+			if (input.exclude && input.exclude?.length > 0) {
+				where.id = { notIn: input.exclude };
+			}
 
 			const [groupsRaw, count] = await database.$transaction([
 				database.group.findMany({

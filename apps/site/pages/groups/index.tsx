@@ -20,17 +20,16 @@ type FindGroupsData = inferProcedureOutput<AppRouter["permission"]["findGroups"]
 export default function GroupsPage() {
 	const router = useRouter();
 	const { page = 1 } = router.query;
-	// const [titleFilter, setTitle] = useState(title);
 	const { data: allGroups } = trpc.permission.findGroups.useQuery(
-		{ /*title: titleFilter as string,*/ page: Number(page) },
+		{ page: Number(page), isGlobal: true },
 		{
 			staleTime: 10_000,
 			placeholderData: keepPreviousData
 		}
 	);
 
-	const { data: myGroups } = trpc.permission.findMyGroups.useQuery(
-		{ /*title: titleFilter as string,*/ page: Number(page) },
+	const { data: myGroups } = trpc.permission.findGroups.useQuery(
+		{ page: Number(page), isGlobal: false },
 		{
 			staleTime: 10_000,
 			placeholderData: keepPreviousData
