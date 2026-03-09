@@ -32,6 +32,7 @@ export * from "./lib/progress-bar/progress-bar";
 export * from "./lib/table/table-menu";
 export * from "./lib/star-rating/star-rating";
 export * from "./lib/use-first-render";
+export * from "./lib/details-dropdown/details-dropdown";
 
 export * from "./lib/effects/FlameParticle";
 export * from "./lib/effects/SlotCounter";
