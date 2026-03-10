@@ -381,16 +381,20 @@ function AuthorDashboardPage({ author }: Props) {
 								</Link>
 								<div className="flex flex-wrap justify-end gap-4">
 									<i className="flex items-center">{m.role}</i>
-									<Link href={`/teaching/groups/${m.group.id}/edit`}>
-										<IconTextButton
-											icon={<PencilIcon className="h-5 w-5" />}
-											text={"Bearbeiten"}
-											className="btn-stroked"
-											title="Gruppe bearbeiten"
-										/>
-									</Link>
+									{(isAdmin || m.role === GroupRole.ADMIN) && (
+										<Link href={`/teaching/groups/${m.group.id}/edit`}>
+											<IconTextButton
+												icon={<PencilIcon className="h-5 w-5" />}
+												text={"Bearbeiten"}
+												className="btn-stroked"
+												title="Gruppe bearbeiten"
+											/>
+										</Link>
+									)}
 									<GroupLeaveOption group={m.group} userId={userId} />
-									<GroupDeleteOption group={m.group} />
+									{(isAdmin || m.role === GroupRole.ADMIN) && (
+										<GroupDeleteOption group={m.group} />
+									)}
 								</div>
 							</li>
 						))
