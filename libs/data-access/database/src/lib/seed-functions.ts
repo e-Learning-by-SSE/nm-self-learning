@@ -95,8 +95,7 @@ export function createLesson({
 		selfRegulatedQuestion: selfRegulatedQuestion,
 		quiz: { questions, config: null },
 		meta: {},
-		licenseId: licenseId ?? 0,
-		courseId: courseId ?? null
+		licenseId: licenseId ?? 0
 	};
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
