@@ -1,12 +1,6 @@
-import { PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { PencilIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
-import {
-	IconTextButton,
-	LoadingBox,
-	OnDialogCloseFn,
-	SectionHeader,
-	showToast
-} from "@self-learning/ui/common";
+import { LoadingBox, OnDialogCloseFn, SectionHeader, showToast } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredContainerXL, TopicHeader, Unauthorized } from "@self-learning/ui/layouts";
 import { TRPCClientError } from "@trpc/client";
@@ -21,7 +15,8 @@ import {
 	GroupPermissionRow,
 	GroupPermissionTable,
 	GroupMemberRow,
-	GroupMemberTable
+	GroupMemberTable,
+	GroupDeleteOption
 } from "@self-learning/teaching";
 
 export default function GroupPage() {
@@ -96,13 +91,13 @@ export default function GroupPage() {
 				title={group.name}
 				subtitle={group.slug || ""}
 			>
-				<Link
-					href={`/teaching/groups/${groupId}/edit`}
-					className="btn-primary absolute top-8 w-fit self-end"
-				>
-					<PencilIcon className="icon h-5" />
-					<span>Bearbeiten</span>
-				</Link>
+				<div className="absolute top-1/2 -translate-y-1/2 right-4 flex flex-col gap-2">
+					<Link href={`/teaching/groups/${groupId}/edit`} className="btn-primary">
+						<PencilIcon className="icon h-5" />
+						<span>Bearbeiten</span>
+					</Link>
+					<GroupDeleteOption group={group} />
+				</div>
 			</TopicHeader>
 
 			<CenteredContainerXL>
@@ -113,13 +108,14 @@ export default function GroupPage() {
 						<SectionHeader
 							title="Mitglieder*innen"
 							subtitle="Alle Mitglieder*innen dieser Gruppe."
-							button={
-								<IconTextButton
-									text="Mitglieder*in hinzufügen"
-									icon={<PlusIcon className="icon w-5" />}
-									onClick={() => setGrantGroupAccessDialog(true)}
-								/>
-							}
+							// TODO not in this PR
+							// button={
+							// 	<IconTextButton
+							// 		text="Mitglieder*in hinzufügen"
+							// 		icon={<PlusIcon className="icon w-5" />}
+							// 		onClick={() => setGrantGroupAccessDialog(true)}
+							// 	/>
+							// }
 						/>
 
 						{/* TODO not in this PR {grantGroupAccessDialog && (

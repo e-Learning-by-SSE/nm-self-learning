@@ -3,7 +3,7 @@ import { TeacherView } from "@self-learning/analysis";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
-import { SkillRepositoryOverview } from "@self-learning/teaching";
+import { GroupDeleteOption, SkillRepositoryOverview } from "@self-learning/teaching";
 import {
 	Dialog,
 	DialogActions,
@@ -23,6 +23,7 @@ import { greaterOrEqAccessLevel, Specialization, Subject } from "@self-learning/
 import { LessonDeleteOption } from "@self-learning/ui/lesson";
 import { ExportCourseDialog } from "@self-learning/teaching";
 import { AccessLevel } from "@prisma/client";
+import { SearchField } from "@self-learning/ui/forms";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
 
@@ -109,6 +110,8 @@ function AuthorDashboardPage({ author }: Props) {
 	const isAdmin = session.data?.user.role === "ADMIN";
 
 	const [viewExportDialog, setViewExportDialog] = useState(false);
+	const [courseFilterName, setCourseFilterName] = useState("");
+	const [lessonFilterName, setLessonFilterName] = useState("");
 
 	// separate permissions into lessons & courses and get distincts
 	const { courses, lessons } = useMemo(() => {
@@ -152,6 +155,13 @@ function AuthorDashboardPage({ author }: Props) {
 								/>
 							</Link>
 						</div>
+
+						<SearchField
+							placeholder="Suche nach Kursnamen"
+							onChange={e => {
+								setCourseFilterName(e.target.value);
+							}}
+						/>
 
 						<ul className="flex flex-col gap-1 py-4">
 							{courses.length === 0 ? (
@@ -257,6 +267,13 @@ function AuthorDashboardPage({ author }: Props) {
 								/>
 							</Link>
 						</div>
+
+						<SearchField
+							placeholder="Suche nach Lerneinheiten"
+							onChange={e => {
+								setLessonFilterName(e.target.value);
+							}}
+						/>
 
 						<ul className="flex flex-col gap-1 py-4">
 							{lessons.length === 0 ? (
@@ -385,77 +402,6 @@ function AuthorDashboardPage({ author }: Props) {
 				</ul>
 			</section>
 		</CenteredSection>
-	);
-}
-
-function GroupDeleteOption({
-	group
-}: {
-	group: { id: number; name: string; children: { id: number; name: string }[] };
-}) {
-	const { mutateAsync: deleteGroup } = trpc.permission.deleteGroup.useMutation();
-	const [showConfirmation, setShowConfirmation] = useState(false);
-	const { reload } = useRouter();
-
-	const handleDelete = async () => {
-		await deleteGroup({ groupId: group.id });
-		// Refresh page
-		reload();
-	};
-
-	async function onClose(isDelete?: boolean) {
-		if (isDelete) {
-			await handleDelete();
-		}
-		setShowConfirmation(false);
-	}
-
-	return (
-		<>
-			<IconOnlyButton
-				icon={<TrashIcon className="h-5 w-5" />}
-				className="btn-danger"
-				onClick={() => setShowConfirmation(true)}
-			/>
-			{showConfirmation && <GroupDeleteDialog onClose={onClose} group={group} />}
-		</>
-	);
-}
-
-function GroupDeleteDialog({
-	group,
-	onClose
-}: {
-	group: { id: number; name: string; children: { id: number; name: string }[] };
-	onClose: (isDelete?: boolean) => void;
-}) {
-	if (group.children && group.children.length > 0) {
-		return (
-			<Dialog title={"Löschen nicht möglich"} onClose={onClose}>
-				Die Gruppe wird in folgenden Gruppen als Hauptgruppe aufgeführt:
-				{group.children.map(child => (
-					<Link
-						key={child.id}
-						href={`/groups/${child.id}`}
-						className="hover:text-c-primary"
-					>
-						{child.name}
-					</Link>
-				))}
-				<DialogActions onClose={onClose} />
-			</Dialog>
-		);
-	}
-
-	return (
-		<Dialog title={"Löschen"} onClose={onClose}>
-			Möchten Sie diese Gruppe wirklich löschen?
-			<DialogActions onClose={onClose}>
-				<button className="btn-primary hover:bg-c-danger" onClick={() => onClose(true)}>
-					Löschen
-				</button>
-			</DialogActions>
-		</Dialog>
 	);
 }
 

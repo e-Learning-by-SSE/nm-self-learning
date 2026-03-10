@@ -17,4 +17,5 @@ export * from "./lib/group/editors/group-members";
 export * from "./lib/group/editors/group-permission";
 export * from "./lib/group/dialogs/search-group-dialog";
 export * from "./lib/group/dialogs/merge-groups-dialog";
+export * from "./lib/group/misc/delete-option";
 export const I18N_NAMESPACE = ["common", "feature-teaching"];
