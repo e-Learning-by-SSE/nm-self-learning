@@ -15,6 +15,7 @@ import {
 	createResourceAccess,
 	getGroup,
 	getResourceAccess,
+	getSingleOwnedResources,
 	hasGroupRole,
 	hasResourceAccess,
 	hasResourceAccessBatch
@@ -415,6 +416,19 @@ export const permissionRouter = t.router({
 				});
 			}
 		}),
+	getSingleOwnedResources: authProcedure
+		.input(z.object({ groupId: z.number() }))
+		.query(async ({ ctx, input }) => {
+			const userId = ctx.user.id;
+			const { groupId } = input;
+			// check if user is group admin or website admin
+			const isOwner =
+				ctx.user.role === "ADMIN" || (await hasGroupRole(groupId, userId, GroupRole.ADMIN));
+			if (!isOwner) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
+			return await getSingleOwnedResources(groupId);
+		}),
 	deleteGroup: authProcedure
 		.input(z.object({ groupId: z.number() }))
 		.mutation(async ({ input, ctx }) => {
@@ -426,6 +440,14 @@ export const permissionRouter = t.router({
 			if (!isOwner) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 			}
+			const resources = await getSingleOwnedResources(groupId);
+			if (resources.length > 0) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: `Cannot delete group with exclusive FULL access to resources`
+				});
+			}
+
 			// delete group
 			return await database.group.delete({ where: { id: groupId } });
 		}),
@@ -537,6 +559,36 @@ export const permissionRouter = t.router({
 			}
 			// delete membership
 			return await database.member.delete({ where: { userId_groupId: input } });
+			// TODO make log of access revoked
+		}),
+	leaveGroup: authProcedure
+		.input(z.object({ groupId: z.number() }))
+		.mutation(async ({ input, ctx }) => {
+			const userId = ctx.user.id;
+			// fetch membership which is revoked
+			const membership = await database.member.findUnique({
+				where: { userId_groupId: { groupId: input.groupId, userId } },
+				select: { groupId: true, userId: true, role: true }
+			});
+			if (!membership) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Invalid membership" });
+			}
+			// check if user is not the only ADMIN in that group
+			if (membership.role === GroupRole.ADMIN) {
+				const adminCount = await database.member.count({
+					where: { groupId: input.groupId, role: GroupRole.ADMIN }
+				});
+				if (adminCount <= 1) {
+					throw new TRPCError({
+						code: "FORBIDDEN",
+						message: "Cannot leave group as you are the only ADMIN"
+					});
+				}
+			}
+			// delete membership
+			return await database.member.delete({
+				where: { userId_groupId: { groupId: input.groupId, userId } }
+			});
 			// TODO make log of access revoked
 		}),
 	// deletePermission: adminProcedure

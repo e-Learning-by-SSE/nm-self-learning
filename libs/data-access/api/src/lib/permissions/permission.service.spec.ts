@@ -31,7 +31,8 @@ import {
 	hasEffectiveResourceAccessBatch,
 	hasEffectiveResourceAccess,
 	getEffectiveAccess,
-	hasEffectiveGroupRole
+	hasEffectiveGroupRole,
+	getSingleOwnedResources
 } from "./permission.service";
 
 describe("permission.service", () => {
@@ -367,6 +368,54 @@ describe("permission.service", () => {
 
 			const ok = await hasEffectiveGroupRole(user, 5, GroupRole.ADMIN);
 			expect(ok).toBe(false);
+		});
+	});
+
+	describe("getSingleOwnedResources", () => {
+		it("returns resources FULL owned by the group", async () => {
+			const mockResult = [
+				{ course: { title: "Course 1", courseId: "c1" }, lesson: null },
+				{ course: null, lesson: { title: "Lesson 1", lessonId: "l1" } }
+			];
+			(database.permission.findMany as jest.Mock).mockResolvedValue(mockResult);
+
+			const result = await getSingleOwnedResources(1);
+
+			expect(database.permission.findMany).toHaveBeenCalledWith({
+				where: {
+					groupId: 1,
+					accessLevel: AccessLevel.FULL,
+					OR: [
+						{
+							course: {
+								permissions: {
+									none: { accessLevel: AccessLevel.FULL, NOT: { groupId: 1 } }
+								}
+							}
+						},
+						{
+							lesson: {
+								permissions: {
+									none: { accessLevel: AccessLevel.FULL, NOT: { groupId: 1 } }
+								}
+							}
+						}
+					]
+				},
+				select: {
+					course: { select: { title: true, courseId: true } },
+					lesson: { select: { title: true, lessonId: true } }
+				}
+			});
+			expect(result).toEqual(mockResult);
+		});
+
+		it("returns empty array when no owned resources", async () => {
+			(database.permission.findMany as jest.Mock).mockResolvedValue([]);
+
+			const result = await getSingleOwnedResources(1);
+
+			expect(result).toEqual([]);
 		});
 	});
 });

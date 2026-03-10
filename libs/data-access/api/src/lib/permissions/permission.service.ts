@@ -308,3 +308,37 @@ export async function getGroup(groupId: number) {
 		}
 	});
 }
+
+/**
+ * Fetches all resources FULL owned by a single group.
+ * @param groupId - ID of the group to check
+ * @returns a list of resources FULL owned by the group
+ */
+export async function getSingleOwnedResources(groupId: number) {
+	return await database.permission.findMany({
+		where: {
+			groupId,
+			accessLevel: AccessLevel.FULL,
+			OR: [
+				{
+					course: {
+						permissions: {
+							none: { accessLevel: AccessLevel.FULL, NOT: { groupId } }
+						}
+					}
+				},
+				{
+					lesson: {
+						permissions: {
+							none: { accessLevel: AccessLevel.FULL, NOT: { groupId } }
+						}
+					}
+				}
+			]
+		},
+		select: {
+			course: { select: { title: true, courseId: true } },
+			lesson: { select: { title: true, lessonId: true } }
+		}
+	});
+}

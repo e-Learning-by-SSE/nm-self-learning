@@ -11,9 +11,9 @@ import {
 	createGroupAccess,
 	getResourceAccess,
 	createResourceAccess,
-	getGroup
+	getGroup,
+	getSingleOwnedResources
 } from "../../permissions/permission.service";
-import { connect } from "http2";
 
 jest.mock("@self-learning/database", () => ({
 	__esModule: true,
@@ -31,7 +31,8 @@ jest.mock("@self-learning/database", () => ({
 		member: {
 			findMany: jest.fn(),
 			findUnique: jest.fn(),
-			delete: jest.fn()
+			delete: jest.fn(),
+			count: jest.fn()
 		},
 		permission: {
 			findMany: jest.fn(),
@@ -48,7 +49,8 @@ jest.mock("../../permissions/permission.service", () => ({
 	createGroupAccess: jest.fn(),
 	getResourceAccess: jest.fn(),
 	createResourceAccess: jest.fn(),
-	getGroup: jest.fn()
+	getGroup: jest.fn(),
+	getSingleOwnedResources: jest.fn()
 }));
 
 function prepare(user: Partial<UserFromSession>) {
@@ -1021,6 +1023,7 @@ describe("permissionRouter", () => {
 		it("deletes group when user is website admin", async () => {
 			const { caller } = prepare({ role: "ADMIN" });
 
+			(getSingleOwnedResources as jest.Mock).mockResolvedValue([]);
 			(database.group.delete as jest.Mock).mockResolvedValue({ id: 7 });
 
 			const res = await caller.deleteGroup({ groupId: 7 });
@@ -1033,6 +1036,7 @@ describe("permissionRouter", () => {
 			const { caller, ctx } = prepare({ role: "USER" });
 
 			(hasGroupRole as jest.Mock).mockResolvedValue(true);
+			(getSingleOwnedResources as jest.Mock).mockResolvedValue([]);
 			(database.group.delete as jest.Mock).mockResolvedValue({ id: 99 });
 
 			const res = await caller.deleteGroup({ groupId: 99 });
@@ -1040,6 +1044,136 @@ describe("permissionRouter", () => {
 			expect(hasGroupRole).toHaveBeenCalledWith(99, ctx.user.id, GroupRole.ADMIN);
 			expect(database.group.delete).toHaveBeenCalledWith({ where: { id: 99 } });
 			expect(res).toEqual({ id: 99 });
+		});
+
+		it("throws BAD_REQUEST when group owns resources", async () => {
+			const { caller } = prepare({ role: "ADMIN" });
+
+			(getSingleOwnedResources as jest.Mock).mockResolvedValue([
+				{ course: { title: "Course 1", courseId: "c1" }, lesson: null }
+			]);
+
+			await expect(caller.deleteGroup({ groupId: 1 })).rejects.toMatchObject({
+				code: "BAD_REQUEST"
+			} as Partial<TRPCError>);
+
+			expect(database.group.delete).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("leaveGroup", () => {
+		it("throws FORBIDDEN when membership not found", async () => {
+			const { caller } = prepare({ role: "USER" });
+
+			(database.member.findUnique as jest.Mock).mockResolvedValue(null);
+
+			await expect(caller.leaveGroup({ groupId: 1 })).rejects.toMatchObject({
+				code: "FORBIDDEN",
+				message: "Invalid membership"
+			} as Partial<TRPCError>);
+
+			expect(database.member.delete).not.toHaveBeenCalled();
+		});
+
+		it("throws FORBIDDEN when user is the only ADMIN", async () => {
+			const { caller } = prepare({ role: "USER" });
+
+			(database.member.findUnique as jest.Mock).mockResolvedValue({
+				groupId: 1,
+				userId: "user-id",
+				role: GroupRole.ADMIN
+			});
+			(database.member.count as jest.Mock).mockResolvedValue(1);
+
+			await expect(caller.leaveGroup({ groupId: 1 })).rejects.toMatchObject({
+				code: "FORBIDDEN",
+				message: "Cannot leave group as you are the only ADMIN"
+			} as Partial<TRPCError>);
+
+			expect(database.member.delete).not.toHaveBeenCalled();
+		});
+
+		it("deletes membership when user is ADMIN but not the only one", async () => {
+			const { caller } = prepare({ role: "USER" });
+
+			(database.member.findUnique as jest.Mock).mockResolvedValue({
+				groupId: 1,
+				userId: "user-id",
+				role: GroupRole.ADMIN
+			});
+			(database.member.count as jest.Mock).mockResolvedValue(2);
+			(database.member.delete as jest.Mock).mockResolvedValue({ id: 1 });
+
+			const result = await caller.leaveGroup({ groupId: 1 });
+
+			expect(database.member.count).toHaveBeenCalledWith({
+				where: { groupId: 1, role: GroupRole.ADMIN }
+			});
+			expect(database.member.delete).toHaveBeenCalledWith({
+				where: { userId_groupId: { groupId: 1, userId: "user-id" } }
+			});
+			expect(result).toEqual({ id: 1 });
+		});
+
+		it("deletes membership when user is not ADMIN", async () => {
+			const { caller } = prepare({ role: "USER" });
+
+			(database.member.findUnique as jest.Mock).mockResolvedValue({
+				groupId: 1,
+				userId: "user-id",
+				role: GroupRole.MEMBER
+			});
+			(database.member.delete as jest.Mock).mockResolvedValue({ id: 2 });
+
+			const result = await caller.leaveGroup({ groupId: 1 });
+
+			expect(database.member.count).not.toHaveBeenCalled();
+			expect(database.member.delete).toHaveBeenCalledWith({
+				where: { userId_groupId: { groupId: 1, userId: "user-id" } }
+			});
+			expect(result).toEqual({ id: 2 });
+		});
+	});
+
+	describe("getSingleOwnedResources", () => {
+		it("throws FORBIDDEN if user is not admin and not group admin", async () => {
+			const { caller } = prepare({ role: "USER" });
+
+			(hasGroupRole as jest.Mock).mockResolvedValue(false);
+
+			await expect(caller.getSingleOwnedResources({ groupId: 1 })).rejects.toMatchObject({
+				code: "FORBIDDEN",
+				message: "Insufficient permissions"
+			} as Partial<TRPCError>);
+
+			expect(getSingleOwnedResources).not.toHaveBeenCalled();
+		});
+
+		it("returns owned resources when user is website admin", async () => {
+			const { caller } = prepare({ role: "ADMIN" });
+
+			const mockResult = [{ course: { title: "Course 1", courseId: "c1" }, lesson: null }];
+			(getSingleOwnedResources as jest.Mock).mockResolvedValue(mockResult);
+
+			const result = await caller.getSingleOwnedResources({ groupId: 1 });
+
+			expect(hasGroupRole).not.toHaveBeenCalled();
+			expect(getSingleOwnedResources).toHaveBeenCalledWith(1);
+			expect(result).toEqual(mockResult);
+		});
+
+		it("returns owned resources when user is group admin", async () => {
+			const { caller } = prepare({ role: "USER" });
+
+			(hasGroupRole as jest.Mock).mockResolvedValue(true);
+			const mockResult = [{ lesson: { title: "Lesson 1", lessonId: "l1" }, course: null }];
+			(getSingleOwnedResources as jest.Mock).mockResolvedValue(mockResult);
+
+			const result = await caller.getSingleOwnedResources({ groupId: 1 });
+
+			expect(hasGroupRole).toHaveBeenCalledWith(1, "user-id", GroupRole.ADMIN);
+			expect(getSingleOwnedResources).toHaveBeenCalledWith(1);
+			expect(result).toEqual(mockResult);
 		});
 	});
 
