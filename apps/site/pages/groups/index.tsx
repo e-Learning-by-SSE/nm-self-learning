@@ -1,7 +1,8 @@
 import { MagnifyingGlassIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { UserSearchEntry } from "@self-learning/admin";
 import { AppRouter, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
-import { MergeGroupsDialog } from "@self-learning/teaching";
+import { MemberFilter, MergeGroupsDialog } from "@self-learning/teaching";
 import { MergeGroupsType } from "@self-learning/types";
 import {
 	IconTextButton,
@@ -33,8 +34,16 @@ export default function GroupsPage() {
 	const [allGroupsPage, setAllGroupsPage] = useState(1);
 	const [myGroupsPage, setMyGroupsPage] = useState(1);
 
+	const [myGroupMemberFilter, setMyGroupMemberFilter] = useState<UserSearchEntry[]>([]);
+	const [allGroupMemberFilter, setAllGroupMemberFilter] = useState<UserSearchEntry[]>([]);
+
 	const { data: allGroups } = trpc.permission.findGroups.useQuery(
-		{ page: Number(allGroupsPage), isGlobal: true, name: groupNameFilter },
+		{
+			page: Number(allGroupsPage),
+			isGlobal: true,
+			name: groupNameFilter,
+			members: allGroupMemberFilter.map(m => m.id)
+		},
 		{
 			staleTime: 10_000,
 			placeholderData: keepPreviousData
@@ -42,7 +51,12 @@ export default function GroupsPage() {
 	);
 
 	const { data: myGroups } = trpc.permission.findGroups.useQuery(
-		{ page: Number(myGroupsPage), isGlobal: false, name: myGroupNameFilter },
+		{
+			page: Number(myGroupsPage),
+			isGlobal: false,
+			name: myGroupNameFilter,
+			members: myGroupMemberFilter.map(m => m.id)
+		},
 		{
 			staleTime: 10_000,
 			placeholderData: keepPreviousData
@@ -122,12 +136,14 @@ export default function GroupsPage() {
 				onChange={e => setMyGroupNameFilter(e.target.value)}
 			/>
 
+			<MemberFilter value={myGroupMemberFilter} onChange={setMyGroupMemberFilter} />
+
 			{!myGroups && <LoadingBox />}
 			{myGroups && myGroups.totalCount > 0 && (
 				<GroupsPaginatedView data={myGroups} setPage={setMyGroupsPage} />
 			)}
 			{myGroups?.totalCount === 0 &&
-				(myGroupNameFilter === "" ? (
+				(myGroupNameFilter === "" && myGroupMemberFilter.length === 0 ? (
 					<div className="mx-auto flex items-center gap-8 pb-8">
 						<div className="h-32 w-32">
 							<VoidSvg />
@@ -154,6 +170,8 @@ export default function GroupsPage() {
 				placeholder="Suche nach Gruppe"
 				onChange={e => setGroupNameFilter(e.target.value)}
 			/>
+
+			<MemberFilter value={allGroupMemberFilter} onChange={setAllGroupMemberFilter} />
 
 			{!myGroups ? (
 				<LoadingBox />

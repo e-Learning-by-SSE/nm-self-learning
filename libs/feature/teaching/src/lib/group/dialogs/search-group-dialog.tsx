@@ -152,3 +152,47 @@ export function useSingleMembership({
 			}
 		: null;
 }
+
+export function MemberFilter({
+	value = [],
+	onChange
+}: {
+	value: UserSearchEntry[];
+	onChange: (users: UserSearchEntry[]) => void;
+}) {
+	const [addMemberDialog, setMemberDialog] = useState(false);
+
+	function onRemoveMember(id: string) {
+		onChange(value.filter(u => u.id !== id));
+	}
+
+	function onAddMember(user?: UserSearchEntry) {
+		setMemberDialog(false);
+		if (!user) return;
+
+		if (!value.some(u => u.id === user.id)) {
+			onChange([...value, user]);
+		}
+	}
+
+	return (
+		<div className="my-4 flex items-center flex-wrap gap-2">
+			{value.map(user => (
+				<Chip key={user.id} onRemove={() => onRemoveMember(user.id)} displayImage={false}>
+					{user.displayName}
+					<span className="text-sm text-light">{user.email}</span>
+				</Chip>
+			))}
+
+			<IconTextButton
+				icon={<PlusIcon className="icon h-5" />}
+				text="Add member to search"
+				className="btn-primary"
+				title="Add member to search"
+				onClick={() => setMemberDialog(true)}
+			/>
+
+			{addMemberDialog && <SearchUserDialog open={addMemberDialog} onClose={onAddMember} />}
+		</div>
+	);
+}
