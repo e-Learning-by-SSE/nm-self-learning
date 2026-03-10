@@ -40,7 +40,7 @@ export function GroupMembersEditor() {
 	return (
 		<CenteredSection>
 			<SectionHeader
-				title="Mitglieder*in"
+				title="Mitglieder*innen"
 				subtitle="Alle Mitglieder*innen dieser Gruppe."
 				button={
 					<IconTextButton

@@ -239,7 +239,7 @@ export function GroupPermissionRow({
 				<span className="text-light">{p.accessLevel}</span>
 			</TableDataColumn>
 			<TableDataColumn className="p-2 flex">
-				<IconOnlyButton
+				{/* <IconOnlyButton TODO not in this PR
 					icon={<PencilIcon className="h-4 w-4" />}
 					onClick={() => onEdit && onEdit(permission)}
 				/>
@@ -247,7 +247,7 @@ export function GroupPermissionRow({
 					icon={<TrashIcon className="h-4 w-4" />}
 					className="btn-x-mark"
 					onClick={() => onDelete && onDelete(permission)}
-				/>
+				/> */}
 			</TableDataColumn>
 		</tr>
 	);

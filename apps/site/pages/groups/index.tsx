@@ -1,4 +1,4 @@
-import { PlusIcon } from "@heroicons/react/24/solid";
+import { MagnifyingGlassIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { AppRouter, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { MergeGroupsDialog } from "@self-learning/teaching";
@@ -53,6 +53,7 @@ export default function GroupsPage() {
 	const isAdmin = session.data?.user.role === "ADMIN";
 
 	const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
+	const [groupSearchDialogOpen, setGroupSearchDialogOpen] = useState(false);
 
 	if (!router.isReady) {
 		return <LoadingBox />;
@@ -151,6 +152,20 @@ export default function GroupsPage() {
 			/>
 
 			{!myGroups ? <LoadingBox /> : <GroupsPaginatedView data={allGroups} />}
+
+			{/* <IconTextButton
+				icon={<MagnifyingGlassIcon className="icon h-5" />}
+				text={"Erweiterte Suche"}
+				className="btn-secondary mt-4"
+				onClick={() => setGroupSearchDialogOpen(true)}
+			/>
+			{groupSearchDialogOpen && (
+				<MergeGroupsDialog
+					isOpen={groupSearchDialogOpen}
+					onClose={onGroupFound}
+					isGlobal={true}
+				/>
+			)} */}
 		</CenteredSection>
 	);
 }

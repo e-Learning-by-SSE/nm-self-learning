@@ -366,7 +366,7 @@ export function GroupMemberRow({
 				</span>
 			</TableDataColumn>
 			<TableDataColumn className="p-2 flex">
-				<IconOnlyButton
+				{/* <IconOnlyButton TODO not in this PR
 					icon={<PencilIcon className="h-4 w-4" />}
 					onClick={() => onEdit && onEdit(member)}
 				/>
@@ -374,7 +374,7 @@ export function GroupMemberRow({
 					icon={<TrashIcon className="h-4 w-4" />}
 					className="btn-x-mark"
 					onClick={() => onDelete && onDelete(member)}
-				/>
+				/> */}
 			</TableDataColumn>
 		</tr>
 	);
