@@ -1,4 +1,4 @@
-import { ArrowsUpDownIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { ArrowsUpDownIcon, TrashIcon, UsersIcon } from "@heroicons/react/24/solid";
 import { AccessLevel } from "@prisma/client";
 import { CourseSearchEntry, SearchCourseDialog } from "@self-learning/admin";
 import { ResourceAccessFormSchema, ResourceAccessFormType } from "@self-learning/types";
@@ -215,11 +215,13 @@ export function GroupPermissionTable({ children }: { children: React.ReactNode[]
 export function GroupPermissionRow({
 	permission,
 	onEdit,
-	onDelete
+	onDelete,
+	onRelations
 }: {
 	permission: PermissionFormModel;
 	onEdit?: OnDialogCloseFn<PermissionFormModel>;
 	onDelete?: OnDialogCloseFn<PermissionFormModel>;
+	onRelations?: OnDialogCloseFn<PermissionFormModel>;
 }) {
 	const p = normalizePermission(ResourceAccessFormSchema.parse(permission));
 
@@ -239,6 +241,12 @@ export function GroupPermissionRow({
 				<span className="text-light">{p.accessLevel}</span>
 			</TableDataColumn>
 			<TableDataColumn className="p-2 flex">
+				<IconOnlyButton
+					icon={<UsersIcon className="h-4 w-4" />}
+					className="btn-with-icon"
+					onClick={() => onRelations && onRelations(permission)}
+					title={"Wer hat Zugriff auf diese Ressource?"}
+				/>
 				{/* <IconOnlyButton TODO not in this PR
 					icon={<PencilIcon className="h-4 w-4" />}
 					onClick={() => onEdit && onEdit(permission)}

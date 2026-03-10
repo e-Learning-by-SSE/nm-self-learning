@@ -16,7 +16,9 @@ import {
 	GroupPermissionTable,
 	GroupMemberRow,
 	GroupMemberTable,
-	GroupDeleteOption
+	GroupDeleteOption,
+	GroupPermissionRelationsDialog,
+	PermissionFormModel
 } from "@self-learning/teaching";
 
 export default function GroupPage() {
@@ -27,6 +29,13 @@ export default function GroupPage() {
 
 	const [grantGroupAccessDialog, setGrantGroupAccessDialog] = useState(false);
 	const { mutateAsync: grantGroupAccess } = trpc.permission.grantGroupAccess.useMutation();
+
+	const [selectedPermission, setSelectedPermission] = useState<PermissionFormModel | undefined>(
+		undefined
+	);
+	const handleRelationsDialogClose: OnDialogCloseFn<PermissionFormModel> = () => {
+		setSelectedPermission(undefined);
+	};
 
 	const handleGrantGroupAccess: OnDialogCloseFn<{
 		userId: string;
@@ -149,9 +158,23 @@ export default function GroupPage() {
 						<GroupPermissionTable>
 							{group.permissions.map(p => {
 								const np = ResourceAccessFormSchema.parse(p);
-								return <GroupPermissionRow permission={np} key={getPermKey(np)} />;
+								return (
+									<GroupPermissionRow
+										permission={np}
+										key={getPermKey(np)}
+										onRelations={setSelectedPermission}
+									/>
+								);
 							})}
 						</GroupPermissionTable>
+
+						{selectedPermission && (
+							<GroupPermissionRelationsDialog
+								permission={selectedPermission}
+								onClose={handleRelationsDialogClose}
+								isOpen={!!selectedPermission}
+							/>
+						)}
 					</>
 				)}
 			</CenteredContainerXL>

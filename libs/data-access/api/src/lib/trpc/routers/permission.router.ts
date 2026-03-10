@@ -2,7 +2,7 @@ import { database } from "@self-learning/database";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
-import { AccessLevel, Group, GroupRole, Member, Permission, Prisma } from "@prisma/client";
+import { AccessLevel, Group, GroupRole, Member, Permission, Prisma, User } from "@prisma/client";
 import { paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { GroupFormSchema } from "@self-learning/types";
 import {
@@ -459,6 +459,83 @@ export const permissionRouter = t.router({
 		if (ctx.user.role === "ADMIN") return true;
 		return await hasResourceAccess({ userId: ctx.user.id, ...input });
 	}),
+	getEffectiveResourceAccesses: authProcedure
+		.input(ResourceInputSchema)
+		.query(async ({ input, ctx }) => {
+			const userId = ctx.user.id;
+
+			// must have FULL access to see all permissions
+			const hasFullAccess =
+				ctx.user.role === "ADMIN" ||
+				(await hasResourceAccess({ userId, ...input, accessLevel: AccessLevel.FULL }));
+			if (!hasFullAccess) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
+			const permissions = await database.permission.findMany({
+				where: {
+					...input // e.g., filter by courseId, lessonId, groupId, etc.
+				},
+				select: {
+					accessLevel: true,
+					id: true,
+					group: {
+						select: {
+							name: true,
+							slug: true,
+							id: true,
+							members: {
+								where: {
+									OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }]
+								},
+								select: {
+									user: {
+										select: {
+											displayName: true,
+											image: true,
+											name: true,
+											id: true
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			});
+			// Aggregate best access level per user
+			const users: Record<
+				string,
+				{
+					id: string;
+					accessLevel: AccessLevel;
+					user: Partial<User>;
+					group: Partial<Group> & { members: Partial<User>[] };
+				}
+			> = {};
+
+			// Compute best access per resource
+			for (const perm of permissions) {
+				for (const member of perm.group.members) {
+					if (!users[member.user.id]) {
+						users[member.user.id] = {
+							accessLevel: perm.accessLevel,
+							id: perm.id,
+							user: member.user,
+							group: {
+								id: perm.group.id,
+								name: perm.group.name,
+								slug: perm.group.slug,
+								members: perm.group.members.map(m => m.user)
+							}
+						};
+					}
+					if (greaterAccessLevel(users[member.user.id].accessLevel, perm.accessLevel)) {
+						users[member.user.id].accessLevel = perm.accessLevel;
+					}
+				}
+			}
+			return Object.values(users);
+		}),
 	// Done by group admins or website admins
 	grantGroupAccess: authProcedure
 		.input(
@@ -515,7 +592,7 @@ export const permissionRouter = t.router({
 			// fetch permission which is revoked
 			const perm = await database.permission.findUnique({
 				where: { id: permissionId },
-				select: { groupId: true, courseId: true, lessonId: true }
+				select: { groupId: true, courseId: true, lessonId: true, accessLevel: true }
 			});
 			if (!perm) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Invalid permission" });
@@ -532,6 +609,22 @@ export const permissionRouter = t.router({
 			}
 			if (!hasAccess) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
+			// check if last FULL access is deleted
+			if (perm.accessLevel === AccessLevel.FULL) {
+				const fullAccesses = await database.permission.count({
+					where: {
+						accessLevel: AccessLevel.FULL,
+						lessonId: perm.lessonId,
+						courseId: perm.courseId
+					}
+				});
+				if (fullAccesses <= 1) {
+					throw new TRPCError({
+						code: "BAD_REQUEST",
+						message: "Cannot remove last FULL access"
+					});
+				}
 			}
 			// delete permission
 			return await database.permission.delete({ where: { id: permissionId } });
@@ -556,6 +649,18 @@ export const permissionRouter = t.router({
 				(await hasGroupRole(membership.groupId, userId, GroupRole.ADMIN));
 			if (!hasAccess) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
+			// check if last admin is removed
+			if (membership.role === GroupRole.ADMIN) {
+				const adminCount = await database.member.count({
+					where: { groupId: input.groupId, role: GroupRole.ADMIN }
+				});
+				if (adminCount <= 1) {
+					throw new TRPCError({
+						code: "FORBIDDEN",
+						message: "Cannot leave group as you are the only ADMIN"
+					});
+				}
 			}
 			// delete membership
 			return await database.member.delete({ where: { userId_groupId: input } });
