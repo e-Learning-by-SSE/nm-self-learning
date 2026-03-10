@@ -49,7 +49,7 @@ export const getServerSideProps = withTranslations(
 		return {
 			notFound: !group,
 			props: {
-				group: { ...group, permissions },
+				group: { ...group, permissions, slug: group.slug ?? "" },
 				...(await serverSideTranslations(locale ?? "en", ["common"]))
 			}
 		};

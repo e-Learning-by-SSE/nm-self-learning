@@ -137,7 +137,7 @@ export function useSingleMembership({
 }: {
 	userGroups?: number[];
 	enabled?: boolean;
-}) {
+}): GroupSearchEntry | null {
 	const hasSingleGroup = userGroups?.length === 1;
 	const groupId = userGroups?.[0];
 	const enabled = hasSingleGroup && shouldFetch;
@@ -147,7 +147,8 @@ export function useSingleMembership({
 		? {
 				groupId: query.data.id,
 				name: query.data.name,
-				members: query.data.members.map(m => m.user.displayName)
+				members: query.data.members.map(m => m.user.displayName),
+				slug: query.data.slug
 			}
 		: null;
 }

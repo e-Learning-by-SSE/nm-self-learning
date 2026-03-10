@@ -27,7 +27,7 @@ export const getServerSideProps = withTranslations(
 			where: { lessonId },
 			select: {
 				lessonId: true,
-				courseId: true,
+				// courseId: true,
 				slug: true,
 				title: true,
 				subtitle: true,
@@ -74,7 +74,6 @@ export const getServerSideProps = withTranslations(
 		}
 
 		const lessonForm: LessonFormModel = {
-			courseId: lesson.courseId,
 			lessonId: lesson.lessonId,
 			slug: lesson.slug,
 			title: lesson.title,

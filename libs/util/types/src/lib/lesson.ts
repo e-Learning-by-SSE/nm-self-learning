@@ -24,7 +24,6 @@ export const lessonSchema = z.object({
 		.array()
 		.min(1, "At least one permission is required"),
 	lessonId: z.string().nullable(),
-	courseId: z.string().nullable(),
 	slug: z.string().min(3),
 	title: z.string().min(3),
 	subtitle: z.string().nullable().optional(),
@@ -54,7 +53,6 @@ export function createEmptyLesson(): Lesson {
 	return {
 		permissions: [],
 		lessonId: null,
-		courseId: null,
 		slug: "",
 		title: "",
 		subtitle: null,
