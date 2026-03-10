@@ -13,7 +13,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 import { canCreate, canDeleteBySlug, canEdit, canEditBySlug } from "../../permissions/course.utils";
-import { greaterOrEqAccessLevel } from "../../permissions/permission.utils";
+import { greaterAccessLevel, greaterOrEqAccessLevel } from "../../permissions/permission.utils";
 import { getEffectiveAccess } from "../../permissions/permission.service";
 
 export const courseRouter = t.router({
@@ -118,6 +118,65 @@ export const courseRouter = t.router({
 				lessons: (course.meta as CourseMeta).lessonCount,
 				description: course.description
 			};
+		}),
+	getMyCourses: authProcedure
+		.input(
+			paginationSchema.extend({
+				title: z.string().optional()
+			})
+		)
+		.query(async ({ input, ctx }) => {
+			const pageSize = 15;
+			const memberships = await database.group.findMany({
+				where: { members: { some: { userId: ctx.user.id } } },
+				select: { id: true }
+			});
+
+			const where: Prisma.CourseWhereInput = {
+				title:
+					input.title && input.title.length > 0
+						? { contains: input.title, mode: "insensitive" }
+						: undefined,
+				permissions: {
+					some: {
+						group: { id: { in: memberships.map(m => m.id) } }
+					}
+				}
+			};
+
+			const [result, count] = await database.$transaction([
+				database.course.findMany({
+					select: {
+						slug: true,
+						title: true,
+						courseId: true,
+						imgUrl: true,
+						permissions: {
+							select: {
+								accessLevel: true
+							}
+						}
+					},
+					...paginate(pageSize, input.page),
+					orderBy: { title: "asc" },
+					where
+				}),
+				database.course.count({ where })
+			]);
+
+			const res = result.map(r => ({
+				...r,
+				accessLevel: r.permissions.reduce<AccessLevel>(
+					(max, p) => (greaterAccessLevel(p.accessLevel, max) ? p.accessLevel : max),
+					r.permissions[0].accessLevel // always at least one permission due to query is present
+				)
+			}));
+			return {
+				result: res,
+				pageSize: pageSize,
+				page: input.page,
+				totalCount: count
+			} satisfies Paginated<unknown>;
 		}),
 	findMany: t.procedure
 		.input(

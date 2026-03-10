@@ -26,13 +26,15 @@ type FindGroupsData = inferProcedureOutput<AppRouter["permission"]["findGroups"]
 
 export default function GroupsPage() {
 	const router = useRouter();
-	const { page = 1 } = router.query;
 
 	const [myGroupNameFilter, setMyGroupNameFilter] = useState("");
 	const [groupNameFilter, setGroupNameFilter] = useState("");
 
+	const [allGroupsPage, setAllGroupsPage] = useState(1);
+	const [myGroupsPage, setMyGroupsPage] = useState(1);
+
 	const { data: allGroups } = trpc.permission.findGroups.useQuery(
-		{ page: Number(page), isGlobal: true, name: groupNameFilter },
+		{ page: Number(allGroupsPage), isGlobal: true, name: groupNameFilter },
 		{
 			staleTime: 10_000,
 			placeholderData: keepPreviousData
@@ -40,7 +42,7 @@ export default function GroupsPage() {
 	);
 
 	const { data: myGroups } = trpc.permission.findGroups.useQuery(
-		{ page: Number(page), isGlobal: false, name: myGroupNameFilter },
+		{ page: Number(myGroupsPage), isGlobal: false, name: myGroupNameFilter },
 		{
 			staleTime: 10_000,
 			placeholderData: keepPreviousData
@@ -121,7 +123,9 @@ export default function GroupsPage() {
 			/>
 
 			{!myGroups && <LoadingBox />}
-			{myGroups && myGroups.totalCount > 0 && <GroupsPaginatedView data={myGroups} />}
+			{myGroups && myGroups.totalCount > 0 && (
+				<GroupsPaginatedView data={myGroups} setPage={setMyGroupsPage} />
+			)}
 			{myGroups?.totalCount === 0 &&
 				(myGroupNameFilter === "" ? (
 					<div className="mx-auto flex items-center gap-8 pb-8">
@@ -151,7 +155,11 @@ export default function GroupsPage() {
 				onChange={e => setGroupNameFilter(e.target.value)}
 			/>
 
-			{!myGroups ? <LoadingBox /> : <GroupsPaginatedView data={allGroups} />}
+			{!myGroups ? (
+				<LoadingBox />
+			) : (
+				<GroupsPaginatedView data={allGroups} setPage={setAllGroupsPage} />
+			)}
 
 			{/* <IconTextButton
 				icon={<MagnifyingGlassIcon className="icon h-5" />}
@@ -170,7 +178,13 @@ export default function GroupsPage() {
 	);
 }
 
-function GroupsPaginatedView({ data }: { data?: FindGroupsData }) {
+function GroupsPaginatedView({
+	data,
+	setPage
+}: {
+	data?: FindGroupsData;
+	setPage: (page: number) => void;
+}) {
 	if (!data) {
 		return (
 			<div className="mx-auto flex items-center gap-8">
@@ -209,7 +223,9 @@ function GroupsPaginatedView({ data }: { data?: FindGroupsData }) {
 					</tr>
 				))}
 			</Table>
-			{data?.result && <Paginator pagination={data} url={`/admin/groups?title=`} />}
+			{data?.result && (
+				<Paginator pagination={data} url={`/admin/groups?title=`} onPageChange={setPage} />
+			)}
 		</>
 	);
 }

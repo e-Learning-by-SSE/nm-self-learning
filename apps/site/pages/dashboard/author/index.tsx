@@ -11,6 +11,8 @@ import {
 	IconOnlyButton,
 	IconTextButton,
 	ImageOrPlaceholder,
+	LoadingBox,
+	Paginator,
 	SectionHeader
 } from "@self-learning/ui/common";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
@@ -18,12 +20,13 @@ import { VoidSvg } from "@self-learning/ui/static";
 import { withAuth } from "@self-learning/util/auth";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { greaterOrEqAccessLevel, Specialization, Subject } from "@self-learning/types";
 import { LessonDeleteOption } from "@self-learning/ui/lesson";
 import { ExportCourseDialog } from "@self-learning/teaching";
 import { AccessLevel } from "@prisma/client";
 import { SearchField } from "@self-learning/ui/forms";
+import { keepPreviousData } from "@tanstack/react-query";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
 
@@ -48,26 +51,7 @@ export function getAuthor(username: string) {
 						select: {
 							name: true,
 							id: true,
-							children: true,
-							permissions: {
-								// where: {
-								// 	OR: [{ accessLevel: "FULL" }, { accessLevel: "EDIT" }]
-								// },
-								select: {
-									accessLevel: true,
-									course: {
-										select: {
-											courseId: true,
-											title: true,
-											slug: true,
-											imgUrl: true
-										}
-									},
-									lesson: {
-										select: { lessonId: true, title: true, slug: true }
-									}
-								}
-							}
+							children: true
 						}
 					}
 				}
@@ -91,19 +75,6 @@ export default function Start(props: Props) {
 	return <AuthorDashboardPage {...props} />;
 }
 
-type _Base = {
-	title: string;
-	slug: string;
-	accessLevel: AccessLevel;
-};
-type Course = _Base & {
-	courseId: string;
-	imgUrl: string | null;
-};
-type Lesson = _Base & {
-	lessonId: string;
-};
-
 function AuthorDashboardPage({ author }: Props) {
 	const session = useRequiredSession();
 	// const authorName = session.data?.user.name;
@@ -112,27 +83,24 @@ function AuthorDashboardPage({ author }: Props) {
 	const [viewExportDialog, setViewExportDialog] = useState(false);
 	const [courseFilterName, setCourseFilterName] = useState("");
 	const [lessonFilterName, setLessonFilterName] = useState("");
+	const [coursePage, setCoursePage] = useState(1);
+	const [lessonPage, setLessonPage] = useState(1);
 
-	// separate permissions into lessons & courses and get distincts
-	const { courses, lessons } = useMemo(() => {
-		const courseMap = new Map<string, Course>();
-		const lessonMap = new Map<string, Lesson>();
-		for (const m of author.memberships) {
-			for (const p of m.group.permissions) {
-				const accessLevel = p.accessLevel;
-				if (p.course) {
-					courseMap.set(p.course.courseId, { ...p.course, accessLevel });
-				}
-				if (p.lesson) {
-					lessonMap.set(p.lesson.lessonId, { ...p.lesson, accessLevel });
-				}
-			}
+	const { data: courses } = trpc.course.getMyCourses.useQuery(
+		{ title: courseFilterName, page: Number(coursePage) },
+		{
+			staleTime: 10_000,
+			placeholderData: keepPreviousData
 		}
-		return {
-			courses: Array.from(courseMap.values()),
-			lessons: Array.from(lessonMap.values())
-		};
-	}, [author.memberships]);
+	);
+
+	const { data: lessons } = trpc.lesson.getMyLessons.useQuery(
+		{ title: lessonFilterName, page: Number(lessonPage) },
+		{
+			staleTime: 10_000,
+			placeholderData: keepPreviousData
+		}
+	);
 
 	const canCreate = author.memberships.length > 0;
 
@@ -164,7 +132,8 @@ function AuthorDashboardPage({ author }: Props) {
 						/>
 
 						<ul className="flex flex-col gap-1 py-4">
-							{courses.length === 0 ? (
+							{!courses && <LoadingBox />}
+							{courses?.result.length === 0 && courseFilterName === "" ? (
 								<div className="mx-auto flex items-center gap-8">
 									<div className="h-32 w-32">
 										<VoidSvg />
@@ -174,7 +143,7 @@ function AuthorDashboardPage({ author }: Props) {
 									</p>
 								</div>
 							) : (
-								courses.map(course => (
+								courses?.result.map(course => (
 									<li
 										key={course.courseId}
 										className="flex items-center rounded-lg border border-c-border bg-white"
@@ -248,6 +217,13 @@ function AuthorDashboardPage({ author }: Props) {
 								))
 							)}
 						</ul>
+						{courses?.result && (
+							<Paginator
+								pagination={courses}
+								url={"ignored"}
+								onPageChange={setCoursePage}
+							/>
+						)}
 					</section>
 
 					<Divider />
@@ -276,7 +252,8 @@ function AuthorDashboardPage({ author }: Props) {
 						/>
 
 						<ul className="flex flex-col gap-1 py-4">
-							{lessons.length === 0 ? (
+							{!lessons && <LoadingBox />}
+							{lessons?.result.length === 0 && lessonFilterName === "" ? (
 								<div className="mx-auto flex items-center gap-8">
 									<div className="h-32 w-32">
 										<VoidSvg />
@@ -287,7 +264,7 @@ function AuthorDashboardPage({ author }: Props) {
 									</p>
 								</div>
 							) : (
-								lessons.map(lesson => (
+								lessons?.result.map(lesson => (
 									<li
 										key={lesson.lessonId}
 										className="flex w-full py-2 items-center justify-between px-4 rounded-lg border border-light-border bg-white"
@@ -307,6 +284,13 @@ function AuthorDashboardPage({ author }: Props) {
 								))
 							)}
 						</ul>
+						{lessons?.result && (
+							<Paginator
+								pagination={lessons}
+								url={"ignored"}
+								onPageChange={setLessonPage}
+							/>
+						)}
 					</section>
 
 					<Divider />
