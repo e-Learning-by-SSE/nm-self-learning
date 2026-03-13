@@ -1,5 +1,6 @@
 import { CheckCircleIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 import type { MdLookup, MdLookupArray } from "@self-learning/markdown";
+import { useTranslation } from "next-i18next";
 import {
 	AnswerContextProvider,
 	BaseEvaluation,
@@ -53,7 +54,8 @@ export function Question({
 	const evaluation = evaluations[question.questionId];
 
 	const [_, setCookie] = useCookies(["quiz_answers_save"]);
-
+	const { t } = useTranslation("feature-language-tree")
+ 
 	function setAnswer(v: unknown) {
 		const value = typeof v === "function" ? v(answer) : v;
 		setAnswers(prev => {
@@ -128,7 +130,9 @@ export function Question({
 				<div>
 					<div className="flex items-center justify-between">
 						<span className="font-semibold text-c-primary" data-testid="questionType">
-							{QUESTION_TYPE_DISPLAY_NAMES[question.type]}
+							{question.type === "language-tree"
+								? t("displayName")
+								: QUESTION_TYPE_DISPLAY_NAMES[question.type]}
 						</span>
 						<div className="flex gap-4">
 							<button

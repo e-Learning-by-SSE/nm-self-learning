@@ -20,6 +20,7 @@ import { useMemo, useState } from "react";
 import { Control, Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { Button } from "@headlessui/react";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { useTranslation } from "next-i18next";
 
 type QuizForm = { quiz: Quiz };
 
@@ -130,6 +131,8 @@ export function QuizEditor() {
 		orderedQuestions
 	} = useQuizEditorForm();
 
+	const { t } = useTranslation("feature-language-tree");
+
 	return (
 		<section className="flex flex-col gap-8">
 			<SectionHeader
@@ -154,7 +157,9 @@ export function QuizEditor() {
 								className={"w-full text-left px-3 py-1"}
 								onClick={() => appendQuestion(type as QuestionType["type"])}
 							>
-								{QUESTION_TYPE_DISPLAY_NAMES[type as QuestionType["type"]]}
+								{type === "language-tree"
+									? t("displayName")
+									: QUESTION_TYPE_DISPLAY_NAMES[type as QuestionType["type"]]}
 							</Button>
 						))}
 					</DropdownMenu>
@@ -174,7 +179,9 @@ export function QuizEditor() {
 											Aufgabe {index + 1} von {quiz.length}
 										</span>
 										<span className="flex">
-											{QUESTION_TYPE_DISPLAY_NAMES[value.type]}
+											{value.type === "language-tree"
+												? t("displayName")
+												: QUESTION_TYPE_DISPLAY_NAMES[value.type]}
 										</span>
 									</div>
 								</RemovableTab>

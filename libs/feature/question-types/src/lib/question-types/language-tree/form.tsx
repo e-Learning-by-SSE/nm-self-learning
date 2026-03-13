@@ -16,7 +16,8 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 		control
 	});
 
-	const [initialTreeInput, setInitialTreeInput] = useState<string>(languageTree.initialTree);
+	const safeInitialTree = languageTree.initialTree || "[Root]";
+	const [initialTreeInput, setInitialTreeInput] = useState<string>(safeInitialTree);
 	const [answerTreeInput, setAnswerTreeInput] = useState<string[]>(languageTree.answer);
 
 	const [editDialog, setEditDialog] = useState<ReactNode | null>(null);

@@ -233,7 +233,7 @@ export const QUESTION_TYPE_DISPLAY_NAMES: {
 	programming: "Programmierung",
 	cloze: "Lückentext",
 	arrange: "Ordnen",
-	"language-tree": "Sprachbaum"
+	"language-tree": "Baumstruktur-Aufgabe"
 };
 
 /**
