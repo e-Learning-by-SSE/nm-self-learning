@@ -1,24 +1,6 @@
 import type { TreeNode } from "./tree-parser";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 
-const phraseOptions = ["NP", "PP", "S", "ADJP", "ADVP", "NEGP", "VP"];
-
-const wordOptions = [
-	"ART",
-	"NN",
-	"NE",
-	"VVFIN",
-	"VVPP",
-	"VAFIN",
-	"PPER",
-	"PRF",
-	"PPOSAT",
-	"APPR",
-	"APPRART",
-	"ADV",
-	"ADJD",
-	"PTKNEG"
-];
 
 export function TreeEditor({
 	tree,
@@ -53,7 +35,7 @@ export function TreeEditor({
 			const oldLeafNode = { value: node.value, children: [] }; // Preserve original text
 
 			// Assign default value from dropdown (first in phrase list)
-			node.value = phraseOptions[0]; // Default to "NP" (or whatever the first entry is)
+			node.value = "Node";
 			node.children = [oldLeafNode]; // Move the old text as a child node
 		} else {
 			// Regular non-leaf node: Add a new child normally
@@ -71,7 +53,6 @@ export function TreeEditor({
 	const generateNodeId = (path: number[]) => `node-${path.join("-")}`;
 
 	const renderNode = (node: TreeNode, parent: TreeNode | null = null, path: number[] = []) => {
-		const isLeaf = node.children.length === 0;
 		const nodeId = generateNodeId(path);
 
 		return (
@@ -80,38 +61,13 @@ export function TreeEditor({
 				className="ml-4 pl-4 border-l-2 border-c-border-strong space-y-2 py-1"
 			>
 				<div className="flex items-center space-x-2 bg-c-surface-2 p-2 rounded-lg shadow-sm">
-					{/* Use a dropdown for non-leaf nodes and text input for leaf nodes */}
-					{isLeaf || allowTextInputForParents ? (
-						<input
-							type="text"
-							className="border rounded px-3 py-1 text-sm w-32 focus:ring-2 focus:ring-blue-400 outline-none"
-							value={node.value}
-							onChange={e => handleRename(node, e.target.value)}
-							placeholder="Enter text..."
-						/>
-					) : (
-						<select
-							title="Select a phrase or word"
-							className="border rounded px-3 py-1 text-sm bg-white w-36"
-							value={node.value}
-							onChange={e => handleRename(node, e.target.value)}
-						>
-							<optgroup label="Phrases">
-								{phraseOptions.map(option => (
-									<option key={option} value={option}>
-										{option}
-									</option>
-								))}
-							</optgroup>
-							<optgroup label="Words">
-								{wordOptions.map(option => (
-									<option key={option} value={option}>
-										{option}
-									</option>
-								))}
-							</optgroup>
-						</select>
-					)}
+					<input
+						type="text"
+						className="border rounded px-3 py-1 text-sm w-32 focus:ring-2 focus:ring-blue-400 outline-none"
+						value={node.value}
+						onChange={e => handleRename(node, e.target.value)}
+						placeholder="Enter text..."
+					/>
 
 					<button
 						onClick={() => handleAddChild(node)}
