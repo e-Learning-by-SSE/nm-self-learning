@@ -4,7 +4,7 @@ import { getSspQuizLearnersView, QuestionProps, Quiz, QuizLearnersView } from "@
 import { withAuth } from "@self-learning/util/auth";
 
 export const getServerSideProps = withTranslations(
-	["common", "feature-language-tree"],
+	["common"],
 	withAuth<QuestionProps>(async ({ params }) => {
 		const parentProps = await getSspStandaloneLessonLayout(params);
 
