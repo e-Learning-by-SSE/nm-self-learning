@@ -26,6 +26,7 @@ const schemaPath = join(prismaPath, "schema");
 const schemaTempPath = join(prismaPath, "schema_temp");
 const dbMigration = "migration.sql";
 const dataMigration = "data-migration.ts";
+const logs: string[] = ["migrations/"];
 
 function isMigration(path: string) {
 	if (statSync(path).isDirectory()) {
@@ -62,6 +63,11 @@ function cleanup() {
 	const schemaFiles = readdirSync(schemaTempPath);
 	schemaFiles.forEach(file => copyFileSync(join(schemaTempPath, file), join(schemaPath, file)));
 	rmSync(schemaTempPath, { recursive: true, force: true });
+
+	// Print logs before process exit
+	for (const log of logs) {
+		console.log(log);
+	}
 }
 
 /**
@@ -69,25 +75,29 @@ function cleanup() {
  * @param migration The currently applied migration
  * @returns The status of the migration and the `stdin` output of the migration
  */
-function migrateDatabase(migration: string) {
+function migrateDatabase(migration: string, prefix: string) {
 	let migrationApplied = false;
 	let result = "";
 	try {
 		result = execSync(`npx prisma migrate deploy`).toString();
 		if (result.includes("No pending migrations to apply.")) {
 			console.log(`⮡ Database migration ${migration} ${neutral}already applied${normal}.`);
+			logs.push(`   ${prefix}  └─ migration.sql ${info}•${normal}`);
 		} else {
 			console.log(
 				`⮡ Database migration ${migration} ${success}successfully applied${normal}.`
 			);
 			migrationApplied = true;
+			logs.push(`   ${prefix}  └─ migration.sql ${success}✓${normal}`);
 		}
 	} catch (e) {
 		console.log(`⮡ Database migration ${error}failed:${normal}\n` + e);
+		logs.push(`   ${prefix}  └─ migration.sql ${error}✗${normal}`);
 		cleanup();
+		console.log(result);
 		process.exit(1);
 	}
-	return { migrationApplied, result };
+	return { migrationApplied };
 }
 
 /**
@@ -97,10 +107,11 @@ function migrateDatabase(migration: string) {
  * @param migration The currently applied migration
  * @param migrationApplied Status of the database migration
  */
-function migrateData(migration: string, migrationApplied: boolean) {
+function migrateData(migration: string, migrationApplied: boolean, prefix: string) {
 	const dataMigrationFile = join(migrationsPath, migration, dataMigration);
 	if (migrationApplied && existsSync(dataMigrationFile)) {
 		console.log(`⮡ Applying ${info}data migration${normal}`);
+		logs[logs.length - 1] = logs[logs.length - 1].replace("└", "├");
 
 		// Create a Prisma client based on current database schema
 		execSync(`npx prisma db pull`);
@@ -108,9 +119,11 @@ function migrateData(migration: string, migrationApplied: boolean) {
 		try {
 			// Execute the data migration in a separate process (to support alternative versions of Prisma Client)
 			execSync(`npx tsx ${dataMigrationFile}`);
+			logs.push(`   ${prefix}  └─ data-migration.ts ${success}✓${normal}`);
 			return true;
 		} catch (error) {
 			console.error(`⮡ Data migration ${error}failed.${normal}`);
+			logs.push(`   ${prefix}  └─ data-migration.ts ${error}✗${normal}`);
 			cleanup();
 			// Restore original Prisma Client
 			execSync(`npx prisma generate`);
@@ -143,20 +156,18 @@ function main() {
 	let dataMigrationApplied = false;
 	for (let i = 0; i < migrations.length; i++) {
 		const migration = migrations[i];
+		const prefix = i === migrations.length - 1 ? " " : "|";
+		const corner = i === migrations.length - 1 ? "└" : "├";
+		logs.push(`   ${corner}─ ${migration}`);
 		console.log(`Applying migration ${info}${migration}${normal}`);
 		moveToMigrationDir(migration);
 
 		// Execute the DB migration
-		const { migrationApplied, result } = migrateDatabase(migration);
+		const { migrationApplied } = migrateDatabase(migration, prefix);
 
 		// Apply data migration if exists
-		const dataMigration = migrateData(migration, migrationApplied);
+		const dataMigration = migrateData(migration, migrationApplied, prefix);
 		dataMigrationApplied = dataMigrationApplied || dataMigration;
-
-		if (i === migrations.length - 1) {
-			// Print log of last migration
-			console.log(result);
-		}
 	}
 
 	// Step 4: Cleanup
