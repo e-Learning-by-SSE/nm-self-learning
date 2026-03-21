@@ -45,8 +45,11 @@ export const aiTutorProfileRouter = t.router({
 		return profiles;
 	}),
 
-	save: authProcedure.input(aiTutorProfileSchema).mutation(async ({ input }) => {
-		if (input.model === undefined) {
+	// Creates or updates a profile. Falls back to the active LLM default model when no model is explicitly provided.
+	save: adminProcedure.input(aiTutorProfileSchema).mutation(async ({ input }) => {
+		let model = input.model;
+
+		if (!model) {
 			const llmConfig = await fetchLlmConfig();
 			if (!llmConfig) {
 				throw new TRPCError({
@@ -99,12 +102,23 @@ export const aiTutorProfileRouter = t.router({
 		}
 	}),
 
-	delete: authProcedure.input(aiTutorProfileSchema).mutation(async ({ input, ctx }) => {
-		return database.aiTutorProfile.delete({
-			where: {
-				id: input.id,
-				author: ctx.user.name
+	// Deletes a profile by ID. The author guard ensures only the profile's creator can delete it.
+	delete: adminProcedure.input(deleteProfileSchema).mutation(async ({ input, ctx }) => {
+		try {
+			return await database.aiTutorProfile.delete({
+				where: {
+					id: input.id,
+					author: ctx.user.name
+				}
+			});
+		} catch (error) {
+			if (error instanceof TRPCError) {
+				throw error;
 			}
-		});
+			throw new TRPCError({
+				code: "INTERNAL_SERVER_ERROR",
+				message: "Failed to delete profile"
+			});
+		}
 	})
 });

@@ -26,131 +26,159 @@ export default function AITutorProfileAdminPage() {
 	const deleteProfile = trpc.aiTutorProfile.delete.useMutation();
 	const { t } = useTranslation("pages-admin-ai-tutor-profile");
 
-	const formSubmit = async (data: typeof formData) => {
-		try {
-			await saveProfile.mutateAsync({
-				id: data.id,
-				name: data.name,
-				description: data.description,
-				author: data.author,
-				model: data.model,
-				avatarUrl: data.avatarUrl,
-				systemPrompt: data.systemPrompt
-			});
-			showToast({
-				type: "success",
-				title: t("Profile Saved"),
-				subtitle: ""
-			});
-		} catch (error) {
-			showToast({
-				type: "error",
-				title: t("Error creating profile"),
-				subtitle: error instanceof Error ? t(error.message) : t("An unknown error occurred")
-			});
-		} finally {
-			reset(defaultAITutorProfile);
-		}
-	};
+	return (
+		<div className="w-full bg-white p-6 rounded shadow md:w-1/4 mb-6 md:mb-0">
+			<button onClick={onNew} className="btn btn-primary mb-4 w-full">
+				{t("New Profile")}
+			</button>
+			<h2 className="text-xl font-bold mb-4">{t("Saved Profiles")}</h2>
+			{profiles.length > 0 ? (
+				<ul className="space-y-2 max-h-[60vh] overflow-y-auto">
+					{profiles.map(profile => (
+						<li
+							key={profile.id}
+							className="btn btn-secondary btn-with-icon w-full justify-start"
+							onClick={() => onSelect(profile)}
+						>
+							<ImageOrPlaceholder
+								src={profile.avatarUrl ?? undefined}
+								alt={t("Profile Picture")}
+								className="w-8 h-8 rounded-xl"
+							/>
+							<span className="flex-grow cursor-default">
+								{nameTrimmer(profile.name)}
+							</span>
+						</li>
+					))}
+				</ul>
+			) : (
+				<p>{t("No saved profiles found")}</p>
+			)}
+		</div>
+	);
+});
 
-	const handleFetchAvailableModels = async () => {
-		setFetchingModels(true);
-		try {
-			const models = await getModels.mutateAsync();
-			setAvailableModels(models.models);
-			showToast({
-				type: "success",
-				title: t("Models fetched"),
-				subtitle: t("Available models have been fetched successfully.")
-			});
-		} catch (error) {
-			showToast({
-				type: "error",
-				title: t("Fetch Models Failed"),
-				subtitle: error instanceof Error ? t(error.message) : t("An unknown error occurred")
-			});
-		} finally {
-			setFetchingModels(false);
-		}
-	};
-
-	const handleDeleteProfile = async (data: typeof formData) => {
-		try {
-			await deleteProfile.mutateAsync({
-				id: data.id,
-				name: data.name,
-				description: data.description,
-				author: data.author,
-				model: data.model,
-				avatarUrl: data.avatarUrl,
-				systemPrompt: data.systemPrompt
-			});
-		} catch (error) {
-			showToast({
-				type: "error",
-				title: t("Delete Profile Failed"),
-				subtitle: error instanceof Error ? t(error.message) : t("An unknown error occurred")
-			});
-		} finally {
-			reset(defaultAITutorProfile);
-		}
-	};
-
-	function nameTrimmer(name: string): string {
-		if (name.length > 15) {
-			return name.slice(0, 14) + "...";
-		}
-		return name;
+function nameTrimmer(name: string): string {
+	if (name.length > 15) {
+		return name.slice(0, 14) + "...";
 	}
+	return name;
+}
 
-	function SavedProfiles() {
-		return (
-			<div className="w-full bg-white p-6 rounded shadow md:w-1/4 mb-6 md:mb-0">
-				<button
-					onClick={() => {
-						reset(defaultAITutorProfile);
-					}}
-					className="btn btn-primary mb-4 w-full"
-				>
-					{t("New Profile")}
-				</button>
-				<h2 className="text-xl font-bold mb-4">{t("Saved Profiles")}</h2>
-				{profiles.data?.length ? (
-					<ul className="space-y-2 max-h-[60vh] overflow-y-auto">
-						{profiles.data.map(profile => (
-							<li
-								key={profile.id}
-								className="btn btn-secondary btn-with-icon w-full justify-start"
-								onClick={() =>
-									reset({
-										id: profile.id,
-										name: profile.name,
-										author: profile.author,
-										model: profile.model ?? "",
-										description: profile.description ?? "",
-										systemPrompt: profile.systemPrompt,
-										avatarUrl: profile.avatarUrl ?? undefined,
-										updatedAt: profile.updatedAt
-									})
-								}
-							>
-								<ImageOrPlaceholder
-									src={profile.avatarUrl ?? undefined}
-									alt={t("Profile Picture")}
-									className="w-8 h-8 rounded-xl"
-								/>
-								<span className="flex-grow cursor-default">
-									{nameTrimmer(profile.name)}
-								</span>
-							</li>
-						))}
-					</ul>
-				) : (
-					<p>{t("No saved profiles found")}</p>
-				)}
-			</div>
+// ---------------------------------------------------------------------------
+// ProfileForm
+//
+// All form state, all mutations, and all per-field subscriptions live here.
+//
+// Cross-component communication (sidebar driving the form) is handled via
+// useImperativeHandle, which exposes a stable `resetForm` handle to the page
+// without lifting state up or passing setState callbacks as props.
+// ---------------------------------------------------------------------------
+const ProfileForm = memo(
+	forwardRef<ProfileFormHandle, ProfileFormProps>(function ProfileForm({ userName }, ref) {
+		const { t } = useTranslation("pages-admin-ai-tutor-profile");
+
+		const { register, handleSubmit, control, reset, setValue } = useForm<AITutorProfile>({
+			defaultValues: defaultAITutorProfile
+		});
+
+		const profileId = useWatch({ control, name: "id" });
+		const avatarUrl = useWatch({ control, name: "avatarUrl" });
+		const selectedModel = useWatch({ control, name: "model" });
+		const updatedAt = useWatch({ control, name: "updatedAt" });
+
+		const [fetchingModels, setFetchingModels] = useState(false);
+		const [availableModels, setAvailableModels] = useState<string[]>([]);
+
+		const getModels = trpc.aiTutorProfile.getModels.useMutation();
+		const saveProfile = trpc.aiTutorProfile.save.useMutation();
+		const deleteProfile = trpc.aiTutorProfile.delete.useMutation();
+
+		// Expose reset to the parent page so the sidebar can load a selected
+		// profile into the form without prop-drilling controlled state upward.
+		useImperativeHandle(
+			ref,
+			() => ({
+				resetForm: (values = defaultAITutorProfile) => reset(values)
+			}),
+			[reset]
 		);
-	}
+
+		const handleUploadCompleted = useCallback(
+			(url: string) => {
+				setValue("avatarUrl", url);
+			},
+			[setValue]
+		);
+
+		const formSubmit = useCallback(
+			async (data: AITutorProfile) => {
+				try {
+					await saveProfile.mutateAsync({
+						id: data.id,
+						name: data.name,
+						description: data.description,
+						author: userName ?? data.author,
+						model: data.model,
+						avatarUrl: data.avatarUrl,
+						systemPrompt: data.systemPrompt
+					});
+					showToast({ type: "success", title: t("Profile Saved"), subtitle: "" });
+				} catch (error) {
+					showToast({
+						type: "error",
+						title: t("Error creating profile"),
+						subtitle:
+							error instanceof Error
+								? t(error.message)
+								: t("An unknown error occurred")
+					});
+				} finally {
+					reset(defaultAITutorProfile);
+				}
+			},
+			[saveProfile, reset, t, userName]
+		);
+
+		const handleFetchAvailableModels = useCallback(async () => {
+			setFetchingModels(true);
+			try {
+				const result = await getModels.mutateAsync();
+				setAvailableModels(result.models);
+				showToast({
+					type: "success",
+					title: t("Models fetched"),
+					subtitle: t("Available models have been fetched successfully.")
+				});
+			} catch (error) {
+				showToast({
+					type: "error",
+					title: t("Fetch Models Failed"),
+					subtitle:
+						error instanceof Error ? t(error.message) : t("An unknown error occurred")
+				});
+			} finally {
+				setFetchingModels(false);
+			}
+		}, [getModels, t]);
+
+		// Reads profileId directly from useWatch
+		const handleDeleteProfile = useCallback(async () => {
+			if (!profileId) return;
+			try {
+				await deleteProfile.mutateAsync({ id: profileId });
+				showToast({ type: "success", title: t("Profile Deleted"), subtitle: "" });
+			} catch (error) {
+				showToast({
+					type: "error",
+					title: t("Delete Profile Failed"),
+					subtitle:
+						error instanceof Error ? t(error.message) : t("An unknown error occurred")
+				});
+			} finally {
+				reset(defaultAITutorProfile);
+			}
+		}, [profileId, deleteProfile, reset, t]);
 
 	return (
 		<AdminGuard>
