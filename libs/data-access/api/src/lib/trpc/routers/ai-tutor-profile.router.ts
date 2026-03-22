@@ -1,33 +1,17 @@
 import { TRPCError } from "@trpc/server";
-import { authProcedure, t } from "../trpc";
+import { adminProcedure, t } from "../trpc";
 import { database } from "@self-learning/database";
-import { aiTutorProfileSchema } from "@self-learning/types";
+import { aiTutorProfileSchema, deleteProfileSchema } from "@self-learning/types";
 import { fetchAvailableModels, fetchLlmConfig } from "./llm-config.router";
 
-export async function getModels() {
-	const config = await fetchLlmConfig();
-	if (!config) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "LLM configuration not found"
-		});
-	}
-	const models = await fetchAvailableModels(
-		config.serverUrl,
-		config.apiKey ? config.apiKey : undefined
-	);
-	return {
-		valid: true,
-		models: models.models.map(m => m.name)
-	};
-}
-
 export const aiTutorProfileRouter = t.router({
-	getModels: authProcedure.mutation(async () => {
+	// Fetches models from the configured LLM server — admin-only operation.
+	getModels: adminProcedure.mutation(async () => {
 		return getModels();
 	}),
 
-	getAll: authProcedure.query(async () => {
+	// Returns all profiles ordered by creation date — admin-only operation.
+	getAll: adminProcedure.query(async () => {
 		const profiles = await database.aiTutorProfile.findMany({
 			orderBy: { createdAt: "desc" },
 			select: {
@@ -57,8 +41,9 @@ export const aiTutorProfileRouter = t.router({
 					message: "No default model configured"
 				});
 			}
-			input.model = llmConfig.defaultModel;
+			model = llmConfig.defaultModel;
 		}
+
 		try {
 			const profile = await database.aiTutorProfile.upsert({
 				where: { id: input.id || crypto.randomUUID() },
@@ -67,7 +52,7 @@ export const aiTutorProfileRouter = t.router({
 					description: input.description,
 					avatarUrl: input.avatarUrl,
 					systemPrompt: input.systemPrompt,
-					model: input.model,
+					model,
 					author: input.author
 				},
 				create: {
@@ -75,7 +60,7 @@ export const aiTutorProfileRouter = t.router({
 					description: input.description,
 					avatarUrl: input.avatarUrl,
 					systemPrompt: input.systemPrompt,
-					model: input.model,
+					model,
 					author: input.author
 				},
 				select: {
@@ -94,7 +79,6 @@ export const aiTutorProfileRouter = t.router({
 			if (error instanceof TRPCError) {
 				throw error;
 			}
-
 			throw new TRPCError({
 				code: "INTERNAL_SERVER_ERROR",
 				message: "Failed to save profile data"
@@ -122,3 +106,18 @@ export const aiTutorProfileRouter = t.router({
 		}
 	})
 });
+
+export async function getModels() {
+	const config = await fetchLlmConfig();
+	if (!config) {
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "LLM configuration not found"
+		});
+	}
+	const models = await fetchAvailableModels(config.serverUrl, config.apiKey ?? undefined);
+	return {
+		valid: true,
+		models: models.models.map(m => m.name)
+	};
+}
