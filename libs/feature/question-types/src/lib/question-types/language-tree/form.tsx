@@ -100,6 +100,10 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 							title={"Struktur Hinzufügen"}
 						/>
 					</div>
+					<p className="text-sm text-gray-500 mb-3">
+						Der Startbaum, den Studierende als Ausgangspunkt erhalten. Verwenden Sie die
+						Klammernotation, z. B.: <code>[S [NP] [VP]]</code>
+					</p>
 					<div className="flex justify-center w-full h-[150px] p-4">
 						{initialTreeInput ? (
 							<li
@@ -132,6 +136,9 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 							title={"Antwort Hinzufügen"}
 						/>
 					</div>
+					<p className="text-sm text-gray-500 mb-3">
+						Definieren Sie mindestens eine korrekte Baumstruktur als Musterlösung.
+					</p>
 					<div className="flex justify-center w-full min-h-[150px] max-h-[300px] overflow-y-auto">
 						{answerTreeInput.length > 0 ? (
 							<ul className="flex flex-col items-start w-full gap-4 p-4">
@@ -247,7 +254,14 @@ function TreeEditDialog({ value, onClose }: { value: string; onClose: (value?: s
 						</div>
 					)}
 				</div>
-				<div className="py-2 mt-2">Baumstruktur eingeben</div>
+				<div className="py-2 mt-2">
+					<p className="font-medium">Baumstruktur eingeben</p>
+					<p className="text-sm text-gray-500">
+						Verwenden Sie die Klammernotation: Jeder Knoten wird in eckige Klammern
+						gesetzt. Kindknoten stehen innerhalb des Elternknotens, z. B.:{" "}
+						<code>[S [NP [Det] [N]] [VP [V]]]</code>
+					</p>
+				</div>
 				<textarea
 					aria-label="tree initial input"
 					id="tree-input-initial"
