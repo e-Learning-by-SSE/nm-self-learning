@@ -6,6 +6,7 @@ import { z } from "zod";
 import { adminProcedure, authProcedure, t } from "../trpc";
 import { userSchema } from "@self-learning/types";
 import { deleteUser, deleteUserAndDependentData } from "@self-learning/admin";
+import { GroupRoleEnum } from "../../permissions/permission.types";
 
 export const adminRouter = t.router({
 	findUsers: authProcedure
@@ -99,13 +100,23 @@ export const adminRouter = t.router({
 	promoteToAuthor: adminProcedure
 		.input(
 			z.object({
-				username: z.string()
+				username: z.string(),
+				role: GroupRoleEnum,
+				group: z.union([
+					z.object({
+						id: z.number()
+					}), 
+					z.object({
+						name: z.string().min(3), 
+						slug: z.string().min(3)
+					})]).optional()
 			})
 		)
 		.mutation(async ({ input }) => {
 			const user = await database.user.findUniqueOrThrow({
 				where: { name: input.username },
 				select: {
+					id: true,
 					name: true,
 					image: true,
 					author: true
@@ -119,17 +130,75 @@ export const adminRouter = t.router({
 				});
 			}
 
-			const created = await database.author.create({
-				data: {
-					username: user.name,
-					displayName: user.name,
-					slug: user.name,
-					imgUrl: user.image
+			const result = await database.$transaction(async (tx) => {
+				const created = await tx.author.create({
+					data: {
+						username: user.name,
+						displayName: user.name,
+						slug: user.name,
+						imgUrl: user.image
+					}
+				});
+
+				console.log("[adminRouter.promoteToAuthor] tx: created author:", created);
+
+				if (input.group) {
+					if ("id" in input.group) {
+						// Link to existing group
+						const groupId = input.group.id;
+						const group = await tx.group.findUnique({
+							where: { id: groupId }
+						});
+						if (!group) {
+							throw new TRPCError({
+								code: "NOT_FOUND",
+								message: `Group with id ${groupId} not found.`
+							});
+						}
+						const existingRole = await tx.member.findFirst({
+							where: { 
+								userId: user.id, 
+								groupId, 
+								OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] 
+							},
+							select: { role: true }
+						});
+						if (existingRole) {
+							throw new TRPCError({
+								code: "CONFLICT",
+								message: `User "${input.username}" is already a member of the group.`
+							});
+						}
+						await tx.member.create({
+							data: {
+								groupId,
+								userId: user.id,
+								role: input.role,
+								expiresAt: null
+							}
+						});
+					} else {
+						// Create new group
+						await tx.group.create({
+							data: {
+								name: input.group.name,
+								slug: input.group.slug,
+								members: {
+									create: {
+										userId: user.id,
+										role: input.role,
+										expiresAt: null
+									}
+								}
+							}
+						});
+					}
 				}
+
+				return created;
 			});
 
-			console.log("[adminRouter.promoteToAuthor] Created author:", created);
-			return created;
+			return result;
 		}),
 	getAccessToken: adminProcedure.query(async input => {
 		console.log("[adminRouter.getAccessToken] input.ctx.user", input.ctx.user);
