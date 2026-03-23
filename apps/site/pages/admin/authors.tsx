@@ -2,8 +2,11 @@ import { PlusIcon } from "@heroicons/react/24/solid";
 import { SearchUserDialog, EditAuthorDialog, UserSearchEntry } from "@self-learning/admin";
 import { trpc } from "@self-learning/api-client";
 import {
+	Dialog,
+	DialogActions,
 	ImageOrPlaceholder,
 	LoadingBox,
+	OnDialogCloseFn,
 	showToast,
 	Table,
 	TableDataColumn,
@@ -15,6 +18,16 @@ import { TRPCClientError } from "@trpc/client";
 import Link from "next/link";
 import { Fragment, useMemo, useState } from "react";
 import { withTranslations } from "@self-learning/api";
+import { GenericCombobox, GroupMemberEditor, GroupSearchEntry, MemberFormModel, SearchGroupDialog } from "@self-learning/teaching";
+import { GroupRole } from "@prisma/client";
+import { slugify } from "@self-learning/util/common";
+import { LabeledField } from "@self-learning/ui/forms";
+
+type PromoteRequest = {
+	user: UserSearchEntry;
+	group?: { id: number } | { name: string; slug: string };
+	role: GroupRole;
+}
 
 export default function AuthorsPage() {
 	useRequiredSession();
@@ -42,16 +55,20 @@ export default function AuthorsPage() {
 		setEditTarget(null);
 	}
 
-	async function onCreateAuthor(user?: UserSearchEntry): Promise<void> {
+	async function onCreateAuthor(data?: PromoteRequest): Promise<void> {
 		setCreateAuthorDialog(false);
 
-		if (user) {
+		if (data) {
 			try {
-				await promoteToAuthor({ username: user.name });
+				await promoteToAuthor({
+					username: data.user.name,
+					group: data.group,
+					role: data.role
+				});
 				showToast({
 					type: "success",
 					title: "Autor hinzugefügt",
-					subtitle: user.displayName
+					subtitle: data.user.displayName
 				});
 			} catch (error) {
 				if (error instanceof TRPCClientError) {
@@ -75,7 +92,7 @@ export default function AuthorsPage() {
 						<span>Autor hinzufügen</span>
 					</button>
 					{createAuthorDialog && (
-						<SearchUserDialog open={createAuthorDialog} onClose={onCreateAuthor} />
+						<AddAuthorDialog isOpen={createAuthorDialog} onClose={onCreateAuthor} />
 					)}
 				</div>
 
@@ -152,3 +169,198 @@ export default function AuthorsPage() {
 }
 
 export const getServerSideProps = withTranslations(["common"]);
+
+
+const groupRoleOptions = [
+	{ label: "Administrator", value: GroupRole.ADMIN },
+	{ label: "Mitglied", value: GroupRole.MEMBER }
+];
+
+function AddAuthorDialog({isOpen, onClose} : {isOpen: boolean; onClose: OnDialogCloseFn<PromoteRequest>;}) {
+	const [isSearchUserOpen, setSearchUserOpen] = useState(false);
+	const [isSearchGroupOpen, setSearchGroupOpen] = useState(false);
+	const [doCreateNewGroup, setCreateNewGroup] = useState(false);
+	const [doAddMembership, setAddMembership] = useState(false);
+	
+	const [selectedUser, setSelectedUser] = useState<UserSearchEntry | null>(null);
+	const [selectedGroup, setSelectedGroup] = useState<GroupSearchEntry | null>(null);
+	const [role, setRole] = useState<GroupRole>(GroupRole.MEMBER);
+	const [groupName, setGroupName] = useState("");
+	const [groupSlug, setGroupSlug] = useState("");
+
+	function onUserSelected(user?: UserSearchEntry): void {
+		setSelectedUser(user ?? null);
+		setSearchUserOpen(false);
+	}
+
+	function onGroupSelected(group?: GroupSearchEntry): void {
+		setSelectedGroup(group ?? null);
+		setSearchGroupOpen(false);
+	}
+
+	function handleGroupNameChange(value: string): void {
+		setGroupName(value);
+		setGroupSlug(slugify(value));
+	}
+
+	function handleSubmit(): void {
+		if (!selectedUser) {
+			showToast({
+				type: "error",
+				title: "Autor nicht hinzugefügt",
+				subtitle: "Kein Benutzer ausgewählt"
+			});
+			return;
+		}
+		let group: { id: number } | { name: string; slug: string } | undefined;
+		if (doCreateNewGroup) {
+			if (!groupName || !groupSlug) {
+				showToast({
+					type: "error",
+					title: "Autor nicht hinzugefügt",
+					subtitle: "Details für neue Gruppe fehlen"
+				});
+				return;
+			}
+			group = { name: groupName, slug: groupSlug };
+		} else if (doAddMembership) {
+			if (!selectedGroup) {
+				showToast({
+					type: "error",
+					title: "Autor nicht hinzugefügt",
+					subtitle: "Keine Gruppe ausgewählt"
+				});
+				return;
+			}
+			group = { id: selectedGroup.groupId };
+		}
+		onClose({
+			user: selectedUser,
+			group,
+			role
+		});
+	}
+
+	const [member, setMember] = useState<MemberFormModel | undefined>(undefined);
+
+	return (
+		<Dialog open={isOpen} onClose={onClose}>
+			<GroupMemberEditor member={member} onChange={setMember}  canEditUser={true}/>
+			<div className="p-4">
+				<h2 className="text-xl font-semibold mb-4">Autor hinzufügen</h2>
+				<div className="space-y-4">
+					<div>
+						<label className="block text-sm font-medium mb-2">Benutzer</label>
+						{selectedUser ? (
+							<div className="flex items-center gap-2 p-2 border rounded-lg">
+								<ImageOrPlaceholder
+									src={selectedUser.image ?? undefined}
+									className="h-8 w-8 rounded-full"
+								/>
+								<span>{selectedUser.displayName}</span>
+								<button
+									className="ml-auto btn-stroked text-xs"
+									onClick={() => setSearchUserOpen(true)}
+								>
+									Ändern
+								</button>
+							</div>
+						) : (
+							<button
+								className="btn-primary"
+								onClick={() => setSearchUserOpen(true)}
+							>
+								Benutzer auswählen
+							</button>
+						)}
+					</div>
+					<div className="flex items-center gap-2">
+						<input
+							type="checkbox"
+							checked={doAddMembership}
+							onChange={e => setAddMembership(e.target.checked)}
+							className="checkbox"
+						/>
+						<label className="text-sm">Auch Gruppe hinzufügen</label>
+					</div>
+					{doAddMembership && (
+						<>
+						<div className="flex items-center gap-2">
+							<input
+								type="checkbox"
+								checked={doCreateNewGroup}
+								onChange={e => setCreateNewGroup(e.target.checked)}
+								className="checkbox"
+							/>
+							<label className="text-sm">Neue Gruppe erstellen</label>
+						</div>
+						{doCreateNewGroup ? (
+							<div className="space-y-2">
+								<LabeledField label="Gruppenname">
+									<input
+										type="text"
+										value={groupName}
+										onChange={e => handleGroupNameChange(e.target.value)}
+										className="textfield"
+										placeholder="Gruppenname"
+									/>
+								</LabeledField>
+								<LabeledField label="Slug">
+									<input
+										type="text"
+										value={groupSlug}
+										onChange={e => setGroupSlug(e.target.value)}
+										className="textfield"
+										placeholder="slug"
+									/>
+								</LabeledField>
+							</div>
+						) : (
+							<div>
+								<label className="block text-sm font-medium mb-2">Gruppe</label>
+								{selectedGroup ? (
+									<div className="flex items-center gap-2 p-2 border rounded">
+										<span>{selectedGroup.name}</span>
+										<button
+											className="ml-auto btn-stroked text-xs"
+											onClick={() => setSearchGroupOpen(true)}
+										>
+											Ändern
+										</button>
+									</div>
+								) : (
+									<button
+										className="btn-primary"
+										onClick={() => setSearchGroupOpen(true)}
+									>
+										Gruppe auswählen
+									</button>
+								)}
+							</div>
+						)}
+						<LabeledField label="Rolle auswählen">
+							<GenericCombobox
+								value={role}
+								onChange={setRole}
+								options={groupRoleOptions}
+								label={"Auswählen"}
+							/>
+						</LabeledField>
+					</>
+					)}
+					<DialogActions onClose={onClose}>
+						<button className="btn-primary" onClick={handleSubmit}>
+							Speichern
+						</button>
+					</DialogActions>
+				</div>
+			</div>
+			{isSearchUserOpen && (
+				<SearchUserDialog open={isSearchUserOpen} onClose={onUserSelected} />
+			)}
+			{isSearchGroupOpen && (
+				<SearchGroupDialog isOpen={isSearchGroupOpen} onClose={onGroupSelected} isGlobalSearch={true} />
+			)}
+		</Dialog>
+	);
+}
