@@ -5,6 +5,7 @@ import { SearchUserDialog, UserSearchEntry } from "@self-learning/admin";
 import { trpc } from "@self-learning/api-client";
 import {
 	Chip,
+	Divider,
 	DropdownDialog,
 	IconTextButton,
 	OnDialogCloseFn,
@@ -38,6 +39,8 @@ export function SearchGroupDialog({
 	const [selectedUsers, setSelectedUsers] = useState<UserSearchEntry[]>([]);
 	const members = selectedUsers.map(u => u.id);
 
+	const [checkGlobalSearch, setGlobalSearch] = useState(isGlobalSearch);
+
 	function onAddMember(user?: UserSearchEntry): void {
 		setMemberDialog(false);
 
@@ -56,7 +59,7 @@ export function SearchGroupDialog({
 			name: filterName,
 			members,
 			exclude,
-			isGlobal: isGlobalSearch
+			isGlobal: isGlobalSearch && checkGlobalSearch
 		},
 		{
 			staleTime: 10_000,
@@ -67,13 +70,12 @@ export function SearchGroupDialog({
 	return (
 		<DropdownDialog.Dialog open={isOpen} onClose={onClose}>
 			<Combobox value={null}>
-				{isGlobalSearch && (
-					<DropdownDialog.SearchInput
-						filter={filterName}
-						setFilter={setFilterName}
-						placeholder="Suche nach Gruppe"
-					/>
-				)}
+				
+				<DropdownDialog.SearchInput
+					filter={filterName}
+					setFilter={setFilterName}
+					placeholder="Suche nach Gruppe"
+				/>
 				<div className="mt-4 flex items-center flex-wrap gap-2 px-4">
 					{selectedUsers.map(user => (
 						<Chip
@@ -97,6 +99,21 @@ export function SearchGroupDialog({
 						<SearchUserDialog open={addMemberDialog} onClose={onAddMember} />
 					)}
 				</div>
+				{isGlobalSearch && (
+					<>
+					<div className="mt-4 flex items-center flex-wrap gap-2 px-4">
+						<input
+							type="checkbox"
+							checked={!checkGlobalSearch}
+							onChange={e => setGlobalSearch(!e.target.checked)}
+							className="checkbox"
+						/>
+						<label className="text-light">
+							Nur meine Gruppen anzeigen
+						</label>
+					</div>
+					</>
+				)}
 
 				<DropdownDialog.PaginationContainer>
 					{groups && <Paginator pagination={groups} url="#" onPageChange={setPage} />}
