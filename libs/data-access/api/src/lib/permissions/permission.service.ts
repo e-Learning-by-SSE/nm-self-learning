@@ -342,3 +342,26 @@ export async function getSingleOwnedResources(groupId: number) {
 		}
 	});
 }
+
+/**
+ * Tests whether group with groupId is an ancestor of itself
+ * @param groupId - id of a group to test
+ * @param parentId - direct parent group id
+ * @returns `true` if circular dependency detected
+ */
+export async function testGroupCircularParent(groupId: number, parentId: number) {
+	let currentId: number | null = parentId;
+	// run through parents
+	while (currentId !== null) {
+		if (currentId === groupId) {
+			return true;
+		}
+		const parent: { parentId: null | number } | null = await database.group.findUnique({
+			where: { id: currentId },
+			select: { parentId: true }
+		});
+
+		currentId = parent?.parentId ?? null;
+	}
+	return false;
+}

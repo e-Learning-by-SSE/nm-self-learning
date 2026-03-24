@@ -18,7 +18,8 @@ import {
 	getSingleOwnedResources,
 	hasGroupRole,
 	hasResourceAccess,
-	hasResourceAccessBatch
+	hasResourceAccessBatch,
+	testGroupCircularParent
 } from "../../permissions/permission.service";
 import { anyTrue, greaterAccessLevel, greaterGroupRole } from "../../permissions/permission.utils";
 
@@ -89,6 +90,7 @@ export const permissionRouter = t.router({
 	updateGroup: authProcedure.input(GroupFormSchema).mutation(async ({ input, ctx }) => {
 		const { id, permissions, members, name, parent, slug } = input;
 		const userId = ctx.user.id;
+		const isAdmin = ctx.user.role === "ADMIN";
 		if (!id) {
 			throw new TRPCError({ code: "BAD_REQUEST", message: "Group id is required" });
 		}
@@ -103,15 +105,23 @@ export const permissionRouter = t.router({
 		});
 		// restrict changing parentId (parent?.id produces undefined !== null)
 		if ((parent && parent.id) !== oldParentId) {
-			throw new TRPCError({
-				code: "FORBIDDEN",
-				message: "Cannot change parentId of the group"
-			});
+			if (!isAdmin) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Cannot change parent of the group"
+				});
+			}
+			// run circular dependency check
+			if (parent && (await testGroupCircularParent(id, parent.id))) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Group parent cannot have circular dependencies"
+				});
+			}
 		}
 		// check if update name or slug
 		if (name !== oldName || slug !== oldSlug) {
-			const hasAccess =
-				ctx.user.role === "ADMIN" || (await hasGroupRole(id, userId, GroupRole.ADMIN));
+			const hasAccess = isAdmin || (await hasGroupRole(id, userId, GroupRole.ADMIN));
 			if (!hasAccess) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
@@ -163,8 +173,7 @@ export const permissionRouter = t.router({
 		}
 		// check if has ADMIN permission (only if members have changed)
 		if (memberDiffs.size > 0) {
-			const hasAccess =
-				ctx.user.role === "ADMIN" || (await hasGroupRole(id, userId, GroupRole.ADMIN));
+			const hasAccess = isAdmin || (await hasGroupRole(id, userId, GroupRole.ADMIN));
 			if (!hasAccess) {
 				throw new TRPCError({
 					code: "FORBIDDEN",

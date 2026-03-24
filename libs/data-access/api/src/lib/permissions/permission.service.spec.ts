@@ -32,7 +32,8 @@ import {
 	hasEffectiveResourceAccess,
 	getEffectiveAccess,
 	hasEffectiveGroupRole,
-	getSingleOwnedResources
+	getSingleOwnedResources,
+	testGroupCircularParent
 } from "./permission.service";
 
 describe("permission.service", () => {
@@ -416,6 +417,53 @@ describe("permission.service", () => {
 			const result = await getSingleOwnedResources(1);
 
 			expect(result).toEqual([]);
+		});
+	});
+
+	describe("testGroupCircularParent", () => {
+		it("returns true immediately if groupId equals parentId", async () => {
+			const result = await testGroupCircularParent(1, 1);
+			expect(result).toBe(true);
+		});
+
+		it("returns false when parent chain exists with no cycle", async () => {
+			// Mock database to return a simple chain: 2 -> 3 -> null
+			(database.group.findUnique as jest.Mock)
+				.mockResolvedValueOnce({ parentId: 3 }) // parent of 2
+				.mockResolvedValueOnce({ parentId: null }); // parent of 3
+
+			const result = await testGroupCircularParent(1, 2);
+			expect(result).toBe(false);
+
+			expect(database.group.findUnique).toHaveBeenCalledTimes(2);
+			expect(database.group.findUnique).toHaveBeenCalledWith({
+				where: { id: 2 },
+				select: { parentId: true }
+			});
+			expect(database.group.findUnique).toHaveBeenCalledWith({
+				where: { id: 3 },
+				select: { parentId: true }
+			});
+		});
+
+		it("returns true when a circular parent is detected", async () => {
+			// Mock database to return circular chain: 1 -> 2 -> 3 -> 1
+			(database.group.findUnique as jest.Mock)
+				.mockResolvedValueOnce({ parentId: 3 }) // parent of 2
+				.mockResolvedValueOnce({ parentId: 1 }); // parent of 3
+
+			const result = await testGroupCircularParent(1, 2);
+			expect(result).toBe(true);
+			expect(database.group.findUnique).toHaveBeenCalledTimes(2);
+		});
+
+		it("handles non-existent parent gracefully", async () => {
+			// parentId 2 returns null in DB → stops chain
+			(database.group.findUnique as jest.Mock).mockResolvedValueOnce(null);
+
+			const result = await testGroupCircularParent(1, 2);
+			expect(result).toBe(false);
+			expect(database.group.findUnique).toHaveBeenCalledTimes(1);
 		});
 	});
 });

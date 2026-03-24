@@ -12,7 +12,8 @@ import {
 	getResourceAccess,
 	createResourceAccess,
 	getGroup,
-	getSingleOwnedResources
+	getSingleOwnedResources,
+	testGroupCircularParent
 } from "../../permissions/permission.service";
 import { greaterAccessLevel, greaterGroupRole } from "../../permissions/permission.utils";
 
@@ -52,7 +53,8 @@ jest.mock("../../permissions/permission.service", () => ({
 	getResourceAccess: jest.fn(),
 	createResourceAccess: jest.fn(),
 	getGroup: jest.fn(),
-	getSingleOwnedResources: jest.fn()
+	getSingleOwnedResources: jest.fn(),
+	testGroupCircularParent: jest.fn()
 }));
 
 jest.mock("../../permissions/permission.utils", () => {
@@ -315,8 +317,8 @@ describe("permissionRouter", () => {
 			expect(database.group.update).not.toHaveBeenCalled();
 		});
 
-		it("throws FORBIDDEN if trying to change parentId", async () => {
-			const { caller } = prepare({ role: "ADMIN" });
+		it("throws FORBIDDEN if trying to change parentId as not admin", async () => {
+			const { caller } = prepare({});
 
 			(database.group.findUniqueOrThrow as jest.Mock).mockResolvedValue({
 				name: "Old",
@@ -336,6 +338,35 @@ describe("permissionRouter", () => {
 			await expect(caller.updateGroup(input)).rejects.toMatchObject({
 				code: "FORBIDDEN"
 			} as Partial<TRPCError>);
+			expect(database.group.update).not.toHaveBeenCalled();
+		});
+
+		it("throws BAD_REQUEST when parent creates circular dependency", async () => {
+			const { caller } = prepare({ role: "ADMIN" });
+
+			(database.group.findUniqueOrThrow as jest.Mock).mockResolvedValue({
+				name: "Group",
+				parentId: 1,
+				slug: "group"
+			});
+
+			const input = {
+				id: 5,
+				name: "Group",
+				slug: "group",
+				parent: { id: 5, name: "Group" }, // circular
+				permissions: [],
+				members: [
+					{ user: { ...testUser, id: "a" }, role: GroupRole.ADMIN, expiresAt: null }
+				]
+			};
+
+			(testGroupCircularParent as jest.Mock).mockResolvedValue(true);
+
+			await expect(caller.updateGroup(input)).rejects.toMatchObject({
+				code: "BAD_REQUEST",
+				message: "Group parent cannot have circular dependencies"
+			});
 			expect(database.group.update).not.toHaveBeenCalled();
 		});
 
