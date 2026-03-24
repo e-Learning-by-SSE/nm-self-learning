@@ -13,11 +13,13 @@ import { SearchUserDialog, UserSearchEntry } from "@self-learning/admin";
 import {
 	Dialog,
 	DialogActions,
+	IconTextButton,
 	ImageOrPlaceholder,
 	OnDialogCloseFn,
 	showToast
 } from "@self-learning/ui/common";
 import { useState } from "react";
+import { ChevronUpDownIcon } from "@heroicons/react/24/solid";
 
 export type PromoteRequest = {
 	user: UserSearchEntry;
@@ -161,22 +163,22 @@ export function AddAuthorDialog({
 									className="h-8 w-8 rounded-full"
 								/>
 								<span>{user.displayName}</span>
-								<button
-									type="button"
-									className="ml-auto btn-stroked text-xs"
+
+								<IconTextButton
+									text=""
+									icon={<ChevronUpDownIcon className="icon w-5" />}
 									onClick={() => setSearchUserOpen(true)}
-								>
-									Ändern
-								</button>
+									className="ml-auto btn-primary"
+									title="Benutzer auswählen"
+								/>
 							</div>
 						) : (
-							<button
-								type="button"
-								className="btn-primary"
+							<IconTextButton
+								text="Benutzer auswählen"
+								icon={<ChevronUpDownIcon className="icon w-5" />}
 								onClick={() => setSearchUserOpen(true)}
-							>
-								Benutzer auswählen
-							</button>
+								className="btn-primary"
+							/>
 						)}
 					</LabeledField>
 
@@ -228,22 +230,21 @@ export function AddAuthorDialog({
 									{selectedGroup ? (
 										<div className="flex items-center gap-2 p-2 border rounded-lg">
 											<span>{selectedGroup.name}</span>
-											<button
-												type="button"
-												className="ml-auto btn-stroked text-xs"
+											<IconTextButton
+												text=""
+												icon={<ChevronUpDownIcon className="icon w-5" />}
 												onClick={() => setSearchGroupOpen(true)}
-											>
-												Ändern
-											</button>
+												className="ml-auto btn-primary"
+												title="Gruppe auswählen"
+											/>
 										</div>
 									) : (
-										<button
-											type="button"
-											className="btn-primary"
+										<IconTextButton
+											text="Gruppe auswählen"
+											icon={<ChevronUpDownIcon className="icon w-5" />}
 											onClick={() => setSearchGroupOpen(true)}
-										>
-											Gruppe auswählen
-										</button>
+											className="btn-primary"
+										/>
 									)}
 								</LabeledField>
 							)}

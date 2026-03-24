@@ -100,7 +100,7 @@ export default function GroupPage() {
 				title={group.name}
 				subtitle={group.slug || ""}
 			>
-				<div className="absolute top-1/2 -translate-y-1/2 right-4 flex flex-col gap-2">
+				<div className="absolute top-1/2 -translate-y-1/2 right-4 flex gap-2">
 					<Link href={`/teaching/groups/${groupId}/edit`} className="btn-primary">
 						<PencilIcon className="icon h-5" />
 						<span>Bearbeiten</span>

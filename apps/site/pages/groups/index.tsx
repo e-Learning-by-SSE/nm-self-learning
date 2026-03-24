@@ -1,4 +1,4 @@
-import { MagnifyingGlassIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { ArrowsPointingInIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { UserSearchEntry } from "@self-learning/admin";
 import { AppRouter, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
@@ -109,7 +109,7 @@ export default function GroupsPage() {
 			<div className="mb-16 flex items-center justify-between gap-4">
 				<h1 className="text-5xl">Meine Gruppen</h1>
 
-				<div className="flex flex-col gap-2">
+				<div className="flex gap-2">
 					<Link href="/teaching/groups/create" className="btn-primary flex">
 						<PlusIcon className="h-5" />
 						<span>Gruppe erstellen</span>
@@ -117,9 +117,10 @@ export default function GroupsPage() {
 
 					<IconTextButton
 						text="Gruppen zusammenführen"
-						icon={<PlusIcon className="icon w-5" />}
+						icon={<ArrowsPointingInIcon className="icon w-5" />}
 						onClick={() => setMergeDialogOpen(true)}
 						className="btn-primary"
+						hideTextOnMobile={true}
 					/>
 				</div>
 			</div>
