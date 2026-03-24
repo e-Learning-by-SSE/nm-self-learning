@@ -49,41 +49,17 @@ export const MemberFormSchema = z.object({
 	user: z.object({
 		id: z.string(),
 		displayName: z.string().nullable(),
-		email: z.string().email().nullable(),
+		email: z.email().nullable(),
 		author: z.object({ id: z.number() }).nullable()
 	})
 });
 
 export type ResourceAccessFormType = z.infer<typeof ResourceAccessFormSchema>;
 
-// compute expiredAt
-// const m = members?.map(m => {
-//     const now = new Date();
-//     const expiresAt =
-//         typeof m.durationMinutes === "number"
-//             ? add(now, { minutes: m.durationMinutes })
-//             : null;
-//     return { userId: m.userId, role: m.role, expiresAt };
-// });
-
 export function computeExpiresAt(durationMinutes: number): Date {
 	const now = new Date();
 	return add(now, { minutes: durationMinutes });
 }
-
-// z.object({
-// 				parentId: z.string().nullable(),
-// 				name: z.string(),
-// 				permissions: ResourceAccessSchema.array(),
-// 				members: z
-// 					.object({
-// 						userId: z.string(),
-// 						role: GroupRoleEnum,
-// 						expiresAt: z.date().optional()
-// 					})
-// 					.array()
-// 					.optional()
-// 			})
 
 export const GroupFormSchema = z.object({
 	id: z.number().nullable(),

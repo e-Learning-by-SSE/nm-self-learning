@@ -14,104 +14,120 @@ import {
 	TableHeaderColumn
 } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { add } from "date-fns";
 import { formatDateDistanceToNow, isInThePast } from "@self-learning/util/common";
 
-export type MemberFormModel = Member;
+type DurationId = "inf" | "1m" | "3m" | "6m" | "1y" | "custom";
+export type MemberFormModel = Member & {
+	durationId?: DurationId;
+};
+
+const membershipOptions: { label: string; value: { id: DurationId; months: number } }[] = [
+	{ label: "1 Monat", value: { id: "1m", months: 1 } },
+	{ label: "3 Monate", value: { id: "3m", months: 3 } },
+	{ label: "6 Monate", value: { id: "6m", months: 6 } },
+	{ label: "1 Jahr", value: { id: "1y", months: 12 } },
+	{ label: "Unbefristet", value: { id: "inf", months: 0 } },
+	{ label: "Datum", value: { id: "custom", months: 0 } }
+];
+
+const groupRoleOptions = [
+	{ label: "Administrator", value: GroupRole.ADMIN },
+	{ label: "Mitglied", value: GroupRole.MEMBER }
+];
+
+function formatDate(d: Date) {
+	return d.toLocaleDateString("de-DE", {
+		day: "2-digit",
+		month: "2-digit",
+		year: "numeric"
+	});
+}
+function getDurationOpt(member: MemberFormModel) {
+	const id = member.durationId ?? (member.expiresAt ? "custom" : "inf");
+	const dur = membershipOptions.find(o => o.value.id === id);
+	if (!dur) throw new Error("Invalid duration option!");
+	return dur.value;
+}
+
+export function createDefaultMember(onlyAdmin?: boolean): MemberFormModel {
+	return {
+		role: onlyAdmin ? GroupRole.ADMIN : GroupRole.MEMBER,
+		expiresAt: null,
+		durationId: "inf",
+		user: {
+			id: "",
+			displayName: null,
+			email: null,
+			author: null
+		}
+	};
+}
 
 export function useMemberEditor(
+	member: MemberFormModel,
 	onChange: OnDialogCloseFn<MemberFormModel>,
-	member?: MemberFormModel
+	onlyAdmin?: boolean
 ) {
-	const formatDate = (d: Date) => d.toISOString().slice(0, 10);
+	const update = (patch: Partial<MemberFormModel>) => onChange({ ...member, ...patch });
 
-	// init duration option and custom date based on initialMember.expiresAt
-	const initialDuration = member?.expiresAt
-		? membershipOptions.find(o => o.value.id === "custom")?.value
-		: membershipOptions.find(o => o.value.id === "inf")?.value;
-	const [durationOpt, setDurationOpt] = useState(initialDuration);
-	const [customDate, setCustomDate] = useState<string>(() =>
-		member?.expiresAt ? formatDate(member.expiresAt) : ""
-	);
-
-	// set default field values
-	const normalize = (m: Partial<MemberFormModel>): MemberFormModel =>
-		({
-			...m,
-			expiresAt: m.expiresAt ?? null
-		}) as MemberFormModel;
-
-	const update = (patch: Partial<MemberFormModel>) =>
-		onChange(normalize({ ...(member ?? ({} as MemberFormModel)), ...patch }));
+	// when onlyAdmin changes - selected option also must change
+	useEffect(() => {
+		if (onlyAdmin && member.role !== GroupRole.ADMIN) {
+			onChange({ ...member, role: GroupRole.ADMIN, expiresAt: null, durationId: "inf" });
+		}
+	}, [onlyAdmin, onChange, member]);
 
 	// handlers
-	const setRole = (role: GroupRole) => update({ role });
+	const setRole = (role: GroupRole) => {
+		// ADMIN is always unlimited
+		if (role === GroupRole.ADMIN) {
+			update({ role, expiresAt: null, durationId: "inf" });
+		} else {
+			update({ role });
+		}
+	};
 
 	const setDuration = (opt: (typeof membershipOptions)[number]["value"]) => {
-		setDurationOpt(opt);
-		if (opt.id === "inf") {
-			update({ expiresAt: null });
-			setCustomDate("");
+		if (opt.id === "inf" || opt.id === "custom") {
+			update({ expiresAt: null, durationId: opt.id });
 			return;
 		}
-		if (opt.id === "custom") return;
-
-		// compute preset
-		const expiry = add(Date.now(), { months: opt.months });
-		update({ expiresAt: expiry });
-		setCustomDate(formatDate(expiry));
+		update({ expiresAt: add(Date.now(), { months: opt.months }), durationId: opt.id });
 	};
 
 	// date input change
 	const setCustomDuration = (v: string) => {
-		setCustomDate(v);
-		update({ expiresAt: v ? new Date(v) : null });
+		update({ expiresAt: v ? new Date(v) : null, durationId: "custom" });
 	};
 
 	const setUser = (user: UserSearchEntry) => {
 		update({ user: { ...user, author: null } });
 	};
 
+	// derived values
+	const durationOpt = getDurationOpt(member);
+	const customDate = member.expiresAt ? formatDate(member.expiresAt) : "";
+	const roleOptions = onlyAdmin
+		? groupRoleOptions.filter(o => o.value === GroupRole.ADMIN)
+		: groupRoleOptions;
+	const durationOptions =
+		member.role === GroupRole.ADMIN
+			? membershipOptions.filter(o => o.value.id === "inf")
+			: membershipOptions;
+
 	return {
 		customDate,
 		durationOpt,
+		roleOptions,
+		durationOptions,
 		setUser,
 		setRole,
 		setDuration,
 		setCustomDuration
 	};
 }
-
-// export function GroupMemberDialog({
-//     onClose,
-//     repositoryId
-// }: {
-//     onClose: OnDialogCloseFn<MemberFormModel>;
-//     repositoryId: string;
-// }) {
-//     const { data: skills, isLoading } = trpc.skill.getUnresolvedSkillsFromRepo.useQuery({
-//         repoId: repositoryId
-//     });
-
-//     return (
-//         <Dialog onClose={() => onClose(undefined)} title={"Add member"}>
-//             {isLoading ? (
-//                 <LoadingBox />
-//             ) : (
-//                 <>
-//                     {skills && (
-//                         <AddMemberForm
-//                             onClose={onClose}
-//                             //skills is missing some properties here
-//                             skills={skills as SkillFormModel[]}
-//                         />
-//                     )}
-//                 </>
-//             )}
-//         </Dialog>
-//     );
-// }
 
 export function GenericCombobox<T>({
 	value,
@@ -126,12 +142,10 @@ export function GenericCombobox<T>({
 	label: string;
 	compare?: (a: T | null, b: T | null) => boolean;
 }) {
-	const currentLabel = useMemo(() => {
-		const found = options.find(item =>
-			compare ? compare(item.value, value) : item.value === value
-		);
-		return found ? found.label : label;
-	}, [value, options, compare, label]);
+	const found = options.find(item =>
+		compare ? compare(item.value, value) : item.value === value
+	);
+	const currentLabel = found ? found.label : label;
 	return (
 		<Combobox
 			value={value}
@@ -168,34 +182,30 @@ export function GenericCombobox<T>({
 	);
 }
 
-const membershipOptions = [
-	{ label: "1 Monat", value: { id: "1m", months: 1 } },
-	{ label: "3 Monate", value: { id: "3m", months: 3 } },
-	{ label: "6 Monate", value: { id: "6m", months: 6 } },
-	{ label: "1 Jahr", value: { id: "1y", months: 12 } },
-	{ label: "Unbefristet", value: { id: "inf", months: 0 } },
-	{ label: "Datum", value: { id: "custom", months: 0 } }
-];
-
-const groupRoleOptions = [
-	{ label: "Administrator", value: GroupRole.ADMIN },
-	{ label: "Mitglied", value: GroupRole.MEMBER }
-];
-
 export function GroupMemberEditor({
 	member,
 	onChange,
 	onSubmit,
-	canEditUser
+	canEditUser,
+	onlyAdmin
 }: {
-	member?: MemberFormModel;
+	member: MemberFormModel;
 	onChange: OnDialogCloseFn<MemberFormModel>;
 	onSubmit?: OnDialogCloseFn<MemberFormModel>;
 	canEditUser?: boolean;
+	onlyAdmin?: boolean;
 }) {
 	const [selectUserActive, setSelectUserActive] = useState(false);
-	const { durationOpt, customDate, setUser, setDuration, setCustomDuration, setRole } =
-		useMemberEditor(onChange, member);
+	const {
+		durationOpt,
+		customDate,
+		roleOptions,
+		durationOptions,
+		setUser,
+		setDuration,
+		setCustomDuration,
+		setRole
+	} = useMemberEditor(member, onChange, onlyAdmin);
 
 	const onCancel = () => {
 		onSubmit && onSubmit(undefined);
@@ -223,7 +233,7 @@ export function GroupMemberEditor({
 					)}
 				</div>
 			)}
-			{member?.user && (
+			{member.user.displayName && (
 				<Chip displayImage={false}>
 					<span>{member?.user.displayName ?? "N/A"}</span>
 					<span className="text-sm text-light">{member?.user.email}</span>
@@ -233,19 +243,19 @@ export function GroupMemberEditor({
 				<GenericCombobox
 					value={member?.role ?? null}
 					onChange={setRole}
-					options={groupRoleOptions}
+					options={roleOptions}
 					label={"Auswählen"}
 				/>
 			</LabeledField>
 			<LabeledField label="Mitgliedschaftsdauer auswählen">
 				<GenericCombobox
-					value={durationOpt ?? null}
+					value={durationOpt}
 					onChange={setDuration}
-					options={membershipOptions}
+					options={durationOptions}
 					label={"Auswählen"}
 					compare={(a, b) => a?.id === b?.id}
 				/>
-				{durationOpt?.id === "custom" && (
+				{durationOpt.id === "custom" && (
 					<input
 						type="date"
 						className="textfield"
@@ -293,10 +303,15 @@ export function GroupMemberRowEditor({
 	onChange: OnDialogCloseFn<MemberFormModel>;
 	onDelete?: OnDialogCloseFn<MemberFormModel>;
 }) {
-	const { durationOpt, customDate, setDuration, setCustomDuration, setRole } = useMemberEditor(
-		onChange,
-		member
-	);
+	const {
+		durationOpt,
+		customDate,
+		roleOptions,
+		durationOptions,
+		setDuration,
+		setCustomDuration,
+		setRole
+	} = useMemberEditor(member, onChange);
 
 	return (
 		<tr key={member.user.id}>
@@ -308,19 +323,19 @@ export function GroupMemberRowEditor({
 				<GenericCombobox
 					value={member?.role ?? null}
 					onChange={setRole}
-					options={groupRoleOptions}
+					options={roleOptions}
 					label={"Auswählen"}
 				/>
 			</TableDataColumn>
 			<TableDataColumn className="flex py-2 gap-2">
 				<GenericCombobox
-					value={durationOpt ?? null}
+					value={durationOpt}
 					onChange={setDuration}
-					options={membershipOptions}
+					options={durationOptions}
 					label={"Auswählen"}
 					compare={(a, b) => a?.id === b?.id}
 				/>
-				{durationOpt?.id === "custom" && (
+				{durationOpt.id === "custom" && (
 					<input
 						type="date"
 						className="textfield"

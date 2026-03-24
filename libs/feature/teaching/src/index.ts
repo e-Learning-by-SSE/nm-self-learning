@@ -17,6 +17,7 @@ export * from "./lib/group/editors/group-members";
 export * from "./lib/group/editors/group-permission";
 export * from "./lib/group/dialogs/search-group-dialog";
 export * from "./lib/group/dialogs/merge-groups-dialog";
+export * from "./lib/group/dialogs/promote-to-author";
 export * from "./lib/group/dialogs/related-permissions-dialog";
 export * from "./lib/group/misc/delete-option";
 export * from "./lib/group/misc/leave-option";
