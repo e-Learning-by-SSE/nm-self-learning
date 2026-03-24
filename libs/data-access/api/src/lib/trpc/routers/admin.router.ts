@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { GroupRole, Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import { paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
@@ -101,15 +101,21 @@ export const adminRouter = t.router({
 		.input(
 			z.object({
 				username: z.string(),
-				role: GroupRoleEnum,
-				group: z.union([
-					z.object({
-						id: z.number()
-					}), 
-					z.object({
-						name: z.string().min(3), 
-						slug: z.string().min(3)
-					})]).optional()
+				membership: z
+					.object({
+						role: GroupRoleEnum,
+						expiresAt: z.date().nullable(),
+						group: z.union([
+							z.object({
+								id: z.number()
+							}),
+							z.object({
+								name: z.string().min(3),
+								slug: z.string().min(3)
+							})
+						])
+					})
+					.optional()
 			})
 		)
 		.mutation(async ({ input }) => {
@@ -130,7 +136,7 @@ export const adminRouter = t.router({
 				});
 			}
 
-			const result = await database.$transaction(async (tx) => {
+			const result = await database.$transaction(async tx => {
 				const created = await tx.author.create({
 					data: {
 						username: user.name,
@@ -142,10 +148,16 @@ export const adminRouter = t.router({
 
 				console.log("[adminRouter.promoteToAuthor] tx: created author:", created);
 
-				if (input.group) {
-					if ("id" in input.group) {
+				if (input.membership) {
+					if (input.membership.expiresAt && input.membership.role === GroupRole.ADMIN) {
+						throw new TRPCError({
+							code: "BAD_REQUEST",
+							message: "Group ADMIN role cannot expire"
+						});
+					}
+					if ("id" in input.membership.group) {
 						// Link to existing group
-						const groupId = input.group.id;
+						const groupId = input.membership.group.id;
 						const group = await tx.group.findUnique({
 							where: { id: groupId }
 						});
@@ -156,10 +168,10 @@ export const adminRouter = t.router({
 							});
 						}
 						const existingRole = await tx.member.findFirst({
-							where: { 
-								userId: user.id, 
-								groupId, 
-								OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] 
+							where: {
+								userId: user.id,
+								groupId,
+								OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }]
 							},
 							select: { role: true }
 						});
@@ -173,21 +185,21 @@ export const adminRouter = t.router({
 							data: {
 								groupId,
 								userId: user.id,
-								role: input.role,
-								expiresAt: null
+								role: input.membership.role,
+								expiresAt: input.membership.expiresAt
 							}
 						});
 					} else {
 						// Create new group
 						await tx.group.create({
 							data: {
-								name: input.group.name,
-								slug: input.group.slug,
+								name: input.membership.group.name,
+								slug: input.membership.group.slug,
 								members: {
 									create: {
 										userId: user.id,
-										role: input.role,
-										expiresAt: null
+										role: input.membership.role,
+										expiresAt: input.membership.expiresAt
 									}
 								}
 							}

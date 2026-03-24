@@ -5,7 +5,6 @@ import { SearchUserDialog, UserSearchEntry } from "@self-learning/admin";
 import { trpc } from "@self-learning/api-client";
 import {
 	Chip,
-	Divider,
 	DropdownDialog,
 	IconTextButton,
 	OnDialogCloseFn,
@@ -70,7 +69,6 @@ export function SearchGroupDialog({
 	return (
 		<DropdownDialog.Dialog open={isOpen} onClose={onClose}>
 			<Combobox value={null}>
-				
 				<DropdownDialog.SearchInput
 					filter={filterName}
 					setFilter={setFilterName}
@@ -100,7 +98,6 @@ export function SearchGroupDialog({
 					)}
 				</div>
 				{isGlobalSearch && (
-					<>
 					<div className="mt-4 flex items-center flex-wrap gap-2 px-4">
 						<input
 							type="checkbox"
@@ -108,11 +105,8 @@ export function SearchGroupDialog({
 							onChange={e => setGlobalSearch(!e.target.checked)}
 							className="checkbox"
 						/>
-						<label className="text-light">
-							Nur meine Gruppen anzeigen
-						</label>
+						<label className="text-light">Nur meine Gruppen anzeigen</label>
 					</div>
-					</>
 				)}
 
 				<DropdownDialog.PaginationContainer>

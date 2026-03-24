@@ -1,5 +1,5 @@
 import { Combobox, ComboboxButton, ComboboxOption, ComboboxOptions } from "@headlessui/react";
-import { ArrowsUpDownIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { ArrowsUpDownIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { GroupRole } from "@prisma/client";
 import { SearchUserDialog, UserSearchEntry } from "@self-learning/admin";
 import { Member } from "@self-learning/types";
@@ -35,9 +35,15 @@ export function useMemberEditor(
 		member?.expiresAt ? formatDate(member.expiresAt) : ""
 	);
 
-	//
+	// set default field values
+	const normalize = (m: Partial<MemberFormModel>): MemberFormModel =>
+		({
+			...m,
+			expiresAt: m.expiresAt ?? null
+		}) as MemberFormModel;
+
 	const update = (patch: Partial<MemberFormModel>) =>
-		onChange({ ...(member ?? ({} as MemberFormModel)), ...patch });
+		onChange(normalize({ ...(member ?? ({} as MemberFormModel)), ...patch }));
 
 	// handlers
 	const setRole = (role: GroupRole) => update({ role });
@@ -163,17 +169,17 @@ export function GenericCombobox<T>({
 }
 
 const membershipOptions = [
-	{ label: "1 month", value: { id: "1m", months: 1 } },
-	{ label: "3 months", value: { id: "3m", months: 3 } },
-	{ label: "6 months", value: { id: "6m", months: 6 } },
-	{ label: "1 year", value: { id: "1y", months: 12 } },
-	{ label: "No limit", value: { id: "inf", months: 0 } },
-	{ label: "Custom", value: { id: "custom", months: 0 } }
+	{ label: "1 Monat", value: { id: "1m", months: 1 } },
+	{ label: "3 Monate", value: { id: "3m", months: 3 } },
+	{ label: "6 Monate", value: { id: "6m", months: 6 } },
+	{ label: "1 Jahr", value: { id: "1y", months: 12 } },
+	{ label: "Unbefristet", value: { id: "inf", months: 0 } },
+	{ label: "Datum", value: { id: "custom", months: 0 } }
 ];
 
 const groupRoleOptions = [
 	{ label: "Administrator", value: GroupRole.ADMIN },
-	{ label: "Member", value: GroupRole.MEMBER }
+	{ label: "Mitglied", value: GroupRole.MEMBER }
 ];
 
 export function GroupMemberEditor({
@@ -205,10 +211,10 @@ export function GroupMemberEditor({
 	return (
 		<div className="flex flex-col gap-2">
 			{canEditUser && (
-				<div className="mb-16 flex items-center justify-between gap-4">
-					<h1 className="text-5xl">Mitglieder*in</h1>
+				<div className="flex items-center justify-between gap-4">
 					<IconTextButton
 						text="Mitglieder*in auswählen"
+						className="btn-secondary"
 						icon={<ArrowsUpDownIcon className="icon h-5" />}
 						onClick={() => setSelectUserActive(true)}
 					/>
@@ -217,11 +223,12 @@ export function GroupMemberEditor({
 					)}
 				</div>
 			)}
-			{!canEditUser && <h1 className="text-xl">{member?.user.displayName}</h1>}
-			<Chip displayImage={false}>
-				<span>{member?.user.displayName ?? "N/A"}</span>
-				<span className="text-sm text-light">{member?.user.email}</span>
-			</Chip>
+			{member?.user && (
+				<Chip displayImage={false}>
+					<span>{member?.user.displayName ?? "N/A"}</span>
+					<span className="text-sm text-light">{member?.user.email}</span>
+				</Chip>
+			)}
 			<LabeledField label="Rolle auswählen">
 				<GenericCombobox
 					value={member?.role ?? null}
