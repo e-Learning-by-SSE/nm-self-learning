@@ -131,6 +131,38 @@ describe("permissionRouter", () => {
 
 			expect(database.group.create).not.toHaveBeenCalled();
 		});
+		it("throws BAD_REQUEST if group has 0 admins", async () => {
+			const date = new Date();
+			date.setDate(date.getDate() + 7); // date in future
+
+			const { caller } = prepare({ role: "ADMIN" });
+
+			const input = {
+				name: "Test Group",
+				slug: "test-group",
+				parent: null,
+				permissions: [],
+				members: [
+					{
+						user: { ...testUser, id: "user-id" },
+						role: GroupRole.MEMBER,
+						expiresAt: date
+					}
+				]
+			};
+
+			(database.group.create as jest.Mock).mockResolvedValue({
+				id: 1,
+				name: "Test Group"
+			});
+
+			await expect(caller.createGroup(input)).rejects.toMatchObject({
+				code: "BAD_REQUEST",
+				message: "Group must have ADMIN without expiration"
+			} as Partial<TRPCError>);
+
+			expect(database.group.create).not.toHaveBeenCalled();
+		});
 		it("throws FORBIDDEN if has not FULL permission to all resources", async () => {
 			const { caller, ctx } = prepare({});
 

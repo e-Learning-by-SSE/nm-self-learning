@@ -31,12 +31,16 @@ export const permissionRouter = t.router({
 			const { parent, name, slug, permissions, members } = input;
 			const userId = ctx.user.id;
 			// check if ADMIN has no limit
+			let adminCount = 0;
 			for (const m of members) {
-				if (m.role === GroupRole.ADMIN && !!m.expiresAt) {
-					throw new TRPCError({
-						code: "BAD_REQUEST",
-						message: "Group ADMIN role cannot expire"
-					});
+				if (m.role === GroupRole.ADMIN) {
+					if (m.expiresAt) {
+						throw new TRPCError({
+							code: "BAD_REQUEST",
+							message: "Group ADMIN role cannot expire"
+						});
+					}
+					adminCount++;
 				}
 			}
 			// map permissions to drop display data
@@ -74,7 +78,15 @@ export const permissionRouter = t.router({
 			// find if already self added
 			const idx = membs.findIndex(m => m.userId === userId);
 			if (idx === -1) {
+				adminCount++;
 				membs.push({ userId, role: GroupRole.ADMIN, expiresAt: null });
+			}
+			// check if at least one ADMIN
+			if (adminCount === 0) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Group must have ADMIN without expiration"
+				});
 			}
 			// create
 			return database.group.create({
