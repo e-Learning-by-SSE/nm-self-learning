@@ -14,7 +14,7 @@ import {
 	TableHeaderColumn
 } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { add } from "date-fns";
 import { formatDateDistanceToNow, isInThePast } from "@self-learning/util/common";
 
@@ -38,11 +38,7 @@ const groupRoleOptions = [
 ];
 
 function formatDate(d: Date) {
-	return d.toLocaleDateString("de-DE", {
-		day: "2-digit",
-		month: "2-digit",
-		year: "numeric"
-	});
+	return d.toISOString().slice(0, 10);
 }
 function getDurationOpt(member: MemberFormModel) {
 	const id = member.durationId ?? (member.expiresAt ? "custom" : "inf");
@@ -218,6 +214,11 @@ export function GroupMemberEditor({
 		}
 	};
 
+	const today = useMemo(() => {
+		const now = new Date();
+		return formatDate(now);
+	}, []); // run once
+
 	return (
 		<div className="flex flex-col gap-2">
 			{canEditUser && (
@@ -259,6 +260,7 @@ export function GroupMemberEditor({
 					<input
 						type="date"
 						className="textfield"
+						min={today}
 						value={customDate}
 						onChange={e => setCustomDuration(e.target.value)}
 					/>
@@ -313,6 +315,11 @@ export function GroupMemberRowEditor({
 		setRole
 	} = useMemberEditor(member, onChange);
 
+	const today = useMemo(() => {
+		const now = new Date();
+		return formatDate(now);
+	}, []); // run once
+
 	return (
 		<tr key={member.user.id}>
 			<TableDataColumn>
@@ -338,6 +345,7 @@ export function GroupMemberRowEditor({
 				{durationOpt.id === "custom" && (
 					<input
 						type="date"
+						min={today}
 						className="textfield"
 						style={{ height: "auto" }}
 						value={customDate}
