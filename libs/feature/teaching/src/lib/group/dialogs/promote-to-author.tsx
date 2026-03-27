@@ -18,7 +18,7 @@ import {
 	OnDialogCloseFn,
 	showToast
 } from "@self-learning/ui/common";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ChevronUpDownIcon } from "@heroicons/react/24/solid";
 
 export type PromoteRequest = {
@@ -102,10 +102,21 @@ export function AddAuthorDialog({
 		setSearchGroupOpen(false);
 	}
 
-	function handleGroupNameChange(value: string) {
-		setValue("groupName", value);
-		setValue("groupSlug", slugify(value));
-	}
+	const handleGroupNameChange = useCallback(
+		(value: string) => {
+			setValue("groupName", value);
+			setValue("groupSlug", slugify(value));
+		},
+		[setValue]
+	);
+
+	useEffect(() => {
+		const groupName = getValues("groupName");
+
+		if (!groupName && user) {
+			handleGroupNameChange(`${user.displayName}s Gruppe`);
+		}
+	}, [user, getValues, handleGroupNameChange]);
 
 	function onSubmit(data: AddAuthorForm) {
 		if (!data.user) {
