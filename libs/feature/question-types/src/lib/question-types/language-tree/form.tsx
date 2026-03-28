@@ -1,7 +1,7 @@
 import { useFormContext, useWatch } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
 import { LanguageTreeQuestion } from "./schema";
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { parseTree, TreeNode } from "./tree-parser";
 import { TreeVisualization } from "./tree-visualization";
 import { Dialog, DialogActions, IconOnlyButton, Toggle } from "@self-learning/ui/common";
@@ -16,8 +16,36 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 		control
 	});
 
-	const safeInitialTree = languageTree.initialTree || "[Root]";
+	const getDefaultInitialTree = () => {
+		if (
+			languageTree.restrictNodeTypes &&
+			languageTree.nodeTypeCategories?.length > 0 &&
+			languageTree.nodeTypeCategories[0].nodes.length > 0
+		) {
+			return `[${languageTree.nodeTypeCategories[0].nodes[0]}]`;
+		}
+		return "[Root]";
+	};
+
+	const safeInitialTree = languageTree.initialTree || getDefaultInitialTree();
 	const [initialTreeInput, setInitialTreeInput] = useState<string>(safeInitialTree);
+
+	useEffect(() => {
+		if (
+			languageTree.restrictNodeTypes &&
+			languageTree.nodeTypeCategories?.length > 0 &&
+			languageTree.nodeTypeCategories[0].nodes.length > 0
+		) {
+			const firstValue = `[${languageTree.nodeTypeCategories[0].nodes[0]}]`;
+			setValue(`quiz.questions.${index}.initialTree`, firstValue);
+			setInitialTreeInput(firstValue);
+		} else if (!languageTree.initialTree) {
+			setValue(`quiz.questions.${index}.initialTree`, "[Root]");
+			setInitialTreeInput("[Root]");
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [languageTree.restrictNodeTypes, languageTree.nodeTypeCategories]);
+
 	const [answerTreeInput, setAnswerTreeInput] = useState<string[]>(languageTree.answer);
 
 	const [editDialog, setEditDialog] = useState<ReactNode | null>(null);
@@ -88,6 +116,116 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 							}
 						/>
 					</div>
+					<div className="flex flex-row mt-2">
+						<Toggle
+							value={languageTree.restrictNodeTypes ?? false}
+							onChange={value =>
+								setValue(`quiz.questions.${index}.restrictNodeTypes`, value)
+							}
+							label={"Knotentypen einschränken"}
+						/>
+					</div>
+
+					{languageTree.restrictNodeTypes && (
+						<>
+							<div className="mt-4 border rounded-lg p-4">
+								<div className="flex items-center justify-between mb-3">
+									<span className="font-medium">Kategorien</span>
+									<button
+										type="button"
+										className="btn-primary text-sm px-3 py-1"
+										onClick={() => {
+											const current = languageTree.nodeTypeCategories ?? [];
+											setValue(`quiz.questions.${index}.nodeTypeCategories`, [
+												...current,
+												{ name: "", nodes: [] }
+											]);
+										}}
+									>
+										+ Kategorie hinzufügen
+									</button>
+								</div>
+
+								{(languageTree.nodeTypeCategories ?? []).map(
+									(category, catIndex) => (
+										<div
+											key={catIndex}
+											className="flex flex-col gap-2 mb-3 p-3 border rounded-lg bg-c-surface-1"
+										>
+											<div className="flex items-center gap-2">
+												<input
+													type="text"
+													className="border rounded px-2 py-1 text-sm flex-1"
+													placeholder="Kategoriename (z. B. Nomen)"
+													value={category.name}
+													onChange={e => {
+														const current = [
+															...(languageTree.nodeTypeCategories ??
+																[])
+														];
+														current[catIndex] = {
+															...current[catIndex],
+															name: e.target.value
+														};
+														setValue(
+															`quiz.questions.${index}.nodeTypeCategories`,
+															current
+														);
+													}}
+												/>
+												<button
+													type="button"
+													className="p-1 bg-c-danger text-white rounded hover:bg-c-danger-strong"
+													onClick={() => {
+														const current = [
+															...(languageTree.nodeTypeCategories ??
+																[])
+														];
+														current.splice(catIndex, 1);
+														setValue(
+															`quiz.questions.${index}.nodeTypeCategories`,
+															current
+														);
+													}}
+												>
+													<TrashIcon className="h-4 w-4" />
+												</button>
+											</div>
+											<input
+												type="text"
+												className="border rounded px-2 py-1 text-sm"
+												placeholder="Wörter, kommagetrennt (z. B. Tisch, Fenster, Tür)"
+												defaultValue={category.nodes.join(", ")}
+												onBlur={e => {
+													const current = [
+														...(languageTree.nodeTypeCategories ?? [])
+													];
+													current[catIndex] = {
+														...current[catIndex],
+														nodes: e.target.value
+															.split(",")
+															.map(s => s.trim())
+															.filter(Boolean)
+													};
+													setValue(
+														`quiz.questions.${index}.nodeTypeCategories`,
+														current
+													);
+												}}
+											/>
+										</div>
+									)
+								)}
+							</div>
+
+							<p className="text-sm text-yellow-600 bg-yellow-50 border border-yellow-200 rounded p-2 mt-2">
+								⚠️ Hinweis: Wenn Knotentypen eingeschränkt sind, sollten die Werte
+								im Anfangsbaum mit den definierten Kategoriewörtern übereinstimmen.
+								Andernfalls kann es zu inkonsistenter Darstellung für Studierende
+								kommen.
+							</p>
+						</>
+					)}
 				</div>
 
 				<div className="flex flex-col p-4 mb-5 rounded-lg">
@@ -102,7 +240,7 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 					</div>
 					<p className="text-sm text-gray-500 mb-3">
 						Der Startbaum, den Studierende als Ausgangspunkt erhalten. Verwenden Sie die
-						Klammernotation, z. B.: <code>[S [NP] [VP]]</code>
+						Klammernotation, z. B.: <code>[Wurzel [Kind1] [Kind2]]</code>
 					</p>
 					<div className="flex justify-center w-full h-[150px] p-4">
 						{initialTreeInput ? (
@@ -259,7 +397,7 @@ function TreeEditDialog({ value, onClose }: { value: string; onClose: (value?: s
 					<p className="text-sm text-gray-500">
 						Verwenden Sie die Klammernotation: Jeder Knoten wird in eckige Klammern
 						gesetzt. Kindknoten stehen innerhalb des Elternknotens, z. B.:{" "}
-						<code>[S [NP [Det] [N]] [VP [V]]]</code>
+						<code>[Wurzel [Kind1 [Enkel1] [Enkel2]] [Kind2]]</code>
 					</p>
 				</div>
 				<textarea
