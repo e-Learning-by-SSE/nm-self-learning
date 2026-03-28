@@ -215,6 +215,8 @@ export const INITIAL_QUESTION_CONFIGURATION_FUNCTIONS: {
 		type: "language-tree",
 		caseSensitive: false,
 		customTextInputInParentNodes: true,
+		restrictNodeTypes: false,
+		nodeTypeCategories: [],
 		initialTree: "",
 		answer: []
 	})
