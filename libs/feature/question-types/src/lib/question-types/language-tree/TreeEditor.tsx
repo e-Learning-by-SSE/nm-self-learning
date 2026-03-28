@@ -1,15 +1,19 @@
 import type { TreeNode } from "./tree-parser";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
-
+import type { NodeTypeCategory } from "./schema";
 
 export function TreeEditor({
 	tree,
 	allowTextInputForParents,
+	restrictNodeTypes,
+	nodeTypeCategories,
 	setTree,
 	setInput
 }: {
 	tree: TreeNode;
 	allowTextInputForParents: boolean;
+	restrictNodeTypes: boolean;
+	nodeTypeCategories: NodeTypeCategory[];
 	setTree: (tree: TreeNode) => void;
 	setInput: (text: string) => void;
 }) {
@@ -31,14 +35,9 @@ export function TreeEditor({
 
 	const handleAddChild = (node: TreeNode) => {
 		if (node.children.length === 0) {
-			// Convert leaf into a non-leaf by moving its value down
-			const oldLeafNode = { value: node.value, children: [] }; // Preserve original text
-
-			// Assign default value from dropdown (first in phrase list)
-			node.value = "Node";
-			node.children = [oldLeafNode]; // Move the old text as a child node
+			// Keep parent value as is, just add a new child below
+			node.children = [{ value: "Node", children: [] }];
 		} else {
-			// Regular non-leaf node: Add a new child normally
 			node.children.push({ value: "Node", children: [] });
 		}
 		updateTree({ ...tree });
@@ -61,13 +60,35 @@ export function TreeEditor({
 				className="ml-4 pl-4 border-l-2 border-c-border-strong space-y-2 py-1"
 			>
 				<div className="flex items-center space-x-2 bg-c-surface-2 p-2 rounded-lg shadow-sm">
-					<input
-						type="text"
-						className="border rounded px-3 py-1 text-sm w-32 focus:ring-2 focus:ring-blue-400 outline-none"
-						value={node.value}
-						onChange={e => handleRename(node, e.target.value)}
-						placeholder="Enter text..."
-					/>
+					{restrictNodeTypes && node.children.length === 0 ? (
+						<select
+							className="border rounded px-3 py-1 text-sm bg-white w-36"
+							value={node.value}
+							onChange={e => handleRename(node, e.target.value)}
+							title="Select a node type"
+						>
+							<option value="Node" disabled>
+								-- wählen --
+							</option>
+							{nodeTypeCategories.map(category => (
+								<optgroup key={category.name} label={category.name}>
+									{category.nodes.map(node => (
+										<option key={node} value={node}>
+											{node}
+										</option>
+									))}
+								</optgroup>
+							))}
+						</select>
+					) : (
+						<input
+							type="text"
+							className="border rounded px-3 py-1 text-sm w-32 focus:ring-2 focus:ring-blue-400 outline-none"
+							value={node.value}
+							onChange={e => handleRename(node, e.target.value)}
+							placeholder="Enter text..."
+						/>
+					)}
 
 					<button
 						onClick={() => handleAddChild(node)}
