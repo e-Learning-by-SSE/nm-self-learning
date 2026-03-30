@@ -5,6 +5,9 @@ const path = require("path");
 const projectRoot = path.resolve(__dirname, "./");
 process.env.TZ = "Europe/Berlin";
 
+const project = process.env.NX_TASK_TARGET_PROJECT || "unknown";
+const taskHash = process.env.NX_TASK_HASH || process.pid;
+
 module.exports = {
 	...nxPreset,
 	setupFiles: ["dotenv/config"],
@@ -31,13 +34,13 @@ module.exports = {
 		[
 			"jest-junit",
 			{
-				outputName: `junit-${new Date().getTime()}.xml`, // Setzt einen Zeitstempel, um Überschreiben zu vermeiden
+				outputName: `junit-${project}-${taskHash}-${Date.now()}.xml`, // Uses timestamp to avoid overwriting test results from parallel test runs
 				outputDirectory: "output/test",
 				suiteName: "Test Suite",
 				classNameTemplate: "{classname}",
 				titleTemplate: "{title}",
 				ancestorSeparator: " › ",
-				usePathForSuiteName: "true"
+				usePathForSuiteName: true
 			}
 		]
 	],

@@ -18,7 +18,7 @@ export function UploadProgressDialog({ name, progress }: { name: string; progres
 				// This makes the dialog modal (i.e. the user cannot click outside of the dialog to close it)
 				onClose={() => {}}
 			>
-				<ProgressBar completionPercentage={progress} />
+				<ProgressBar text={`${progress}%`} progressPercentage={progress} />
 			</DialogWithReactNodeTitle>
 		</CenteredContainer>
 	);

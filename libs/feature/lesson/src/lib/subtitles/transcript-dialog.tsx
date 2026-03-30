@@ -2,12 +2,8 @@ import { Dialog, showToast } from "@self-learning/ui/common";
 import { useMemo, useState } from "react";
 import { webvttToText } from "./webvtt_helper";
 
-export function ShowTranskript({ webVTTtranscript }: { webVTTtranscript: string | undefined }) {
+export function ShowTranskript({ webvttTranscript }: { webvttTranscript: string }) {
 	const [showTranscript, setShowTranscript] = useState(false);
-
-	if (!webVTTtranscript) {
-		return null;
-	}
 
 	return (
 		<>
@@ -21,7 +17,7 @@ export function ShowTranskript({ webVTTtranscript }: { webVTTtranscript: string 
 			{showTranscript && (
 				<TranscriptDialog
 					onClose={() => setShowTranscript(false)}
-					webVTTtranscript={webVTTtranscript}
+					webvttTranscript={webvttTranscript}
 				/>
 			)}
 		</>
@@ -30,14 +26,14 @@ export function ShowTranskript({ webVTTtranscript }: { webVTTtranscript: string 
 
 export function TranscriptDialog({
 	onClose,
-	webVTTtranscript
+	webvttTranscript
 }: {
 	onClose: () => void;
-	webVTTtranscript: string;
+	webvttTranscript: string;
 }) {
 	const transcript = useMemo(() => {
-		return webvttToText(webVTTtranscript);
-	}, [webVTTtranscript]);
+		return webvttToText(webvttTranscript);
+	}, [webvttTranscript]);
 
 	const handleCopy = () => {
 		navigator.clipboard

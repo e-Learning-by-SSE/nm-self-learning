@@ -18,7 +18,7 @@ export function ImageCard({
 	return (
 		<div className="glass relative flex h-full w-full flex-col rounded-lg transition-transform hover:scale-105 hover:shadow-lg">
 			{!imgUrl || imgUrl.length === 0 ? (
-				<div className="relative h-[256px] w-full shrink-0 rounded-t-lg bg-gradient-to-br from-purple-500 to-blue-400"></div>
+				<div className="relative h-[256px] w-full shrink-0 rounded-t-lg bg-gradient-to-br from-c-accent to-blue-400"></div>
 			) : (
 				<div className="relative h-[256px] w-full shrink-0 rounded-t-lg bg-white">
 					<Image
@@ -37,10 +37,10 @@ export function ImageCard({
 				<div className="flex flex-col gap-4">
 					<h2 className="text-2xl">{title}</h2>
 					{subtitle && subtitle.length > 0 && (
-						<span className="text-sm text-slate-500">{subtitle}</span>
+						<span className="text-sm text-c-text-muted">{subtitle}</span>
 					)}
 				</div>
-				{footer && <div className="flex flex-col text-slate-500">{footer}</div>}
+				{footer && <div className="flex flex-col text-c-text-muted">{footer}</div>}
 			</div>
 		</div>
 	);
@@ -51,7 +51,7 @@ export function ImageCardBadge({
 	className
 }: {
 	text: string;
-	/** Tailwind background color, i.e. `bg-emerald-500`. */
+	/** Tailwind background color, i.e. `bg-c-primary`. */
 	className?: string;
 }) {
 	return (

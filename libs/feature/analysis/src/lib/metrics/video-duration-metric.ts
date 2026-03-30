@@ -1,4 +1,4 @@
-import { UserEvent } from "@self-learning/database";
+import { UserEvent } from "./types";
 
 const CONSIDERED_EVENTS = [
 	"VIDEO_PLAY",

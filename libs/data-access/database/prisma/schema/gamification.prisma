@@ -1,0 +1,50 @@
+model GamificationProfile {
+    userId        String   @unique
+    username      String   @id
+    lastLogin     DateTime @default(now())
+    loginStreak   Json     @default("{\"count\": 0, \"status\": \"active\", \"pauseUntil\": null}")
+    longestStreak Int      @default(0)
+    energy        Int      @default(2)
+    xp            Int      @default(0)
+
+    user                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+    achievementProgress AchievementProgress[]
+}
+
+model Achievement {
+    id            String             @id @default(uuid())
+    code          String             @unique
+    title         String
+    description   String
+    xpReward      Int
+    category      String
+    createdAt     DateTime           @default(now())
+    trigger       AchievementTrigger
+    meta          Json?
+    requiredValue Int                @default(1)
+
+    progressBy AchievementProgress[]
+}
+
+enum AchievementTrigger {
+    lesson_completed
+    daily_login
+    session_time
+    streak_check
+    manual
+}
+
+model AchievementProgress {
+    id            String    @id @default(uuid())
+    username      String
+    achievementId String
+    progressValue Int
+    redeemedAt    DateTime?
+    updatedAt     DateTime  @updatedAt
+    meta          Json?
+
+    gamificationProfile GamificationProfile @relation(fields: [username], references: [username], onDelete: Cascade)
+    achievement         Achievement         @relation(fields: [achievementId], references: [id])
+
+    @@unique([username, achievementId])
+}

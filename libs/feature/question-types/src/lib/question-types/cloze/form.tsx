@@ -44,7 +44,7 @@ export default function ClozeForm({ index }: { question: { type: Cloze["type"] }
 				</LabeledField>
 
 				<LabeledField label="Vorschau">
-					<pre className="prose h-full max-w-full whitespace-pre-line border border-light-border bg-white p-4 font-sans">
+					<pre className="prose h-full max-w-full whitespace-pre-line border border-c-border bg-white p-4 font-sans">
 						{cloze.segments.map((segment, index) => (
 							<Fragment key={index}>
 								<ReactMarkdown
@@ -74,7 +74,7 @@ export default function ClozeForm({ index }: { question: { type: Cloze["type"] }
 				</LabeledField>
 			</div>
 
-			<ul className="flex list-inside list-disc flex-col rounded-lg bg-gray-200 p-4">
+			<ul className="flex list-inside list-disc flex-col rounded-lg bg-c-surface-2 p-4">
 				<li className="flex flex-col gap-2">
 					<span className="font-semibold">Beispiele</span>
 					<span className="rounded-lg bg-white p-2 font-mono">

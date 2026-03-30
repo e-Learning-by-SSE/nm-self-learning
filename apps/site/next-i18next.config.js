@@ -10,7 +10,8 @@ module.exports = {
 	/** To avoid issues when deploying to some paas (vercel...) */
 	localePath:
 		typeof window === "undefined"
-			? require("path").resolve("./public/locales")
+			? // eslint-disable-next-line @typescript-eslint/no-require-imports
+				require("path").resolve("./public/locales")
 			: "./apps/site/public/locales",
 
 	reloadOnPrerender: process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE === "true"

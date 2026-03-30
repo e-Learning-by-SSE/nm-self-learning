@@ -44,7 +44,7 @@ export function SubjectEditor({
 					sidebar={
 						<>
 							<div>
-								<span className="font-semibold text-secondary">
+								<span className="font-semibold text-c-primary">
 									{initialSubject.subjectId === ""
 										? t("Create Topic")
 										: t("Edit Topic")}

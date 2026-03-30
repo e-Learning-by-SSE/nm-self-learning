@@ -1,9 +1,22 @@
-import { ArrowPathIcon, PlayIcon } from "@heroicons/react/24/solid";
-import { useMarkAsCompleted } from "@self-learning/completion";
-import { useLessonContext, ChapterName, LessonData, getCourse } from "@self-learning/lesson";
+import {
+	calculateAverageQuizScore,
+	QuizCompletionDialog,
+	QuizFailedDialog,
+	useMarkAsCompleted
+} from "@self-learning/completion";
+import {
+	ChapterName,
+	LessonCourseData,
+	LessonData,
+	LessonLayoutProps,
+	StandaloneLessonLayoutProps,
+	useLessonContext,
+	useLessonSession
+} from "@self-learning/lesson";
 import { MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuizContent } from "@self-learning/question-types";
 import {
+	compileQuizMarkdown,
 	defaultQuizConfig,
 	Question,
 	QuestionTab,
@@ -11,16 +24,16 @@ import {
 	QuizProvider,
 	useQuiz
 } from "@self-learning/quiz";
-import { Dialog, DialogActions, OnDialogCloseFn, Tab, Tabs } from "@self-learning/ui/common";
+import { LoadingBox, Tab, Tabs, useIsFirstRender } from "@self-learning/ui/common";
+import { useEventLog } from "@self-learning/util/eventlog";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useEventLog } from "@self-learning/util/common";
-import { ResolvedValue } from "@self-learning/types";
+import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useMemo, useState } from "react";
+import { useAttemptSubmission } from "../quiz-submit-attempt";
 
 export type QuestionProps = {
 	lesson: LessonData;
-	course?: ResolvedValue<typeof getCourse>;
+	course?: LessonCourseData;
 	quiz: Quiz;
 	markdown: {
 		questionsMd: MdLookup;
@@ -29,12 +42,35 @@ export type QuestionProps = {
 	};
 };
 
+export async function getSspQuizLearnersView(
+	parentProps: LessonLayoutProps | StandaloneLessonLayoutProps
+) {
+	const quiz = parentProps.lesson.quiz as Quiz;
+	const { questionsMd, answersMd, hintsMd, processedQuestions } = await compileQuizMarkdown(quiz);
+	quiz.questions = processedQuestions;
+
+	return {
+		props: {
+			...parentProps,
+			quiz,
+			markdown: { questionsMd, answersMd, hintsMd }
+		}
+	};
+}
+
 export function QuizLearnersView({ course, lesson, quiz, markdown }: QuestionProps) {
 	const { questionOrder, questions, config } = quiz;
 	const [currentQuestion, setCurrentQuestion] = useState(questions[0]);
 	const router = useRouter();
 	const { index } = router.query;
 	const [nextIndex, setNextIndex] = useState(1);
+	const { lessonAttemptId, reset, setTrackingState, init } = useLessonSession({
+		lessonId: lesson.lessonId
+	});
+	const { logAttemptSubmit } = useAttemptSubmission({
+		lessonId: lesson.lessonId,
+		courseId: course?.courseId ?? ""
+	});
 
 	const isStandalone = !course;
 
@@ -67,12 +103,20 @@ export function QuizLearnersView({ course, lesson, quiz, markdown }: QuestionPro
 		}
 	}, [index, questions]);
 
+	const restart = () => {
+		router.reload();
+		reset();
+		init();
+	};
+
+	if (lessonAttemptId === null) return <LoadingBox />;
 	return (
 		<QuizProvider
 			questions={questions}
 			config={config ?? defaultQuizConfig}
 			goToNextQuestion={goToNextQuestion}
-			reload={router.reload}
+			reload={restart}
+			lessonAttemptId={lessonAttemptId}
 		>
 			<div className="flex w-full flex-col gap-4">
 				<div className="flex w-full flex-col gap-4">
@@ -93,33 +137,80 @@ export function QuizLearnersView({ course, lesson, quiz, markdown }: QuestionPro
 						courseId={course?.courseId}
 					/>
 
-					{!isStandalone && <QuizCompletionSubscriber lesson={lesson} course={course} />}
+					{!isStandalone && (
+						<QuizCompletionStateSubscriber
+							lesson={lesson}
+							course={course}
+							onSubmitAttempt={logAttemptSubmit}
+							setLearningTrackingState={setTrackingState}
+							resetTracking={reset}
+						/>
+					)}
 				</div>
 			</div>
 		</QuizProvider>
 	);
 }
 
-/** Component that listens to the `completionState` and marks lesson as completed, when quiz is `completed`. */
-function QuizCompletionSubscriber({
+/** Component that listens to the `completionState` and marks lesson as completed, or logs the submission. */
+function QuizCompletionStateSubscriber({
 	lesson,
-	course
+	course,
+	onSubmitAttempt,
+	resetTracking,
+	setLearningTrackingState
 }: {
 	lesson: QuestionProps["lesson"];
 	course: NonNullable<QuestionProps["course"]>;
+	onSubmitAttempt: (
+		completionState: "completed" | "failed",
+		performanceScore: number
+	) => Promise<unknown>;
+	resetTracking: () => void;
+	setLearningTrackingState: Dispatch<SetStateAction<boolean>>;
 }) {
-	const { completionState } = useQuiz();
+	const { completionState, attempts, answers } = useQuiz();
 	const unsubscribeRef = useRef(false);
-	const markAsCompleted = useMarkAsCompleted(lesson.lessonId, course.slug ?? null);
+	const markAsCompleted = useMarkAsCompleted();
 
 	useEffect(() => {
-		// TODO check if this useEffect is necessary
-		if (!unsubscribeRef.current && completionState === "completed") {
-			unsubscribeRef.current = true;
-			console.log("QuizCompletionSubscriber: Marking as completed");
-			markAsCompleted();
-		}
-	}, [completionState, markAsCompleted]);
+		if (unsubscribeRef.current) return;
+
+		const handleCompletion = async () => {
+			const performanceScore = calculateAverageQuizScore(attempts, answers);
+
+			if (completionState !== "in-progress") {
+				onSubmitAttempt(completionState, performanceScore);
+				setLearningTrackingState(false);
+			}
+
+			if (completionState === "in-progress") {
+				setLearningTrackingState(true);
+			}
+
+			if (completionState === "completed") {
+				unsubscribeRef.current = true;
+				console.log("QuizCompletionSubscriber: Marking as completed");
+				markAsCompleted({
+					lessonId: lesson.lessonId,
+					courseSlug: course.slug,
+					performanceScore
+				});
+			}
+		};
+
+		void handleCompletion();
+	}, [
+		answers,
+		attempts,
+		completionState,
+		course.slug,
+		lesson.lessonId,
+		markAsCompleted,
+		onSubmitAttempt,
+		resetTracking,
+		setLearningTrackingState
+	]);
 
 	return <></>;
 }
@@ -140,9 +231,11 @@ export function QuizHeader({
 	questionOrder: string[];
 	goToQuestion: (index: number) => void;
 }) {
-	const { evaluations, completionState } = useQuiz();
+	const { evaluations, completionState, lessonAttemptId } = useQuiz();
 	const { newEvent } = useEventLog();
 	const [suppressDialog, setSuppressDialog] = useState(false);
+
+	const { nextLesson } = useLessonContext(lesson.lessonId, course?.slug ?? "");
 	const orderedQuestions = useMemo(() => {
 		return questionOrder
 			.map(Id => questions.find(q => q.questionId === Id))
@@ -155,9 +248,12 @@ export function QuizHeader({
 
 	// we need to reset the warning dialog when the quiz is in progress since the user can retry and
 	// the state is kept in this case
-	if (completionState === "in-progress" && suppressDialog) {
-		setSuppressDialog(false);
-	}
+	useEffect(() => {
+		if (completionState === "in-progress" && suppressDialog) {
+			setSuppressDialog(false);
+		}
+	}, [completionState, suppressDialog]);
+
 	const showSuccessDialog = completionState === "completed" && !suppressDialog;
 	const showFailureDialog = completionState === "failed" && !suppressDialog;
 
@@ -169,17 +265,19 @@ export function QuizHeader({
 				resourceId: lesson.lessonId,
 				payload: {
 					questionId: question.questionId,
-					type: question.type
+					type: question.type,
+					lessonAttemptId: lessonAttemptId
 				}
 			});
 		},
-		[newEvent, course?.courseId]
+		[newEvent, course?.courseId, lessonAttemptId]
 	);
 
+	const isFirstRender = useIsFirstRender();
 	useEffect(() => {
-		// TODO diary: check if the useEffect is necessary
-		logQuizStart(lesson, orderedQuestions[currentIndex]);
-	}, [orderedQuestions, currentIndex, logQuizStart, lesson]);
+		if (!isFirstRender) return;
+		void logQuizStart(lesson, orderedQuestions[currentIndex]);
+	}, [orderedQuestions, currentIndex, isFirstRender, lesson, logQuizStart]);
 
 	return (
 		<div className="flex flex-col gap-4">
@@ -210,6 +308,7 @@ export function QuizHeader({
 					onClose={() => {
 						setSuppressDialog(true);
 					}}
+					nextLesson={nextLesson}
 				/>
 			)}
 			{showFailureDialog && !isStandalone && (
@@ -219,103 +318,9 @@ export function QuizHeader({
 					onClose={() => {
 						setSuppressDialog(true);
 					}}
+					nextLesson={nextLesson}
 				/>
 			)}
 		</div>
-	);
-}
-
-function NextLessonButton({
-	courseSlug,
-	nextLessonSlug
-}: {
-	courseSlug: string;
-	nextLessonSlug: string;
-}) {
-	return (
-		<Link href={`/courses/${courseSlug}/${nextLessonSlug}`} className="btn-primary">
-			<span>Zur nächsten Lerneinheit</span>
-			<PlayIcon className="h-5 shrink-0" />
-		</Link>
-	);
-}
-
-function QuizCompletionDialog({
-	course,
-	lesson,
-	onClose
-}: {
-	course: NonNullable<QuestionProps["course"]>;
-	lesson: QuestionProps["lesson"];
-	onClose: OnDialogCloseFn<void>;
-}) {
-	const { nextLesson } = useLessonContext(lesson.lessonId, course.slug);
-	return (
-		<Dialog onClose={onClose} title="Geschafft!" style={{ maxWidth: "600px" }}>
-			<div className="flex flex-col text-sm text-light">
-				<p>
-					Du hast die Lerneinheit{" "}
-					<span className="font-semibold text-secondary">{lesson.title}</span> erfolgreich
-					abgeschlossen.
-				</p>
-
-				{nextLesson ? (
-					<div className="flex flex-col">
-						<p>Die nächste Lerneinheit ist ...</p>
-						<span className="mt-4 self-center rounded-lg bg-gray-100 px-12 py-4 text-xl font-semibold tracking-tighter text-secondary">
-							{nextLesson.title}
-						</span>
-					</div>
-				) : (
-					<p>
-						Der Kurs{" "}
-						<span className="font-semibold text-secondary">{course.title}</span> enthält
-						keine weiteren Lerneinheiten für dich.
-					</p>
-				)}
-			</div>
-
-			<DialogActions onClose={onClose}>
-				{nextLesson && (
-					<NextLessonButton courseSlug={course.slug} nextLessonSlug={nextLesson.slug} />
-				)}
-			</DialogActions>
-		</Dialog>
-	);
-}
-
-function QuizFailedDialog({
-	course,
-	lesson,
-	onClose
-}: {
-	course: NonNullable<QuestionProps["course"]>;
-	lesson: QuestionProps["lesson"];
-	onClose: OnDialogCloseFn<void>;
-}) {
-	const { reload } = useQuiz();
-	const { nextLesson } = useLessonContext(lesson.lessonId, course.slug);
-
-	return (
-		<Dialog onClose={onClose} title="Nicht Bestanden" style={{ maxWidth: "600px" }}>
-			<div className="flex flex-col text-sm text-light">
-				<p>
-					Du hast leider zu viele Fragen falsch beantwortet, um die Lerneinheit{" "}
-					<span className="font-semibold text-secondary">{lesson.title}</span>{" "}
-					abzuschließen.
-				</p>
-			</div>
-
-			<DialogActions onClose={onClose}>
-				<button className="btn-primary" onClick={reload}>
-					<span>Erneut probieren</span>
-					<ArrowPathIcon className="h-5 shrink-0" />
-				</button>
-
-				{nextLesson && (
-					<NextLessonButton courseSlug={course.slug} nextLessonSlug={nextLesson.slug} />
-				)}
-			</DialogActions>
-		</Dialog>
 	);
 }

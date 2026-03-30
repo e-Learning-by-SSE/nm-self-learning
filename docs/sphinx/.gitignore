@@ -1,0 +1,46 @@
+# ------------------------
+# Python
+# ------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtuelle Umgebungen
+.venv/
+venv/
+ENV/
+env/
+*.egg-info/
+.eggs/
+
+# Byte-compiled / Cache
+*.log
+*.pot
+*.mo
+
+# ------------------------
+# Sphinx Build
+# ------------------------
+docs/build/
+build/
+dist/
+_static/*
+_templates/*
+# (Achtung: nur generierte Inhalte ignorieren – nicht deine eigenen statischen Dateien,
+# falls du dort Bilder/CSS/JS ablegst, musst du _static/_templates evtl. auskommentieren!)
+
+# ------------------------
+# IDE / Editor
+# ------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ------------------------
+# Sonstiges
+# ------------------------
+.DS_Store
+Thumbs.db

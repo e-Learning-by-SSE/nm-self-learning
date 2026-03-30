@@ -59,7 +59,7 @@ export function SkillFolderEditor({
 	);
 
 	return (
-		<div className="bg-gray-50">
+		<div>
 			<SidebarEditorLayout
 				sidebar={
 					<SidebarContentEditor
@@ -137,7 +137,7 @@ function SidebarContentEditor({
 }) {
 	return (
 		<>
-			<span className="text-2xl font-semibold text-secondary">Skillkarte bearbeiten</span>
+			<span className="text-2xl font-semibold text-c-primary">Skillkarte bearbeiten</span>
 
 			<RepositoryInfoMemorized repository={repository} />
 			<Divider />

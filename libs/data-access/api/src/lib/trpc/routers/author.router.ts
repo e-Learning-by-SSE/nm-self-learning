@@ -137,7 +137,6 @@ export const authorRouter = t.router({
 				pageSize
 			} satisfies Paginated<unknown>;
 		}),
-	// eslint-disable-next-line @typescript-eslint/no-empty-function
 	updateAsAdmin: adminProcedure
 		.input(
 			z.object({

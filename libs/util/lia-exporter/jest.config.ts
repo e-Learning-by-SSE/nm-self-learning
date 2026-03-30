@@ -1,4 +1,3 @@
-/* eslint-disable */
 export default {
 	displayName: "lia-exporter",
 	preset: "../../../jest.preset.js",

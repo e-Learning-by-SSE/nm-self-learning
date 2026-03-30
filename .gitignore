@@ -56,3 +56,8 @@ data.db
 .env.local
 
 /docs/markdown-examples
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md
+
+# Mount point to mount DB scripts for debugging purposes
+db_scripts/*

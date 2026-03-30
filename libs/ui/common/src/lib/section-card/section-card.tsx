@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 export function SectionCard({ children, className }: { children: ReactNode; className?: string }) {
 	return (
 		<div
-			className={`card relative grid w-full items-start rounded-lg border border-light-border bg-white ${
+			className={`card relative grid w-full items-start rounded-lg border border-c-border bg-white ${
 				className ?? ""
 			}`}
 		>
@@ -22,7 +22,7 @@ export function SectionCardHeader({
 	return (
 		<div className="mb-8 grid items-start gap-2">
 			<h2 className="text-2xl">{title}</h2>
-			{subtitle && <span className="text-light">{subtitle}</span>}
+			{subtitle && <span className="text-c-text-muted">{subtitle}</span>}
 		</div>
 	);
 }
@@ -43,7 +43,7 @@ export function SectionHeader({
 
 				{button && <div className="mr-0.5">{button}</div>}
 			</div>
-			{subtitle && <p className="mt-2 text-light">{subtitle}</p>}{" "}
+			{subtitle && <p className="mt-2 text-c-text-muted">{subtitle}</p>}{" "}
 		</div>
 	);
 }

@@ -110,5 +110,5 @@ export function RenderGapType({
 		);
 	}
 
-	return <span className="text-red-500">Unknown gap type: {gap.type}</span>;
+	return <span className="text-c-danger">Unknown gap type: {gap.type}</span>;
 }

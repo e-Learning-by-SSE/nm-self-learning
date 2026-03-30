@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { createBaseQuestion } from "@self-learning/question-types";
 import { evaluateLanguageTreeAnswer } from "./evaluate";
 import { parseTree } from "./tree-parser";
@@ -70,8 +69,7 @@ describe("evaluateLanguageTreeAnswer", () => {
 
 		const result = evaluateLanguageTreeAnswer(defaultQuestion, answer);
 		expect(result.isCorrect).toBe(true);
-	}
-	);
+	});
 
 	it("Correct Answer but without spaces", () => {
 		const answer = {
@@ -82,8 +80,7 @@ describe("evaluateLanguageTreeAnswer", () => {
 
 		const result = evaluateLanguageTreeAnswer(defaultQuestion, answer);
 		expect(result.isCorrect).toBe(true);
-	}
-	);
+	});
 });
 
 describe("Tree parsing and serialization", () => {
@@ -91,14 +88,16 @@ describe("Tree parsing and serialization", () => {
 		const input = "[S [NP [ART [the]] [NN [cat]]] [VP [V [sleeps]]]]";
 		const tree = parseTree(input);
 		expect(tree).not.toBeNull();
-        
+
 		const serialized = serializeTree(tree!);
 		expect(serialized).toBe(input);
 	});
 
 	it("Missing brackets around words", () => {
 		const input = "[S [NP [ART the] [NN cat]] [VP [V sleeps]]]";
-		expect(() => parseTree(input)).toThrow("Unexpected inline text at position 12. Expected '[' or ']'");
+		expect(() => parseTree(input)).toThrow(
+			"Unexpected inline text at position 12. Expected '[' or ']'"
+		);
 	});
 
 	it("Invalid tree structure throws error", () => {

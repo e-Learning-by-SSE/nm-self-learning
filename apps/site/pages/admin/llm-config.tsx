@@ -103,7 +103,7 @@ export default function LlmConfigPage() {
 			<AdminGuard>
 				<CenteredSection>
 					<div className="text-center">
-						<p className="text-gray-500">Loading LLM configuration...</p>
+						<p className="text-c-text-muted">Loading LLM configuration...</p>
 					</div>
 				</CenteredSection>
 			</AdminGuard>
@@ -112,7 +112,7 @@ export default function LlmConfigPage() {
 
 	return (
 		<AdminGuard>
-			<CenteredSection className="bg-gray-50">
+			<CenteredSection>
 				<div className="max-w-4xl mx-auto p-6">
 					<div className="bg-white rounded-lg shadow-md p-6">
 						<h1 className="text-2xl font-bold text-gray-900 mb-6">
@@ -135,7 +135,7 @@ export default function LlmConfigPage() {
 									className="textfield w-full"
 									placeholder="https://example.com/ollama/api"
 								/>
-								<p className="text-sm text-gray-500 mt-1">
+								<p className="text-sm text-c-text-muted mt-1">
 									{t("Base URL of your LLM server", {
 										url: "https://example.com/ollama/api"
 									})}
@@ -161,7 +161,7 @@ export default function LlmConfigPage() {
 									}
 								/>
 								{config?.hasApiKey && (
-									<p className="text-sm text-gray-500 mt-1">
+									<p className="text-sm text-c-text-muted mt-1">
 										{t("Leave empty if API key is not required")}
 									</p>
 								)}
@@ -234,7 +234,7 @@ export default function LlmConfigPage() {
 								</div>
 
 								{config && (
-									<div className="text-sm text-gray-500">
+									<div className="text-sm text-c-text-muted">
 										{t("Last updated", {
 											date: formatDateString(config.updatedAt, "d. MMM yyyy")
 										})}
@@ -243,14 +243,14 @@ export default function LlmConfigPage() {
 							</div>
 						</form>
 						{errorMessage && (
-							<div className="mt-4 p-4 bg-red-50 rounded-md">
-								<p className="text-sm text-red-700">
+							<div className="mt-4 p-4 bg-c-danger-subtle rounded-md">
+								<p className="text-sm text-c-danger-strong">
 									<strong>Code: </strong>
-									<span className="text-red-600">{errorMessage.code}</span>
+									<span className="text-c-danger">{errorMessage.code}</span>
 								</p>
-								<p className="text-sm text-red-700">
+								<p className="text-sm text-c-danger-strong">
 									<strong>Message: </strong>
-									<span className="text-red-600">{errorMessage.message}</span>
+									<span className="text-c-danger">{errorMessage.message}</span>
 								</p>
 							</div>
 						)}

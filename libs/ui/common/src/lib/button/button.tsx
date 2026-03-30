@@ -1,5 +1,9 @@
 import { ButtonHTMLAttributes, DetailedHTMLProps } from "react";
 
+/**
+ * @deprecated since 2025-12
+ * Use className="btn-primary" etc. inside the IconButton instead
+ */
 export type ButtonVariant = "primary" | "secondary" | "danger" | "tertiary" | "x-mark" | "stroked";
 
 /**
@@ -7,28 +11,25 @@ export type ButtonVariant = "primary" | "secondary" | "danger" | "tertiary" | "x
  * Text disappears on small viewports, only icon remains visible
  *
  * @example
- * <IconButton text="Edit" icon={<PencilIcon className="h-5" />} variant="primary" />
- * <IconButton text="Delete" icon={<TrashIcon className="h-5" />} variant="danger" />
+ * <IconTextButton text="Edit" icon={<PencilIcon className="h-5" />} variant="primary" />
+ * <IconTextButton text="Delete" icon={<TrashIcon className="h-5" />} variant="danger" />
  */
-export function IconButton({
+export function IconTextButton({
 	icon,
 	text,
-	variant = "primary",
 	hideTextOnMobile = true,
 	className = "",
 	...props
 }: DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
 	icon: React.ReactNode;
 	text: string;
-	variant?: ButtonVariant;
 	hideTextOnMobile?: boolean;
 }) {
 	const baseClasses = "btn btn-with-icon";
-	const variantClass = `btn-${variant}`;
 	const textClasses = hideTextOnMobile ? "hidden sm:inline" : "";
 
 	return (
-		<button type="button" className={`${baseClasses} ${variantClass} ${className}`} {...props}>
+		<button type="button" className={`${baseClasses} ${className}`} {...props}>
 			{icon}
 			<span className={`text-sm ${textClasses}`}>{text}</span>
 		</button>
@@ -41,18 +42,15 @@ export function IconButton({
  */
 export function IconOnlyButton({
 	icon,
-	variant = "tertiary",
 	className = "",
 	...props
 }: DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
 	icon: React.ReactNode;
-	variant?: ButtonVariant;
 }) {
-	const baseClasses = "btn btn-icon-only";
-	const variantClass = `btn-${variant}`;
+	const baseClasses = "btn btn-icon-only text-c-text-muted";
 
 	return (
-		<button type="button" className={`${baseClasses} ${variantClass} ${className}`} {...props}>
+		<button type="button" className={`${baseClasses} ${className}`} {...props}>
 			{icon}
 		</button>
 	);

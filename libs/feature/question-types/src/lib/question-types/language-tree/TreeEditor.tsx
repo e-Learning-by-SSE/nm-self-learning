@@ -27,7 +27,7 @@ export function TreeEditor({
 	setInput
 }: {
 	tree: TreeNode;
-	allowTextInputForParents: boolean
+	allowTextInputForParents: boolean;
 	setTree: (tree: TreeNode) => void;
 	setInput: (text: string) => void;
 }) {
@@ -70,13 +70,16 @@ export function TreeEditor({
 
 	const generateNodeId = (path: number[]) => `node-${path.join("-")}`;
 
-	const renderNode = (node: TreeNode, parent: TreeNode | null = null,  path: number[] = []) => {
+	const renderNode = (node: TreeNode, parent: TreeNode | null = null, path: number[] = []) => {
 		const isLeaf = node.children.length === 0;
 		const nodeId = generateNodeId(path);
 
 		return (
-			<div key={`${nodeId}`} className="ml-4 pl-4 border-l-2 border-gray-300 space-y-2 py-1">
-				<div className="flex items-center space-x-2 bg-gray-100 p-2 rounded-lg shadow-sm">
+			<div
+				key={`${nodeId}`}
+				className="ml-4 pl-4 border-l-2 border-c-border-strong space-y-2 py-1"
+			>
+				<div className="flex items-center space-x-2 bg-c-surface-2 p-2 rounded-lg shadow-sm">
 					{/* Use a dropdown for non-leaf nodes and text input for leaf nodes */}
 					{isLeaf || allowTextInputForParents ? (
 						<input
@@ -112,7 +115,7 @@ export function TreeEditor({
 
 					<button
 						onClick={() => handleAddChild(node)}
-						className="p-1 bg-secondary text-white rounded hover:bg-blue-600 transition-colors"
+						className="p-1 bg-c-primary text-white rounded hover:bg-blue-600 transition-colors"
 						aria-label="Add child node"
 					>
 						<PlusIcon className="h-4 w-4" />
@@ -121,7 +124,7 @@ export function TreeEditor({
 					{parent && (
 						<button
 							onClick={() => handleDelete(parent, node)}
-							className="p-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+							className="p-1 bg-c-danger text-white rounded hover:bg-c-danger-strong transition-colors"
 							aria-label="Delete node"
 						>
 							<TrashIcon className="h-4 w-4" />
@@ -131,7 +134,9 @@ export function TreeEditor({
 
 				{node.children.length > 0 && (
 					<div className="space-y-1">
-						{node.children.map((child, index) => renderNode(child, node,  [...path, index]))}
+						{node.children.map((child, index) =>
+							renderNode(child, node, [...path, index])
+						)}
 					</div>
 				)}
 			</div>
@@ -147,6 +152,6 @@ export function serializeTree(node: TreeNode): string {
 	}
 
 	const childrenText = node.children.map(serializeTree).join(" ");
-	
+
 	return `[${node.value} ${childrenText}]`;
 }

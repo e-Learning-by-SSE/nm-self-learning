@@ -236,7 +236,9 @@ async function seedQuizEvents({
 			resourceId: lessonId,
 			username,
 			createdAt,
-			payload: {}
+			payload: {
+				/* TODO add lessonAttemptId */
+			}
 		}
 	});
 

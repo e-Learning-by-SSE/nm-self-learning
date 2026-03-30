@@ -39,7 +39,7 @@ export function MarkdownWithPreviewContainer({ children }: { children: React.Rea
  *
  * @example
  * <Form.Title
- * 	title={<span>Neuen <span className="text-emerald-600">Kurs</span> hinzufügen</span>}
+ * 	title={<span>Neuen <span className="text-c-primary-strong">Kurs</span> hinzufügen</span>}
  * 	button={
  * 		<button className="btn-primary h-fit w-fit" type="submit">
  * 			Speichern
@@ -48,7 +48,7 @@ export function MarkdownWithPreviewContainer({ children }: { children: React.Rea
  * 	specialButtons={
  * 		<button
  * 			type="button"
- * 			className="absolute bottom-16 text-sm font-semibold text-secondary"
+ * 			className="absolute bottom-16 text-sm font-semibold text-c-primary"
  * 			onClick={() => setOpenAsJson(true)}
  * 		>
  * 			Als JSON bearbeiten
@@ -77,7 +77,7 @@ export function Title({
 export function SidebarSection({ children }: { children: React.ReactNode }) {
 	return (
 		<section
-			className={`ml-3 flex flex-col gap-4 border-b border-light-border py-4 last:border-b-0`}
+			className={`ml-3 flex flex-col gap-4 border-b border-c-border py-4 last:border-b-0`}
 		>
 			{children}
 		</section>
@@ -100,7 +100,7 @@ export function SidebarSectionTitle({
 
 				{children && <div className="flex-shrink-0">{children}</div>}
 			</div>
-			<span className="text-sm text-light">{subtitle}</span>
+			<span className="text-sm text-c-text-muted">{subtitle}</span>
 		</div>
 	);
 }

@@ -18,7 +18,7 @@ export type MultipleChoiceQuestion = z.infer<typeof multipleChoiceQuestionSchema
 
 export const multipleChoiceAnswerSchema = baseAnswerSchema.extend({
 	type: z.literal("multiple-choice"),
-	value: z.record(z.boolean())
+	value: z.record(z.string(), z.boolean())
 });
 
 export type MultipleChoiceAnswer = z.infer<typeof multipleChoiceAnswerSchema>;

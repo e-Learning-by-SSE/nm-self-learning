@@ -71,7 +71,7 @@ function getAuthor(slug: string | undefined) {
 export default function AuthorPage({ author, aboutMeMarkdown }: AuthorPageProps) {
 	return (
 		<div className="min-h-screen">
-			<CenteredSection className="bg-gray-50">
+			<CenteredSection>
 				<AuthorHeader author={author} />
 			</CenteredSection>
 
@@ -117,7 +117,7 @@ export function AuthorHeader({ author }: { author: Author }) {
 						alt=""
 					></Image>
 				) : (
-					<div className="h-64 w-64 rounded-lg bg-gray-200"></div>
+					<div className="h-64 w-64 rounded-lg bg-c-surface-3"></div>
 				)}
 			</div>
 			<div className="flex flex-col place-items-center gap-16">
@@ -138,7 +138,7 @@ export function TeamChip({ slug, name }: { slug: string; name: string }) {
 	return (
 		<Link
 			href={`/teams/${slug}`}
-			className="rounded-full bg-secondary py-2 px-4 text-sm font-semibold text-white"
+			className="rounded-full bg-c-primary py-2 px-4 text-sm font-semibold text-white"
 		>
 			{name}
 		</Link>

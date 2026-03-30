@@ -6,13 +6,15 @@ import { useRef } from "react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import ReactPlayer from "react-player";
 
+type ReactPlayerRef = React.ElementRef<typeof ReactPlayer>;
+
 export function VideoInput({ index }: { index: number }) {
 	const { control } = useFormContext<{ content: Video[] }>();
 	const { update } = useFieldArray<{ content: Video[] }>({
 		name: "content"
 	});
 	const { watch } = useFormContext<{ lessonId: string }>();
-	const reactPlayer = useRef<ReactPlayer | null>(null);
+	const reactPlayer = useRef<ReactPlayerRef | null>(null);
 
 	const {
 		value: { url, subtitle },
@@ -68,7 +70,7 @@ export function VideoInput({ index }: { index: number }) {
 								subtitle={subtitle}
 								onClick={seconds => {
 									if (reactPlayer.current) {
-										reactPlayer.current.seekTo(seconds);
+										reactPlayer.current.currentTime = seconds;
 									}
 								}}
 								onChange={newSubtitle => {

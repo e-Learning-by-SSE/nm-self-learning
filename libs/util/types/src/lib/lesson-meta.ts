@@ -1,4 +1,3 @@
-/* eslint-disable indent */
 import { Lesson } from "./lesson";
 import { LessonContentMediaType, MetaByContentType } from "./lesson-content";
 

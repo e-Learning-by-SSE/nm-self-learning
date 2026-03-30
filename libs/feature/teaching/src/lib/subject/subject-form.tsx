@@ -1,7 +1,7 @@
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { SpecializationRelation } from "@self-learning/types";
-import { IconButton, ImageChip, OnDialogCloseFn, showToast } from "@self-learning/ui/common";
+import { IconTextButton, ImageChip, OnDialogCloseFn, showToast } from "@self-learning/ui/common";
 import { Form } from "@self-learning/ui/forms";
 import Link from "next/link";
 import { useState } from "react";
@@ -44,7 +44,7 @@ export function SpecializationForm({ subtitle }: { subtitle: string }) {
 		<Form.SidebarSection>
 			<Form.SidebarSectionTitle title="Spezialisierungen" subtitle={subtitle} />
 
-			<IconButton
+			<IconTextButton
 				type="button"
 				data-testid="author-add"
 				onClick={() => setOpenAddDialog(true)}
@@ -78,16 +78,16 @@ function Specialization({
 	const { data: specialization } = trpc.specialization.getById.useQuery({ specializationId });
 
 	if (!specialization) {
-		return <li className="rounded-lg border border-light-border bg-white p-2">Loading...</li>;
+		return <li className="rounded-lg border border-c-border bg-white p-2">Loading...</li>;
 	}
 
 	return (
 		<ImageChip imgUrl={specialization.cardImgUrl} onRemove={onRemove}>
-			<span className="text-xs text-light">{specialization.subject.title}</span>
+			<span className="text-xs text-c-text-muted">{specialization.subject.title}</span>
 			<Link
 				href={`/subjects/${specialization.subject.slug}/${specialization.slug}`}
 				target="_blank"
-				className="font-medium hover:text-secondary"
+				className="font-medium hover:text-c-primary"
 				rel="noopener noreferrer"
 			>
 				{specialization.title}

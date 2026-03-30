@@ -1,0 +1,232 @@
+// // styles/Flame.module.scss
+
+// $fireColor: rgb(255, 80, 0);
+// $fireColorT: rgba(255, 80, 0, 0);
+// $dur: 1s;
+// $blur: 0.02em;
+// $fireRad: 3em;
+// $parts: 50;
+// $partSize: 5em;
+
+// .fire {
+// 	// font-size: 1em;
+// 	font-size: inherit;
+// 	pointer-events: none;
+
+// 	filter: blur($blur);
+// 	-webkit-filter: blur($blur);
+// 	margin: 3em auto 0 auto;
+// 	position: relative;
+// 	z-index: 0;
+// 	// width: 10em;
+// 	// height: 12em;
+// 	width: 100%;
+// 	height: 100%;
+// 	position: relative;
+// }
+// // .fire {
+// //   width: 100%;
+// //   height: 100%;
+// //   font-size: inherit;
+// //   filter: blur(0.02em);
+// //   position: relative;
+// //   margin: 3em auto 0 auto;
+// //   -webkit-filter: blur($blur);
+// //   z-index: 0;
+// // }
+
+// .particle {
+// 	animation: rise $dur ease-in infinite;
+// 	background-image: radial-gradient($fireColor 20%, $fireColorT 70%);
+// 	border-radius: 50%;
+// 	mix-blend-mode: screen;
+// 	opacity: 0;
+// 	position: absolute;
+// 	bottom: 0;
+// 	width: $partSize;
+// 	height: $partSize;
+
+// 	@for $p from 1 through $parts {
+// 		&:nth-of-type(#{$p}) {
+// 			animation-delay: $dur * random();
+// 			left: calc((100% - #{$partSize}) * #{($p - 1) / $parts});
+// 		}
+// 	}
+// }
+
+// @keyframes rise {
+// 	from {
+// 		opacity: 0;
+// 		transform: translateY(0) scale(1);
+// 	}
+// 	25% {
+// 		opacity: 1;
+// 	}
+// 	to {
+// 		opacity: 0;
+// 		transform: translateY(-10em) scale(0);
+// 	}
+// }
+// styles/Flame.module.scss
+
+//## claude anpassungen
+// $fireColor: rgb(255, 80, 0);
+// $fireColorT: rgba(255, 80, 0, 0);
+// $dur: 1s;
+// $blur: 0.02em;
+// $parts: 50;
+// $partSize: 5em;
+
+// .flameContainer {
+// 	position: absolute;
+// 	top: 0;
+// 	left: 0;
+// 	width: 100%;
+// 	height: 100%;
+// 	z-index: 0; // Platziert die Flamme hinter dem Inhalt
+// 	overflow: hidden;
+// }
+
+// .fire {
+// 	font-size: inherit;
+// 	pointer-events: none;
+// 	filter: blur($blur);
+// 	-webkit-filter: blur($blur);
+// 	position: absolute;
+// 	bottom: 0;
+// 	left: 0;
+// 	width: 100%;
+// 	height: 100%;
+// 	z-index: -1;
+// }
+
+// .particle {
+// 	animation: rise $dur ease-in infinite;
+// 	background-image: radial-gradient($fireColor 20%, $fireColorT 70%);
+// 	border-radius: 50%;
+// 	mix-blend-mode: screen;
+// 	opacity: 0;
+// 	position: absolute;
+// 	bottom: 0;
+// 	width: $partSize;
+// 	height: $partSize;
+
+// 	@for $p from 1 through $parts {
+// 		&:nth-of-type(#{$p}) {
+// 			animation-delay: $dur * random();
+// 			left: calc((100% - #{$partSize}) * #{($p - 1) / $parts});
+// 		}
+// 	}
+// }
+
+// @keyframes rise {
+// 	from {
+// 		opacity: 0;
+// 		transform: translateY(0) scale(1);
+// 	}
+// 	25% {
+// 		opacity: 1;
+// 	}
+// 	to {
+// 		opacity: 0;
+// 		transform: translateY(-10em) scale(0);
+// 	}
+// }
+
+//#weitere anpassung  um die flamme zu zentrieren
+// styles/Flame.module.scss
+$fireColor: rgb(255, 80, 0);
+$fireColorT: rgba(255, 80, 0, 0);
+$dur: 1s;
+$blur: 0.02em;
+$parts: 50;
+$partSize: 5em;
+
+.flame {
+	--fire-color: rgb(255, 80, 0);
+	--fire-color-transparent: rgba(255, 80, 0, 0);
+}
+
+.blueFlame {
+	--fire-color: rgb(123, 188, 234);
+	--fire-color-transparent: rgba(0, 149, 255, 0.771);
+}
+
+.container {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	min-height: 100px;
+}
+
+.flameContainer {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 0;
+	overflow: visible;
+}
+
+.fire {
+	font-size: inherit;
+	pointer-events: none;
+	filter: blur($blur);
+	-webkit-filter: blur($blur);
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.particle {
+	animation: rise $dur ease-in infinite;
+	background-image: radial-gradient(var(--fire-color) 20%, var(--fire-color-transparent) 70%);
+	border-radius: 50%;
+	mix-blend-mode: screen;
+	opacity: 0;
+	position: absolute;
+	bottom: 0;
+	width: $partSize;
+	height: $partSize;
+
+	@for $p from 1 through $parts {
+		&:nth-of-type(#{$p}) {
+			animation-delay: $dur * random();
+			left: calc((100% - #{$partSize}) * #{($p - 1) / $parts});
+		}
+	}
+}
+
+.content {
+	position: relative;
+	z-index: 1;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+@keyframes rise {
+	from {
+		opacity: 0;
+		transform: translateY(0) scale(1);
+	}
+	25% {
+		opacity: 1;
+	}
+	to {
+		opacity: 0;
+		transform: translateY(-10em) scale(0);
+	}
+}
+
+.smallCounterFlame {
+	.particle {
+		width: 3em;
+		height: 3em;
+	}
+}

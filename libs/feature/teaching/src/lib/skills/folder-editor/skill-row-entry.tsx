@@ -1,4 +1,4 @@
-import { TableDataColumn } from "@self-learning/ui/common";
+import { TableDataColumn, IconOnlyButton } from "@self-learning/ui/common";
 import React from "react";
 import {
 	ChevronDownIcon,
@@ -103,13 +103,13 @@ function SkillRow({
 		<tr
 			style={depthCssStyle}
 			title={title}
-			className={`group cursor-pointer hover:bg-gray-100 ${cycleError ? "bg-red-100" : ""}
+			className={`group cursor-pointer hover:bg-c-neutral-muted ${cycleError ? "bg-c-danger-subtle" : ""}
 				${cycleWarning ? "bg-yellow-100" : ""}
-				${skill.isSelected ? "bg-gray-200" : ""} `}
+				${skill.isSelected ? "bg-c-surface-3" : ""} `}
 		>
 			<TableDataColumn className={"text-center align-middle"}>
 				<input
-					className="secondary form-checkbox rounded text-secondary focus:ring-secondary"
+					className="c-primary form-checkbox rounded text-c-primary focus:ring-c-primary"
 					type="checkbox"
 					defaultChecked={false} // TODO mass select
 				/>
@@ -122,7 +122,7 @@ function SkillRow({
 			>
 				<div className={`flex px-2`}>
 					<div
-						className={`flex ${skill.isFolder && "hover:text-secondary"}`}
+						className={`flex ${skill.isFolder && "hover:text-c-primary"}`}
 						onClick={onOpen}
 					>
 						<div className="flex px-3">
@@ -153,17 +153,17 @@ function SkillRow({
 							)}
 						</div>
 						{cycleError && (
-							<ArrowPathRoundedSquareIcon className="icon h-5 text-lg text-red-500" />
+							<ArrowPathRoundedSquareIcon className="icon h-5 text-lg text-c-danger" />
 						)}
 						{cycleWarning && (
 							<ShieldExclamationIcon className="icon h-5 text-lg text-yellow-500" />
 						)}
-						<span className={`${skill.isSelected ? "text-secondary" : ""}`}>
+						<span className={`${skill.isSelected ? "text-c-primary" : ""}`}>
 							{skill.displayName ?? skill.skill.name}
 						</span>
-						<span className="ml-1 text-xs text-gray-500">{skill.skill.id}</span>
+						<span className="ml-1 text-xs text-c-text-muted">{skill.skill.id}</span>
 					</div>
-					<div className="invisible  group-hover:visible">
+					<div className="invisible group-hover:visible">
 						<QuickEditButton onClick={() => handleSelection(skill.id)} skill={skill} />
 						<AddChildButton
 							parentSkill={skill.skill}
@@ -187,14 +187,13 @@ function QuickEditButton({
 	skill: SkillFolderVisualization;
 }) {
 	return (
-		<button
+		<IconOnlyButton
 			title="Bearbeiten"
-			className="mr-3 px-2 hover:text-secondary"
+			className="!px-2 !py-0"
+			icon={<PencilIcon className="h-5 text-lg" />}
 			onClick={onClick}
 			disabled={skill.isSelected}
-		>
-			<PencilIcon className="ml-1 h-5 text-lg" />
-		</button>
+		/>
 	);
 }
 

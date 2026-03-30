@@ -11,7 +11,7 @@ import {
 	OnDialogCloseFn,
 	SectionHeader,
 	showToast,
-	IconButton,
+	IconTextButton,
 	Toggle,
 	IconOnlyButton
 } from "@self-learning/ui/common";
@@ -125,11 +125,13 @@ export default function ArrangeForm({ index }: { index: number }) {
 			<SectionHeader
 				title="Kategorien"
 				button={
-					<IconButton
-						text="Kategorie Hinzufügen"
-						icon={<PlusIcon className="icon w-5" />}
+					<button
+						type="button"
+						className="btn-primary"
 						onClick={() => setAddCategoryDialog(true)}
-					/>
+					>
+						Kategorie erstellen
+					</button>
 				}
 			/>
 			<div className="flex items-center gap-2">
@@ -152,13 +154,13 @@ export default function ArrangeForm({ index }: { index: number }) {
 							// eslint-disable-next-line react/jsx-no-useless-fragment
 							<Fragment key={containerId}>
 								{containerId === "_init" ? null : (
-									<div className="flex min-w-fit flex-col gap-4 rounded-lg bg-gray-200 p-4">
+									<div className="flex min-w-fit flex-col gap-4 rounded-lg bg-c-surface-3 p-4">
 										<span className="flex items-center justify-between gap-4 font-semibold">
 											<span>{containerId}</span>
 											<div className="flex gap-2">
 												<IconOnlyButton
 													icon={<PencilIcon className="h-5 w-5" />}
-													variant="tertiary"
+													className="btn-tertiary"
 													onClick={() =>
 														setEditCategoryDialog(containerId)
 													}
@@ -166,7 +168,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 												/>
 												<IconOnlyButton
 													icon={<PlusIcon className="h-5 w-5" />}
-													variant="primary"
+													className="btn-primary"
 													onClick={() =>
 														setEditItemDialog({ containerId })
 													}
@@ -174,7 +176,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 												/>
 												<IconOnlyButton
 													icon={<TrashIcon className="h-5 w-5" />}
-													variant="danger"
+													className="btn-danger"
 													onClick={() => onDeleteContainer(containerId)}
 													title={"Kategorie entfernen"}
 												/>
@@ -186,7 +188,7 @@ export default function ArrangeForm({ index }: { index: number }) {
 												<ul
 													ref={provided.innerRef}
 													{...provided.droppableProps}
-													className="flex w-full gap-4 overflow-x-auto min-h-[164px] rounded-lg bg-gray-100 p-4"
+													className="flex w-full gap-4 overflow-x-auto min-h-[164px] rounded-lg bg-c-surface-2 p-4"
 												>
 													{items[containerId].map((item, index) => (
 														<DraggableContent
@@ -237,7 +239,7 @@ function DraggableContent({
 					<div className="flex justify-end gap-2">
 						<IconOnlyButton
 							icon={<PencilIcon className="h-5 w-5" />}
-							variant="tertiary"
+							className="btn-tertiary"
 							onClick={() =>
 								setEditItemDialog({
 									containerId,
@@ -249,7 +251,7 @@ function DraggableContent({
 
 						<IconOnlyButton
 							icon={<XMarkIcon className="h-5 w-5" />}
-							variant="x-mark"
+							className="btn-x-mark"
 							onClick={() => onDeleteItem(containerId, item.id)}
 							title="Löschen"
 						/>

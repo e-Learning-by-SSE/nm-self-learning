@@ -1,6 +1,7 @@
 import { getCourseCompletionOfStudent } from "@self-learning/completion";
-import { createUserEvent, database } from "@self-learning/database";
+import { database } from "@self-learning/database";
 import { CourseEnrollment, ResolvedValue } from "@self-learning/types";
+import { createEventLogEntry } from "@self-learning/util/eventlog";
 import { AlreadyExists } from "@self-learning/util/http";
 
 export async function getEnrollmentDetails(username: string) {
@@ -100,7 +101,7 @@ export async function enrollUser({ courseId, username }: { courseId: string; use
 		}
 	});
 
-	await createUserEvent({
+	await createEventLogEntry({
 		username,
 		type: "COURSE_ENROLL",
 		resourceId: courseId,

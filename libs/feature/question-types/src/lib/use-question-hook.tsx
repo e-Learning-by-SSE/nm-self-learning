@@ -1,6 +1,7 @@
 import { MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { createContext, Dispatch, PropsWithChildren, SetStateAction, useContext } from "react";
 import { InferQuestionType, QuestionType, QuestionTypeUnion } from "./question-type-registry";
+import { BaseEvaluation } from "./base-question";
 
 type AnswerContextValue = {
 	question: QuestionType;
@@ -11,7 +12,7 @@ type AnswerContextValue = {
 	answer: Record<string, unknown> | null;
 	setAnswer: Dispatch<SetStateAction<Record<string, unknown>>>;
 	evaluation: { isCorrect: boolean } | null;
-	setEvaluation: (ev: { isCorrect: boolean } | null) => void;
+	setEvaluation: (ev: BaseEvaluation | null) => void;
 };
 
 export const AnswerContext = createContext(null as unknown as AnswerContextValue);

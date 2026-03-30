@@ -1,28 +1,18 @@
-import {
-	EventType,
-	evenTypePayloadSchema,
-	eventWhereSchema,
-	eventLogSchema
-} from "@self-learning/types";
+import { eventWhereSchema, eventLogSchema } from "@self-learning/types";
 import { authProcedure, t } from "../trpc";
-
-import { createUserEvent, loadUserEvents } from "@self-learning/database";
+import { createEventLogEntry, loadUserEventLogs } from "@self-learning/util/eventlog";
 
 export const userEventRouter = t.router({
-	// !!!! not for direct use; use useEventLog hook instead !!!!
+	// !!!! Do not use this router directly in the client code, use the useEventLog hook instead. !!!!
+	// The hook created compiler errors in case payload and type do not match.
 	create: authProcedure.input(eventLogSchema).mutation(async ({ ctx, input }) => {
-		// Validate playload matches action
-		const schema = evenTypePayloadSchema.shape[input.type];
-		schema.parse(input.payload);
-
-		return await createUserEvent({
+		return await createEventLogEntry({
 			username: ctx.user.name,
-			...input,
-			payload: input.payload satisfies EventType[typeof input.type]
+			...input
 		});
 	}),
 	findMany: authProcedure.input(eventWhereSchema).query(async ({ ctx, input }) => {
-		return loadUserEvents({
+		return loadUserEventLogs({
 			...input,
 			username: ctx.user?.name
 		});

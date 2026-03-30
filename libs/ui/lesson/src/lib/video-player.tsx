@@ -1,10 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, forwardRef } from "react";
-import type { OnProgressProps } from "react-player/base";
-import ReactPlayer from "react-player/lazy";
 import { EventLog, EventTypeKeys } from "@self-learning/types";
-import { useEventLog } from "@self-learning/util/common";
+import { useEventLog } from "@self-learning/util/eventlog";
+import { useCallback, useEffect, useRef, useState, forwardRef } from "react";
+import ReactPlayer from "react-player";
+
+function useHydrationFix() {
+	// hydration error workaround https://github.com/cookpete/react-player/issues/1474#issuecomment-1484028123 :)
+	const [isClient, setIsClient] = useState(false);
+	useEffect(() => {
+		setIsClient(true);
+	}, []);
+	return { isClient };
+}
 
 type SubtitleDescriptor = {
 	src: string;
@@ -21,30 +29,26 @@ type VideoPlayerProps = Readonly<{
 	courseId?: string;
 }>;
 
-function useHydrationFix() {
-	// hydration error workaround https://github.com/cookpete/react-player/issues/1474#issuecomment-1484028123 :)
-	const [isClient, setIsClient] = useState(false);
-	useEffect(() => {
-		setIsClient(true);
-	}, []);
-	return { isClient };
-}
+type ReactPlayerRef = React.ElementRef<typeof ReactPlayer>;
 
-export const VideoPlayer = forwardRef<ReactPlayer | null, VideoPlayerProps>(function VideoPlayer(
-	{ url, subtitle, onProgress, startAt = 0, parentLessonId, courseId },
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	externalRef
+export const VideoPlayer = forwardRef<ReactPlayerRef | null, VideoPlayerProps>(function VideoPlayer({
+	url,
+    subtitle,
+	startAt = 0,
+	parentLessonId,
+	courseId
+}, 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    externalRef
 ) {
-	const playerRef = useRef<ReactPlayer | null>(null);
-
+	const playerRef = useRef<HTMLVideoElement | null>(null);
 	const { isClient } = useHydrationFix();
 	const { newEvent: writeEvent } = useEventLog();
 	const [isReady, setIsReady] = useState(false);
-	const [lastRenderTime, setLastRenderTime] = useState(Date.now());
+	const [lastRenderTime, setLastRenderTime] = useState(new Date().getTime());
+    const [subtitleUrl, setSubtitleUrl] = useState<string | null>(null);
 
-	const [subtitleUrl, setSubtitleUrl] = useState<string | null>(null);
-
-	useEffect(() => {
+    useEffect(() => {
 		if (!subtitle?.src) {
 			setSubtitleUrl(null);
 			return;
@@ -59,131 +63,117 @@ export const VideoPlayer = forwardRef<ReactPlayer | null, VideoPlayerProps>(func
 		};
 	}, [subtitle?.src]);
 
+
 	useEffect(() => {
-		setLastRenderTime(Date.now());
+		const now = new Date();
+		setLastRenderTime(now.getTime());
 	}, []);
 
-	const logEvent = useCallback(
+	const newEvent = useCallback(
 		async <K extends EventTypeKeys>(event: EventLog<K>) => {
+			// when parentLessonId is not provided, the player is probably not in a lesson during learning
+			// (probably inside an editor) so we don't need to write events
 			if (parentLessonId) {
-				await writeEvent({ ...event, resourceId: parentLessonId, courseId });
+				await writeEvent({ ...event, resourceId: parentLessonId, courseId: courseId });
 			}
 		},
 		[parentLessonId, writeEvent, courseId]
 	);
-
-	const handleStart = useCallback(async () => {
-		await logEvent({
+	async function onStart() {
+		await newEvent({
 			type: "LESSON_VIDEO_START",
 			payload: undefined
 		});
-	}, [logEvent]);
+	}
 
-	const handleReady = useCallback(() => {
+	const onReady = useCallback(() => {
 		if (!isReady) {
-			playerRef.current?.seekTo(startAt, "seconds");
+			if (playerRef.current) {
+				playerRef.current.currentTime = startAt;
+			}
 			setIsReady(true);
-			void logEvent({
+			newEvent({
 				type: "LESSON_VIDEO_OPENED",
 				payload: { url }
 			});
 		}
-	}, [isReady, startAt, logEvent, url]);
+	}, [isReady, startAt, newEvent, url]);
 
-	const handlePlay = useCallback(() => {
-		void logEvent({
+	function onPlay() {
+		newEvent({
 			type: "LESSON_VIDEO_PLAY",
-			payload: { videoCurrentTime: playerRef.current?.getCurrentTime() ?? 0, url }
+			payload: { videoCurrentTime: playerRef?.current?.currentTime ?? 0, url }
 		});
-	}, [logEvent, url]);
-
-	const handlePause = useCallback(() => {
-		void logEvent({
+	}
+	function onPause() {
+		// this is fired even when the video ends or on seeking
+		newEvent({
 			type: "LESSON_VIDEO_PAUSE",
-			payload: { videoCurrentTime: playerRef.current?.getCurrentTime() ?? 0, url }
+			payload: { videoCurrentTime: playerRef?.current?.currentTime ?? 0, url }
 		});
-	}, [logEvent, url]);
+	}
 
-	const handleEnded = useCallback(() => {
-		void logEvent({
+	function onEnded() {
+		newEvent({
 			type: "LESSON_VIDEO_END",
 			payload: { url }
 		});
-	}, [logEvent, url]);
+	}
 
-	const handlePlaybackRateChange = useCallback(
-		(videoSpeed: number) => {
-			void logEvent({
-				type: "LESSON_VIDEO_SPEED",
-				payload: { videoSpeed }
-			});
-		},
-		[logEvent]
-	);
+	function onPlaybackRateChange() {
+		const videoSpeed = playerRef?.current?.playbackRate;
+		if (videoSpeed === undefined) return;
+		newEvent({
+			type: "LESSON_VIDEO_SPEED",
+			payload: { videoSpeed }
+		});
+	}
 
-	const handleSeek = useCallback(
-		(seconds: number) => {
-			if (startAt === playerRef.current?.getCurrentTime()) return;
-			if (Date.now() - lastRenderTime < 2000) return;
-			void logEvent({
-				type: "LESSON_VIDEO_JUMP",
-				payload: {
-					videoJump: 0,
-					videoLand: seconds
-				}
-			});
-		},
-		[startAt, lastRenderTime, logEvent]
-	);
+	function onSeek() {
+		const current = playerRef?.current?.currentTime;
+		if (current === undefined) return;
+		if (startAt === current) return;
+		if (new Date().getTime() - lastRenderTime < 2000 /* 2 Seconds */) return;
+		// TODO write a test for this behavior
+		newEvent({
+			type: "LESSON_VIDEO_JUMP",
+			payload: {
+				videoJump: 0,
+				videoLand: current
+			}
+		});
+	}
 
-	const handleProgress = useCallback(
-		(state: OnProgressProps) => {
-			onProgress?.(state.playedSeconds);
-		},
-		[onProgress]
-	);
-
-	console.log("Rendering video player...", { subtitleUrl });
+    console.log("Rendering video player...", { subtitleUrl });
 
 	if (!isClient) return <p>The video player cannot render on the server side</p>;
 
 	return (
 		<ReactPlayer
 			data-testid="video-player"
-			url={url}
+			src={url}
 			ref={playerRef}
 			height="100%"
 			width="100%"
 			controls={true}
-			onStart={handleStart}
-			onPause={handlePause}
-			onEnded={handleEnded}
-			onPlay={handlePlay}
-			onSeek={handleSeek}
-			onProgress={handleProgress}
-			onReady={handleReady}
+			onStart={onStart}
+			onPause={onPause}
+			onEnded={onEnded}
+			onPlay={onPlay}
+			onSeeked={onSeek}
+			onReady={onReady}
 			loop={false}
-			onPlaybackRateChange={handlePlaybackRateChange}
-			config={
-				subtitleUrl
-					? {
-							file: {
-								attributes: {
-									crossOrigin: "true"
-								},
-								tracks: [
-									{
-										kind: "subtitles",
-										src: subtitleUrl,
-										srcLang: subtitle?.srcLang ?? "en",
-										label: subtitle?.label ?? "English",
-										default: true
-									}
-								]
-							}
-						}
-					: undefined
-			}
-		/>
+			onRateChange={onPlaybackRateChange}
+		>
+            {subtitleUrl && (
+            <track
+                kind="subtitles"
+                src={subtitleUrl}
+                srcLang={subtitle?.srcLang ?? "en"}
+                label={subtitle?.label ?? "English"}
+                default
+            />
+            )}
+        </ReactPlayer>
 	);
 });

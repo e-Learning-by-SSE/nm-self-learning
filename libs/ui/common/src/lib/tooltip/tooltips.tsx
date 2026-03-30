@@ -14,9 +14,9 @@ export function QuestionMarkTooltip({
 	return (
 		<Tooltip content={content}>
 			{type === "outline" ? (
-				<QuestionMarcOutline className="h-4 w-4 text-gray-500" />
+				<QuestionMarcOutline className="h-4 w-4 text-c-text-muted" />
 			) : (
-				<QuestionMarcSolid className="h-4 w-4 text-gray-500" />
+				<QuestionMarcSolid className="h-4 w-4 text-c-text-muted" />
 			)}
 		</Tooltip>
 	);

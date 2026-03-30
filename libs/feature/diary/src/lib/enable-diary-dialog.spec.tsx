@@ -17,8 +17,8 @@ describe("EnableLearningDiaryDialog", () => {
 
 		await waitFor(() => {
 			expect(mockOnSubmit).toHaveBeenCalledWith({
-				enabledLearningStatistics: true,
-				enabledFeatureLearningDiary: true
+				learningDiary: true,
+				learningStatistics: true
 			});
 		});
 	});

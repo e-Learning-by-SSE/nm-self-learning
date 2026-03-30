@@ -43,7 +43,7 @@ export function PdfInput({ index }: { index: number }) {
 						key={"pdf"}
 						mediaType="pdf"
 						preview={
-							<div className="overflow-hidden bg-gray-200">
+							<div className="overflow-hidden bg-c-surface-3">
 								{url && (
 									<div className="h-[500px] overflow-auto bg-white">
 										<PdfViewer url={url} />
