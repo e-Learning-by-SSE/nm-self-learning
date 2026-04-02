@@ -265,11 +265,11 @@ export function ModifySubtile({
 export function GenerateSubtile({
 	video_url,
 	lessonId,
-	onTranscribitionCompleted
+	onTranscriptionCompleted
 }: {
 	video_url: string;
 	lessonId: string;
-	onTranscribitionCompleted: (subtitle: Subtitle) => void;
+	onTranscriptionCompleted: (subtitle: Subtitle) => void;
 }) {
 	const [showDialog, setShowDialog] = useState(false);
 
@@ -290,7 +290,7 @@ export function GenerateSubtile({
 								label: "Deutsch",
 								srcLang: transcription?.language
 							};
-							onTranscribitionCompleted(subtitle);
+							onTranscriptionCompleted(subtitle);
 						} catch {
 							showToast({
 								type: "error",

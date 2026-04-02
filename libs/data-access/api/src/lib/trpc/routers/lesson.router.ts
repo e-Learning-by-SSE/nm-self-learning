@@ -16,6 +16,7 @@ import { ConvertTranscriptionToSubtitle } from "@self-learning/ui/lesson";
 
 const saveSubtitleInputSchema = z.object({
 	lessonId: z.string(),
+	video_url: z.url(),
 	transcription: subtitleSrcSchema
 });
 
@@ -248,7 +249,7 @@ export const lessonRouter = t.router({
 			})
 		)
 		.mutation(async ({ input }) => {
-			const { lessonId, transcription } = input;
+			const { lessonId, video_url, transcription } = input;
 
 			const subtitleSrc = subtitleSrcSchema.parse(transcription);
 			const subtitle = await ConvertTranscriptionToSubtitle(subtitleSrc);
@@ -288,7 +289,7 @@ export const lessonRouter = t.router({
 				},
 				data: {
 					content: content.map(c =>
-						c.type === "video"
+						c.type === "video" && c.value.url === video_url
 							? {
 									...c,
 									value: {

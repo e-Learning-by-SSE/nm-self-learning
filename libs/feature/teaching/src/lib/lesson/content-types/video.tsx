@@ -17,6 +17,7 @@ export function VideoInput({ index }: { index: number }) {
 		value: { url, subtitle },
 		meta: { duration }
 	} = useWatch({ control, name: `content.${index}` });
+	const transcriptionServiceUrl = process.env.NEXT_PUBLIC_TRANSCRIPTION_SERVICE_URL;
 
 	return (
 		<SectionCard>
@@ -86,11 +87,11 @@ export function VideoInput({ index }: { index: number }) {
 							/>
 						</div>
 					)}
-					{url && !subtitle && (
+					{url && !subtitle && transcriptionServiceUrl && (
 						<GenerateSubtile
 							video_url={url}
 							lessonId={watch().lessonId}
-							onTranscribitionCompleted={createdSubtitle => {
+							onTranscriptionCompleted={createdSubtitle => {
 								update(index, {
 									type: "video",
 									value: { url, subtitle: createdSubtitle },
