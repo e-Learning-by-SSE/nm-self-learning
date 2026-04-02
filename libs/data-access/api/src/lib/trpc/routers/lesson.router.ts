@@ -275,6 +275,13 @@ export const lessonRouter = t.router({
 				});
 			}
 
+			// Lang Code -> Lang Label, e.g. "de" -> "Deutsch"
+			const languageNames = new Intl.DisplayNames(["de"], { type: "language" });
+			const getLanguageLabel = (lang?: string) => {
+				const code = lang ?? "de";
+				return languageNames.of(code) ?? code;
+			};
+
 			await database.lesson.update({
 				where: {
 					lessonId
@@ -288,7 +295,7 @@ export const lessonRouter = t.router({
 										...c.value,
 										subtitle: {
 											src: subtitle,
-											label: "Deutsch",
+											label: getLanguageLabel(subtitleSrc.language),
 											srcLang: subtitleSrc.language ?? "de"
 										}
 									}
