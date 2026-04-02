@@ -1,11 +1,23 @@
 import { Course, Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
-import { createLessonMeta, EventTypeMap, lessonSchema } from "@self-learning/types";
+import {
+	createLessonMeta,
+	EventTypeMap,
+	lessonSchema,
+	subtitleSrcSchema,
+	LessonContent
+} from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { differenceInHours } from "date-fns";
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
+import { ConvertTranscriptionToSubtitle } from "@self-learning/ui/lesson";
+
+const saveSubtitleInputSchema = z.object({
+	lessonId: z.string(),
+	transcription: subtitleSrcSchema
+});
 
 export const lessonRouter = t.router({
 	findOneAllProps: authProcedure.input(z.object({ lessonId: z.string() })).query(({ input }) => {
@@ -142,7 +154,7 @@ export const lessonRouter = t.router({
 				FROM "Course"
 				WHERE EXISTS (SELECT 1
 							  FROM jsonb_array_elements("Course".content) AS chapter
-									   CROSS JOIN jsonb_array_elements(chapter - > 'content') AS lesson
+									   CROSS JOIN jsonb_array_elements(chapter->'content') AS lesson
 							  WHERE lesson ->>'lessonId' = ${input.lessonId})
 			`;
 			return courses as Course[];
@@ -217,6 +229,76 @@ export const lessonRouter = t.router({
 			}
 
 			return { isValid: true };
+		}),
+	save_subtitles: authProcedure
+		.meta({
+			openapi: {
+				enabled: true,
+				method: "POST",
+				path: "/lessons/save_subtitles",
+				tags: ["Lessons"],
+				protect: true,
+				summary: "Store externally generated subtitles for a lesson"
+			}
+		})
+		.input(saveSubtitleInputSchema)
+		.output(
+			z.object({
+				message: z.string()
+			})
+		)
+		.mutation(async ({ input }) => {
+			const { lessonId, transcription } = input;
+
+			const subtitleSrc = subtitleSrcSchema.parse(transcription);
+			const subtitle = await ConvertTranscriptionToSubtitle(subtitleSrc);
+
+			const lesson = await database.lesson.findUnique({
+				where: {
+					lessonId
+				}
+			});
+
+			if (!lesson) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Lesson not found"
+				});
+			}
+
+			const content = lesson.content as LessonContent | undefined;
+
+			if (!content || content.length === 0) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Content not found"
+				});
+			}
+
+			await database.lesson.update({
+				where: {
+					lessonId
+				},
+				data: {
+					content: content.map(c =>
+						c.type === "video"
+							? {
+									...c,
+									value: {
+										...c.value,
+										subtitle: {
+											src: subtitle,
+											label: "Deutsch",
+											srcLang: subtitleSrc.language ?? "de"
+										}
+									}
+								}
+							: c
+					)
+				}
+			});
+
+			return { message: "Subtitle saved" };
 		})
 });
 

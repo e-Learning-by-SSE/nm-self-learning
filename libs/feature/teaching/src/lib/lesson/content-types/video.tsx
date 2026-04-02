@@ -1,7 +1,7 @@
 import { Video } from "@self-learning/types";
 import { SectionCard } from "@self-learning/ui/common";
 import { GenerateSubtile, LabeledField, ModifySubtile, Upload } from "@self-learning/ui/forms";
-import { VideoPlayer } from "@self-learning/ui/lesson";
+import { VideoPlayer, VideoPlayerHandle } from "@self-learning/ui/lesson";
 import { useRef } from "react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 
@@ -11,7 +11,7 @@ export function VideoInput({ index }: { index: number }) {
 		name: "content"
 	});
 	const { watch } = useFormContext<{ lessonId: string }>();
-	const reactPlayer = useRef<HTMLVideoElement | null>(null);
+	const reactPlayer = useRef<VideoPlayerHandle | null>(null);
 
 	const {
 		value: { url, subtitle },
@@ -73,7 +73,7 @@ export function VideoInput({ index }: { index: number }) {
 										reactPlayer.current
 									);
 									if (reactPlayer.current) {
-										reactPlayer.current.currentTime = seconds;
+										reactPlayer.current.setCurrentTime(seconds);
 									}
 								}}
 								onChange={newSubtitle => {

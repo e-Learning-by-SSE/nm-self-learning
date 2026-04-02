@@ -5,6 +5,11 @@ import { useEventLog } from "@self-learning/util/eventlog";
 import { useCallback, useEffect, useRef, useState, forwardRef, useImperativeHandle } from "react";
 import ReactPlayer from "react-player";
 
+export type VideoPlayerHandle = {
+	setCurrentTime: (seconds: number) => void;
+	getCurrentTime: () => number;
+};
+
 function useHydrationFix() {
 	// hydration error workaround https://github.com/cookpete/react-player/issues/1474#issuecomment-1484028123 :)
 	const [isClient, setIsClient] = useState(false);
@@ -29,12 +34,21 @@ type VideoPlayerProps = Readonly<{
 	courseId?: string;
 }>;
 
-export const VideoPlayer = forwardRef<HTMLVideoElement, VideoPlayerProps>(function VideoPlayer(
+export const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(function VideoPlayer(
 	{ url, subtitle, startAt = 0, parentLessonId, courseId },
-	externalRef: React.Ref<HTMLVideoElement | null>
+	externalRef: React.Ref<VideoPlayerHandle | null>
 ) {
 	const playerRef = useRef<HTMLVideoElement | null>(null);
-	useImperativeHandle(externalRef, () => playerRef.current, []);
+	useImperativeHandle(externalRef, () => ({
+		setCurrentTime: (seconds: number) => {
+			if (playerRef.current) {
+				playerRef.current.currentTime = seconds;
+			}
+		},
+		getCurrentTime: () => {
+			return playerRef.current?.currentTime ?? 0;
+		}
+	}));
 
 	const { isClient } = useHydrationFix();
 	const { newEvent: writeEvent } = useEventLog();
