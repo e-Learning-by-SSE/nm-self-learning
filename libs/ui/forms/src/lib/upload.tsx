@@ -1,7 +1,12 @@
 "use client";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { StarIcon } from "@heroicons/react/24/outline";
-import { CloudArrowUpIcon, EllipsisVerticalIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+import {
+	CloudArrowUpIcon,
+	EllipsisVerticalIcon,
+	PencilIcon,
+	TrashIcon
+} from "@heroicons/react/24/solid";
 import { AppRouter } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import {
@@ -268,6 +273,8 @@ export function GenerateSubtile({
 }) {
 	const [showDialog, setShowDialog] = useState(false);
 
+	console.log("GenerateSubtile", { video_url, lessonId });
+
 	return (
 		<>
 			{showDialog && (
@@ -284,7 +291,7 @@ export function GenerateSubtile({
 								srcLang: transcription?.language
 							};
 							onTranscribitionCompleted(subtitle);
-						} catch (error) {
+						} catch {
 							showToast({
 								type: "error",
 								title: "Fehler beim Erstellen des Untertitels",
@@ -321,23 +328,32 @@ function GenerateSubtileDialog({
 	const [transcription, setTranscription] = useState<string | null>(null);
 	const [socket, setSocket] = useState<Socket | null>(null);
 	const [isSocketConnected, setIsSocketConnected] = useState(false);
-	const { data: sessionToken, isLoading } = trpc.me.getJWTToken.useQuery();
-
+	const { data: sessionToken } = trpc.me.getJWTToken.useQuery();
 
 	useEffect(() => {
-		const socket = io(process.env["TRANSCRIPTION_SERVICE_URL"] ?? "http://localhost:5000");
+		const socket = io(
+			process.env["NEXT_PUBLIC_TRANSCRIPTION_SERVICE_URL"] ?? "http://localhost:5000"
+		);
 		setSocket(socket);
 
-		socket.emit("transcribe", {
-			video_url,
-			realtime: true,
-			lessonId: lessonId,
-			bearer_token: sessionToken
+		socket.on("connect", () => {
+			setIsSocketConnected(true);
+
+			socket.emit("transcribe", {
+				video_url,
+				realtime: true,
+				lessonId: lessonId,
+				bearer_token: sessionToken
+			});
 		});
 
-		socket.on("connect", () => {
-            setIsSocketConnected(true);
-        });
+		socket.on("connect_error", err => {
+			setProgress(
+				`Verbindung zum Transkription-Server fehlgeschlagen: <tt>${err.message}</tt>.\nWahrscheinlichste Ursache ist eine fehlerhafte Konfiguration oder der Server ist offline. Bitte kontaktieren Sie einen Administrator.`
+			);
+			setIsSocketConnected(false);
+			socket.disconnect();
+		});
 
 		socket.on("progress", (data: { message: string }) => {
 			setProgress(data.message);
@@ -350,6 +366,7 @@ function GenerateSubtileDialog({
 
 		socket.on("error", (data: { message: string }) => {
 			setProgress(`Error: ${data.message}`);
+			setIsSocketConnected(false);
 		});
 
 		return () => {
@@ -366,8 +383,11 @@ function GenerateSubtileDialog({
 			>
 				<CenteredContainer>
 					<div>
-						<p>{progress}</p>
-						{!transcription && (
+						<p
+							style={{ whiteSpace: "pre-line" }}
+							dangerouslySetInnerHTML={{ __html: progress }}
+						/>
+						{!transcription && isSocketConnected && (
 							<div className="h-5 w-5 mt-5 justify-center animate-spin rounded-full border-b-2 border-black" />
 						)}
 						{transcription && (

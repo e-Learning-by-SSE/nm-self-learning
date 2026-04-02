@@ -2,7 +2,7 @@
 
 import { EventLog, EventTypeKeys } from "@self-learning/types";
 import { useEventLog } from "@self-learning/util/eventlog";
-import { useCallback, useEffect, useRef, useState, forwardRef } from "react";
+import { useCallback, useEffect, useRef, useState, forwardRef, useImperativeHandle } from "react";
 import ReactPlayer from "react-player";
 
 function useHydrationFix() {
@@ -29,26 +29,20 @@ type VideoPlayerProps = Readonly<{
 	courseId?: string;
 }>;
 
-type ReactPlayerRef = React.ElementRef<typeof ReactPlayer>;
-
-export const VideoPlayer = forwardRef<ReactPlayerRef | null, VideoPlayerProps>(function VideoPlayer({
-	url,
-    subtitle,
-	startAt = 0,
-	parentLessonId,
-	courseId
-}, 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    externalRef
+export const VideoPlayer = forwardRef<HTMLVideoElement, VideoPlayerProps>(function VideoPlayer(
+	{ url, subtitle, startAt = 0, parentLessonId, courseId },
+	externalRef: React.Ref<HTMLVideoElement | null>
 ) {
 	const playerRef = useRef<HTMLVideoElement | null>(null);
+	useImperativeHandle(externalRef, () => playerRef.current, []);
+
 	const { isClient } = useHydrationFix();
 	const { newEvent: writeEvent } = useEventLog();
 	const [isReady, setIsReady] = useState(false);
 	const [lastRenderTime, setLastRenderTime] = useState(new Date().getTime());
-    const [subtitleUrl, setSubtitleUrl] = useState<string | null>(null);
+	const [subtitleUrl, setSubtitleUrl] = useState<string | null>(null);
 
-    useEffect(() => {
+	useEffect(() => {
 		if (!subtitle?.src) {
 			setSubtitleUrl(null);
 			return;
@@ -62,7 +56,6 @@ export const VideoPlayer = forwardRef<ReactPlayerRef | null, VideoPlayerProps>(f
 			URL.revokeObjectURL(objectUrl);
 		};
 	}, [subtitle?.src]);
-
 
 	useEffect(() => {
 		const now = new Date();
@@ -144,8 +137,6 @@ export const VideoPlayer = forwardRef<ReactPlayerRef | null, VideoPlayerProps>(f
 		});
 	}
 
-    console.log("Rendering video player...", { subtitleUrl });
-
 	if (!isClient) return <p>The video player cannot render on the server side</p>;
 
 	return (
@@ -165,15 +156,14 @@ export const VideoPlayer = forwardRef<ReactPlayerRef | null, VideoPlayerProps>(f
 			loop={false}
 			onRateChange={onPlaybackRateChange}
 		>
-            {subtitleUrl && (
-            <track
-                kind="subtitles"
-                src={subtitleUrl}
-                srcLang={subtitle?.srcLang ?? "en"}
-                label={subtitle?.label ?? "English"}
-                default
-            />
-            )}
-        </ReactPlayer>
+			{subtitleUrl && (
+				<track
+					kind="subtitles"
+					src={subtitleUrl}
+					srcLang={subtitle?.srcLang ?? "de"}
+					label={subtitle?.label ?? "Deutsch"}
+				/>
+			)}
+		</ReactPlayer>
 	);
 });

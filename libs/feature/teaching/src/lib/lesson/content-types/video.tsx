@@ -4,9 +4,6 @@ import { GenerateSubtile, LabeledField, ModifySubtile, Upload } from "@self-lear
 import { VideoPlayer } from "@self-learning/ui/lesson";
 import { useRef } from "react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
-import ReactPlayer from "react-player";
-
-type ReactPlayerRef = React.ElementRef<typeof ReactPlayer>;
 
 export function VideoInput({ index }: { index: number }) {
 	const { control } = useFormContext<{ content: Video[] }>();
@@ -14,7 +11,7 @@ export function VideoInput({ index }: { index: number }) {
 		name: "content"
 	});
 	const { watch } = useFormContext<{ lessonId: string }>();
-	const reactPlayer = useRef<ReactPlayerRef | null>(null);
+	const reactPlayer = useRef<HTMLVideoElement | null>(null);
 
 	const {
 		value: { url, subtitle },
@@ -69,6 +66,12 @@ export function VideoInput({ index }: { index: number }) {
 							<ModifySubtile
 								subtitle={subtitle}
 								onClick={seconds => {
+									console.log(
+										"Seeking to",
+										seconds,
+										"Player ref:",
+										reactPlayer.current
+									);
 									if (reactPlayer.current) {
 										reactPlayer.current.currentTime = seconds;
 									}
