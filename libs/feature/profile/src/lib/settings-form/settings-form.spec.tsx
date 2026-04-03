@@ -11,7 +11,7 @@ describe("FeatureSettingsForm", () => {
 			learningStatistics: false
 		};
 		render(<FeatureSettingsForm featureSettings={initialState} onChange={onChange} />);
-		const toggle = screen.getByTestId("ltb-toggle").querySelector('[role="switch"]')!;
+		const toggle = screen.getByTestId("ltb-toggle");
 		await userEvent.click(toggle);
 
 		await waitFor(() => {
@@ -30,10 +30,8 @@ describe("FeatureSettingsForm", () => {
 		};
 		render(<FeatureSettingsForm featureSettings={initialState} onChange={onChange} />);
 
-		const statisticsCheckbox = screen
-			.getByTestId("statistics-toggle")
-			.querySelector('[role="switch"]')!;
-		const ltbCheckbox = screen.getByTestId("ltb-toggle").querySelector('[role="switch"]')!;
+		const statisticsCheckbox = screen.getByTestId("statistics-toggle");
+		const ltbCheckbox = screen.getByTestId("ltb-toggle");
 
 		await userEvent.click(ltbCheckbox);
 		await userEvent.click(statisticsCheckbox);
