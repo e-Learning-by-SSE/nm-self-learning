@@ -138,7 +138,7 @@ export function LessonInfoEditor({ isNew }: { isNew: boolean }) {
 			</Form.SidebarSection>
 			<GroupAccessEditor
 				subtitle="Gruppen, die auf diese Lerninhalt zugreifen können"
-				fillInSingleGroup={isNew}
+				doUseDefaultGroup={isNew}
 			/>
 			<AuthorsForm
 				subtitle="Autoren dieser Lerneinheit."

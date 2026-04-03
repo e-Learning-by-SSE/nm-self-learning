@@ -7,7 +7,7 @@ import { ArrowsUpDownIcon, PlusIcon } from "@heroicons/react/24/solid";
 import {
 	GroupSearchEntry,
 	SearchGroupDialog,
-	useSingleMembership
+	useDefaultGroup
 } from "../dialogs/search-group-dialog";
 import { AccessLevel } from "@prisma/client";
 import { GenericCombobox } from "../editors/group-members";
@@ -157,10 +157,10 @@ export function ResourceAccessEditor({ subtitle }: { subtitle: string }) {
 
 export function GroupAccessEditor({
 	subtitle,
-	fillInSingleGroup
+	doUseDefaultGroup
 }: {
 	subtitle: string;
-	fillInSingleGroup: boolean;
+	doUseDefaultGroup: boolean;
 }) {
 	const [isGroupDialogOpen, setGroupDialogOpen] = useState(false);
 	const { control } = useFormContext<{ permissions: LessonFormModel["permissions"] }>();
@@ -233,23 +233,19 @@ export function GroupAccessEditor({
 		editor.remove(index);
 	}
 
-	// If user creates a group, not an admin, and has single membership - preset group parent (once)
+	// If user creates a group, and has default group set - preset group parent (once)
 	const hasSetSingleGroup = useRef(false);
-	const singleGroup = useSingleMembership({
-		userGroups: session.data?.user.memberships,
-		enabled:
-			fillInSingleGroup &&
-			editor.fields.length === 0 &&
-			!hasSetSingleGroup.current &&
-			!isAdmin
+	const defaultGroup = useDefaultGroup({
+		defaultGroupId: session.data?.user.defaultGroupId,
+		enabled: doUseDefaultGroup && editor.fields.length === 0 && !hasSetSingleGroup.current
 	});
 	useEffect(() => {
 		if (hasSetSingleGroup.current) return;
-		if (!singleGroup) return;
-		handleAddGroup(singleGroup);
+		if (!defaultGroup) return;
+		handleAddGroup(defaultGroup);
 
 		hasSetSingleGroup.current = true;
-	}, [singleGroup, handleAddGroup]);
+	}, [defaultGroup, handleAddGroup]);
 
 	return (
 		<Form.SidebarSection>
@@ -277,22 +273,24 @@ export function GroupAccessEditor({
 									displayImage={false}
 									onRemove={() => handleRemoveGroup(index, field.value)}
 								>
-									<span>
-										{field.value?.groupName} {tmp && <i>(Mitglied)</i>}
-									</span>
-									<LabeledField label="Zugriffsebene auswählen">
-										<GenericCombobox
-											value={field.value?.accessLevel ?? null}
-											onChange={newLevel =>
-												field.onChange({
-													...field.value,
-													accessLevel: newLevel
-												})
-											}
-											options={accessLevelOptions}
-											label="Auswählen"
-										/>
-									</LabeledField>
+									<div className="flex flex-col gap-1 py-2">
+										<span>
+											{field.value?.groupName} {tmp && <i>(Mitglied)</i>}
+										</span>
+										<LabeledField label="Zugriffsebene auswählen">
+											<GenericCombobox
+												value={field.value?.accessLevel ?? null}
+												onChange={newLevel =>
+													field.onChange({
+														...field.value,
+														accessLevel: newLevel
+													})
+												}
+												options={accessLevelOptions}
+												label="Auswählen"
+											/>
+										</LabeledField>
+									</div>
 								</Chip>
 							);
 						}}

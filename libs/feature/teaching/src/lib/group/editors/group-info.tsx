@@ -3,7 +3,7 @@ import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { Controller, useFormContext } from "react-hook-form";
 import { GroupFormModel } from "../group-editor";
 import { InputWithButton, LabeledField, useSlugify } from "@self-learning/ui/forms";
-import { SearchGroupDialog, useSingleMembership } from "../dialogs/search-group-dialog";
+import { SearchGroupDialog, useDefaultGroup } from "../dialogs/search-group-dialog";
 import { useEffect, useRef, useState } from "react";
 import { ArrowsUpDownIcon } from "@heroicons/react/24/solid";
 
@@ -21,20 +21,20 @@ export function GroupInfoEditor({ fillInSingleGroup }: { fillInSingleGroup: bool
 
 	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "name", "slug");
 
-	// If user creates a group, not an admin, and has single membership - preset group parent (once)
+	// If user creates a group, and has default group set - preset group parent (once)
 	const hasSetSingleGroup = useRef(false);
-	const singleGroup = useSingleMembership({
-		userGroups: session.data?.user.memberships,
-		enabled:
-			fillInSingleGroup && !form.getValues("parent") && !hasSetSingleGroup.current && !isAdmin
+	console.log(session.data?.user);
+	const defaultGroup = useDefaultGroup({
+		defaultGroupId: session.data?.user.defaultGroupId,
+		enabled: fillInSingleGroup && !form.getValues("parent") && !hasSetSingleGroup.current
 	});
 	useEffect(() => {
 		if (hasSetSingleGroup.current) return;
-		if (!singleGroup) return;
+		if (!defaultGroup) return;
 
-		form.setValue("parent", { id: singleGroup.groupId, name: singleGroup.name });
+		form.setValue("parent", { id: defaultGroup.groupId, name: defaultGroup.name });
 		hasSetSingleGroup.current = true;
-	}, [singleGroup, form]);
+	}, [defaultGroup, form]);
 
 	return (
 		<CenteredSection>
@@ -70,6 +70,7 @@ export function GroupInfoEditor({ fillInSingleGroup }: { fillInSingleGroup: bool
 					<IconTextButton
 						text="Auswählen"
 						icon={<ArrowsUpDownIcon className="icon h-5" />}
+						className="btn-secondary"
 						onClick={() => setGroupDialogOpen(true)}
 					/>
 					<Controller

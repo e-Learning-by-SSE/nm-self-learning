@@ -74,7 +74,7 @@ export function CourseEditor({
 							<CourseInfoForm />
 							<GroupAccessEditor
 								subtitle="Gruppen, die auf diesen Kurs zugreifen können"
-								fillInSingleGroup={isNew}
+								doUseDefaultGroup={isNew}
 							/>
 							<AuthorsForm
 								subtitle="Die Autoren dieses Kurses."
