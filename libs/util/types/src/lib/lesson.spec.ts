@@ -2,7 +2,6 @@ import { AccessLevel, LessonType } from "@prisma/client";
 import { Lesson, lessonSchema } from "./lesson";
 
 const minValidLesson: Lesson = {
-	courseId: "c-1",
 	lessonId: "id-1",
 	slug: "slug-1",
 	title: "The Title",
@@ -101,7 +100,6 @@ describe("lessonSchema", () => {
 			  "data": Object {
 			    "authors": Array [],
 			    "content": Array [],
-			    "courseId": "c-1",
 			    "lessonId": "id-1",
 			    "lessonType": "TRADITIONAL",
 			    "licenseId": 1,
