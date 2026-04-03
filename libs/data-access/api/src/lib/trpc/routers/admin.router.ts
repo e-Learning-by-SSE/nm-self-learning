@@ -69,7 +69,8 @@ export const adminRouter = t.router({
 				notificationSettings: true,
 				acceptedExperimentTerms: true,
 				declinedExperimentTerms: true,
-				featureFlags: true
+				featureFlags: true,
+				defaultGroupId: true
 			}
 		});
 	}),
