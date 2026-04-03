@@ -1,6 +1,7 @@
 import { InformationCircleIcon as InformationCircleIconOutline } from "@heroicons/react/24/outline";
 import { InformationCircleIcon } from "@heroicons/react/24/solid";
 import { useState } from "react";
+import { IconOnlyButton } from "../button/button";
 
 export function DetailsDropdown({
 	header,
@@ -22,18 +23,21 @@ export function DetailsDropdown({
 	return (
 		<section className={`${className}`}>
 			<div className="flex justify-between">
-				<h2 className={`${headerStyles ?? "text-xl"}`}>{header}</h2>
-				<button
-					className="rounded-full p-1 hover:bg-c-neutral-muted"
+				<h2 className={`${headerStyles ?? "text-xl"} flex items-center`}>{header}</h2>
+				<IconOnlyButton
+					icon={
+						<>
+							{!isExpanded ? (
+								<InformationCircleIconOutline className="h-6 w-6 text-c-text-muted transition-colors duration-200" />
+							) : (
+								<InformationCircleIcon className="h-6 w-6 text-c-primary transition-colors duration-200" />
+							)}
+						</>
+					}
+					className=""
 					onClick={toggleExpanded}
 					aria-expanded={isExpanded}
-				>
-					{!isExpanded ? (
-						<InformationCircleIconOutline className="h-6 w-6 text-c-text-muted transition-colors duration-200" />
-					) : (
-						<InformationCircleIcon className="h-6 w-6 text-c-primary transition-colors duration-200" />
-					)}
-				</button>
+				/>
 			</div>
 			<div
 				className={`overflow-hidden transition-all duration-300 ${
