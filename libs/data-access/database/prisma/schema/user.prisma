@@ -45,6 +45,9 @@ model User {
     featureFlags         Features?
     memberships          Member[]
 
+    defaultGroupId Int?
+    defaultGroup   Group? @relation(fields: [defaultGroupId], references: [id])
+
     registrationCompleted   Boolean   @default(false)
     acceptedExperimentTerms DateTime?
     declinedExperimentTerms DateTime?
@@ -94,6 +97,8 @@ model Group {
     members     Member[]
     permissions Permission[]
     // skills      SkillRepository
+
+    user User[]
 
     // This is NOT used to inherit permissions but to differentiate between root and user-created groups
     parentId Int?
