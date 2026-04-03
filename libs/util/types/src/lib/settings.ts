@@ -16,6 +16,17 @@ export const editPersonalSettingSchema = z.object({
 });
 export type EditPersonalSettings = z.infer<typeof editPersonalSettingSchema>;
 
+export const editPermissionsSettingsSchema = z.object({
+	defaultGroup: z
+		.object({
+			id: z.number(),
+			name: z.string(),
+			slug: z.string().nullable()
+		})
+		.nullable()
+});
+export type EditPermissionsSettings = z.infer<typeof editPermissionsSettingsSchema>;
+
 export const editUserSchema = z
 	.object({
 		user: z

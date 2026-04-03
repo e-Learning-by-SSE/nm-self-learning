@@ -7,14 +7,16 @@ import {
 import {
 	EditFeatureSettings,
 	editFeatureSettingsSchema,
+	editPermissionsSettingsSchema,
 	editUserSchema
 } from "@self-learning/types";
 import { randomUUID } from "crypto";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 import { Session } from "next-auth";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { GroupRole, Prisma, PrismaClient } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
+import { hasEffectiveGroupRole } from "../../permissions/permission.service";
 
 function isAdmin(user: Session["user"]) {
 	return user.role === "ADMIN";
@@ -128,6 +130,28 @@ export const meRouter = t.router({
 			return await tx.user.update({ where: { name: ctx.user.name }, data: updateData });
 		});
 	}),
+
+	updateDefaultGroup: authProcedure
+		.input(editPermissionsSettingsSchema)
+		.mutation(async ({ ctx, input }) => {
+			// 1st check if user can set this group as default (be at least member or ADMIN)
+			const defaultGroupId = input.defaultGroup?.id;
+			if (
+				defaultGroupId &&
+				!(await hasEffectiveGroupRole(ctx.user, defaultGroupId, GroupRole.MEMBER))
+			) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "User must be a member of the group to set it as default"
+				});
+			}
+			return await database.user.update({
+				where: { id: ctx.user.id },
+				data: {
+					defaultGroupId: defaultGroupId ?? null
+				}
+			});
+		}),
 
 	updateFeatureFlags: authProcedure
 		.input(editFeatureSettingsSchema)
