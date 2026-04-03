@@ -51,6 +51,7 @@ declare module "next-auth" {
 				learningStatistics: boolean;
 				experimental: boolean;
 			};
+			defaultGroupId?: number;
 		};
 	}
 }

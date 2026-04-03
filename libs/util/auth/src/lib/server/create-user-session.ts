@@ -45,7 +45,8 @@ export async function createToken(name: string, incomingRole: UserRole): Promise
 			author: { select: { username: true } },
 			featureFlags: true,
 			acceptedExperimentTerms: true,
-			memberships: { select: { groupId: true } }
+			memberships: { select: { groupId: true } },
+			defaultGroupId: true
 		}
 	});
 	const updateUser = (role: UserRole) => {
@@ -79,7 +80,8 @@ export async function createToken(name: string, incomingRole: UserRole): Promise
 			learningDiary: false,
 			learningStatistics: false
 		},
-		memberships: userFromDb.memberships.map(m => m.groupId)
+		memberships: userFromDb.memberships.map(m => m.groupId),
+		defaultGroupId: userFromDb.defaultGroupId ?? undefined
 	};
 }
 
