@@ -95,36 +95,29 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 					<span className="text-lg font-medium mb-3">Einstellungen</span>
 					<div className="flex flex-row">
 						<Toggle
-							value={languageTree.caseSensitive}
-							onChange={value =>
-								setValue(`quiz.questions.${index}.caseSensitive`, value)
-							}
-							label={"Groß- und Kleinschreibung beachten"}
-						/>
-					</div>
-					<div className="flex flex-row mt-2">
-						<Toggle
-							value={languageTree.customTextInputInParentNodes}
-							onChange={value =>
-								setValue(
-									`quiz.questions.${index}.customTextInputInParentNodes`,
-									value
-								)
-							}
-							label={
-								"Erlaubt Freitexteingabe in Knoten mit untergeordneten Elementen"
-							}
-						/>
-					</div>
-					<div className="flex flex-row mt-2">
-						<Toggle
 							value={languageTree.restrictNodeTypes ?? false}
-							onChange={value =>
-								setValue(`quiz.questions.${index}.restrictNodeTypes`, value)
-							}
+							onChange={value => {
+								setValue(`quiz.questions.${index}.restrictNodeTypes`, value);
+								if (value) {
+									// When restriction is turned ON, reset caseSensitive
+									setValue(`quiz.questions.${index}.caseSensitive`, false);
+								}
+							}}
 							label={"Knotentypen einschränken"}
 						/>
 					</div>
+
+					{!languageTree.restrictNodeTypes && (
+						<div className="flex flex-row mt-2">
+							<Toggle
+								value={languageTree.caseSensitive}
+								onChange={value =>
+									setValue(`quiz.questions.${index}.caseSensitive`, value)
+								}
+								label={"Groß- und Kleinschreibung beachten"}
+							/>
+						</div>
+					)}
 
 					{languageTree.restrictNodeTypes && (
 						<>
