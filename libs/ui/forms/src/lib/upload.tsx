@@ -235,6 +235,10 @@ export function ModifySubtile({
 		onClick(totalSeconds);
 	};
 
+	const removeMillisecondsFromRange = (input: string) => {
+		return input.replace(/\.\d{3}/g, "");
+	};
+
 	return (
 		<div>
 			<ul>
@@ -246,7 +250,7 @@ export function ModifySubtile({
 								onClickTimeStamp(subtitle.timestamp);
 							}}
 						>
-							{subtitle.timestamp}
+							{removeMillisecondsFromRange(subtitle.timestamp)}
 						</span>
 
 						<textarea
