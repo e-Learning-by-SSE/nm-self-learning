@@ -10,6 +10,7 @@ export * from "./lib/specialization";
 export * from "./lib/subject";
 export * from "./lib/user";
 export * from "./lib/skill";
+export * from "./lib/subtitle";
 export * from "./lib/learning-diary";
 export * from "./lib/settings";
 export * from "./lib/event-log";

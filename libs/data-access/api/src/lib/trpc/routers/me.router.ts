@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database, generateTokenForUser } from "@self-learning/database";
 import {
 	createUserParticipation,
 	getExperimentStatus,
@@ -129,6 +129,9 @@ export const meRouter = t.router({
 
 			return await tx.user.update({ where: { name: ctx.user.name }, data: updateData });
 		});
+	}),
+	getJWTToken: authProcedure.query(async ({ ctx }) => {
+		return generateTokenForUser({ name: ctx.user.name });
 	}),
 
 	updateDefaultGroup: authProcedure

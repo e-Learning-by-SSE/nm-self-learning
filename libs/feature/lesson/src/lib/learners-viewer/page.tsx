@@ -15,6 +15,7 @@ import {
 	useMarkAsCompleted
 } from "@self-learning/completion";
 import { database } from "@self-learning/database";
+import { ShowTranskript } from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
 	Article,
@@ -107,7 +108,6 @@ export async function getSspLearnersView(
 
 // id is required by Navigable. Content id is required to map this to lesson.content pos
 type OpenedMediaInfo = LessonContentType & { id: number; content_id: number };
-//
 type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta };
 type LessonNavigationItem = { slug: string; lessonId: string };
 type LessonNavigationData = LessonNavigationItem[];
@@ -125,6 +125,7 @@ function ContentDisplayItem({
 	course: LessonLearnersViewProps["course"];
 	addMediaDisplay: (idx: number) => void;
 }) {
+
 	if (!c || index === undefined) {
 		return <ContentInfo text="Diese Lerneinheit hat keinen Inhalt." />;
 	}
@@ -140,12 +141,14 @@ function ContentDisplayItem({
 		case "video":
 			if (!c.value.url) return <ContentInfo error text="Fehlende Video-URL." />;
 			return (
-				<div className="aspect-video w-full xl:max-h-[75vh]">
+				<div className="flex flex-col gap-4 aspect-video w-full xl:max-h-[75vh]">
 					<VideoPlayer
 						parentLessonId={lesson.lessonId}
 						url={c.value.url}
 						courseId={course?.courseId}
+						subtitle={c.value.subtitle}
 					/>
+					{c.value.subtitle?.src && <ShowTranskript webvttTranscript={c.value.subtitle.src} />}
 				</div>
 			);
 		case "pdf":

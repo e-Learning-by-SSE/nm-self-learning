@@ -13,6 +13,8 @@ declare global {
 			NEXT_TRAILING_SLASH: boolean | undefined;
 			NEXT_PUBLIC_MATOMO_ULR: string | undefined;
 			NEXT_PUBLIC_MATOMO_SITE_ID: string | undefined;
+			NEXT_PUBLIC_TRANSCRIPTION_SERVICE_URL: string | undefined;
+			NEXT_PUBLIC_TRANSCRIPTION_MIGRATE_EXISTING_VIDEO_CONTENT: string | undefined;
 			DATABASE_URL: string;
 			MINIO_ENDPOINT: string;
 			MINIO_PORT: string;
