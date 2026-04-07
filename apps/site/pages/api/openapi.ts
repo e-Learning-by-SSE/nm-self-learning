@@ -1,4 +1,4 @@
-import { generateOpenApiDocument } from "trpc-to-to-openapi";
+import { generateOpenApiDocument } from "trpc-to-openapi";
 import { appRouter, API_PATH } from "@self-learning/api";
 import { type NextApiRequest, type NextApiResponse } from "next";
 
