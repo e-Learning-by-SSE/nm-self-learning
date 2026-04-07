@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database, generateTokenForUser } from "@self-learning/database";
 import {
 	createUserParticipation,
 	getExperimentStatus,
@@ -12,7 +12,6 @@ import {
 import { randomUUID } from "crypto";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
-import jwt from "jsonwebtoken";
 import { Session } from "next-auth";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
@@ -153,31 +152,7 @@ export const meRouter = t.router({
 		});
 	}),
 	getJWTToken: authProcedure.query(async ({ ctx }) => {
-		const user = await database.user.findUnique({
-			where: { name: ctx.user.name },
-			select: {
-				name: true,
-				role: true
-			}
-		});
-
-		if (!user) {
-			throw new Error("User not found");
-		}
-
-		const sharedPrivateKey = process.env["NEXTAUTH_SECRET"] ?? "default";
-
-		const token = jwt.sign(
-			{
-				name: user.name,
-				role: user.role
-			},
-			sharedPrivateKey,
-			{
-				expiresIn: "1d"
-			}
-		);
-		return token;
+		return generateTokenForUser({ name: ctx.user.name });
 	}),
 
 	updateFeatureFlags: authProcedure

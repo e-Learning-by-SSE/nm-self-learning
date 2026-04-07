@@ -20,7 +20,7 @@ import {
 	TableDataColumn,
 	TableHeaderColumn
 } from "@self-learning/ui/common";
-import { formatDateAgo } from "@self-learning/util/common";
+import { formatDateAgo, ConvertTranscriptionToSubtitle } from "@self-learning/util/common";
 import { TRPCClientError } from "@trpc/client";
 import { inferRouterOutputs } from "@trpc/server";
 import { ReactElement, useEffect, useId, useMemo, useState } from "react";
@@ -29,7 +29,6 @@ import { UploadProgressDialog } from "./upload-progress-dialog";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import io, { Socket } from "socket.io-client";
 import { Subtitle, SubtitleSrc, subtitleSrcSchema } from "@self-learning/types";
-import { ConvertTranscriptionToSubtitle } from "@self-learning/ui/lesson";
 import { useTranslation } from "next-i18next";
 import { keepPreviousData } from "@tanstack/react-query";
 
@@ -262,7 +261,7 @@ export function ModifySubtile({
 	);
 }
 
-export function GenerateSubtile({
+export function GenerateSubtitle({
 	video_url,
 	lessonId,
 	onTranscriptionCompleted
@@ -273,7 +272,7 @@ export function GenerateSubtile({
 }) {
 	const [showDialog, setShowDialog] = useState(false);
 
-	console.log("GenerateSubtile", { video_url, lessonId });
+	console.log("GenerateSubtitle", { video_url, lessonId });
 
 	return (
 		<>

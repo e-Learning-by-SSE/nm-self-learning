@@ -1,18 +1,16 @@
 import { Course, Prisma } from "@prisma/client";
-import { database } from "@self-learning/database";
+import { database, save_subtitle_for_lesson } from "@self-learning/database";
 import {
 	createLessonMeta,
 	EventTypeMap,
 	lessonSchema,
-	subtitleSrcSchema,
-	LessonContent
+	subtitleSrcSchema
 } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { differenceInHours } from "date-fns";
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
-import { ConvertTranscriptionToSubtitle } from "@self-learning/ui/lesson";
 
 const saveSubtitleInputSchema = z.object({
 	lessonId: z.string(),
@@ -231,12 +229,12 @@ export const lessonRouter = t.router({
 
 			return { isValid: true };
 		}),
-	save_subtitles: authProcedure
+	save_subtitle: authProcedure
 		.meta({
 			openapi: {
 				enabled: true,
 				method: "POST",
-				path: "/lessons/save_subtitles",
+				path: "/lessons/save_subtitle",
 				tags: ["Lessons"],
 				protect: true,
 				summary: "Store externally generated subtitles for a lesson"
@@ -250,63 +248,23 @@ export const lessonRouter = t.router({
 		)
 		.mutation(async ({ input }) => {
 			const { lessonId, video_url, transcription } = input;
-
 			const subtitleSrc = subtitleSrcSchema.parse(transcription);
-			const subtitle = await ConvertTranscriptionToSubtitle(subtitleSrc);
-
-			const lesson = await database.lesson.findUnique({
-				where: {
-					lessonId
+			try {
+				await save_subtitle_for_lesson(lessonId, video_url, subtitleSrc);
+				return { message: "Subtitle saved" };
+			} catch (error) {
+				if (error instanceof Error) {
+					throw new TRPCError({
+						code: "NOT_FOUND",
+						message: error.message
+					});
+				} else {
+					throw new TRPCError({
+						code: "INTERNAL_SERVER_ERROR",
+						message: "An unknown error occurred"
+					});
 				}
-			});
-
-			if (!lesson) {
-				throw new TRPCError({
-					code: "NOT_FOUND",
-					message: "Lesson not found"
-				});
 			}
-
-			const content = lesson.content as LessonContent | undefined;
-
-			if (!content || content.length === 0) {
-				throw new TRPCError({
-					code: "NOT_FOUND",
-					message: "Content not found"
-				});
-			}
-
-			// Lang Code -> Lang Label, e.g. "de" -> "Deutsch"
-			const languageNames = new Intl.DisplayNames(["de"], { type: "language" });
-			const getLanguageLabel = (lang?: string) => {
-				const code = lang ?? "de";
-				return languageNames.of(code) ?? code;
-			};
-
-			await database.lesson.update({
-				where: {
-					lessonId
-				},
-				data: {
-					content: content.map(c =>
-						c.type === "video" && c.value.url === video_url
-							? {
-									...c,
-									value: {
-										...c.value,
-										subtitle: {
-											src: subtitle,
-											label: getLanguageLabel(subtitleSrc.language),
-											srcLang: subtitleSrc.language ?? "de"
-										}
-									}
-								}
-							: c
-					)
-				}
-			});
-
-			return { message: "Subtitle saved" };
 		})
 });
 

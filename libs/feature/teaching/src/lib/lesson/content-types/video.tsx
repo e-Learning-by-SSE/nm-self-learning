@@ -1,6 +1,6 @@
 import { Video } from "@self-learning/types";
 import { SectionCard } from "@self-learning/ui/common";
-import { GenerateSubtile, LabeledField, ModifySubtile, Upload } from "@self-learning/ui/forms";
+import { GenerateSubtitle, LabeledField, ModifySubtile, Upload } from "@self-learning/ui/forms";
 import { VideoPlayer, VideoPlayerHandle } from "@self-learning/ui/lesson";
 import { useRef } from "react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
@@ -88,7 +88,7 @@ export function VideoInput({ index }: { index: number }) {
 						</div>
 					)}
 					{url && !subtitle && transcriptionServiceUrl && (
-						<GenerateSubtile
+						<GenerateSubtitle
 							video_url={url}
 							lessonId={watch().lessonId}
 							onTranscriptionCompleted={createdSubtitle => {
