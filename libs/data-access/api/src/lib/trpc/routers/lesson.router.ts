@@ -1,11 +1,22 @@
 import { Course, Prisma } from "@prisma/client";
-import { database } from "@self-learning/database";
-import { createLessonMeta, EventTypeMap, lessonSchema } from "@self-learning/types";
+import { database, save_subtitle_for_lesson } from "@self-learning/database";
+import {
+	createLessonMeta,
+	EventTypeMap,
+	lessonSchema,
+	subtitleSrcSchema
+} from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { differenceInHours } from "date-fns";
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
+
+const saveSubtitleInputSchema = z.object({
+	lessonId: z.string(),
+	video_url: z.url(),
+	transcription: subtitleSrcSchema
+});
 
 export const lessonRouter = t.router({
 	findOneAllProps: authProcedure.input(z.object({ lessonId: z.string() })).query(({ input }) => {
@@ -142,7 +153,7 @@ export const lessonRouter = t.router({
 				FROM "Course"
 				WHERE EXISTS (SELECT 1
 							  FROM jsonb_array_elements("Course".content) AS chapter
-									   CROSS JOIN jsonb_array_elements(chapter - > 'content') AS lesson
+									   CROSS JOIN jsonb_array_elements(chapter->'content') AS lesson
 							  WHERE lesson ->>'lessonId' = ${input.lessonId})
 			`;
 			return courses as Course[];
@@ -217,6 +228,43 @@ export const lessonRouter = t.router({
 			}
 
 			return { isValid: true };
+		}),
+	save_subtitle: authProcedure
+		.meta({
+			openapi: {
+				enabled: true,
+				method: "POST",
+				path: "/lessons/save_subtitle",
+				tags: ["Lessons"],
+				protect: true,
+				summary: "Store externally generated subtitles for a lesson"
+			}
+		})
+		.input(saveSubtitleInputSchema)
+		.output(
+			z.object({
+				message: z.string()
+			})
+		)
+		.mutation(async ({ input }) => {
+			const { lessonId, video_url, transcription } = input;
+			const subtitleSrc = subtitleSrcSchema.parse(transcription);
+			try {
+				await save_subtitle_for_lesson(lessonId, video_url, subtitleSrc);
+				return { message: "Subtitle saved" };
+			} catch (error) {
+				if (error instanceof Error) {
+					throw new TRPCError({
+						code: "NOT_FOUND",
+						message: error.message
+					});
+				} else {
+					throw new TRPCError({
+						code: "INTERNAL_SERVER_ERROR",
+						message: "An unknown error occurred"
+					});
+				}
+			}
 		})
 });
 

@@ -1,4 +1,4 @@
-import { TextEncoder, TextDecoder } from "web-encoding";
+import { TextEncoder, TextDecoder } from "util";
 
-global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder;
+global.TextEncoder = TextEncoder as typeof global.TextEncoder;
+global.TextDecoder = TextDecoder as typeof global.TextDecoder;

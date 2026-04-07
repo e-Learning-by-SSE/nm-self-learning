@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database, generateTokenForUser } from "@self-learning/database";
 import {
 	createUserParticipation,
 	getExperimentStatus,
@@ -150,6 +150,9 @@ export const meRouter = t.router({
 				data: updateData
 			});
 		});
+	}),
+	getJWTToken: authProcedure.query(async ({ ctx }) => {
+		return generateTokenForUser({ name: ctx.user.name });
 	}),
 
 	updateFeatureFlags: authProcedure
