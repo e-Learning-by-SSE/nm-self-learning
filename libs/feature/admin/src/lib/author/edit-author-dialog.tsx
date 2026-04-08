@@ -95,8 +95,7 @@ function AuthorForm({
 
 				<div className="grid gap-8 overflow-y-auto xl:grid-cols-[400px_600px] xl:overflow-y-auto">
 					<AuthorData />
-					{/* <AuthorMemberships /> */}
-					{/* TODO turn into a form */}
+					{/*TODO not in this PR <AuthorMemberships /> */}
 				</div>
 
 				<div className="absolute bottom-10 right-10 xl:right-14">
