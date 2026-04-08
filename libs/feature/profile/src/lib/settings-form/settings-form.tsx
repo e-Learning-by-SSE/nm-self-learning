@@ -10,22 +10,13 @@ import {
 	ResolvedValue,
 	UserNotificationSetting
 } from "@self-learning/types";
-import {
-	Chip,
-	DetailsDropdown,
-	IconTextButton,
-	OnDialogCloseFn,
-	Toggle,
-	Trans
-} from "@self-learning/ui/common";
+import { OnDialogCloseFn, Toggle, Trans } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { Controller, useForm } from "react-hook-form";
 import { getUserWithSettings } from "../crud-settings";
 import { useTranslation } from "next-i18next";
 import { SettingsSection } from "./setting-section";
-import { SearchGroupDialog } from "@self-learning/teaching";
-import { useState } from "react";
-import { ArrowsUpDownIcon } from "@heroicons/react/24/solid";
+import { GroupPicker } from "@self-learning/teaching";
 
 function ToggleSetting({
 	value,
@@ -277,9 +268,6 @@ export function PermissionsSettingsForm({
 		mode: "onChange"
 	});
 	const { isValid, isDirty } = form.formState;
-	const { t } = useTranslation("feature-settings");
-
-	const [isPickerOpen, setIsPickerOpen] = useState(false);
 
 	return (
 		<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
@@ -287,56 +275,21 @@ export function PermissionsSettingsForm({
 				control={form.control}
 				name="defaultGroup"
 				render={({ field }) => (
-					<>
-						<DetailsDropdown
-							header={t("Default Group")}
-							headerStyles="text-sm font-semibold"
-						>
-							<span className="text-sm text-light">
-								{t(
-									"When selected, every new course and lesson you create will be assigned to said group, unless other specified"
-								)}
-							</span>
-						</DetailsDropdown>
-						<IconTextButton
-							icon={<ArrowsUpDownIcon className="icon h-5" />}
-							className="btn-secondary"
-							text={t("Select a group...")}
-							onClick={() => setIsPickerOpen(true)}
-						/>
-
-						{field.value ? (
-							<Chip displayImage={false} onRemove={async () => field.onChange(null)}>
-								<div className="p-2 flex flex-col gap-1">
-									{field.value.name}
-									<span className="text-sm text-light">{field.value.slug}</span>
-								</div>
-							</Chip>
-						) : (
-							<p className="text-sm text-light">{t("No default group selected")}</p>
-						)}
-
-						{isPickerOpen && (
-							<SearchGroupDialog
-								isOpen={isPickerOpen}
-								isGlobalSearch={isAdmin}
-								onClose={async selectedGroup => {
-									if (selectedGroup) {
-										field.onChange({
-											id: selectedGroup.groupId,
-											name: selectedGroup.name,
-											slug: selectedGroup.slug
-										});
-									}
-									setIsPickerOpen(false);
-								}}
-							/>
-						)}
-					</>
+					<GroupPicker
+						header="Standardgruppe"
+						description="Wenn ausgewählt, werden alle neuen Kurse und Lektionen, die Sie erstellen, dieser Gruppe zugewiesen, sofern nicht anders angegeben."
+						value={field.value}
+						onChange={group => {
+							// avoid form cancellation as null option
+							if (group === undefined) return;
+							field.onChange(group);
+						}}
+						isAdmin={isAdmin}
+					/>
 				)}
 			/>
 			<button className="btn-primary" disabled={!isDirty || !isValid}>
-				{t("Save Profile")}
+				Profil speichern
 			</button>
 		</form>
 	);

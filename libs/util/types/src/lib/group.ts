@@ -1,6 +1,5 @@
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel, GroupRole } from "@prisma/client";
 import { z } from "zod";
-import { GroupRoleEnum } from "./author";
 import { add } from "date-fns";
 
 export enum MergeStrategy {
@@ -39,7 +38,7 @@ export const ResourceAccessFormSchema = z.union([
 	})
 ]);
 export const MemberFormSchema = z.object({
-	role: GroupRoleEnum,
+	role: z.enum(GroupRole),
 	expiresAt: z.coerce
 		.date()
 		.nullable()
@@ -95,6 +94,14 @@ export type GroupAccess = {
 	groupId: number;
 	accessLevel: AccessLevel;
 };
+
+// Display Group Entry
+export const GroupEntrySchema = z.object({
+	id: z.number(),
+	name: z.string(),
+	slug: z.string().nullable()
+});
+export type GroupEntry = z.infer<typeof GroupEntrySchema>;
 
 //
 const accessLevelHierarchy: Record<AccessLevel, number> = { VIEW: 1, EDIT: 2, FULL: 3 };
