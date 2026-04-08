@@ -46,6 +46,16 @@ export function getPermKey(perm: ResourceAccessFormType) {
 	return perm.course ? "c:" + perm.course.courseId : "l:" + perm.lesson.lessonId;
 }
 
+/**
+ * usePermissionEditor - Hook providing state and handlers for permission form field changes.
+ *
+ * Usage: Called by permission editor components to manage permission updates (access level, resource).
+ * Provides setter functions and automatic validation via ResourceAccessFormSchema.parse().
+ *
+ * @param onChange - Callback with updated PermissionFormModel when any field changes
+ * @param permission - Current permission form data (optional)
+ * @returns Object with setters (setLevel, setCourse) for updating permission fields
+ */
 export function usePermissionEditor(
 	onChange: OnDialogCloseFn<PermissionFormModel>,
 	permission?: PermissionFormModel
@@ -70,6 +80,22 @@ export function usePermissionEditor(
 	};
 }
 
+/**
+ * GroupPermissionEditor - Dialog or form section for editing a single group permission (course or lesson access).
+ *
+ * Usage: Renders editable fields for permission: resource (course/lesson) selector, access level dropdown.
+ * Optionally allows choosing a resource (SearchCourseDialog) or displays read-only resource info. Calls onChange
+ * on any change. Optional onSubmit adds action buttons.
+ *
+ * UI: Either resource selector button (if canEditResource) or read-only resource display, access level
+ * combobox (FULL/EDIT/VIEW), optional submit/cancel buttons. Opens SearchCourseDialog internally.
+ * Related: usePermissionEditor, SearchCourseDialog, GenericCombobox
+ *
+ * @param permission - Current permission form data
+ * @param onChange - Callback when any field changes
+ * @param onSubmit - Optional callback for submit button; if provided, adds dialog action buttons
+ * @param canEditResource - If true, shows resource selector; if false, resource is read-only
+ */
 export function GroupPermissionEditor({
 	permission,
 	onChange,
@@ -149,6 +175,20 @@ export function GroupPermissionEditor({
 	);
 }
 
+/**
+ * GroupPermissionRowEditor - Editable table row displaying a permission with inline access level control.
+ *
+ * Usage: Renders a single permission as an editable table row within GroupPermissionTable. Displays
+ * resource type (Kurs/Lerneinheit), title, slug, and access level as an editable dropdown.
+ * Optional delete button calls onDelete callback.
+ *
+ * UI: Table row with resource info (read-only), access level dropdown (editable), trash icon to delete
+ * Related: GroupPermissionTable, usePermissionEditor, GroupPermissionRow (read-only version)
+ *
+ * @param permission - Permission form data
+ * @param onChange - Callback when access level dropdown changes
+ * @param onDelete - Optional callback when trash icon clicked; receives the permission to delete
+ */
 export function GroupPermissionRowEditor({
 	permission,
 	onChange,
@@ -193,6 +233,18 @@ export function GroupPermissionRowEditor({
 	);
 }
 
+/**
+ * GroupPermissionTable - Wrapper table component for displaying group permissions in rows.
+ *
+ * Usage: Container table for rendering a list of group permissions (courses/lessons). Provides standard
+ * table header with columns (Resource type, Title, Slug, Access level, Actions). Use with
+ * GroupPermissionRow or GroupPermissionRowEditor children.
+ *
+ * UI: Table with 5 columns (resource type, title, slug, access level, delete button)
+ * Related: GroupPermissionRow, GroupPermissionRowEditor, Table (UI component)
+ *
+ * @param children - Array of row elements (GroupPermissionRow or GroupPermissionRowEditor)
+ */
 export function GroupPermissionTable({ children }: { children: React.ReactNode[] }) {
 	return (
 		<Table
@@ -212,6 +264,20 @@ export function GroupPermissionTable({ children }: { children: React.ReactNode[]
 	);
 }
 
+/**
+ * GroupPermissionRow - Read-only table row displaying a permission and relation action.
+ *
+ * Usage: Renders a single group permission in a read-only list with a button to open the relation
+ * dialog showing which users have access through this group. Used in group detail pages.
+ *
+ * UI: Table row with resource type, title, slug, access level, and a "who has access" button.
+ * Related: GroupPermissionTable, GroupPermissionRelationsDialog
+ *
+ * @param permission - Permission data to display
+ * @param onEdit - Optional callback when edit action is triggered (currently unused)
+ * @param onDelete - Optional callback when delete action is triggered (currently unused)
+ * @param onRelations - Callback when the relations button is clicked
+ */
 export function GroupPermissionRow({
 	permission,
 	onEdit,

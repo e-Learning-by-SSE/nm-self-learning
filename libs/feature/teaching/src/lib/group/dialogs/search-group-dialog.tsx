@@ -20,6 +20,20 @@ export type GroupSearchEntry = {
 	members: string[];
 };
 
+/**
+ * SearchGroupDialog - Modal for searching and selecting groups from a combobox list.
+ *
+ * Usage: Renders a dropdown dialog where users can search groups by name, filter by members,
+ * and select a group. Uses pagination.
+ *
+ * UI: Combobox with search input, member filter chips, pagination controls, and option list.
+ * Related: SearchUserDialog, GroupPicker (simpler wrapper for pick and display), DropdownDialog
+ *
+ * @param isOpen - Controls dialog visibility
+ * @param isGlobalSearch - If true, shows all groups; if false, only user's groups
+ * @param exclude - Group IDs to hide from the list (e.g., to avoid self-reference)
+ * @param onClose - Callback fires with selected GroupSearchEntry or undefined if dismissed
+ */
 export function SearchGroupDialog({
 	isOpen,
 	isGlobalSearch,
@@ -141,7 +155,16 @@ export function SearchGroupDialog({
 	);
 }
 
-// if user has single membership, fetches the group
+/**
+ * useDefaultGroup - Hook to fetch a single group by ID, typically for pre-selecting a user's default group.
+ *
+ * Usage: Used in group creation forms to auto-fill the parent group field based on the current user's
+ * defaultGroupId setting. Fetches only when enabled and returns null until data loads.
+ *
+ * @param defaultGroupId - The group ID to fetch (e.g., from session.user.defaultGroupId)
+ * @param enabled - If false, the query doesn't run; set true when the form is ready
+ * @returns GroupSearchEntry or null if not found or not enabled
+ */
 export function useDefaultGroup({
 	defaultGroupId,
 	enabled: shouldFetch = false
@@ -162,6 +185,18 @@ export function useDefaultGroup({
 		: null;
 }
 
+/**
+ * MemberFilter - Chip-based filter component for selecting multiple users to filter groups by members.
+ *
+ * Usage: Displays selected users as removable chips with an "Add member" button. Opens SearchUserDialog
+ * to add users. Used in group search dialogs and filter sections to narrow group results by membership.
+ *
+ * UI: Chips for selected users + button to open SearchUserDialog
+ * Related: SearchUserDialog, SearchGroupDialog
+ *
+ * @param value - Array of currently selected users
+ * @param onChange - Callback with updated user array when adding/removing users
+ */
 export function MemberFilter({
 	value = [],
 	onChange

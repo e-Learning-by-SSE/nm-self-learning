@@ -7,6 +7,20 @@ import { SearchGroupDialog, useDefaultGroup } from "../dialogs/search-group-dial
 import { useEffect, useRef, useState } from "react";
 import { ArrowsUpDownIcon } from "@heroicons/react/24/solid";
 
+/**
+ * GroupInfoEditor - Form section for editing basic group information (name, slug, parent).
+ *
+ * Note: Must be used within a form with field `GroupFormModel` in context.
+ *
+ * Usage: Renders within a group editor form to edit group name, auto-generate slug, and optionally
+ * assign a parent group. If fillInSingleGroup is true and user has defaultGroupId, auto-selects that
+ * group as parent on first render. Used in group creation and edit pages as a form section.
+ *
+ * UI: Text input for name, slug input with "Generate" button, parent group selector (button + chip)
+ * Related: useDefaultGroup, SearchGroupDialog, GroupFormModel, slugify utility
+ *
+ * @param fillInSingleGroup - If true, auto-select user's default group as parent (one-time only)
+ */
 export function GroupInfoEditor({ fillInSingleGroup }: { fillInSingleGroup: boolean }) {
 	const form = useFormContext<GroupFormModel>();
 	const {

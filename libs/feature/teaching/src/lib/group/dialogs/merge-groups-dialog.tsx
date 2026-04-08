@@ -21,6 +21,22 @@ export const MergeStrategyLabels: Record<MergeStrategy, string> = {
 	[MergeStrategy.Lowest]: "Niedrigste Berechtigung behalten"
 };
 
+/**
+ * MergeGroupsDialog - Modal for merging multiple groups with a chosen permission strategy.
+ *
+ * Usage: Use to consolidate overlapping groups while preserving member data.
+ * Opens a form to select 2+ groups to merge. Provides name and slug for the new merged group.
+ * User chooses a merge strategy (first, highest, or lowest permission level). Creates a new group
+ * entry; **old groups must be manually deleted after verification**.
+ *
+ * UI: Form with name/slug inputs, strategy selector (radio/combobox), group list with add button
+ * (opens SearchGroupDialog), info section explaining strategies and requirements
+ * Related: SearchGroupDialog, MergeGroupsType, MergeStrategy
+ *
+ * @param isOpen - Controls dialog visibility
+ * @param isGlobal - If true, allows selecting from all groups; if false, only user's groups
+ * @param onClose - Callback with MergeGroupsType (name, slug, strategy, selected groups) or undefined
+ */
 export function MergeGroupsDialog({
 	isOpen,
 	isGlobal,

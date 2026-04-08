@@ -13,6 +13,18 @@ import {
 } from "@self-learning/admin";
 import { GroupPermissionRowEditor, GroupPermissionTable } from "../editors/group-permission";
 
+/**
+ * GroupPermissionsEditor - Section for editing a group's resource permissions.
+ *
+ * Note: Must be used within a form with field `permissions: GroupFormModel["permissions"]` in context.
+ *
+ * Usage: Used in group edit/create flows to add courses or lessons to a group's permissions list.
+ * It opens course and lesson search dialogs, appends selected resources, and renders editable rows
+ * for each permission.
+ *
+ * UI: Header with add buttons, SearchCourseDialog/SearchLessonDialog overlays, and a permission table.
+ * Related: GroupPermissionTable, GroupPermissionRowEditor, SearchCourseDialog, SearchLessonDialog
+ */
 export function GroupPermissionsEditor() {
 	const { control } = useFormContext<{ permissions: GroupFormModel["permissions"] }>();
 	const editor = useFieldArray({

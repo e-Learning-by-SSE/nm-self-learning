@@ -47,6 +47,15 @@ function getDurationOpt(member: MemberFormModel) {
 	return dur.value;
 }
 
+/**
+ * createDefaultMember - Factory function to create a new member form model with default values.
+ *
+ * Usage: Called when adding a new member to a group form. Creates an empty member object with
+ * undefined user and either ADMIN (if onlyAdmin) or MEMBER role, no expiration.
+ *
+ * @param onlyAdmin - If true, force role to ADMIN; if false, default to MEMBER
+ * @returns MemberFormModel with empty user and role selection
+ */
 export function createDefaultMember(onlyAdmin?: boolean): MemberFormModel {
 	return {
 		role: onlyAdmin ? GroupRole.ADMIN : GroupRole.MEMBER,
@@ -61,6 +70,18 @@ export function createDefaultMember(onlyAdmin?: boolean): MemberFormModel {
 	};
 }
 
+/**
+ * useMemberEditor - Hook handling member form state and role/expiration logic.
+ *
+ * Usage: Called by member editor components to manage member updates (role changes, date pickers).
+ * Auto-enforces rules: ADMIN role = unlimited duration, MEMBER role supports expiration.
+ * Provides setter functions and derived values (formatted dates, filtered options).
+ *
+ * @param member - Current member form data
+ * @param onChange - Callback with updated member when any field changes
+ * @param onlyAdmin - If true, restrict role options to ADMIN only
+ * @returns Object with setters (setRole, setDuration, setUser, setCustomDuration) and derived display values
+ */
 export function useMemberEditor(
 	member: MemberFormModel,
 	onChange: OnDialogCloseFn<MemberFormModel>,
@@ -125,6 +146,21 @@ export function useMemberEditor(
 	};
 }
 
+/**
+ * GenericCombobox - Reusable dropdown combobox for selecting from a list of typed options.
+ *
+ * Usage: Generic select component displaying options as a combobox with custom comparison logic.
+ * Renders button with current selection label and dropdown menu. Used in role, duration, and other
+ * form field selections throughout group editors.
+ *
+ * UI: Button with dropdown icon + options list with focus/selected states
+ *
+ * @param value - Currently selected value (null if unselected)
+ * @param onChange - Callback when option is selected
+ * @param options - Array of {value, label} pairs to display
+ * @param label - Placeholder label when no value selected
+ * @param compare - Optional custom comparison function for value equality (e.g., for objects)
+ */
 export function GenericCombobox<T>({
 	value,
 	onChange,
@@ -178,6 +214,23 @@ export function GenericCombobox<T>({
 	);
 }
 
+/**
+ * GroupMemberEditor - Dialog or form section for editing a single group member's details.
+ *
+ * Usage: Renders editable fields for member: user selection (SearchUserDialog), role dropdown,
+ * duration/expiration selector. Calls onChange on any change. Optional onSubmit adds action buttons.
+ * Used as a modal dialog to add/edit a single member, or inline in table row editors.
+ *
+ * UI: User info display/selector, role combobox, duration combobox, optional date picker,
+ * optional submit/cancel buttons opens SearchUserDialog internally
+ * Related: useMemberEditor, SearchUserDialog, GenericCombobox, GroupMemberTable
+ *
+ * @param member - Current member form data
+ * @param onChange - Callback when any field changes
+ * @param onSubmit - Optional callback for submit button; if provided, adds dialog action buttons
+ * @param canEditUser - If true, shows user selector; if false, user is read-only
+ * @param onlyAdmin - If true, restricts role to ADMIN only
+ */
 export function GroupMemberEditor({
 	member,
 	onChange,
@@ -278,6 +331,18 @@ export function GroupMemberEditor({
 	);
 }
 
+/**
+ * GroupMemberTable - Wrapper table component for displaying group members in rows.
+ *
+ * Usage: Container table for rendering a list of group members. Provides standard table header
+ * with columns (Name, Role, Duration, Actions) and overflow visible for editing controls.
+ * Use with GroupMemberRow or GroupMemberRowEditor children.
+ *
+ * UI: Table with 4 columns (name, role, duration, actions/delete button)
+ * Related: GroupMemberRow, GroupMemberRowEditor, Table (UI component)
+ *
+ * @param children - Array of row elements (GroupMemberRow or GroupMemberRowEditor)
+ */
 export function GroupMemberTable({ children }: { children: React.ReactNode[] }) {
 	return (
 		<Table
@@ -296,6 +361,21 @@ export function GroupMemberTable({ children }: { children: React.ReactNode[] }) 
 	);
 }
 
+/**
+ * GroupMemberRowEditor - Editable table row displaying a member's details with inline role/duration controls.
+ *
+ * Usage: Renders a single member as a keyboard-editable table row within GroupMemberTable. Allows
+ * changing role and duration directly in the table cell using dropdowns. Optional delete button
+ * calls onDelete callback. Used in member list forms to edit multiple members inline.
+ *
+ * UI: Table row with name (read-only), role dropdown, duration dropdown with optional date picker,
+ * trash icon to delete. Uses GenericCombobox for dropdowns.
+ * Related: GroupMemberTable, useMemberEditor, GroupMemberRow (read-only version)
+ *
+ * @param member - Member form data
+ * @param onChange - Callback when role or duration changes
+ * @param onDelete - Optional callback when trash icon clicked; receives the member to delete
+ */
 export function GroupMemberRowEditor({
 	member,
 	onChange,
@@ -364,6 +444,21 @@ export function GroupMemberRowEditor({
 	);
 }
 
+/**
+ * GroupMemberRow - Read-only table row displaying a group member's details.
+ *
+ * Usage: Renders a single member as a read-only table row within GroupMemberTable. Shows member name,
+ * role, and expiration status (with color coding for expired). Optional edit/delete buttons call
+ * callbacks. Used to display existing members in a group detail view.
+ *
+ * UI: Table row with name, role (text), duration (formatted as "expires in X days" or "Expired" in red),
+ * optional action buttons. Non-interactive, read-only display.
+ * Related: GroupMemberTable, GroupMemberRowEditor (editable version)
+ *
+ * @param member - Member data to display
+ * @param onEdit - Optional callback when edit button clicked
+ * @param onDelete - Optional callback when delete button clicked
+ */
 export function GroupMemberRow({
 	member,
 	onEdit,

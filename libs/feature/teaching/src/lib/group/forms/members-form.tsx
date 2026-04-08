@@ -8,6 +8,17 @@ import { useState } from "react";
 import { GroupMemberRowEditor, GroupMemberTable } from "../editors/group-members";
 import { SearchUserDialog, UserSearchEntry } from "@self-learning/admin";
 
+/**
+ * GroupMembersEditor - Section for managing group members in a form.
+ *
+ * Note: Must be used within a form with field `members: GroupFormModel["members"]` in context.
+ *
+ * Usage: Used in group edit/create flows to add and manage group members.
+ * Renders a member list with an add-user button, opens SearchUserDialog to add members,
+ * and displays existing members in an editable table.
+ * UI: Header with add button, SearchUserDialog overlay, GroupMemberTable with editable member rows.
+ * Related: GroupMemberTable, GroupMemberRowEditor, SearchUserDialog
+ */
 export function GroupMembersEditor() {
 	const { control } = useFormContext<{ members: GroupFormModel["members"] }>();
 	const editor = useFieldArray({

@@ -17,6 +17,21 @@ type EffectiveAccessType = inferProcedureOutput<
 	AppRouter["permission"]["getEffectiveResourceAccesses"]
 >[number];
 
+/**
+ * GroupPermissionRelationsDialog - Modal showing all users with access to a resource via group permissions.
+ *
+ * Usage: Use to review who can access a permission-protected resource.
+ * Displays a dialog listing effective permissions (users who can access a course/lesson).
+ * Shows each user's access level and the group granting that access. Allows revoking group permissions,
+ * which removes all group members' access to that resource.
+ *
+ * UI: List of users with chips showing access level and group, trash icon to revoke; confirmation dialog
+ * Related: GroupPermissionRow, PermissionFormModel, Dialog
+ *
+ * @param permission - The course or lesson permission object being reviewed
+ * @param isOpen - Controls dialog visibility
+ * @param onClose - Callback when dialog is dismissed
+ */
 export function GroupPermissionRelationsDialog({
 	permission,
 	isOpen,

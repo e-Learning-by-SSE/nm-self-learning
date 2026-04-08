@@ -64,6 +64,20 @@ const ADD_AUTHOR_DEFAULTS: AddAuthorForm = {
 	}
 };
 
+/**
+ * AddAuthorDialog - Multi-step dialog to promote a user to author with optional group membership.
+ *
+ * Usage: Allows admins to add a new author to the system. User selection is required. Optionally adds
+ * the author to an existing group or creates a new group for them. Each group membership includes role
+ * (ADMIN/MEMBER) and expiration date. Used on the admin authors management page.
+ *
+ * UI: Steps for user selection -> membership options -> group selection (or new group creation) ->
+ * membership details (role, expiration); uses SearchUserDialog and SearchGroupDialog internally
+ * Related: SearchUserDialog, SearchGroupDialog, GroupMemberEditor, PromoteRequest
+ *
+ * @param isOpen - Controls dialog visibility
+ * @param onClose - Callback with PromoteRequest (user + optional membership) or undefined if cancelled
+ */
 export function AddAuthorDialog({
 	isOpen,
 	onClose
@@ -166,7 +180,7 @@ export function AddAuthorDialog({
 				<h2 className="text-xl font-semibold mb-4">Autor hinzufügen</h2>
 				<div className="space-y-4">
 					{/* User selection */}
-					<LabeledField label="Benutzer">
+					<LabeledField label="Benutzer" error={errors.user?.message}>
 						{user ? (
 							<div className="flex items-center gap-2 p-2 border rounded-lg">
 								<ImageOrPlaceholder
@@ -194,30 +208,38 @@ export function AddAuthorDialog({
 					</LabeledField>
 
 					{/* Membership toggle */}
-					<label className="flex items-center gap-2 text-sm">
+					<LabeledField
+						label="Auch Gruppe hinzufügen"
+						error={errors.doAddMembership?.message}
+					>
 						<input
 							type="checkbox"
 							className="checkbox"
 							{...register("doAddMembership")}
 						/>
-						Auch Gruppe hinzufügen
-					</label>
+					</LabeledField>
 
 					{doAddMembership && (
 						<>
 							{/* New group toggle */}
-							<label className="flex items-center gap-2 text-sm">
+							<LabeledField
+								label="Neue Gruppe erstellen"
+								error={errors.doCreateNewGroup?.message}
+							>
 								<input
 									type="checkbox"
 									className="checkbox"
 									{...register("doCreateNewGroup")}
 								/>
 								Neue Gruppe erstellen
-							</label>
+							</LabeledField>
 
 							{doCreateNewGroup ? (
 								<div className="space-y-2">
-									<LabeledField label="Gruppenname">
+									<LabeledField
+										label="Gruppenname"
+										error={errors.groupName?.message}
+									>
 										<input
 											type="text"
 											className="textfield"
@@ -227,7 +249,7 @@ export function AddAuthorDialog({
 											})}
 										/>
 									</LabeledField>
-									<LabeledField label="Slug">
+									<LabeledField label="Slug" error={errors.groupSlug?.message}>
 										<input
 											type="text"
 											className="textfield"
@@ -237,7 +259,7 @@ export function AddAuthorDialog({
 									</LabeledField>
 								</div>
 							) : (
-								<LabeledField label="Gruppe">
+								<LabeledField label="Gruppe" error={errors.selectedGroup?.message}>
 									{selectedGroup ? (
 										<div className="flex items-center gap-2 p-2 border rounded-lg">
 											<span>{selectedGroup.name}</span>

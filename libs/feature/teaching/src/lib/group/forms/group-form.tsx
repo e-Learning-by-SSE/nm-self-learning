@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Controller, useFieldArray, useFormContext, useFormState, useWatch } from "react-hook-form";
+import { Controller, useFieldArray, useFormContext, useFormState } from "react-hook-form";
 import { LessonFormModel } from "../../lesson/lesson-form-model";
 import { Form, LabeledField } from "@self-learning/ui/forms";
 import { Chip, IconTextButton } from "@self-learning/ui/common";
-import { ArrowsUpDownIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { PlusIcon } from "@heroicons/react/24/solid";
 import {
 	GroupSearchEntry,
 	SearchGroupDialog,
@@ -13,148 +13,22 @@ import { AccessLevel } from "@prisma/client";
 import { GenericCombobox } from "../editors/group-members";
 import { useRequiredSession } from "@self-learning/ui/layouts";
 
-export function GroupForm({ subtitle }: { subtitle: string }) {
-	const [isGroupDialogOpen, setGroupDialogOpen] = useState(false);
-	const { control } = useFormContext<{ permissions: LessonFormModel["permissions"] }>();
-
-	return (
-		<Form.SidebarSection>
-			<Form.SidebarSectionTitle title="Gruppe" subtitle={subtitle}>
-				<IconTextButton
-					text="Auswählen"
-					icon={<ArrowsUpDownIcon className="icon h-5" />}
-					onClick={() => setGroupDialogOpen(true)}
-				/>
-			</Form.SidebarSectionTitle>
-
-			<Controller
-				name="permissions"
-				control={control}
-				render={({ field, fieldState }) => {
-					const error = fieldState.error?.message;
-
-					return (
-						<>
-							{isGroupDialogOpen && (
-								<SearchGroupDialog
-									isOpen={isGroupDialogOpen}
-									isGlobalSearch={false}
-									exclude={field.value.map(f => f.groupId)}
-									onClose={group => {
-										setGroupDialogOpen(false);
-										if (!group) return;
-										// Temporal solution: just add one group with FULL permissions
-										field.onChange([
-											{
-												groupId: group.groupId,
-												accessLevel: AccessLevel.FULL,
-												groupName: group.name
-											}
-										]);
-									}}
-								/>
-							)}
-							{error && <span className="px-4 text-xs text-red-500">{error}</span>}
-						</>
-					);
-				}}
-			/>
-		</Form.SidebarSection>
-	);
-}
-
-export function ResourceAccessEditor({ subtitle }: { subtitle: string }) {
-	const [isGroupDialogOpen, setGroupDialogOpen] = useState(false);
-	const { control } = useFormContext<{ permissions: LessonFormModel["permissions"] }>();
-	const editor = useFieldArray({
-		name: "permissions",
-		control
-	});
-	const accessLevelOptions = [
-		{ label: "Full", value: AccessLevel.FULL },
-		{ label: "Edit", value: AccessLevel.EDIT },
-		{ label: "View", value: AccessLevel.VIEW }
-	];
-	const permissions = useWatch({
-		control,
-		name: "permissions"
-	});
-
-	return (
-		<Form.SidebarSection>
-			<Form.SidebarSectionTitle title="Gruppen" subtitle={subtitle}>
-				<IconTextButton
-					text="Hinzufugen"
-					className="btn-secondary"
-					icon={<PlusIcon className="icon h-5" />}
-					onClick={() => setGroupDialogOpen(true)}
-				/>
-			</Form.SidebarSectionTitle>
-
-			<>
-				{permissions.length === 0 ? (
-					<p className="text-sm text-light">Keine Gruppen</p>
-				) : (
-					<div className="flex flex-col gap-2">
-						{editor.fields.map((field, index) => {
-							return (
-								<Controller
-									key={field.id}
-									name={`permissions.${index}`}
-									control={control}
-									render={({ field }) => (
-										// const error = fieldState.error?.message;
-										<Chip
-											displayImage={false}
-											onRemove={() => editor.remove(index)}
-										>
-											<span>{field.value?.groupName}</span>
-											<LabeledField label="Zugriffsebene auswählen">
-												<GenericCombobox
-													value={field.value?.accessLevel ?? null}
-													onChange={newLevel =>
-														field.onChange({
-															...field.value,
-															accessLevel: newLevel
-														})
-													}
-													options={accessLevelOptions}
-													label={"Auswählen"}
-												/>
-											</LabeledField>
-										</Chip>
-										// {error && <span className="px-4 text-xs text-red-500">{error}</span>}
-									)}
-								/>
-							);
-						})}
-					</div>
-				)}
-				{isGroupDialogOpen && (
-					<SearchGroupDialog
-						isOpen={isGroupDialogOpen}
-						isGlobalSearch={true}
-						onClose={group => {
-							setGroupDialogOpen(false);
-							if (!group) return;
-							// check if already appended
-							const duplicate = editor.fields.find(u => u.groupId === group?.groupId);
-							if (duplicate) return;
-
-							editor.append({
-								groupId: group.groupId,
-								accessLevel: AccessLevel.EDIT,
-								groupName: group.name
-							});
-						}}
-						exclude={editor.fields.map(f => f.groupId)}
-					/>
-				)}
-			</>
-		</Form.SidebarSection>
-	);
-}
-
+/**
+ * GroupAccessEditor - Sidebar form section for selecting group access and auto-filling default group.
+ *
+ * Note: Must be used within a form with field `permissions: LessonFormModel["permissions"]` in context.
+ *
+ * Usage: Used for permission forms that require one or more groups. It shows the current group access
+ * list, allows adding new groups via SearchGroupDialog, and can auto-add the user's default group once.
+ * It also warns users when removing their last access group.
+ *
+ * UI: Sidebar section with title/subtitle, add-group button, permission chips with access-level selectors,
+ * and SearchGroupDialog for group selection.
+ * Related: SearchGroupDialog, useDefaultGroup, LessonFormModel
+ *
+ * @param subtitle - Subtitle text for the sidebar section
+ * @param doUseDefaultGroup - If true, auto-add the user's default group on first load when empty
+ */
 export function GroupAccessEditor({
 	subtitle,
 	doUseDefaultGroup

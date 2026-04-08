@@ -4,6 +4,22 @@ import { SearchGroupDialog } from "@self-learning/teaching";
 import { ArrowsUpDownIcon } from "@heroicons/react/24/solid";
 import { GroupEntry } from "@self-learning/types";
 
+/**
+ * GroupPicker - Compact UI for selecting a single group with a dialog picker.
+ *
+ * Usage: Displays a summary section with header and description, a button to open SearchGroupDialog,
+ * and the currently selected group as a removable chip. Used in settings forms and admin user forms
+ * where a single group selection is needed.
+ *
+ * UI: Header block, select button, selected group chip, SearchGroupDialog overlay.
+ * Related: SearchGroupDialog, GroupEntry
+ *
+ * @param header - Title text shown in the details dropdown
+ * @param description - Supporting description text for the section
+ * @param value - Currently selected GroupEntry or null
+ * @param onChange - Callback when selection changes
+ * @param isAdmin - If true, opens global group search; otherwise restricts to user groups
+ */
 export function GroupPicker({
 	header,
 	description,
