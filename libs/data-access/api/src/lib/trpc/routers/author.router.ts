@@ -34,7 +34,8 @@ export const authorRouter = t.router({
 				name: true,
 				role: true,
 				author: { select: { slug: true, displayName: true, imgUrl: true } },
-				memberships: { select: { role: true, group: { select: { name: true } } } }
+				memberships: { select: { role: true, expiresAt: true, group: { select: { id: true, name: true } } } },
+				defaultGroupId: true
 			}
 		});
 	}),
@@ -52,20 +53,17 @@ export const authorRouter = t.router({
 					memberships: {
 						select: {
 							role: true,
+							expiresAt: true,
 							group: {
 								select: {
+									id: true,
 									name: true,
-									permissions: {
-										select: {
-											accessLevel: true,
-											course: { select: { courseId: true, title: true } },
-											lesson: { select: { lessonId: true, title: true } }
-										}
-									}
+									slug: true
 								}
 							}
 						}
-					}
+					},
+					defaultGroupId: true
 				}
 			});
 		}),

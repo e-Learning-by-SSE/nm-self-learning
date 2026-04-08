@@ -1,20 +1,21 @@
 import { GroupRole } from "@prisma/client";
 import { z } from "zod";
+import { GroupEntrySchema } from "./group";
 
-export const GroupRoleEnum = z.nativeEnum(GroupRole);
+export const GroupRoleEnum = z.enum(GroupRole);
 
 export const membershipSchema = z.object({
-	groupId: z.number(),
+	group: GroupEntrySchema,
 	expiresAt: z.date().nullable(),
-	userId: z.string(),
 	role: GroupRoleEnum
 });
 
 export const authorSchema = z.object({
 	displayName: z.string().min(3),
 	slug: z.string().min(3),
-	imgUrl: z.string().url().nullable(),
-	memberships: z.array(membershipSchema)
+	imgUrl: z.url().nullable(),
+	memberships: z.array(membershipSchema),
+	defaultGroupId: z.number().nullable()
 });
 
 /**

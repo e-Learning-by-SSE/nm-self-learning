@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { trpc } from "@self-learning/api-client";
-import { Author, authorSchema } from "@self-learning/types";
+import { GroupPicker } from "@self-learning/teaching";
+import { Author, authorSchema, GroupEntry } from "@self-learning/types";
 import {
 	Dialog,
 	DialogActions,
@@ -10,6 +11,7 @@ import {
 } from "@self-learning/ui/common";
 import { LabeledField, Upload } from "@self-learning/ui/forms";
 import { OpenAsJsonButton } from "@self-learning/ui/forms";
+import { useMemo } from "react";
 import { FormProvider, useForm, useFormContext, useWatch } from "react-hook-form";
 
 export function EditAuthorDialog({
@@ -35,7 +37,8 @@ export function EditAuthorDialog({
 								displayName: user.author.displayName,
 								imgUrl: user.author.imgUrl,
 								slug: user.author.slug,
-								memberships: [] // TODO user.memberships
+								memberships: user.memberships,
+								defaultGroupId: user.defaultGroupId
 							}}
 						/>
 					)}
@@ -92,6 +95,7 @@ function AuthorForm({
 
 				<div className="grid gap-8 overflow-y-auto xl:grid-cols-[400px_600px] xl:overflow-y-auto">
 					<AuthorData />
+					{/* <AuthorMemberships /> */}
 					{/* TODO turn into a form */}
 				</div>
 
@@ -109,8 +113,34 @@ function AuthorForm({
 
 function AuthorData() {
 	const { register, control, setValue, formState } = useFormContext<Author>();
-	const imgUrl = useWatch({ control: control, name: "imgUrl" });
+	const imgUrl = useWatch({ control, name: "imgUrl" });
+	const memberships = useWatch({ control, name: "memberships" });
+	const defaultGroupId = useWatch({ control, name: "defaultGroupId" });
 	const errors = formState.errors;
+
+	const defaultGroup = useMemo(() => {
+		return (
+			memberships?.find(membership => membership.group.id === defaultGroupId)?.group ?? null
+		);
+	}, [memberships, defaultGroupId]);
+
+	function onDefaultGroupSelected(selectedGroup: GroupEntry | null | undefined) {
+		// avoid form cancellation as null option
+		if (selectedGroup === undefined) return;
+		if (
+			selectedGroup &&
+			memberships.find(membership => membership.group.id === selectedGroup.id) === undefined
+		) {
+			showToast({
+				type: "error",
+				title: "Ungültige Gruppe",
+				subtitle: "Die ausgewählte Gruppe muss eine der Gruppen des Autors sein."
+			});
+			return;
+		}
+		//
+		setValue("defaultGroupId", selectedGroup?.id ?? null);
+	}
 
 	return (
 		<section className="flex flex-col rounded-lg border border-c-border p-4">
@@ -122,6 +152,13 @@ function AuthorData() {
 				<LabeledField label="Slug" error={errors.slug?.message}>
 					<input className="textfield" type={"text"} {...register("slug")} />
 				</LabeledField>
+				<GroupPicker
+					header="Standardgruppe"
+					description="Wenn ausgewählt, werden standardmäßig neuen Kurse und Lektionen des Autors dieser Gruppe zugewiesen."
+					value={defaultGroup}
+					onChange={onDefaultGroupSelected}
+					isAdmin={true}
+				/>
 				<LabeledField label="Bild" error={errors.imgUrl?.message}>
 					<div className="flex w-full gap-4">
 						<div className="flex w-full flex-col gap-2">
