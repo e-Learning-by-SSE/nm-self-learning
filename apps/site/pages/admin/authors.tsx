@@ -100,6 +100,7 @@ export default function AuthorsPage() {
 							<>
 								<TableHeaderColumn></TableHeaderColumn>
 								<TableHeaderColumn>Name</TableHeaderColumn>
+								<TableHeaderColumn>Mitgliedschaften</TableHeaderColumn>
 								<TableHeaderColumn></TableHeaderColumn>
 							</>
 						}
@@ -115,24 +116,46 @@ export default function AuthorsPage() {
 											/>
 										</TableDataColumn>
 										<TableDataColumn>
-											<div className="flex flex-wrap gap-4">
+											<div className="flex gap-4 min-w-16">
 												<Link
 													className="text-sm font-medium hover:text-c-primary"
 													href={`/authors/${user.author.slug}`}
 												>
 													{user.author.displayName}
 												</Link>
-												<span className="flex gap-2 text-xs">
-													{user.memberships.map(({ role, group }) => (
-														<span
-															key={group.name}
-															className="rounded-full bg-c-primary px-3 py-[2px] text-white"
-														>
-															{group.name} - {role}
-														</span>
-													))}
-												</span>
 											</div>
+										</TableDataColumn>
+										<TableDataColumn>
+											<span className="flex flex-wrap gap-2 text-xs">
+												{user.memberships.map(
+													({ role, expiresAt, group }) => {
+														const isExpired =
+															expiresAt &&
+															new Date(expiresAt) < new Date();
+
+														let classes =
+															"rounded-full px-2 py-[2px] text-sm font-medium border";
+
+														if (isExpired) {
+															classes +=
+																" bg-gray-200 text-gray-500 border-gray-300 line-through";
+														} else {
+															classes +=
+																" bg-green-100 text-green-700 border-green-300";
+														}
+
+														return (
+															<Link
+																key={group.name}
+																className={classes}
+																href={`/teaching/groups/${group.id}`}
+															>
+																{group.name} als {role}
+															</Link>
+														);
+													}
+												)}
+											</span>
 										</TableDataColumn>
 										<TableDataColumn>
 											<div className="flex flex-wrap justify-end gap-4">
