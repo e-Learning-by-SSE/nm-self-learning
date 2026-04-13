@@ -31,20 +31,14 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 	const [initialTreeInput, setInitialTreeInput] = useState<string>(safeInitialTree);
 
 	useEffect(() => {
-		if (
-			languageTree.restrictNodeTypes &&
-			languageTree.nodeTypeCategories?.length > 0 &&
-			languageTree.nodeTypeCategories[0].nodes.length > 0
-		) {
-			const firstValue = `[${languageTree.nodeTypeCategories[0].nodes[0]}]`;
-			setValue(`quiz.questions.${index}.initialTree`, firstValue);
-			setInitialTreeInput(firstValue);
-		} else if (!languageTree.initialTree) {
-			setValue(`quiz.questions.${index}.initialTree`, "[Root]");
-			setInitialTreeInput("[Root]");
+		// Only set default when initialTree is empty
+		if (!languageTree.initialTree) {
+			const defaultTree = getDefaultInitialTree();
+			setValue(`quiz.questions.${index}.initialTree`, defaultTree);
+			setInitialTreeInput(defaultTree);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [languageTree.restrictNodeTypes, languageTree.nodeTypeCategories]);
+	}, [languageTree.restrictNodeTypes]);
 
 	const [answerTreeInput, setAnswerTreeInput] = useState<string[]>(languageTree.answer);
 

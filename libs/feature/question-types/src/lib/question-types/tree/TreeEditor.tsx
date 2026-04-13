@@ -4,14 +4,12 @@ import type { NodeTypeCategory } from "./schema";
 
 export function TreeEditor({
 	tree,
-	allowTextInputForParents,
 	restrictNodeTypes,
 	nodeTypeCategories,
 	setTree,
 	setInput
 }: {
 	tree: TreeNode;
-	allowTextInputForParents: boolean;
 	restrictNodeTypes: boolean;
 	nodeTypeCategories: NodeTypeCategory[];
 	setTree: (tree: TreeNode) => void;
@@ -35,10 +33,9 @@ export function TreeEditor({
 
 	const handleAddChild = (node: TreeNode) => {
 		if (node.children.length === 0) {
-			// Keep parent value as is, just add a new child below
-			node.children = [{ value: "Node", children: [] }];
+			node.children = [{ value: "", children: [] }];
 		} else {
-			node.children.push({ value: "Node", children: [] });
+			node.children.push({ value: "", children: [] });
 		}
 		updateTree({ ...tree });
 	};
@@ -60,14 +57,18 @@ export function TreeEditor({
 				className="ml-4 pl-4 border-l-2 border-c-border-strong space-y-2 py-1"
 			>
 				<div className="flex items-center space-x-2 bg-c-surface-2 p-2 rounded-lg shadow-sm">
-					{restrictNodeTypes && node.children.length === 0 ? (
+					{restrictNodeTypes && node.children.length === 0 && nodeTypeCategories.some(c => c.nodes.length > 0) ? (
 						<select
 							className="border rounded px-3 py-1 text-sm bg-white w-36"
-							value={node.value}
+							value={
+								nodeTypeCategories.flatMap(c => c.nodes).includes(node.value)
+									? node.value
+									: ""
+							}
 							onChange={e => handleRename(node, e.target.value)}
 							title="Select a node type"
 						>
-							<option value="Node" disabled>
+							<option value="" disabled>
 								-- wählen --
 							</option>
 							{nodeTypeCategories.map(category => (

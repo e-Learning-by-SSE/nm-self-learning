@@ -42,8 +42,8 @@ import { evaluateProgramming } from "./question-types/programming/evaluate";
 import { Programming, programmingQuestionSchema } from "./question-types/programming/schema";
 import { Text, textQuestionSchema } from "./question-types/text/schema";
 import { LessonLayoutProps } from "@self-learning/lesson";
-import { LanguageTree, languageTreeQuestionSchema } from "./question-types/language-tree/schema";
-import { evaluateLanguageTreeAnswer } from "./question-types/language-tree/evaluate";
+import { LanguageTree, languageTreeQuestionSchema } from "./question-types/tree/schema";
+import { evaluateLanguageTreeAnswer } from "./question-types/tree/evaluate";
 
 const ProgrammingAnswer = dynamic(() => import("./question-types/programming/component"), {
 	ssr: false
@@ -69,10 +69,10 @@ const ClozeAnswer = dynamic(() => import("./question-types/cloze/component"), { 
 const ClozeForm = dynamic(() => import("./question-types/cloze/form"), { ssr: false });
 const ArrangeAnswer = dynamic(() => import("./question-types/arrange/component"), { ssr: false });
 const ArrangeForm = dynamic(() => import("./question-types/arrange/form"), { ssr: false });
-const LanguageTextForm = dynamic(() => import("./question-types/language-tree/form"), {
+const LanguageTextForm = dynamic(() => import("./question-types/tree/form"), {
 	ssr: false
 });
-const LanguageTextAnswer = dynamic(() => import("./question-types/language-tree/component"), {
+const LanguageTextAnswer = dynamic(() => import("./question-types/tree/component"), {
 	ssr: false
 });
 
@@ -217,7 +217,7 @@ export const INITIAL_QUESTION_CONFIGURATION_FUNCTIONS: {
 		customTextInputInParentNodes: true,
 		restrictNodeTypes: false,
 		nodeTypeCategories: [],
-		initialTree: "",
+		initialTree: "[Root]",
 		answer: []
 	})
 };
