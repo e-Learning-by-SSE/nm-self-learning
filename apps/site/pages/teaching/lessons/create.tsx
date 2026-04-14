@@ -30,4 +30,4 @@ export default function CreateLessonPage() {
 	return <LessonEditor onSubmit={handleCreateClose} isFullScreen={true} />;
 }
 
-export const getServerSideProps = withTranslations(["common"]);
+export const getServerSideProps = withTranslations(["common", "feature-question-types"]);

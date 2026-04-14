@@ -1,6 +1,7 @@
 import type { TreeNode } from "./tree-parser";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import type { NodeTypeCategory } from "./schema";
+import { useTranslation } from "next-i18next";
 
 export function TreeEditor({
 	tree,
@@ -15,6 +16,7 @@ export function TreeEditor({
 	setTree: (tree: TreeNode) => void;
 	setInput: (text: string) => void;
 }) {
+	const { t } = useTranslation("feature-question-types");
 	const updateTree = (newTree: TreeNode) => {
 		function updateLeafStatus(node: TreeNode) {
 			node.isLeaf = node.children.length === 0;
@@ -57,7 +59,9 @@ export function TreeEditor({
 				className="ml-4 pl-4 border-l-2 border-c-border-strong space-y-2 py-1"
 			>
 				<div className="flex items-center space-x-2 bg-c-surface-2 p-2 rounded-lg shadow-sm">
-					{restrictNodeTypes && node.children.length === 0 && nodeTypeCategories.some(c => c.nodes.length > 0) ? (
+					{restrictNodeTypes &&
+					node.children.length === 0 &&
+					nodeTypeCategories.some(c => c.nodes.length > 0) ? (
 						<select
 							className="border rounded px-3 py-1 text-sm bg-white w-36"
 							value={
@@ -66,15 +70,15 @@ export function TreeEditor({
 									: ""
 							}
 							onChange={e => handleRename(node, e.target.value)}
-							title="Select a node type"
+							title={t("selectNodeType")}
 						>
 							<option value="" disabled>
-								-- wählen --
+								{t("selectPlaceholder")}
 							</option>
-							{nodeTypeCategories.map(category => (
-								<optgroup key={category.name} label={category.name}>
-									{category.nodes.map(node => (
-										<option key={node} value={node}>
+							{nodeTypeCategories.map((category, catIndex) => (
+								<optgroup key={catIndex} label={category.name}>
+									{category.nodes.map((node, nodeIndex) => (
+										<option key={nodeIndex} value={node}>
 											{node}
 										</option>
 									))}

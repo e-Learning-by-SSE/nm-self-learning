@@ -8,6 +8,7 @@ import { Dialog, DialogActions, IconOnlyButton, Toggle } from "@self-learning/ui
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { FaceFrownIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { PlusIcon } from "@heroicons/react/24/solid";
+import { useTranslation } from "next-i18next";
 
 export default function LanguageTreeForm({ index }: { index: number }) {
 	const { control, setValue } = useFormContext<QuestionTypeForm<LanguageTreeQuestion>>();
@@ -15,6 +16,7 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 		name: `quiz.questions.${index}`,
 		control
 	});
+	const { t } = useTranslation("feature-question-types");
 
 	const getDefaultInitialTree = () => {
 		if (
@@ -129,7 +131,7 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 											]);
 										}}
 									>
-										+ Kategorie hinzufügen
+										{t("addCategory")}
 									</button>
 								</div>
 
@@ -143,7 +145,7 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 												<input
 													type="text"
 													className="border rounded px-2 py-1 text-sm flex-1"
-													placeholder="Kategoriename (z. B. Nomen)"
+													placeholder={t("categoryNamePlaceholder")}
 													value={category.name}
 													onChange={e => {
 														const current = [
@@ -206,10 +208,7 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 							</div>
 
 							<p className="text-sm text-yellow-600 bg-yellow-50 border border-yellow-200 rounded p-2 mt-2">
-								⚠️ Hinweis: Wenn Knotentypen eingeschränkt sind, sollten die Werte
-								im Anfangsbaum mit den definierten Kategoriewörtern übereinstimmen.
-								Andernfalls kann es zu inkonsistenter Darstellung für Studierende
-								kommen.
+								{t("restrictNodeTypesHint")}
 							</p>
 						</>
 					)}
