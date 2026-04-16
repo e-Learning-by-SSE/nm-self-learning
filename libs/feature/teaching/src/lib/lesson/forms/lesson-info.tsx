@@ -12,6 +12,7 @@ import { Controller, useFormContext } from "react-hook-form";
 import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { LessonSkillManager } from "./lesson-skill-manager";
+import { AiTutorConsent } from "./ai-tutor-consent";
 
 export function LessonInfoEditor() {
 	const form = useFormContext<LessonFormModel>();
@@ -132,6 +133,7 @@ export function LessonInfoEditor() {
 				subtitle="Autoren dieser Lerneinheit."
 				emptyString="Für diese Lerneinheit sind noch keine Autoren hinterlegt."
 			/>
+			<AiTutorConsent />
 			<LicenseForm />
 			<LessonSkillManager />
 		</>

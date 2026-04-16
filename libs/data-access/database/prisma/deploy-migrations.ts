@@ -118,7 +118,9 @@ function migrateData(migration: string, migrationApplied: boolean, prefix: strin
 		execSync(`npx prisma generate`);
 		try {
 			// Execute the data migration in a separate process (to support alternative versions of Prisma Client)
-			execSync(`npx tsx ${dataMigrationFile}`);
+			execSync(`TSX_TSCONFIG_PATH=./tsconfig.base.json npx tsx ${dataMigrationFile}`, {
+				stdio: "inherit"
+			});
 			logs.push(`   ${prefix}  └─ data-migration.ts ${success}✓${normal}`);
 			return true;
 		} catch (error) {
@@ -156,7 +158,7 @@ function main() {
 	let dataMigrationApplied = false;
 	for (let i = 0; i < migrations.length; i++) {
 		const migration = migrations[i];
-		const prefix = i === migrations.length - 1 ? " " : "|";
+		const prefix = i === migrations.length - 1 ? " " : "│";
 		const corner = i === migrations.length - 1 ? "└" : "├";
 		logs.push(`   ${corner}─ ${migration}`);
 		console.log(`Applying migration ${info}${migration}${normal}`);

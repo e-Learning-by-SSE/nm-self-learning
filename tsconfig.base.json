@@ -17,6 +17,7 @@
 		"paths": {
 			"@self-learning/achievements": ["libs/feature/achievements/src/index.ts"],
 			"@self-learning/admin": ["libs/feature/admin/src/index.ts"],
+			"@self-learning/ai-tutor": ["libs/feature/ai-tutor/src/index.ts"],
 			"@self-learning/analysis": ["libs/feature/analysis/src/index.ts"],
 			"@self-learning/api": ["libs/data-access/api/src/index.ts"],
 			"@self-learning/api-client": ["libs/data-access/api-client/src/index.ts"],
@@ -51,7 +52,9 @@
 			"@self-learning/util/testing": ["libs/util/testing/src/index.ts"],
 			"@self-learning/util/validate": ["libs/util/validation/src/index.ts"],
 			"@self-learning/webhooks": ["libs/feature/webhooks/src/index.ts"],
+			"settings": ["libs/feature/settings/src/index.ts"],
 			"@self-learning/worker-api": ["libs/data-access/worker/src/index.ts"],
+			"@self-learning/rag-processing": ["libs/feature/rag-processing/src/index.ts"]
 		}
 	},
 	"files": ["./index.d.ts"],

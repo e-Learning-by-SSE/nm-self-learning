@@ -1,9 +1,10 @@
 import { Course, Prisma } from "@prisma/client";
-import { database, save_subtitle_for_lesson } from "@self-learning/database";
+import { database, save_subtitle_for_lesson, logJobProgress } from "@self-learning/database";
 import {
 	createLessonMeta,
 	EventTypeMap,
 	lessonSchema,
+	LessonContentType,
 	subtitleSrcSchema
 } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
@@ -11,12 +12,42 @@ import { differenceInHours } from "date-fns";
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
+import {
+	getRagVersionHash,
+	prepareRagContent,
+	deleteEmbedding
+} from "@self-learning/rag-processing";
+import { workerServiceClient } from "@self-learning/worker-api";
+import crypto from "crypto";
 
 const saveSubtitleInputSchema = z.object({
 	lessonId: z.string(),
 	video_url: z.url(),
 	transcription: subtitleSrcSchema
 });
+
+/**
+ * RAG Embedding Flow (triggered on lesson create/edit when ragEnabled=true, {by default, RAG is enabled}):
+ *
+ * 1. prepareRagContent() downloads PDFs and extracts article text and video
+ *    transcripts from the lesson content array. The lesson record in the DB
+ *    is NOT modified — only ChromaDB is written to.
+ *
+ * 2. The prepared content (base64 PDF buffers + plain text strings) is
+ *    submitted to the worker-service as a ragEmbed job via submitJob.mutate().
+ *    We await this call so the mutation fails visibly if job submission fails.
+ *
+ * 3. Once submitted, job progress is tracked asynchronously via subscribeToRagJobEvents
+ *    (fire-and-forget — the lesson mutation has already returned to the client).
+ *
+ * 4. The worker splits content into overlapping text chunks, generates embeddings
+ *    using the local Xenova/all-MiniLM-L6-v2 model, and stores them in ChromaDB
+ *    in a per-lesson collection keyed by lessonId.
+ *
+ * 5. On update, the existing ChromaDB collection for the lessonId is deleted
+ *    before re-embedding, ensuring no stale chunks remain. The ragVersionHash
+ *    field in the DB tracks the content hash so unchanged lessons are not re-embedded.
+ */
 
 export const lessonRouter = t.router({
 	findOneAllProps: authProcedure.input(z.object({ lessonId: z.string() })).query(({ input }) => {
@@ -163,7 +194,12 @@ export const lessonRouter = t.router({
 				totalCount: count
 			};
 		}),
-	create: authProcedure.input(lessonSchema).mutation(async ({ input, ctx }) => {
+	create: authProcedure.input(lessonSchema).mutation(async ({ input }) => {
+		const ragCheck = input.ragEnabled ?? true;
+		let hash: string | null = null;
+		if (ragCheck && input.content.length) {
+			hash = getRagVersionHash(JSON.stringify(input.content));
+		}
 		const createdLesson = await database.lesson.create({
 			data: {
 				...input,
@@ -180,16 +216,23 @@ export const lessonRouter = t.router({
 				},
 				content: input.content as Prisma.InputJsonArray,
 				lessonId: getRandomId(),
-				meta: createLessonMeta(input) as unknown as Prisma.JsonObject
+				meta: createLessonMeta(input) as unknown as Prisma.JsonObject,
+				ragVersionHash: hash,
+				ragEnabled: input.ragEnabled ?? true
 			},
 			select: {
 				lessonId: true,
 				slug: true,
-				title: true
+				title: true,
+				ragEnabled: true
 			}
 		});
 
-		console.log("[lessonRouter.create]: Lesson created by", ctx.user.name, createdLesson);
+		if (createdLesson.ragEnabled && hash) {
+			// Await job submission to surface errors early; job itself runs asynchronously in worker.
+			await enqueueRagEmbedJob(createdLesson.lessonId, createdLesson.title, input.content);
+		}
+
 		return createdLesson;
 	}),
 	edit: authProcedure
@@ -199,35 +242,75 @@ export const lessonRouter = t.router({
 				lesson: lessonSchema
 			})
 		)
-		.mutation(async ({ input, ctx }) => {
-			const updatedLesson = await database.lesson.update({
-				where: { lessonId: input.lessonId },
-				data: {
-					...input.lesson,
-					quiz: input.lesson.quiz
-						? (input.lesson.quiz as Prisma.JsonObject)
-						: Prisma.JsonNull,
-					lessonId: input.lessonId,
-					authors: {
-						set: input.lesson.authors.map(a => ({ username: a.username }))
+		.mutation(async ({ input }) => {
+			const ragCheck = input.lesson.ragEnabled ?? true;
+			const hash =
+				ragCheck && input.lesson.content.length
+					? getRagVersionHash(JSON.stringify(input.lesson.content))
+					: null;
+			/**
+			 * Fetch existing state and apply update in a single transaction to avoid
+			 * a race condition where a concurrent edit could change ragEnabled between
+			 * the two operations, leading to a missed deletion or double-embed.
+			 */
+			const [existing, updatedLesson] = await database.$transaction([
+				database.lesson.findUnique({
+					where: { lessonId: input.lessonId },
+					select: { ragVersionHash: true, ragEnabled: true }
+				}),
+				database.lesson.update({
+					where: { lessonId: input.lessonId },
+					data: {
+						...input.lesson,
+						quiz: input.lesson.quiz
+							? (input.lesson.quiz as Prisma.JsonObject)
+							: Prisma.JsonNull,
+						lessonId: input.lessonId,
+						authors: {
+							set: input.lesson.authors.map(a => ({ username: a.username }))
+						},
+						licenseId: input.lesson.licenseId,
+						requires: {
+							set: input.lesson.requires.map(r => ({ id: r.id }))
+						},
+						provides: {
+							set: input.lesson.provides.map(r => ({ id: r.id }))
+						},
+						meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject,
+						ragVersionHash: hash,
+						ragEnabled: input.lesson.ragEnabled ?? true
 					},
-					licenseId: input.lesson.licenseId,
-					requires: {
-						set: input.lesson.requires.map(r => ({ id: r.id }))
-					},
-					provides: {
-						set: input.lesson.provides.map(r => ({ id: r.id }))
-					},
-					meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject
-				},
-				select: {
-					lessonId: true,
-					slug: true,
-					title: true
-				}
-			});
+					select: {
+						lessonId: true,
+						slug: true,
+						title: true,
+						ragEnabled: true
+					}
+				})
+			]);
 
-			console.log("[lessonRouter.edit]: Lesson updated by", ctx.user.name, updatedLesson);
+			if (updatedLesson.ragEnabled && hash) {
+				if (!existing?.ragEnabled) {
+					// RAG newly enabled — embed for the first time
+					await enqueueRagEmbedJob(
+						updatedLesson.lessonId,
+						updatedLesson.title,
+						input.lesson.content
+					);
+				} else {
+					// RAG already enabled — content may have changed; delete old embeddings then re-embed
+					await deleteEmbedding(updatedLesson.lessonId);
+					await enqueueRagEmbedJob(
+						updatedLesson.lessonId,
+						updatedLesson.title,
+						input.lesson.content
+					);
+				}
+			} else if (!updatedLesson.ragEnabled && existing?.ragEnabled) {
+				// RAG was disabled — clean up existing embeddings
+				await deleteEmbedding(updatedLesson.lessonId);
+			}
+
 			return updatedLesson;
 		}),
 	findLinkedLessonEntities: authorProcedure
@@ -252,6 +335,7 @@ export const lessonRouter = t.router({
 						lessonId: input.lessonId
 					}
 				});
+				await deleteEmbedding(input.lessonId);
 			} else {
 				const deleted = await database.lesson.deleteMany({
 					where: {
@@ -269,6 +353,8 @@ export const lessonRouter = t.router({
 						code: "FORBIDDEN",
 						message: "User is not an author of this lesson or lesson does not exist."
 					});
+				} else {
+					await deleteEmbedding(input.lessonId);
 				}
 			}
 		}),
@@ -513,4 +599,64 @@ export async function findLessons({
 	]);
 
 	return { lessons, count };
+}
+
+/**
+ * Enqueue RAG embedding job
+ *
+ * Submit a RAG embedding job for the given lesson content.
+ */
+async function enqueueRagEmbedJob(
+	lessonId: string,
+	lessonTitle: string,
+	lessonContent: LessonContentType[]
+): Promise<string> {
+	try {
+		const preparedContent = await prepareRagContent(lessonContent);
+		const jobId = crypto.randomUUID();
+		await workerServiceClient.submitJob.mutate({
+			jobId,
+			jobType: "ragEmbed",
+			payload: {
+				lessonId,
+				lessonTitle,
+				pdfBuffers: preparedContent.pdfBuffers,
+				articleTexts: preparedContent.articleTexts,
+				transcriptTexts: preparedContent.transcriptTexts
+			}
+		});
+		subscribeToRagJobEvents(jobId, lessonId).catch(err => {
+			console.error("[LessonRouter] Subscription error", err, { jobId });
+		});
+		return jobId;
+	} catch (error) {
+		console.error("[LessonRouter] Failed to enqueue RAG job", error, { lessonId });
+		throw error;
+	}
+}
+
+async function subscribeToRagJobEvents(jobId: string, lessonId: string): Promise<void> {
+	try {
+		workerServiceClient.jobQueue.subscribe(
+			{ jobId },
+			{
+				onData: async event => {
+					await logJobProgress(jobId, event);
+					if (event.status === "finished") {
+						console.log("[LessonRouter] RAG job completed", {
+							jobId,
+							lessonId
+						});
+					} else if (event.status === "aborted") {
+						console.error("[LessonRouter] RAG job aborted", new Error(event.cause));
+					}
+				},
+				onError: error => {
+					console.error("[LessonRouter] RAG subscription error", error, { jobId });
+				}
+			}
+		);
+	} catch (error) {
+		console.error("[LessonRouter] Failed to subscribe to RAG events", error, { jobId });
+	}
 }

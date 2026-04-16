@@ -38,7 +38,8 @@ export const getServerSideProps = withTranslations(
 				provides: true,
 				authors: true,
 				lessonType: true,
-				selfRegulatedQuestion: true
+				selfRegulatedQuestion: true,
+				ragEnabled: true
 			}
 		});
 
@@ -78,7 +79,8 @@ export const getServerSideProps = withTranslations(
 			content: (lesson.content ?? []) as LessonContent,
 			quiz: lesson.quiz as Quiz,
 			lessonType: lesson.lessonType,
-			selfRegulatedQuestion: lesson.selfRegulatedQuestion
+			selfRegulatedQuestion: lesson.selfRegulatedQuestion,
+			ragEnabled: lesson.ragEnabled
 		};
 
 		return {

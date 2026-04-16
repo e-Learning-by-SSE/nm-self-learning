@@ -26,6 +26,7 @@ import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo } from "react";
+import { useAiTutor, AiTutor, FloatingTutorButton } from "@self-learning/ai-tutor";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -131,7 +132,7 @@ type CourseProps = {
 };
 
 export const getServerSideProps = withTranslations(
-	["common"],
+	["common", "ai-tutor"],
 	withAuth(async context => {
 		const { req, res, params } = context;
 		const courseSlug = params?.courseSlug as string | undefined;
@@ -195,6 +196,7 @@ async function getCourse(courseSlug: string) {
 }
 
 export default function Course({ course, summary, content, markdownDescription }: CourseProps) {
+	const tutorState = useAiTutor();
 	return (
 		<div className="pb-32">
 			<CenteredSection>
@@ -212,6 +214,12 @@ export default function Course({ course, summary, content, markdownDescription }
 			<CenteredSection>
 				<TableOfContents content={content} course={course} />
 			</CenteredSection>
+			<FloatingTutorButton 
+				onToggle={tutorState.toggleTutor}
+				disabled={tutorState.isAnimating}
+			/>
+			
+			<AiTutor tutorState={tutorState} />
 		</div>
 	);
 }
