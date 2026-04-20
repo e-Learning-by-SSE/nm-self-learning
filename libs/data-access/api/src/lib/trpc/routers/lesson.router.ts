@@ -532,7 +532,11 @@ export const lessonRouter = t.router({
 			const { lessonId, video_url, transcription } = input;
 			const subtitleSrc = subtitleSrcSchema.parse(transcription);
 			try {
-				await save_subtitle_for_lesson(lessonId, video_url, subtitleSrc);
+				const lesson = await save_subtitle_for_lesson(lessonId, video_url, subtitleSrc);
+				if (lesson.ragEnabled) {
+					await deleteEmbedding(lessonId);
+					await enqueueRagEmbedJob(lessonId, lesson.title, lesson.content as LessonContentType[]);
+				}
 				return { message: "Subtitle saved" };
 			} catch (error) {
 				if (error instanceof Error) {
