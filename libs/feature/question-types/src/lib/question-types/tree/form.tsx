@@ -1,13 +1,14 @@
 import { useFormContext, useWatch } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
 import { LanguageTreeQuestion } from "./schema";
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { parseTree, TreeNode } from "./tree-parser";
 import { TreeVisualization } from "./tree-visualization";
 import { Dialog, DialogActions, IconOnlyButton, Toggle } from "@self-learning/ui/common";
 import { CenteredContainer } from "@self-learning/ui/layouts";
 import { FaceFrownIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { PlusIcon } from "@heroicons/react/24/solid";
+import { useTranslation } from "next-i18next";
 
 export default function LanguageTreeForm({ index }: { index: number }) {
 	const { control, setValue } = useFormContext<QuestionTypeForm<LanguageTreeQuestion>>();
@@ -15,8 +16,35 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 		name: `quiz.questions.${index}`,
 		control
 	});
+	const { t } = useTranslation("feature-question-types");
 
-	const [initialTreeInput, setInitialTreeInput] = useState<string>(languageTree.initialTree);
+	const getDefaultInitialTree = () => {
+		if (
+			languageTree.restrictNodeTypes &&
+			languageTree.nodeTypeCategories?.length > 0 &&
+			languageTree.nodeTypeCategories[0].nodes.length > 0
+		) {
+			return `[${languageTree.nodeTypeCategories[0].nodes[0]}]`;
+		}
+		return "[Root]";
+	};
+
+	const safeInitialTree = languageTree.initialTree || getDefaultInitialTree();
+	const [initialTreeInput, setInitialTreeInput] = useState<string>(safeInitialTree);
+
+	useEffect(() => {
+		// Only set default when initialTree is empty
+		if (!languageTree.initialTree) {
+			const defaultTree = getDefaultInitialTree();
+			setValue(`quiz.questions.${index}.initialTree`, defaultTree);
+			setInitialTreeInput(defaultTree);
+		}
+		// setValue is excluded as it is a stable reference from react-hook-form that never changes.
+		// index is excluded as it is a prop that never changes for a given question instance.
+		// languageTree.initialTree is excluded to prevent an infinite loop since we set it inside the effect.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [languageTree.restrictNodeTypes]);
+
 	const [answerTreeInput, setAnswerTreeInput] = useState<string[]>(languageTree.answer);
 
 	const [editDialog, setEditDialog] = useState<ReactNode | null>(null);
@@ -66,27 +94,127 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 					<span className="text-lg font-medium mb-3">Einstellungen</span>
 					<div className="flex flex-row">
 						<Toggle
-							value={languageTree.caseSensitive}
-							onChange={value =>
-								setValue(`quiz.questions.${index}.caseSensitive`, value)
-							}
-							label={"Groß- und Kleinschreibung beachten"}
+							value={languageTree.restrictNodeTypes ?? false}
+							onChange={value => {
+								setValue(`quiz.questions.${index}.restrictNodeTypes`, value);
+								if (value) {
+									// When restriction is turned ON, reset caseSensitive
+									setValue(`quiz.questions.${index}.caseSensitive`, false);
+								}
+							}}
+							label={"Knotentypen einschränken"}
 						/>
 					</div>
-					<div className="flex flex-row mt-2">
-						<Toggle
-							value={languageTree.customTextInputInParentNodes}
-							onChange={value =>
-								setValue(
-									`quiz.questions.${index}.customTextInputInParentNodes`,
-									value
-								)
-							}
-							label={
-								"Erlaubt Freitexteingabe in Knoten mit untergeordneten Elementen"
-							}
-						/>
-					</div>
+
+					{!languageTree.restrictNodeTypes && (
+						<div className="flex flex-row mt-2">
+							<Toggle
+								value={languageTree.caseSensitive}
+								onChange={value =>
+									setValue(`quiz.questions.${index}.caseSensitive`, value)
+								}
+								label={"Groß- und Kleinschreibung beachten"}
+							/>
+						</div>
+					)}
+
+					{languageTree.restrictNodeTypes && (
+						<>
+							<div className="mt-4 border rounded-lg p-4">
+								<div className="flex items-center justify-between mb-3">
+									<span className="font-medium">Kategorien</span>
+									<button
+										type="button"
+										className="btn-primary text-sm px-3 py-1"
+										onClick={() => {
+											const current = languageTree.nodeTypeCategories ?? [];
+											setValue(`quiz.questions.${index}.nodeTypeCategories`, [
+												...current,
+												{ name: "", nodes: [] }
+											]);
+										}}
+									>
+										{t("addCategory")}
+									</button>
+								</div>
+
+								{(languageTree.nodeTypeCategories ?? []).map(
+									(category, catIndex) => (
+										<div
+											key={catIndex}
+											className="flex flex-col gap-2 mb-3 p-3 border rounded-lg bg-c-surface-1"
+										>
+											<div className="flex items-center gap-2">
+												<input
+													type="text"
+													className="border rounded px-2 py-1 text-sm flex-1"
+													placeholder={t("categoryNamePlaceholder")}
+													value={category.name}
+													onChange={e => {
+														const current = [
+															...(languageTree.nodeTypeCategories ??
+																[])
+														];
+														current[catIndex] = {
+															...current[catIndex],
+															name: e.target.value
+														};
+														setValue(
+															`quiz.questions.${index}.nodeTypeCategories`,
+															current
+														);
+													}}
+												/>
+												<button
+													type="button"
+													className="p-1 bg-c-danger text-white rounded hover:bg-c-danger-strong"
+													onClick={() => {
+														const current = [
+															...(languageTree.nodeTypeCategories ??
+																[])
+														];
+														current.splice(catIndex, 1);
+														setValue(
+															`quiz.questions.${index}.nodeTypeCategories`,
+															current
+														);
+													}}
+												>
+													<TrashIcon className="h-4 w-4" />
+												</button>
+											</div>
+											<input
+												type="text"
+												className="border rounded px-2 py-1 text-sm"
+												placeholder="Wörter, kommagetrennt (z. B. Tisch, Fenster, Tür)"
+												defaultValue={category.nodes.join(", ")}
+												onBlur={e => {
+													const current = [
+														...(languageTree.nodeTypeCategories ?? [])
+													];
+													current[catIndex] = {
+														...current[catIndex],
+														nodes: e.target.value
+															.split(",")
+															.map(s => s.trim())
+															.filter(Boolean)
+													};
+													setValue(
+														`quiz.questions.${index}.nodeTypeCategories`,
+														current
+													);
+												}}
+											/>
+										</div>
+									)
+								)}
+							</div>
+
+							<p className="text-sm text-yellow-600 bg-yellow-50 border border-yellow-200 rounded p-2 mt-2">
+								{t("restrictNodeTypesHint")}
+							</p>
+						</>
+					)}
 				</div>
 
 				<div className="flex flex-col p-4 mb-5 rounded-lg">
@@ -99,6 +227,10 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 							title={"Struktur Hinzufügen"}
 						/>
 					</div>
+					<p className="text-sm text-gray-500 mb-3">
+						Der Startbaum, den Studierende als Ausgangspunkt erhalten. Verwenden Sie die
+						Klammernotation, z. B.: <code>[Wurzel [Kind1] [Kind2]]</code>
+					</p>
 					<div className="flex justify-center w-full h-[150px] p-4">
 						{initialTreeInput ? (
 							<li
@@ -131,6 +263,9 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 							title={"Antwort Hinzufügen"}
 						/>
 					</div>
+					<p className="text-sm text-gray-500 mb-3">
+						Definieren Sie mindestens eine korrekte Baumstruktur als Musterlösung.
+					</p>
 					<div className="flex justify-center w-full min-h-[150px] max-h-[300px] overflow-y-auto">
 						{answerTreeInput.length > 0 ? (
 							<ul className="flex flex-col items-start w-full gap-4 p-4">
@@ -246,7 +381,14 @@ function TreeEditDialog({ value, onClose }: { value: string; onClose: (value?: s
 						</div>
 					)}
 				</div>
-				<div className="py-2 mt-2">Baumstruktur eingeben</div>
+				<div className="py-2 mt-2">
+					<p className="font-medium">Baumstruktur eingeben</p>
+					<p className="text-sm text-gray-500">
+						Verwenden Sie die Klammernotation: Jeder Knoten wird in eckige Klammern
+						gesetzt. Kindknoten stehen innerhalb des Elternknotens, z. B.:{" "}
+						<code>[Wurzel [Kind1 [Enkel1] [Enkel2]] [Kind2]]</code>
+					</p>
+				</div>
 				<textarea
 					aria-label="tree initial input"
 					id="tree-input-initial"

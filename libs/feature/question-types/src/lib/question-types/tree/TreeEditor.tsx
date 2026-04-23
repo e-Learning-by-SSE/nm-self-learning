@@ -1,36 +1,22 @@
 import type { TreeNode } from "./tree-parser";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
-
-const phraseOptions = ["NP", "PP", "S", "ADJP", "ADVP", "NEGP", "VP"];
-
-const wordOptions = [
-	"ART",
-	"NN",
-	"NE",
-	"VVFIN",
-	"VVPP",
-	"VAFIN",
-	"PPER",
-	"PRF",
-	"PPOSAT",
-	"APPR",
-	"APPRART",
-	"ADV",
-	"ADJD",
-	"PTKNEG"
-];
+import type { NodeTypeCategory } from "./schema";
+import { useTranslation } from "next-i18next";
 
 export function TreeEditor({
 	tree,
-	allowTextInputForParents,
+	restrictNodeTypes,
+	nodeTypeCategories,
 	setTree,
 	setInput
 }: {
 	tree: TreeNode;
-	allowTextInputForParents: boolean;
+	restrictNodeTypes: boolean;
+	nodeTypeCategories: NodeTypeCategory[];
 	setTree: (tree: TreeNode) => void;
 	setInput: (text: string) => void;
 }) {
+	const { t } = useTranslation("feature-question-types");
 	const updateTree = (newTree: TreeNode) => {
 		function updateLeafStatus(node: TreeNode) {
 			node.isLeaf = node.children.length === 0;
@@ -49,15 +35,9 @@ export function TreeEditor({
 
 	const handleAddChild = (node: TreeNode) => {
 		if (node.children.length === 0) {
-			// Convert leaf into a non-leaf by moving its value down
-			const oldLeafNode = { value: node.value, children: [] }; // Preserve original text
-
-			// Assign default value from dropdown (first in phrase list)
-			node.value = phraseOptions[0]; // Default to "NP" (or whatever the first entry is)
-			node.children = [oldLeafNode]; // Move the old text as a child node
+			node.children = [{ value: "", children: [] }];
 		} else {
-			// Regular non-leaf node: Add a new child normally
-			node.children.push({ value: "Node", children: [] });
+			node.children.push({ value: "", children: [] });
 		}
 		updateTree({ ...tree });
 	};
@@ -71,7 +51,6 @@ export function TreeEditor({
 	const generateNodeId = (path: number[]) => `node-${path.join("-")}`;
 
 	const renderNode = (node: TreeNode, parent: TreeNode | null = null, path: number[] = []) => {
-		const isLeaf = node.children.length === 0;
 		const nodeId = generateNodeId(path);
 
 		return (
@@ -80,8 +59,33 @@ export function TreeEditor({
 				className="ml-4 pl-4 border-l-2 border-c-border-strong space-y-2 py-1"
 			>
 				<div className="flex items-center space-x-2 bg-c-surface-2 p-2 rounded-lg shadow-sm">
-					{/* Use a dropdown for non-leaf nodes and text input for leaf nodes */}
-					{isLeaf || allowTextInputForParents ? (
+					{restrictNodeTypes &&
+					node.children.length === 0 &&
+					nodeTypeCategories.some(c => c.nodes.length > 0) ? (
+						<select
+							className="border rounded px-3 py-1 text-sm bg-white w-36"
+							value={
+								nodeTypeCategories.flatMap(c => c.nodes).includes(node.value)
+									? node.value
+									: ""
+							}
+							onChange={e => handleRename(node, e.target.value)}
+							title={t("selectNodeType")}
+						>
+							<option value="" disabled>
+								{t("selectPlaceholder")}
+							</option>
+							{nodeTypeCategories.map((category, catIndex) => (
+								<optgroup key={catIndex} label={category.name}>
+									{category.nodes.map((node, nodeIndex) => (
+										<option key={nodeIndex} value={node}>
+											{node}
+										</option>
+									))}
+								</optgroup>
+							))}
+						</select>
+					) : (
 						<input
 							type="text"
 							className="border rounded px-3 py-1 text-sm w-32 focus:ring-2 focus:ring-blue-400 outline-none"
@@ -89,28 +93,6 @@ export function TreeEditor({
 							onChange={e => handleRename(node, e.target.value)}
 							placeholder="Enter text..."
 						/>
-					) : (
-						<select
-							title="Select a phrase or word"
-							className="border rounded px-3 py-1 text-sm bg-white w-36"
-							value={node.value}
-							onChange={e => handleRename(node, e.target.value)}
-						>
-							<optgroup label="Phrases">
-								{phraseOptions.map(option => (
-									<option key={option} value={option}>
-										{option}
-									</option>
-								))}
-							</optgroup>
-							<optgroup label="Words">
-								{wordOptions.map(option => (
-									<option key={option} value={option}>
-										{option}
-									</option>
-								))}
-							</optgroup>
-						</select>
 					)}
 
 					<button

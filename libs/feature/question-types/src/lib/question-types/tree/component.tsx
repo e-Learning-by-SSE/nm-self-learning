@@ -36,7 +36,8 @@ export default function LanguageTreeAnswer() {
 							tree={tree}
 							setTree={setTree}
 							setInput={onInputChange}
-							allowTextInputForParents={question.customTextInputInParentNodes}
+							restrictNodeTypes={question.restrictNodeTypes ?? false}
+							nodeTypeCategories={question.nodeTypeCategories ?? []}
 						/>
 					</div>
 					<div className="w-1/2">

@@ -10,6 +10,8 @@ describe("evaluateLanguageTreeAnswer", () => {
 		questionId: "question-id",
 		caseSensitive: false,
 		customTextInputInParentNodes: true,
+		restrictNodeTypes: false,
+		nodeTypeCategories: [],
 		answer: ["[S [NP [ART [the]] [NN [cat]]] [VP [V [sleeps]]]]"],
 		initialTree: "[S [NP [ART [the]] [NN [cat]]] [VP [V [sleeps]]]]"
 	};

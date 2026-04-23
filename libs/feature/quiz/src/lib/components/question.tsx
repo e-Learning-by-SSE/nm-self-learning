@@ -53,7 +53,7 @@ export function Question({
 	const evaluation = evaluations[question.questionId];
 
 	const [_, setCookie] = useCookies(["quiz_answers_save"]);
-
+ 
 	function setAnswer(v: unknown) {
 		const value = typeof v === "function" ? v(answer) : v;
 		setAnswers(prev => {
