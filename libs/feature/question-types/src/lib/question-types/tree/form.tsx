@@ -39,6 +39,9 @@ export default function LanguageTreeForm({ index }: { index: number }) {
 			setValue(`quiz.questions.${index}.initialTree`, defaultTree);
 			setInitialTreeInput(defaultTree);
 		}
+		// setValue is excluded as it is a stable reference from react-hook-form that never changes.
+		// index is excluded as it is a prop that never changes for a given question instance.
+		// languageTree.initialTree is excluded to prevent an infinite loop since we set it inside the effect.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [languageTree.restrictNodeTypes]);
 
