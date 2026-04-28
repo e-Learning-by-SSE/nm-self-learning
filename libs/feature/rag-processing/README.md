@@ -61,7 +61,7 @@ Embed 3 → Worker: Embedding & Storage            (VectorStore → EmbeddingSer
 
 The author saves a lesson. Next.js downloads all PDF files, extracts article text, then submits a `ragEmbed` job to the WorkerService and subscribes to its events for status tracking.
 
-![Alt text](./src/lib/utils/static/content-preparation-figure.png)
+![Alt text](./content-preparation-figure.png)
 
 ---
 
@@ -69,7 +69,7 @@ The author saves a lesson. Next.js downloads all PDF files, extracts article tex
 
 The WorkerService dispatches the job to a free worker thread. `RagEmbedJob` checks whether stale embeddings exist, then delegates each content type to `ContentProcessor` which parses and chunks the raw content into typed `DocumentChunk` arrays.
 
-![alt text](./src/lib/utils/static/content-chunking-figure.png)
+![alt text](./content-chunking-figure.png)
 
 ---
 
@@ -77,7 +77,7 @@ The WorkerService dispatches the job to a free worker thread. `RagEmbedJob` chec
 
 For each content type, `RagEmbedJob` hands the chunks to `VectorStore`, which generates float-vector embeddings via `EmbeddingService` and writes them to ChromaDB. The job then reports its final status.
 
-![Alt text](./src/lib/utils/static/embedding-and-storage-figure.png)
+![Alt text](./embedding-and-storage-figure.png)
 
 ---
 
@@ -97,7 +97,7 @@ Retrieve 3 → Result polling & LLM call               (Next.js polls DB → bui
 
 The student's message travels from the React hook to the tRPC router. The router resolves the LLM config, the user's question, and the course/lesson context from the database, then submits a `ragRetrieve` job.
 
-![Alt text](./src/lib/utils/static/message-dispatch-figure.png)
+![Alt text](./message-dispatch-figure.png)
 
 ---
 
@@ -105,7 +105,7 @@ The student's message travels from the React hook to the tRPC router. The router
 
 Inside the worker thread, `RagRetrieveJob` checks for the lesson collection, then delegates the full vector search to `VectorStore`: the user's question is embedded, ChromaDB is queried, and results are filtered by minimum similarity score.
 
-![Alt text](./src/lib/utils/static/vector-search-figure.png)
+![Alt text](./vector-search-figure.png)
 
 ---
 
@@ -113,7 +113,7 @@ Inside the worker thread, `RagRetrieveJob` checks for the lesson collection, the
 
 Back in Next.js, the router polls the job queue until the result is ready, builds the system prompt by injecting RAG context and course/lesson info, calls the LLM, and returns the cleaned response to the React hook.
 
-![Alt text](./src/lib/utils/static/result-pooling-figure.png)
+![Alt text](./result-pooling-figure.png)
 
 ---
 

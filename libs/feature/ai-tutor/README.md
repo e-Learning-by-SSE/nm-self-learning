@@ -23,7 +23,7 @@ The library is split into two clear layers:
 
 The diagram below shows the full flow from user interaction to LLM response.
 
-![Alt text](./src/lib/static/ai-tutor-architecture-diagram.png)
+![Alt text](./ai-tutor-architecture-diagram.png)
 
 ---
 
