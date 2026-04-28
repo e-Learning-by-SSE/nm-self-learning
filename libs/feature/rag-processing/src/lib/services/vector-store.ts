@@ -61,10 +61,7 @@ class CustomEmbeddingFunction implements EmbeddingFunction {
 }
 
 // Register once so the client can round-trip the config through the known-function registry.
-registerEmbeddingFunction(
-	CustomEmbeddingFunction.FUNCTION_NAME,
-	CustomEmbeddingFunction as never
-);
+registerEmbeddingFunction(CustomEmbeddingFunction.FUNCTION_NAME, CustomEmbeddingFunction as never);
 
 const CUSTOM_EMBEDDING_FUNCTION = new CustomEmbeddingFunction();
 
@@ -110,7 +107,9 @@ export class VectorStore {
 
 			this.initialized = true;
 		} catch (error) {
-			console.error("[VectorStore] VectorStore initialization failed", error);
+			console.error("[VectorStore] VectorStore initialization failed", {
+				error: error instanceof Error ? error.message : String(error)
+			});
 			throw new Error("Failed to connect to ChromaDB");
 		}
 	}
@@ -164,27 +163,20 @@ export class VectorStore {
 
 		const collectionName = `${RAG_CONFIG.VECTOR_STORE.COLLECTION_PREFIX}${lessonId}`;
 
-		try {
-			return await this.client.getCollection({
-				name: collectionName,
-				embeddingFunction: CUSTOM_EMBEDDING_FUNCTION
-			});
-		} catch {
-			return await this.client.createCollection({
-				name: collectionName,
-				embeddingFunction: CUSTOM_EMBEDDING_FUNCTION,
-				metadata: {
-					description: `Lesson ${lessonId} documents`,
-					// Tells the ChromaDB server which embedding function this collection uses
-					// during schema deserialization, suppressing the "No embedding function
-					// configuration found" warning that is otherwise printed on every collection load.
-					"embedding_function": CUSTOM_EMBEDDING_FUNCTION.name,
-					custom_embeddings: "true",
-					embedding_model: RAG_CONFIG.EMBEDDING.MODEL_NAME,
-					"hnsw:space": "cosine"
-				}
-			});
-		}
+		return await this.client.getOrCreateCollection({
+			name: collectionName,
+			embeddingFunction: CUSTOM_EMBEDDING_FUNCTION,
+			metadata: {
+				description: `Lesson ${lessonId} documents`,
+				// Tells the ChromaDB server which embedding function this collection uses
+				// during schema deserialization, suppressing the "No embedding function
+				// configuration found" warning that is otherwise printed on every collection load.
+				embedding_function: CUSTOM_EMBEDDING_FUNCTION.name,
+				custom_embeddings: "true",
+				embedding_model: RAG_CONFIG.EMBEDDING.MODEL_NAME,
+				"hnsw:space": "cosine"
+			}
+		});
 	}
 
 	/**
@@ -218,7 +210,10 @@ export class VectorStore {
 			this.recordSuccess();
 		} catch (error) {
 			this.recordFailure();
-			console.error("[VectorStore] Failed to add documents", error, { lessonId });
+			console.error("[VectorStore] Failed to add documents", {
+				error: error instanceof Error ? error.message : String(error),
+				lessonId
+			});
 			throw error;
 		}
 	}
@@ -271,7 +266,10 @@ export class VectorStore {
 
 			return filtered;
 		} catch (error) {
-			console.error("[VectorStore] Search failed", error, { lessonId });
+			console.error("[VectorStore] Search failed", {
+				error: error instanceof Error ? error.message : String(error),
+				lessonId
+			});
 			throw error;
 		}
 	}
@@ -302,15 +300,11 @@ export class VectorStore {
 
 		const collectionName = `${RAG_CONFIG.VECTOR_STORE.COLLECTION_PREFIX}${lessonId}`;
 
-		try {
-			await this.client?.getCollection({
-				name: collectionName,
-				embeddingFunction: CUSTOM_EMBEDDING_FUNCTION
-			});
-			return true;
-		} catch {
-			return false;
-		}
+		const collection = await this.client?.getCollection({
+			name: collectionName,
+			embeddingFunction: CUSTOM_EMBEDDING_FUNCTION
+		});
+		return !!collection;
 	}
 
 	/**
@@ -324,7 +318,9 @@ export class VectorStore {
 					await this.client.deleteCollection({ name: col.name });
 				}
 			} catch (error) {
-				console.error("[VectorStore] Error during cleanup", { error });
+				console.error("[VectorStore] Error during cleanup", {
+					error: error instanceof Error ? error.message : String(error)
+				});
 			}
 
 			this.client = null;

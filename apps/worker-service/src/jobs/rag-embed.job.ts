@@ -118,7 +118,11 @@ export const ragEmbedJob: JobDefinition<"ragEmbed"> = {
 
 			return result;
 		} catch (error) {
-			console.error("[RagService] RAG embed job failed", error, { lessonId, lessonTitle });
+			console.error("[RagService] RAG embed job failed", {
+				lessonId,
+				lessonTitle,
+				error: error instanceof Error ? error.message : String(error)
+			});
 			throw error;
 		}
 	}

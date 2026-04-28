@@ -10,7 +10,10 @@ export async function deleteEmbedding(lessonId: string): Promise<void> {
 			console.error("[LessonRouter] Lesson not found in vector store", { lessonId });
 		}
 	} catch (error) {
-		console.error("[LessonRouter] Failed to delete lesson", error, { lessonId });
+		console.error("[LessonRouter] Failed to delete lesson", {
+			error: error instanceof Error ? error.message : String(error),
+			lessonId
+		});
 		throw error;
 	}
 }

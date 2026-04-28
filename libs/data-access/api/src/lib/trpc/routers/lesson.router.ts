@@ -535,7 +535,11 @@ export const lessonRouter = t.router({
 				const lesson = await save_subtitle_for_lesson(lessonId, video_url, subtitleSrc);
 				if (lesson.ragEnabled) {
 					await deleteEmbedding(lessonId);
-					await enqueueRagEmbedJob(lessonId, lesson.title, lesson.content as LessonContentType[]);
+					await enqueueRagEmbedJob(
+						lessonId,
+						lesson.title,
+						lesson.content as LessonContentType[]
+					);
 				}
 				return { message: "Subtitle saved" };
 			} catch (error) {
@@ -616,13 +620,10 @@ async function enqueueRagEmbedJob(
 	lessonContent: LessonContentType[]
 ): Promise<string> {
 	try {
-		const preparedContent = await prepareRagContent(
-			lessonContent, 
-			{ 
-				lessonId,
-				lessonTitle 
-			}
-		);
+		const preparedContent = await prepareRagContent(lessonContent, {
+			lessonId,
+			lessonTitle
+		});
 		const jobId = crypto.randomUUID();
 		await workerServiceClient.submitJob.mutate({
 			jobId,
@@ -636,11 +637,21 @@ async function enqueueRagEmbedJob(
 			}
 		});
 		subscribeToRagJobEvents(jobId, lessonId).catch(err => {
-			console.error("[LessonRouter] Subscription error", err, { jobId });
+			console.error(
+				"[LessonRouter] Subscription error",
+				{
+					lessonId,
+					error: err instanceof Error ? err.message : String(err)
+				},
+				{ jobId }
+			);
 		});
 		return jobId;
 	} catch (error) {
-		console.error("[LessonRouter] Failed to enqueue RAG job", error, { lessonId });
+		console.error("[LessonRouter] Failed to enqueue RAG job", {
+			lessonId,
+			error: error instanceof Error ? error.message : String(error)
+		});
 		throw error;
 	}
 }
@@ -658,15 +669,36 @@ async function subscribeToRagJobEvents(jobId: string, lessonId: string): Promise
 							lessonId
 						});
 					} else if (event.status === "aborted") {
-						console.error("[LessonRouter] RAG job aborted", new Error(event.cause));
+						console.error(
+							"[LessonRouter] RAG job aborted",
+							{
+								lessonId,
+								error: new Error(event.cause)
+							},
+							{ jobId }
+						);
 					}
 				},
 				onError: error => {
-					console.error("[LessonRouter] RAG subscription error", error, { jobId });
+					console.error(
+						"[LessonRouter] RAG subscription error",
+						{
+							lessonId,
+							error: error instanceof Error ? error.message : String(error)
+						},
+						{ jobId }
+					);
 				}
 			}
 		);
 	} catch (error) {
-		console.error("[LessonRouter] Failed to subscribe to RAG events", error, { jobId });
+		console.error(
+			"[LessonRouter] Failed to subscribe to RAG events",
+			{
+				lessonId,
+				error: error instanceof Error ? error.message : String(error)
+			},
+			{ jobId }
+		);
 	}
 }

@@ -31,7 +31,9 @@ export class EmbeddingService implements IEmbeddingService {
 
 			this.initialized = true;
 		} catch (error) {
-			console.error("[EmbedService] Failed to initialize embedding model", error);
+			console.error("[EmbedService] Failed to initialize embedding model", {
+				error: error instanceof Error ? error.message : String(error)
+			});
 			throw new Error("Embedding model initialization failed");
 		}
 	}
@@ -78,7 +80,8 @@ export class EmbeddingService implements IEmbeddingService {
 
 			return Array.from(output.data);
 		} catch (error) {
-			console.error("[EmbedService] Embedding generation failed", error, {
+			console.error("[EmbedService] Embedding generation failed", {
+				error: error instanceof Error ? error.message : String(error),
 				textLength: text.length
 			});
 			throw new Error("Failed to generate embedding");
@@ -110,8 +113,10 @@ export class EmbeddingService implements IEmbeddingService {
 				const embedding = await this.generateEmbedding(text);
 				embeddings.push(embedding);
 			} catch (error) {
-				console.error("[EmbedService] Failed to generate embedding in batch", error, {
-					index: i
+				console.error("[EmbedService] Failed to generate embedding in batch", {
+					error: error instanceof Error ? error.message : String(error),
+					index: i,
+					textLength: text.length
 				});
 				throw error;
 			}

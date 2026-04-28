@@ -50,7 +50,9 @@ export class ContentProcessor {
 			// standardFontDataUrl: points pdfjs to the Helvetica/Times/Courier etc.
 			// metrics files bundled with pdfjs-dist so it can lay out PDFs that
 			// reference standard fonts without embedding them.
-			const pdfjsDir = require.resolve("pdfjs-dist/package.json").replace(/package\.json$/, "");
+			const pdfjsDir = require
+				.resolve("pdfjs-dist/package.json")
+				.replace(/package\.json$/, "");
 			const standardFontDataUrl = `${pdfjsDir}standard_fonts/`;
 			const parser = new PDFParse({
 				data: buffer,
@@ -60,7 +62,9 @@ export class ContentProcessor {
 			const result = await parser.getText();
 			return result.text.trim();
 		} catch (error) {
-			console.error("[ContentProcessor] PDF text extraction failed", error);
+			console.error("[ContentProcessor] PDF text extraction failed", {
+				error: error instanceof Error ? error.message : String(error)
+			});
 			throw new Error("PDF extraction failed");
 		}
 	}
@@ -111,7 +115,11 @@ export class ContentProcessor {
 			} catch (error) {
 				console.warn(
 					"[ContentProcessor] Skipping invalid PDF — article/video content for this lesson will still be processed",
-					{ url: file.url, lessonId, error: error instanceof Error ? error.message : String(error) }
+					{
+						url: file.url,
+						lessonId,
+						error: error instanceof Error ? error.message : String(error)
+					}
 				);
 			}
 		}

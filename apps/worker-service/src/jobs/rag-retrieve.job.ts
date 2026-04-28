@@ -27,7 +27,7 @@ export const ragRetrieveJob: JobDefinition<"ragRetrieve"> = {
 			const exists = await vectorStore.lessonExists(lessonId);
 			if (!exists) {
 				console.log("[RagRetrieve] Lesson not found in vector store", { lessonId });
-				return { 
+				return {
 					context: "No relevant content found for lesson data.",
 					sources: []
 				};
@@ -36,7 +36,7 @@ export const ragRetrieveJob: JobDefinition<"ragRetrieve"> = {
 			const results = await vectorStore.search(lessonId, question, topK);
 			if (results.length === 0) {
 				console.log("[RagRetrieve] No relevant results found", { lessonId });
-				return { 
+				return {
 					context: "No relevant content found for this question.",
 					sources: []
 				};
@@ -67,7 +67,10 @@ export const ragRetrieveJob: JobDefinition<"ragRetrieve"> = {
 				}))
 			};
 		} catch (error) {
-			console.error("[RagRetrieve] Retrieval failed", error, { lessonId });
+			console.error("[RagRetrieve] Retrieval failed", {
+				lessonId,
+				error: error instanceof Error ? error.message : String(error)
+			});
 			throw error;
 		}
 	}
