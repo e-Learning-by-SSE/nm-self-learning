@@ -1,12 +1,10 @@
-// scripts/migrate-rag-embeddings.ts
-//
 // Data migration: embed all existing lessons into the vector store.
 //
 // Runs at deploy time (before the app starts), alongside `prisma migrate deploy`.
 // Requires only the DB and ChromaDB to be up — no app, no worker-service needed.
 // Safe to re-run: lessons with an existing ragVersionHash are skipped.
 
-// use this command to run: npx tsx --tsconfig tsconfig.base.json libs/data-access/prisma/migrations/20260319073726_rag_support/data-migration.ts
+// use this command to run: npx tsx --tsconfig tsconfig.base.json libs/data-access/database/prisma/migrations/20260319073726_rag_support/data-migration.ts
 
 import { PrismaClient, Prisma } from "@prisma/client";
 import {
@@ -15,9 +13,27 @@ import {
 	contentProcessor,
 	vectorStore
 } from "@self-learning/rag-processing";
+
+// Suppress the benign TrueType font warning emitted by pdf-parse ("TT: undefined function: 32").
+// This is a cosmetic rendering issue in the font subsystem and does not affect text extraction.
+const _originalWarn = console.warn.bind(console);
+console.warn = (...args: unknown[]) => {
+	const msg = typeof args[0] === "string" ? args[0] : "";
+	if (msg.startsWith("Warning: TT:")) return;
+	_originalWarn(...args);
+};
+
 const prisma = new PrismaClient();
 
 async function main() {
+	// Guard: skip entirely if no LLM configuration is present.
+	// The migration only makes sense when the app is fully set up.
+	// const llmConfig = await prisma.llmConfiguration.findFirst({ select: { serverUrl: true } });
+	// if (!llmConfig) {
+	// 	console.log("[RagMigration] No LLM configuration found — skipping RAG migration.");
+	// 	return;
+	// }
+
 	const lessons = await prisma.lesson.findMany({
 		where: {
 			ragEnabled: true,
@@ -37,7 +53,8 @@ async function main() {
 		try {
 			// Step 1: Prepare content (download PDFs, extract article text)
 			const { pdfBuffers, articleTexts, transcriptTexts } = await prepareRagContent(
-				lesson.content
+				lesson.content,
+				{ lessonId: lesson.lessonId, lessonTitle: lesson.title }
 			);
 
 			// Step 2: Clean up any stale vector data for this lesson

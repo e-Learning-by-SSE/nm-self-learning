@@ -34,14 +34,18 @@ export class ContentProcessor {
 			buffer[3] === 0x46; // F
 
 		if (!isPDF) {
-			const preview = Buffer.from(buffer.slice(0, 100)).toString("utf8").replace(/\n/g, " ");
-			console.warn(
-				"[ContentProcessor] Buffer does not start with PDF magic bytes. Preview:",
-				preview
-			);
 			throw new Error("Invalid PDF: buffer is not a PDF file (missing %PDF header)");
 		}
 
+		// Suppress the benign TrueType font warning emitted by pdf-parse ("TT: undefined function: N").
+		// This is a cosmetic rendering issue in the font subsystem and does not affect text extraction.
+		const originalWarn = console.warn.bind(console);
+		console.warn = (...args: unknown[]) => {
+			const msg = typeof args[0] === "string" ? args[0] : "";
+			if (msg.startsWith("Warning: TT:")) return;
+			if (msg.includes("standardFontDataUrl")) return;
+			originalWarn(...args);
+		};
 		try {
 			const PDFParse = await this.getPDFParse();
 			const parser = new PDFParse(buffer);
@@ -50,6 +54,8 @@ export class ContentProcessor {
 		} catch (error) {
 			console.error("[ContentProcessor] PDF text extraction failed", error);
 			throw new Error("PDF extraction failed");
+		} finally {
+			console.warn = originalWarn;
 		}
 	}
 
@@ -99,7 +105,7 @@ export class ContentProcessor {
 			} catch (error) {
 				console.warn(
 					"[ContentProcessor] Skipping invalid PDF — article/video content for this lesson will still be processed",
-					{ url: file.url, lessonId, error }
+					{ url: file.url, lessonId, error: error instanceof Error ? error.message : String(error) }
 				);
 			}
 		}

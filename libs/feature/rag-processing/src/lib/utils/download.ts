@@ -74,9 +74,6 @@ export async function downloadWithRetry(
 
 			if (isLastAttempt) {
 				const message = error instanceof Error ? error.message : String(error);
-				console.error("[DownloadUtil] Download failed after all retries", error as Error, {
-					attempts: maxRetries
-				});
 				throw new DownloadError(
 					`Failed to download ${url} after ${maxRetries} attempts: ${message}`,
 					url,
@@ -93,7 +90,8 @@ export async function downloadWithRetry(
 }
 
 export async function downloadMultiple(
-	urls: string[]
+	urls: string[],
+	lessonContext?: { lessonId: string; lessonTitle: string }
 ): Promise<Array<{ data: string; url: string }>> {
 	if (!RAG_CONFIG.DOWNLOAD.PARALLEL_DOWNLOADS) {
 		// Sequential download
@@ -107,7 +105,7 @@ export async function downloadMultiple(
 			} catch (error) {
 				console.warn(
 					"[DownloadUtil] Skipping PDF due to download error — other content types will still be processed",
-					{ url, error }
+					{ ...lessonContext, url, error: error instanceof Error ? error.message : String(error) }
 				);
 			}
 		}
@@ -122,7 +120,7 @@ export async function downloadMultiple(
 		} catch (error) {
 			console.warn(
 				"[DownloadUtil] Skipping PDF due to download error — other content types will still be processed",
-				{ url, error }
+				{ ...lessonContext, url, error: error instanceof Error ? error.message : String(error) }
 			);
 			return null;
 		}

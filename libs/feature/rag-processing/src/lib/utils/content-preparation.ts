@@ -24,20 +24,23 @@ function extractPlainTextFromVtt(vtt: string): string {
 /**
  * Prepare lesson content for RAG embedding
  */
-export async function prepareRagContent(content: LessonContent): Promise<{
+export async function prepareRagContent(
+	content: LessonContent,
+	lessonContext?: { lessonId: string; lessonTitle: string }
+): Promise<{
 	pdfBuffers: Array<{ data: string; url: string }>;
 	articleTexts: string[];
 	transcriptTexts: string[];
 }> {
 	const pdfUrls = content.filter(item => item.type === "pdf").map(item => item.value.url);
-	const pdfBuffers = pdfUrls.length > 0 ? await downloadMultiple(pdfUrls) : [];
+	const pdfBuffers = pdfUrls.length > 0 ? await downloadMultiple(pdfUrls, lessonContext) : [];
 
 	const articleTexts = content
 		.filter(item => item.type === "article")
 		.map(item => item.value.content);
 
 	const transcriptTexts = content
-		.filter((item): item is Video => item.type === "video"  && !!item.value.subtitle?.src)
+		.filter((item): item is Video => item.type === "video" && !!item.value.subtitle?.src)
 		.map(item => extractPlainTextFromVtt(item.value.subtitle?.src ?? ""))
 	
 	return { pdfBuffers, articleTexts, transcriptTexts };

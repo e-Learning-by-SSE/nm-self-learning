@@ -3,6 +3,16 @@ import { RAG_CONFIG } from "../config/rag-config";
 import { DocumentChunk, RetrievalResult, CircuitBreakerState } from "../types/chunk";
 import type { IEmbeddingService } from "../types/embedding";
 
+// ChromaDB's JS client emits this warning whenever it deserializes a collection
+// that was stored without a named embedding function — which is always the case
+// here because we supply embeddings directly. The warning is harmless noise.
+const _originalWarn = console.warn.bind(console);
+console.warn = (...args: unknown[]) => {
+	const msg = typeof args[0] === "string" ? args[0] : "";
+	if (msg.startsWith("No embedding function configuration found")) return;
+	_originalWarn(...args);
+};
+
 type ChromaMetadata = Record<string, string | number | boolean>;
 
 function toChromaMetadata(metadata: DocumentChunk["metadata"]): ChromaMetadata {
@@ -280,7 +290,10 @@ export class VectorStore {
 		const collectionName = `${RAG_CONFIG.VECTOR_STORE.COLLECTION_PREFIX}${lessonId}`;
 
 		try {
-			await this.client?.getCollection({ name: collectionName });
+			await this.client?.getCollection({
+				name: collectionName,
+				embeddingFunction: CUSTOM_EMBEDDING_FUNCTION
+			});
 			return true;
 		} catch {
 			return false;

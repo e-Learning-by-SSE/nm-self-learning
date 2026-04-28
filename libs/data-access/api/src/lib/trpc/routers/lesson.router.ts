@@ -616,7 +616,13 @@ async function enqueueRagEmbedJob(
 	lessonContent: LessonContentType[]
 ): Promise<string> {
 	try {
-		const preparedContent = await prepareRagContent(lessonContent);
+		const preparedContent = await prepareRagContent(
+			lessonContent, 
+			{ 
+				lessonId,
+				lessonTitle 
+			}
+		);
 		const jobId = crypto.randomUUID();
 		await workerServiceClient.submitJob.mutate({
 			jobId,
