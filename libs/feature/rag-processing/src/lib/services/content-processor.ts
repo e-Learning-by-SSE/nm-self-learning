@@ -37,25 +37,31 @@ export class ContentProcessor {
 			throw new Error("Invalid PDF: buffer is not a PDF file (missing %PDF header)");
 		}
 
-		// Suppress the benign TrueType font warning emitted by pdf-parse ("TT: undefined function: N").
-		// This is a cosmetic rendering issue in the font subsystem and does not affect text extraction.
-		const originalWarn = console.warn.bind(console);
-		console.warn = (...args: unknown[]) => {
-			const msg = typeof args[0] === "string" ? args[0] : "";
-			if (msg.startsWith("Warning: TT:")) return;
-			if (msg.includes("standardFontDataUrl")) return;
-			originalWarn(...args);
-		};
 		try {
 			const PDFParse = await this.getPDFParse();
-			const parser = new PDFParse(buffer);
-			const data = await parser.getText();
-			return data.text.trim();
+			// pdf-parse v2 wraps pdfjs-dist directly. The constructor takes a
+			// `LoadParameters` object (which extends pdfjs DocumentInitParameters),
+			// so all pdfjs options — including `standardFontDataUrl` and `verbosity` — go here.
+			//
+			// verbosity: 0 = VerbosityLevel.ERRORS — suppresses:
+			//   • "Warning: TT: undefined function: N" (TrueType bytecode opcode gap)
+			//   • "Warning: UnknownErrorException: Ensure that standardFontDataUrl …"
+			//
+			// standardFontDataUrl: points pdfjs to the Helvetica/Times/Courier etc.
+			// metrics files bundled with pdfjs-dist so it can lay out PDFs that
+			// reference standard fonts without embedding them.
+			const pdfjsDir = require.resolve("pdfjs-dist/package.json").replace(/package\.json$/, "");
+			const standardFontDataUrl = `${pdfjsDir}standard_fonts/`;
+			const parser = new PDFParse({
+				data: buffer,
+				verbosity: 0,
+				standardFontDataUrl
+			});
+			const result = await parser.getText();
+			return result.text.trim();
 		} catch (error) {
 			console.error("[ContentProcessor] PDF text extraction failed", error);
 			throw new Error("PDF extraction failed");
-		} finally {
-			console.warn = originalWarn;
 		}
 	}
 

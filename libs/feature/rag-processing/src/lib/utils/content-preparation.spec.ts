@@ -84,8 +84,12 @@ describe("prepareRagContent", () => {
             // Exercise
             const result = await prepareRagContent(content);
 
-            // Verify
-            expect(mockDownloadMultiple).toHaveBeenCalledWith(["https://example.com/slides.pdf"]);
+            // Verify – downloadMultiple receives the URL array and the optional lessonContext
+            // (undefined when prepareRagContent is called without one).
+            expect(mockDownloadMultiple).toHaveBeenCalledWith(
+                ["https://example.com/slides.pdf"],
+                undefined
+            );
             expect(result.pdfBuffers).toEqual([fakePdfBuffer]);
             expect(result.articleTexts).toEqual([]);
             expect(result.transcriptTexts).toEqual([]);
@@ -120,11 +124,29 @@ describe("prepareRagContent", () => {
 
             // Verify
             expect(mockDownloadMultiple).toHaveBeenCalledTimes(1);
-            expect(mockDownloadMultiple).toHaveBeenCalledWith([
-                "https://example.com/a.pdf",
-                "https://example.com/b.pdf"
-            ]);
+            expect(mockDownloadMultiple).toHaveBeenCalledWith(
+                ["https://example.com/a.pdf", "https://example.com/b.pdf"],
+                undefined
+            );
             expect(result.pdfBuffers).toHaveLength(2);
+        });
+
+        it("forwards lessonContext to downloadMultiple when provided", async () => {
+            // Setup
+            mockDownloadMultiple.mockResolvedValue([]);
+            const content: LessonContent = [
+                { type: "pdf", meta: { estimatedDuration: 5 }, value: { url: "https://example.com/doc.pdf" } }
+            ];
+            const lessonContext = { lessonId: "lesson-42", lessonTitle: "Advanced TypeScript" };
+
+            // Exercise
+            await prepareRagContent(content, lessonContext);
+
+            // Verify – lessonContext must be forwarded so download errors carry the right metadata.
+            expect(mockDownloadMultiple).toHaveBeenCalledWith(
+                ["https://example.com/doc.pdf"],
+                lessonContext
+            );
         });
     });
 

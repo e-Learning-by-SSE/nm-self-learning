@@ -1,17 +1,7 @@
-import { ChromaClient, Collection, EmbeddingFunction } from "chromadb";
+import { ChromaClient, Collection, EmbeddingFunction, registerEmbeddingFunction } from "chromadb";
 import { RAG_CONFIG } from "../config/rag-config";
 import { DocumentChunk, RetrievalResult, CircuitBreakerState } from "../types/chunk";
 import type { IEmbeddingService } from "../types/embedding";
-
-// ChromaDB's JS client emits this warning whenever it deserializes a collection
-// that was stored without a named embedding function — which is always the case
-// here because we supply embeddings directly. The warning is harmless noise.
-const _originalWarn = console.warn.bind(console);
-console.warn = (...args: unknown[]) => {
-	const msg = typeof args[0] === "string" ? args[0] : "";
-	if (msg.startsWith("No embedding function configuration found")) return;
-	_originalWarn(...args);
-};
 
 type ChromaMetadata = Record<string, string | number | boolean>;
 
@@ -39,15 +29,20 @@ function toChromaMetadata(metadata: DocumentChunk["metadata"]): ChromaMetadata {
 }
 
 /**
- * ChromaDB's collections can be configured with a custom embedding function, but since we're generating
- * embeddings separately and passing them in directly, we provide a no-op function that throws if called.
- * This ensures that if ChromaDB tries to call it for any reason, we'll get a clear error instead of silent
- * failures or incorrect behavior.
+ * ChromaDB 3.x resolves whether to warn about a missing embedding function by calling
+ * `serializeEmbeddingFunction` on the instance passed to getCollection/createCollection.
+ * It returns `{ type: "legacy" }` — triggering the warning — whenever the instance is
+ * missing `getConfig` or `buildFromConfig`. Implementing those two methods (plus
+ * registering the class under its name) makes the client serialize it as
+ * `{ type: "known", name: "custom-direct-embeddings", config: {} }`, which suppresses
+ * the warning without any console patching.
  *
- * This will suppresses all the warnings about missing embedding function in ChromaDB.
+ * `generate()` intentionally throws: we always pass pre-computed embeddings directly
+ * to `add()` and `query()`, so ChromaDB should never call this.
  */
 class CustomEmbeddingFunction implements EmbeddingFunction {
-	public name = "custom";
+	public static readonly FUNCTION_NAME = "custom-direct-embeddings";
+	public name = CustomEmbeddingFunction.FUNCTION_NAME;
 
 	async generate(): Promise<number[][]> {
 		throw new Error(
@@ -55,7 +50,21 @@ class CustomEmbeddingFunction implements EmbeddingFunction {
 				"Always pass embeddings directly to add() and query()."
 		);
 	}
+
+	getConfig(): Record<string, never> {
+		return {};
+	}
+
+	static buildFromConfig(): CustomEmbeddingFunction {
+		return new CustomEmbeddingFunction();
+	}
 }
+
+// Register once so the client can round-trip the config through the known-function registry.
+registerEmbeddingFunction(
+	CustomEmbeddingFunction.FUNCTION_NAME,
+	CustomEmbeddingFunction as never
+);
 
 const CUSTOM_EMBEDDING_FUNCTION = new CustomEmbeddingFunction();
 
@@ -166,6 +175,10 @@ export class VectorStore {
 				embeddingFunction: CUSTOM_EMBEDDING_FUNCTION,
 				metadata: {
 					description: `Lesson ${lessonId} documents`,
+					// Tells the ChromaDB server which embedding function this collection uses
+					// during schema deserialization, suppressing the "No embedding function
+					// configuration found" warning that is otherwise printed on every collection load.
+					"embedding_function": CUSTOM_EMBEDDING_FUNCTION.name,
 					custom_embeddings: "true",
 					embedding_model: RAG_CONFIG.EMBEDDING.MODEL_NAME,
 					"hnsw:space": "cosine"

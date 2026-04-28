@@ -14,25 +14,9 @@ import {
 	vectorStore
 } from "@self-learning/rag-processing";
 
-// Suppress the benign TrueType font warning emitted by pdf-parse ("TT: undefined function: 32").
-// This is a cosmetic rendering issue in the font subsystem and does not affect text extraction.
-const _originalWarn = console.warn.bind(console);
-console.warn = (...args: unknown[]) => {
-	const msg = typeof args[0] === "string" ? args[0] : "";
-	if (msg.startsWith("Warning: TT:")) return;
-	_originalWarn(...args);
-};
-
 const prisma = new PrismaClient();
 
 async function main() {
-	// Guard: skip entirely if no LLM configuration is present.
-	// The migration only makes sense when the app is fully set up.
-	// const llmConfig = await prisma.llmConfiguration.findFirst({ select: { serverUrl: true } });
-	// if (!llmConfig) {
-	// 	console.log("[RagMigration] No LLM configuration found — skipping RAG migration.");
-	// 	return;
-	// }
 
 	const lessons = await prisma.lesson.findMany({
 		where: {
