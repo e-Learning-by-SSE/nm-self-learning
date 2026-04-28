@@ -9,20 +9,13 @@ import {
 	aiTutorRequestSchema,
 	Message
 } from "@self-learning/ai-tutor";
-import { RagRetrievalResult, VALID_SOURCE_TYPES, SourceType } from "@self-learning/rag-processing";
+import { RagRetrievalResult } from "@self-learning/rag-processing";
 import { workerServiceClient } from "@self-learning/worker-api";
 import crypto from "crypto";
 import { z } from "zod";
 
 const aiTutorResponseSchema = z.object({
 	content: z.string(),
-	sources: z.array(
-		z.object({
-			lessonName: z.string().optional(),
-			pageNumber: z.number().optional(),
-			sourceType: z.enum(["pdf", "article", "video"]).optional()
-		})
-	),
 	timestamp: z.date()
 });
 
@@ -42,7 +35,7 @@ export const aiTutorRouter = t.router({
 				const contextPayload = await fetchContextPayload(input.pageContext);
 
 				// Step 4: Fetch context using RAG service with lessonID
-				const { context, sources } = await retrieveContext(
+				const { context } = await retrieveContext(
 					contextPayload?.type === "lesson" ? contextPayload.lessonId : "",
 					userQuestion
 				);
@@ -59,15 +52,8 @@ export const aiTutorRouter = t.router({
 				// Step 8: Clean and format response
 				const cleanedResponse = cleanResponse(rawResponse);
 
-				// Step 9: Validate and narrow the sourceType union for each RAG source.
-				const validatedSources = sources.map(source => ({
-					...source,
-					sourceType: isValidSourceType(source.sourceType) ? source.sourceType : undefined
-				}));
-
 				return {
 					content: cleanedResponse,
-					sources: validatedSources,
 					timestamp: new Date()
 				};
 			} catch (error) {
@@ -237,10 +223,6 @@ function injectSystemPrompt(messages: Message[], systemPrompt: string): Message[
 	return updated;
 }
 
-function isValidSourceType(value: string | undefined): value is SourceType {
-	return VALID_SOURCE_TYPES.includes(value as SourceType);
-}
-
 async function retrieveContext(
 	lessonId: string,
 	question: string,
@@ -262,7 +244,10 @@ async function retrieveContext(
 		// Poll DB until job finishes (non-blocking per request cycle, max 30s)
 		return await pollRagResult(jobId);
 	} catch (error) {
-		console.error("[RagService] Failed to retrieve context", error, { lessonId });
+		console.error("[RagService] Failed to retrieve context", {
+			lessonId,
+			error: error instanceof Error ? error.message : error
+		});
 		return {
 			context: "Unable to retrieve lesson context at this time.",
 			sources: []
@@ -283,7 +268,10 @@ function subscribeToRagRetrieveJob(jobId: string): void {
 				}
 			},
 			onError: error => {
-				console.error("[AiTutor] RAG retrieve subscription error", error, { jobId });
+				console.error("[AiTutor] RAG retrieve subscription error", {
+					jobId,
+					error: error instanceof Error ? error.message : String(error)
+				});
 			}
 		}
 	);

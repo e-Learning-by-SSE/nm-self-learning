@@ -104,13 +104,10 @@ export async function fetchContextPayload(
 			courseDescription: course.description ?? undefined
 		};
 	} catch (error) {
-		console.error(
-			"[AiTutorService] Failed to fetch context payload",
-			{
-				error: error instanceof Error ? error.message : String(error)
-			},
-			{ pageContext }
-		);
+		console.error("[AiTutorService] Failed to fetch context payload", {
+			pageContext,
+			error: error instanceof Error ? error.message : String(error)
+		});
 		throw new TRPCError({
 			code: "INTERNAL_SERVER_ERROR",
 			message: "Failed to fetch course/lesson context"
@@ -222,7 +219,5 @@ function buildLessonPrompt(
 	return `${basePrompt}
  
 === Relevant Lesson Content ===
-${ragContext}
- 
-Remember to cite the sources when answering questions. Base your answers on the provided lesson content.`;
+${ragContext}`;
 }
