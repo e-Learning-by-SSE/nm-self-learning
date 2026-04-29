@@ -1,8 +1,8 @@
 // Utility: deletes ALL collections from ChromaDB.
 //
 // Usage (from repo root, inside the dev container):
-//   npx tsx --tsconfig tsconfig.base.json scripts/chroma-reset.ts
-
+//   npx tsx --tsconfig tsconfig.base.json scripts/reset-chroma.ts
+import "dotenv/config";
 import { ChromaClient, EmbeddingFunction, registerEmbeddingFunction } from "chromadb";
 
 // Register the same embedding function that vector-store.ts uses.
