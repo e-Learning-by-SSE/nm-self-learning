@@ -1,14 +1,12 @@
 import { PencilIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
-import { LoadingBox, OnDialogCloseFn, SectionHeader, showToast } from "@self-learning/ui/common";
+import { LoadingBox, OnDialogCloseFn, SectionHeader } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredContainerXL, TopicHeader, Unauthorized } from "@self-learning/ui/layouts";
-import { TRPCClientError } from "@trpc/client";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { withTranslations } from "@self-learning/api";
-import { GroupRole } from "@prisma/client";
 import { ResourceAccessFormSchema } from "@self-learning/types";
 import {
 	getPermKey,
@@ -26,9 +24,7 @@ export default function GroupPage() {
 	const { memberName = "" } = router.query;
 
 	const [memberNameFilter, setMemberName] = useState(memberName);
-
-	const [grantGroupAccessDialog, setGrantGroupAccessDialog] = useState(false);
-	const { mutateAsync: grantGroupAccess } = trpc.permission.grantGroupAccess.useMutation();
+    const [resourceNameFilter, setResourceNameFilter] = useState("");
 
 	const [selectedPermission, setSelectedPermission] = useState<PermissionFormModel | undefined>(
 		undefined
@@ -37,39 +33,9 @@ export default function GroupPage() {
 		setSelectedPermission(undefined);
 	};
 
-	const handleGrantGroupAccess: OnDialogCloseFn<{
-		userId: string;
-		role: GroupRole;
-		durationMinutes: number;
-	}> = async access => {
-		setGrantGroupAccessDialog(false);
-
-		try {
-			if (access) {
-				const r = await grantGroupAccess({
-					groupId,
-					...access
-				});
-				showToast({
-					type: "success",
-					title: "Mitglieder*in hinzugefügt",
-					subtitle: `Mitglieder*in "${r.role}" wurde erfolgreich hinzugefügt.`
-				});
-			}
-		} catch (error) {
-			console.error(error);
-
-			if (error instanceof TRPCClientError) {
-				showToast({ type: "error", title: "Fehler", subtitle: error.message });
-			}
-		}
-	};
-
 	// processing
 	// verify groupId
 	const groupId = parseInt(router.query.groupId as string);
-	// const session = useRequiredSession();
-	// const user = session.data?.user;
 
 	const { data: group, isLoading } = trpc.permission.getGroup.useQuery(
 		{
@@ -91,6 +57,29 @@ export default function GroupPage() {
 			</Unauthorized>
 		);
 	}
+
+    // Optional filtered list of group members based on memberNameFilter
+    const memberNameFilterString =
+	typeof memberNameFilter === "string" ? memberNameFilter.toLowerCase().trim() : "";
+    const filteredMembers = group.members.filter(member => {
+        const name = member.user.displayName.toLowerCase() ?? "";
+        const email = member.user.email?.toLowerCase() ?? "";
+
+        return (
+            name.includes(memberNameFilterString) ||
+            email.includes(memberNameFilterString)
+        );
+    });
+
+    // Optional filtered list of resources based on resourceNameFilter
+    const resourceNameFilterString = resourceNameFilter.toLowerCase().trim();
+    const filteredResources = group.permissions.filter(p => {
+        const permission = ResourceAccessFormSchema.parse(p);
+
+        return JSON.stringify(permission)
+            .toLowerCase()
+            .includes(resourceNameFilterString);
+    });
 
 	return (
 		<div className="flex flex-col gap-8 bg-gray-50 pb-32">
@@ -117,22 +106,7 @@ export default function GroupPage() {
 						<SectionHeader
 							title="Mitglieder*innen"
 							subtitle="Alle Mitglieder*innen dieser Gruppe."
-							// TODO not in this PR
-							// button={
-							// 	<IconTextButton
-							// 		text="Mitglieder*in hinzufügen"
-							// 		icon={<PlusIcon className="icon w-5" />}
-							// 		onClick={() => setGrantGroupAccessDialog(true)}
-							// 	/>
-							// }
 						/>
-
-						{/* TODO not in this PR {grantGroupAccessDialog && (
-							<SearchUserDialog
-								open={grantGroupAccessDialog}
-								onClose={handleGrantGroupAccess}
-							/>
-						)} */}
 
 						<SearchField
 							placeholder="Suche nach Mitglieder*in"
@@ -140,7 +114,7 @@ export default function GroupPage() {
 						/>
 
 						<GroupMemberTable>
-							{group.members.map(member => (
+							{filteredMembers.map(member => (
 								<GroupMemberRow key={member.user.id} member={member} />
 							))}
 						</GroupMemberTable>
@@ -152,11 +126,11 @@ export default function GroupPage() {
 
 						<SearchField
 							placeholder="Suche nach Ressourcen"
-							onChange={e => setMemberName(e.target.value)}
+							onChange={e => setResourceNameFilter(e.target.value)}
 						/>
 
 						<GroupPermissionTable>
-							{group.permissions.map(p => {
+							{filteredResources.map(p => {
 								const np = ResourceAccessFormSchema.parse(p);
 								return (
 									<GroupPermissionRow
@@ -180,8 +154,6 @@ export default function GroupPage() {
 			</CenteredContainerXL>
 		</div>
 	);
-
-	return;
 }
 
 export const getServerSideProps = withTranslations(["common"]);

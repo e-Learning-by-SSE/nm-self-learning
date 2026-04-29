@@ -4,7 +4,7 @@ import { Dialog, DialogActions, IconOnlyButton, showToast } from "@self-learning
 import { inferProcedureOutput } from "@trpc/server";
 import { AppRouter } from "libs/data-access/api/src/lib/trpc/app.router";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 type SingleOwnedResources = inferProcedureOutput<
@@ -16,7 +16,8 @@ export function GroupDeleteOption({
 }: {
 	group: { id: number; name: string; children: { id: number; name: string }[] };
 }) {
-	const query = trpc.permission.getSingleOwnedResources.useQuery(
+	const router = useRouter();
+    const query = trpc.permission.getSingleOwnedResources.useQuery(
 		{ groupId: group.id },
 		{
 			enabled: false
@@ -29,7 +30,7 @@ export function GroupDeleteOption({
 				title: "Gruppe gelöscht",
 				subtitle: `Sie haben die Gruppe ${group.name} gelöscht.`
 			});
-			reload();
+			router.back();
 		},
 		onError: () => {
 			showToast({
@@ -40,12 +41,9 @@ export function GroupDeleteOption({
 		},
 	});
 	const [showConfirmation, setShowConfirmation] = useState(false);
-	const { reload } = useRouter();
 
 	const handleDelete = async () => {
 		await deleteGroup({ groupId: group.id });
-		// Refresh page
-		reload();
 	};
 
 	async function onClose(isDelete?: boolean) {
