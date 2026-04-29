@@ -15,7 +15,7 @@ type EditLessonProps = {
 };
 
 export const getServerSideProps = withTranslations(
-	["common"],
+	["common", "feature-question-types"],
 	withAuth<EditLessonProps>(async (ctx, user) => {
 		const lessonId = ctx.params?.lessonId;
 

@@ -617,16 +617,22 @@ function LessonControls({
 }
 
 function StandaloneLessonControls({ lesson }: { lesson: LessonLearnersViewProps["lesson"] }) {
-	const session = useSession();
-	// TODO - separate issue -  find out am I an author? lesson provides no uid
+    const session = useSession();
+    const hasQuiz = (lesson.meta as LessonMeta).hasQuiz;
+    // TODO - separate issue -  find out am I an author? lesson provides no uid
 
-	if (session.data?.user.role === "ADMIN" || session.data?.user.isAuthor)
-		return (
-			<div className="flex w-full flex-wrap gap-2 xl:w-fit flex-row">
-				<AuthorEditButton lesson={lesson} />
-			</div>
-		);
-	else return <div></div>;
+    if (session.data?.user.role === "ADMIN" || session.data?.user.isAuthor)
+        return (
+            <div className="flex w-full flex-wrap gap-2 xl:w-fit flex-row">
+                <AuthorEditButton lesson={lesson} />
+                {hasQuiz && <LinkToQuiz url={`lessons/${lesson.slug}`} />}
+            </div>
+        );
+    else return (
+        <div className="flex w-full flex-wrap gap-2 xl:w-fit flex-row">
+            {hasQuiz && <LinkToQuiz url={`lessons/${lesson.slug}`} />}
+        </div>
+    );
 }
 
 function LinkToQuiz({ url }: { url: string }) {

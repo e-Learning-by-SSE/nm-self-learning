@@ -67,4 +67,4 @@ export default function CreateCoursePage() {
 	);
 }
 
-export const getServerSideProps = withTranslations(["pages-course-info", "common"]);
+export const getServerSideProps = withTranslations(["pages-course-info", "common", "feature-question-types"]);

@@ -1,0 +1,8 @@
+{
+    "displayName": "Baumstruktur-Aufgabe",
+    "selectNodeType": "Knotentyp wählen",
+    "selectPlaceholder": "-- wählen --",
+    "addCategory": "+ Kategorie hinzufügen",
+    "categoryNamePlaceholder": "Kategoriename (z. B. Nomen)",
+    "restrictNodeTypesHint": "⚠️ Hinweis: Wenn Knotentypen eingeschränkt sind, sollten die Werte im Anfangsbaum mit den definierten Kategoriewörtern übereinstimmen. Andernfalls kann es zu inkonsistenter Darstellung für Studierende kommen."
+}
