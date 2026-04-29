@@ -297,14 +297,16 @@ export class VectorStore {
 	 */
 	async lessonExists(lessonId: string): Promise<boolean> {
 		await this.initialize(true);
-
 		const collectionName = `${RAG_CONFIG.VECTOR_STORE.COLLECTION_PREFIX}${lessonId}`;
-
-		const collection = await this.client?.getCollection({
-			name: collectionName,
-			embeddingFunction: CUSTOM_EMBEDDING_FUNCTION
-		});
-		return !!collection;
+		try {
+			await this.client?.getCollection({
+				name: collectionName,
+				embeddingFunction: CUSTOM_EMBEDDING_FUNCTION
+			});
+			return true;
+		} catch {
+			return false;
+		}
 	}
 
 	/**
