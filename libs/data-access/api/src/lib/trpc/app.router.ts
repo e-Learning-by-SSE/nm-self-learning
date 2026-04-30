@@ -23,6 +23,7 @@ import { userEventRouter } from "./routers/event-log.router";
 import { notificationRouter } from "./routers/notification.router";
 import { gamificationRouter } from "./routers/achievement.router";
 import { permissionRouter } from "./routers/permission.router";
+import { aiTutorRouter } from "./routers/ai-tutor.router";
 
 export const appRouter = t.router({
 	admin: adminRouter,
@@ -47,6 +48,7 @@ export const appRouter = t.router({
 	notification: notificationRouter,
 	llmConfig: llmConfigRouter,
 	permission: permissionRouter
+	aiTutor: aiTutorRouter
 });
 
 // export type definition of API

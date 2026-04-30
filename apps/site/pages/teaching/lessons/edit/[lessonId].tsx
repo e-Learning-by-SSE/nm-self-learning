@@ -52,6 +52,7 @@ export const getServerSideProps = withTranslations(
 						}
 					}
 				}
+				ragEnabled: true
 			}
 		});
 
@@ -102,6 +103,7 @@ export const getServerSideProps = withTranslations(
 				groupId: p.group.id,
 				groupName: p.group.name
 			}))
+			ragEnabled: lesson.ragEnabled
 		};
 
 		return {

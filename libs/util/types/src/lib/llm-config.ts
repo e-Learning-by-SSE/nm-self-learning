@@ -18,3 +18,10 @@ export const ollamaModelList = z.object({
 		})
 	)
 });
+
+export interface ServerConfig {
+	serverUrl: string;
+	apiKey?: string;
+	defaultModel: string;
+	updatedAt?: Date;
+}

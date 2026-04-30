@@ -13,6 +13,7 @@ import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { LessonSkillManager } from "./lesson-skill-manager";
 import { GroupAccessEditor } from "../../group/forms/group-form";
+// import { AiTutorConsent } from "./ai-tutor-consent";
 
 export function LessonInfoEditor({ isNew }: { isNew: boolean }) {
 	const form = useFormContext<LessonFormModel>();
@@ -144,6 +145,7 @@ export function LessonInfoEditor({ isNew }: { isNew: boolean }) {
 				subtitle="Autoren dieser Lerneinheit."
 				emptyString="Für diese Lerneinheit sind noch keine Autoren hinterlegt."
 			/>
+			{/* <AiTutorConsent /> */}
 			<LicenseForm />
 			<LessonSkillManager />
 		</>

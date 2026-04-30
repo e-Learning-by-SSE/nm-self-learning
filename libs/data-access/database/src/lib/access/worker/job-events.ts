@@ -12,7 +12,7 @@ const jobStatusMap: Record<JobEventType, JobStatus> = {
 	finished: JobStatus.FINISHED
 };
 
-export async function logJobProgress(jobId: string, event: JobEvent) {
+export async function logJobProgress(jobId: string, event: JobEvent, context?: string) {
 	if (event.status !== "ready") {
 		const cause = event.status === "aborted" ? event.cause : undefined;
 
@@ -25,11 +25,13 @@ export async function logJobProgress(jobId: string, event: JobEvent) {
 				id: jobId,
 				jobType: event.type,
 				status: jobStatusMap[event.status],
-				cause
+				cause,
+				context: context ?? null
 			},
 			update: {
 				status: jobStatusMap[event.status],
-				cause
+				cause,
+				...(context !== undefined ? { context } : {})
 			}
 		});
 	} else {

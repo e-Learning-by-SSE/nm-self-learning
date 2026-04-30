@@ -19,7 +19,8 @@ const minValidLesson: Lesson = {
 			groupName: "Group 1",
 			accessLevel: AccessLevel.EDIT
 		}
-	]
+	],
+	ragEnabled: true
 };
 
 describe("lessonSchema", () => {
@@ -112,6 +113,7 @@ describe("lessonSchema", () => {
 			    ],
 			    "provides": Array [],
 			    "quiz": null,
+			    "ragEnabled": true,
 			    "requires": Array [],
 			    "selfRegulatedQuestion": null,
 			    "slug": "slug-1",

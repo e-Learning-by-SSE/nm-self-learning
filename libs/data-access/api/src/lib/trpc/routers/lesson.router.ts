@@ -1,9 +1,10 @@
 import { AccessLevel, Course, Prisma } from "@prisma/client";
-import { database, save_subtitle_for_lesson } from "@self-learning/database";
+import { database, save_subtitle_for_lesson, logJobProgress } from "@self-learning/database";
 import {
 	createLessonMeta,
 	EventTypeMap,
 	lessonSchema,
+	LessonContentType,
 	subtitleSrcSchema
 } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
@@ -14,12 +15,42 @@ import { TRPCError } from "@trpc/server";
 import { greaterAccessLevel, greaterOrEqAccessLevel } from "../../permissions/permission.utils";
 import { getEffectiveAccess } from "../../permissions/permission.service";
 import { canCreate, canDelete } from "../../permissions/lesson.utils";
+import {
+	getRagVersionHash,
+	prepareRagContent,
+	deleteEmbedding
+} from "@self-learning/rag-processing";
+import { workerServiceClient } from "@self-learning/worker-api";
+import crypto from "crypto";
 
 const saveSubtitleInputSchema = z.object({
 	lessonId: z.string(),
 	video_url: z.url(),
 	transcription: subtitleSrcSchema
 });
+
+/**
+ * RAG Embedding Flow (triggered on lesson create/edit when ragEnabled=true, {by default, RAG is enabled}):
+ *
+ * 1. prepareRagContent() downloads PDFs and extracts article text and video
+ *    transcripts from the lesson content array. The lesson record in the DB
+ *    is NOT modified — only ChromaDB is written to.
+ *
+ * 2. The prepared content (base64 PDF buffers + plain text strings) is
+ *    submitted to the worker-service as a ragEmbed job via submitJob.mutate().
+ *    We await this call so the mutation fails visibly if job submission fails.
+ *
+ * 3. Once submitted, job progress is tracked asynchronously via subscribeToRagJobEvents
+ *    (fire-and-forget — the lesson mutation has already returned to the client).
+ *
+ * 4. The worker splits content into overlapping text chunks, generates embeddings
+ *    using the local Xenova/all-MiniLM-L6-v2 model, and stores them in ChromaDB
+ *    in a per-lesson collection keyed by lessonId.
+ *
+ * 5. On update, the existing ChromaDB collection for the lessonId is deleted
+ *    before re-embedding, ensuring no stale chunks remain. The ragVersionHash
+ *    field in the DB tracks the content hash so unchanged lessons are not re-embedded.
+ */
 
 export const lessonRouter = t.router({
 	findOneAllProps: authProcedure.input(z.object({ lessonId: z.string() })).query(({ input }) => {
@@ -234,6 +265,11 @@ export const lessonRouter = t.router({
 		// can create if user is a member of at least one group
 		if (!(await canCreate(ctx.user))) {
 			throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
+    }
+		const ragCheck = input.ragEnabled ?? true;
+		let hash: string | null = null;
+		if (ragCheck && input.content.length) {
+		 hash = getRagVersionHash(JSON.stringify(input.content));
 		}
 		const createdLesson = await database.lesson.create({
 			data: {
@@ -246,6 +282,8 @@ export const lessonRouter = t.router({
 				content: input.content as Prisma.InputJsonArray,
 				lessonId: getRandomId(),
 				meta: createLessonMeta(input) as unknown as Prisma.JsonObject,
+        ragVersionHash: hash,
+				ragEnabled: input.ragEnabled ?? true,
 				permissions: {
 					create: input.permissions.map(p => ({
 						accessLevel: p.accessLevel,
@@ -253,14 +291,24 @@ export const lessonRouter = t.router({
 					}))
 				}
 			},
-			select: { lessonId: true, slug: true, title: true }
+			select: {
+				lessonId: true,
+				slug: true,
+				title: true,
+				ragEnabled: true,
+				ragVersionHash: true
+			}
 		});
 
-		console.log("[lessonRouter.create]: Lesson created by", ctx.user.name, createdLesson);
+		await callRagJob(null, {
+			...createdLesson,
+			content: input.content as LessonContentType[]
+		});
+
 		return createdLesson;
 	}),
 	edit: authProcedure
-		.input(z.object({ lessonId: z.string(), lesson: lessonSchema }))
+    .input(z.object({ lessonId: z.string(), lesson: lessonSchema }))
 		.mutation(async ({ input, ctx }) => {
 			// get user access level to resource - must be at least EDIT
 			const { accessLevel: actualAccess } = await getEffectiveAccess(ctx.user, {
@@ -308,37 +356,73 @@ export const lessonRouter = t.router({
 					});
 				}
 			}
-			// update
-			const updatedLesson = await database.lesson.update({
-				where: { lessonId: input.lessonId },
-				data: {
-					...input.lesson,
-					quiz: input.lesson.quiz
-						? (input.lesson.quiz as Prisma.JsonObject)
-						: Prisma.JsonNull,
-					lessonId: input.lessonId,
-					authors: { set: input.lesson.authors.map(a => ({ username: a.username })) },
-					licenseId: input.lesson.licenseId,
-					requires: { set: input.lesson.requires.map(r => ({ id: r.id })) },
-					provides: { set: input.lesson.provides.map(r => ({ id: r.id })) },
-					meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject,
-					permissions: {
-						deleteMany: { groupId: { notIn: perms.map(p => p.groupId) } },
-						upsert: perms.map(p => ({
-							where: {
-								groupId_lessonId: { lessonId: input.lessonId, groupId: p.groupId }
-							},
-							create: p,
-							update: {
-								accessLevel: p.accessLevel
-							}
-						}))
+			
+			const ragCheck = input.lesson.ragEnabled ?? true;
+			const hash =
+				ragCheck && input.lesson.content.length
+					? getRagVersionHash(JSON.stringify(input.lesson.content))
+					: null;
+			
+			// update		   
+			/**
+			 * Fetch existing state and apply update in a single transaction to avoid
+			 * a race condition where a concurrent edit could change ragEnabled between
+			 * the two operations, leading to a missed deletion or double-embed.
+			 */
+			const [existing, updatedLesson] = await database.$transaction([
+				database.lesson.findUnique({
+					where: { lessonId: input.lessonId },
+					select: { ragVersionHash: true, ragEnabled: true }
+				}),
+				database.lesson.update({
+					where: { lessonId: input.lessonId },
+					data: {
+						...input.lesson,
+						quiz: input.lesson.quiz
+							? (input.lesson.quiz as Prisma.JsonObject)
+							: Prisma.JsonNull,
+						lessonId: input.lessonId,
+						authors: {
+							set: input.lesson.authors.map(a => ({ username: a.username }))
+						},
+						licenseId: input.lesson.licenseId,
+						requires: {
+							set: input.lesson.requires.map(r => ({ id: r.id }))
+						},
+						provides: {
+							set: input.lesson.provides.map(r => ({ id: r.id }))
+						},
+						meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject,
+						ragVersionHash: hash,
+						ragEnabled: input.lesson.ragEnabled ?? true,
+						permissions: {
+							deleteMany: { groupId: { notIn: perms.map(p => p.groupId) } },
+							upsert: perms.map(p => ({
+								where: {
+									groupId_lessonId: { lessonId: input.lessonId, groupId: p.groupId }
+								},
+								create: p,
+								update: {
+									accessLevel: p.accessLevel
+								}
+							}))
+						}
+					},
+					select: {
+						lessonId: true,
+						slug: true,
+						title: true,
+						ragVersionHash: true,
+						ragEnabled: true
 					}
-				},
-				select: { lessonId: true, slug: true, title: true }
+				})
+			]);
+
+			await callRagJob(existing, {
+				...updatedLesson,
+				content: input.lesson.content as LessonContentType[]
 			});
 
-			console.log("[lessonRouter.edit]: Lesson updated by", ctx.user.name, updatedLesson);
 			return updatedLesson;
 		}),
 	findLinkedLessonEntities: authorProcedure
@@ -359,7 +443,8 @@ export const lessonRouter = t.router({
 		.mutation(async ({ input, ctx }) => {
 			if (!(await canDelete(ctx.user, input.lessonId))) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
-			}
+      }
+			await deleteEmbedding(input.lessonId);
 			return await database.lesson.delete({ where: { lessonId: input.lessonId } });
 		}),
 
@@ -536,7 +621,15 @@ export const lessonRouter = t.router({
 			const { lessonId, video_url, transcription } = input;
 			const subtitleSrc = subtitleSrcSchema.parse(transcription);
 			try {
-				await save_subtitle_for_lesson(lessonId, video_url, subtitleSrc);
+				const [lesson, updatedLesson] = await save_subtitle_for_lesson(
+					lessonId,
+					video_url,
+					subtitleSrc
+				);
+				await callRagJob(lesson, {
+					...updatedLesson,
+					content: updatedLesson.content as LessonContentType[]
+				});
 				return { message: "Subtitle saved" };
 			} catch (error) {
 				if (error instanceof Error) {
@@ -591,4 +684,123 @@ export async function findLessons({
 	]);
 
 	return { lessons, count };
+}
+
+async function callRagJob(
+	oldLesson: {
+		ragVersionHash: string | null;
+		ragEnabled: boolean;
+	} | null,
+	newLesson: {
+		lessonId: string;
+		title: string;
+		content: LessonContentType[];
+		ragVersionHash: string | null;
+		ragEnabled: boolean;
+	}
+): Promise<void> {
+	if (newLesson.ragEnabled && newLesson.ragVersionHash) {
+		const hashChanged = oldLesson?.ragVersionHash !== newLesson.ragVersionHash;
+		if (hashChanged) {
+			// Worker will handle deletion of old embeddings internally
+			await enqueueRagEmbedJob(newLesson.lessonId, newLesson.title, newLesson.content);
+		}
+	} else if (!newLesson.ragEnabled && oldLesson?.ragEnabled) {
+		// Only delete when transitioning enabled → disabled
+		await deleteEmbedding(newLesson.lessonId);
+	}
+}
+
+/**
+ * Enqueue RAG embedding job
+ *
+ * Submit a RAG embedding job for the given lesson content.
+ */
+async function enqueueRagEmbedJob(
+	lessonId: string,
+	lessonTitle: string,
+	lessonContent: LessonContentType[]
+): Promise<string> {
+	try {
+		const preparedContent = await prepareRagContent(lessonContent, {
+			lessonId,
+			lessonTitle
+		});
+		const jobId = crypto.randomUUID();
+		await workerServiceClient.submitJob.mutate({
+			jobId,
+			jobType: "ragEmbed",
+			payload: {
+				lessonId,
+				lessonTitle,
+				pdfBuffers: preparedContent.pdfBuffers,
+				articleTexts: preparedContent.articleTexts,
+				transcriptTexts: preparedContent.transcriptTexts
+			}
+		});
+		subscribeToRagJobEvents(jobId, lessonId).catch(err => {
+			console.error(
+				"[LessonRouter] Subscription error",
+				{
+					lessonId,
+					error: err instanceof Error ? err.message : String(err)
+				},
+				{ jobId }
+			);
+		});
+		return jobId;
+	} catch (error) {
+		console.error("[LessonRouter] Failed to enqueue RAG job", {
+			lessonId,
+			error: error instanceof Error ? error.message : String(error)
+		});
+		throw error;
+	}
+}
+
+async function subscribeToRagJobEvents(jobId: string, lessonId: string): Promise<void> {
+	try {
+		workerServiceClient.jobQueue.subscribe(
+			{ jobId },
+			{
+				onData: async event => {
+					await logJobProgress(jobId, event);
+					if (event.status === "finished") {
+						console.log("[LessonRouter] RAG job completed", {
+							jobId,
+							lessonId
+						});
+					} else if (event.status === "aborted") {
+						console.error(
+							"[LessonRouter] RAG job aborted",
+							{
+								lessonId,
+								error: new Error(event.cause)
+							},
+							{ jobId }
+						);
+					}
+				},
+				onError: error => {
+					console.error(
+						"[LessonRouter] RAG subscription error",
+						{
+							lessonId,
+							error: error instanceof Error ? error.message : String(error)
+						},
+						{ jobId }
+					);
+				}
+			}
+		);
+	} catch (error) {
+		console.error(
+			"[LessonRouter] Failed to subscribe to RAG events",
+			{
+				lessonId,
+				error: error instanceof Error ? error.message : String(error)
+			},
+			{ jobId }
+		);
+	}
 }
