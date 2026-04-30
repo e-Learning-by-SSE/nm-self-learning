@@ -214,11 +214,12 @@ export default function Course({ course, summary, content, markdownDescription }
 			<CenteredSection>
 				<TableOfContents content={content} course={course} />
 			</CenteredSection>
-			<FloatingTutorButton 
+			<FloatingTutorButton
 				onToggle={tutorState.toggleTutor}
 				disabled={tutorState.isAnimating}
+				hideToggle={tutorState.hideToggle || !tutorState.config}
 			/>
-			
+
 			<AiTutor tutorState={tutorState} />
 		</div>
 	);

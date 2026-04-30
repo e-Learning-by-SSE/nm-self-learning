@@ -34,7 +34,7 @@ interface LessonContextPayload extends BaseContextPayload {
 	title: string;
 }
 
-export type LessonwithoutCourseContextPayload = {
+export type LessonWithoutCourseContextPayload = {
 	type: "lesson";
 	lessonId: string;
 	title: string;

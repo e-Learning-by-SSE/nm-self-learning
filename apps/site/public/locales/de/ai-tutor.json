@@ -20,6 +20,6 @@
     "Failed to communicate with LLM server": "Kommunikation mit LLM-Server fehlgeschlagen",
     "AI Tutor Consent": "Zustimmung zum KI-Tutor",
     "Consent to use this content for AI Tutor Context": "Einwilligung zur Nutzung dieser Inhalte für KI-Tutor Kontext",
-    "You have consented to use this content for AI Tutor Context.": "Sie haben der Verwendung dieser Inhalte für KI-Tutor kontext zugestimmt.",
-    "You have not consented to use this content for AI Tutor Context.": "Sie haben der Verwendung dieses Inhalts für KI-Tutor kontext nicht zugestimmt."
+    "You have consented to use this content for AI Tutor Context.": "Sie haben der Verwendung dieser Inhalte für KI-Tutor Kontext zugestimmt.",
+    "You have not consented to use this content for AI Tutor Context.": "Sie haben der Verwendung dieses Inhalts für KI-Tutor Kontext nicht zugestimmt."
 }

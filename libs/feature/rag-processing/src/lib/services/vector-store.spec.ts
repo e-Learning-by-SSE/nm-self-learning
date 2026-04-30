@@ -25,7 +25,8 @@ jest.mock("../config/rag-config", () => ({
 
 jest.mock("chromadb", () => ({
 	ChromaClient: jest.fn(),
-	registerEmbeddingFunction: jest.fn()
+	registerEmbeddingFunction: jest.fn(),
+	knownEmbeddingFunctions: new Map<string, unknown>()
 }));
 
 import { ChromaClient } from "chromadb";
@@ -74,6 +75,9 @@ interface CollectionQueryArgs {
 /** Minimal ChromaDB Client mock surface used in tests. */
 interface ClientMock {
 	getCollection: jest.MockedFunction<(args: { name: string }) => Promise<CollectionMock>>;
+	getOrCreateCollection: jest.MockedFunction<
+		(args: { name: string; metadata?: Record<string, string> }) => Promise<CollectionMock>
+	>;
 	createCollection: jest.MockedFunction<
 		(args: { name: string; metadata?: Record<string, string> }) => Promise<CollectionMock>
 	>;
@@ -128,6 +132,7 @@ describe("VectorStore", () => {
 		clientMock = {
 			getCollection: jest.fn().mockResolvedValue(collectionMock),
 			createCollection: jest.fn().mockResolvedValue(collectionMock),
+			getOrCreateCollection: jest.fn().mockResolvedValue(collectionMock),
 			deleteCollection: jest.fn().mockResolvedValue(undefined),
 			listCollections: jest.fn().mockResolvedValue([])
 		};
@@ -194,8 +199,9 @@ describe("VectorStore", () => {
 			// then inject the already-imported embeddingService to bypass the dynamic import
 			// inside getEmbeddingService() and ensure the spy is intercepted.
 			await vectorStore.initialize(true);
-			(vectorStore as unknown as { _embeddingService: typeof embeddingService })._embeddingService =
-				embeddingService;
+			(
+				vectorStore as unknown as { _embeddingService: typeof embeddingService }
+			)._embeddingService = embeddingService;
 
 			const embeddingsSpy = jest
 				.spyOn(embeddingService, "generateBatchEmbeddings")
@@ -219,10 +225,11 @@ describe("VectorStore", () => {
 
 		it("uses the collection for the supplied lessonId", async () => {
 			// Setup – same pattern: pre-initialize and inject embeddingService.
-			await vectorStore.initialize(true);
-			(vectorStore as unknown as { _embeddingService: typeof embeddingService })._embeddingService =
-				embeddingService;
 			jest.spyOn(embeddingService, "generateBatchEmbeddings").mockResolvedValue([[1]]);
+			await vectorStore.initialize(true);
+			(
+				vectorStore as unknown as { _embeddingService: typeof embeddingService }
+			)._embeddingService = embeddingService;
 
 			const chunks: DocumentChunk[] = [makePdfChunk("cx", "some text", 0)];
 
@@ -230,7 +237,8 @@ describe("VectorStore", () => {
 			await vectorStore.addDocuments("specific-lesson", chunks);
 
 			// Verify – the collection name must contain the lessonId
-			const getArgs = clientMock.getCollection.mock.calls[0][0];
+			expect(clientMock.getOrCreateCollection).toHaveBeenCalled();
+			const getArgs = clientMock.getOrCreateCollection.mock.calls[0][0];
 			expect(getArgs.name).toContain("specific-lesson");
 		});
 	});
@@ -256,8 +264,10 @@ describe("VectorStore", () => {
 			collectionMock.query.mockResolvedValue(queryResult);
 
 			await vectorStore.initialize(true);
-			(vectorStore as unknown as { _embeddingService: typeof embeddingService })._embeddingService =
-				embeddingService;
+			clientMock.getCollection.mockResolvedValue(collectionMock);
+			(
+				vectorStore as unknown as { _embeddingService: typeof embeddingService }
+			)._embeddingService = embeddingService;
 
 			// Exercise
 			const results = await vectorStore.search("l1", "query", 5);
@@ -282,8 +292,9 @@ describe("VectorStore", () => {
 				distances: [[]]
 			});
 			await vectorStore.initialize(true);
-			(vectorStore as unknown as { _embeddingService: typeof embeddingService })._embeddingService =
-				embeddingService;
+			(
+				vectorStore as unknown as { _embeddingService: typeof embeddingService }
+			)._embeddingService = embeddingService;
 
 			// Exercise
 			const results = await vectorStore.search("l1", "no results", 5);

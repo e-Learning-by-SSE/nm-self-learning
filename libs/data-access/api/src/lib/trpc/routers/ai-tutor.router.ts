@@ -34,11 +34,13 @@ export const aiTutorRouter = t.router({
 				// Step 3: Fetch AI-Tutor location, either opened in course page or in lesson page
 				const contextPayload = await fetchContextPayload(input.pageContext);
 
-				// Step 4: Fetch context using RAG service with lessonID
-				const { context } = await retrieveContext(
-					contextPayload?.type === "lesson" ? contextPayload.lessonId : "",
-					userQuestion
-				);
+				// Step 4: Fetch context using RAG service only for lesson pages
+				let context = "";
+				if (contextPayload?.type === "lesson") {
+					context = await retrieveContext(contextPayload.lessonId, userQuestion).then(
+						res => res.context
+					);
+				}
 
 				// Step 5: Build system prompt
 				const systemPrompt = await buildSystemPrompt(contextPayload, context);

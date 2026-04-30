@@ -257,17 +257,13 @@ describe("useAiTutor", () => {
 		it("detects a course context from a /courses/<slug> URL", () => {
 			// Setup
 			setWindowPath("/courses/intro-typescript");
-			const { result } = renderHook(() => useAiTutor());
 			const expected: PageContext = {
 				type: "course",
 				courseSlug: "intro-typescript"
 			};
 
-			// Exercise
-			act(() => {
-				result.current.toggleTutor();
-				jest.advanceTimersByTime(400);
-			});
+			// Exercise – context is derived reactively on mount; no toggleTutor needed
+			const { result } = renderHook(() => useAiTutor());
 
 			// Verify
 			expect(result.current.pageContext).toEqual(expected);
@@ -276,7 +272,6 @@ describe("useAiTutor", () => {
 		it("detects a lesson context from a /courses/<course>/<lesson> URL", () => {
 			// Setup
 			setWindowPath("/courses/intro-typescript/variables-types");
-			const { result } = renderHook(() => useAiTutor());
 			const expected: PageContext = {
 				type: "lesson",
 				courseSlug: "intro-typescript",
@@ -284,10 +279,7 @@ describe("useAiTutor", () => {
 			};
 
 			// Exercise
-			act(() => {
-				result.current.toggleTutor();
-				jest.advanceTimersByTime(400);
-			});
+			const { result } = renderHook(() => useAiTutor());
 
 			// Verify
 			expect(result.current.pageContext).toEqual(expected);
@@ -296,13 +288,9 @@ describe("useAiTutor", () => {
 		it("sets a null context when not on a course or lesson page", () => {
 			// Setup
 			setWindowPath("/about");
-			const { result } = renderHook(() => useAiTutor());
 
 			// Exercise
-			act(() => {
-				result.current.toggleTutor();
-				jest.advanceTimersByTime(400);
-			});
+			const { result } = renderHook(() => useAiTutor());
 
 			// Verify
 			expect(result.current.pageContext).toBeNull();
@@ -311,7 +299,6 @@ describe("useAiTutor", () => {
 		it("handles locale-prefixed URLs like /en/courses/<course>/<lesson>", () => {
 			// Setup
 			setWindowPath("/en/courses/advanced-react/hooks-deep-dive");
-			const { result } = renderHook(() => useAiTutor());
 			const expected: PageContext = {
 				type: "lesson",
 				courseSlug: "advanced-react",
@@ -319,13 +306,29 @@ describe("useAiTutor", () => {
 			};
 
 			// Exercise
-			act(() => {
-				result.current.toggleTutor();
-				jest.advanceTimersByTime(400);
-			});
+			const { result } = renderHook(() => useAiTutor());
 
 			// Verify
 			expect(result.current.pageContext).toEqual(expected);
+		});
+
+		it("updates pageContext reactively when the pathname changes (client-side navigation)", () => {
+			// Setup – start on a generic page
+			setWindowPath("/about");
+			const { result, rerender } = renderHook(() => useAiTutor());
+			expect(result.current.pageContext).toBeNull();
+
+			// Exercise – simulate Next.js router navigating to a course page
+			act(() => {
+				mockNextNavigation.pathname = "/courses/intro-typescript";
+				rerender();
+			});
+
+			// Verify – pageContext must reflect the new pathname, not the stale one
+			expect(result.current.pageContext).toEqual({
+				type: "course",
+				courseSlug: "intro-typescript"
+			});
 		});
 	});
 
@@ -378,15 +381,11 @@ describe("useAiTutor", () => {
 		});
 
 		it("includes the current pageContext in the mutation payload", async () => {
-			// Setup
+			// Setup – pageContext is derived from pathname on mount; no toggleTutor needed
 			setWindowPath("/courses/intro-typescript");
 			mockMutateAsync.mockResolvedValue({ content: "Response" });
 			const { result } = renderHook(() => useAiTutor());
 
-			act(() => {
-				result.current.toggleTutor();
-				jest.advanceTimersByTime(400);
-			});
 			expect(result.current.pageContext).toEqual({
 				type: "course",
 				courseSlug: "intro-typescript"
@@ -611,23 +610,26 @@ describe("useAiTutor", () => {
 			expect(result.current.isTutorOpen).toBe(false);
 		});
 
-		it("detects and stores the page context when toggled", () => {
-			// Setup
+		it("does not affect the existing pageContext (context is derived from pathname, not toggle)", () => {
+			// Setup – pageContext is already set by the pathname effect on mount
 			setWindowPath("/courses/intro-typescript");
 			const { result } = renderHook(() => useAiTutor());
-			const expected: PageContext = {
+			expect(result.current.pageContext).toEqual({
 				type: "course",
 				courseSlug: "intro-typescript"
-			};
+			});
 
-			// Exercise
+			// Exercise – toggling should not clear or change pageContext
 			act(() => {
 				result.current.toggleTutor();
 				jest.advanceTimersByTime(400);
 			});
 
-			// Verify
-			expect(result.current.pageContext).toEqual(expected);
+			// Verify – context is unchanged after toggle
+			expect(result.current.pageContext).toEqual({
+				type: "course",
+				courseSlug: "intro-typescript"
+			});
 		});
 	});
 

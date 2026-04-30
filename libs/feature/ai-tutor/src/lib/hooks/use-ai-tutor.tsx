@@ -28,14 +28,14 @@ export function useAiTutor() {
 	const pathname = usePathname();
 
 	/**
-	 * Detect page context from the current URL.
+	 * Derive page context directly from the current pathname.
 	 *
 	 * Supported URL patterns:
 	 *   /courses/<courseSlug>                   → course context
 	 *   /courses/<courseSlug>/<lessonSlug>      → lesson within course context
 	 *   /lessons/<lessonSlug>                   → standalone lesson context (e.g. direct Moodle link)
 	 */
-	const detectPageContext = useCallback(() => {
+	useEffect(() => {
 		if (typeof pathname === "undefined") {
 			setPageContext(null);
 			return;
@@ -84,7 +84,7 @@ export function useAiTutor() {
 		}
 
 		setPageContext(null);
-	}, []);
+	}, [pathname]);
 
 	const sendMessage = useCallback(async () => {
 		const trimmedInput = input.trim();
@@ -136,14 +136,13 @@ export function useAiTutor() {
 	);
 
 	const toggleTutor = useCallback(() => {
-		detectPageContext();
 		setIsAnimating(true);
 
 		setTimeout(() => {
 			setIsTutorOpen(prev => !prev);
 			setIsAnimating(false);
 		}, 400);
-	}, [detectPageContext]);
+	}, []);
 
 	const closeTutor = useCallback(() => {
 		setIsTutorOpen(false);
@@ -155,15 +154,14 @@ export function useAiTutor() {
 	}, []);
 
 	useEffect(() => {
-		detectPageContext();
 		const modalOpened = searchParams.get("modal");
-		if (modalOpened === "open") {
+		if (modalOpened === "open" || !config) {
 			setHideToggle(true);
 			closeTutor();
 		} else {
 			setHideToggle(false);
 		}
-	}, [setHideToggle, closeTutor, detectPageContext, searchParams]);
+	}, [setHideToggle, closeTutor, searchParams, config]);
 
 	const isLoading = sendMessageMutation.isPending;
 

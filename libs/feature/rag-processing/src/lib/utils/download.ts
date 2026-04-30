@@ -34,17 +34,21 @@ export async function downloadWithRetry(
 	const userAgent = options.userAgent ?? RAG_CONFIG.DOWNLOAD.USER_AGENT;
 
 	validateURL(url);
+	let lastError: Error | undefined;
 
 	for (let attempt = 1; attempt <= maxRetries; attempt++) {
 		try {
 			const controller = new AbortController();
 			const timeout = setTimeout(() => controller.abort(), timeoutMs);
-			const response = await fetch(url, {
-				headers: { "User-Agent": userAgent },
-				signal: controller.signal
-			});
-
-			clearTimeout(timeout);
+			let response: Response;
+			try {
+				response = await fetch(url, {
+					headers: { "User-Agent": userAgent },
+					signal: controller.signal
+				});
+			} finally {
+				clearTimeout(timeout);
+			}
 
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -67,26 +71,21 @@ export async function downloadWithRetry(
 			}
 
 			const arrayBuffer = await response.arrayBuffer();
-			const uint8Array = new Uint8Array(arrayBuffer);
-			return uint8Array;
+			return new Uint8Array(arrayBuffer);
 		} catch (error) {
-			const isLastAttempt = attempt === maxRetries;
+			lastError = error as Error;
+		}
 
-			if (isLastAttempt) {
-				const message = error instanceof Error ? error.message : String(error);
-				throw new DownloadError(
-					`Failed to download ${url} after ${maxRetries} attempts: ${message}`,
-					url,
-					error as Error
-				);
-			}
-
-			// Exponential backoff
+		if (attempt < maxRetries) {
 			const delayMs = Math.min(1000 * Math.pow(2, attempt), 10000);
 			await new Promise(resolve => setTimeout(resolve, delayMs));
 		}
 	}
-	throw new DownloadError(`Unexpected error downloading ${url}`, url);
+	throw new DownloadError(
+		`Failed to download ${url} after ${maxRetries} attempts: ${lastError?.message ?? String(lastError)}`,
+		url,
+		lastError
+	);
 }
 
 export async function downloadMultiple(
@@ -105,7 +104,11 @@ export async function downloadMultiple(
 			} catch (error) {
 				console.warn(
 					"[DownloadUtil] Skipping PDF due to download error — other content types will still be processed",
-					{ ...lessonContext, url, error: error instanceof Error ? error.message : String(error) }
+					{
+						...lessonContext,
+						url,
+						error: error instanceof Error ? error.message : String(error)
+					}
 				);
 			}
 		}
@@ -120,7 +123,11 @@ export async function downloadMultiple(
 		} catch (error) {
 			console.warn(
 				"[DownloadUtil] Skipping PDF due to download error — other content types will still be processed",
-				{ ...lessonContext, url, error: error instanceof Error ? error.message : String(error) }
+				{
+					...lessonContext,
+					url,
+					error: error instanceof Error ? error.message : String(error)
+				}
 			);
 			return null;
 		}

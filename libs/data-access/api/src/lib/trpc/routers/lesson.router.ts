@@ -224,14 +224,15 @@ export const lessonRouter = t.router({
 				lessonId: true,
 				slug: true,
 				title: true,
-				ragEnabled: true
+				ragEnabled: true,
+				ragVersionHash: true
 			}
 		});
 
-		if (createdLesson.ragEnabled && hash) {
-			// Await job submission to surface errors early; job itself runs asynchronously in worker.
-			await enqueueRagEmbedJob(createdLesson.lessonId, createdLesson.title, input.content);
-		}
+		await callRagJob(null, {
+			...createdLesson,
+			content: input.content as LessonContentType[]
+		});
 
 		return createdLesson;
 	}),
@@ -284,32 +285,16 @@ export const lessonRouter = t.router({
 						lessonId: true,
 						slug: true,
 						title: true,
+						ragVersionHash: true,
 						ragEnabled: true
 					}
 				})
 			]);
 
-			if (updatedLesson.ragEnabled && hash) {
-				if (!existing?.ragEnabled) {
-					// RAG newly enabled — embed for the first time
-					await enqueueRagEmbedJob(
-						updatedLesson.lessonId,
-						updatedLesson.title,
-						input.lesson.content
-					);
-				} else {
-					// RAG already enabled — content may have changed; delete old embeddings then re-embed
-					await deleteEmbedding(updatedLesson.lessonId);
-					await enqueueRagEmbedJob(
-						updatedLesson.lessonId,
-						updatedLesson.title,
-						input.lesson.content
-					);
-				}
-			} else if (!updatedLesson.ragEnabled && existing?.ragEnabled) {
-				// RAG was disabled — clean up existing embeddings
-				await deleteEmbedding(updatedLesson.lessonId);
-			}
+			await callRagJob(existing, {
+				...updatedLesson,
+				content: input.lesson.content as LessonContentType[]
+			});
 
 			return updatedLesson;
 		}),
@@ -532,15 +517,15 @@ export const lessonRouter = t.router({
 			const { lessonId, video_url, transcription } = input;
 			const subtitleSrc = subtitleSrcSchema.parse(transcription);
 			try {
-				const lesson = await save_subtitle_for_lesson(lessonId, video_url, subtitleSrc);
-				if (lesson.ragEnabled) {
-					await deleteEmbedding(lessonId);
-					await enqueueRagEmbedJob(
-						lessonId,
-						lesson.title,
-						lesson.content as LessonContentType[]
-					);
-				}
+				const [lesson, updatedLesson] = await save_subtitle_for_lesson(
+					lessonId,
+					video_url,
+					subtitleSrc
+				);
+				await callRagJob(lesson, {
+					...updatedLesson,
+					content: updatedLesson.content as LessonContentType[]
+				});
 				return { message: "Subtitle saved" };
 			} catch (error) {
 				if (error instanceof Error) {
@@ -607,6 +592,31 @@ export async function findLessons({
 	]);
 
 	return { lessons, count };
+}
+
+async function callRagJob(
+	oldLesson: {
+		ragVersionHash: string | null;
+		ragEnabled: boolean;
+	} | null,
+	newLesson: {
+		lessonId: string;
+		title: string;
+		content: LessonContentType[];
+		ragVersionHash: string | null;
+		ragEnabled: boolean;
+	}
+): Promise<void> {
+	if (newLesson.ragEnabled && newLesson.ragVersionHash) {
+		const hashChanged = oldLesson?.ragVersionHash !== newLesson.ragVersionHash;
+		if (hashChanged) {
+			// Worker will handle deletion of old embeddings internally
+			await enqueueRagEmbedJob(newLesson.lessonId, newLesson.title, newLesson.content);
+		}
+	} else if (!newLesson.ragEnabled && oldLesson?.ragEnabled) {
+		// Only delete when transitioning enabled → disabled
+		await deleteEmbedding(newLesson.lessonId);
+	}
 }
 
 /**

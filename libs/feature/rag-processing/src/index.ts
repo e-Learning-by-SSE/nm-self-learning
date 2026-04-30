@@ -6,3 +6,4 @@ export * from "./lib/services/content-processor";
 export * from "./lib/utils/download";
 export * from "./lib/utils/content-preparation";
 export * from "./lib/utils/delete-embed";
+export { RAG_CONFIG } from "./lib/config/rag-config";

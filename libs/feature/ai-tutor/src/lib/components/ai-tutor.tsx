@@ -39,7 +39,7 @@ export function AiTutor({ tutorState }: { tutorState: UseAiTutorReturn }) {
 
 	return (
 		<div
-			className={`fixed top-0 right-0 h-full z-20 transform transition-all duration-400 ease-out
+			className={`fixed top-0 right-0 h-full z-20 transform transition-all duration-500 ease-out
                 w-full sm:w-11/12 md:w-4/5 lg:w-2/3 xl:w-2/6
                 ${isTutorOpen ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
 			aria-hidden={!isTutorOpen}

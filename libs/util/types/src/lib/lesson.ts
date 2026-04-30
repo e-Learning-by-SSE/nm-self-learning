@@ -59,7 +59,7 @@ export function createEmptyLesson(): Lesson {
 		authors: [],
 		lessonType: LessonType.TRADITIONAL,
 		selfRegulatedQuestion: null,
-		ragEnabled: false,
+		ragEnabled: true,
 		ragVersionHash: null
 	};
 }

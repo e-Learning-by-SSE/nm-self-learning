@@ -100,23 +100,24 @@ export class EmbeddingService implements IEmbeddingService {
 		if (texts.length === 0) {
 			return [];
 		}
+
 		const embeddings: number[][] = [];
 
 		for (let i = 0; i < texts.length; i++) {
 			const text = texts[i];
 
-			if (!text || text.trim().length === 0) {
-				continue;
-			}
-
 			try {
+				// Delegates to generateEmbedding, which throws on empty/whitespace text.
+				// We intentionally do NOT skip blank entries here: silently dropping them
+				// would make the returned array shorter than `texts`, breaking the 1-to-1
+				// alignment that callers (e.g. VectorStore.addDocuments) rely on for
+				// ids/documents/embeddings arrays passed to ChromaDB.
 				const embedding = await this.generateEmbedding(text);
 				embeddings.push(embedding);
 			} catch (error) {
 				console.error("[EmbedService] Failed to generate embedding in batch", {
 					error: error instanceof Error ? error.message : String(error),
-					index: i,
-					textLength: text.length
+					index: i
 				});
 				throw error;
 			}

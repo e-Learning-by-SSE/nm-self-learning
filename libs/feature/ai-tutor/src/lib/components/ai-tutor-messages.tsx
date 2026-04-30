@@ -1,5 +1,6 @@
 import ReactMarkdown from "react-markdown";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
+import { Session } from "next-auth";
 
 export function AiTutorMessages({
 	messages,
@@ -10,7 +11,7 @@ export function AiTutorMessages({
 }: {
 	messages: Array<{ role: string; content: string }>;
 	isLoading: boolean;
-	user: any;
+	user: Session["user"] | undefined;
 	basePath: string;
 	t: (key: string) => string;
 }) {

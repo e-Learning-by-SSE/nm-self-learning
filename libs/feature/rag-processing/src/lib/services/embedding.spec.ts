@@ -143,35 +143,39 @@ describe("EmbeddingService", () => {
 	describe("generateBatchEmbeddings", () => {
 		// =========================================================================
 
-		it("processes non-empty texts and skips blank entries", async () => {
+		it("returns one embedding per input text, preserving 1-to-1 alignment", async () => {
 			// Setup
 			const embedderFn: EmbedderFn = jest.fn().mockImplementation(async (text: string) => ({
 				data: Float32Array.from([text.length])
 			}));
 			(pipeline as jest.Mock).mockResolvedValue(embedderFn);
-			const texts = ["a", "", "abc"];
+			const texts = ["a", "ab", "abc"];
 
 			// Exercise
 			const result = await embeddingService.generateBatchEmbeddings(texts);
 
-			// Verify – empty string is skipped, so only 2 embeddings returned
-			expect(result).toEqual([[1], [3]]);
+			// Verify – output length always matches input length
+			expect(result).toHaveLength(texts.length);
+			expect(result).toEqual([[1], [2], [3]]);
 		});
 
-		it("returns an empty array when all input texts are empty", async () => {
+		it("throws when a batch entry is empty, keeping the same contract as generateEmbedding", async () => {
 			// Setup
 			const embedderFn: EmbedderFn = jest
 				.fn()
 				.mockResolvedValue({ data: Float32Array.from([1]) });
 			(pipeline as jest.Mock).mockResolvedValue(embedderFn);
-			const texts = ["", "   "];
 
-			// Exercise
-			const result = await embeddingService.generateBatchEmbeddings(texts);
+			// Exercise & Verify – silently skipping blank entries would shorten the
+			// returned array, breaking the ids/embeddings/documents alignment in
+			// VectorStore.addDocuments. Throwing is the safe, explicit contract.
+			await expect(
+				embeddingService.generateBatchEmbeddings(["hello", "", "world"])
+			).rejects.toThrow("Cannot generate embedding for empty text");
 
-			// Verify
-			expect(result).toEqual([]);
-			expect(embedderFn).not.toHaveBeenCalled();
+			await expect(embeddingService.generateBatchEmbeddings(["   "])).rejects.toThrow(
+				"Cannot generate embedding for empty text"
+			);
 		});
 
 		it("returns an empty array when the input list is empty", async () => {

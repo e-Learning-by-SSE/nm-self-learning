@@ -32,7 +32,7 @@ export async function save_subtitle_for_lesson(
 		return languageNames.of(code) ?? code;
 	};
 
-	return await database.lesson.update({
+	const updatedLesson = await database.lesson.update({
 		where: {
 			lessonId
 		},
@@ -56,7 +56,10 @@ export async function save_subtitle_for_lesson(
 		select: {
 			title: true,
 			content: true,
-			ragEnabled: true
+			ragEnabled: true,
+			ragVersionHash: true,
+			lessonId: true
 		}
 	});
+	return [lesson, updatedLesson];
 }

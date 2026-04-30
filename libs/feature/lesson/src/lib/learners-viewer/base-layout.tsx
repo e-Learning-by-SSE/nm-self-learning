@@ -40,7 +40,7 @@ export function BaseLessonLayout({ lesson, title, playlistArea, children }: Base
 			<FloatingTutorButton
 				onToggle={tutorState.toggleTutor}
 				disabled={tutorState.isAnimating}
-				hideToggle={tutorState.hideToggle}
+				hideToggle={tutorState.hideToggle || !tutorState.config}
 			/>
 			<AiTutor tutorState={tutorState} />
 		</LessonOutlineContext.Provider>

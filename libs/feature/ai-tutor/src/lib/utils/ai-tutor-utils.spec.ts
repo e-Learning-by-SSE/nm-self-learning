@@ -28,7 +28,7 @@ import type {
 	PageContext,
 	Message,
 	ContextPayload,
-	LessonwithoutCourseContextPayload
+	LessonWithoutCourseContextPayload
 } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -198,7 +198,7 @@ describe("fetchContextPayload", () => {
 				type: "lesson",
 				lessonId: "lesson-xyz",
 				title: "Standalone"
-			} satisfies LessonwithoutCourseContextPayload);
+			} satisfies LessonWithoutCourseContextPayload);
 		});
 
 		it("returns null when the standalone lesson is not found", async () => {

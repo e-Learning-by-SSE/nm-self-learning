@@ -1,4 +1,10 @@
-import { ChromaClient, Collection, EmbeddingFunction, registerEmbeddingFunction } from "chromadb";
+import {
+	ChromaClient,
+	Collection,
+	EmbeddingFunction,
+	registerEmbeddingFunction,
+	knownEmbeddingFunctions
+} from "chromadb";
 import { RAG_CONFIG } from "../config/rag-config";
 import { DocumentChunk, RetrievalResult, CircuitBreakerState } from "../types/chunk";
 import type { IEmbeddingService } from "../types/embedding";
@@ -61,7 +67,15 @@ class CustomEmbeddingFunction implements EmbeddingFunction {
 }
 
 // Register once so the client can round-trip the config through the known-function registry.
-registerEmbeddingFunction(CustomEmbeddingFunction.FUNCTION_NAME, CustomEmbeddingFunction as never);
+// Guard against double-registration: Next.js may re-evaluate this module (hot reload, multiple
+// compilations) while the ChromaDB registry Map persists in the same process, causing a
+// ChromaValueError on the second call to registerEmbeddingFunction.
+if (!knownEmbeddingFunctions.has(CustomEmbeddingFunction.FUNCTION_NAME)) {
+	registerEmbeddingFunction(
+		CustomEmbeddingFunction.FUNCTION_NAME,
+		CustomEmbeddingFunction as never
+	);
+}
 
 const CUSTOM_EMBEDDING_FUNCTION = new CustomEmbeddingFunction();
 
@@ -297,7 +311,9 @@ export class VectorStore {
 	 */
 	async lessonExists(lessonId: string): Promise<boolean> {
 		await this.initialize(true);
+
 		const collectionName = `${RAG_CONFIG.VECTOR_STORE.COLLECTION_PREFIX}${lessonId}`;
+
 		try {
 			await this.client?.getCollection({
 				name: collectionName,

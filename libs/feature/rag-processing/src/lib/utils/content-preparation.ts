@@ -1,4 +1,4 @@
-import { downloadMultiple } from "@self-learning/rag-processing";
+import { downloadMultiple } from "./download";
 import { LessonContent, Video } from "@self-learning/types";
 
 /**
@@ -41,7 +41,7 @@ export async function prepareRagContent(
 
 	const transcriptTexts = content
 		.filter((item): item is Video => item.type === "video" && !!item.value.subtitle?.src)
-		.map(item => extractPlainTextFromVtt(item.value.subtitle?.src ?? ""))
-	
+		.map(item => extractPlainTextFromVtt(item.value.subtitle?.src ?? ""));
+
 	return { pdfBuffers, articleTexts, transcriptTexts };
 }

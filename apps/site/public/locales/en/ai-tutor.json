@@ -17,5 +17,13 @@
     "Backend server is taking too long to respond": "Backend server is taking too long to respond",
     "Unknown error": "Unknown error",
     "Message Failed": "Message Failed",
-    "Failed to communicate with LLM server": "Failed to communicate with LLM server"
+    "Failed to communicate with LLM server": "Failed to communicate with LLM server",
+    "AI Tutor Consent": "AI Tutor Consent",
+    "AI Tutor Consent Subtitle": "Please review and confirm your consent before using AI Tutor.",
+    "Consent Granted": "Consent granted",
+    "Consent Denied": "Consent denied",
+    "Consent Required": "Consent required",
+    "Consent Pending": "Consent pending",
+    "Message input": "Message input",
+    "Send message": "Send message"
 }
