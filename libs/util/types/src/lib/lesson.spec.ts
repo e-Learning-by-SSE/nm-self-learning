@@ -12,7 +12,8 @@ const minValidLesson: Lesson = {
 	lessonType: LessonType.TRADITIONAL,
 	selfRegulatedQuestion: null,
 	requires: [],
-	provides: []
+	provides: [],
+	ragEnabled: true
 };
 
 describe("lessonSchema", () => {
@@ -98,6 +99,7 @@ describe("lessonSchema", () => {
 			    "licenseId": 1,
 			    "provides": Array [],
 			    "quiz": null,
+			    "ragEnabled": true,
 			    "requires": Array [],
 			    "selfRegulatedQuestion": null,
 			    "slug": "slug-1",

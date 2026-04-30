@@ -14,6 +14,21 @@ jest.mock("@self-learning/database", () => ({
 	}
 }));
 
+jest.mock("@self-learning/rag-processing", () => ({
+	__esModule: true,
+	getRagVersionHash: jest.fn(() => "mock-hash"),
+	prepareRagContent: jest.fn().mockResolvedValue({
+		pdfBuffers: [],
+		articleTexts: [],
+		transcriptTexts: []
+	}),
+	deleteEmbedding: jest.fn().mockResolvedValue(undefined),
+	vectorStore: {
+		lessonExists: jest.fn().mockResolvedValue(false),
+		deleteLesson: jest.fn().mockResolvedValue(undefined)
+	}
+}));
+
 function prepare(user: Partial<UserFromSession>) {
 	const ctx: Context & { user: UserFromSession } = {
 		user: {

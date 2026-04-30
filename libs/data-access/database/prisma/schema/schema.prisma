@@ -175,11 +175,13 @@ enum JobStatus {
 }
 
 // Stored progress of jobs, may be deleted after a while (e.g. 1 day); can be used to watch if job is still running
+// context stores JSON result for ragRetrieve jobs
 model JobQueue {
     id        String    @id
     jobType   String
     status    JobStatus
     // Only to report errors when job is aborted
     cause     String?
+    context   String?
     updatedAt DateTime  @updatedAt
 }
