@@ -47,7 +47,7 @@ export const appRouter = t.router({
 	events: userEventRouter,
 	notification: notificationRouter,
 	llmConfig: llmConfigRouter,
-	permission: permissionRouter
+	permission: permissionRouter,
 	aiTutor: aiTutorRouter
 });
 

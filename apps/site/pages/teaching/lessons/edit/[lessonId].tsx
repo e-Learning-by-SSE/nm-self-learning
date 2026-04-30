@@ -51,7 +51,7 @@ export const getServerSideProps = withTranslations(
 							}
 						}
 					}
-				}
+				},
 				ragEnabled: true
 			}
 		});
@@ -102,7 +102,7 @@ export const getServerSideProps = withTranslations(
 				accessLevel: p.accessLevel,
 				groupId: p.group.id,
 				groupName: p.group.name
-			}))
+			})),
 			ragEnabled: lesson.ragEnabled
 		};
 

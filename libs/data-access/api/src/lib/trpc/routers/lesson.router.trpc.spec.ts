@@ -12,10 +12,12 @@ import { AccessLevel, LessonType } from "@prisma/client";
 jest.mock("@self-learning/database", () => ({
 	__esModule: true,
 	database: {
+		$transaction: jest.fn(),
 		lesson: {
 			delete: jest.fn(),
 			update: jest.fn(),
-			create: jest.fn()
+			create: jest.fn(),
+			findUnique: jest.fn()
 		},
 		permission: {
 			findMany: jest.fn()
@@ -31,6 +33,8 @@ jest.mock("../../permissions/lesson.utils", () => ({
 
 jest.mock("../../permissions/permission.service", () => ({
 	getEffectiveAccess: jest.fn()
+}));
+
 jest.mock("@self-learning/rag-processing", () => ({
 	__esModule: true,
 	getRagVersionHash: jest.fn(() => "mock-hash"),
@@ -79,6 +83,7 @@ describe("tRPC API of Lesson Router", () => {
 			meta: {},
 			authors: [{ username: "author1" }],
 			licenseId: null,
+			ragEnabled: false,
 			requires: [
 				{
 					name: "Resource 1",
@@ -149,7 +154,7 @@ describe("tRPC API of Lesson Router", () => {
 					]
 				})
 			).rejects.toMatchObject({
-				code: "BAD_REQUEST",
+				code: "FORBIDDEN",
 				message: "requires at least one FULL permission."
 			} as Partial<TRPCError>);
 			expect(database.lesson.create).not.toHaveBeenCalled();
@@ -247,7 +252,7 @@ describe("tRPC API of Lesson Router", () => {
 		});
 
 		it("should update lesson if user has EDIT access and permissions are unchanged", async () => {
-			const { caller } = prepare({});
+			const { caller } = prepare({ memberships: [1] });
 
 			(getEffectiveAccess as jest.Mock).mockResolvedValue({
 				accessLevel: AccessLevel.EDIT,
@@ -256,6 +261,20 @@ describe("tRPC API of Lesson Router", () => {
 			(database.permission.findMany as jest.Mock).mockResolvedValue([
 				{ groupId: 1, accessLevel: AccessLevel.FULL }
 			]);
+			(database.lesson.findUnique as jest.Mock).mockResolvedValue({
+				ragVersionHash: "old-hash",
+				ragEnabled: false
+			});
+			(database.lesson.update as jest.Mock).mockResolvedValue({
+				lessonId: defaultLesson.lessonId,
+				slug: defaultLesson.lesson.slug,
+				title: defaultLesson.lesson.title,
+				ragVersionHash: "new-hash",
+				ragEnabled: false
+			});
+			(database.$transaction as jest.Mock) = jest.fn(async operations =>
+				Promise.all(operations)
+			);
 
 			await expect(caller.edit(defaultLesson)).resolves.toBeDefined();
 			expect(database.lesson.update).toHaveBeenCalledTimes(1);
@@ -271,6 +290,23 @@ describe("tRPC API of Lesson Router", () => {
 			(database.permission.findMany as jest.Mock).mockResolvedValue([
 				{ groupId: 1, accessLevel: AccessLevel.EDIT }
 			]);
+
+			(database.lesson.findUnique as jest.Mock).mockResolvedValue({
+				ragVersionHash: "old-hash",
+				ragEnabled: false
+			});
+
+			(database.lesson.update as jest.Mock).mockResolvedValue({
+				lessonId: defaultLesson.lessonId,
+				slug: defaultLesson.lesson.slug,
+				title: defaultLesson.lesson.title,
+				ragVersionHash: "new-hash",
+				ragEnabled: false
+			});
+
+			(database.$transaction as jest.Mock).mockImplementation(async operations =>
+				Promise.all(operations)
+			);
 
 			await expect(caller.edit(defaultLesson)).resolves.toBeDefined();
 			expect(database.lesson.update).toHaveBeenCalledTimes(1);

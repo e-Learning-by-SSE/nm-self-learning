@@ -258,18 +258,18 @@ export const lessonRouter = t.router({
 		// make sure at least one permission is FULL
 		if (input.permissions.filter(p => p.accessLevel === AccessLevel.FULL).length === 0) {
 			throw new TRPCError({
-				code: "BAD_REQUEST",
+				code: "FORBIDDEN",
 				message: "requires at least one FULL permission."
 			});
 		}
 		// can create if user is a member of at least one group
 		if (!(await canCreate(ctx.user))) {
 			throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
-    }
+		}
 		const ragCheck = input.ragEnabled ?? true;
 		let hash: string | null = null;
 		if (ragCheck && input.content.length) {
-		 hash = getRagVersionHash(JSON.stringify(input.content));
+			hash = getRagVersionHash(JSON.stringify(input.content));
 		}
 		const createdLesson = await database.lesson.create({
 			data: {
@@ -282,7 +282,7 @@ export const lessonRouter = t.router({
 				content: input.content as Prisma.InputJsonArray,
 				lessonId: getRandomId(),
 				meta: createLessonMeta(input) as unknown as Prisma.JsonObject,
-        ragVersionHash: hash,
+				ragVersionHash: hash,
 				ragEnabled: input.ragEnabled ?? true,
 				permissions: {
 					create: input.permissions.map(p => ({
@@ -308,7 +308,7 @@ export const lessonRouter = t.router({
 		return createdLesson;
 	}),
 	edit: authProcedure
-    .input(z.object({ lessonId: z.string(), lesson: lessonSchema }))
+		.input(z.object({ lessonId: z.string(), lesson: lessonSchema }))
 		.mutation(async ({ input, ctx }) => {
 			// get user access level to resource - must be at least EDIT
 			const { accessLevel: actualAccess } = await getEffectiveAccess(ctx.user, {
@@ -356,14 +356,14 @@ export const lessonRouter = t.router({
 					});
 				}
 			}
-			
+
 			const ragCheck = input.lesson.ragEnabled ?? true;
 			const hash =
 				ragCheck && input.lesson.content.length
 					? getRagVersionHash(JSON.stringify(input.lesson.content))
 					: null;
-			
-			// update		   
+
+			// update
 			/**
 			 * Fetch existing state and apply update in a single transaction to avoid
 			 * a race condition where a concurrent edit could change ragEnabled between
@@ -399,7 +399,10 @@ export const lessonRouter = t.router({
 							deleteMany: { groupId: { notIn: perms.map(p => p.groupId) } },
 							upsert: perms.map(p => ({
 								where: {
-									groupId_lessonId: { lessonId: input.lessonId, groupId: p.groupId }
+									groupId_lessonId: {
+										lessonId: input.lessonId,
+										groupId: p.groupId
+									}
 								},
 								create: p,
 								update: {
@@ -443,7 +446,7 @@ export const lessonRouter = t.router({
 		.mutation(async ({ input, ctx }) => {
 			if (!(await canDelete(ctx.user, input.lessonId))) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
-      }
+			}
 			await deleteEmbedding(input.lessonId);
 			return await database.lesson.delete({ where: { lessonId: input.lessonId } });
 		}),
