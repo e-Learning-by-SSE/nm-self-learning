@@ -26,6 +26,7 @@ function prepare() {
 			role: "USER",
 			isAuthor: false,
 			avatarUrl: null,
+			memberships: [],
 			featureFlags: {
 				learningDiary: false,
 				learningStatistics: false,

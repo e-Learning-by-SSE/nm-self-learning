@@ -1,4 +1,4 @@
-import { restQuery, createLessonMock } from "@self-learning/util/testing";
+import { callOpenApi, createLessonMock } from "@self-learning/util/testing";
 import { database } from "@self-learning/database";
 import { UserFromSession } from "../context";
 
@@ -29,8 +29,12 @@ describe("REST API of Lesson Router", () => {
 		role: "ADMIN",
 		isAuthor: true,
 		avatarUrl: null,
-		enabledFeatureLearningDiary: false,
-		enabledLearningStatistics: false
+		featureFlags: {
+			learningDiary: false,
+			learningStatistics: false,
+			experimental: false
+		},
+		memberships: []
 	};
 
 	describe("[GET]: /lessons", () => {
@@ -201,13 +205,14 @@ describe("REST API of Lesson Router", () => {
 		it("should list all lessons (paginated) if no filter specified", async () => {
 			const pageSize = 20;
 
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
+				path: "/lessons",
 				query: {
-					trpc: ["lessons"],
 					page: JSON.stringify(1),
 					pageSize: JSON.stringify(pageSize)
 				},
+				headers: { "content-type": "application/json" },
 				user: privilegedUser
 			});
 
@@ -246,10 +251,10 @@ describe("REST API of Lesson Router", () => {
 			const pageSize = 20;
 			const titleFilter = "5"; // Should match "Lesson 5"
 
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
+				path: "/lessons",
 				query: {
-					trpc: ["lessons"],
 					page: JSON.stringify(1),
 					pageSize: JSON.stringify(pageSize),
 					title: titleFilter
@@ -296,10 +301,10 @@ describe("REST API of Lesson Router", () => {
 		it("should accept filter parameter: authorName", async () => {
 			const pageSize = 20;
 
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
+				path: "/lessons",
 				query: {
-					trpc: ["lessons"],
 					page: JSON.stringify(1),
 					pageSize: JSON.stringify(pageSize),
 					authorName: "Author1"
@@ -353,10 +358,10 @@ describe("REST API of Lesson Router", () => {
 			const pageSize = 5;
 			const page = 2;
 
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
+				path: "/lessons",
 				query: {
-					trpc: ["lessons"],
 					page: JSON.stringify(page),
 					pageSize: JSON.stringify(pageSize)
 				},
@@ -396,10 +401,10 @@ describe("REST API of Lesson Router", () => {
 		it("should return 401 on unauthorized calls", async () => {
 			const pageSize = 20;
 
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
+				path: "/lessons",
 				query: {
-					trpc: ["lessons"],
 					page: JSON.stringify(1),
 					pageSize: JSON.stringify(pageSize)
 				}
@@ -438,9 +443,9 @@ describe("REST API of Lesson Router", () => {
 		});
 
 		it("should return lesson information for valid slug", async () => {
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
-				query: { trpc: ["lessons", lessonMock.slug] },
+				path: `/lessons/${lessonMock.slug}`,
 				user: privilegedUser
 			});
 
@@ -462,9 +467,9 @@ describe("REST API of Lesson Router", () => {
 				description: null
 			}));
 
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
-				query: { trpc: ["lessons", lessonMock.slug] },
+				path: `/lessons/${lessonMock.slug}`,
 				user: privilegedUser
 			});
 
@@ -478,9 +483,9 @@ describe("REST API of Lesson Router", () => {
 		});
 
 		it("should return 404 for invalid slug", async () => {
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
-				query: { trpc: ["lessons", "invalid-slug-id"] },
+				path: `/lessons/invalid-slug-id`,
 				user: privilegedUser
 			});
 
@@ -492,9 +497,9 @@ describe("REST API of Lesson Router", () => {
 		});
 
 		it("should return 401 on unauthorized calls", async () => {
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
-				query: { trpc: ["lessons", lessonMock.slug] }
+				path: `/lessons/${lessonMock.slug}/progress`
 			});
 
 			expect(response.statusCode).toBe(401);
@@ -516,8 +521,12 @@ describe("REST API of Lesson Router", () => {
 			role: "USER",
 			isAuthor: true,
 			avatarUrl: null,
-			enabledFeatureLearningDiary: false,
-			enabledLearningStatistics: false
+			featureFlags: {
+				learningDiary: false,
+				learningStatistics: false,
+				experimental: false
+			},
+			memberships: []
 		};
 
 		const lessonAuthor2: UserFromSession = {
@@ -526,8 +535,12 @@ describe("REST API of Lesson Router", () => {
 			role: "USER",
 			isAuthor: true,
 			avatarUrl: null,
-			enabledFeatureLearningDiary: false,
-			enabledLearningStatistics: false
+			featureFlags: {
+				learningDiary: false,
+				learningStatistics: false,
+				experimental: false
+			},
+			memberships: []
 		};
 
 		const nonAuthor: UserFromSession = {
@@ -536,8 +549,12 @@ describe("REST API of Lesson Router", () => {
 			role: "USER",
 			isAuthor: true,
 			avatarUrl: null,
-			enabledFeatureLearningDiary: false,
-			enabledLearningStatistics: false
+			featureFlags: {
+				learningDiary: false,
+				learningStatistics: false,
+				experimental: false
+			},
+			memberships: []
 		};
 
 		const adminNonAuthor: UserFromSession = {
@@ -546,8 +563,12 @@ describe("REST API of Lesson Router", () => {
 			role: "ADMIN",
 			isAuthor: true,
 			avatarUrl: null,
-			enabledFeatureLearningDiary: false,
-			enabledLearningStatistics: false
+			featureFlags: {
+				learningDiary: false,
+				learningStatistics: false,
+				experimental: false
+			},
+			memberships: []
 		};
 
 		beforeEach(() => {
@@ -600,10 +621,10 @@ describe("REST API of Lesson Router", () => {
 		});
 
 		it("should return progress for valid students only", async () => {
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
+				path: `/lessons/${lessonMock.slug}/progress`,
 				query: {
-					trpc: ["lessons", "test-lesson", "progress"],
 					usernames: "student1,student2,student3" // student3 doesn't exist
 				},
 				user: lessonAuthor1 // First author
@@ -618,10 +639,10 @@ describe("REST API of Lesson Router", () => {
 		});
 
 		it("should allow access for second lesson author", async () => {
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
+				path: `/lessons/${lessonMock.slug}/progress`,
 				query: {
-					trpc: ["lessons", "test-lesson", "progress"],
 					usernames: "student1,student2"
 				},
 				user: lessonAuthor2 // Second author should also have access
@@ -635,10 +656,10 @@ describe("REST API of Lesson Router", () => {
 		});
 
 		it("should return empty array when no usernames provided", async () => {
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
+				path: `/lessons/${lessonMock.slug}/progress`,
 				query: {
-					trpc: ["lessons", "test-lesson", "progress"]
 					// No usernames parameter
 				},
 				user: lessonAuthor1
@@ -649,10 +670,10 @@ describe("REST API of Lesson Router", () => {
 		});
 
 		it("should return empty array for empty usernames string", async () => {
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
+				path: `/lessons/${lessonMock.slug}/progress`,
 				query: {
-					trpc: ["lessons", "test-lesson", "progress"],
 					usernames: "" // Empty string
 				},
 				user: lessonAuthor1
@@ -663,10 +684,10 @@ describe("REST API of Lesson Router", () => {
 		});
 
 		it("should handle usernames with whitespace correctly", async () => {
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
+				path: `/lessons/${lessonMock.slug}/progress`,
 				query: {
-					trpc: ["lessons", "test-lesson", "progress"],
 					usernames: " student1 , student2 " // Extra whitespace
 				},
 				user: lessonAuthor1
@@ -680,10 +701,10 @@ describe("REST API of Lesson Router", () => {
 		});
 
 		it("should return 403 for non-author users", async () => {
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
+				path: `/lessons/${lessonMock.slug}/progress`,
 				query: {
-					trpc: ["lessons", "test-lesson", "progress"],
 					usernames: "student1,student2"
 				},
 				user: nonAuthor // This user is NOT an author of the lesson
@@ -697,10 +718,10 @@ describe("REST API of Lesson Router", () => {
 		});
 
 		it("should return 403 for admin users who are not lesson authors", async () => {
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
+				path: `/lessons/${lessonMock.slug}/progress`,
 				query: {
-					trpc: ["lessons", "test-lesson", "progress"],
 					usernames: "student1,student2"
 				},
 				user: adminNonAuthor // Admin but NOT author of this lesson
@@ -714,10 +735,10 @@ describe("REST API of Lesson Router", () => {
 		});
 
 		it("should return 401 for unauthorized requests", async () => {
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
+				path: `/lessons/${lessonMock.slug}/progress`,
 				query: {
-					trpc: ["lessons", "test-lesson", "progress"],
 					usernames: "student1,student2"
 				}
 				// No user provided at all
@@ -732,10 +753,10 @@ describe("REST API of Lesson Router", () => {
 				return []; // No completed lessons
 			});
 
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
+				path: `/lessons/${lessonMock.slug}/progress`,
 				query: {
-					trpc: ["lessons", "test-lesson", "progress"],
 					usernames: "student1,student2"
 				},
 				user: lessonAuthor1
@@ -752,10 +773,10 @@ describe("REST API of Lesson Router", () => {
 			// Override the findUnique mock to return null (lesson doesn't exist)
 			(database.lesson.findUnique as jest.Mock).mockImplementationOnce(async () => null);
 
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
+				path: `/lessons/non-existent-lesson/progress`,
 				query: {
-					trpc: ["lessons", "non-existent-lesson", "progress"],
 					usernames: "student1,student2"
 				},
 				user: lessonAuthor1
@@ -772,10 +793,10 @@ describe("REST API of Lesson Router", () => {
 			// Override the user.findMany mock to return empty array
 			(database.user.findMany as jest.Mock).mockImplementationOnce(async () => []);
 
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
+				path: `/lessons/${lessonMock.slug}/progress`,
 				query: {
-					trpc: ["lessons", "test-lesson", "progress"],
 					usernames: "nonexistent1,nonexistent2"
 				},
 				user: lessonAuthor1
