@@ -96,6 +96,7 @@ model Course {
     authors              Author[]            @relation("AuthorToCourse")
     specializations      Specialization[]    @relation("CourseToSpecialization")
     learningDiaryEntries LearningDiaryPage[]
+    permissions          Permission[]
 }
 
 model Enrollment {
@@ -136,8 +137,9 @@ model Lesson {
     licenseId             Int?
     lessonType            LessonType                    @default(TRADITIONAL)
     selfRegulatedQuestion String?
-    requires              Skill[]                       @relation("requiredSkills")
-    provides              Skill[]                       @relation("providedSkills")
+    requires              Skill[]           @relation("requiredSkills")
+    provides              Skill[]           @relation("providedSkills")
+    permissions           Permission[]
     lessonStart           LearningDiaryLearnedLessons[]
     ragEnabled            Boolean                       @default(true)
     ragVersionHash        String?                       @db.VarChar(128)

@@ -9,7 +9,8 @@ import {
 	isExperimentActive,
 	NotificationSettingsForm,
 	PersonalSettingsForm,
-	I18N_NAMESPACE as NS_SETTINGS
+	I18N_NAMESPACE as NS_SETTINGS,
+	PermissionsSettingsForm
 } from "@self-learning/profile";
 import { ResolvedValue } from "@self-learning/types";
 import { showToast, Toggle } from "@self-learning/ui/common";
@@ -53,6 +54,7 @@ export default function SettingsPage(props: PageProps) {
 
 	const { mutateAsync: updateUser } = trpc.me.update.useMutation();
 	const { mutateAsync: updateFeatures } = trpc.me.updateFeatureFlags.useMutation();
+	const { mutateAsync: updateDefaultGroup } = trpc.me.updateDefaultGroup.useMutation();
 	const { mutateAsync: updateNotificationSettings } =
 		trpc.notification.upsertNotificationSetting.useMutation();
 
@@ -62,6 +64,7 @@ export default function SettingsPage(props: PageProps) {
 
 	const router = useRouter();
 	const { data: session } = useRequiredSession();
+	const isAdmin = session?.user.role === "ADMIN";
 
 	const { loginRedirect } = useLoginRedirect();
 
@@ -87,6 +90,35 @@ export default function SettingsPage(props: PageProps) {
 
 			if (error instanceof TRPCClientError) {
 				showToast({ type: "error", title: t_common("Error"), subtitle: error.message });
+			}
+		}
+	};
+
+	const onPermissionSettingsSubmit: Parameters<
+		typeof PermissionsSettingsForm
+	>[0]["onSubmit"] = async update => {
+		if (!update) return;
+		try {
+			setSettings(prev => {
+				const newSettings = { ...prev, ...update };
+				console.log("Updating default group to", update.defaultGroup);
+				void updateDefaultGroup(update);
+				return newSettings;
+			});
+			setHasSettingsChanged(true);
+			showToast({
+				type: "success",
+				title: t_common("Information Updated"),
+				subtitle: update.defaultGroup?.name ?? "Empty"
+			});
+			router.replace(router.asPath);
+		} catch (error) {
+			if (error instanceof Error) {
+				showToast({
+					type: "error",
+					title: t_common("Settings Could not be Saved!"),
+					subtitle: error.message ?? ""
+				});
 			}
 		}
 	};
@@ -199,6 +231,15 @@ export default function SettingsPage(props: PageProps) {
 					onChange={onFeatureChange}
 				/>
 			</SettingSection>
+			<SettingSection title={t_common("Permissions")}>
+				{session?.user.memberships.length !== 0 && (
+					<PermissionsSettingsForm
+						personalSettings={settings}
+						isAdmin={isAdmin}
+						onSubmit={onPermissionSettingsSubmit}
+					/>
+				)}
+			</SettingSection>
 			<SettingSection title="Benachrichtigungen">
 				{props.experimentStatus?.experimentalFeatures && (
 					<NotificationSettingsForm
@@ -216,7 +257,7 @@ export default function SettingsPage(props: PageProps) {
 					<ExperimentShortInfo {...props.experimentStatus} />
 				)}
 			</SettingSection>
-			{session?.user.role === "ADMIN" && (
+			{isAdmin && (
 				<SettingSection title={t("Developer Options")}>
 					<Toggle
 						value={props.settings.featureFlags.experimental}

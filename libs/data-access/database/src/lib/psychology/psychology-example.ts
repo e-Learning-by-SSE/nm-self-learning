@@ -7,6 +7,7 @@ import * as PerceptionOfSmelling from "./PerceptionOfSmelling";
 import * as PerceptionOfTasting from "./PerceptionOfTasting";
 import * as FundamentalsOfAttention from "./FundamentalsOfAttention";
 import * as FundamentalsOfConsciousness from "./FundamentalsOfConsciousness";
+import { GroupRole } from "@prisma/client";
 
 const chapters = [
 	FundamentalsOfPerception.chapters,
@@ -28,16 +29,20 @@ const courses = [
 	FundamentalsOfConsciousness.course
 ];
 
+const group = { name: "Psychology" };
+
 const authors = [
 	createAuthor({
 		userName: "zaepernickrothe-demo",
 		name: "Ute Zaepernick-Rothe",
 		imgUrl: "https://lsf.uni-hildesheim.de/qisserver/rds?state=medialoader&application=lsf&objectid=15528",
 		lessons: chapters,
-		courses: courses
+		courses: courses,
+		group: group.name,
+		role: GroupRole.ADMIN
 	})
 ];
 
 export async function psychologyExample(): Promise<void> {
-	await seedCaseStudy("Psychology", courses, chapters, authors);
+	await seedCaseStudy("Psychology", courses, chapters, group, authors);
 }

@@ -6,6 +6,9 @@ import {
 	createTextQuestion,
 	createVideo
 } from "../seed-functions";
+import { faker } from "@faker-js/faker";
+
+const courseId = faker.string.alphanumeric(8);
 
 export const chapters = [
 	{
@@ -14,6 +17,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Aufbau und Funktion des Auges",
 				subtitle:
 					"Aktivierungsfrage: Welche Aussage zur visuellen Wahrnehmung ist **falsch**?",
@@ -100,6 +104,7 @@ export const chapters = [
 			}),
 
 			createLesson({
+				courseId,
 				title: "Schärfe des Sehens",
 				subtitle:
 					"Aktivierungsfrage: Welche der folgenden Reizqualität(en) kann der Mensch  visuell wahrnehmen?",
@@ -135,6 +140,7 @@ export const chapters = [
 			}),
 
 			createLesson({
+				courseId,
 				title: "Dunkeladaption",
 				subtitle: "Aktivierungsfrage: Beim Übertritt von Helligkeit in Dunkelheit…",
 				description:
@@ -200,6 +206,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Rezeptives Feld",
 				subtitle:
 					"Aktivierungsfrage: An welchem der folgenden Phänomene kann es liegen, wenn wir an einer Stelle der Retina einen visuellen Reiz nicht erkennen können?",
@@ -234,6 +241,7 @@ export const chapters = [
 			}),
 
 			createLesson({
+				courseId,
 				title: "Laterale Hemmung und Kontrastverstärkung",
 				subtitle:
 					"Aktivierungsfrage: Was bewirkt die laterale Hemmung der retinalen Ganglienzellen im visuellen System?",
@@ -274,6 +282,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Corpus geniculatum laterale",
 				subtitle:
 					"Aktivierungsfrage: Wie funktioniert die Weiterverarbeitung des Seheindrucks vom Auge bis ins Gehirn?",
@@ -307,6 +316,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Visueller Cortex",
 				subtitle: "Aktivierungsfrage: Was ist der visuelle Cortex?",
 				description:
@@ -338,6 +348,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Organisation des Visuellen Cortex in Säulen",
 				subtitle: "Aktivierungsfrage: Wie ist der visuelle Cortex organisiert?",
 				description:
@@ -376,6 +387,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Modell des Farbraumes",
 				subtitle:
 					"Aktivierungsfrage: Wie funktioniert die additive und subtraktive Farbmischung?",
@@ -409,6 +421,7 @@ export const chapters = [
 			}),
 
 			createLesson({
+				courseId,
 				title: "Spektralfarben und Farbmischung",
 				subtitle: "Aktivierungsfrage: Was ist weißes Licht?",
 				description:
@@ -441,6 +454,7 @@ export const chapters = [
 			}),
 
 			createLesson({
+				courseId,
 				title: "Drei-Farben-Theorie von Young und Helmholtz",
 				subtitle:
 					"Aktivierungsfrage: Aus welchen Farben werden alle wahrgenommen Farbtöne laut Drei-Farben-Theorie zusammengesetzt?",
@@ -475,6 +489,7 @@ export const chapters = [
 			}),
 
 			createLesson({
+				courseId,
 				title: "Gegenfarbentheorie (*opponent-process theory*) von Hering",
 				subtitle: "Aktivierungsfrage: Was besagt die Gegenfarbentheorie?",
 				description:
@@ -508,6 +523,7 @@ export const chapters = [
 			}),
 
 			createLesson({
+				courseId,
 				title: "Physiologische Basis der Farbwahrnehmung und die Zweistufentheorie",
 				subtitle: "Aktivierungsfrage: Was besagt die Gegenfarbentheorie?",
 				description:
@@ -547,6 +563,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Monokulare Tiefenhinweise",
 				subtitle:
 					"Aktivierungsfrage: Wie funktioniert Tiefenwahrnehmung und räumliches Sehen?",
@@ -580,6 +597,7 @@ export const chapters = [
 			}),
 
 			createLesson({
+				courseId,
 				title: "Binokulare Tiefenhinweise",
 				subtitle: "Aktivierungsfrage: Was versteht man unter Querdisparation?",
 				description:
@@ -612,6 +630,7 @@ export const chapters = [
 			}),
 
 			createLesson({
+				courseId,
 				title: "Zufallsstereogramme und binokulare Neurone",
 				subtitle: "Aktivierungsfrage zu. Zufallsstereogramme und binokulare Neurone",
 				description:
@@ -650,6 +669,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Helligkeitskonstanz",
 				subtitle: "Aktivierungsfrage zu: Helligkeitskonstanz",
 				description:
@@ -681,6 +701,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Farbkonstanz",
 				subtitle: "Aktivierungsfrage zu: Farbkonstanz?",
 				description:
@@ -713,6 +734,7 @@ export const chapters = [
 			}),
 
 			createLesson({
+				courseId,
 				title: "Größenkonstanz",
 				subtitle: "Aktivierungsfrage zu: Größenkonstanz?",
 				description:
@@ -744,6 +766,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Form- und Lokationskonstanz",
 				subtitle: "Aktivierungsfrage zu: Form- und Lokationskonstanz?",
 				description:
@@ -782,6 +805,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Ponzo-Täuschung",
 				subtitle: "Aktivierungsfrage zu: Ponzo-Täuschung",
 				description:
@@ -813,6 +837,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Ames`sche Raum",
 				subtitle: "Aktivierungsfrage zu: Ames`sche Raum?",
 				description:
@@ -845,6 +870,7 @@ export const chapters = [
 			}),
 
 			createLesson({
+				courseId,
 				title: "Müller-Lyer`sche Täuschung",
 				subtitle: "Aktivierungsfrage zu: Müller-Lyer`sche Täuschung?",
 				description:
@@ -876,6 +902,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Zöllner`sche Täuschung",
 				subtitle: "Aktivierungsfrage zu: Zöllner`sche Täuschung?",
 				description:
@@ -908,6 +935,7 @@ export const chapters = [
 			}),
 
 			createLesson({
+				courseId,
 				title: "Poggendorf`sche Täuschung",
 				subtitle: "Aktivierungsfrage zu: Poggendorf`sche Täuschung?",
 				description:
@@ -939,6 +967,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Der wahrnehmungsökologische Ansatz",
 				subtitle: "Aktivierungsfrage zu: Der wahrnehmungsökologische Ansatz?",
 				description:
@@ -977,6 +1006,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Figur-Grund-Trennung und Gestaltprinzipien",
 				subtitle:
 					"Aktivierungsfrage: Welches Gestaltgesetz bewirkt, dass Sie hier (Bild einfügen) ein Rechteck und ein Dreieck sehen?",
@@ -1035,6 +1065,7 @@ export const chapters = [
 			}),
 
 			createLesson({
+				courseId,
 				title: "Perzept und Wahrnehmungserwartung",
 				subtitle: "Aktivierungsfrage zu: Perzept und Wahrnehmungserwartung?",
 				description:
@@ -1067,6 +1098,7 @@ export const chapters = [
 			}),
 
 			createLesson({
+				courseId,
 				title: "Späte Prozesse der Objekterkennung",
 				subtitle: "Aktivierungsfrage zu: Späte Prozesse der Objekterkennung?",
 				description:
@@ -1099,6 +1131,7 @@ export const chapters = [
 			}),
 
 			createLesson({
+				courseId,
 				title: "Konnektionistische Netzwerke",
 				subtitle: "Aktivierungsfrage zu: Konnektionistische Netzwerke?",
 				description:
@@ -1131,6 +1164,7 @@ export const chapters = [
 			}),
 
 			createLesson({
+				courseId,
 				title: "Erkennung natürlicher Objekte",
 				subtitle: "Aktivierungsfrage zu: Erkennung natürlicher Objekte?",
 				description:
@@ -1169,6 +1203,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Stroboskopische oder Scheinbewegung",
 				subtitle: "Aktivierungsfrage zu: Stroboskopische oder Scheinbewegung?",
 				description:
@@ -1201,6 +1236,7 @@ export const chapters = [
 			}),
 
 			createLesson({
+				courseId,
 				title: "Induzierte Bewegung",
 				subtitle: "Aktivierungsfrage zu: Induzierte Bewegung?",
 				description:
@@ -1233,6 +1269,7 @@ export const chapters = [
 			}),
 
 			createLesson({
+				courseId,
 				title: "Reale Bewegung",
 				subtitle: "Selbstregulierter Kurs zum Thema 'Reale Bewegung'",
 				description:
@@ -1296,6 +1333,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Sensible Phasen der Wahrnehmungsentwicklung",
 				subtitle: "Aktivierungsfrage zu: Sensible Phasen der Wahrnehmungsentwicklung?",
 				description:
@@ -1328,6 +1366,7 @@ export const chapters = [
 			}),
 
 			createLesson({
+				courseId,
 				title: "Eigenbewegung als Bedingung der Tiefenwahrnehmung",
 				subtitle:
 					"Aktivierungsfrage zu: Eigenbewegung als Bedingung der Tiefenwahrnehmung?",
@@ -1361,6 +1400,7 @@ export const chapters = [
 			}),
 
 			createLesson({
+				courseId,
 				title: " Wahrnehmungs-Reaktions-Kopplungen (Auslösemechanismen)",
 				subtitle:
 					"Aktivierungsfrage zu:  Wahrnehmungs-Reaktions-Kopplungen (Auslösemechanismen)?",
@@ -1398,6 +1438,7 @@ export const chapters = [
 ];
 
 export const course = createCourse({
+	courseId,
 	subjectId: "psychologie",
 	specializationId: "wahrnehmung",
 	title: "Das Wahrnehmungssystem zum Sehen",

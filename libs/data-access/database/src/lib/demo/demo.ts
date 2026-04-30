@@ -1,6 +1,9 @@
 /* eslint-disable quotes */
 import { PrismaClient } from "@prisma/client";
-import { softwareentwicklungDemoSpecialization } from "../seedSpecializations";
+import {
+	softwareentwicklungDemoGroup,
+	softwareentwicklungDemoSpecialization
+} from "../seedSpecializations";
 import { demoSubjects } from "../seedSubjects";
 import { generateEventlogDate } from "./event-log/seed-event-log";
 import { seedEvents } from "./event-seed";
@@ -20,6 +23,9 @@ export async function seedDemos(): Promise<void> {
 
 	await prisma.specialization.createMany({ data: softwareentwicklungDemoSpecialization });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Specializations");
+
+	await prisma.group.create({ data: softwareentwicklungDemoGroup });
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Groups");
 
 	await seedReactDemo();
 

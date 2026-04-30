@@ -13,7 +13,9 @@ export async function generateTokenForUser(where: Prisma.UserWhereUniqueInput) {
 			name: true,
 			role: true,
 			author: true,
-			featureFlags: true
+			featureFlags: true,
+			memberships: { select: { groupId: true } },
+			defaultGroupId: true
 		}
 	});
 
@@ -30,7 +32,9 @@ export async function generateTokenForUser(where: Prisma.UserWhereUniqueInput) {
 			learningDiary: user.featureFlags?.learningDiary ?? false,
 			learningStatistics: user.featureFlags?.learningStatistics ?? false,
 			experimental: user.featureFlags?.experimental ?? false
-		}
+		},
+		memberships: user.memberships.map(m => m.groupId),
+		defaultGroupId: user.defaultGroupId ?? undefined
 	};
 
 	const token = jwt.sign(sessionUser, sharedPrivateKey, {

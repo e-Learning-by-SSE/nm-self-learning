@@ -88,7 +88,7 @@ export function Dialog<TResult>({
 	className,
 	open = true
 }: {
-	title: string;
+	title?: string;
 	onClose: OnDialogCloseFn<TResult>;
 	children: React.ReactNode;
 	style?: CSSProperties;
@@ -110,9 +110,11 @@ export function Dialog<TResult>({
 								style={style ?? DEFAULT_DIALOG_STYLE_SIZE}
 								data-testid="Dialog"
 							>
-								<HeadlessDialogTitle className="mb-8 text-2xl">
-									{title}
-								</HeadlessDialogTitle>
+								{title && (
+									<HeadlessDialogTitle className="mb-8 text-2xl">
+										{title}
+									</HeadlessDialogTitle>
+								)}
 								{children}
 							</HeadlessDialogPanel>
 						</div>

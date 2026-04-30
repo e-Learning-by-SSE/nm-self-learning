@@ -1,4 +1,4 @@
-import { Course, Prisma } from "@prisma/client";
+import { AccessLevel, Course, Prisma } from "@prisma/client";
 import { database, save_subtitle_for_lesson, logJobProgress } from "@self-learning/database";
 import {
 	createLessonMeta,
@@ -12,6 +12,9 @@ import { differenceInHours } from "date-fns";
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
+import { greaterAccessLevel, greaterOrEqAccessLevel } from "../../permissions/permission.utils";
+import { getEffectiveAccess } from "../../permissions/permission.service";
+import { canCreate, canDelete } from "../../permissions/lesson.utils";
 import {
 	getRagVersionHash,
 	prepareRagContent,
@@ -54,11 +57,7 @@ export const lessonRouter = t.router({
 		return database.lesson.findUniqueOrThrow({
 			where: { lessonId: input.lessonId },
 			include: {
-				authors: {
-					select: {
-						username: true
-					}
-				},
+				authors: { select: { username: true } },
 				requires: {
 					select: {
 						id: true,
@@ -194,7 +193,79 @@ export const lessonRouter = t.router({
 				totalCount: count
 			};
 		}),
-	create: authProcedure.input(lessonSchema).mutation(async ({ input }) => {
+	getMyLessons: authProcedure
+		.input(
+			paginationSchema.extend({
+				title: z.string().optional()
+			})
+		)
+		.query(async ({ input, ctx }) => {
+			const pageSize = 15;
+
+			const memberships = await database.group.findMany({
+				where: { members: { some: { userId: ctx.user.id } } },
+				select: { id: true }
+			});
+
+			const where: Prisma.LessonWhereInput = {
+				title:
+					input.title && input.title.length > 0
+						? { contains: input.title, mode: "insensitive" }
+						: undefined,
+				permissions: {
+					some: {
+						group: { id: { in: memberships.map(m => m.id) } }
+					}
+				}
+			};
+
+			const [result, count] = await database.$transaction([
+				database.lesson.findMany({
+					select: {
+						slug: true,
+						title: true,
+						lessonId: true,
+						imgUrl: true,
+						permissions: {
+							select: {
+								accessLevel: true
+							}
+						}
+					},
+					...paginate(pageSize, input.page),
+					orderBy: { title: "asc" },
+					where
+				}),
+				database.lesson.count({ where })
+			]);
+
+			const res = result.map(r => ({
+				...r,
+				accessLevel: r.permissions.reduce<AccessLevel>(
+					(max, p) => (greaterAccessLevel(p.accessLevel, max) ? p.accessLevel : max),
+					r.permissions[0].accessLevel // always at least one permission due to query is present
+				)
+			}));
+
+			return {
+				result: res,
+				pageSize: pageSize,
+				page: input.page,
+				totalCount: count
+			} satisfies Paginated<unknown>;
+		}),
+	create: authProcedure.input(lessonSchema).mutation(async ({ input, ctx }) => {
+		// make sure at least one permission is FULL
+		if (input.permissions.filter(p => p.accessLevel === AccessLevel.FULL).length === 0) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: "requires at least one FULL permission."
+			});
+		}
+		// can create if user is a member of at least one group
+		if (!(await canCreate(ctx.user))) {
+			throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
+		}
 		const ragCheck = input.ragEnabled ?? true;
 		let hash: string | null = null;
 		if (ragCheck && input.content.length) {
@@ -204,21 +275,21 @@ export const lessonRouter = t.router({
 			data: {
 				...input,
 				quiz: input.quiz ? (input.quiz as Prisma.JsonObject) : Prisma.JsonNull,
-				authors: {
-					connect: input.authors.map(a => ({ username: a.username }))
-				},
+				authors: { connect: input.authors.map(a => ({ username: a.username })) },
 				licenseId: input.licenseId,
-				requires: {
-					connect: input.requires.map(r => ({ id: r.id }))
-				},
-				provides: {
-					connect: input.provides.map(r => ({ id: r.id }))
-				},
+				requires: { connect: input.requires.map(r => ({ id: r.id })) },
+				provides: { connect: input.provides.map(r => ({ id: r.id })) },
 				content: input.content as Prisma.InputJsonArray,
 				lessonId: getRandomId(),
 				meta: createLessonMeta(input) as unknown as Prisma.JsonObject,
 				ragVersionHash: hash,
-				ragEnabled: input.ragEnabled ?? true
+				ragEnabled: input.ragEnabled ?? true,
+				permissions: {
+					create: input.permissions.map(p => ({
+						accessLevel: p.accessLevel,
+						groupId: p.groupId
+					}))
+				}
 			},
 			select: {
 				lessonId: true,
@@ -237,18 +308,62 @@ export const lessonRouter = t.router({
 		return createdLesson;
 	}),
 	edit: authProcedure
-		.input(
-			z.object({
-				lessonId: z.string(),
-				lesson: lessonSchema
-			})
-		)
-		.mutation(async ({ input }) => {
+		.input(z.object({ lessonId: z.string(), lesson: lessonSchema }))
+		.mutation(async ({ input, ctx }) => {
+			// get user access level to resource - must be at least EDIT
+			const { accessLevel: actualAccess } = await getEffectiveAccess(ctx.user, {
+				lessonId: input.lessonId
+			});
+			if (!actualAccess || !greaterOrEqAccessLevel(actualAccess, AccessLevel.EDIT)) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
+			// drop display fields
+			const perms = input.lesson.permissions.map(p => {
+				return {
+					accessLevel: p.accessLevel,
+					groupId: p.groupId
+				};
+			});
+			// make sure at least one permission is FULL
+			if (perms.filter(p => p.accessLevel === AccessLevel.FULL).length === 0) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "requires at least one FULL permission."
+				});
+			}
+			// fetch existing permissions to determine diffs
+			const existingPerms = await database.permission.findMany({
+				where: { lessonId: input.lessonId },
+				select: { groupId: true, accessLevel: true }
+			});
+			// compute if premissions are equal
+			type Permission = {
+				groupId: number;
+				accessLevel: AccessLevel;
+			};
+			const toKey = (p: Permission) => `${p.groupId}|${p.accessLevel}`;
+			const keys = new Set(perms.map(toKey));
+			const equal =
+				existingPerms.length === perms.length &&
+				existingPerms.every(ep => keys.has(toKey(ep)));
+			//
+			if (!equal) {
+				// must have FULL access in the resource to change permissions
+				if (!greaterOrEqAccessLevel(actualAccess, AccessLevel.FULL)) {
+					throw new TRPCError({
+						code: "FORBIDDEN",
+						message: "Insufficient permissions to update permissions"
+					});
+				}
+			}
+
 			const ragCheck = input.lesson.ragEnabled ?? true;
 			const hash =
 				ragCheck && input.lesson.content.length
 					? getRagVersionHash(JSON.stringify(input.lesson.content))
 					: null;
+
+			// update
 			/**
 			 * Fetch existing state and apply update in a single transaction to avoid
 			 * a race condition where a concurrent edit could change ragEnabled between
@@ -279,7 +394,22 @@ export const lessonRouter = t.router({
 						},
 						meta: createLessonMeta(input.lesson) as unknown as Prisma.JsonObject,
 						ragVersionHash: hash,
-						ragEnabled: input.lesson.ragEnabled ?? true
+						ragEnabled: input.lesson.ragEnabled ?? true,
+						permissions: {
+							deleteMany: { groupId: { notIn: perms.map(p => p.groupId) } },
+							upsert: perms.map(p => ({
+								where: {
+									groupId_lessonId: {
+										lessonId: input.lessonId,
+										groupId: p.groupId
+									}
+								},
+								create: p,
+								update: {
+									accessLevel: p.accessLevel
+								}
+							}))
+						}
 					},
 					select: {
 						lessonId: true,
@@ -311,37 +441,14 @@ export const lessonRouter = t.router({
 			`;
 			return courses as Course[];
 		}),
-	deleteLesson: authorProcedure
+	deleteLesson: authProcedure
 		.input(z.object({ lessonId: z.string() }))
 		.mutation(async ({ input, ctx }) => {
-			if (ctx.user?.role === "ADMIN") {
-				await database.lesson.deleteMany({
-					where: {
-						lessonId: input.lessonId
-					}
-				});
-				await deleteEmbedding(input.lessonId);
-			} else {
-				const deleted = await database.lesson.deleteMany({
-					where: {
-						lessonId: input.lessonId,
-						authors: {
-							some: {
-								username: ctx.user?.name
-							}
-						}
-					}
-				});
-
-				if (deleted.count === 0) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
-						message: "User is not an author of this lesson or lesson does not exist."
-					});
-				} else {
-					await deleteEmbedding(input.lessonId);
-				}
+			if (!(await canDelete(ctx.user, input.lessonId))) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
 			}
+			await deleteEmbedding(input.lessonId);
+			return await database.lesson.delete({ where: { lessonId: input.lessonId } });
 		}),
 
 	getProgress: authorProcedure
@@ -559,13 +666,7 @@ export async function findLessons({
 			typeof title === "string" && title.length > 0
 				? { contains: title, mode: "insensitive" }
 				: undefined,
-		authors: authorName
-			? {
-					some: {
-						username: authorName
-					}
-				}
-			: undefined
+		authors: authorName ? { some: { username: authorName } } : undefined
 	};
 
 	const [lessons, count] = await database.$transaction([
@@ -575,13 +676,7 @@ export async function findLessons({
 				title: true,
 				slug: true,
 				updatedAt: true,
-				authors: {
-					select: {
-						displayName: true,
-						slug: true,
-						imgUrl: true
-					}
-				}
+				authors: { select: { displayName: true, slug: true, imgUrl: true } }
 			},
 			orderBy: { updatedAt: "desc" },
 			where,

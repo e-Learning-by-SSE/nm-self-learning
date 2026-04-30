@@ -30,7 +30,7 @@ export function Chip({
 						className="btn-x-mark"
 						onClick={onRemove}
 						data-testid={"remove"}
-						title="Author Entfernen"
+						title="Entfernen"
 					/>
 				)}
 			</div>

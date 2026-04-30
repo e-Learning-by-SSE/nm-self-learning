@@ -60,8 +60,6 @@ describe("checkStreakRisks integration", () => {
 				email: "test@example.com",
 				displayName: "User",
 				name: "User",
-				enabledLearningStatistics: true,
-				acceptedExperimentTerms: true,
 				gamificationProfile: {
 					lastLogin: yesterday,
 					loginStreak: { count: 5, status: "active", pausedUntil: null }
@@ -100,8 +98,6 @@ describe("checkStreakRisks integration", () => {
 				email: "test@example.com",
 				displayName: "User",
 				name: "User",
-				enabledLearningStatistics: true,
-				acceptedExperimentTerms: true,
 				gamificationProfile: {
 					lastLogin: yesterday,
 					loginStreak: { count: 5, status: "active", pausedUntil: null }
@@ -133,8 +129,6 @@ describe("getUsersWithStreakRisks", () => {
 				email: "test@example.com",
 				displayName: "User",
 				name: "User",
-				acceptedExperimentTerms: true,
-				enabledLearningStatistics: true,
 				gamificationProfile: {
 					lastLogin: yesterday,
 					loginStreak: { count: 3, status: "active", pausedUntil: null }

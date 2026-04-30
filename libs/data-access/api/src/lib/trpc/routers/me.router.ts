@@ -7,14 +7,16 @@ import {
 import {
 	EditFeatureSettings,
 	editFeatureSettingsSchema,
+	editPermissionsSettingsSchema,
 	editUserSchema
 } from "@self-learning/types";
 import { randomUUID } from "crypto";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 import { Session } from "next-auth";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { GroupRole, Prisma, PrismaClient } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
+import { hasEffectiveGroupRole } from "../../permissions/permission.service";
 
 function isAdmin(user: Session["user"]) {
 	return user.role === "ADMIN";
@@ -59,16 +61,19 @@ export const meRouter = t.router({
 			where: { name: ctx.user.name },
 			select: {
 				role: true,
-				author: {
+				memberships: {
 					select: {
-						subjectAdmin: {
+						role: true,
+						group: {
 							select: {
-								subjectId: true
-							}
-						},
-						specializationAdmin: {
-							select: {
-								specializationId: true
+								name: true,
+								permissions: {
+									select: {
+										accessLevel: true,
+										course: { select: { courseId: true, title: true } },
+										lesson: { select: { lessonId: true, title: true } }
+									}
+								}
 							}
 						}
 					}
@@ -80,9 +85,7 @@ export const meRouter = t.router({
 		return await database.$transaction(async tx => {
 			const user = await tx.user.findUnique({
 				where: { name: ctx.user.name },
-				include: {
-					author: true
-				}
+				include: { author: true }
 			});
 
 			if (!user) {
@@ -92,46 +95,27 @@ export const meRouter = t.router({
 			const anonymousUsername = "anonymous-" + randomUUID();
 
 			await tx.user.create({
-				data: {
-					name: anonymousUsername,
-					displayName: "Deleted User",
-					role: "USER"
-				}
+				data: { name: anonymousUsername, displayName: "Deleted User", role: "USER" }
 			});
 
 			if (user.author) {
 				await tx.author.update({
-					where: {
-						username: user.name
-					},
-					data: {
-						username: anonymousUsername,
-						slug: anonymousUsername
-					}
+					where: { username: user.name },
+					data: { username: anonymousUsername, slug: anonymousUsername }
 				});
 			}
 
 			await tx.skillRepository.updateMany({
-				where: {
-					ownerName: user.name
-				},
-				data: {
-					ownerName: anonymousUsername
-				}
+				where: { ownerName: user.name },
+				data: { ownerName: anonymousUsername }
 			});
 
 			await tx.eventLog.updateMany({
-				where: {
-					username: user.name
-				},
-				data: {
-					username: anonymousUsername
-				}
+				where: { username: user.name },
+				data: { username: anonymousUsername }
 			});
 
-			await tx.user.delete({
-				where: { name: ctx.user.name }
-			});
+			await tx.user.delete({ where: { name: ctx.user.name } });
 
 			return true;
 		});
@@ -143,17 +127,34 @@ export const meRouter = t.router({
 			);
 			console.warn("Updating user settings", updateData);
 
-			return await tx.user.update({
-				where: {
-					name: ctx.user.name
-				},
-				data: updateData
-			});
+			return await tx.user.update({ where: { name: ctx.user.name }, data: updateData });
 		});
 	}),
 	getJWTToken: authProcedure.query(async ({ ctx }) => {
 		return generateTokenForUser({ name: ctx.user.name });
 	}),
+
+	updateDefaultGroup: authProcedure
+		.input(editPermissionsSettingsSchema)
+		.mutation(async ({ ctx, input }) => {
+			// 1st check if user can set this group as default (be at least member or ADMIN)
+			const defaultGroupId = input.defaultGroup?.id;
+			if (
+				defaultGroupId &&
+				!(await hasEffectiveGroupRole(ctx.user, defaultGroupId, GroupRole.MEMBER))
+			) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "User must be a member of the group to set it as default"
+				});
+			}
+			return await database.user.update({
+				where: { id: ctx.user.id },
+				data: {
+					defaultGroupId: defaultGroupId ?? null
+				}
+			});
+		}),
 
 	updateFeatureFlags: authProcedure
 		.input(editFeatureSettingsSchema)

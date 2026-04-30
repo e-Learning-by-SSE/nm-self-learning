@@ -1,4 +1,4 @@
-import { LessonType } from "@prisma/client";
+import { AccessLevel, LessonType } from "@prisma/client";
 import { Lesson, lessonSchema } from "./lesson";
 
 const minValidLesson: Lesson = {
@@ -13,6 +13,13 @@ const minValidLesson: Lesson = {
 	selfRegulatedQuestion: null,
 	requires: [],
 	provides: [],
+	permissions: [
+		{
+			groupId: 1,
+			groupName: "Group 1",
+			accessLevel: AccessLevel.EDIT
+		}
+	],
 	ragEnabled: true
 };
 
@@ -97,6 +104,13 @@ describe("lessonSchema", () => {
 			    "lessonId": "id-1",
 			    "lessonType": "TRADITIONAL",
 			    "licenseId": 1,
+			    "permissions": Array [
+			      Object {
+			        "accessLevel": "EDIT",
+			        "groupId": 1,
+			        "groupName": "Group 1",
+			      },
+			    ],
 			    "provides": Array [],
 			    "quiz": null,
 			    "ragEnabled": true,

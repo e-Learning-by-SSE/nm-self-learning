@@ -3,12 +3,16 @@ import { LessonEditor, LessonFormModel, onLessonCreatorSubmit } from "@self-lear
 import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";
 import { withTranslations } from "@self-learning/api";
+import { LoadingBox } from "@self-learning/ui/common";
 
 export default function CreateLessonPage() {
 	const session = useRequiredSession();
 	const authorUsername = session.data?.user.name;
 	const router = useRouter();
 	const { mutateAsync: createLessonAsync } = trpc.lesson.create.useMutation();
+	if (session.status === "loading") {
+		return <LoadingBox />;
+	}
 	if (!authorUsername) {
 		return (
 			<Unauthorized>Um eine Lerneinheit zu erstellen, musst du ein Autor sein.</Unauthorized>

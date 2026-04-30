@@ -11,8 +11,8 @@ describe("FeatureSettingsForm", () => {
 			learningStatistics: false
 		};
 		render(<FeatureSettingsForm featureSettings={initialState} onChange={onChange} />);
-		const ltbCheckbox = screen.getByTestId("ltb-toggle");
-		await userEvent.click(ltbCheckbox);
+		const toggle = screen.getByTestId("ltb-toggle");
+		await userEvent.click(toggle);
 
 		await waitFor(() => {
 			expect(onChange).toHaveBeenCalledWith({

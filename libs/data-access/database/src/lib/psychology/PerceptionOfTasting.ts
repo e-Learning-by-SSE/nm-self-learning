@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 import {
 	createCourse,
 	createLesson,
@@ -6,6 +7,8 @@ import {
 	createVideo
 } from "../seed-functions";
 
+const courseId = faker.string.alphanumeric(8);
+
 export const chapters = [
 	{
 		title: "Geschmack - das gustatorische System",
@@ -13,6 +16,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Aufbau und Funktion der Zunge",
 				subtitle: "Aktivierungsfrage: Was ist der Ausgangspunkt der Geschmackswahrnehmung?",
 				description:
@@ -64,6 +68,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Spezifika des Schmeckens",
 				subtitle:
 					"Aktivierungsfrage: Welche unterschiedlichen Geschmacksempfindungen gibt es?",
@@ -123,6 +128,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Gustatorik und Gedächtnis",
 				subtitle: "Aktivierungsfrage zu Gustatorik und Gedächtnis ",
 				description:
@@ -174,6 +180,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Besonderheiten der neuronalen Verschaltung beim Schmecken",
 				subtitle: "Aktivierungsfrage zur neuronalen Verschaltung beim Schmecken",
 				description:
@@ -232,6 +239,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Nucleus Tractus Solitarii",
 				subtitle: "Aktivierungsfrage zu: Nucleus Tractus Solitarii?",
 				description:
@@ -283,6 +291,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Gustatorischer Cortex ",
 				subtitle: "Aktivierungsfrage zu: Gustatorischer Cortex?",
 				description:
@@ -341,6 +350,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Prinzipien der gustatorischen Wahrnehmung - Textur",
 				subtitle:
 					"Aktivierungsfrage zu: Prinzipien der gustatorischen Wahrnehmung - Textur",
@@ -393,6 +403,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Prinzipien der gustatorischen Wahrnehmung - Geräusche",
 				subtitle:
 					"Aktivierungsfrage zu: Prinzipien der gustatorischen Wahrnehmung - Geräusche",
@@ -452,6 +463,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: " Zusammenhang zwischen Gustatorik und Hunger/Appetit ",
 				subtitle:
 					"Aktivierungsfrage zu: Zusammenhang zwischen Gustatorik und Hunger/Appetit?",
@@ -504,6 +516,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Zusammenhang zwischen Schmecken und Sehen",
 				subtitle: "Aktivierungsfrage zu: Zusammenhang zwischen Schmecken und Sehen",
 				description:
@@ -555,6 +568,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Der Proust-Effekt oder auch Madeleine-Effekt",
 				subtitle: "Aktivierungsfrage zu: Der Proust-Effekt oder auch Madeleine-Effekt",
 				description:
@@ -610,6 +624,7 @@ export const chapters = [
 ];
 
 export const course = createCourse({
+	courseId,
 	subjectId: "psychologie",
 	specializationId: "wahrnehmung",
 	title: "Das Wahrnehmungssystem zum Schmecken",

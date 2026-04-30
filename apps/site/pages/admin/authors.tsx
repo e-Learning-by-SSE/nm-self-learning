@@ -1,5 +1,5 @@
 import { PlusIcon } from "@heroicons/react/24/solid";
-import { SearchUserDialog, EditAuthorDialog } from "@self-learning/admin";
+import { EditAuthorDialog } from "@self-learning/admin";
 import { trpc } from "@self-learning/api-client";
 import {
 	ImageOrPlaceholder,
@@ -15,12 +15,13 @@ import { TRPCClientError } from "@trpc/client";
 import Link from "next/link";
 import { Fragment, useMemo, useState } from "react";
 import { withTranslations } from "@self-learning/api";
+import { AddAuthorDialog, PromoteRequest } from "@self-learning/teaching";
 
 export default function AuthorsPage() {
 	useRequiredSession();
 
 	const [displayName, setDisplayName] = useState("");
-	const { data: users, isLoading } = trpc.author.getAllWithSubject.useQuery();
+	const { data: users, isLoading } = trpc.author.getAllWithGroups.useQuery();
 	const [editTarget, setEditTarget] = useState<string | null>(null);
 	const [createAuthorDialog, setCreateAuthorDialog] = useState(false);
 	const { mutateAsync: promoteToAuthor } = trpc.admin.promoteToAuthor.useMutation();
@@ -42,13 +43,20 @@ export default function AuthorsPage() {
 		setEditTarget(null);
 	}
 
-	async function onCreateAuthor(username?: string): Promise<void> {
+	async function onCreateAuthor(data?: PromoteRequest): Promise<void> {
 		setCreateAuthorDialog(false);
 
-		if (username) {
+		if (data) {
 			try {
-				await promoteToAuthor({ username });
-				showToast({ type: "success", title: "Autor hinzugefügt", subtitle: username });
+				await promoteToAuthor({
+					username: data.user.name,
+					membership: data.membership
+				});
+				showToast({
+					type: "success",
+					title: "Autor hinzugefügt",
+					subtitle: data.user.displayName
+				});
 			} catch (error) {
 				if (error instanceof TRPCClientError) {
 					showToast({
@@ -71,7 +79,7 @@ export default function AuthorsPage() {
 						<span>Autor hinzufügen</span>
 					</button>
 					{createAuthorDialog && (
-						<SearchUserDialog open={createAuthorDialog} onClose={onCreateAuthor} />
+						<AddAuthorDialog isOpen={createAuthorDialog} onClose={onCreateAuthor} />
 					)}
 				</div>
 
@@ -92,45 +100,68 @@ export default function AuthorsPage() {
 							<>
 								<TableHeaderColumn></TableHeaderColumn>
 								<TableHeaderColumn>Name</TableHeaderColumn>
+								<TableHeaderColumn>Mitgliedschaften</TableHeaderColumn>
 								<TableHeaderColumn></TableHeaderColumn>
 							</>
 						}
 					>
-						{filteredAuthors.map(({ author, name }) => (
-							<Fragment key={name}>
-								{author && (
-									<tr key={name}>
+						{filteredAuthors.map(user => (
+							<Fragment key={user.name}>
+								{user.author && (
+									<tr key={user.name}>
 										<TableDataColumn>
 											<ImageOrPlaceholder
-												src={author?.imgUrl ?? undefined}
+												src={user.author?.imgUrl ?? undefined}
 												className="m-0 h-10 w-10 rounded-lg object-cover"
 											/>
 										</TableDataColumn>
 										<TableDataColumn>
-											<div className="flex flex-wrap gap-4">
+											<div className="flex gap-4 min-w-16">
 												<Link
 													className="text-sm font-medium hover:text-c-primary"
-													href={`/authors/${author.slug}`}
+													href={`/authors/${user.author.slug}`}
 												>
-													{author.displayName}
+													{user.author.displayName}
 												</Link>
-												<span className="flex gap-2 text-xs">
-													{author.subjectAdmin.map(({ subject }) => (
-														<span
-															key={subject.title}
-															className="rounded-full bg-c-primary px-3 py-[2px] text-white"
-														>
-															Admin: {subject.title}
-														</span>
-													))}
-												</span>
 											</div>
+										</TableDataColumn>
+										<TableDataColumn>
+											<span className="flex flex-wrap gap-2 text-xs">
+												{user.memberships.map(
+													({ role, expiresAt, group }) => {
+														const isExpired =
+															expiresAt &&
+															new Date(expiresAt) < new Date();
+
+														let classes =
+															"rounded-full px-2 py-[2px] text-sm font-medium border";
+
+														if (isExpired) {
+															classes +=
+																" bg-gray-200 text-gray-500 border-gray-300 line-through";
+														} else {
+															classes +=
+																" bg-green-100 text-green-700 border-green-300";
+														}
+
+														return (
+															<Link
+																key={group.name}
+																className={classes}
+																href={`/teaching/groups/${group.id}`}
+															>
+																{group.name} als {role}
+															</Link>
+														);
+													}
+												)}
+											</span>
 										</TableDataColumn>
 										<TableDataColumn>
 											<div className="flex flex-wrap justify-end gap-4">
 												<button
 													className="btn-stroked"
-													onClick={() => onEdit(name)}
+													onClick={() => onEdit(user.name)}
 												>
 													Bearbeiten
 												</button>
