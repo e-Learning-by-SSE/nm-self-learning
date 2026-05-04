@@ -1,4 +1,3 @@
-/* eslint-disable quotes */
 import { faker } from "@faker-js/faker";
 import {
 	AccessLevel,
@@ -15,7 +14,7 @@ import {
 	createCourseMeta,
 	createLessonMeta,
 	extractLessonIds,
-	LessonContent /* eslint-disable quotes */,
+	LessonContent,
 	LessonContentType
 } from "@self-learning/types";
 import { slugify } from "@self-learning/util/common";

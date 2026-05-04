@@ -1,4 +1,3 @@
-/* eslint-disable quotes */
 import { PrismaClient } from "@prisma/client";
 import {
 	softwareentwicklungDemoGroup,

@@ -28,9 +28,16 @@ def buildSphinxDocs(Map cfg = [:]) {
         }
     
     // Build and publish Docker image
-    ssedocker {
-        create { target "ghcr.io/e-learning-by-sse/nm-self-learn-docs:${version}" }
-        publish { tag dockerTag }
+    docker.withRegistry('https://ghcr.io', 'github-ssejenkins') {
+        sh """
+            docker build \
+                -t ghcr.io/e-learning-by-sse/nm-self-learn-docs:${VERSION_TAG} \
+                -t ghcr.io/e-learning-by-sse/nm-self-learn-docs:latest \
+                docs/sphinx
+
+            docker push ghcr.io/e-learning-by-sse/nm-self-learn-docs:${VERSION_TAG}
+            docker push ghcr.io/e-learning-by-sse/nm-self-learn-docs:latest
+        """
     }
 
     // Clean up build directory

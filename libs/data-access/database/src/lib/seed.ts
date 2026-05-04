@@ -1,4 +1,3 @@
-/* eslint-disable quotes */
 import { faker } from "@faker-js/faker";
 import { PrismaClient } from "@prisma/client";
 import { mathExample } from "./math/math-example";
