@@ -7,19 +7,19 @@ export async function migrateAuthorsAddDefaultGroup(tx: Prisma.TransactionClient
 	const users = await tx.user.findMany({
 		include: {
 			_count: {
-				select: { memberships: true }
+				select: { Member: true }
 			},
-			memberships: {
+			Member: {
 				take: 1 // we filter for single membership, so we dont need all memberships
 			}
 		}
 	});
 
-	const filteredUsers = users.filter(user => user._count.memberships === 1);
+	const filteredUsers = users.filter(user => user._count.Member === 1);
 	for (const user of filteredUsers) {
 		await tx.user.update({
 			where: { id: user.id },
-			data: { defaultGroupId: user.memberships[0].groupId }
+			data: { defaultGroupId: user.Member[0].groupId }
 		});
 	}
 }
