@@ -31,11 +31,11 @@ def buildSphinxDocs(Map cfg = [:]) {
     docker.withRegistry('https://ghcr.io', 'github-ssejenkins') {
         sh """
             docker build \
-                -t ghcr.io/e-learning-by-sse/nm-self-learn-docs:${VERSION_TAG} \
+                -t ghcr.io/e-learning-by-sse/nm-self-learn-docs:${version} \
                 -t ghcr.io/e-learning-by-sse/nm-self-learn-docs:latest \
                 docs/sphinx
 
-            docker push ghcr.io/e-learning-by-sse/nm-self-learn-docs:${VERSION_TAG}
+            docker push ghcr.io/e-learning-by-sse/nm-self-learn-docs:${version}
             docker push ghcr.io/e-learning-by-sse/nm-self-learn-docs:latest
         """
     }
