@@ -26,7 +26,8 @@ WORKDIR /app
 # * bash is needed for entry-script
 # * postgresql-libs and postgresql-client are needed for pg_isready
 # * diffutils is needed for cmp (needed for entry-script)
-RUN apk add --no-cache libc6-compat bash postgresql-libs postgresql-client diffutils
+# * libc6-compat gcompat libstdc++ libgcc for onnxruntime (RAG / xenova/transformers)
+RUN apk add --no-cache libc6-compat bash postgresql-libs postgresql-client diffutils gcompat libstdc++ libgcc
 
 # Uncomment the following line in case you want to disable telemetry during build & runtime.
 ENV NEXT_TELEMETRY_DISABLED 1
