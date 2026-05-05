@@ -1,6 +1,6 @@
 {
 	"name": "self-learning",
-	"version": "unstable",
+	"version": "0.8.2",
 	"license": "MIT",
 	"scripts": {
 		"postinstall": "prisma generate --no-hints",
@@ -9,7 +9,7 @@
 		"start:standalone": "concurrently \"cd dist/apps/site && npm start\" \"node dist/apps/cron-service/main.js\" \"node dist/apps/worker-service/main.js\"",
 		"start:prod": "npm run migrate && npm run start:standalone",
 		"start:demo": "npm run seed && npm run start:standalone",
-        "reset:cromadb": "npx tsx --tsconfig tsconfig.base.json scripts/reset-chroma.ts",
+		"reset:cromadb": "npx tsx --tsconfig tsconfig.base.json scripts/reset-chroma.ts",
 		"cypress": "cypress open --project=apps/site-e2e",
 		"jest": "env TZ='Europe/Berlin' jest",
 		"format:check": "nx format:check --files '{apps,libs}/**/*.{ts,tsx}'",
@@ -94,7 +94,7 @@
 		"remark-math": "^6.0.0",
 		"resend": "^4.5.1",
 		"sharp": "^0.34.4",
-        "socket.io-client": "^4.7.5",
+		"socket.io-client": "^4.7.5",
 		"superjson": "2.2.3",
 		"swagger-ui-react": "^5.30.1",
 		"trpc-to-openapi": "3.1.0",
