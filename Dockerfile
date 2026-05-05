@@ -14,8 +14,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY package.json package-lock.json ./
 COPY .npmrc.example ./.npmrc
-RUN --mount=type=secret,id=NPM_TOKEN,env=NPM_TOKEN \
-    npm ci
+RUN --mount=type=secret,id=NPM_TOKEN,required=true \
+    sh -c 'TOKEN="$(cat /run/secrets/NPM_TOKEN)" && \
+    printf "@e-learning-by-sse:registry=https://npm.pkg.github.com\n//npm.pkg.github.com/:_authToken=%s\n" "$TOKEN" > .npmrc && \
+    npm ci && \
+    rm -f .npmrc'
 
 COPY . ./
 RUN mv .env.example .env
