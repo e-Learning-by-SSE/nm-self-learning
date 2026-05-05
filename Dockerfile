@@ -24,7 +24,6 @@ RUN npm run prisma generate
 # Allow runnig prisma commands, based on: https://stackoverflow.com/a/72602624
 # RUN chown nextjs:nodejs -R node_modules/.prisma
 
-RUN npm run build
 RUN cp package.json dist/package.json
 
 FROM node:22-slim
