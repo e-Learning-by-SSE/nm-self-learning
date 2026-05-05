@@ -13,12 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json ./
-COPY .npmrc.example ./.npmrc
-RUN --mount=type=secret,id=NPM_TOKEN,required=true \
-    sh -c 'TOKEN="$(cat /run/secrets/NPM_TOKEN)" && \
-    printf "@e-learning-by-sse:registry=https://npm.pkg.github.com\n//npm.pkg.github.com/:_authToken=%s\n" "$TOKEN" > .npmrc && \
-    npm ci && \
-    rm -f .npmrc'
+RUN --mount=type=secret,id=npmrc,target=/root/.npmrc,required=true \
+    npm ci
 
 COPY . ./
 RUN mv .env.example .env
@@ -52,7 +48,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # RUN apk add --no-cache libc6-compat bash postgresql-libs postgresql-client diffutils gcompat libstdc++ libgcc
 
 # Uncomment the following line in case you want to disable telemetry during build & runtime.
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NEXT_TELEMETRY_DISABLED=1
 
 # Prepare startup script
 COPY docker/entry.sh /entry.sh

@@ -181,11 +181,23 @@ pipeline {
                             buildSphinxDocs(dockerTag: 'unstable')
                         }
                         withCredentials([string(credentialsId: 'GitHub-NPM', variable: 'NPM_TOKEN')]) {
-                            ssedocker {
-                                create {
-                                    target "${env.TARGET_PREFIX}:unstable"
+                            withEnv(["DOCKER_BUILDKIT=1"]) {
+                                writeFile file: '.npmrc.build', text: """
+@e-learning-by-sse:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${env.NPM_TOKEN}
+"""
+
+                                try {
+                                    ssedocker {
+                                        create {
+                                            target "${env.TARGET_PREFIX}:unstable"
+                                            args "--secret id=npmrc,src=.npmrc.build"
+                                        }
+                                        publish {}
+                                    }
+                                } finally {
+                                    sh 'rm -f .npmrc.build'
                                 }
-                                publish {}
                             }
                         }
                     }
@@ -221,9 +233,21 @@ pipeline {
                             //buildSphinxDocs()
                         }
                         withCredentials([string(credentialsId: 'GitHub-NPM', variable: 'NPM_TOKEN')]) {
-                            ssedocker {
-                                create {
-                                    target "${env.TARGET_PREFIX}:${env.VERSION}"
+                            withEnv(["DOCKER_BUILDKIT=1"]) {
+                                writeFile file: '.npmrc.build', text: """
+@e-learning-by-sse:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${env.NPM_TOKEN}
+"""
+
+                                try {
+                                    ssedocker {
+                                        create {
+                                            target "${env.TARGET_PREFIX}:${env.VERSION}"
+                                            args "--secret id=npmrc,src=.npmrc.build"
+                                        }
+                                    }
+                                } finally {
+                                    sh 'rm -f .npmrc.build'
                                 }
                             }
                         }
@@ -270,12 +294,24 @@ pipeline {
                                 }
 
                                 withCredentials([string(credentialsId: 'GitHub-NPM', variable: 'NPM_TOKEN')]) {
-                                    ssedocker {
-                                        create {
-                                            target "${env.TARGET_PREFIX}:${apiVersion}"
-                                        }
-                                        publish {
-                                            tag "${releaseTag}"
+                                    withEnv(["DOCKER_BUILDKIT=1"]) {
+                                        writeFile file: '.npmrc.build', text: """
+@e-learning-by-sse:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${env.NPM_TOKEN}
+"""
+
+                                        try {
+                                            ssedocker {
+                                                create {
+                                                    target "${env.TARGET_PREFIX}:${apiVersion}"
+                                                    args "--secret id=npmrc,src=.npmrc.build"
+                                                }
+                                                publish {
+                                                    tag "${releaseTag}"
+                                                }
+                                            }
+                                        } finally {
+                                            sh 'rm -f .npmrc.build'
                                         }
                                     }
                                 }
@@ -322,12 +358,24 @@ pipeline {
 
                             // Docker-Build und Publish
                             withCredentials([string(credentialsId: 'GitHub-NPM', variable: 'NPM_TOKEN')]) {
-                                ssedocker {
-                                    create {
-                                        target "${env.TARGET_PREFIX}:${params.RELEASE_LATEST_VERSION}"
-                                    }
-                                    publish {
-                                        tag "latest"
+                                withEnv(["DOCKER_BUILDKIT=1"]) {
+                                    writeFile file: '.npmrc.build', text: """
+@e-learning-by-sse:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${env.NPM_TOKEN}
+"""
+
+                                    try {
+                                        ssedocker {
+                                            create {
+                                                target "${env.TARGET_PREFIX}:${params.RELEASE_LATEST_VERSION}"
+                                                args "--secret id=npmrc,src=.npmrc.build"
+                                            }
+                                            publish {
+                                                tag "latest"
+                                            }
+                                        }
+                                    } finally {
+                                        sh 'rm -f .npmrc.build'
                                     }
                                 }
                             }
