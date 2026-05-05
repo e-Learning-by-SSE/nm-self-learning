@@ -106,6 +106,11 @@ pipeline {
         ansiColor('xterm')
     }
     stages {
+        stage('Cleanup') {
+            steps {
+                sh 'rm -rf dist .next'
+            }
+        }
         stage('NPM Install') {
             agent {
                 docker {
@@ -127,10 +132,10 @@ pipeline {
 
         stage('Test') {
             when {
-                        expression {
-                            return params.RELEASE_LATEST_VERSION == ''
-                        }
-                    }
+                expression {
+                    return params.RELEASE_LATEST_VERSION == ''
+                }
+            }
             environment {
                 POSTGRES_DB = 'SelfLearningDb'
                 POSTGRES_USER = 'username'
