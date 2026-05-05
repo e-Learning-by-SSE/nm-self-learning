@@ -6,7 +6,7 @@
 		"postinstall": "prisma generate --no-hints",
 		"start": "concurrently \"nx serve site\" \"nx serve cron-service\"  \"NODE_PATH=dist/libs nx serve worker-service\"",
 		"start:dev": "concurrently \"nx serve site\" \"npx prisma studio --browser none\"",
-		"start:standalone": "concurrently \"cd dist/apps/site && npm start\" \"node dist/apps/cron-service/main.js\" \"node dist/apps/worker-service/main.js\"",
+		"start:standalone": "concurrently \"DOTENV_CONFIG_PATH=.env node -r dotenv/config node_modules/next/dist/bin/next start dist/apps/site\" \"DOTENV_CONFIG_PATH=.env node -r dotenv/config dist/apps/cron-service/main.js\" \"DOTENV_CONFIG_PATH=.env node -r dotenv/config dist/apps/worker-service/main.js\"",
 		"start:prod": "npm run migrate && npm run start:standalone",
 		"start:demo": "npm run seed && npm run start:standalone",
         "reset:cromadb": "npx tsx --tsconfig tsconfig.base.json scripts/reset-chroma.ts",
