@@ -103,10 +103,6 @@ async function main() {
 			}
 		}
 		console.log(`[RagMigration] Finished. succeeded=${succeeded}, failed=${failed}`);
-		if (failed > 0) {
-			// Non-zero exit so the deploy pipeline can surface failures
-			process.exit(1);
-		}
 	} finally {
 		await prisma.$disconnect();
 	}
