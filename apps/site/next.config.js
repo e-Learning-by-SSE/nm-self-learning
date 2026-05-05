@@ -2,8 +2,27 @@
 const { withNx } = require("@nx/next");
 const { withPlausibleProxy } = require("next-plausible");
 const { i18n } = require("./next-i18next.config.js");
+const fs = require("fs");
+const path = require("path");
 
-const packageJson = require("../../package.json");
+function readPackageJson() {
+	const candidates = [
+		path.resolve(__dirname, "../../package.json"), // apps/site/next.config.js local
+		path.resolve(__dirname, "../../../package.json"), // dist/apps/site/next.config.js
+		path.resolve(process.cwd(), "package.json"), // if project is started from root
+		path.resolve(process.cwd(), "../../package.json") // if started from dist/apps/site
+	];
+
+	const packageJsonPath = candidates.find(fs.existsSync);
+
+	if (!packageJsonPath) {
+		return { version: "unknown" };
+	}
+
+	return require(packageJsonPath);
+}
+
+const packageJson = readPackageJson();
 
 /**
  * @type {import('@nx/next/plugins/with-nx').WithNxOptions}
