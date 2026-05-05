@@ -179,24 +179,25 @@ pipeline {
                                     sh "env TZ=${env.TZ} npx nx affected --base=${lastSuccessSHA} -t lint build e2e-ci"
                                 }
                             buildSphinxDocs(dockerTag: 'unstable')
-                        }
-                        withCredentials([string(credentialsId: 'GitHub-NPM', variable: 'NPM_TOKEN')]) {
-                            withEnv(["DOCKER_BUILDKIT=1"]) {
-                                writeFile file: '.npmrc.build', text: """
+                        
+                            withCredentials([string(credentialsId: 'GitHub-NPM', variable: 'NPM_TOKEN')]) {
+                                withEnv(["DOCKER_BUILDKIT=1"]) {
+                                    writeFile file: '.npmrc.build', text: """
 @e-learning-by-sse:registry=https://npm.pkg.github.com
 //npm.pkg.github.com/:_authToken=${env.NPM_TOKEN}
 """
 
-                                try {
-                                    ssedocker {
-                                        create {
-                                            target "${env.TARGET_PREFIX}:unstable"
-                                            args "--secret id=npmrc,src=.npmrc.build"
+                                    try {
+                                        ssedocker {
+                                            create {
+                                                target "${env.TARGET_PREFIX}:unstable"
+                                                args "--secret id=npmrc,src=.npmrc.build"
+                                            }
+                                            publish {}
                                         }
-                                        publish {}
+                                    } finally {
+                                        sh 'rm -f .npmrc.build'
                                     }
-                                } finally {
-                                    sh 'rm -f .npmrc.build'
                                 }
                             }
                         }
@@ -231,23 +232,24 @@ pipeline {
                                     sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
                             }
                             //buildSphinxDocs()
-                        }
-                        withCredentials([string(credentialsId: 'GitHub-NPM', variable: 'NPM_TOKEN')]) {
-                            withEnv(["DOCKER_BUILDKIT=1"]) {
-                                writeFile file: '.npmrc.build', text: """
+                        
+                            withCredentials([string(credentialsId: 'GitHub-NPM', variable: 'NPM_TOKEN')]) {
+                                withEnv(["DOCKER_BUILDKIT=1"]) {
+                                    writeFile file: '.npmrc.build', text: """
 @e-learning-by-sse:registry=https://npm.pkg.github.com
 //npm.pkg.github.com/:_authToken=${env.NPM_TOKEN}
 """
 
-                                try {
-                                    ssedocker {
-                                        create {
-                                            target "${env.TARGET_PREFIX}:${env.VERSION}"
-                                            args "--secret id=npmrc,src=.npmrc.build"
+                                    try {
+                                        ssedocker {
+                                            create {
+                                                target "${env.TARGET_PREFIX}:${env.VERSION}"
+                                                args "--secret id=npmrc,src=.npmrc.build"
+                                            }
                                         }
+                                    } finally {
+                                        sh 'rm -f .npmrc.build'
                                     }
-                                } finally {
-                                    sh 'rm -f .npmrc.build'
                                 }
                             }
                         }
