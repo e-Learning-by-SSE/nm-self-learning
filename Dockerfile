@@ -1,20 +1,31 @@
-FROM node:22.6.0-alpine AS build
+FROM node:22-slim AS build
 
 WORKDIR /app
 
-#RUN addgroup --system --gid 1001 nodejs
-#RUN adduser --system --uid 1001 nextjs
+# Build dependencies as they may contain native libraries which must be built for target environment
+#RUN apk add --no-cache bash python3 make g++ libc6-compat gcompat libstdc++ libgcc
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  bash \
+  python3 \
+  make \
+  g++ \
+  ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
+COPY package.json package-lock.json ./
+RUN npm ci
 
 COPY . ./
 RUN mv .env.example .env
 
 # Generate Prisma client
-ADD node_modules /app/node_modules
 RUN npm run prisma generate
 # Allow runnig prisma commands, based on: https://stackoverflow.com/a/72602624
 # RUN chown nextjs:nodejs -R node_modules/.prisma
 
-FROM node:22.6.0-alpine
+RUN npm run build
+
+FROM node:22-slim
 # org image node:alpine - temporary fix https://github.com/vercel/next.js/discussions/69326
 
 COPY --from=build /app /app
@@ -27,7 +38,13 @@ WORKDIR /app
 # * postgresql-libs and postgresql-client are needed for pg_isready
 # * diffutils is needed for cmp (needed for entry-script)
 # * libc6-compat gcompat libstdc++ libgcc for onnxruntime (RAG / xenova/transformers)
-RUN apk add --no-cache libc6-compat bash postgresql-libs postgresql-client diffutils gcompat libstdc++ libgcc
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  bash \
+  postgresql-client \
+  diffutils \
+  ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+# RUN apk add --no-cache libc6-compat bash postgresql-libs postgresql-client diffutils gcompat libstdc++ libgcc
 
 # Uncomment the following line in case you want to disable telemetry during build & runtime.
 ENV NEXT_TELEMETRY_DISABLED 1
