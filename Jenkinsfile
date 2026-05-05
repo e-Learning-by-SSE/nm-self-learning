@@ -99,6 +99,7 @@ pipeline {
         TARGET_PREFIX = 'ghcr.io/e-learning-by-sse/nm-self-learning'
         // we need the .npm and .cache folders in a separate volume to avoid permission issues during npm install
         DOCKER_ARGS = "--tmpfs /.npm -v ${env.WORKSPACE}/build-caches/npm:${env.WORKSPACE}/.npm -v $HOME/build-caches/cache:/.cache -v $HOME/build-caches/nx:${env.WORKSPACE}/.nx"
+        DOCKER_BUILDKIT = '1'
     }
 
     options {
@@ -180,7 +181,6 @@ pipeline {
                             buildSphinxDocs(dockerTag: 'unstable')
                         }
                         withCredentials([string(credentialsId: 'GitHub-NPM', variable: 'NPM_TOKEN')]) {
-                            env.DOCKER_BUILDKIT = '1'
                             ssedocker {
                                 create {
                                     target "${env.TARGET_PREFIX}:unstable"
@@ -221,7 +221,6 @@ pipeline {
                             //buildSphinxDocs()
                         }
                         withCredentials([string(credentialsId: 'GitHub-NPM', variable: 'NPM_TOKEN')]) {
-                            env.DOCKER_BUILDKIT = '1'
                             ssedocker {
                                 create {
                                     target "${env.TARGET_PREFIX}:${env.VERSION}"
@@ -271,7 +270,6 @@ pipeline {
                                 }
 
                                 withCredentials([string(credentialsId: 'GitHub-NPM', variable: 'NPM_TOKEN')]) {
-                                    env.DOCKER_BUILDKIT = '1'
                                     ssedocker {
                                         create {
                                             target "${env.TARGET_PREFIX}:${apiVersion}"
@@ -324,7 +322,6 @@ pipeline {
 
                             // Docker-Build und Publish
                             withCredentials([string(credentialsId: 'GitHub-NPM', variable: 'NPM_TOKEN')]) {
-                                env.DOCKER_BUILDKIT = '1'
                                 ssedocker {
                                     create {
                                         target "${env.TARGET_PREFIX}:${params.RELEASE_LATEST_VERSION}"
