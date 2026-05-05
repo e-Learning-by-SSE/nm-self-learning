@@ -179,11 +179,14 @@ pipeline {
                                 }
                             buildSphinxDocs(dockerTag: 'unstable')
                         }
-                        ssedocker {
-                            create {
-                                target "${env.TARGET_PREFIX}:unstable"
+                        withCredentials([string(credentialsId: 'GitHub-NPM', variable: 'NPM_TOKEN')]) {
+                            env.DOCKER_BUILDKIT = '1'
+                            ssedocker {
+                                create {
+                                    target "${env.TARGET_PREFIX}:unstable"
+                                }
+                                publish {}
                             }
-                            publish {}
                         }
                     }
                     post {
@@ -217,9 +220,12 @@ pipeline {
                             }
                             //buildSphinxDocs()
                         }
-                        ssedocker {
-                            create {
-                                target "${env.TARGET_PREFIX}:${env.VERSION}"
+                        withCredentials([string(credentialsId: 'GitHub-NPM', variable: 'NPM_TOKEN')]) {
+                            env.DOCKER_BUILDKIT = '1'
+                            ssedocker {
+                                create {
+                                    target "${env.TARGET_PREFIX}:${env.VERSION}"
+                                }
                             }
                         }
                     }
@@ -263,12 +269,16 @@ pipeline {
                                 } else {
                                     releaseTag = "${params.PUBLISH_IMAGE_TAG}"
                                 }
-                                ssedocker {
-                                    create {
-                                        target "${env.TARGET_PREFIX}:${apiVersion}"
-                                    }
-                                    publish {
-                                        tag "${releaseTag}"
+
+                                withCredentials([string(credentialsId: 'GitHub-NPM', variable: 'NPM_TOKEN')]) {
+                                    env.DOCKER_BUILDKIT = '1'
+                                    ssedocker {
+                                        create {
+                                            target "${env.TARGET_PREFIX}:${apiVersion}"
+                                        }
+                                        publish {
+                                            tag "${releaseTag}"
+                                        }
                                     }
                                 }
                             }
@@ -313,12 +323,15 @@ pipeline {
                             }
 
                             // Docker-Build und Publish
-                            ssedocker {
-                                create {
-                                    target "${env.TARGET_PREFIX}:${params.RELEASE_LATEST_VERSION}"
-                                }
-                                publish {
-                                    tag "latest"
+                            withCredentials([string(credentialsId: 'GitHub-NPM', variable: 'NPM_TOKEN')]) {
+                                env.DOCKER_BUILDKIT = '1'
+                                ssedocker {
+                                    create {
+                                        target "${env.TARGET_PREFIX}:${params.RELEASE_LATEST_VERSION}"
+                                    }
+                                    publish {
+                                        tag "latest"
+                                    }
                                 }
                             }
                         }

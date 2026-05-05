@@ -13,7 +13,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json ./
-RUN npm ci
+COPY .npmrc.example ./.npmrc
+RUN --mount=type=secret,id=NPM_TOKEN,env=NPM_TOKEN \
+    npm ci
 
 COPY . ./
 RUN mv .env.example .env
