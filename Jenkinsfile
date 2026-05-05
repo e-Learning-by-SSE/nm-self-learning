@@ -3,7 +3,7 @@
 def buildSphinxDocs(Map cfg = [:]) {
     // Function parameters
     // Mandatory: Version (version or unstable)
-    def version     = env.VERSION ?: "unstable"
+    def version     = cfg.get('version', env.VERSION ?: "unstable")
     // Optional: Additional Docker tag
     def dockerTag   = cfg.get('dockerTag', version)
 
@@ -306,7 +306,7 @@ pipeline {
                                 sh "env TZ=${env.TZ} npx nx run-many --target=build --all --skip-nx-cache"
                                 sh "npm version ${newVersion}"
                             }
-                            buildSphinxDocs(dockerTag: "latest")
+                            buildSphinxDocs(dockerTag: "latest", version: newVersion)
 
                             sshagent(['STM-SSH-DEMO']) {
                                  sh "GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=no' git push origin v${newVersion}"
