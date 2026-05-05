@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY package.json package-lock.json ./
 RUN --mount=type=secret,id=npmrc,target=/root/.npmrc,required=true \
-    npm ci
+    npm ci --ignore-scripts
 
 COPY . ./
 RUN mv .env.example .env
