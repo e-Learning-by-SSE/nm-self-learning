@@ -3,6 +3,7 @@ import cron from "node-cron";
 import { database, generateTokenForUser, save_subtitle_for_lesson } from "@self-learning/database";
 import { LessonContent, LessonContentType, subtitleSrcSchema, Video } from "@self-learning/types";
 import io from "socket.io-client";
+import { embedLesson } from "./rag";
 
 const API_SECRET = process.env.SCHEDULER_SECRET;
 const API_URL = process.env.NEXT_PUBLIC_SITE_BASE_URL;
@@ -101,17 +102,29 @@ async function generateSubtitlesForExistingVideos() {
 			sendNextJob();
 		});
 
-		socket.on("complete", data => {
+		socket.on("complete", async data => {
 			const finishedJob = jobs[currentIndex];
 			const transcription = data.transcription;
 			const subtitleSrc = subtitleSrcSchema.parse(transcription);
-			save_subtitle_for_lesson(finishedJob.lessonId, finishedJob.videoUrl, subtitleSrc).then(
-				() => {
-					console.log(
-						`Saved subtitle for lesson ${finishedJob.lessonId} after transcription.`
-					);
+			let embeddedSuccessfully = false;
+			try {
+				save_subtitle_for_lesson(finishedJob.lessonId, finishedJob.videoUrl, subtitleSrc);
+				console.log(
+					`Saved subtitle for lesson ${finishedJob.lessonId} after transcription.`
+				);
+				embeddedSuccessfully = true;
+			} catch (err) {
+				console.error("Failed saving subtitle", err);
+			}
+
+			if (embeddedSuccessfully) {
+				try {
+					await embedLesson(finishedJob.lessonId);
+					console.log(`Embedded lesson ${finishedJob.lessonId} after transcription.`);
+				} catch (err) {
+					console.error("Failed embedding lesson after transcription", err);
 				}
-			);
+			}
 			isProcessing = false;
 			currentIndex += 1;
 			sendNextJob();
