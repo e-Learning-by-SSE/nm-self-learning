@@ -46,6 +46,7 @@ async function generateSubtitlesForExistingVideos() {
 				...lesson,
 				content: lesson.content as LessonContent
 			}))
+			.filter(lesson => lesson.content != null)
 			.flatMap(lesson =>
 				lesson.content
 					.filter(isVideoContent)
@@ -106,18 +107,22 @@ async function generateSubtitlesForExistingVideos() {
 			const finishedJob = jobs[currentIndex];
 			const transcription = data.transcription;
 			const subtitleSrc = subtitleSrcSchema.parse(transcription);
-			let embeddedSuccessfully = false;
+			let subtitlesGenerated = false;
 			try {
-				save_subtitle_for_lesson(finishedJob.lessonId, finishedJob.videoUrl, subtitleSrc);
+				await save_subtitle_for_lesson(
+					finishedJob.lessonId,
+					finishedJob.videoUrl,
+					subtitleSrc
+				);
 				console.log(
 					`Saved subtitle for lesson ${finishedJob.lessonId} after transcription.`
 				);
-				embeddedSuccessfully = true;
+				subtitlesGenerated = true;
 			} catch (err) {
 				console.error("Failed saving subtitle", err);
 			}
 
-			if (embeddedSuccessfully) {
+			if (subtitlesGenerated) {
 				try {
 					await embedLesson(finishedJob.lessonId);
 					console.log(`Embedded lesson ${finishedJob.lessonId} after transcription.`);
