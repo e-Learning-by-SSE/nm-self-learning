@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createEmptyLesson, lessonSchema } from "@self-learning/types";
 import { DialogActions, OnDialogCloseFn, showToast, Tab, Tabs } from "@self-learning/ui/common";
 import { useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
+import { FormProvider, useForm, FieldErrors } from "react-hook-form";
 import { LessonContentEditor } from "./forms/lesson-content";
 import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
@@ -66,9 +66,80 @@ export async function onLessonEditorSubmit(
 		showToast({
 			type: "error",
 			title: "Fehler",
-			subtitle: "Die Lernheit konnte nicht gespeichert werden."
+			subtitle: "Die Lerneinheit konnte nicht gespeichert werden."
 		});
 	}
+}
+
+type ValidationError = {
+	field: string;
+	message: string;
+	type?: string;
+};
+
+/**
+ * Traverse the nested FieldErrors object from react-hook-form and collect all error messages into a flat array.
+ *
+ * @param errors
+ * @returns
+ */
+
+export function collectErrorMessages(errors: FieldErrors): ValidationError[] {
+	const result: ValidationError[] = [];
+	const visited = new WeakSet<object>();
+
+	function traverse(obj: unknown, path: string[] = []) {
+		if (!obj || typeof obj !== "object") return;
+
+		if (visited.has(obj)) return;
+		visited.add(obj);
+
+		if ("message" in obj && typeof obj.message === "string") {
+			result.push({
+				field: path.join("."),
+				message: obj.message,
+				type: "type" in obj && typeof obj.type === "string" ? obj.type : undefined
+			});
+
+			return;
+		}
+
+		for (const [key, value] of Object.entries(obj)) {
+			// Avoid endless loops on references and skip non-error properties
+			if (key === "ref" || key === "type" || key === "message" || key === "types") {
+				continue;
+			}
+
+			traverse(value, [...path, key]);
+		}
+	}
+
+	traverse(errors);
+	return result;
+}
+
+function showValidationErrors(errors: FieldErrors) {
+	const errorMessages = collectErrorMessages(errors);
+	const errorMsg = errorMessages
+		.map(e => {
+			switch (e.field) {
+				case "title":
+					return "🞄 Kein Titel vergeben. Geben Sie einen Titel für die Lerneinheit an.";
+				case "slug":
+					return "🞄 Keine eindeutige ID vergeben. Geben Sie einen eindeutigen Slug an, um eine URL für die Lerneinheit erzeugen zu können.";
+				case "permissions":
+					return "🞄 Es wurden keine Bearbeitungsrechte vergeben. Wählen Sie mindestens eine Bearbeitungsgruppe aus.";
+				default:
+					return `🞄 ${e.field}: ${e.message}`;
+			}
+		})
+		.join("\n");
+
+	showToast({
+		type: "error",
+		title: "Validierungsfehler",
+		subtitle: `Beim Anlegen wurden die folgenden Felder fehlerhaft ausgefüllt:\n${errorMsg}`
+	});
 }
 
 export function LessonEditor({
@@ -103,7 +174,7 @@ export function LessonEditor({
 		<FormProvider {...form}>
 			<form
 				id="lessonform"
-				onSubmit={form.handleSubmit(onSubmit, console.log)}
+				onSubmit={form.handleSubmit(onSubmit, showValidationErrors)}
 				className="w-full"
 			>
 				<div className="flex flex-col px-4 max-w-screen-xl mx-auto">
