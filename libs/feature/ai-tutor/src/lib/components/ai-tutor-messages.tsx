@@ -1,6 +1,7 @@
 import ReactMarkdown from "react-markdown";
 import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
 import { Session } from "next-auth";
+import { useEffect, useRef } from "react";
 
 export function AiTutorMessages({
 	messages,
@@ -15,6 +16,11 @@ export function AiTutorMessages({
 	basePath: string;
 	t: (key: string) => string;
 }) {
+	const bottomRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+	}, [messages, isLoading]);
 	return (
 		<div className="flex-1 overflow-y-auto p-4 space-y-4">
 			{messages.map((msg, idx) => (
@@ -79,6 +85,7 @@ export function AiTutorMessages({
 					</div>
 				</div>
 			)}
+			<div ref={bottomRef} />
 		</div>
 	);
 }
