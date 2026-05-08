@@ -167,21 +167,23 @@ export class VectorStore {
 		}
 	}
 
+	private getSharedCollectionName(): string {
+		return "SelfLearn_Shared_VectorStore";
+	}
+
 	/**
 	 * Get or create collection for a lesson
 	 */
-	private async getCollection(lessonId: string): Promise<Collection> {
+	private async getCollection(): Promise<Collection> {
 		if (!this.client) {
 			throw new Error("VectorStore not initialized");
 		}
 
-		const collectionName = `${RAG_CONFIG.VECTOR_STORE.COLLECTION_PREFIX}${lessonId}`;
-
 		return await this.client.getOrCreateCollection({
-			name: collectionName,
+			name: this.getSharedCollectionName(),
 			embeddingFunction: CUSTOM_EMBEDDING_FUNCTION,
 			metadata: {
-				description: `Lesson ${lessonId} documents`,
+				description: `All lesson documents`,
 				// Tells the ChromaDB server which embedding function this collection uses
 				// during schema deserialization, suppressing the "No embedding function
 				// configuration found" warning that is otherwise printed on every collection load.
@@ -202,7 +204,7 @@ export class VectorStore {
 		try {
 			await this.initialize(false);
 			const embeddingService = await this.getEmbeddingService();
-			const collection = await this.getCollection(lessonId);
+			const collection = await this.getCollection();
 			const batchSize = RAG_CONFIG.EMBEDDING.BATCH_SIZE;
 
 			for (let i = 0; i < chunks.length; i += batchSize) {
@@ -217,7 +219,12 @@ export class VectorStore {
 					ids: batch.map(chunk => chunk.id),
 					embeddings: embeddings,
 					documents: texts,
-					metadatas: batch.map(chunk => toChromaMetadata(chunk.metadata))
+					metadatas: batch.map(chunk =>
+						toChromaMetadata({
+							...chunk.metadata,
+							lessonId
+						})
+					)
 				});
 			}
 
@@ -240,7 +247,7 @@ export class VectorStore {
 		const embeddingService = await this.getEmbeddingService();
 		const actualTopK = Math.min(topK, RAG_CONFIG.RETRIEVAL.MAX_TOP_K);
 		try {
-			const collection = await this.getCollection(lessonId);
+			const collection = await this.getCollection();
 
 			// Generate query embedding
 			const queryEmbedding = await embeddingService.generateEmbedding(query);
@@ -248,7 +255,10 @@ export class VectorStore {
 			// Search
 			const results = await collection.query({
 				queryEmbeddings: [queryEmbedding],
-				nResults: actualTopK
+				nResults: actualTopK,
+				where: {
+					lessonId
+				}
 			});
 
 			if (!results.documents[0] || !results.metadatas[0] || !results.distances[0]) {
@@ -294,14 +304,18 @@ export class VectorStore {
 	async deleteLesson(lessonId: string): Promise<void> {
 		await this.initialize(true);
 
-		const collectionName = `${RAG_CONFIG.VECTOR_STORE.COLLECTION_PREFIX}${lessonId}`;
-
 		try {
-			await this.client?.deleteCollection({ name: collectionName });
-		} catch {
-			console.error("[VectorStore] Collection not found or already deleted", {
-				lessonId,
-				collectionName
+			const collection = await this.getCollection();
+
+			await collection.delete({
+				where: {
+					lessonId
+				}
+			});
+		} catch (error) {
+			console.error("[VectorStore] Failed to delete lesson documents", {
+				error: error instanceof Error ? error.message : String(error),
+				lessonId
 			});
 		}
 	}
@@ -312,17 +326,17 @@ export class VectorStore {
 	async lessonExists(lessonId: string): Promise<boolean> {
 		await this.initialize(true);
 
-		const collectionName = `${RAG_CONFIG.VECTOR_STORE.COLLECTION_PREFIX}${lessonId}`;
+		const collection = await this.getCollection();
 
-		try {
-			await this.client?.getCollection({
-				name: collectionName,
-				embeddingFunction: CUSTOM_EMBEDDING_FUNCTION
-			});
-			return true;
-		} catch {
-			return false;
-		}
+		const result = await collection.get({
+			where: {
+				lessonId
+			},
+			limit: 1,
+			include: []
+		});
+
+		return result.ids.length > 0;
 	}
 
 	/**
