@@ -87,6 +87,8 @@ export class VectorStore {
 	private initialized = false;
 	private circuitBreaker: CircuitBreakerState = { failureCount: 0, isOpen: false };
 	private _embeddingService: IEmbeddingService | null = null;
+	// Missing: half-open reset logic
+	private readonly CIRCUIT_RESET_MS = 30_000;
 	/**
 	 * Lazily load the embedding service.
 	 * Using a dynamic import means @xenova/transformers is only parsed when
@@ -140,10 +142,16 @@ export class VectorStore {
 	 */
 	private checkCircuitBreaker(): void {
 		if (this.circuitBreaker.isOpen) {
-			throw new Error("ChromaDB circuit breaker is open due to repeated failures");
+			const elapsed = Date.now() - (this.circuitBreaker.lastFailure?.getTime() ?? 0);
+			if (elapsed > this.CIRCUIT_RESET_MS) {
+				this.circuitBreaker.isOpen = false; // attempt half-open
+			} else {
+				throw new Error(
+					"ChromaDB circuit breaker is open due to repeated failures. Skipping operation."
+				);
+			}
 		}
 	}
-
 	/**
 	 * Record successful operation
 	 */
