@@ -39,18 +39,43 @@ import type { DocumentChunk, PDFChunk } from "../types/chunk";
 // ---------------------------------------------------------------------------
 
 /** Minimal ChromaDB Collection mock surface used in tests. */
+type ChromaMetadata = Record<string, string | number | boolean>;
+interface CollectionGetArgs {
+	where?: ChromaMetadata;
+	limit?: number;
+	include?: string[];
+}
+
+interface CollectionDeleteArgs {
+	where?: ChromaMetadata;
+}
 interface CollectionMock {
 	add: jest.MockedFunction<
 		(args: {
 			ids: string[];
 			embeddings: number[][];
 			documents: string[];
-			metadatas: Record<string, string | number | boolean>[];
+			metadatas: ChromaMetadata[];
 		}) => Promise<void>
 	>;
+
 	query: jest.MockedFunction<
-		(args: { queryEmbeddings: number[][]; nResults: number }) => Promise<ChromaQueryResult>
+		(args: {
+			queryEmbeddings: number[][];
+			nResults: number;
+			where?: ChromaMetadata;
+		}) => Promise<ChromaQueryResult>
 	>;
+
+	get: jest.MockedFunction<
+		(args: {
+			where?: ChromaMetadata;
+			limit?: number;
+			include?: string[];
+		}) => Promise<{ ids: string[] }>
+	>;
+
+	delete: jest.MockedFunction<(args: { where?: ChromaMetadata }) => Promise<void>>;
 }
 
 /** Shape returned by ChromaDB collection.query() used in tests. */
@@ -70,6 +95,7 @@ interface CollectionAddArgs {
 interface CollectionQueryArgs {
 	queryEmbeddings: number[][];
 	nResults: number;
+	where?: ChromaMetadata;
 }
 
 /** Minimal ChromaDB Client mock surface used in tests. */
@@ -126,7 +152,11 @@ describe("VectorStore", () => {
 				documents: [[]],
 				metadatas: [[]],
 				distances: [[]]
-			})
+			}),
+			get: jest.fn<Promise<{ ids: string[] }>, [CollectionGetArgs]>().mockResolvedValue({
+				ids: []
+			}),
+			delete: jest.fn<Promise<void>, [CollectionDeleteArgs]>().mockResolvedValue(undefined)
 		};
 
 		clientMock = {
@@ -239,7 +269,7 @@ describe("VectorStore", () => {
 			// Verify – the collection name must contain the lessonId
 			expect(clientMock.getOrCreateCollection).toHaveBeenCalled();
 			const getArgs = clientMock.getOrCreateCollection.mock.calls[0][0];
-			expect(getArgs.name).toContain("specific-lesson");
+			expect(getArgs.name).toContain("SelfLearn_Shared_VectorStore");
 		});
 	});
 
@@ -305,60 +335,31 @@ describe("VectorStore", () => {
 	});
 
 	// =========================================================================
-	describe("lessonExists", () => {
-		// =========================================================================
-
-		it("returns true when getCollection resolves successfully", async () => {
-			// Setup
-			clientMock.getCollection.mockResolvedValueOnce(collectionMock);
-			await vectorStore.initialize(true);
-
-			// Exercise
-			const exists = await vectorStore.lessonExists("l1");
-
-			// Verify
-			expect(exists).toBe(true);
-		});
-
-		it("returns false when getCollection throws (collection absent)", async () => {
-			// Setup
-			clientMock.getCollection.mockImplementationOnce(() => {
-				throw new Error("not found");
-			});
-			await vectorStore.initialize(true);
-
-			// Exercise
-			const exists = await vectorStore.lessonExists("l2");
-
-			// Verify
-			expect(exists).toBe(false);
-		});
-	});
-
-	// =========================================================================
 	describe("deleteLesson", () => {
-		// =========================================================================
-
-		it("calls deleteCollection with the correct collection name", async () => {
-			// Setup
+		it("deletes documents for the supplied lessonId", async () => {
 			await vectorStore.initialize(true);
 
-			// Exercise
 			await vectorStore.deleteLesson("l1");
 
-			// Verify
-			expect(clientMock.deleteCollection).toHaveBeenCalledWith(
-				expect.objectContaining({ name: expect.stringContaining("l1") })
-			);
+			expect(collectionMock.delete).toHaveBeenCalledWith({
+				where: {
+					lessonId: "l1"
+				}
+			});
 		});
 
-		it("does not throw when the collection does not exist", async () => {
-			// Setup
-			clientMock.deleteCollection.mockRejectedValueOnce(new Error("Collection not found"));
+		it("does not throw when deleting lesson documents fails", async () => {
+			collectionMock.delete.mockRejectedValueOnce(new Error("Collection not found"));
+
 			await vectorStore.initialize(true);
 
-			// Exercise & Verify
 			await expect(vectorStore.deleteLesson("missing")).resolves.toBeUndefined();
+
+			expect(collectionMock.delete).toHaveBeenCalledWith({
+				where: {
+					lessonId: "missing"
+				}
+			});
 		});
 	});
 });
