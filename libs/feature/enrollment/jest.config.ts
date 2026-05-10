@@ -1,5 +1,5 @@
 /* eslint-disable */
-export default {
+module.exports = {
 	displayName: "feature-enrollment",
 	preset: "../../../jest.preset.js",
 	testEnvironment: "node",

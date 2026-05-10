@@ -48,7 +48,7 @@ export function Upload({
 }: {
 	mediaType?: MediaType;
 	onUploadCompleted: (publicUrl: string, meta?: { duration: number }) => void;
-	preview?: ReactElement;
+	preview?: ReactElement<any>;
 	/** If `true`, button to open asset picker is not rendered. */
 	hideAssetPicker?: boolean;
 }) {

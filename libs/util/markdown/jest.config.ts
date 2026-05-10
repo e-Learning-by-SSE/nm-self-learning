@@ -1,5 +1,5 @@
 /* eslint-disable */
-export default {
+module.exports = {
 	displayName: "util-markdown",
 	preset: "../../../jest.preset.js",
 	testEnvironment: "jsdom"

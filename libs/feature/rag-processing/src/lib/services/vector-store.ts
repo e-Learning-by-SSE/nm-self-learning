@@ -96,7 +96,7 @@ export class VectorStore {
 	 */
 	private async getEmbeddingService(): Promise<IEmbeddingService> {
 		if (!this._embeddingService) {
-			const { embeddingService } = await import("./embedding.js");
+			const { embeddingService } = await import("./embedding");
 			this._embeddingService = embeddingService;
 		}
 		return this._embeddingService;

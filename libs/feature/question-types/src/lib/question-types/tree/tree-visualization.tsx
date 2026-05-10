@@ -78,7 +78,7 @@ export function TreeVisualization({
 }: {
 	root: TreeNode;
 	className?: string;
-}): React.ReactElement {
+}): React.ReactElement<any> {
 	const { nodes, edges } = useMemo(() => createGraph(root), [root]);
 	const viewBox = useMemo(() => calculateViewBox(nodes), [nodes]);
 
@@ -144,7 +144,7 @@ export function TreeVisualization({
 		isDragging.current = false;
 	}, []);
 
-	function renderEdge(edge: Edge): React.ReactElement | null {
+	function renderEdge(edge: Edge): React.ReactElement<any> | null {
 		const fromNode = nodes.find(n => n.id === edge.from);
 		const toNode = nodes.find(n => n.id === edge.to);
 		if (!fromNode || !toNode) return null;
@@ -161,7 +161,7 @@ export function TreeVisualization({
 		);
 	}
 
-	function renderNode(pos: NodePosition): React.ReactElement {
+	function renderNode(pos: NodePosition): React.ReactElement<any> {
 		return (
 			<g key={pos.id} transform={`translate(${pos.x},${pos.y})`}>
 				<rect

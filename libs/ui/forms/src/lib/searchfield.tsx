@@ -1,5 +1,7 @@
 import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 
+import type { JSX } from "react";
+
 export function SearchField(props: JSX.IntrinsicElements["input"]) {
 	return (
 		<span className="mb-4 flex items-center rounded-lg border border-c-border bg-c-surface-0 py-1 px-3">

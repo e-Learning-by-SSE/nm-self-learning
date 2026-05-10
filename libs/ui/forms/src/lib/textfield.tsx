@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, type JSX } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { slugify } from "@self-learning/util/common";
 import { LabeledField } from "./labeled-field";
@@ -21,8 +21,8 @@ export function TextArea(props: JSX.IntrinsicElements["textarea"] & { label: str
 
 export function InputWithButton(
 	props: JSX.IntrinsicElements["input"] & {
-		button: React.ReactElement;
-		input: React.ReactElement;
+		button: React.ReactElement<any>;
+		input: React.ReactElement<any>;
 	}
 ) {
 	return (

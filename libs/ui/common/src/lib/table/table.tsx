@@ -5,7 +5,7 @@ export function Table({
 	children,
 	overflow
 }: {
-	head: React.ReactElement;
+	head: React.ReactElement<any>;
 	children: React.ReactNode;
 	overflow?: "auto" | "visible";
 }) {

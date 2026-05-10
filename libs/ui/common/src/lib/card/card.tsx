@@ -6,7 +6,7 @@ export function Card({
 	title,
 	href
 }: {
-	imageElement: ReactElement;
+	imageElement: ReactElement<any>;
 	title: string;
 	href: string;
 }) {

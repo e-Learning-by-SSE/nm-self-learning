@@ -1,5 +1,5 @@
 /* eslint-disable */
-export default {
+module.exports = {
 	displayName: "feature-teaching",
 	preset: "../../../jest.preset.js",
 	testEnvironment: "jsdom",
