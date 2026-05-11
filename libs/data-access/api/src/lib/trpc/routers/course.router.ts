@@ -2,7 +2,6 @@ import { AccessLevel, Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import {
 	courseFormSchema,
-	CoursePermission,
 	getFullCourseExport,
 	mapCourseFormToInsert,
 	mapCourseFormToUpdate
@@ -12,9 +11,16 @@ import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learni
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
-import { canCreate, canDeleteBySlug, canEdit, canEditBySlug } from "../../permissions/course.utils";
-import { greaterAccessLevel, greaterOrEqAccessLevel } from "../../permissions/permission.utils";
-import { getEffectiveAccess } from "../../permissions/permission.service";
+import { getCourseResource } from "../../permissions/course.utils";
+import { greaterAccessLevel } from "../../permissions/permission.utils";
+import {
+	canCreate,
+	canDelete,
+	canEdit,
+	hasEffectiveAccess,
+	preparePermissionsForCreate,
+	preparePermissionsForUpdate
+} from "../../permissions/permission.service";
 
 export const courseRouter = t.router({
 	listAvailableCourses: authProcedure
@@ -255,10 +261,7 @@ export const courseRouter = t.router({
 		);
 
 		// OER-compatible or ADMIN / AUTHOR of the course TODO can edit or FULL?
-		if (
-			!isOERCompatible &&
-			!(ctx.user && (await canEdit(ctx.user, fullExport.course.courseId)))
-		) {
+		if (!isOERCompatible && !(ctx.user && (await canEdit(ctx.user, fullExport.course)))) {
 			throw new TRPCError({
 				code: "FORBIDDEN",
 				message:
@@ -276,19 +279,14 @@ export const courseRouter = t.router({
 					"Deleting the last author as is not allowed, except for Admin Users. Contact the side administrator for more information. "
 			});
 		}
-		// make sure at least one permission is FULL
-		if (input.permissions.filter(p => p.accessLevel === AccessLevel.FULL).length === 0) {
-			throw new TRPCError({
-				code: "BAD_REQUEST",
-				message: "requires at least one FULL permission."
-			});
-		}
-		// can create if user is a member of at least one group
+		// check permissions
 		if (!(await canCreate(ctx.user))) {
 			throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
 		}
+		// prepare permissions for create (can throw)
+		const permissions = await preparePermissionsForCreate(input.permissions);
 
-		const courseForDb = mapCourseFormToInsert(input, getRandomId());
+		const courseForDb = mapCourseFormToInsert(input, getRandomId(), permissions);
 
 		const created = await database.course.create({
 			data: courseForDb,
@@ -301,51 +299,14 @@ export const courseRouter = t.router({
 	edit: authProcedure
 		.input(z.object({ courseId: z.string(), course: courseFormSchema }))
 		.mutation(async ({ input, ctx }) => {
-			// TODO similar to lessonRouter
-			// get user access level to resource - must be at least EDIT
-			const { accessLevel: actualAccess } = await getEffectiveAccess(ctx.user, {
-				courseId: input.courseId
-			});
-			if (!actualAccess || !greaterOrEqAccessLevel(actualAccess, AccessLevel.EDIT)) {
+			// For edit EDIT access required. But if permissions were updated - FULL access is required
+			const permissions = await preparePermissionsForUpdate(input, input.course.permissions);
+			const requiredAccess = permissions ? AccessLevel.FULL : AccessLevel.EDIT;
+			if (!hasEffectiveAccess(ctx.user, input, requiredAccess)) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 			}
-			// drop display fields
-			const perms = input.course.permissions.map(p => {
-				return {
-					accessLevel: p.accessLevel,
-					groupId: p.groupId
-				};
-			});
-			// make sure at least one permission is FULL
-			if (perms.filter(p => p.accessLevel === AccessLevel.FULL).length === 0) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: "requires at least one FULL permission."
-				});
-			}
-			// fetch existing permissions to determine diffs
-			const existingPerms = await database.permission.findMany({
-				where: { courseId: input.courseId },
-				select: { groupId: true, accessLevel: true }
-			});
-			// compute if premissions are equal
-			const toKey = (p: CoursePermission) => `${p.groupId}|${p.accessLevel} ?? "-"}`;
-			const keys = new Set(perms.map(toKey));
-			const equal =
-				existingPerms.length === perms.length &&
-				existingPerms.every(ep => keys.has(toKey(ep)));
-			//
-			if (!equal) {
-				// must have FULL access in the resource to change permissions
-				if (!greaterOrEqAccessLevel(actualAccess, AccessLevel.FULL)) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
-						message: "Insufficient permissions to update permissions"
-					});
-				}
-			}
 
-			const courseForDb = mapCourseFormToUpdate(input.course, input.courseId, perms);
+			const courseForDb = mapCourseFormToUpdate(input.course, input.courseId, permissions);
 
 			return await database.course.update({
 				where: { courseId: input.courseId },
@@ -356,7 +317,8 @@ export const courseRouter = t.router({
 	deleteCourse: authProcedure
 		.input(z.object({ slug: z.string() }))
 		.mutation(async ({ input, ctx }) => {
-			if (!(await canDeleteBySlug(ctx.user, input.slug))) {
+			const resource = await getCourseResource(input.slug);
+			if (!(await canDelete(ctx.user, resource))) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 			}
 			return database.course.delete({
@@ -366,7 +328,8 @@ export const courseRouter = t.router({
 	findLinkedEntities: authProcedure
 		.input(z.object({ slug: z.string() }))
 		.query(async ({ input, ctx }) => {
-			if (!(await canEditBySlug(ctx.user, input.slug))) {
+			const resource = await getCourseResource(input.slug);
+			if (!(await canEdit(ctx.user, resource))) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 			}
 			return database.course.findUnique({
@@ -403,10 +366,6 @@ export const courseRouter = t.router({
 			)
 		)
 		.query(async ({ input, ctx }) => {
-			if (!(await canEditBySlug(ctx.user, input.slug))) {
-				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
-			}
-
 			const usernames = input.usernames
 				? input.usernames
 						.split(",")
@@ -425,6 +384,10 @@ export const courseRouter = t.router({
 					code: "NOT_FOUND",
 					message: `Course not found for slug: ${input.slug}`
 				});
+			}
+
+			if (!(await canEdit(ctx.user, course))) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 			}
 
 			const content = (course.content ?? []) as CourseContent;

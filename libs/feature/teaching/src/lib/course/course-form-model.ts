@@ -1,4 +1,5 @@
 import { AccessLevel, Prisma } from "@prisma/client";
+import { preparePermissionsForCreate, preparePermissionsForUpdate } from "@self-learning/api";
 import { authorsRelationSchema, courseContentSchema, createCourseMeta } from "@self-learning/types";
 import { stringOrNull } from "@self-learning/util/common";
 import { z } from "zod";
@@ -25,12 +26,14 @@ export const courseFormSchema = z.object({
 
 export type CourseFormModel = z.infer<typeof courseFormSchema>;
 
+type PermissionsForCreate = Awaited<ReturnType<typeof preparePermissionsForCreate>>;
+
 export function mapCourseFormToInsert(
 	course: CourseFormModel,
-	courseId: string
+	courseId: string,
+	permissions: PermissionsForCreate
 ): Prisma.CourseCreateInput {
-	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors, permissions } =
-		course;
+	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors } = course;
 
 	const courseForDb: Prisma.CourseCreateInput = {
 		courseId,
@@ -43,26 +46,18 @@ export function mapCourseFormToInsert(
 		meta: createCourseMeta(course),
 		authors: { connect: authors.map(author => ({ username: author.username })) },
 		subject: subjectId ? { connect: { subjectId } } : undefined,
-		permissions: {
-			create: permissions.map(p => ({
-				accessLevel: p.accessLevel,
-				groupId: p.groupId
-			}))
-		}
+		permissions: permissions
 	};
 
 	return courseForDb;
 }
 
-export type CoursePermission = {
-	groupId: number;
-	accessLevel: AccessLevel;
-};
+type PermissionsForUpdate = Awaited<ReturnType<typeof preparePermissionsForUpdate>>;
 
 export function mapCourseFormToUpdate(
 	course: CourseFormModel,
 	courseId: string,
-	perms: CoursePermission[]
+	permissions: PermissionsForUpdate
 ): Prisma.CourseUpdateInput {
 	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors } = course;
 
@@ -77,18 +72,7 @@ export function mapCourseFormToUpdate(
 		meta: createCourseMeta(course),
 		authors: { set: authors.map(author => ({ username: author.username })) },
 		subject: subjectId ? { connect: { subjectId } } : undefined,
-		permissions: {
-			deleteMany: { groupId: { notIn: perms.map(p => p.groupId) } },
-			upsert: perms.map(p => ({
-				where: {
-					groupId_courseId: { courseId, groupId: p.groupId }
-				},
-				create: p,
-				update: {
-					accessLevel: p.accessLevel
-				}
-			}))
-		}
+		permissions
 	};
 
 	return courseForDb;
