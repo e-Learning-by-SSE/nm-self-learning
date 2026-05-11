@@ -13,6 +13,32 @@ import {
 } from "./permission.utils";
 import { add } from "date-fns";
 import { UserFromSession } from "../trpc/context";
+import { TRPCError } from "@trpc/server";
+
+// TODO for now all can read
+// async function canRead(user: UserFromSession, resource: ResourceInput): Promise<boolean> {
+// 	return hasEffectiveResourceAccess(user, resource, AccessLevel.VIEW );
+// }
+
+export async function canEdit(user: UserFromSession, resource: ResourceInput): Promise<boolean> {
+	return hasEffectiveAccess(user, resource, AccessLevel.EDIT);
+}
+
+export async function canDelete(user: UserFromSession, resource: ResourceInput): Promise<boolean> {
+	return hasEffectiveAccess(user, resource, AccessLevel.FULL);
+}
+
+// any group user can create lessons
+export async function canCreate(user: UserFromSession): Promise<boolean> {
+	if (user.role === "ADMIN") return true;
+	const canCreate = await database.member.findFirst({
+		where: {
+			userId: user.id
+		},
+		select: { userId: true } // do not select unnecessary data
+	});
+	return !!canCreate;
+}
 
 /**
  * "Effective" access means:
@@ -20,6 +46,23 @@ import { UserFromSession } from "../trpc/context";
  * - group-derived permissions are resolved
  * - the highest applicable access level is returned
  */
+
+/**
+ * A shortcut for @see hasResourceAccess
+ * checks if the user is a website admin or has defined access to a specific resource.
+ * @param ctx - trpc context with user information
+ * @param input - resource input
+ * @param accessLevel - required resource access level
+ * @returns `true` if user is website admin or has access to the resource at specified access level
+ */
+export async function hasEffectiveAccess(
+	user: UserFromSession,
+	resource: ResourceInput,
+	accessLevel: AccessLevel
+) {
+	if (user.role === "ADMIN") return true;
+	return await hasResourceAccess({ userId: user.id, accessLevel, ...resource });
+}
 
 /**
  * A shortcut for @see hasResourceAccessBatch
@@ -364,4 +407,94 @@ export async function testGroupCircularParent(groupId: number, parentId: number)
 		currentId = parent?.parentId ?? null;
 	}
 	return false;
+}
+
+type PermissionOfResource = {
+	groupId: number;
+	accessLevel: AccessLevel;
+};
+
+export async function preparePermissionsForCreate(newPermissions: PermissionOfResource[]) {
+	// make sure at least one permission is FULL
+	if (newPermissions.filter(p => p.accessLevel === AccessLevel.FULL).length === 0) {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message: "requires at least one FULL permission."
+		});
+	}
+	//
+	return {
+		create: newPermissions.map(p => ({
+			accessLevel: p.accessLevel,
+			groupId: p.groupId
+		}))
+	};
+}
+
+export async function preparePermissionsForUpdate(
+	resource: ResourceInput,
+	newPermissions: PermissionOfResource[]
+) {
+	// drop display fields
+	const perms = newPermissions.map(p => {
+		return {
+			accessLevel: p.accessLevel,
+			groupId: p.groupId
+		};
+	});
+	// make sure at least one permission is FULL
+	if (perms.filter(p => p.accessLevel === AccessLevel.FULL).length === 0) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "requires at least one FULL permission."
+		});
+	}
+	// fetch existing permissions to determine diffs
+	const existingPerms = await database.permission.findMany({
+		where: resource,
+		select: { groupId: true, lessonId: true, accessLevel: true }
+	});
+	// compute if permissions are equal
+	const toKey = (p: PermissionOfResource) => `${p.groupId}|${p.accessLevel}`;
+	const keys = new Set(perms.map(toKey));
+	const equal =
+		existingPerms.length === perms.length && existingPerms.every(ep => keys.has(toKey(ep)));
+	// no update required
+	if (equal) {
+		return undefined;
+	}
+	// TODO make this through common base
+	const getUpsertWhere = (p: PermissionOfResource) => {
+		if (resource.lessonId) {
+			return {
+				groupId_lessonId: {
+					groupId: p.groupId,
+					lessonId: resource.lessonId
+				}
+			};
+		}
+		if (resource.courseId) {
+			return {
+				groupId_courseId: {
+					groupId: p.groupId,
+					courseId: resource.courseId
+				}
+			};
+		}
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "invalid resource input."
+		});
+	};
+
+	return {
+		deleteMany: { groupId: { notIn: perms.map(p => p.groupId) } },
+		upsert: perms.map(p => ({
+			where: getUpsertWhere(p),
+			create: p,
+			update: {
+				accessLevel: p.accessLevel
+			}
+		}))
+	};
 }
