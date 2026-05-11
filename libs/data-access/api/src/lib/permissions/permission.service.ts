@@ -16,13 +16,38 @@ import { add } from "date-fns";
 import { UserFromSession } from "../trpc/context";
 import { TRPCError } from "@trpc/server";
 
-// TODO for now all can read
-// async function canRead(user: UserFromSession, resource: ResourceInput): Promise<boolean> {
-// 	return hasEffectiveResourceAccess(user, resource, AccessLevel.VIEW );
-// }
+/**
+ * Readme
+ *
+ * Working with user permissions in the best scenario should be limited to these 6 functions
+ * - @see canCreate
+ * - @see canView (always true for now)
+ * - @see canEdit
+ * - @see canDelete
+ * - @see hasEffectiveAccess check if user has @see AccessLevel or higher
+ * - @see getEffectiveAccess allows to get exact @see AccessLevel
+ *
+ * They all accept @see UserFromSession and @see ResourceInput
+ *
+ * If more sophisticated functionality is required - see functions below
+ *
+ * Other stuff may be available in permission.router.tsx
+ */
 
 /**
- * Ensures that user can edit a specified resource (has EDIT access)
+ * Ensures that user can view a specified resource (has VIEW+ access)
+ * @note TODO for now all can read
+ * @param user - user from session (ctx.user)
+ * @param resource - defined resource following ResourceInputSchema
+ * @returns `true` if can view specified resource
+ */
+async function canRead(user: UserFromSession, resource: ResourceInput): Promise<boolean> {
+	return true;
+	// return hasEffectiveResourceAccess(user, resource, AccessLevel.VIEW );
+}
+
+/**
+ * Ensures that user can edit a specified resource (has EDIT+ access)
  * @param user - user from session (ctx.user)
  * @param resource - defined resource following ResourceInputSchema
  * @returns `true` if can edit specified resource
@@ -32,7 +57,7 @@ export async function canEdit(user: UserFromSession, resource: ResourceInput): P
 }
 
 /**
- * Ensures that user can delete a specified resource (has FULL access)
+ * Ensures that user can delete a specified resource (has FULL+ access)
  * @param user - user from session (ctx.user)
  * @param resource - defined resource following ResourceInputSchema
  * @returns `true` if can delete specified resource
