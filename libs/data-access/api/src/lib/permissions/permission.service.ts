@@ -4,7 +4,8 @@ import {
 	MembershipInput,
 	PermissionInput,
 	ResourceAccess,
-	ResourceInput
+	ResourceInput,
+	ResourceInputSchema
 } from "./permission.types";
 import {
 	greaterAccessLevel,
@@ -20,15 +21,32 @@ import { TRPCError } from "@trpc/server";
 // 	return hasEffectiveResourceAccess(user, resource, AccessLevel.VIEW );
 // }
 
+/**
+ * Ensures that user can edit a specified resource (has EDIT access)
+ * @param user - user from session (ctx.user)
+ * @param resource - defined resource following ResourceInputSchema
+ * @returns `true` if can edit specified resource
+ */
 export async function canEdit(user: UserFromSession, resource: ResourceInput): Promise<boolean> {
 	return hasEffectiveAccess(user, resource, AccessLevel.EDIT);
 }
 
+/**
+ * Ensures that user can delete a specified resource (has FULL access)
+ * @param user - user from session (ctx.user)
+ * @param resource - defined resource following ResourceInputSchema
+ * @returns `true` if can delete specified resource
+ */
 export async function canDelete(user: UserFromSession, resource: ResourceInput): Promise<boolean> {
 	return hasEffectiveAccess(user, resource, AccessLevel.FULL);
 }
 
-// any group user can create lessons
+/**
+ * Ensures that user can create a resource
+ * @note any group user can create lessons
+ * @param user - user from session (ctx.user)
+ * @returns `true` if can create a resource
+ */
 export async function canCreate(user: UserFromSession): Promise<boolean> {
 	if (user.role === "ADMIN") return true;
 	const canCreate = await database.member.findFirst({
@@ -435,6 +453,16 @@ export async function preparePermissionsForUpdate(
 	resource: ResourceInput,
 	newPermissions: PermissionOfResource[]
 ) {
+	// safe parse input (as its used in where clause)
+	const validation = ResourceInputSchema.safeParse(resource);
+	if (!validation.success) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Invalid resource identifiers provided.",
+			cause: validation.error
+		});
+	}
+	resource = validation.data;
 	// drop display fields
 	const perms = newPermissions.map(p => {
 		return {

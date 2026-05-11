@@ -465,6 +465,14 @@ describe("permission.service", () => {
 			).rejects.toMatchObject({ code: "BAD_REQUEST" });
 		});
 
+		it("throws BAD_REQUEST resource input is invalid", async () => {
+			await expect(
+				preparePermissionsForUpdate({} as any, [
+					{ groupId: 1, accessLevel: AccessLevel.VIEW }
+				])
+			).rejects.toMatchObject({ code: "BAD_REQUEST" });
+		});
+
 		it("throws BAD_REQUEST when no FULL permission is provided", async () => {
 			await expect(
 				preparePermissionsForUpdate({ courseId: "c1" }, [
