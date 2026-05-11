@@ -32,11 +32,14 @@ const nextConfig = {
 	nx: {},
 	i18n,
 	basePath: process.env.NEXT_PUBLIC_BASE_PATH ?? "",
-	assetPrefix: process.env.NEXT_ASSET_PREFIX,
+	assetPrefix: process.env.NEXT_ASSET_PREFIX ?? "",
 	trailingSlash: process.env.NEXT_TRAILING_SLASH ?? false,
 	reactStrictMode: process.env.NODE_ENV === "development",
 	productionBrowserSourceMaps: process.env.NODE_ENV === "development",
 	env: { APP_VERSION: packageJson.version },
+	experimental: {
+		swcPlugins: [["superjson-next", {}]],
+	},
 	turbopack: {
 		rules: {
 			"*.svg": {
