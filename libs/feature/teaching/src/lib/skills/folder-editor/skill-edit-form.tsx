@@ -120,12 +120,12 @@ export function SkillInfoForm({
 						<LabeledField label="Beschreibung" error={errors.description?.message}>
 							<textarea {...form.register("description")} />
 						</LabeledField>
-						<SkillToSkillDepsInfo
-							parents={dbSkill?.parents ?? []}
-							children={dbSkill?.children ?? []}
-							repoId={skill.repositoryId}
-							skillToChange={skill}
-						/>
+					<SkillToSkillDepsInfo
+						parents={dbSkill?.parents ?? []}
+						childSkills={dbSkill?.children ?? []}
+						repoId={skill.repositoryId}
+						skillToChange={skill}
+					/>
 					</div>
 					<div className="flex justify-between">
 						<button type="submit" className="btn-primary w-full">
@@ -145,17 +145,17 @@ export function SkillInfoForm({
 
 function SkillToSkillDepsInfo({
 	parents,
-	children,
+	childSkills,
 	repoId,
 	skillToChange
 }: {
 	parents: SkillResolved["parents"];
-	children: SkillResolved["children"];
+	childSkills: SkillResolved["children"];
 	repoId: string;
 	skillToChange: SkillFormModel;
 }) {
 	const [parentItems, setParentItems] = useState<SkillResolved["parents"]>(parents);
-	const [childItems, setChildItems] = useState<SkillResolved["children"]>(children);
+	const [childItems, setChildItems] = useState<SkillResolved["children"]>(childSkills);
 	const { setValue } = useFormContext<SkillFormModel>();
 
 	useEffect(() => {
@@ -163,8 +163,8 @@ function SkillToSkillDepsInfo({
 	}, [parents]);
 
 	useEffect(() => {
-		setChildItems(children);
-	}, [children]);
+		setChildItems(childSkills);
+	}, [childSkills]);
 
 	const removeParent = (id: string) => {
 		setParentItems(parentItems.filter(item => item.id !== id));

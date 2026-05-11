@@ -232,7 +232,7 @@ export default function ProgrammingAnswer() {
 										<span>Keine Ausgabe.</span>
 										{output.signal && (
 											<span className="text-xs text-c-danger">
-												Prozess wurde mit "{output.signal}" beendet.
+												Prozess wurde mit &quot;{output.signal}&quot; beendet.
 											</span>
 										)}
 									</span>

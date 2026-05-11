@@ -166,12 +166,12 @@ export function ErrorReportDialog({
 			>
 				<div className="mt-[-1rem] mb-4">{`${element} nicht vollständig in LiaScript unterstützt:`}</div>
 				<div className="scroll flex-grow overflow-auto">
-					{report.map(item => (
-						<div className="mb-2">
-							<CollapsibleBox title={<SectionTitle slug={course.slug} item={item} />}>
-								<ul className="ml-4 list-disc space-y-1">
-									{item.missedElements.map(missed => (
-										<li>
+				{report.map((item, idx) => (
+					<div key={idx} className="mb-2">
+						<CollapsibleBox title={<SectionTitle slug={course.slug} item={item} />}>
+							<ul className="ml-4 list-disc space-y-1">
+								{item.missedElements.map((missed, mIdx) => (
+									<li key={mIdx}>
 											<ErrorMessageForReportItem
 												missedItem={missed}
 												courseUrlPath={`/courses/${course.slug}/${item.nanomodule.slug}`}

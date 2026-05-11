@@ -90,36 +90,36 @@ export function GroupPermissionRelationsDialog({
 			<div className="flex flex-col gap-4 overflow-auto">
 				<p>
 					Folgende Benutzer haben Zugriff auf{" "}
-					<span className="font-semibold">"{title}"</span>:
-				</p>
-				{query.isLoading && <LoadingBox />}
-				{query.data?.length === 0 && <p>Keine Benutzer gefunden</p>}
-				{query.data?.map(entry => (
-					<Chip key={entry.user.id} displayImage={true} imgUrl={entry.user.image}>
-						<div className="flex gap-1 justify-between">
-							{entry.user.name} ({entry.accessLevel} über {entry.group.name})
-							<IconOnlyButton
-								icon={<TrashIcon className="h-4 w-4" />}
-								className="btn-x-mark"
-								onClick={() => setRevokeCandidate(entry)}
-							/>
-						</div>
-					</Chip>
-				))}
-				<DialogActions onClose={onClose} abortLabel="OK" />
-			</div>
-			{revokeCandidate && (
-				<Dialog title={"Berechtigung entfernen?"} onClose={onRevokePermission}>
-					<div className="flex flex-col gap-2 overflow-auto">
-						<span>
-							Möchten Sie die Berechtigung für{" "}
-							<span className="font-semibold">"{title}"</span> wirklich entfernen?
-						</span>
-						<span className="text-red-500">
-							Hinweis: Alle Benutzer der Gruppe{" "}
-							<span className="font-semibold">{revokeCandidate.group.name}</span>{" "}
-							verlieren ihren Zugriff für{" "}
-							<span className="font-semibold">"{title}"</span>:
+				<span className="font-semibold">&quot;{title}&quot;</span>:
+			</p>
+			{query.isLoading && <LoadingBox />}
+			{query.data?.length === 0 && <p>Keine Benutzer gefunden</p>}
+			{query.data?.map(entry => (
+				<Chip key={entry.user.id} displayImage={true} imgUrl={entry.user.image}>
+					<div className="flex gap-1 justify-between">
+						{entry.user.name} ({entry.accessLevel} über {entry.group.name})
+						<IconOnlyButton
+							icon={<TrashIcon className="h-4 w-4" />}
+							className="btn-x-mark"
+							onClick={() => setRevokeCandidate(entry)}
+						/>
+					</div>
+				</Chip>
+			))}
+			<DialogActions onClose={onClose} abortLabel="OK" />
+		</div>
+		{revokeCandidate && (
+			<Dialog title={"Berechtigung entfernen?"} onClose={onRevokePermission}>
+				<div className="flex flex-col gap-2 overflow-auto">
+					<span>
+						Möchten Sie die Berechtigung für{" "}
+						<span className="font-semibold">&quot;{title}&quot;</span> wirklich entfernen?
+					</span>
+					<span className="text-red-500">
+						Hinweis: Alle Benutzer der Gruppe{" "}
+						<span className="font-semibold">{revokeCandidate.group.name}</span>{" "}
+						verlieren ihren Zugriff für{" "}
+						<span className="font-semibold">&quot;{title}&quot;</span>:
 						</span>
 						{revokeCandidate.group.members.map(m => (
 							<Chip key={m.id} displayImage={true} imgUrl={m.image}>

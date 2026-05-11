@@ -22,8 +22,8 @@ export default function TextAnswer() {
 			{evaluation && (
 				<Feedback isCorrect={evaluation.isCorrect}>
 					<p className="text-sm">
-						Fragen vom Typ "Freitext" werden momentan nicht automatisch ausgewertet und
-						daher immer als korrekt gewertet.
+					Fragen vom Typ &quot;Freitext&quot; werden momentan nicht automatisch ausgewertet und
+					daher immer als korrekt gewertet.
 					</p>
 				</Feedback>
 			)}

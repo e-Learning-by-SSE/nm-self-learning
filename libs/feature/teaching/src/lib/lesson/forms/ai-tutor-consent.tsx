@@ -14,22 +14,21 @@ export function AiTutorConsent() {
 			<Form.SidebarSectionTitle
 				title={t("AI Tutor Consent")}
 				subtitle={t("Consent to use this content for AI Tutor Context")}
-				children={
-					<Controller
-						name={"ragEnabled"}
-						control={control}
-						render={({ field }) => (
-							<Toggle
-								label=""
-								value={field.value ?? true}
-								onChange={checked => {
-									field.onChange(checked);
-								}}
-							/>
-						)}
-					/>
-				}
-			/>
+			>
+				<Controller
+					name={"ragEnabled"}
+					control={control}
+					render={({ field }) => (
+						<Toggle
+							label=""
+							value={field.value ?? true}
+							onChange={checked => {
+								field.onChange(checked);
+							}}
+						/>
+					)}
+				/>
+			</Form.SidebarSectionTitle>
 			<Controller
 				name={"ragEnabled"}
 				control={control}

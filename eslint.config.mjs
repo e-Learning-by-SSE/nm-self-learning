@@ -5,6 +5,23 @@ import nxPlugin from "@nx/eslint-plugin";
 import pluginCypress from "eslint-plugin-cypress";
 
 export default [...nextCoreWebVitals, {
+    // React Compiler rules from eslint-config-next v16 — downgrade to warnings
+    // since the project does not enable reactCompiler in next.config.js
+    rules: {
+        "react-hooks/set-state-in-effect": "warn",
+        "react-hooks/refs": "warn",
+        "react-hooks/immutability": "warn",
+        "react-hooks/preserve-manual-memoization": "warn",
+        "react-hooks/set-state-in-render": "warn",
+        "react-hooks/purity": "warn",
+        "react-hooks/static-components": "warn",
+        "react-hooks/use-memo": "warn",
+        "react-hooks/globals": "warn",
+        "react-hooks/error-boundaries": "warn",
+        "react-hooks/gating": "warn",
+        "react-hooks/config": "warn",
+    }
+}, {
     ignores: [
         "**/dist",
         "**/node_modules/**",

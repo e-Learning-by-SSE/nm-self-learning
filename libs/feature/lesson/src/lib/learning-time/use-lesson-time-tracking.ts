@@ -88,7 +88,11 @@ export function useLessonSession({
 		}
 
 		const handleVisibilityChange = (): void => {
-			document.hidden ? onHide() : onShow();
+			if (document.hidden) {
+				onHide();
+			} else {
+				onShow();
+			}
 		};
 
 		document.addEventListener("visibilitychange", handleVisibilityChange);

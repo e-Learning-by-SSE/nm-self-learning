@@ -94,7 +94,11 @@ export function MemberGuard({
 	}
 
 	const hasAccess = isAdmin || userGroups.has(groupId);
-	return <AuthorizedGuard condition={hasAccess} children={children} error={error} />;
+	return (
+		<AuthorizedGuard condition={hasAccess} error={error}>
+			{children}
+		</AuthorizedGuard>
+	);
 }
 
 export function testResourceGuard(
