@@ -309,7 +309,7 @@ export const lessonRouter = t.router({
 			// For edit EDIT access required. But if permissions were updated - FULL access is required
 			const permissions = await preparePermissionsForUpdate(input, input.lesson.permissions);
 			const requiredAccess = permissions ? AccessLevel.FULL : AccessLevel.EDIT;
-			if (!hasEffectiveAccess(ctx.user, input, requiredAccess)) {
+			if (!(await hasEffectiveAccess(ctx.user, input, requiredAccess))) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 			}
 			//

@@ -195,7 +195,7 @@ describe("tRPC API of Lesson Router", () => {
 			const { caller } = prepare({});
 
 			(preparePermissionsForUpdate as jest.Mock).mockResolvedValue(undefined);
-			(hasEffectiveAccess as jest.Mock).mockReturnValue(false);
+			(hasEffectiveAccess as jest.Mock).mockResolvedValue(false);
 
 			await expect(caller.edit(defaultLesson)).rejects.toMatchObject({
 				code: "FORBIDDEN"
@@ -207,7 +207,7 @@ describe("tRPC API of Lesson Router", () => {
 			const { caller } = prepare({});
 
 			(preparePermissionsForUpdate as jest.Mock).mockResolvedValue(undefined);
-			(hasEffectiveAccess as jest.Mock).mockReturnValue(false);
+			(hasEffectiveAccess as jest.Mock).mockResolvedValue(false);
 
 			await expect(caller.edit(defaultLesson)).rejects.toMatchObject({
 				code: "FORBIDDEN"
@@ -249,7 +249,7 @@ describe("tRPC API of Lesson Router", () => {
 				deleteMany: { groupId: { notIn: [1] } },
 				upsert: []
 			});
-			(hasEffectiveAccess as jest.Mock).mockReturnValue(false);
+			(hasEffectiveAccess as jest.Mock).mockResolvedValue(false);
 
 			await expect(caller.edit(defaultLesson)).rejects.toMatchObject({
 				code: "FORBIDDEN",
@@ -262,7 +262,7 @@ describe("tRPC API of Lesson Router", () => {
 			const { caller } = prepare({ memberships: [1] });
 
 			(preparePermissionsForUpdate as jest.Mock).mockResolvedValue(undefined);
-			(hasEffectiveAccess as jest.Mock).mockReturnValue(true);
+			(hasEffectiveAccess as jest.Mock).mockResolvedValue(true);
 			(database.lesson.findUnique as jest.Mock).mockResolvedValue({
 				ragVersionHash: "old-hash",
 				ragEnabled: false
@@ -289,7 +289,7 @@ describe("tRPC API of Lesson Router", () => {
 				deleteMany: { groupId: { notIn: [1] } },
 				upsert: []
 			});
-			(hasEffectiveAccess as jest.Mock).mockReturnValue(true);
+			(hasEffectiveAccess as jest.Mock).mockResolvedValue(true);
 			(database.lesson.findUnique as jest.Mock).mockResolvedValue({
 				ragVersionHash: "old-hash",
 				ragEnabled: false

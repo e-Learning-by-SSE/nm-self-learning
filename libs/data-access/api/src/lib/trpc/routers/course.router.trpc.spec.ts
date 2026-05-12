@@ -9,7 +9,6 @@ import { AccessLevel } from "@prisma/client";
 import {
 	canCreate,
 	canDelete,
-	canEdit,
 	hasEffectiveAccess,
 	preparePermissionsForCreate,
 	preparePermissionsForUpdate
@@ -89,7 +88,7 @@ describe("tRPC API of Course Router", () => {
 			const { caller } = prepare({});
 
 			(canCreate as jest.Mock).mockResolvedValue(false);
-			(preparePermissionsForCreate as jest.Mock).mockResolvedValue(undefined);
+			(preparePermissionsForCreate as jest.Mock).mockReturnValue(undefined);
 
 			await expect(caller.create(defaultCourse.course)).rejects.toMatchObject({
 				code: "FORBIDDEN",
@@ -113,7 +112,7 @@ describe("tRPC API of Course Router", () => {
 			const { caller } = prepare({});
 
 			(canCreate as jest.Mock).mockResolvedValue(true);
-			(preparePermissionsForCreate as jest.Mock).mockResolvedValue({
+			(preparePermissionsForCreate as jest.Mock).mockReturnValue({
 				create: defaultCourse.course.permissions.map(p => ({
 					accessLevel: p.accessLevel,
 					groupId: p.groupId
@@ -177,7 +176,7 @@ describe("tRPC API of Course Router", () => {
 			const { caller } = prepare({});
 
 			(preparePermissionsForUpdate as jest.Mock).mockResolvedValue(undefined); // no change
-			(hasEffectiveAccess as jest.Mock).mockReturnValue(false); // no access for EDIT
+			(hasEffectiveAccess as jest.Mock).mockResolvedValue(false); // no access for EDIT
 
 			await expect(caller.edit(defaultCourse)).rejects.toMatchObject({
 				code: "FORBIDDEN"
@@ -189,7 +188,7 @@ describe("tRPC API of Course Router", () => {
 			const { caller } = prepare({});
 
 			(preparePermissionsForUpdate as jest.Mock).mockResolvedValue(undefined); // no change
-			(hasEffectiveAccess as jest.Mock).mockReturnValue(false); // no access for EDIT
+			(hasEffectiveAccess as jest.Mock).mockResolvedValue(false); // no access for EDIT
 
 			await expect(caller.edit(defaultCourse)).rejects.toMatchObject({
 				code: "FORBIDDEN"
@@ -231,7 +230,7 @@ describe("tRPC API of Course Router", () => {
 				deleteMany: { groupId: { notIn: [1] } },
 				upsert: []
 			}); // permissions changed
-			(hasEffectiveAccess as jest.Mock).mockReturnValue(false); // no FULL access
+			(hasEffectiveAccess as jest.Mock).mockResolvedValue(false); // no FULL access
 
 			await expect(caller.edit(defaultCourse)).rejects.toMatchObject({
 				code: "FORBIDDEN",
@@ -244,7 +243,7 @@ describe("tRPC API of Course Router", () => {
 			const { caller } = prepare({});
 
 			(preparePermissionsForUpdate as jest.Mock).mockResolvedValue(undefined); // no change
-			(hasEffectiveAccess as jest.Mock).mockReturnValue(true); // has EDIT access
+			(hasEffectiveAccess as jest.Mock).mockResolvedValue(true); // has EDIT access
 
 			await expect(caller.edit(defaultCourse)).resolves.toBeDefined();
 			expect(database.course.update).toHaveBeenCalledTimes(1);
@@ -257,7 +256,7 @@ describe("tRPC API of Course Router", () => {
 				deleteMany: { groupId: { notIn: [1] } },
 				upsert: []
 			}); // permissions changed
-			(hasEffectiveAccess as jest.Mock).mockReturnValue(true); // has FULL access
+			(hasEffectiveAccess as jest.Mock).mockResolvedValue(true); // has FULL access
 
 			await expect(caller.edit(defaultCourse)).resolves.toBeDefined();
 			expect(database.course.update).toHaveBeenCalledTimes(1);
