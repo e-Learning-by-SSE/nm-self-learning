@@ -35,11 +35,11 @@ import { TRPCError } from "@trpc/server";
  */
 
 /**
- * Ensures that user can view a specified resource (has VIEW+ access)
+ * Ensures that user can read a specified resource (has VIEW+ access)
  * @note TODO for now all can read
  * @param user - user from session (ctx.user)
  * @param resource - defined resource following ResourceInputSchema
- * @returns `true` if can view specified resource
+ * @returns `true` if can read specified resource
  */
 async function canRead(user: UserFromSession, resource: ResourceInput): Promise<boolean> {
 	return true;
@@ -457,6 +457,14 @@ type PermissionOfResource = {
 	accessLevel: AccessLevel;
 };
 
+/**
+ * Every resource has permissions array. If that array was created through create trpc
+ * this method helps to perform necessary checks to create permissions
+ * @note Checks if permissions are to be changed:
+ * @param newPermissions - list of created permissions
+ * @throws TRPCError if permissions do not follow the schema
+ * @returns db create ready json
+ */
 export async function preparePermissionsForCreate(newPermissions: PermissionOfResource[]) {
 	// make sure at least one permission is FULL
 	if (newPermissions.filter(p => p.accessLevel === AccessLevel.FULL).length === 0) {
@@ -474,6 +482,18 @@ export async function preparePermissionsForCreate(newPermissions: PermissionOfRe
 	};
 }
 
+/**
+ * Every resource has permissions array. If that array was modified through update trpc
+ * this method helps to perform necessary checks to update permissions
+ * Usage inside transaction is possible
+ * @note Checks if permissions are to be changed:
+ * If changed: Requires FULL access
+ * If not changed: Requires EDIT access
+ * @param resource - @see ResourceInput - specifies resource permissions are attached to
+ * @param newPermissions - list of edited permissions
+ * @throws TRPCError if permissions or resource do not follow the schema
+ * @returns db upsert ready json or undefined (if no changes are required)
+ */
 export async function preparePermissionsForUpdate(
 	resource: ResourceInput,
 	newPermissions: PermissionOfResource[]
