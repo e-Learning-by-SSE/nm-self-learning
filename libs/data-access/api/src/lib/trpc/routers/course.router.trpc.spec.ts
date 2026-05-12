@@ -325,10 +325,19 @@ describe("tRPC API of Course Router", () => {
 			});
 			const input = { slug: "non-existing-course" };
 
+			(getCourseResource as jest.Mock).mockRejectedValue(
+				new TRPCError({
+					code: "NOT_FOUND",
+					message: "Course not found"
+				})
+			);
 			(canDelete as jest.Mock).mockResolvedValue(true);
 
-			// Course doesn't exists; user is author -> TRPCError
-			await expect(caller.deleteCourse(input)).rejects.toThrow(TRPCError);
+			// Course doesn't exist; getCourseResource drives NOT_FOUND
+			await expect(caller.deleteCourse(input)).rejects.toMatchObject({
+				code: "NOT_FOUND"
+			});
+			expect(database.course.delete).not.toHaveBeenCalled();
 		});
 	});
 });
