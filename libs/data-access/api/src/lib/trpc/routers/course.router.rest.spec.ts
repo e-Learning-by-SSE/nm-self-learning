@@ -29,10 +29,6 @@ jest.mock("@self-learning/database", () => ({
 	}
 }));
 
-jest.mock("../../permissions/course.utils", () => ({
-	getCourseResource: jest.fn()
-}));
-
 describe("REST API of Course Router", () => {
 	const privilegedUser: UserFromSession = {
 		id: "1",

@@ -7,16 +7,8 @@ jest.mock("@self-learning/database", () => ({
 	database: {
 		course: {
 			findUnique: jest.fn()
-		},
-		member: {
-			findFirst: jest.fn()
 		}
 	}
-}));
-
-jest.mock("./permission.service", () => ({
-	hasGroupRole: jest.fn(),
-	hasResourceAccess: jest.fn()
 }));
 
 describe("course permission utils", () => {
