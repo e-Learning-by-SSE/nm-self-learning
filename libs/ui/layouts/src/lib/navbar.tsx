@@ -6,6 +6,7 @@ import {
 	ArrowRightStartOnRectangleIcon,
 	Bars4Icon,
 	PencilSquareIcon,
+	UserGroupIcon,
 	UserIcon,
 	WrenchIcon,
 	XMarkIcon
@@ -93,6 +94,7 @@ export function Navbar() {
 											avatarUrl={user.avatarUrl}
 											isAuthor={user.isAuthor}
 											isAdmin={user.role === "ADMIN"}
+											isMember={user.memberships.length > 0}
 											signOut={() => logoutRedirect("/")}
 										/>
 									</div>
@@ -184,11 +186,13 @@ export function NavbarDropdownMenu({
 	signOut,
 	isAuthor,
 	isAdmin,
+	isMember,
 	avatarUrl
 }: {
 	avatarUrl?: string | null;
 	isAuthor: boolean;
 	isAdmin: boolean;
+	isMember: boolean;
 	signOut: () => void;
 }) {
 	const { t } = useTranslation("common");
@@ -229,6 +233,16 @@ export function NavbarDropdownMenu({
 				<AdjustmentsHorizontalIcon className="h-5" />
 				<span>{t("Settings")}</span>
 			</Link>
+
+			{(isMember || isAdmin || isAuthor) && (
+				<Link
+					href="/groups"
+					className={` flex w-full items-center gap-2 rounded-md px-3 py-3`}
+				>
+					<UserGroupIcon className="h-5" />
+					<span>{t("Groups")}</span>
+				</Link>
+			)}
 
 			{isAuthor && (
 				<Link

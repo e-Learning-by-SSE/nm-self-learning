@@ -25,6 +25,11 @@ const authors: Prisma.UserCreateInput[] = [
 				displayName: "Jane Doe",
 				slug: "slr-author_1"
 			}
+		},
+		student: {
+			create: {
+				username: "slr-author_1"
+			}
 		}
 	}
 ];

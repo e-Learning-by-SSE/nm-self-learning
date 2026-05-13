@@ -26,7 +26,7 @@ import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { handleEmailTracking } from "@self-learning/ui/notifications";
 import { withAuth } from "@self-learning/util/auth";
 import {
-	formatDateAgo,
+	formatDateDistanceToNow,
 	formatDateStringShort,
 	formatTimeIntervalToString,
 	IdSet
@@ -878,7 +878,7 @@ function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 											{lesson.title}
 										</span>
 										<span className="text-xs text-c-text-muted mt-1">
-											{formatDateAgo(lesson.touchedAt)}
+											{formatDateDistanceToNow(lesson.touchedAt)}
 										</span>
 									</div>
 

@@ -16,6 +16,13 @@ export async function getUserWithSettings(username: string) {
 					learningDiary: true,
 					learningStatistics: true
 				}
+			},
+			defaultGroup: {
+				select: {
+					id: true,
+					name: true,
+					slug: true
+				}
 			}
 		}
 	});

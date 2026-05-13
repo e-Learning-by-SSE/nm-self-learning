@@ -1,5 +1,6 @@
 "use client";
 import { Combobox, ComboboxOption } from "@headlessui/react";
+import { UserRole } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import {
 	DropdownDialog,
@@ -10,13 +11,22 @@ import {
 import { Fragment, useState } from "react";
 import { keepPreviousData } from "@tanstack/react-query";
 
+export type UserSearchEntry = {
+	id: string;
+	name: string;
+	email: string | null;
+	displayName: string;
+	role: UserRole;
+	image: string | null;
+};
+
 export function SearchUserDialog({
 	onClose,
 	open
 }: {
 	open: boolean;
 	/** Returns the `username` of the selected user, or `undefined`, if no user was selected. */
-	onClose: OnDialogCloseFn<string>;
+	onClose: OnDialogCloseFn<UserSearchEntry>;
 }) {
 	const [name, setName] = useState("");
 	const [page, setPage] = useState(1);
@@ -55,7 +65,7 @@ export function SearchUserDialog({
 										focus ? "bg-c-primary text-white" : ""
 									}`}
 									onClick={() => {
-										onClose(user.name);
+										onClose(user);
 									}}
 								>
 									<ImageOrPlaceholder
@@ -63,7 +73,9 @@ export function SearchUserDialog({
 										className="h-10 w-10 rounded-lg object-cover"
 									/>
 									<div className="flex flex-col">
-										<span className="text-sm font-medium">{user.name}</span>
+										<span className="text-sm font-medium">
+											{user.displayName}
+										</span>
 										<span
 											className={`text-start text-xs ${
 												focus ? "text-white" : "text-c-text-muted"

@@ -11,8 +11,8 @@ export type ButtonVariant = "primary" | "secondary" | "danger" | "tertiary" | "x
  * Text disappears on small viewports, only icon remains visible
  *
  * @example
- * <IconTextButton text="Edit" icon={<PencilIcon className="h-5" />} variant="primary" />
- * <IconTextButton text="Delete" icon={<TrashIcon className="h-5" />} variant="danger" />
+ * <IconTextButton text="Edit" icon={<PencilIcon className="h-5" />} className="btn-primary" />
+ * <IconTextButton text="Delete" icon={<TrashIcon className="h-5" />} className="btn-danger" />
  */
 export function IconTextButton({
 	icon,

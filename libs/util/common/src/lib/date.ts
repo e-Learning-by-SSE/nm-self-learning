@@ -1,6 +1,6 @@
-import { differenceInDays, formatDistance, intervalToDuration, startOfDay } from "date-fns";
+import { differenceInDays, formatDistanceToNow, intervalToDuration, startOfDay } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
-import { de } from "date-fns/locale";
+import { de, enUS } from "date-fns/locale";
 
 export const DISPLAY_TIMEZONE = "Europe/Berlin";
 
@@ -22,21 +22,48 @@ export function formatSeconds(seconds: number): string {
 	}:${secondsLeft.toString().padStart(2, "0")}`;
 }
 
-export function formatDateAgo(date: Date | string | number) {
-	return formatDistance(new Date(date), Date.now(), {
+export function isInThePast(date: Date): boolean {
+	return date.getTime() - Date.now() < 0;
+}
+
+/**
+ * Formats a date as a relative (to now) time string (e.g., "vor 3 Tagen"/"3 days ago" or "in 3 Tagen"/"in 3 days").
+ * @param date - The date to format
+ * @param locale - The locale to use ("de" for German, "en" for English)
+ * @returns A relative time string
+ */
+export function formatDateDistanceToNow(date: Date | string | number, locale: "de" | "en" = "de") {
+	return formatDistanceToNow(new Date(date), {
 		addSuffix: true,
-		locale: de
+		locale: locale === "de" ? de : enUS
 	});
 }
 
-export function formatTimeIntervalToString(ms: number): string {
+/**
+ * Preciece time interval formatting into a human readable string.
+ * Do not use for long time intervals (years, months) as it becomes unreadable.
+ * @param ms
+ * @param locale
+ * @returns
+ */
+export function formatTimeIntervalToString(ms: number, locale: "de" | "en" = "de"): string {
 	const duration = intervalToDuration({ start: 0, end: ms });
 
-	const { days, hours, minutes } = duration;
+	const { years, months, days, hours, minutes } = duration;
 
 	let result = "";
 
+	if (years && years > 0) {
+		result += `${years} ${years > 1 ? "Jahre" : "Jahr"}`;
+	}
+
+	if (months && months > 0) {
+		if (result) result += " und ";
+		result += `${months} ${months > 1 ? "Monate" : "Monat"}`;
+	}
+
 	if (days && days > 0) {
+		if (result) result += " und ";
 		result += `${days} ${days > 1 ? "Tage" : "Tag"}`;
 	}
 

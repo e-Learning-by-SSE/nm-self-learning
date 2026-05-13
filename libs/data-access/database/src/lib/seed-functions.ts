@@ -1,6 +1,7 @@
-/* eslint-disable quotes */
 import { faker } from "@faker-js/faker";
 import {
+	AccessLevel,
+	GroupRole,
 	LessonType,
 	NotificationChannel,
 	NotificationType,
@@ -13,7 +14,7 @@ import {
 	createCourseMeta,
 	createLessonMeta,
 	extractLessonIds,
-	LessonContent /* eslint-disable quotes */,
+	LessonContent,
 	LessonContentType
 } from "@self-learning/types";
 import { slugify } from "@self-learning/util/common";
@@ -28,10 +29,12 @@ const adminName = "dumbledore";
 
 export function createLessonWithRandomContentAndDemoQuestions({
 	title,
-	questions
+	questions,
+	courseId
 }: {
 	title: string;
 	questions: QuizContent;
+	courseId?: string;
 }) {
 	const content = [
 		{
@@ -49,6 +52,7 @@ export function createLessonWithRandomContentAndDemoQuestions({
 	] as LessonContent;
 
 	return createLesson({
+		courseId,
 		title,
 		subtitle: faker.lorem.paragraph(1),
 		description: faker.lorem.paragraphs(3),
@@ -66,7 +70,8 @@ export function createLesson({
 	questions,
 	licenseId,
 	lessonType,
-	selfRegulatedQuestion
+	selfRegulatedQuestion,
+	courseId
 }: {
 	title: string;
 	subtitle: string | null;
@@ -76,6 +81,7 @@ export function createLesson({
 	licenseId?: number | null;
 	lessonType?: LessonType;
 	selfRegulatedQuestion?: string;
+	courseId?: string;
 }) {
 	const lesson: Prisma.LessonCreateManyInput = {
 		title,
@@ -104,13 +110,17 @@ export function createAuthor({
 	name,
 	imgUrl,
 	lessons,
-	courses
+	courses,
+	group,
+	role
 }: {
 	userName: string;
 	name: string;
 	imgUrl: string;
 	lessons: Lessons;
 	courses: Course[];
+	group: string; // relies on the fact that name is unique
+	role: GroupRole;
 }): Prisma.UserCreateInput {
 	const slug = slugify(name, { lower: true, strict: true });
 	return {
@@ -126,7 +136,9 @@ export function createAuthor({
 				lessons: { connect: extractLessonIds(lessons).map(lessonId => ({ lessonId })) },
 				teams: { create: [] }
 			}
-		}
+		},
+		student: { create: { username: userName } },
+		memberships: { create: { group: { connect: { name: group } }, role: role } }
 	};
 }
 
@@ -138,6 +150,7 @@ type Chapters = {
 }[];
 
 export function createCourse({
+	courseId,
 	subjectId,
 	specializationId,
 	title,
@@ -146,6 +159,7 @@ export function createCourse({
 	imgUrl,
 	chapters
 }: {
+	courseId: string;
 	subjectId: string;
 	specializationId: string;
 	title: string;
@@ -155,7 +169,7 @@ export function createCourse({
 	chapters: Chapters;
 }): Course {
 	const course = {
-		courseId: faker.string.alphanumeric(8),
+		courseId,
 		title: title,
 		slug: slugify(title, { lower: true, strict: true }),
 		subtitle: subtitle ?? "",
@@ -173,7 +187,7 @@ export function createCourse({
 		),
 		meta: {}
 	};
-
+	// TODO Can be removed
 	course.meta = createCourseMeta(course);
 
 	const result = {
@@ -292,6 +306,7 @@ export async function seedCaseStudy(
 	name: string,
 	courses: Course[],
 	chapters: Chapters,
+	group: Prisma.GroupCreateInput | null,
 	authors: Prisma.UserCreateInput[] | null
 ): Promise<void> {
 	console.log("\x1b[94m%s\x1b[0m", name + " Example:");
@@ -335,6 +350,26 @@ export async function seedCaseStudy(
 		});
 	}
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Connect Specialization to Courses");
+
+	if (group) {
+		const lessonsPermissions = chapters.flatMap(chapter =>
+			chapter.content.map(lesson => ({
+				accessLevel: AccessLevel.FULL,
+				lessonId: lesson.lessonId
+			}))
+		);
+		const coursesPermissions = courses.map(c => ({
+			accessLevel: AccessLevel.FULL,
+			courseId: c.data.courseId
+		}));
+		const perms = [...lessonsPermissions, ...coursesPermissions];
+		await prisma.group.upsert({
+			where: { name: group.name },
+			create: { ...group, permissions: { create: perms } },
+			update: { permissions: { createMany: { data: perms, skipDuplicates: true } } }
+		});
+	}
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Create a group with FULL permissions to all resources");
 
 	if (authors) {
 		for (const author of authors) {

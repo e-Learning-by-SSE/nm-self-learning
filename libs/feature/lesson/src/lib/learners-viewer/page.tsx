@@ -7,7 +7,7 @@ import {
 	PencilIcon,
 	QuestionMarkCircleIcon
 } from "@heroicons/react/24/solid";
-import { LessonType } from "@prisma/client";
+import { AccessLevel, LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import {
 	SmallGradeBadge,
@@ -15,6 +15,7 @@ import {
 	useMarkAsCompleted
 } from "@self-learning/completion";
 import { database } from "@self-learning/database";
+import { ShowTranskript } from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
 	Article,
@@ -36,6 +37,7 @@ import {
 	MarkdownContainer,
 	NavigableContentViewer,
 	useNavigableContent,
+	ResourceGuard,
 	useRequiredSession
 } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
@@ -106,7 +108,6 @@ export async function getSspLearnersView(
 
 // id is required by Navigable. Content id is required to map this to lesson.content pos
 type OpenedMediaInfo = LessonContentType & { id: number; content_id: number };
-//
 type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta };
 type LessonNavigationItem = { slug: string; lessonId: string };
 type LessonNavigationData = LessonNavigationItem[];
@@ -124,6 +125,7 @@ function ContentDisplayItem({
 	course: LessonLearnersViewProps["course"];
 	addMediaDisplay: (idx: number) => void;
 }) {
+
 	if (!c || index === undefined) {
 		return <ContentInfo text="Diese Lerneinheit hat keinen Inhalt." />;
 	}
@@ -139,12 +141,14 @@ function ContentDisplayItem({
 		case "video":
 			if (!c.value.url) return <ContentInfo error text="Fehlende Video-URL." />;
 			return (
-				<div className="aspect-video w-full xl:max-h-[75vh]">
+				<div className="flex flex-col gap-4 aspect-video w-full xl:max-h-[75vh]">
 					<VideoPlayer
 						parentLessonId={lesson.lessonId}
 						url={c.value.url}
 						courseId={course?.courseId}
+						subtitle={c.value.subtitle}
 					/>
+					{c.value.subtitle?.src && <ShowTranskript webvttTranscript={c.value.subtitle.src} />}
 				</div>
 			);
 		case "pdf":
@@ -233,10 +237,7 @@ function extractNavigationInfo(
 ): LessonNavigationData {
 	const tmp = courseContent.map(chapter => ({
 		content: chapter.content.map(lesson => {
-			const lessonInfo = lessons[lesson.lessonId] ?? {
-				slug: undefined,
-				lessonId: undefined
-			};
+			const lessonInfo = lessons[lesson.lessonId] ?? { slug: undefined, lessonId: undefined };
 			return lessonInfo;
 		})
 	}));
@@ -287,10 +288,7 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonLearnersV
 	const INITIAL_PDF: OpenedMediaInfo[] = useMemo(
 		() =>
 			lessonContent
-				.map((m, idx) => ({
-					...m,
-					content_id: idx
-				}))
+				.map((m, idx) => ({ ...m, content_id: idx }))
 				.filter(m => m.type === "pdf") as OpenedMediaInfo[],
 		[lessonContent]
 	);
@@ -302,9 +300,7 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonLearnersV
 
 	const handleCloseDialog = () => {
 		setShowDialog(false);
-		router.push({ pathname: path, query: { modal: "closed" } }, undefined, {
-			shallow: true
-		});
+		router.push({ pathname: path, query: { modal: "closed" } }, undefined, { shallow: true });
 	};
 
 	if (showDialog && markdown.preQuestion) {
@@ -525,20 +521,20 @@ function LessonHeader({
 }
 
 function AuthorEditButton({ lesson }: { lesson: LessonLearnersViewProps["lesson"] }) {
-	const session = useRequiredSession();
-
-	if (session.data?.user.isAuthor || session.data?.user.role === "ADMIN") {
-		return (
+	return (
+		<ResourceGuard
+			mode="hide"
+			accessLevel={AccessLevel.EDIT}
+			allowedGroups={lesson.permissions}
+		>
 			<Link
 				href={`/teaching/lessons/edit/${lesson.lessonId}`}
 				className="btn-stroked h-fit xl:w-fit"
 			>
 				<PencilIcon className="h-6" />
 			</Link>
-		);
-	}
-
-	return null;
+		</ResourceGuard>
+	);
 }
 
 function LessonControls({
@@ -621,16 +617,22 @@ function LessonControls({
 }
 
 function StandaloneLessonControls({ lesson }: { lesson: LessonLearnersViewProps["lesson"] }) {
-	const session = useSession();
-	// TODO - separate issue -  find out am I an author? lesson provides no uid
+    const session = useSession();
+    const hasQuiz = (lesson.meta as LessonMeta).hasQuiz;
+    // TODO - separate issue -  find out am I an author? lesson provides no uid
 
-	if (session.data?.user.role === "ADMIN" || session.data?.user.isAuthor)
-		return (
-			<div className="flex w-full flex-wrap gap-2 xl:w-fit flex-row">
-				<AuthorEditButton lesson={lesson} />
-			</div>
-		);
-	else return <div></div>;
+    if (session.data?.user.role === "ADMIN" || session.data?.user.isAuthor)
+        return (
+            <div className="flex w-full flex-wrap gap-2 xl:w-fit flex-row">
+                <AuthorEditButton lesson={lesson} />
+                {hasQuiz && <LinkToQuiz url={`lessons/${lesson.slug}`} />}
+            </div>
+        );
+    else return (
+        <div className="flex w-full flex-wrap gap-2 xl:w-fit flex-row">
+            {hasQuiz && <LinkToQuiz url={`lessons/${lesson.slug}`} />}
+        </div>
+    );
 }
 
 function LinkToQuiz({ url }: { url: string }) {

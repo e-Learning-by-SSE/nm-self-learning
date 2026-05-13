@@ -54,10 +54,71 @@ export const pathGenerationPayloadSchema = z.object({
 	knowledge: z.array(z.string()).optional()
 });
 
+/******************************************************************************
+ ******************************  RAG Embedding ******************************
+ ******************************************************************************/
+
+export const ragEmbedPayloadSchema = z.object({
+	lessonId: z.string(),
+	lessonTitle: z.string(),
+	pdfBuffers: z.array(
+		z.object({ 
+			data: z.string(),
+			url: z.string().url()
+		})
+	),
+	articleTexts: z.array(z.string()),
+	transcriptTexts: z.array(z.string())
+});
+
+export const ragEmbedResponseSchema = z.object({
+	success: z.boolean(),
+	chunksCreated: z.number(),
+	breakdown: z.object({
+		pdfChunks: z.number(),
+		articleChunks: z.number(),
+		videoChunks: z.number()
+	}),
+	message: z.string()
+});
+
+/******************************************************************************
+ ******************************  RAG Retrieval ******************************
+ ******************************************************************************/
+
+export const ragRetrievePayloadSchema = z.object({
+	lessonId: z.string(),
+	question: z.string(),
+	topK: z.number().optional()
+});
+
+export const ragRetrieveResponseSchema = z.object({
+	context: z.string(),
+	sources: z.array(
+		z.object({
+			lessonName: z.string(),
+			pageNumber: z.number().optional(),
+			sourceType: z.string(),
+			score: z.number()
+		})
+	)
+});
+
+/******************************************************************************
+ ******************************  Job Unions ******************************
+ ******************************************************************************/
+
 export const SubmitJobInput = z.discriminatedUnion("jobType", [
 	BaseJobSchema.extend({
 		jobType: z.literal("pathGeneration"),
 		payload: pathGenerationPayloadSchema
+	}),
+	BaseJobSchema.extend({
+		jobType: z.literal("ragEmbed"), payload: ragEmbedPayloadSchema
+	}),
+	BaseJobSchema.extend({
+		jobType: z.literal("ragRetrieve"),
+		payload: ragRetrievePayloadSchema
 	})
 ]);
 
@@ -65,6 +126,14 @@ export const JobResponse = z.discriminatedUnion("jobType", [
 	BaseJobSchema.extend({
 		jobType: z.literal("pathGeneration"),
 		response: unknown()
+	}),
+	BaseJobSchema.extend({
+		jobType: z.literal("ragEmbed"),
+		response: ragEmbedResponseSchema
+	}),
+	BaseJobSchema.extend({
+		jobType: z.literal("ragRetrieve"),
+		response: ragRetrieveResponseSchema
 	})
 ]);
 

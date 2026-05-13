@@ -10,12 +10,14 @@ import {
 import { Fragment, useState } from "react";
 import { keepPreviousData } from "@tanstack/react-query";
 
+export type CourseSearchEntry = { courseId: string; title: string; slug: string };
+
 export function SearchCourseDialog({
 	open,
 	onClose
 }: {
 	open: boolean;
-	onClose: OnDialogCloseFn<{ courseId: string; title: string }>;
+	onClose: OnDialogCloseFn<CourseSearchEntry>;
 }) {
 	const [title, setTitle] = useState("");
 	const [page, setPage] = useState(1);

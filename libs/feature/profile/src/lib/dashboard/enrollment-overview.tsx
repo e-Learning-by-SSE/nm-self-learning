@@ -9,7 +9,7 @@ import {
 	Tabs
 } from "@self-learning/ui/common";
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
-import { formatDateAgo } from "@self-learning/util/common";
+import { formatDateDistanceToNow } from "@self-learning/util/common";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -267,7 +267,7 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 							/>
 						</TableDataColumn>
 						<TableDataColumn>
-							{formatDateAgo(enrollment.lastProgressUpdate)}
+							{formatDateDistanceToNow(enrollment.lastProgressUpdate)}
 						</TableDataColumn>
 					</tr>
 				))}

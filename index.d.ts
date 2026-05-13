@@ -13,6 +13,8 @@ declare global {
 			NEXT_TRAILING_SLASH: boolean | undefined;
 			NEXT_PUBLIC_MATOMO_ULR: string | undefined;
 			NEXT_PUBLIC_MATOMO_SITE_ID: string | undefined;
+			NEXT_PUBLIC_TRANSCRIPTION_SERVICE_URL: string | undefined;
+			NEXT_PUBLIC_TRANSCRIPTION_MIGRATE_EXISTING_VIDEO_CONTENT: string | undefined;
 			DATABASE_URL: string;
 			MINIO_ENDPOINT: string;
 			MINIO_PORT: string;
@@ -45,11 +47,13 @@ declare module "next-auth" {
 			role: UserRole;
 			isAuthor: boolean;
 			avatarUrl?: string | null;
+			memberships: number[];
 			featureFlags: {
 				learningDiary: boolean;
 				learningStatistics: boolean;
 				experimental: boolean;
 			};
+			defaultGroupId?: number;
 		};
 	}
 }

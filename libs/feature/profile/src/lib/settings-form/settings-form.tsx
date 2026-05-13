@@ -3,6 +3,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { NotificationChannel, NotificationType } from "@prisma/client";
 import {
 	EditFeatureSettings,
+	EditPermissionsSettings,
+	editPermissionsSettingsSchema,
 	EditPersonalSettings,
 	editPersonalSettingSchema,
 	ResolvedValue,
@@ -10,10 +12,11 @@ import {
 } from "@self-learning/types";
 import { OnDialogCloseFn, Toggle, Trans } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { getUserWithSettings } from "../crud-settings";
 import { useTranslation } from "next-i18next";
 import { SettingsSection } from "./setting-section";
+import { GroupPicker } from "@self-learning/teaching";
 
 function ToggleSetting({
 	value,
@@ -96,8 +99,9 @@ export function FeatureSettingsForm({
 	const onChangeStatistics = (value: boolean) => {
 		if (!value) {
 			onChange({ learningStatistics: false, learningDiary: false });
+		} else {
+			onChange({ learningStatistics: value });
 		}
-		onChange({ learningStatistics: value });
 	};
 
 	const { t: t_common } = useTranslation("common");
@@ -246,5 +250,47 @@ export function NotificationSettingsForm({
 				</div>
 			))}
 		</div>
+	);
+}
+
+export function PermissionsSettingsForm({
+	personalSettings,
+	isAdmin,
+	onSubmit
+}: {
+	personalSettings: SettingsProps;
+	isAdmin: boolean;
+	onSubmit: OnDialogCloseFn<EditPermissionsSettings>;
+}) {
+	const form = useForm({
+		defaultValues: { defaultGroup: personalSettings.defaultGroup },
+		resolver: zodResolver(editPermissionsSettingsSchema),
+		mode: "onChange"
+	});
+	const { isValid, isDirty } = form.formState;
+
+	return (
+		<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
+			<Controller
+				control={form.control}
+				name="defaultGroup"
+				render={({ field }) => (
+					<GroupPicker
+						header="Standardgruppe"
+						description="Wenn ausgewählt, werden alle neuen Kurse und Lektionen, die Sie erstellen, dieser Gruppe zugewiesen, sofern nicht anders angegeben."
+						value={field.value}
+						onChange={group => {
+							// avoid form cancellation as null option
+							if (group === undefined) return;
+							field.onChange(group);
+						}}
+						isAdmin={isAdmin}
+					/>
+				)}
+			/>
+			<button className="btn-primary" disabled={!isDirty || !isValid}>
+				Profil speichern
+			</button>
+		</form>
 	);
 }

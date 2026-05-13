@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 import {
 	createCourse,
 	createLesson,
@@ -6,6 +7,8 @@ import {
 	createVideo
 } from "../seed-functions";
 
+const courseId = faker.string.alphanumeric(8);
+
 export const chapters = [
 	{
 		title: "Geruch - das olfaktorische System",
@@ -13,6 +16,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Aufbau und Funktion der Nase",
 				subtitle: "Aktivierungsfrage: Was ist der Ausgangspunkt der Geruchswahrnehmung?",
 				description:
@@ -64,6 +68,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Spezifika des Riechens",
 				subtitle: "Aktivierungsfrage: Welche unterschiedlichen Geruchsqualitäten gibt es?",
 				description:
@@ -122,6 +127,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Olfaktorik und Gedächtnis (Hackländer & Bermeitinger, 2017)",
 				subtitle: "Aktivierungsfrage Olfaktorik und Gedächtnis",
 				description:
@@ -173,6 +179,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: " Besonderheiten der neuronalen Verschaltung beim Riechen ",
 				subtitle: "Aktivierungsfrage zur neuronalen Verschaltung beim Riechen",
 				description:
@@ -231,6 +238,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Bulbus olfactorius",
 				subtitle: "Aktivierungsfrage zu: Bulbus olfactorius?",
 				description:
@@ -282,6 +290,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: " Entorhinaler Cortex ",
 				subtitle: "Aktivierungsfrage zu: Entorhinaler Cortex?",
 				description:
@@ -340,6 +349,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Prinzipien der olfaktorischen Wahrnehmung - sozial",
 				subtitle:
 					"Aktivierungsfrage zu: Prinzipien der olfaktorischen Wahrnehmung - sozial",
@@ -392,6 +402,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Prinzipien der olfaktorischen Wahrnehmung - emotional",
 				subtitle:
 					"Aktivierungsfrage zu: Prinzipien der olfaktorischen Wahrnehmung - emotional",
@@ -451,6 +462,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Duftkreis nach P. Jellinek",
 				subtitle: "Aktivierungsfrage zu: Duftkreis nach P. Jellinek?",
 				description:
@@ -502,6 +514,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Zusammenhang zwischen Riechen und Sehen",
 				subtitle: "Aktivierungsfrage zu: Zusammenhang zwischen Riechen und Sehen",
 				description:
@@ -557,6 +570,7 @@ export const chapters = [
 ];
 
 export const course = createCourse({
+	courseId,
 	subjectId: "psychologie",
 	specializationId: "wahrnehmung",
 	title: "Das Wahrnehmungssystem zum Riechen",

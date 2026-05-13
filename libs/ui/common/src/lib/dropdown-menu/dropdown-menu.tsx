@@ -53,7 +53,11 @@ export function DropdownMenu({
 	return (
 		<Menu as="div" className="relative inline-block text-left w-fit">
 			<>
-				<MenuButton title={title} className="inline-flex items-center rounded-md">
+				<MenuButton
+					as="div"
+					title={title}
+					className="inline-flex items-center rounded-md cursor-pointer"
+				>
 					<div ref={buttonRef}>{button}</div>
 				</MenuButton>
 

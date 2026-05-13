@@ -29,7 +29,7 @@ export function Toast({ id, title, subtitle, type }: ToastProps & { id: string }
 			{type === "warning" && <ExclamationTriangleIcon className="h-6 text-c-attention" />}
 			<div className="flex flex-col gap-1">
 				<span className="text-sm font-semibold">{title}</span>
-				<span className="text-sm text-c-text-muted">{subtitle}</span>
+				<span className="text-sm text-c-text-muted whitespace-pre-line">{subtitle}</span>
 			</div>
 			<button
 				type="button"

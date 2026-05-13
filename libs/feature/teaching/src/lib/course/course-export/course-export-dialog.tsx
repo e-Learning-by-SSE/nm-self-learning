@@ -8,9 +8,6 @@ export type CourseExportType = {
 	slug: string;
 	imgUrl: string | null;
 	title: string;
-	specializations: {
-		title: string;
-	}[];
 	courseId: string;
 };
 
