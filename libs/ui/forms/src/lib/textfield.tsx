@@ -21,8 +21,8 @@ export function TextArea(props: JSX.IntrinsicElements["textarea"] & { label: str
 
 export function InputWithButton(
 	props: JSX.IntrinsicElements["input"] & {
-		button: React.ReactElement<any>;
-		input: React.ReactElement<any>;
+		button: React.ReactElement;
+		input: React.ReactElement;
 	}
 ) {
 	return (

@@ -40,7 +40,7 @@ export function GroupInfoEditor({ fillInSingleGroup }: { fillInSingleGroup: bool
 	console.log(session.data?.user);
 	const defaultGroup = useDefaultGroup({
 		defaultGroupId: session.data?.user.defaultGroupId,
-		enabled: fillInSingleGroup && !form.getValues("parent") && !hasSetSingleGroup.current
+		enabled: fillInSingleGroup && !form.getValues("parent")
 	});
 	useEffect(() => {
 		if (hasSetSingleGroup.current) return;

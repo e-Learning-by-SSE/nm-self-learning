@@ -42,7 +42,11 @@ export function Tooltip({
 }) {
 	const [showTooltip, setShowTooltip] = useState(false);
 
-	const { refs, floatingStyles, context } = useFloating({
+	const {
+		refs: { setReference, setFloating },
+		floatingStyles,
+		context
+	} = useFloating({
 		open: showTooltip,
 		onOpenChange: setShowTooltip,
 		placement,
@@ -57,7 +61,7 @@ export function Tooltip({
 	return (
 		<>
 			<div
-				ref={refs.setReference}
+				ref={setReference}
 				{...getReferenceProps()}
 				className={`cursor-pointer ${className}`}
 			>
@@ -65,7 +69,7 @@ export function Tooltip({
 			</div>
 			{showTooltip && (
 				<div
-					ref={refs.setFloating}
+					ref={setFloating}
 					style={floatingStyles}
 					{...getFloatingProps()}
 					className="z-50 rounded-lg bg-gray-800 p-2 text-sm text-white shadow-md"

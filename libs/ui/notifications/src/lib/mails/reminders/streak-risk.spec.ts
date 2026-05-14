@@ -28,7 +28,7 @@ jest.mock("../email-service", () => {
 const mockCurrentTime = (hour: number) => {
 	const fixed = new Date();
 	fixed.setUTCHours(hour, 0, 0, 0);
-	jest.spyOn(global, "Date").mockImplementation(() => fixed as any);
+	jest.spyOn(global, "Date").mockImplementation((value: Date | string | number) => fixed);
 	return fixed;
 };
 

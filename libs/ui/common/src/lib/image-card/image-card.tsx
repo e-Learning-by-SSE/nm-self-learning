@@ -12,8 +12,8 @@ export function ImageCard({
 	subtitle: string | null;
 	slug: string;
 	imgUrl?: string | null;
-	footer?: ReactElement<any>;
-	badge?: ReactElement<any>;
+	footer?: ReactElement;
+	badge?: ReactElement;
 }) {
 	return (
 		<div className="glass relative flex h-full w-full flex-col rounded-lg transition-transform hover:scale-105 hover:shadow-lg">

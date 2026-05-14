@@ -413,7 +413,7 @@ function CourseHeader({
 
 function TableOfContents({ content, course }: { content: ToC.Content; course: Course }) {
 	// const completion = useCourseCompletion(course.slug);
-	const completion: any = null;
+	// const completion = null;
 	const hasContent = content.length > 0;
 
 	if (!hasContent) {
@@ -447,7 +447,7 @@ function TableOfContents({ content, course }: { content: ToC.Content; course: Co
 									key={lesson.lessonId}
 									href={`/courses/${course.slug}/${lesson.slug}`}
 									lesson={lesson}
-									isCompleted={!!completion?.completedLessons[lesson.lessonId]}
+									isCompleted={false}
 								/>
 							))}
 						</ul>

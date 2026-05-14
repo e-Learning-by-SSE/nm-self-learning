@@ -111,7 +111,7 @@ export function GroupAccessEditor({
 	const hasSetSingleGroup = useRef(false);
 	const defaultGroup = useDefaultGroup({
 		defaultGroupId: session.data?.user.defaultGroupId,
-		enabled: doUseDefaultGroup && editor.fields.length === 0 && !hasSetSingleGroup.current
+		enabled: doUseDefaultGroup && editor.fields.length === 0
 	});
 	useEffect(() => {
 		if (hasSetSingleGroup.current) return;

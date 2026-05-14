@@ -66,7 +66,7 @@ export function DropdownMenu({
 						<MenuItems
 							anchor={dropdownPosition}
 							style={{
-								minWidth: buttonRef.current?.offsetWidth || "auto"
+								minWidth: menuWidth ?? "auto"
 							}}
 							className={`absolute z-10 bg-white shadow-lg max-h-64 overflow-auto text-sm rounded`}
 						>

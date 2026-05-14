@@ -78,11 +78,12 @@ export function TreeVisualization({
 }: {
 	root: TreeNode;
 	className?: string;
-}): React.ReactElement<any> {
+}): React.ReactElement {
 	const { nodes, edges } = useMemo(() => createGraph(root), [root]);
 	const viewBox = useMemo(() => calculateViewBox(nodes), [nodes]);
 
 	const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
+	const [isDraggingState, setIsDraggingState] = useState(false);
 	const svgRef = useRef<SVGSVGElement>(null);
 	const isDragging = useRef(false);
 	const lastPosition = useRef({ x: 0, y: 0 });
@@ -122,6 +123,7 @@ export function TreeVisualization({
 	const handleMouseDown = useCallback((event: React.MouseEvent) => {
 		event.preventDefault();
 		isDragging.current = true;
+		setIsDraggingState(true);
 		lastPosition.current = { x: event.clientX, y: event.clientY };
 	}, []);
 
@@ -142,9 +144,10 @@ export function TreeVisualization({
 
 	const handleMouseUp = useCallback(() => {
 		isDragging.current = false;
+		setIsDraggingState(false);
 	}, []);
 
-	function renderEdge(edge: Edge): React.ReactElement<any> | null {
+	function renderEdge(edge: Edge): React.ReactElement | null {
 		const fromNode = nodes.find(n => n.id === edge.from);
 		const toNode = nodes.find(n => n.id === edge.to);
 		if (!fromNode || !toNode) return null;
@@ -161,7 +164,7 @@ export function TreeVisualization({
 		);
 	}
 
-	function renderNode(pos: NodePosition): React.ReactElement<any> {
+	function renderNode(pos: NodePosition): React.ReactElement {
 		return (
 			<g key={pos.id} transform={`translate(${pos.x},${pos.y})`}>
 				<rect
@@ -187,7 +190,9 @@ export function TreeVisualization({
 	}
 
 	return (
-		<div className={`${isDragging.current ? "cursor-grabbing" : "cursor-grab"} ${className} relative`}>
+		<div
+			className={`${isDraggingState ? "cursor-grabbing" : "cursor-grab"} ${className} relative`}
+		>
 			<div className="absolute flex justify-between w-full">
 				<span className="text-base p-2">strg + wheel to zoom</span>
 				<div className="p-2 mr-5">
