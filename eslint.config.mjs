@@ -1,8 +1,8 @@
-import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import nxPlugin from "@nx/eslint-plugin";
 import pluginCypress from "eslint-plugin-cypress";
+// import prettier from "eslint-config-prettier/flat";
 
 export default [
 	{
@@ -18,6 +18,7 @@ export default [
 	}, // Base JS rules
 	js.configs.recommended, // TypeScript rules (non–type-aware; switch to recommendedTypeChecked if you want)
 	...tseslint.configs.recommended, // Base config
+	// prettier,
 	{
 		files: ["**/*.{ts,tsx,cts,mts}"],
 		plugins: { "@nx": nxPlugin },
