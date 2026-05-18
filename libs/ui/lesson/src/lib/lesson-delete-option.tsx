@@ -6,9 +6,10 @@ import Link from "next/link";
 
 export function LessonDeleteOption({ lessonId }: { lessonId: string }) {
 	const { mutateAsync: deleteLesson } = trpc.lesson.deleteLesson.useMutation();
-	const { data: linkedEntities, isLoading } = trpc.lesson.findLinkedLessonEntities.useQuery({
-		lessonId
-	});
+	const {
+		data: linkedEntities,
+		refetch
+	} = trpc.lesson.findLinkedLessonEntities.useQuery({ lessonId }, { enabled: false }); // Prevent DB call on page load
 	const [showConfirmation, setShowConfirmation] = useState(false);
 
 	const handleDelete = async () => {
@@ -24,17 +25,15 @@ export function LessonDeleteOption({ lessonId }: { lessonId: string }) {
 		setShowConfirmation(false);
 	};
 
-	// Don't show delete button -> Empty option
-	if (isLoading) {
-		return null;
-	}
-
 	return (
 		<>
 			<IconOnlyButton
 				icon={<TrashIcon className="h-5 w-5" />}
 				className="btn-danger"
-				onClick={() => setShowConfirmation(true)}
+				onClick={() => {
+					refetch(); // Lazy-load linked entities only when delete is initiated
+					setShowConfirmation(true);
+				}}
 				title={"Lerneinheit löschen"}
 			/>
 			{showConfirmation && (
