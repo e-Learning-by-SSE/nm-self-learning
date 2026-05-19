@@ -1,111 +1,30 @@
 /**
  * Teacher-facing form for configuring an open (text) question with optional AI evaluation.
  *
- * Rendered inside BaseQuestionForm in quiz-editor.tsx via QuestionFormRenderer.
- * Uses react-hook-form's useFormContext — the form state lives in the parent QuizEditor.
- *
- * FR-04: Toggle to enable/disable AI evaluation (off by default)
- * FR-05: Toggle disabled + label shown when no LLM config is present
- * FR-06: Example box showing both supported input formats
+ * Example box showing both supported input formats
  */
 
 import { LabeledField } from "@self-learning/ui/forms";
 import { trpc } from "@self-learning/api-client";
-import { Controller, useFormContext, useWatch } from "react-hook-form";
+import { Controller, useFormContext } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
 import { TextQuestion } from "./schema";
 import { useTranslation } from "next-i18next";
 
 type TextForm = QuestionTypeForm<TextQuestion>;
 
-// ─── Main Form Component ──────────────────────────────────────────────────────
-
 export default function TextForm({ question, index }: { question: TextQuestion; index: number }) {
 	const { t } = useTranslation("feature-question-types");
-	const { control, setValue } = useFormContext<TextForm>();
-
-	// Reflects whether aiEvaluation is currently set in the form state.
-	// If the field is present → toggle is ON; if absent/undefined → toggle is OFF.
-	const aiEvaluationValue = useWatch({
-		control,
-		name: `quiz.questions.${index}.aiEvaluation`
-	});
-	const isEnabled = !!aiEvaluationValue;
-
-	// FR-05: Ask the router whether an LLM config exists.
-	// Using useQuery so it integrates with React's lifecycle without manual useEffect.
-	// data is undefined while loading, then { available: boolean }.
+	const { control } = useFormContext<TextForm>();
 	const { data: llmConfigData } = trpc.textEvaluation.checkLlmConfig.useQuery();
-	const llmAvailable = llmConfigData?.available ?? null; // null = still loading
-
-	// FR-04: Enable → initialise sub-object with sensible defaults
-	function handleToggleOn() {
-		setValue(`quiz.questions.${index}.aiEvaluation`, {
-			solutionOrConcepts: question.aiEvaluation?.solutionOrConcepts ?? "",
-			passingThreshold: question.aiEvaluation?.passingThreshold ?? 80
-		});
-	}
-
-	// FR-04: Disable → remove the field entirely so it is not stored in the DB
-	function handleToggleOff() {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		setValue(`quiz.questions.${index}.aiEvaluation`, undefined as any);
-	}
-
-	function handleToggleChange(e: React.ChangeEvent<HTMLInputElement>) {
-		e.target.checked ? handleToggleOn() : handleToggleOff();
-	}
-
-	// Toggle is only disabled when we KNOW the config is missing.
-	// While loading (llmAvailable === null) we keep it disabled too so
-	// the teacher doesn't enable it before we know the state.
-	const isToggleDisabled = llmAvailable !== true;
+	const llmAvailable = llmConfigData?.available ?? null;
 
 	return (
 		<div className="flex flex-col gap-6">
-			{/* ── AI Evaluation Toggle (FR-04, FR-05) ── */}
-			<div className="rounded-lg border border-c-border bg-c-surface-2 p-4 flex flex-col gap-3">
-				{llmAvailable === true && (
-					<div>
-						<div className="flex items-center gap-3">
-							<input
-								id={`ai-eval-toggle-${index}`}
-								type="checkbox"
-								className="checkbox"
-								checked={isEnabled}
-								disabled={isToggleDisabled}
-								onChange={handleToggleChange}
-							/>
-							<label
-								htmlFor={`ai-eval-toggle-${index}`}
-								className={`select-none font-medium ${isToggleDisabled ? "text-c-text-muted" : ""}`}
-							>
-								{t("Enable AI evaluation")}
-							</label>
-						</div>
-
-						<p className="text-sm text-c-text-muted">
-							{t(
-								"When enabled, the AI will automatically evaluate the open-ended responses of the students based on your sample solution or expected concepts."
-							)}
-						</p>
-					</div>
-				)}
-				{/* FR-05: Status labels next to the toggle */}
-				{llmAvailable === null && (
-					<span className="text-sm text-c-text-muted">
-						{t("Checking LLM configuration…")}
-					</span>
-				)}
-				{llmAvailable === false && (
-					<span className="text-sm text-red-600">
-						{t("AI evaluation is not available (no LLM configuration available)")}
-					</span>
-				)}
+			<div className="mb-2">
+				<strong className="text-2xl">{t("Solution")}</strong>
 			</div>
-
-			{/* ── AI Evaluation Fields — only shown when toggle is ON (FR-04) ── */}
-			{isEnabled && (
+			{llmAvailable === true && (
 				<div className="flex flex-col gap-5 rounded-lg border border-c-border-strong bg-c-surface-3 p-5">
 					{/* Solution / Concepts textarea */}
 					<Controller
@@ -133,7 +52,7 @@ export default function TextForm({ question, index }: { question: TextQuestion; 
 						)}
 					/>
 
-					{/* FR-06: Show both supported formats as examples */}
+					{/* Show both supported formats as examples */}
 					<ExampleBox />
 
 					{/* Passing threshold number input */}

@@ -25,13 +25,15 @@ import { trpc } from "@self-learning/api-client";
 import { useState, useEffect } from "react";
 import { useQuestion } from "../../use-question-hook";
 import { evaluateTextAnswerWithAI } from "./evaluate";
-import type { TextEvaluateRouterInput, TextEvaluateRouterOutput } from "./evaluate";
-import { TextEvaluation, TextVerdict } from "./schema";
+import {
+	TextEvaluation,
+	TextVerdict,
+	TextEvaluateRouterInput,
+	TextEvaluateRouterOutput
+} from "./schema";
 import { useTranslation } from "next-i18next";
 
-// ─── Verdict display helpers ──────────────────────────────────────────────────
-
-// FR-15: Human-readable German label per verdict level
+// Human-readable German label per verdict level
 const VERDICT_LABELS: Record<TextVerdict, string> = {
 	correct: "Richtig",
 	"partially-correct": "Teilweise richtig",
@@ -46,8 +48,6 @@ const VERDICT_STYLES: Record<TextVerdict, string> = {
 	"partially-wrong": "border-orange-400 bg-orange-50  text-orange-800",
 	wrong: "border-c-danger   bg-c-danger-subtle text-c-danger"
 };
-
-// ─── Placeholder detection ────────────────────────────────────────────────────
 
 /**
  * Returns true when the evaluation object is the synchronous placeholder produced
@@ -66,27 +66,12 @@ function isLegacyPlaceholder(ev: TextEvaluation): boolean {
 	);
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
-
 export default function TextAnswer() {
 	const { question, setAnswer, answer, evaluation, setEvaluation } = useQuestion("text");
-
-	// FR-13: local loading flag shown while the AI call is in-flight
 	const [isEvaluating, setIsEvaluating] = useState(false);
-
-	// Safe cast — we produce every TextEvaluation object in this feature so the
-	// shape is always correct.
 	const typedEvaluation = evaluation as TextEvaluation | null;
-
-	// FR-14: textarea is locked once the student has submitted or while evaluating
 	const isSubmitted = !!evaluation || isEvaluating;
-
-	// ── tRPC mutation — calls textEvaluationRouter.evaluate (server-side) ────
-	// The router owns: prompt building, LLM config fetch, HTTP call,
-	// response parsing, temperature: 0.  We only pass the question data.
 	const { mutateAsync: evaluateViaRouter } = trpc.textEvaluation.evaluate.useMutation();
-
-	// ── Detect the sync placeholder and launch the async AI call ─────────────
 	useEffect(() => {
 		// Not yet submitted, or no AI config on this question → nothing to do
 		if (!typedEvaluation || !question.aiEvaluation) return;
@@ -116,15 +101,12 @@ export default function TextAnswer() {
 			(input: TextEvaluateRouterInput): Promise<TextEvaluateRouterOutput> =>
 				evaluateViaRouter(input)
 		);
-
-		// FR-02, FR-03: overwrite the placeholder with the real result
 		setEvaluation(result);
 		setIsEvaluating(false);
 	}
 
 	return (
 		<div className="flex flex-col gap-4">
-			{/* FR-14: textarea disabled once submitted */}
 			<TextArea
 				rows={12}
 				label="Antwort"
@@ -137,11 +119,8 @@ export default function TextAnswer() {
 					})
 				}
 			/>
-
-			{/* FR-13: spinner while AI evaluates */}
 			{isEvaluating && <LoadingIndicator />}
 
-			{/* Show result only when we have a real (non-placeholder) evaluation */}
 			{typedEvaluation && !isEvaluating && !isLegacyPlaceholder(typedEvaluation) && (
 				<EvaluationResult
 					evaluation={typedEvaluation}
@@ -152,7 +131,7 @@ export default function TextAnswer() {
 	);
 }
 
-// ─── Loading indicator (FR-13) ────────────────────────────────────────────────
+// ─── Loading indicator ────────────────────────────────────────────────
 
 function LoadingIndicator() {
 	const { t } = useTranslation("feature-question-types");
@@ -166,7 +145,7 @@ function LoadingIndicator() {
 	);
 }
 
-// ─── Evaluation result display (FR-15, FR-16, FR-17) ─────────────────────────
+// ─── Evaluation result display ─────────────────────────
 
 function EvaluationResult({
 	evaluation,
@@ -176,7 +155,7 @@ function EvaluationResult({
 	hasAiConfig: boolean;
 }) {
 	const { t } = useTranslation("feature-question-types");
-	// FR-16: any AI failure (missing config, timeout, parse error, …) → unified message
+	// any AI failure (missing config, timeout, parse error, …) → unified message
 	if (evaluation.evaluationError) {
 		return (
 			<div className="rounded-lg border border-yellow-400 bg-yellow-50 p-4 text-yellow-800">
@@ -190,7 +169,7 @@ function EvaluationResult({
 		);
 	}
 
-	// FR-17: legacy question without AI config → old "always correct" message
+	// legacy question without AI config → old "always correct" message
 	if (!hasAiConfig) {
 		return (
 			<div className="rounded-lg border border-green-500 bg-green-50 p-4 text-green-800">
@@ -204,7 +183,7 @@ function EvaluationResult({
 		);
 	}
 
-	// FR-15: real AI result — show verdict label + feedback
+	// real AI result — show verdict label + feedback
 	const verdictStyle = VERDICT_STYLES[evaluation.verdict];
 	const verdictLabel = VERDICT_LABELS[evaluation.verdict];
 

@@ -23,59 +23,35 @@
  *      once the async result arrives. A spinner is shown in between.
  */
 
-import { TextEvaluation, TextQuestion, TextVerdict } from "./schema";
+import {
+	TextEvaluation,
+	TextQuestion,
+	TextVerdict,
+	TextEvaluateRouterInput,
+	TextEvaluateRouterOutput
+} from "./schema";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-/**
- * The typed input expected by textEvaluationRouter.evaluate on the server.
- * Mirrors evaluateInputSchema in text-evaluation.router.ts exactly.
- */
-export interface TextEvaluateRouterInput {
-	questionStatement: string;
-	solutionOrConcepts: string;
-	passingThreshold: number;
-	studentAnswer: string;
-}
-
-/**
- * The typed output returned by textEvaluationRouter.evaluate.
- * Mirrors evaluateOutputSchema in text-evaluation.router.ts exactly.
- */
-export interface TextEvaluateRouterOutput {
-	verdict: TextVerdict;
-	feedback: string;
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-/**
- * Maps the four-level verdict to the quiz engine's boolean.
- * FR-03: Only "correct" → true; everything else → false.
- */
 function verdictToIsCorrect(verdict: TextVerdict): boolean {
 	return verdict === "correct";
 }
 
 /**
  * Builds the error evaluation returned on any failure.
- * FR-12, FR-16: Accept the answer so quiz progress is never blocked.
+ * Accept the answer so quiz progress is never blocked.
  */
 function buildErrorEvaluation(): TextEvaluation {
 	return {
-		isCorrect: true, // FR-16: student is not blocked
-		verdict: "correct", // quiz engine sees passing
-		evaluationError: true // component reads this to show the fallback message
+		isCorrect: true,
+		verdict: "correct",
+		evaluationError: true
 	};
 }
-
-// ─── Main export ──────────────────────────────────────────────────────────────
 
 /**
  * Evaluates a student's text answer by calling textEvaluationRouter.evaluate.
  *
  * Called from component.tsx — NOT from EVALUATION_FUNCTIONS.
- * Never throws: all failure cases return buildErrorEvaluation() (FR-12).
+ * Never throws: all failure cases return buildErrorEvaluation().
  *
  * @param question         The full TextQuestion (contains aiEvaluation config)
  * @param studentAnswer    The raw string the student typed
@@ -94,8 +70,6 @@ export async function evaluateTextAnswerWithAI(
 	}
 
 	try {
-		// All prompt building, LLM config fetching, HTTP call, response parsing,
-		// and temperature: 0 happen inside the router. We only pass the data.
 		const result = await callRouter({
 			questionStatement: question.statement,
 			solutionOrConcepts: question.aiEvaluation.solutionOrConcepts,
@@ -103,22 +77,16 @@ export async function evaluateTextAnswerWithAI(
 			studentAnswer
 		});
 
-		// FR-03: map verdict → isCorrect for the quiz engine
-		// FR-02: preserve verdict + feedback for the component to display
 		return {
 			isCorrect: verdictToIsCorrect(result.verdict),
 			verdict: result.verdict,
 			feedback: result.feedback
 		};
 	} catch (err) {
-		// FR-12: any tRPC error (NOT_FOUND config, TIMEOUT, INTERNAL_SERVER_ERROR,
-		// rate limit, malformed JSON) ends up here → show fallback, never crash.
 		console.error("[TextEvaluate] AI evaluation failed:", err);
 		return buildErrorEvaluation();
 	}
 }
-
-// ─── Legacy path ──────────────────────────────────────────────────────────────
 
 /**
  * Synchronous evaluation for old questions without aiEvaluation config.
