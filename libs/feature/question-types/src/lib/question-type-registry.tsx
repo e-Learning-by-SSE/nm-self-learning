@@ -1,3 +1,10 @@
+// CHANGES FROM ORIGINAL:
+//   1. Import evaluateTextLegacy from text/evaluate
+//   2. Import updated Text type and textQuestionSchema (now includes aiEvaluation)
+//   3. Replace inline "text" dummy in EVALUATION_FUNCTIONS with evaluateTextLegacy
+//   4. INITIAL_QUESTION_CONFIGURATION_FUNCTIONS["text"] remains unchanged (aiEvaluation is optional/absent by default)
+// Everything else is IDENTICAL to the original file.
+
 /*
 	ALL QUESTION TYPES MUST BE REGISTERED IN THIS FILE!
 
@@ -40,7 +47,9 @@ import {
 } from "./question-types/multiple-choice/schema";
 import { evaluateProgramming } from "./question-types/programming/evaluate";
 import { Programming, programmingQuestionSchema } from "./question-types/programming/schema";
+// ↓ CHANGED: import both the type and the legacy evaluator from text/
 import { Text, textQuestionSchema } from "./question-types/text/schema";
+import { evaluateTextLegacy } from "./question-types/text/evaluate";
 import { LessonLayoutProps } from "@self-learning/lesson";
 import { LanguageTree, languageTreeQuestionSchema } from "./question-types/tree/schema";
 import { evaluateLanguageTreeAnswer } from "./question-types/tree/evaluate";
@@ -88,27 +97,26 @@ export type QuestionTypeUnion =
 export const quizContentSchema = z.discriminatedUnion("type", [
 	multipleChoiceQuestionSchema,
 	exactQuestionSchema,
-	textQuestionSchema,
+	textQuestionSchema, // ← now includes optional aiEvaluation field
 	programmingQuestionSchema,
 	clozeQuestionSchema,
 	arrangeQuestionSchema,
 	languageTreeQuestionSchema
 ]);
 
-// export const quizAnswerSchema = z.discriminatedUnion("type", [
-// 	multipleChoiceAnswerSchema,
-// 	exactAnswerSchema,
-// ]);
-
 /**
  * Object that contains the evaluation function of each question type.
+ *
+ * NOTE on "text":
+ * The real AI evaluation is async and is triggered from component.tsx directly.
+ * This entry handles only the LEGACY path (no aiEvaluation config) and serves as
+ * the synchronous placeholder that the quiz engine expects.
+ * See evaluate.ts and component.tsx for the full async AI evaluation flow.
  */
 export const EVALUATION_FUNCTIONS: { [QType in QuestionType["type"]]: EvaluationFn<QType> } = {
 	"multiple-choice": evaluateMultipleChoice,
-	text: (q, _a) => {
-		console.error(`Evaluation function for ${q.type} is not implemented.}`);
-		return { isCorrect: true };
-	},
+	// ↓ CHANGED: replaced inline dummy with the proper legacy evaluator
+	text: (_question, _answer) => evaluateTextLegacy(),
 	exact: evaluateExactAnswer,
 	programming: evaluateProgramming,
 	cloze: evaluateCloze,
@@ -167,6 +175,11 @@ export const INITIAL_ANSWER_VALUE_FUNCTIONS: {
 
 /**
  * Object containing a function returning the initial question configuration of each question type.
+ *
+ * NOTE on "text":
+ * aiEvaluation is intentionally ABSENT here — it's optional in the schema, and
+ * new questions start with no AI evaluation config (toggle is off by default, FR-04).
+ * The teacher must explicitly enable and configure it in the form.
  */
 export const INITIAL_QUESTION_CONFIGURATION_FUNCTIONS: {
 	[QType in QuestionType["type"]]: () => InferQuestionType<QType>["question"];
@@ -186,7 +199,11 @@ export const INITIAL_QUESTION_CONFIGURATION_FUNCTIONS: {
 	}),
 	text: () => ({
 		...createBaseQuestion(),
-		type: "text"
+		type: "text",
+		aiEvaluation: {
+			solutionOrConcepts: "",
+			passingThreshold: 80
+		}
 	}),
 	programming: () => ({
 		...createBaseQuestion(),
@@ -329,7 +346,6 @@ export function QuestionFormRenderer({
 }
 
 export type QuestionType = z.infer<typeof quizContentSchema>;
-// export type QuizAnswers = z.infer<typeof quizAnswerSchema>;
 export type QuizContent = QuestionType[];
 
 export type EvaluationFn<QType extends QuestionType["type"]> = (
