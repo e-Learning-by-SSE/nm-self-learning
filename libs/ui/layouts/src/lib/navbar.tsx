@@ -217,6 +217,7 @@ export function NavbarDropdownMenu({
 					<ChevronDownIcon className="h-6 w-6 text-c-text-muted" />
 				</div>
 			}
+			z_index={30}
 		>
 			<Link
 				href="/dashboard"
