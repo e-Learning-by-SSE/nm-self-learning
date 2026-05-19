@@ -1,15 +1,9 @@
-// Mock the heavy @xenova/transformers pipeline before any service import.
-jest.mock("@xenova/transformers", () => ({
-	pipeline: jest.fn()
-}));
-
 jest.mock("../config/rag-config", () => ({
 	RAG_CONFIG: {
 		VECTOR_STORE: {
 			HOST: "localhost",
 			PORT: 8000,
 			USE_SSL: false,
-			COLLECTION_PREFIX: "col_",
 			MAX_FAILURES: 3
 		},
 		EMBEDDING: {
@@ -25,57 +19,56 @@ jest.mock("../config/rag-config", () => ({
 
 jest.mock("chromadb", () => ({
 	ChromaClient: jest.fn(),
-	registerEmbeddingFunction: jest.fn(),
-	knownEmbeddingFunctions: new Map<string, unknown>()
+	knownEmbeddingFunctions: { has: jest.fn().mockReturnValue(true) },
+	registerEmbeddingFunction: jest.fn()
 }));
 
 import { ChromaClient } from "chromadb";
 import { vectorStore } from "./vector-store";
-import { embeddingService } from "./embedding";
-import type { DocumentChunk, PDFChunk } from "../types/chunk";
+import type { IEmbeddingService } from "../types/embedding";
+import type { PDFChunk } from "../types/chunk";
+
+// ---------------------------------------------------------------------------
+// Embedding service stub
+//
+// vector-store.ts has no static import of embedding.ts, so we must not import
+// it here either — doing so would load @xenova/transformers at module evaluation
+// time, which crashes Jest's CJS transform with a __dirname redeclaration error.
+// A plain object that satisfies IEmbeddingService is sufficient for all tests.
+// ---------------------------------------------------------------------------
+
+const embeddingService: IEmbeddingService = {
+	initialize: jest.fn(),
+	isInitialized: jest.fn().mockReturnValue(false),
+	generateEmbedding: jest.fn(),
+	generateBatchEmbeddings: jest.fn()
+};
 
 // ---------------------------------------------------------------------------
 // Type helpers – no "any" in test code
 // ---------------------------------------------------------------------------
 
 /** Minimal ChromaDB Collection mock surface used in tests. */
-type ChromaMetadata = Record<string, string | number | boolean>;
-interface CollectionGetArgs {
-	where?: ChromaMetadata;
-	limit?: number;
-	include?: string[];
-}
-
-interface CollectionDeleteArgs {
-	where?: ChromaMetadata;
-}
 interface CollectionMock {
 	add: jest.MockedFunction<
 		(args: {
 			ids: string[];
 			embeddings: number[][];
 			documents: string[];
-			metadatas: ChromaMetadata[];
+			metadatas: Record<string, string | number | boolean>[];
 		}) => Promise<void>
 	>;
-
 	query: jest.MockedFunction<
-		(args: {
-			queryEmbeddings: number[][];
-			nResults: number;
-			where?: ChromaMetadata;
-		}) => Promise<ChromaQueryResult>
+		(args: { queryEmbeddings: number[][]; nResults: number }) => Promise<ChromaQueryResult>
 	>;
-
+	delete: jest.MockedFunction<(args: { where: Record<string, string> }) => Promise<void>>;
 	get: jest.MockedFunction<
 		(args: {
-			where?: ChromaMetadata;
-			limit?: number;
-			include?: string[];
+			where: Record<string, string>;
+			limit: number;
+			include: never[];
 		}) => Promise<{ ids: string[] }>
 	>;
-
-	delete: jest.MockedFunction<(args: { where?: ChromaMetadata }) => Promise<void>>;
 }
 
 /** Shape returned by ChromaDB collection.query() used in tests. */
@@ -95,16 +88,11 @@ interface CollectionAddArgs {
 interface CollectionQueryArgs {
 	queryEmbeddings: number[][];
 	nResults: number;
-	where?: ChromaMetadata;
 }
 
 /** Minimal ChromaDB Client mock surface used in tests. */
 interface ClientMock {
-	getCollection: jest.MockedFunction<(args: { name: string }) => Promise<CollectionMock>>;
 	getOrCreateCollection: jest.MockedFunction<
-		(args: { name: string; metadata?: Record<string, string> }) => Promise<CollectionMock>
-	>;
-	createCollection: jest.MockedFunction<
 		(args: { name: string; metadata?: Record<string, string> }) => Promise<CollectionMock>
 	>;
 	deleteCollection: jest.MockedFunction<(args: { name: string }) => Promise<void>>;
@@ -141,6 +129,11 @@ describe("VectorStore", () => {
 		// Setup – reset all mocks and rebuild fresh mock instances.
 		jest.clearAllMocks();
 
+		// Reset the embedding service stub so spies from previous tests don't bleed over.
+		(embeddingService.initialize as jest.Mock).mockReset();
+		(embeddingService.generateEmbedding as jest.Mock).mockReset();
+		(embeddingService.generateBatchEmbeddings as jest.Mock).mockReset();
+
 		// Teardown of previous test's vector store state.
 		await vectorStore.cleanup().catch(() => {
 			// Ignore errors – store may not have been initialized yet.
@@ -153,15 +146,11 @@ describe("VectorStore", () => {
 				metadatas: [[]],
 				distances: [[]]
 			}),
-			get: jest.fn<Promise<{ ids: string[] }>, [CollectionGetArgs]>().mockResolvedValue({
-				ids: []
-			}),
-			delete: jest.fn<Promise<void>, [CollectionDeleteArgs]>().mockResolvedValue(undefined)
+			delete: jest.fn().mockResolvedValue(undefined),
+			get: jest.fn().mockResolvedValue({ ids: [] })
 		};
 
 		clientMock = {
-			getCollection: jest.fn().mockResolvedValue(collectionMock),
-			createCollection: jest.fn().mockResolvedValue(collectionMock),
 			getOrCreateCollection: jest.fn().mockResolvedValue(collectionMock),
 			deleteCollection: jest.fn().mockResolvedValue(undefined),
 			listCollections: jest.fn().mockResolvedValue([])
@@ -181,39 +170,22 @@ describe("VectorStore", () => {
 	describe("initialize", () => {
 		// =========================================================================
 
-		it("connects to ChromaDB and also initializes the embedding service when onlyChroma is false", async () => {
-			// Setup
-			const initSpy = jest.spyOn(embeddingService, "initialize").mockResolvedValue(undefined);
-
+		it("connects to ChromaDB and marks the store as initialized", async () => {
 			// Exercise
-			await vectorStore.initialize(false);
+			await vectorStore.initialize();
 
 			// Verify
 			expect(ChromaClient as unknown as jest.Mock).toHaveBeenCalled();
 			expect(vectorStore.isInitialized()).toBe(true);
-			expect(initSpy).toHaveBeenCalledTimes(1);
-		});
-
-		it("connects to ChromaDB but skips embedding initialization when onlyChroma is true", async () => {
-			// Setup
-			const initSpy = jest.spyOn(embeddingService, "initialize").mockResolvedValue(undefined);
-
-			// Exercise
-			await vectorStore.initialize(true);
-
-			// Verify
-			expect(vectorStore.isInitialized()).toBe(true);
-			expect(initSpy).not.toHaveBeenCalled();
 		});
 
 		it("does not reconnect when already initialized", async () => {
 			// Setup
-			jest.spyOn(embeddingService, "initialize").mockResolvedValue(undefined);
-			await vectorStore.initialize(true);
+			await vectorStore.initialize();
 			(ChromaClient as unknown as jest.Mock).mockClear();
 
 			// Exercise
-			await vectorStore.initialize(true);
+			await vectorStore.initialize();
 
 			// Verify – ChromaClient constructor must not be called a second time
 			expect(ChromaClient as unknown as jest.Mock).not.toHaveBeenCalled();
@@ -225,25 +197,18 @@ describe("VectorStore", () => {
 		// =========================================================================
 
 		it("generates embeddings and calls collection.add for every batch of chunks", async () => {
-			// Setup – pre-initialize with onlyChroma so addDocuments skips re-initialization,
-			// then inject the already-imported embeddingService to bypass the dynamic import
-			// inside getEmbeddingService() and ensure the spy is intercepted.
-			await vectorStore.initialize(true);
-			(
-				vectorStore as unknown as { _embeddingService: typeof embeddingService }
-			)._embeddingService = embeddingService;
-
+			// Setup
 			const embeddingsSpy = jest
 				.spyOn(embeddingService, "generateBatchEmbeddings")
 				.mockResolvedValue([[1], [2]]);
 
-			const chunks: DocumentChunk[] = [
+			const chunks: PDFChunk[] = [
 				makePdfChunk("c1", "text a", 0),
 				makePdfChunk("c2", "text b", 1)
 			];
 
 			// Exercise
-			await vectorStore.addDocuments("l1", chunks);
+			await vectorStore.addDocuments("l1", chunks, embeddingService);
 
 			// Verify
 			expect(embeddingsSpy).toHaveBeenCalled();
@@ -253,23 +218,21 @@ describe("VectorStore", () => {
 			expect(addArgs.documents).toEqual(["text a", "text b"]);
 		});
 
-		it("uses the collection for the supplied lessonId", async () => {
-			// Setup – same pattern: pre-initialize and inject embeddingService.
-			jest.spyOn(embeddingService, "generateBatchEmbeddings").mockResolvedValue([[1]]);
-			await vectorStore.initialize(true);
-			(
-				vectorStore as unknown as { _embeddingService: typeof embeddingService }
-			)._embeddingService = embeddingService;
+		it("splits chunks into batches of BATCH_SIZE", async () => {
+			// Setup – BATCH_SIZE is 2; supply 3 chunks to force two batches
+			jest.spyOn(embeddingService, "generateBatchEmbeddings").mockResolvedValue([[1], [2]]);
 
-			const chunks: DocumentChunk[] = [makePdfChunk("cx", "some text", 0)];
+			const chunks: PDFChunk[] = [
+				makePdfChunk("c1", "text a", 0),
+				makePdfChunk("c2", "text b", 1),
+				makePdfChunk("c3", "text c", 2)
+			];
 
 			// Exercise
-			await vectorStore.addDocuments("specific-lesson", chunks);
+			await vectorStore.addDocuments("l1", chunks, embeddingService);
 
-			// Verify – the collection name must contain the lessonId
-			expect(clientMock.getOrCreateCollection).toHaveBeenCalled();
-			const getArgs = clientMock.getOrCreateCollection.mock.calls[0][0];
-			expect(getArgs.name).toContain("SelfLearn_Shared_VectorStore");
+			// Verify – two batches means two collection.add calls
+			expect(collectionMock.add).toHaveBeenCalledTimes(2);
 		});
 	});
 
@@ -292,25 +255,17 @@ describe("VectorStore", () => {
 				distances: [[0.1, 0.2]]
 			};
 			collectionMock.query.mockResolvedValue(queryResult);
-
-			await vectorStore.initialize(true);
-			clientMock.getCollection.mockResolvedValue(collectionMock);
-			(
-				vectorStore as unknown as { _embeddingService: typeof embeddingService }
-			)._embeddingService = embeddingService;
+			await vectorStore.initialize();
 
 			// Exercise
-			const results = await vectorStore.search("l1", "query", 5);
+			const results = await vectorStore.search("l1", "query", embeddingService, 5);
 
 			// Verify
 			expect(collectionMock.query).toHaveBeenCalled();
-			expect(Array.isArray(results)).toBe(true);
-
-			if (results.length > 0) {
-				expect(results[0]).toHaveProperty("text");
-				expect(results[0]).toHaveProperty("score");
-				expect(results[0]).toHaveProperty("metadata");
-			}
+			expect(results).toHaveLength(2);
+			expect(results[0]).toHaveProperty("text", "doc1");
+			expect(results[0]).toHaveProperty("score", 0.9);
+			expect(results[0]).toHaveProperty("metadata");
 		});
 
 		it("returns an empty array when ChromaDB returns no documents", async () => {
@@ -321,13 +276,10 @@ describe("VectorStore", () => {
 				metadatas: [[]],
 				distances: [[]]
 			});
-			await vectorStore.initialize(true);
-			(
-				vectorStore as unknown as { _embeddingService: typeof embeddingService }
-			)._embeddingService = embeddingService;
+			await vectorStore.initialize();
 
 			// Exercise
-			const results = await vectorStore.search("l1", "no results", 5);
+			const results = await vectorStore.search("l1", "no results", embeddingService, 5);
 
 			// Verify
 			expect(results).toEqual([]);
@@ -335,31 +287,57 @@ describe("VectorStore", () => {
 	});
 
 	// =========================================================================
-	describe("deleteLesson", () => {
-		it("deletes documents for the supplied lessonId", async () => {
-			await vectorStore.initialize(true);
+	describe("lessonExists", () => {
+		// =========================================================================
 
-			await vectorStore.deleteLesson("l1");
+		it("returns true when the collection contains at least one chunk for the lesson", async () => {
+			// Setup
+			collectionMock.get.mockResolvedValueOnce({ ids: ["chunk-1"] });
+			await vectorStore.initialize();
 
-			expect(collectionMock.delete).toHaveBeenCalledWith({
-				where: {
-					lessonId: "l1"
-				}
-			});
+			// Exercise
+			const exists = await vectorStore.lessonExists("l1");
+
+			// Verify
+			expect(exists).toBe(true);
 		});
 
-		it("does not throw when deleting lesson documents fails", async () => {
-			collectionMock.delete.mockRejectedValueOnce(new Error("Collection not found"));
+		it("returns false when no chunks are found for the lesson", async () => {
+			// Setup – default mock already returns { ids: [] }
+			await vectorStore.initialize();
 
-			await vectorStore.initialize(true);
+			// Exercise
+			const exists = await vectorStore.lessonExists("l2");
 
+			// Verify
+			expect(exists).toBe(false);
+		});
+	});
+
+	// =========================================================================
+	describe("deleteLesson", () => {
+		// =========================================================================
+
+		it("calls collection.delete with the correct lessonId filter", async () => {
+			// Setup
+			await vectorStore.initialize();
+
+			// Exercise
+			await vectorStore.deleteLesson("l1");
+
+			// Verify
+			expect(collectionMock.delete).toHaveBeenCalledWith(
+				expect.objectContaining({ where: { lessonId: "l1" } })
+			);
+		});
+
+		it("does not throw when collection.delete rejects", async () => {
+			// Setup
+			collectionMock.delete.mockRejectedValueOnce(new Error("delete failed"));
+			await vectorStore.initialize();
+
+			// Exercise & Verify
 			await expect(vectorStore.deleteLesson("missing")).resolves.toBeUndefined();
-
-			expect(collectionMock.delete).toHaveBeenCalledWith({
-				where: {
-					lessonId: "missing"
-				}
-			});
 		});
 	});
 });

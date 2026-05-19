@@ -9,6 +9,11 @@ import { RAG_CONFIG } from "../config/rag-config";
 import { DocumentChunk, RetrievalResult, CircuitBreakerState } from "../types/chunk";
 import type { IEmbeddingService } from "../types/embedding";
 
+// IEmbeddingService is a compile-time-only import (import type). It adds no runtime
+// dependency on embedding.ts or @xenova/transformers, so this module is safe to load
+// in any process — including the API server — without triggering the ESM parse error
+// that @xenova/transformers causes under Jest's CJS transform.
+
 type ChromaMetadata = Record<string, string | number | boolean>;
 
 function toChromaMetadata(metadata: DocumentChunk["metadata"]): ChromaMetadata {
@@ -35,16 +40,18 @@ function toChromaMetadata(metadata: DocumentChunk["metadata"]): ChromaMetadata {
 }
 
 /**
- * ChromaDB 3.x resolves whether to warn about a missing embedding function by calling
- * `serializeEmbeddingFunction` on the instance passed to getCollection/createCollection.
- * It returns `{ type: "legacy" }` — triggering the warning — whenever the instance is
- * missing `getConfig` or `buildFromConfig`. Implementing those two methods (plus
- * registering the class under its name) makes the client serialize it as
- * `{ type: "known", name: "custom-direct-embeddings", config: {} }`, which suppresses
- * the warning without any console patching.
+ * Satisfies the ChromaDB 3.x embedding-function contract without pulling in any ML model.
  *
- * `generate()` intentionally throws: we always pass pre-computed embeddings directly
- * to `add()` and `query()`, so ChromaDB should never call this.
+ * ChromaDB resolves whether to warn about a missing embedding function by calling
+ * `serializeEmbeddingFunction` on the instance passed to getCollection/createCollection.
+ * It returns `{ type: "legacy" }` — triggering a console warning — whenever the instance
+ * is missing `getConfig` or `buildFromConfig`. Implementing those two methods (plus
+ * registering the class under its name) makes the client serialize it as
+ * `{ type: "known", name: "custom-direct-embeddings", config: {} }`, suppressing the
+ * warning without any console patching.
+ *
+ * `generate()` intentionally throws: embeddings are always computed externally and passed
+ * directly to `add()` / `query()`, so ChromaDB must never call this method itself.
  */
 class CustomEmbeddingFunction implements EmbeddingFunction {
 	public static readonly FUNCTION_NAME = "custom-direct-embeddings";
@@ -52,8 +59,8 @@ class CustomEmbeddingFunction implements EmbeddingFunction {
 
 	async generate(): Promise<number[][]> {
 		throw new Error(
-			"CustomEmbeddingFunction.generate() should never be called. " +
-				"Always pass embeddings directly to add() and query()."
+			"CustomEmbeddingFunction.generate() must never be called. " +
+				"Always pass pre-computed embeddings directly to add() and query()."
 		);
 	}
 
@@ -66,10 +73,10 @@ class CustomEmbeddingFunction implements EmbeddingFunction {
 	}
 }
 
-// Register once so the client can round-trip the config through the known-function registry.
-// Guard against double-registration: Next.js may re-evaluate this module (hot reload, multiple
-// compilations) while the ChromaDB registry Map persists in the same process, causing a
-// ChromaValueError on the second call to registerEmbeddingFunction.
+// Register once so ChromaDB can round-trip the config through its known-function registry.
+// The guard prevents a ChromaValueError on double-registration, which can happen when
+// Next.js hot-reload or multiple compilations re-evaluate this module while the ChromaDB
+// registry Map persists in the same process.
 if (!knownEmbeddingFunctions.has(CustomEmbeddingFunction.FUNCTION_NAME)) {
 	registerEmbeddingFunction(
 		CustomEmbeddingFunction.FUNCTION_NAME,
@@ -80,32 +87,35 @@ if (!knownEmbeddingFunctions.has(CustomEmbeddingFunction.FUNCTION_NAME)) {
 const CUSTOM_EMBEDDING_FUNCTION = new CustomEmbeddingFunction();
 
 /**
- * Service for managing vector storage and retrieval using ChromaDB
+ * Service for managing vector storage and retrieval using ChromaDB.
+ *
+ * This class deliberately has no static dependency on the embedding service or
+ * @xenova/transformers. Methods that need embeddings (`addDocuments`, `search`)
+ * receive an `IEmbeddingService` as an explicit parameter. Methods that only
+ * manage ChromaDB collections (`deleteLesson`, `lessonExists`, `cleanup`) need
+ * no embedding model at all.
+ *
+ * This separation means the module is safe to import from any process — including
+ * the Next.js API server — without loading the ML model or triggering ESM parse
+ * errors in Jest.
  */
 export class VectorStore {
 	private client: ChromaClient | null = null;
 	private initialized = false;
-	private circuitBreaker: CircuitBreakerState = { failureCount: 0, isOpen: false };
-	private _embeddingService: IEmbeddingService | null = null;
-	// Missing: half-open reset logic
+	private circuitBreaker: CircuitBreakerState = {
+		failureCount: 0,
+		isOpen: false
+	};
+	// TODO: implement half-open reset logic
 	private readonly CIRCUIT_RESET_MS = 30_000;
-	/**
-	 * Lazily load the embedding service.
-	 * Using a dynamic import means @xenova/transformers is only parsed when
-	 * this method is first called at runtime — never during Jest module loading.
-	 */
-	private async getEmbeddingService(): Promise<IEmbeddingService> {
-		if (!this._embeddingService) {
-			const { embeddingService } = await import("./embedding.js");
-			this._embeddingService = embeddingService;
-		}
-		return this._embeddingService;
-	}
 
 	/**
-	 * Initialize connection to ChromaDB
+	 * Initialize the ChromaDB connection.
+	 *
+	 * Initialising the embedding model is the caller's responsibility; pass the
+	 * initialised service to `addDocuments` or `search` when you need it.
 	 */
-	async initialize(onlyChroma: boolean): Promise<void> {
+	async initialize(): Promise<void> {
 		if (this.initialized) {
 			return;
 		}
@@ -115,11 +125,6 @@ export class VectorStore {
 				port: RAG_CONFIG.VECTOR_STORE.PORT,
 				ssl: RAG_CONFIG.VECTOR_STORE.USE_SSL
 			});
-
-			if (!onlyChroma) {
-				const embeddingService = await this.getEmbeddingService();
-				await embeddingService.initialize();
-			}
 
 			this.initialized = true;
 		} catch (error) {
@@ -131,20 +136,22 @@ export class VectorStore {
 	}
 
 	/**
-	 * Check if initialized
+	 * Returns true when the ChromaDB client has been successfully connected.
 	 */
 	isInitialized(): boolean {
 		return this.initialized;
 	}
 
 	/**
-	 * Check circuit breaker state
+	 * Throws when the circuit breaker is open, otherwise returns.
+	 * If the breaker has been open longer than CIRCUIT_RESET_MS it is
+	 * reset to closed (half-open) so the next call can probe the server.
 	 */
 	private checkCircuitBreaker(): void {
 		if (this.circuitBreaker.isOpen) {
 			const elapsed = Date.now() - (this.circuitBreaker.lastFailure?.getTime() ?? 0);
 			if (elapsed > this.CIRCUIT_RESET_MS) {
-				this.circuitBreaker.isOpen = false; // attempt half-open
+				this.circuitBreaker.isOpen = false; // half-open: allow one probe
 			} else {
 				throw new Error(
 					"ChromaDB circuit breaker is open due to repeated failures. Skipping operation."
@@ -152,9 +159,7 @@ export class VectorStore {
 			}
 		}
 	}
-	/**
-	 * Record successful operation
-	 */
+
 	private recordSuccess(): void {
 		this.circuitBreaker.failureCount = 0;
 		this.circuitBreaker.isOpen = false;
@@ -180,7 +185,7 @@ export class VectorStore {
 	}
 
 	/**
-	 * Get or create collection for a lesson
+	 * Returns the ChromaDB collection for the given lesson, creating it if it does not exist.
 	 */
 	private async getCollection(): Promise<Collection> {
 		if (!this.client) {
@@ -192,9 +197,6 @@ export class VectorStore {
 			embeddingFunction: CUSTOM_EMBEDDING_FUNCTION,
 			metadata: {
 				description: `All lesson documents`,
-				// Tells the ChromaDB server which embedding function this collection uses
-				// during schema deserialization, suppressing the "No embedding function
-				// configuration found" warning that is otherwise printed on every collection load.
 				embedding_function: CUSTOM_EMBEDDING_FUNCTION.name,
 				custom_embeddings: "true",
 				embedding_model: RAG_CONFIG.EMBEDDING.MODEL_NAME,
@@ -204,25 +206,32 @@ export class VectorStore {
 	}
 
 	/**
-	 * Add document chunks to vector store
+	 * Embed and store document chunks for a lesson.
+	 *
+	 * Chunks are processed in batches of `RAG_CONFIG.EMBEDDING.BATCH_SIZE`.
+	 *
+	 * @param embeddingService - Caller-supplied embedding service. Accepting it as a
+	 *   parameter rather than importing it statically keeps this module free of any
+	 *   @xenova/transformers dependency, which would otherwise break Jest in projects
+	 *   that import VectorStore without needing the ML model.
 	 */
-	async addDocuments(lessonId: string, chunks: DocumentChunk[]): Promise<void> {
+	async addDocuments(
+		lessonId: string,
+		chunks: DocumentChunk[],
+		embeddingService: IEmbeddingService
+	): Promise<void> {
 		this.checkCircuitBreaker();
 
 		try {
-			await this.initialize(false);
-			const embeddingService = await this.getEmbeddingService();
+			await this.initialize();
 			const collection = await this.getCollection();
 			const batchSize = RAG_CONFIG.EMBEDDING.BATCH_SIZE;
 
 			for (let i = 0; i < chunks.length; i += batchSize) {
 				const batch = chunks.slice(i, i + batchSize);
-
-				// Generate embeddings for batch
 				const texts = batch.map(chunk => chunk.text);
 				const embeddings = await embeddingService.generateBatchEmbeddings(texts);
 
-				// Add to collection
 				await collection.add({
 					ids: batch.map(chunk => chunk.id),
 					embeddings: embeddings,
@@ -248,35 +257,41 @@ export class VectorStore {
 	}
 
 	/**
-	 * Search for relevant documents
+	 * Search for the most relevant chunks for a free-text query.
+	 *
+	 * Results are filtered to those whose cosine similarity score meets
+	 * `RAG_CONFIG.RETRIEVAL.MIN_SIMILARITY_SCORE`, and capped at `topK`
+	 * (bounded by `RAG_CONFIG.RETRIEVAL.MAX_TOP_K`).
+	 *
+	 * @param embeddingService - Caller-supplied embedding service. Same rationale as
+	 *   `addDocuments`: keeping it out of the static import graph means this module
+	 *   can be loaded without @xenova/transformers.
 	 */
-	async search(lessonId: string, query: string, topK = 5): Promise<RetrievalResult[]> {
-		await this.initialize(false);
-		const embeddingService = await this.getEmbeddingService();
+	async search(
+		lessonId: string,
+		query: string,
+		embeddingService: IEmbeddingService,
+		topK = 5
+	): Promise<RetrievalResult[]> {
+		await this.initialize();
 		const actualTopK = Math.min(topK, RAG_CONFIG.RETRIEVAL.MAX_TOP_K);
 		try {
 			const collection = await this.getCollection();
-
-			// Generate query embedding
 			const queryEmbedding = await embeddingService.generateEmbedding(query);
 
-			// Search
 			const results = await collection.query({
 				queryEmbeddings: [queryEmbedding],
 				nResults: actualTopK,
-				where: {
-					lessonId
-				}
+				where: { lessonId }
 			});
 
 			if (!results.documents[0] || !results.metadatas[0] || !results.distances[0]) {
 				return [];
 			}
 
-			// Convert to retrieval results
 			const retrievalResults: RetrievalResult[] = results.documents[0].map((text, idx) => {
 				const distance = results.distances?.[0]?.[idx] ?? 1;
-				const score = 1 - distance;
+				const score = 1 - distance; // convert cosine distance → similarity
 				const metadata = results.metadatas[0][idx];
 
 				return {
@@ -291,12 +306,9 @@ export class VectorStore {
 				};
 			});
 
-			// Filter by minimum similarity score
-			const filtered = retrievalResults.filter(
+			return retrievalResults.filter(
 				result => result.score >= RAG_CONFIG.RETRIEVAL.MIN_SIMILARITY_SCORE
 			);
-
-			return filtered;
 		} catch (error) {
 			console.error("[VectorStore] Search failed", {
 				error: error instanceof Error ? error.message : String(error),
@@ -307,19 +319,15 @@ export class VectorStore {
 	}
 
 	/**
-	 * Delete a lesson's collection
+	 * Delete all stored chunks for a lesson.
+	 * Silently swallows errors so a missing collection does not fail a lesson deletion.
 	 */
 	async deleteLesson(lessonId: string): Promise<void> {
-		await this.initialize(true);
+		await this.initialize();
 
 		try {
 			const collection = await this.getCollection();
-
-			await collection.delete({
-				where: {
-					lessonId
-				}
-			});
+			await collection.delete({ where: { lessonId } });
 		} catch (error) {
 			console.error("[VectorStore] Failed to delete lesson documents", {
 				error: error instanceof Error ? error.message : String(error),
@@ -329,17 +337,14 @@ export class VectorStore {
 	}
 
 	/**
-	 * Check if lesson collection exists
+	 * Returns true when at least one chunk for the lesson is present in the vector store.
 	 */
 	async lessonExists(lessonId: string): Promise<boolean> {
-		await this.initialize(true);
+		await this.initialize();
 
 		const collection = await this.getCollection();
-
 		const result = await collection.get({
-			where: {
-				lessonId
-			},
+			where: { lessonId },
 			limit: 1,
 			include: []
 		});
@@ -348,7 +353,8 @@ export class VectorStore {
 	}
 
 	/**
-	 * Cleanup resources
+	 * Drop all collections and reset the client. Used in tests to ensure a clean state
+	 * between runs.
 	 */
 	async cleanup(): Promise<void> {
 		if (this.client) {

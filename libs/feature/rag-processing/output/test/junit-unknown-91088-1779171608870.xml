@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Test Suite" tests="10" failures="0" errors="0" time="1.285">
+  <testsuite name="VectorStore" errors="0" failures="0" skipped="0" timestamp="2026-05-19T06:20:10" time="0.402" tests="10">
+    <testcase classname="VectorStore › initialize" name="connects to ChromaDB and marks the store as initialized" time="0.007">
+    </testcase>
+    <testcase classname="VectorStore › initialize" name="does not reconnect when already initialized" time="0.002">
+    </testcase>
+    <testcase classname="VectorStore › addDocuments" name="generates embeddings and calls collection.add for every batch of chunks" time="0.006">
+    </testcase>
+    <testcase classname="VectorStore › addDocuments" name="splits chunks into batches of BATCH_SIZE" time="0.002">
+    </testcase>
+    <testcase classname="VectorStore › search" name="returns mapped RetrievalResult entries for matching documents" time="0.009">
+    </testcase>
+    <testcase classname="VectorStore › search" name="returns an empty array when ChromaDB returns no documents" time="0.003">
+    </testcase>
+    <testcase classname="VectorStore › lessonExists" name="returns true when the collection contains at least one chunk for the lesson" time="0.002">
+    </testcase>
+    <testcase classname="VectorStore › lessonExists" name="returns false when no chunks are found for the lesson" time="0.003">
+    </testcase>
+    <testcase classname="VectorStore › deleteLesson" name="calls collection.delete with the correct lessonId filter" time="0.009">
+    </testcase>
+    <testcase classname="VectorStore › deleteLesson" name="does not throw when collection.delete rejects" time="0.07">
+    </testcase>
+  </testsuite>
+</testsuites>
