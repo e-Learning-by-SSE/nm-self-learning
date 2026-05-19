@@ -1,5 +1,6 @@
 import { PDFChunk, ArticleChunk, VideoChunk, ChunkOptions } from "../types/chunk";
 import { chunkText } from "../utils/chunking";
+import { PDFParse } from "pdf-parse";
 
 /**
  * Service for processing various content types into text chunks.
@@ -16,10 +17,10 @@ export class ContentProcessor {
 	/**
 	 * Lazily load the pdf-parse library to avoid unnecessary overhead in environments that don't need it.
 	 */
-	private async getPDFParse() {
-		const mod = await import("pdf-parse");
-		return mod.PDFParse;
-	}
+	// private async getPDFParse() {
+	// 	const mod = await import("pdf-parse");
+	// 	return mod.PDFParse;
+	// }
 
 	/**
 	 * Extract text content from PDF buffer
@@ -38,7 +39,7 @@ export class ContentProcessor {
 		}
 
 		try {
-			const PDFParse = await this.getPDFParse();
+			// const PDFParse = await this.getPDFParse();
 			// pdf-parse v2 wraps pdfjs-dist directly. The constructor takes a
 			// `LoadParameters` object (which extends pdfjs DocumentInitParameters),
 			// so all pdfjs options — including `standardFontDataUrl` and `verbosity` — go here.

@@ -53,7 +53,8 @@
 			"@self-learning/util/validate": ["libs/util/validation/src/index.ts"],
 			"@self-learning/webhooks": ["libs/feature/webhooks/src/index.ts"],
 			"@self-learning/worker-api": ["libs/data-access/worker/src/index.ts"],
-			"@self-learning/rag-processing": ["libs/feature/rag-processing/src/index.ts"]
+			"@self-learning/rag-processing": ["libs/feature/rag-processing/src/index.ts"],
+			"@self-learning/rag-processing/services": ["libs/feature/rag-processing/src/lib/services/index.ts"]
 		}
 	},
 	"files": ["./index.d.ts"],

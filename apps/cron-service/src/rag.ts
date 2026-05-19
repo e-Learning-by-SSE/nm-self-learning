@@ -1,10 +1,10 @@
 import { Prisma } from "@prisma/client";
+import { prepareRagContent, getRagVersionHash } from "@self-learning/rag-processing";
 import {
-	prepareRagContent,
-	getRagVersionHash,
 	contentProcessor,
-	vectorStore
-} from "@self-learning/rag-processing";
+	vectorStore,
+	embeddingService
+} from "@self-learning/rag-processing/services";
 import { database } from "@self-learning/database";
 import { LessonContent } from "@self-learning/types";
 
@@ -36,7 +36,7 @@ export async function embedLesson(lessonId: string) {
 				lesson.title
 			);
 			if (chunks.length > 0) {
-				await vectorStore.addDocuments(lesson.lessonId, chunks);
+				await vectorStore.addDocuments(lesson.lessonId, chunks, embeddingService);
 			}
 		}
 		if (articleTexts.length > 0) {
@@ -46,7 +46,7 @@ export async function embedLesson(lessonId: string) {
 				lesson.title
 			);
 			if (chunks.length > 0) {
-				await vectorStore.addDocuments(lesson.lessonId, chunks);
+				await vectorStore.addDocuments(lesson.lessonId, chunks, embeddingService);
 			}
 		}
 		if (transcriptTexts.length > 0) {
@@ -56,7 +56,7 @@ export async function embedLesson(lessonId: string) {
 				lesson.title
 			);
 			if (chunks.length > 0) {
-				await vectorStore.addDocuments(lesson.lessonId, chunks);
+				await vectorStore.addDocuments(lesson.lessonId, chunks, embeddingService);
 			}
 		}
 		// Step 4: Mark as embedded so this lesson is skipped on re-runs

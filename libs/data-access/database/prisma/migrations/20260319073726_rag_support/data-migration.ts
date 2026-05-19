@@ -7,12 +7,12 @@
 // use this command to run: npx tsx --tsconfig tsconfig.base.json libs/data-access/database/prisma/migrations/20260319073726_rag_support/data-migration.ts
 
 import { PrismaClient, Prisma } from "@prisma/client";
+import { prepareRagContent, getRagVersionHash } from "@self-learning/rag-processing";
 import {
-	prepareRagContent,
-	getRagVersionHash,
 	contentProcessor,
-	vectorStore
-} from "@self-learning/rag-processing";
+	vectorStore,
+	embeddingService
+} from "@self-learning/rag-processing/services";
 
 const prisma = new PrismaClient();
 
@@ -57,7 +57,7 @@ async function main() {
 						lesson.title
 					);
 					if (chunks.length > 0) {
-						await vectorStore.addDocuments(lesson.lessonId, chunks);
+						await vectorStore.addDocuments(lesson.lessonId, chunks, embeddingService);
 					}
 				}
 				if (articleTexts.length > 0) {
@@ -67,7 +67,7 @@ async function main() {
 						lesson.title
 					);
 					if (chunks.length > 0) {
-						await vectorStore.addDocuments(lesson.lessonId, chunks);
+						await vectorStore.addDocuments(lesson.lessonId, chunks, embeddingService);
 					}
 				}
 				if (transcriptTexts.length > 0) {
@@ -77,7 +77,7 @@ async function main() {
 						lesson.title
 					);
 					if (chunks.length > 0) {
-						await vectorStore.addDocuments(lesson.lessonId, chunks);
+						await vectorStore.addDocuments(lesson.lessonId, chunks, embeddingService);
 					}
 				}
 				// Step 4: Mark as embedded so this lesson is skipped on re-runs

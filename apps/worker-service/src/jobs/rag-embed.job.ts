@@ -1,6 +1,10 @@
 import { JobDefinition } from "../lib/core/job-registry";
 import { ragEmbedPayloadSchema } from "@self-learning/worker-api";
-import { contentProcessor, vectorStore } from "@self-learning/rag-processing";
+import {
+	contentProcessor,
+	vectorStore,
+	embeddingService
+} from "@self-learning/rag-processing/services";
 
 /**
  * RAG Embedding Job
@@ -46,7 +50,7 @@ export const ragEmbedJob: JobDefinition<"ragEmbed"> = {
 
 				// Add to vector store
 				if (chunks.length > 0) {
-					await vectorStore.addDocuments(lessonId, chunks);
+					await vectorStore.addDocuments(lessonId, chunks, embeddingService);
 				}
 			}
 
@@ -63,7 +67,7 @@ export const ragEmbedJob: JobDefinition<"ragEmbed"> = {
 
 				// Add to vector store
 				if (chunks.length > 0) {
-					await vectorStore.addDocuments(lessonId, chunks);
+					await vectorStore.addDocuments(lessonId, chunks, embeddingService);
 				}
 			}
 
@@ -82,7 +86,7 @@ export const ragEmbedJob: JobDefinition<"ragEmbed"> = {
 
 				// Add to vector store
 				if (chunks.length > 0) {
-					await vectorStore.addDocuments(lessonId, chunks);
+					await vectorStore.addDocuments(lessonId, chunks, embeddingService);
 				}
 			}
 

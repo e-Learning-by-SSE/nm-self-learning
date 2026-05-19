@@ -1,5 +1,5 @@
 import { JobDefinition } from "../lib/core/job-registry";
-import { vectorStore } from "@self-learning/rag-processing";
+import { vectorStore, embeddingService } from "@self-learning/rag-processing/services";
 import { ragRetrievePayloadSchema } from "@self-learning/worker-api";
 import { RAG_CONFIG } from "@self-learning/rag-processing";
 
@@ -34,7 +34,7 @@ export const ragRetrieveJob: JobDefinition<"ragRetrieve"> = {
 				};
 			}
 			// Perform vector search (generates embeddings internally)
-			const results = await vectorStore.search(lessonId, question, topK);
+			const results = await vectorStore.search(lessonId, question, embeddingService, topK);
 			if (results.length === 0) {
 				console.log("[RagRetrieve] No relevant results found", { lessonId });
 				return {

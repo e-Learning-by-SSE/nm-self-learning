@@ -1,3 +1,14 @@
+// rag-embed.job and rag-retrieve.job import @self-learning/rag-processing/services, which
+// loads embedding.ts → @xenova/transformers. That package is ESM-only and crashes Jest's
+// CJS transform with a __dirname redeclaration error. Since this spec only exercises
+// pathGenerationJob, stub the two RAG jobs out so the heavy ML deps are never loaded.
+jest.mock("./rag-embed.job", () => ({
+	ragEmbedJob: { name: "ragEmbed", schema: { parse: jest.fn() }, run: jest.fn() }
+}));
+jest.mock("./rag-retrieve.job", () => ({
+	ragRetrieveJob: { name: "ragRetrieve", schema: { parse: jest.fn() }, run: jest.fn() }
+}));
+
 import { WorkerHost } from "../lib/core/worker-host";
 import { jobs } from "./index";
 import { pathGenerationPayloadSchema } from "@self-learning/worker-api";
