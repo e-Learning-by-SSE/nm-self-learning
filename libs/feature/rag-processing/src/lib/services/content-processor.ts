@@ -15,14 +15,6 @@ import { PDFParse } from "pdf-parse";
  */
 export class ContentProcessor {
 	/**
-	 * Lazily load the pdf-parse library to avoid unnecessary overhead in environments that don't need it.
-	 */
-	// private async getPDFParse() {
-	// 	const mod = await import("pdf-parse");
-	// 	return mod.PDFParse;
-	// }
-
-	/**
 	 * Extract text content from PDF buffer
 	 */
 	async extractTextFromPDF(buffer: Uint8Array): Promise<string> {
@@ -39,7 +31,6 @@ export class ContentProcessor {
 		}
 
 		try {
-			// const PDFParse = await this.getPDFParse();
 			// pdf-parse v2 wraps pdfjs-dist directly. The constructor takes a
 			// `LoadParameters` object (which extends pdfjs DocumentInitParameters),
 			// so all pdfjs options — including `standardFontDataUrl` and `verbosity` — go here.
