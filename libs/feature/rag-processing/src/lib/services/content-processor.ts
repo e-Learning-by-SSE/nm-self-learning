@@ -2,6 +2,15 @@ import { PDFChunk, ArticleChunk, VideoChunk, ChunkOptions } from "../types/chunk
 import { chunkText } from "../utils/chunking";
 import { extractText } from "unpdf";
 
+// Suppress "Warning: TT: undefined function: 32" warning, which is not controlled by the library, but by lower level api.
+const originalWarn = console.warn;
+console.warn = (...args: unknown[]) => {
+	if (typeof args[0] === "string" && args[0].includes("TT: undefined function")) {
+		return;
+	}
+	originalWarn(...args);
+};
+
 /**
  * Service for processing various content types into text chunks.
  *
