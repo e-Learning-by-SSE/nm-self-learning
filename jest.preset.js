@@ -12,6 +12,11 @@ module.exports = {
 	...nxPreset,
 	setupFiles: ["dotenv/config"],
 	globals: {},
+	moduleNameMapper: {
+		// for Jest (transform imports)
+		// @xenova/transformers is ESM-only and causes a __dirname redeclaration error
+		"^@xenova/transformers$": "libs/util/testing/src/lib/xenova-transformers.mock.ts"
+	},
 	/* TODO: Update to latest Jest snapshotFormat
 	 * By default Nx has kept the older style of Jest Snapshot formats
 	 * to prevent breaking of any existing tests with snapshots.
