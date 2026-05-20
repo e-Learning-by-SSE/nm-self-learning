@@ -26,7 +26,10 @@ export function LessonSelector({
 			<Combobox value={null}>
 				<DropdownDialog.SearchInput
 					filter={title}
-					setFilter={setTitle}
+					setFilter={value => {
+						setTitle(value);
+						setPage(1);
+					}}
 					placeholder="Suche nach Titel"
 				/>
 

@@ -46,7 +46,7 @@ export function SearchUserDialog({
 			<Combobox value={null}>
 				<DropdownDialog.SearchInput
 					filter={name}
-					setFilter={setName}
+					setFilter={(value) => { setName(value); setPage(1); }}
 					placeholder="Suche nach Nutzer"
 				/>
 
