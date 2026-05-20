@@ -1,5 +1,8 @@
 import { PDFChunk, ArticleChunk, VideoChunk, ChunkOptions } from "../types/chunk";
 import { chunkText } from "../utils/chunking";
+// Polyfill to use Browser API DOM definition, which is used by pdfjs-dist (used by pdf-parse)
+import { DOMMatrix, ImageData, Path2D } from "@napi-rs/canvas";
+Object.assign(globalThis, { DOMMatrix, ImageData, Path2D });
 import { PDFParse } from "pdf-parse";
 
 /**
