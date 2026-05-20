@@ -30,8 +30,8 @@ export function LessonDeleteOption({ lessonId }: { lessonId: string }) {
 			<IconOnlyButton
 				icon={<TrashIcon className="h-5 w-5" />}
 				className="btn-danger"
-				onClick={() => {
-					refetch(); // Lazy-load linked entities only when delete is initiated
+				onClick={async () => {
+					await refetch(); // Lazy-load linked entities only when delete is initiated
 					setShowConfirmation(true);
 				}}
 				title={"Lerneinheit löschen"}
