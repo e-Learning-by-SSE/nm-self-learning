@@ -1,13 +1,6 @@
-export class PDFParse {
-	constructor(_options: unknown) {}
+import { jest } from "@jest/globals";
+import type { extractText as ExtractTextType } from "unpdf";
 
-	async getText(): Promise<{ text: string }> {
-		return {
-			text: "Mocked PDF text"
-		};
-	}
-
-	async destroy(): Promise<void> {
-		// noop
-	}
-}
+export const extractText = jest
+	.fn<typeof ExtractTextType>()
+	.mockResolvedValue({ text: "Mocked PDF text", totalPages: 1 });
