@@ -1,5 +1,15 @@
 import { PDFChunk, ArticleChunk, VideoChunk, ChunkOptions } from "../types/chunk";
 import { chunkText } from "../utils/chunking";
+import { extractText } from "unpdf";
+
+// Suppress "Warning: TT: undefined function: 32" warning, which is not controlled by the library, but by lower level api.
+const originalWarn = console.warn;
+console.warn = (...args: unknown[]) => {
+	if (typeof args[0] === "string" && args[0].includes("TT: undefined function")) {
+		return;
+	}
+	originalWarn(...args);
+};
 
 /**
  * Service for processing various content types into text chunks.
@@ -13,14 +23,6 @@ import { chunkText } from "../utils/chunking";
  * After extraction, all content types are strings and pass through EmbeddingService → VectorStore.
  */
 export class ContentProcessor {
-	/**
-	 * Lazily load the pdf-parse library to avoid unnecessary overhead in environments that don't need it.
-	 */
-	private async getPDFParse() {
-		const mod = await import("pdf-parse");
-		return mod.PDFParse;
-	}
-
 	/**
 	 * Extract text content from PDF buffer
 	 */
@@ -38,29 +40,8 @@ export class ContentProcessor {
 		}
 
 		try {
-			const PDFParse = await this.getPDFParse();
-			// pdf-parse v2 wraps pdfjs-dist directly. The constructor takes a
-			// `LoadParameters` object (which extends pdfjs DocumentInitParameters),
-			// so all pdfjs options — including `standardFontDataUrl` and `verbosity` — go here.
-			//
-			// verbosity: 0 = VerbosityLevel.ERRORS — suppresses:
-			//   • "Warning: TT: undefined function: N" (TrueType bytecode opcode gap)
-			//   • "Warning: UnknownErrorException: Ensure that standardFontDataUrl …"
-			//
-			// standardFontDataUrl: points pdfjs to the Helvetica/Times/Courier etc.
-			// metrics files bundled with pdfjs-dist so it can lay out PDFs that
-			// reference standard fonts without embedding them.
-			const pdfjsDir = require
-				.resolve("pdfjs-dist/package.json")
-				.replace(/package\.json$/, "");
-			const standardFontDataUrl = `${pdfjsDir}standard_fonts/`;
-			const parser = new PDFParse({
-				data: buffer,
-				verbosity: 0,
-				standardFontDataUrl
-			});
-			const result = await parser.getText();
-			return result.text.trim();
+			const { text } = await extractText(buffer, { mergePages: true });
+			return text.trim();
 		} catch (error) {
 			console.error("[ContentProcessor] PDF text extraction failed", {
 				error: error instanceof Error ? error.message : String(error)

@@ -13,11 +13,6 @@ export default {
 	coverageDirectory: "../../coverage/apps/worker-service",
 	preset: "../../jest.preset.js",
 
-	// for Jest (transform imports)
-	moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths ?? {}, {
-		prefix: "<rootDir>/../../"
-	}),
-
 	// Setup global setup to use NX way to run tests in VS Code
 	// This will build the worker-service before running tests
 	globalSetup: "<rootDir>/jest.global-setup.ts",
