@@ -1,14 +1,7 @@
-// Mock pdf-parse before importing the processor (it is required lazily but
-// mocking ensures stable behavior in tests).
-jest.mock("pdf-parse", () => {
-	const getText = jest.fn().mockResolvedValue({ text: "  Hello world  ", numpages: 2 });
-
-	function PDFParse(_buffer: Uint8Array) {
-		return { getText };
-	}
-
-	return { PDFParse };
-});
+// Mock used PDF extractor.
+jest.mock("unpdf", () => ({
+	extractText: jest.fn().mockResolvedValue({ text: "  Hello world  ", totalPages: 2 })
+}));
 
 // Mock chunking util to return deterministic chunks based on input string.
 // Splits text into two roughly-equal halves for predictable, stable output.
