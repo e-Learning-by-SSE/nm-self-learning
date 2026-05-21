@@ -407,10 +407,10 @@ function AuthorDashboardPage({ author }: Props) {
 
 function CourseDeleteOption({ slug }: { slug: string }) {
 	const { mutateAsync: deleteCourse } = trpc.course.deleteCourse.useMutation();
-	const {
-		data: linkedEntities,
-		refetch
-	} = trpc.course.findLinkedEntities.useQuery({ slug }, { enabled: false }); // Prevent DB call on page load
+	const { data: linkedEntities, refetch } = trpc.course.findLinkedEntities.useQuery(
+		{ slug },
+		{ enabled: false }
+	); // Prevent DB call on page load
 	const [showConfirmation, setShowConfirmation] = useState(false);
 	const { reload } = useRouter();
 
@@ -434,8 +434,8 @@ function CourseDeleteOption({ slug }: { slug: string }) {
 			<IconOnlyButton
 				icon={<TrashIcon className="h-5 w-5" />}
 				className="btn-danger"
-				onClick={() => {
-					refetch(); // Lazy-load linked entities only when delete is initiated
+				onClick={async () => {
+					await refetch(); // Lazy-load linked entities only when delete is initiated
 					setShowConfirmation(true);
 				}}
 			/>
