@@ -1,0 +1,16 @@
+{
+    "Completed_Lessons_one": "Du hast bereits <count>{{count}}</count> Lerneinheit abgeschlossen.",
+    "Completed_Lessons_other": "Du hast bereits <count>{{count}}</count> Lerneinheiten abgeschlossen.",
+    "Last_Course": "Letzter Kurs",
+    "Last_Learning_Diary_Entry": "Letzter Lerntagebucheintrag",
+    "Recently_Viewed_Lessons": "Zuletzt bearbeitete Lerneinheiten",
+    "My_Courses": "Meine Kurse",
+    "My_Learning_Diary": "Mein Lerntagebuch",
+    "My_Learning_Goals": "Meine Lernziele",
+    "No_Learning_Diary_Entries": "Keine Lerntagebucheinträge vorhanden. Einträge werden erstellt, wenn du mit dem Lernen beginnst.",
+    "Time_Spent": "Verbrachte Zeit",
+    "No_Recent_Lessons": "Du hast noch keine Lerneinheiten bearbeitet.",
+    "No_Enrolled_Course": "Du bist momentan in keinem Kurs eingeschrieben.",
+    "Get_Started": "Leg los",
+    "Completed": "Abgeschlossen"
+}

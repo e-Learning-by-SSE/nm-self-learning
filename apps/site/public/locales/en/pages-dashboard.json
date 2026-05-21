@@ -1,0 +1,16 @@
+{
+    "Completed_Lessons_one": "You have already completed <count>{{count}}</count> lesson.",
+    "Completed_Lessons_other": "You have already completed <count>{{count}}</count> lessons.",
+    "Last_Course": "Last course",
+    "Last_Learning_Diary_Entry": "Last learning diary entry",
+    "Recently_Viewed_Lessons": "Recently worked on lessons",
+    "My_Courses": "My courses",
+    "My_Learning_Diary": "My learning diary",
+    "My_Learning_Goals": "My learning goals",
+    "No_Learning_Diary_Entries": "No learning diary entries yet. Entries are created when you start learning.",
+    "Time_Spent": "Time spent",
+    "No_Recent_Lessons": "You have not worked on any lessons yet.",
+    "No_Enrolled_Course": "You are currently not enrolled in any course.",
+    "Get_Started": "Get started",
+    "Completed": "Completed"
+}
