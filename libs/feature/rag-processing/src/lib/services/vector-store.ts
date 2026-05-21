@@ -7,7 +7,7 @@ import {
 } from "chromadb";
 import { RAG_CONFIG } from "../config/rag-config";
 import { DocumentChunk, RetrievalResult, CircuitBreakerState } from "../types/chunk";
-import type { IEmbeddingService } from "../types/embedding";
+import { embeddingService } from "./embedding";
 
 type ChromaMetadata = Record<string, string | number | boolean>;
 
@@ -86,21 +86,8 @@ export class VectorStore {
 	private client: ChromaClient | null = null;
 	private initialized = false;
 	private circuitBreaker: CircuitBreakerState = { failureCount: 0, isOpen: false };
-	private _embeddingService: IEmbeddingService | null = null;
 	// Missing: half-open reset logic
 	private readonly CIRCUIT_RESET_MS = 30_000;
-	/**
-	 * Lazily load the embedding service.
-	 * Using a dynamic import means @xenova/transformers is only parsed when
-	 * this method is first called at runtime — never during Jest module loading.
-	 */
-	private async getEmbeddingService(): Promise<IEmbeddingService> {
-		if (!this._embeddingService) {
-			const { embeddingService } = await import("./embedding");
-			this._embeddingService = embeddingService;
-		}
-		return this._embeddingService;
-	}
 
 	/**
 	 * Initialize connection to ChromaDB
@@ -117,8 +104,9 @@ export class VectorStore {
 			});
 
 			if (!onlyChroma) {
-				const embeddingService = await this.getEmbeddingService();
-				await embeddingService.initialize();
+				if (!embeddingService.isInitialized()) {
+					await embeddingService.initialize();
+				}
 			}
 
 			this.initialized = true;
@@ -211,7 +199,6 @@ export class VectorStore {
 
 		try {
 			await this.initialize(false);
-			const embeddingService = await this.getEmbeddingService();
 			const collection = await this.getCollection();
 			const batchSize = RAG_CONFIG.EMBEDDING.BATCH_SIZE;
 
@@ -252,7 +239,6 @@ export class VectorStore {
 	 */
 	async search(lessonId: string, query: string, topK = 5): Promise<RetrievalResult[]> {
 		await this.initialize(false);
-		const embeddingService = await this.getEmbeddingService();
 		const actualTopK = Math.min(topK, RAG_CONFIG.RETRIEVAL.MAX_TOP_K);
 		try {
 			const collection = await this.getCollection();

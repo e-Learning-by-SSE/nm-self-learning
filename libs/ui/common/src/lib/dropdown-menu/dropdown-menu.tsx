@@ -13,6 +13,7 @@ import { MinorScaleFadeIn } from "@self-learning/ui/common";
  * @param {(focus: boolean) => string} [customFocusStyle] - Optional function to customize class names for focused items.
  * @param {ReactNode} button - The button content that triggers the dropdown (e.g., text or icon).
  * @param {ReactNode} children - Menu items to display inside the dropdown, typically as `<span>` or `<div>`.
+ * @param {number} [z_index=10] - The z-index for the dropdown menu.
  *
  * @example
  * <DropdownMenu
@@ -31,13 +32,15 @@ export function DropdownMenu({
 	dropdownPosition = "bottom",
 	customFocusStyle,
 	button,
-	children
+	children,
+	z_index = 10
 }: {
 	title: string;
 	dropdownPosition?: "top" | "bottom";
 	customFocusStyle?: (focus: boolean) => string;
 	button: ReactNode;
 	children: ReactNode;
+	z_index?: number;
 }) {
 	const buttonRef = useRef<HTMLDivElement>(null);
 	const [menuWidth, setMenuWidth] = useState<number | null>(null);
@@ -68,7 +71,7 @@ export function DropdownMenu({
 							style={{
 								minWidth: menuWidth ?? "auto"
 							}}
-							className={`absolute z-10 bg-white shadow-lg max-h-64 overflow-auto text-sm rounded`}
+							className={`absolute z-${z_index} bg-white shadow-lg max-h-64 overflow-auto text-sm rounded`}
 						>
 							{childrenArray.map((element, i) => (
 								<MenuItem key={i}>

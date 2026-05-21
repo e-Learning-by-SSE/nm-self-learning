@@ -1,6 +1,5 @@
 import { pipeline, FeatureExtractionPipeline } from "@xenova/transformers";
 import { RAG_CONFIG } from "../config/rag-config";
-import { IEmbeddingService } from "../types/embedding";
 
 /**
  * Service for generating text embeddings using transformers
@@ -12,7 +11,7 @@ import { IEmbeddingService } from "../types/embedding";
  * Using the library's own type avoids any hand-rolled interface that would drift from the actual
  * implementation and cause assignability errors.
  */
-export class EmbeddingService implements IEmbeddingService {
+export class EmbeddingService {
 	private embedder: FeatureExtractionPipeline | null = null;
 	private initialized = false;
 
