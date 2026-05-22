@@ -2,11 +2,14 @@ import { useRef, useCallback } from "react";
 import ReactCanvasConfetti from "react-canvas-confetti";
 
 export function FireworkOnClick({ children }: { children: React.ReactNode }) {
-	const confettiRef = useRef<((options: any) => void) | null>(null);
+	const confettiRef = useRef<((options: Record<string, unknown>) => void) | null>(null);
 
-	const handleInit = useCallback((instance: { confetti: (options: any) => void }) => {
-		confettiRef.current = instance.confetti;
-	}, []);
+	const handleInit = useCallback(
+		(instance: { confetti: (options: Record<string, unknown>) => void }) => {
+			confettiRef.current = instance.confetti;
+		},
+		[]
+	);
 
 	const handleClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
 		if (!confettiRef.current) return;

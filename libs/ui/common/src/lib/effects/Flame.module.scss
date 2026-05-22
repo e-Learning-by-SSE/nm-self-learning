@@ -133,6 +133,8 @@
 // 	}
 // }
 
+@use "sass:math";
+
 //#weitere anpassung  um die flamme zu zentrieren
 // styles/Flame.module.scss
 $fireColor: rgb(255, 80, 0);
@@ -194,8 +196,8 @@ $partSize: 5em;
 
 	@for $p from 1 through $parts {
 		&:nth-of-type(#{$p}) {
-			animation-delay: $dur * random();
-			left: calc((100% - #{$partSize}) * #{($p - 1) / $parts});
+			animation-delay: $dur * math.random();
+			left: calc((100% - #{$partSize}) * #{math.div($p - 1, $parts)});
 		}
 	}
 }

@@ -1,5 +1,5 @@
 // /* eslint-disable */
-export default {
+module.exports = {
 	displayName: "feature-achievements",
 	preset: "../../../jest.preset.js",
 	setupFiles: ["<rootDir>/jest.setup.ts"],

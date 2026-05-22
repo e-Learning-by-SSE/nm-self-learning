@@ -48,3 +48,5 @@ export * from "./lib/dropdown-menu/combobox-menu";
 export * from "./lib/transition/minor-scale-fade-in";
 export * from "./lib/i18n/trans";
 export * from "./lib/help/online-help-link";
+
+export const I18N_NAMESPACE = ["common", "features-ui-commons"];

@@ -20,7 +20,10 @@ import {
 	TableDataColumn,
 	TableHeaderColumn
 } from "@self-learning/ui/common";
-import { formatDateDistanceToNow, ConvertTranscriptionToSubtitle } from "@self-learning/util/common";
+import {
+	formatDateDistanceToNow,
+	ConvertTranscriptionToSubtitle
+} from "@self-learning/util/common";
 import { TRPCClientError } from "@trpc/client";
 import { inferRouterOutputs } from "@trpc/server";
 import { ReactElement, useEffect, useId, useMemo, useState } from "react";

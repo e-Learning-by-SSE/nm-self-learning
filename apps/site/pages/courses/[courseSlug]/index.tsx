@@ -2,7 +2,7 @@ import { PlayIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
-import { SmallGradeBadge } from "@self-learning/completion";
+import { SmallGradeBadge, useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
@@ -412,8 +412,7 @@ function CourseHeader({
 }
 
 function TableOfContents({ content, course }: { content: ToC.Content; course: Course }) {
-	// const completion = useCourseCompletion(course.slug);
-	const completion: any = null;
+	const completion = useCourseCompletion(course.slug);
 	const hasContent = content.length > 0;
 
 	if (!hasContent) {

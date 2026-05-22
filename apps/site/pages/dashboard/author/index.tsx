@@ -12,6 +12,7 @@ import {
 	Dialog,
 	DialogActions,
 	Divider,
+	I18N_NAMESPACE as NS_UI_COMMON,
 	IconOnlyButton,
 	IconTextButton,
 	ImageOrPlaceholder,
@@ -31,6 +32,7 @@ import { ExportCourseDialog } from "@self-learning/teaching";
 import { AccessLevel, GroupRole } from "@prisma/client";
 import { SearchField } from "@self-learning/ui/forms";
 import { keepPreviousData } from "@tanstack/react-query";
+import { useTranslation } from "next-i18next";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
 
@@ -71,7 +73,7 @@ export function getAuthor(username: string) {
 }
 
 export const getServerSideProps = withTranslations(
-	["common"],
+	Array.from(new Set(["common", "pages-dashboard", ...NS_UI_COMMON])),
 	withAuth<Props>(async (context, user) => {
 		if (user.isAuthor) {
 			return { props: { author: await getAuthor(user.name) } };
@@ -86,6 +88,7 @@ export default function Start(props: Props) {
 }
 
 function AuthorDashboardPage({ author }: Props) {
+	const { t } = useTranslation("pages-dashboard");
 	const session = useRequiredSession();
 	// const authorName = session.data?.user.name;
 	const isAdmin = session.data?.user.role === "ADMIN";
@@ -122,21 +125,21 @@ function AuthorDashboardPage({ author }: Props) {
 					<section>
 						<div className="flex justify-between gap-4">
 							<SectionHeader
-								title="Meine Kurse"
-								subtitle="Berechtigungen in den folgenden Kurse:"
+								title={t("My_Courses")}
+								subtitle={t("Author_Courses_Subtitle")}
 							/>
 
 							<Link href="/teaching/courses/create" className="mt-4">
 								<IconTextButton
 									className="btn-secondary"
-									text="Kurs erstellen"
+									text={t("Create_Course")}
 									icon={<PlusIcon className="icon h-5" />}
 								/>
 							</Link>
 						</div>
 
 						<SearchField
-							placeholder="Suche nach Kursnamen"
+							placeholder={t("Search_Course_Name")}
 							onChange={e => {
 								setCourseFilterName(e.target.value);
 							}}
@@ -150,7 +153,7 @@ function AuthorDashboardPage({ author }: Props) {
 										<VoidSvg />
 									</div>
 									<p className="text-c-text-muted">
-										Sie haben derzeit keine Kurse, auf die Sie Zugriff haben.
+										{t("No_Accessible_Courses")}
 									</p>
 								</div>
 							) : (
@@ -188,9 +191,9 @@ function AuthorDashboardPage({ author }: Props) {
 															icon={
 																<PencilIcon className="h-5 w-5" />
 															}
-															text={"Bearbeiten"}
+															text={t("Edit")}
 															className="btn-stroked"
-															title="Kurs bearbeiten"
+															title={t("Edit_Course")}
 														/>
 													</Link>
 												)}
@@ -204,9 +207,9 @@ function AuthorDashboardPage({ author }: Props) {
 															icon={
 																<ArrowDownTrayIcon className="h-5 w-5" />
 															}
-															text={"Export"}
+															text={t("Export")}
 															className="btn-stroked"
-															title="Kurs exportieren"
+															title={t("Export_Course")}
 															onClick={() =>
 																setViewExportDialog(true)
 															}
@@ -242,13 +245,13 @@ function AuthorDashboardPage({ author }: Props) {
 					<section>
 						<div className="flex justify-between gap-4">
 							<SectionHeader
-								title="Meine Lerneinheiten"
-								subtitle="Berechtigungen in den folgenden Lerneinheiten:"
+								title={t("My_Lessons")}
+								subtitle={t("Author_Lessons_Subtitle")}
 							/>
 
 							<Link href="/teaching/lessons/create" className="mt-4">
 								<IconTextButton
-									text="Lerneinheit erstellen"
+									text={t("Create_Lesson")}
 									className="btn-secondary"
 									icon={<PlusIcon className="icon h-5" />}
 								/>
@@ -256,7 +259,7 @@ function AuthorDashboardPage({ author }: Props) {
 						</div>
 
 						<SearchField
-							placeholder="Suche nach Lerneinheiten"
+							placeholder={t("Search_Lessons")}
 							onChange={e => {
 								setLessonFilterName(e.target.value);
 							}}
@@ -270,8 +273,7 @@ function AuthorDashboardPage({ author }: Props) {
 										<VoidSvg />
 									</div>
 									<p className="text-light">
-										Sie haben derzeit keine Lerneinheiten, auf die Sie Zugriff
-										haben
+										{t("No_Accessible_Lessons")}
 									</p>
 								</div>
 							) : (
@@ -308,14 +310,14 @@ function AuthorDashboardPage({ author }: Props) {
 					<section>
 						<div className="flex justify-between gap-4">
 							<SectionHeader
-								title="Meine Skillkarten"
-								subtitle="Autor der folgenden Skillkarten:"
+								title={t("My_Skill_Cards")}
+								subtitle={t("Author_Skill_Cards_Subtitle")}
 							/>
 							<Link href="/skills/repository/create" className="mt-4">
 								<IconTextButton
 									icon={<PlusIcon className="icon h-5" />}
 									className="btn-secondary"
-									text="Skillkarte erstellen"
+									text={t("Create_Skill_Card")}
 								/>
 							</Link>
 						</div>
@@ -326,9 +328,8 @@ function AuthorDashboardPage({ author }: Props) {
 					<section>
 						<div className="flex justify-between gap-4">
 							<SectionHeader
-								title="Teilnahmeübersicht"
-								subtitle="Es werden aus datenschutzgründen nur Angaben bei mindestens 10
-			teilnehmenden Studierenden angezeigt."
+								title={t("Participation_Overview")}
+								subtitle={t("Participation_Overview_Subtitle")}
 							/>
 						</div>
 						<TeacherView />
@@ -342,12 +343,12 @@ function AuthorDashboardPage({ author }: Props) {
 			<section>
 				<div className="flex justify-between gap-4">
 					<SectionHeader
-						title="Meine Gruppen"
-						subtitle="Mitglied der folgenden Gruppen:"
+						title={t("My_Groups")}
+						subtitle={t("My_Groups_Subtitle")}
 					/>
 					<Link href="/teaching/groups/create" className="mt-4">
 						<IconTextButton
-							text="Gruppe erstellen"
+							text={t("Create_Group")}
 							className="btn-secondary"
 							icon={<PlusIcon className="icon h-5" />}
 						/>
@@ -360,10 +361,9 @@ function AuthorDashboardPage({ author }: Props) {
 								<VoidSvg />
 							</div>
 							<div>
-								<p className="text-light">Sie sind Mitglied keiner Gruppe.</p>
+								<p className="text-light">{t("No_Group_Membership")}</p>
 								<p>
-									Um Inhalte zu erstellen, müssen Sie Mitglied von mindestens
-									einer Gruppe sein.
+									{t("Group_Membership_Required")}
 								</p>
 							</div>
 						</div>
@@ -385,9 +385,9 @@ function AuthorDashboardPage({ author }: Props) {
 										<Link href={`/teaching/groups/${m.group.id}/edit`}>
 											<IconTextButton
 												icon={<PencilIcon className="h-5 w-5" />}
-												text={"Bearbeiten"}
+												text={t("Edit")}
 												className="btn-stroked"
-												title="Gruppe bearbeiten"
+												title={t("Edit_Group")}
 											/>
 										</Link>
 									)}
@@ -407,7 +407,10 @@ function AuthorDashboardPage({ author }: Props) {
 
 function CourseDeleteOption({ slug }: { slug: string }) {
 	const { mutateAsync: deleteCourse } = trpc.course.deleteCourse.useMutation();
-	const { data: linkedEntities, isLoading } = trpc.course.findLinkedEntities.useQuery({ slug });
+	const { data: linkedEntities, refetch } = trpc.course.findLinkedEntities.useQuery(
+		{ slug },
+		{ enabled: false }
+	); // Prevent DB call on page load
 	const [showConfirmation, setShowConfirmation] = useState(false);
 	const { reload } = useRouter();
 
@@ -426,17 +429,15 @@ function CourseDeleteOption({ slug }: { slug: string }) {
 		setShowConfirmation(false);
 	};
 
-	// Don't show delete button -> Empty option
-	if (isLoading) {
-		return <></>;
-	}
-
 	return (
 		<>
 			<IconOnlyButton
 				icon={<TrashIcon className="h-5 w-5" />}
 				className="btn-danger"
-				onClick={() => setShowConfirmation(true)}
+				onClick={async () => {
+					await refetch(); // Lazy-load linked entities only when delete is initiated
+					setShowConfirmation(true);
+				}}
 			/>
 			{showConfirmation && (
 				<CourseDeletionDialog
@@ -463,14 +464,16 @@ function CourseDeletionDialog({
 	onSubmit: () => void;
 	linkedEntities?: CourseLinkedEntities | null;
 }) {
+	const { t } = useTranslation("pages-dashboard");
+
 	if (linkedEntities && (linkedEntities.subject || linkedEntities.specializations.length > 0)) {
 		return (
-			<Dialog title={"Löschen nicht möglich"} onClose={onCancel}>
-				Kurs kann nicht gelöscht werden.
+			<Dialog title={t("Delete_Not_Possible")} onClose={onCancel}>
+				{t("Course_Cannot_Be_Deleted")}
 				{linkedEntities.subject && (
 					<>
 						<br />
-						Er wird im folgenden Fachgebiet verwendet:{" "}
+						{t("Used_In_Subject")} {" "}
 						<Link
 							href={`/subjects/${linkedEntities.subject.slug}`}
 							className="hover:text-c-primary"
@@ -480,7 +483,7 @@ function CourseDeletionDialog({
 					</>
 				)}
 				<br />
-				Er wird in folgenden Fachgebieten genutzt:
+				{t("Used_In_Subjects")}
 				<ul className="flex flex-wrap gap-4 list-inside list-disc text-sm font-medium">
 					{linkedEntities.specializations.map(specialization => (
 						<li key={specialization.slug}>
@@ -499,11 +502,11 @@ function CourseDeletionDialog({
 	}
 
 	return (
-		<Dialog title={"Löschen"} onClose={onCancel}>
-			Möchten Sie diesen Kurs wirklich löschen?
+		<Dialog title={t("Delete")} onClose={onCancel}>
+			{t("Confirm_Delete_Course")}
 			<DialogActions onClose={onCancel}>
 				<button className="btn-primary hover:bg-c-danger" onClick={onSubmit}>
-					Löschen
+					{t("Delete")}
 				</button>
 			</DialogActions>
 		</Dialog>
@@ -519,6 +522,7 @@ function LessonTaskbar({
 	accessLevel: AccessLevel;
 	isAdmin: boolean;
 }) {
+	const { t } = useTranslation("pages-dashboard");
 	const canDelete = isAdmin || greaterOrEqAccessLevel(accessLevel, AccessLevel.FULL);
 	const canEdit = isAdmin || greaterOrEqAccessLevel(accessLevel, AccessLevel.EDIT);
 	return (
@@ -528,9 +532,9 @@ function LessonTaskbar({
 				<Link href={`/teaching/lessons/edit/${lessonId}`}>
 					<IconTextButton
 						icon={<PencilIcon className="h-5 w-5" />}
-						text={"Bearbeiten"}
+						text={t("Edit")}
 						className="btn-stroked"
-						title="Lerneinheit bearbeiten"
+						title={t("Edit_Lesson")}
 					/>
 				</Link>
 			)}
