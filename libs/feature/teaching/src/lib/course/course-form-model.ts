@@ -1,5 +1,5 @@
 import { AccessLevel, Prisma } from "@prisma/client";
-import { preparePermissionsForCreate, preparePermissionsForUpdate } from "@self-learning/api";
+import { PermissionsForCreate, PermissionsForUpdate } from "@self-learning/api";
 import { authorsRelationSchema, courseContentSchema, createCourseMeta } from "@self-learning/types";
 import { stringOrNull } from "@self-learning/util/common";
 import { z } from "zod";
@@ -26,8 +26,6 @@ export const courseFormSchema = z.object({
 
 export type CourseFormModel = z.infer<typeof courseFormSchema>;
 
-type PermissionsForCreate = Awaited<ReturnType<typeof preparePermissionsForCreate>>;
-
 export function mapCourseFormToInsert(
 	course: CourseFormModel,
 	courseId: string,
@@ -51,8 +49,6 @@ export function mapCourseFormToInsert(
 
 	return courseForDb;
 }
-
-type PermissionsForUpdate = Awaited<ReturnType<typeof preparePermissionsForUpdate>>;
 
 export function mapCourseFormToUpdate(
 	course: CourseFormModel,

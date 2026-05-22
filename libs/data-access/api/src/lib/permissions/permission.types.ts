@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { AccessLevel, GroupRole } from "@prisma/client";
+import { preparePermissionsForCreate, preparePermissionsForUpdate } from "./permission.service";
 
 export const AccessLevelEnum = z.nativeEnum(AccessLevel);
 export const GroupRoleEnum = z.nativeEnum(GroupRole);
@@ -31,3 +32,6 @@ export type PermissionInput = {
 	groupId: number;
 	accessLevel: AccessLevel;
 } & ResourceInput;
+
+export type PermissionsForCreate = Awaited<ReturnType<typeof preparePermissionsForCreate>>;
+export type PermissionsForUpdate = Awaited<ReturnType<typeof preparePermissionsForUpdate>>;
