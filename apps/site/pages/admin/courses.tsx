@@ -1,6 +1,7 @@
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import {
+	I18N_NAMESPACE as NS_UI_COMMON,
 	ImageOrPlaceholder,
 	LoadingBox,
 	Paginator,
@@ -109,4 +110,4 @@ export default function CoursesPage() {
 	);
 }
 
-export const getServerSideProps = withTranslations(["common"]);
+export const getServerSideProps = withTranslations(Array.from(new Set(["common", ...NS_UI_COMMON])));

@@ -62,4 +62,5 @@ data.db
 # Mount point to mount DB scripts for debugging purposes
 db_scripts/*
 
+# AI tools
 .claude/worktrees
