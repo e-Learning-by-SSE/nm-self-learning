@@ -1,6 +1,6 @@
 "use client";
 import { Bars4Icon, ViewColumnsIcon } from "@heroicons/react/24/outline";
-import { PropsWithChildren, ReactNode, useCallback, useEffect, useState } from "react";
+import { PropsWithChildren, ReactNode, useCallback, useEffect, useState, type JSX } from "react";
 import { DefaultSidebar } from "./sidebar-default";
 import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
 import Link from "next/link";
@@ -18,10 +18,7 @@ export function SecondarySidebarLayout({
 }) {
 	const [open, setOpen] = useSidebarState();
 	return (
-		<div
-			className="flex h-ful
-		l w-full"
-		>
+		<div className="flex h-full w-full">
 			{open ? (
 				<div className="relative">
 					<SecondarySidebar
@@ -37,7 +34,6 @@ export function SecondarySidebarLayout({
 					<Bars4Icon height="24" />
 				</button>
 			)}
-
 			<div className={`w-full`}>{children}</div>
 		</div>
 	);

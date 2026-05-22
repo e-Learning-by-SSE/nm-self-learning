@@ -1,4 +1,4 @@
-export default {
+module.exports = {
 	displayName: "lia-exporter",
 	preset: "../../../jest.preset.js",
 	testEnvironment: "node",

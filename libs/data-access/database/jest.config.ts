@@ -1,5 +1,5 @@
 /* eslint-disable */
-export default {
+module.exports = {
 	displayName: "database",
 	coverageDirectory: "../../coverage/libs/database",
 	preset: "../../../jest.preset.js"

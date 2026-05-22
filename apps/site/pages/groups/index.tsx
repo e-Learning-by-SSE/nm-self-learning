@@ -6,6 +6,7 @@ import { MemberFilter, MergeGroupsDialog } from "@self-learning/teaching";
 import { MergeGroupsType } from "@self-learning/types";
 import {
 	IconTextButton,
+	I18N_NAMESPACE as NS_UI_COMMON,
 	LoadingBox,
 	Paginator,
 	showToast,
@@ -249,4 +250,4 @@ function GroupsPaginatedView({
 	);
 }
 
-export const getServerSideProps = withTranslations(["common"]);
+export const getServerSideProps = withTranslations(Array.from(new Set(["common", ...NS_UI_COMMON])));
