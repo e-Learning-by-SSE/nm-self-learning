@@ -1,4 +1,5 @@
 import {
+	I18N_NAMESPACE as NS_UI_COMMON,
 	ImageOrPlaceholder,
 	Paginator,
 	Table,
@@ -121,4 +122,4 @@ function RoleLabel({ role }: { role: string }) {
 	return <span className={`rounded-full ${roleColor} px-3 py-[2px] text-white`}>{role}</span>;
 }
 
-export const getServerSideProps = withTranslations(["common"]);
+export const getServerSideProps = withTranslations(Array.from(new Set(["common", ...NS_UI_COMMON])));

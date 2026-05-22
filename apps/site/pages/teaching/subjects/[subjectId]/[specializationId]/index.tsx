@@ -3,6 +3,7 @@ import { SearchCourseDialog } from "@self-learning/admin";
 import { trpc } from "@self-learning/api-client";
 import {
 	ImageOrPlaceholder,
+	I18N_NAMESPACE as NS_UI_COMMON,
 	LoadingBox,
 	OnDialogCloseFn,
 	Paginator,
@@ -235,4 +236,4 @@ export default function SpecializationManagementPage() {
 	return;
 }
 
-export const getServerSideProps = withTranslations(["common"]);
+export const getServerSideProps = withTranslations(Array.from(new Set(["common", ...NS_UI_COMMON])));

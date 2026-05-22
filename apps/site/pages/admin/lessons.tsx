@@ -1,6 +1,12 @@
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
-import { Paginator, Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
+import {
+	I18N_NAMESPACE as NS_UI_COMMON,
+	Paginator,
+	Table,
+	TableDataColumn,
+	TableHeaderColumn
+} from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { formatDateDistanceToNow } from "@self-learning/util/common";
@@ -107,4 +113,4 @@ export default function LessonManagementPage() {
 	);
 }
 
-export const getServerSideProps = withTranslations(["common"]);
+export const getServerSideProps = withTranslations(Array.from(new Set(["common", ...NS_UI_COMMON])));
