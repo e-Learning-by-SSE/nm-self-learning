@@ -1,8 +1,16 @@
 "use client";
 import { QuestionMarkCircleIcon as QuestionMarcOutline } from "@heroicons/react/24/outline";
 import { QuestionMarkCircleIcon as QuestionMarcSolid } from "@heroicons/react/24/solid";
-import { useRef, useState } from "react";
-import { usePopper } from "react-popper";
+import { useState } from "react";
+import {
+	autoUpdate,
+	flip,
+	offset,
+	shift,
+	useFloating,
+	useHover,
+	useInteractions
+} from "@floating-ui/react";
 
 export function QuestionMarkTooltip({
 	content,
@@ -33,28 +41,38 @@ export function Tooltip({
 	className?: string;
 }) {
 	const [showTooltip, setShowTooltip] = useState(false);
-	const referenceElement = useRef(null);
-	const popperElement = useRef(null);
-	const { styles, attributes } = usePopper(referenceElement.current, popperElement.current, {
-		placement: placement
+
+	const {
+		refs: { setReference, setFloating },
+		floatingStyles,
+		context
+	} = useFloating({
+		open: showTooltip,
+		onOpenChange: setShowTooltip,
+		placement,
+		strategy: "fixed",
+		whileElementsMounted: autoUpdate,
+		middleware: [offset(6), flip(), shift({ padding: 8 })]
 	});
+
+	const hover = useHover(context);
+	const { getReferenceProps, getFloatingProps } = useInteractions([hover]);
 
 	return (
 		<>
 			<div
-				ref={referenceElement}
-				onMouseEnter={() => setShowTooltip(true)}
-				onMouseLeave={() => setShowTooltip(false)}
+				ref={setReference}
+				{...getReferenceProps()}
 				className={`cursor-pointer ${className}`}
 			>
 				{children}
 			</div>
 			{showTooltip && (
 				<div
-					ref={popperElement}
-					style={styles["popper"]}
-					{...attributes["popper"]}
-					className="rounded-lg bg-gray-800 p-2 text-sm text-white shadow-md"
+					ref={setFloating}
+					style={floatingStyles}
+					{...getFloatingProps()}
+					className="z-50 rounded-lg bg-gray-800 p-2 text-sm text-white shadow-md"
 				>
 					{content}
 				</div>

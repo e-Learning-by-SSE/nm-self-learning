@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, type JSX } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { slugify } from "@self-learning/util/common";
 import { LabeledField } from "./labeled-field";

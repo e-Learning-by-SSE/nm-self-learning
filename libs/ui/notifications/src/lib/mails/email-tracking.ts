@@ -49,7 +49,7 @@ export async function handleEmailTracking(
 				where: { id: reminderLog.id },
 				data: {
 					metadata: {
-						...((reminderLog.metadata ?? {}) as any),
+						...((reminderLog.metadata ?? {}) as Record<string, unknown>),
 						ipAddress: req.headers["x-forwarded-for"] || req.connection.remoteAddress,
 						userAgent: req.headers["user-agent"],
 						clickedAt: new Date().toISOString()

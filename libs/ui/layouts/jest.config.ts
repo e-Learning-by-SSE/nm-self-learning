@@ -1,4 +1,4 @@
-export default {
+module.exports = {
 	testEnvironmentOptions: {
 		url: "https://example.com" // -> window.location.origin === "https://example.com"
 	},

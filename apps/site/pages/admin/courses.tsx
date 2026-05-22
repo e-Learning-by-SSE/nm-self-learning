@@ -3,6 +3,7 @@ import { trpc } from "@self-learning/api-client";
 import {
 	I18N_NAMESPACE as NS_UI_COMMON,
 	ImageOrPlaceholder,
+	LoadingBox,
 	Paginator,
 	Table,
 	TableDataColumn,
@@ -12,30 +13,30 @@ import { SearchField } from "@self-learning/ui/forms";
 import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
 import { withTranslations } from "@self-learning/api";
 import { keepPreviousData } from "@tanstack/react-query";
 
 export default function CoursesPage() {
 	const router = useRouter();
-	const { page = 1, title = "" } = router.query;
-	const [titleFilter, setTitle] = useState(title);
+	const { page = 1, title: titleRaw } = router.query;
+	const title = typeof titleRaw === "string" ? titleRaw : "";
+	const pageNumber = typeof page === "string" ? Number(page) : 1;
 	const { data } = trpc.course.findMany.useQuery(
-		{ title: titleFilter as string, page: Number(page) },
+		{ title, page: pageNumber },
 		{
 			staleTime: 10_000,
-			placeholderData: keepPreviousData
+			placeholderData: keepPreviousData,
+			enabled: router.isReady
 		}
 	);
-
-	useEffect(() => {
-		// We need this effect, because router.query is empty on first render
-		setTitle(title as string);
-	}, [title]);
 
 	const session = useRequiredSession();
 	if (session.data?.user.role !== "ADMIN") {
 		return <AdminGuard></AdminGuard>;
+	}
+
+	if (!router.isReady) {
+		return <LoadingBox />;
 	}
 
 	return (
@@ -49,7 +50,24 @@ export default function CoursesPage() {
 				</Link>
 			</div>
 
-			<SearchField placeholder="Suche nach Titel" onChange={e => setTitle(e.target.value)} />
+			<SearchField
+				placeholder="Suche nach Titel"
+				value={title}
+				onChange={e => {
+					router.push(
+						{
+							pathname: router.pathname,
+							query: {
+								...router.query,
+								title: e.target.value,
+								page: 1
+							}
+						},
+						undefined,
+						{ shallow: true }
+					);
+				}}
+			/>
 
 			<Table
 				head={
@@ -87,9 +105,7 @@ export default function CoursesPage() {
 				))}
 			</Table>
 
-			{data?.result && (
-				<Paginator pagination={data} url={`/admin/courses?title=${titleFilter}`} />
-			)}
+			{data?.result && <Paginator pagination={data} url={`/admin/courses?title=${title}`} />}
 		</CenteredSection>
 	);
 }

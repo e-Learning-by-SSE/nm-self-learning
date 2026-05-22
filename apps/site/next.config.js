@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
-const { withNx } = require("@nx/next");
+const { withNx, composePlugins } = require("@nx/next");
 const { withPlausibleProxy } = require("next-plausible");
 const { i18n } = require("./next-i18next.config.js");
 const fs = require("fs");
@@ -32,12 +32,43 @@ const nextConfig = {
 	nx: {},
 	i18n,
 	basePath: process.env.NEXT_PUBLIC_BASE_PATH ?? "",
-	assetPrefix: process.env.NEXT_ASSET_PREFIX,
+	assetPrefix: process.env.NEXT_ASSET_PREFIX ?? "",
 	trailingSlash: process.env.NEXT_TRAILING_SLASH ?? false,
 	reactStrictMode: process.env.NODE_ENV === "development",
 	productionBrowserSourceMaps: process.env.NODE_ENV === "development",
-	experimental: { swcPlugins: [["next-superjson-plugin", {}]] },
 	env: { APP_VERSION: packageJson.version },
+	experimental: {
+		swcPlugins: [["superjson-next", {}]]
+	},
+	turbopack: {
+		rules: {
+			"*.svg": {
+				loaders: [
+					{
+						loader: "@svgr/webpack",
+						options: {
+							exportType: "named",
+							svgo: true,
+							svgoConfig: {
+								plugins: [
+									// keep the viewBox (don't let SVGO remove it)
+									{
+										name: "preset-default",
+										params: { overrides: { removeViewBox: false } }
+									},
+									// drop width/height so CSS can control size
+									{ name: "removeDimensions", active: true }
+								]
+							},
+							titleProp: true,
+							ref: true
+						}
+					}
+				],
+				as: "*.js"
+			}
+		}
+	},
 	webpack: config => {
 		// Let `?url` keep returning a file URL string.
 		// Otherwise, import .svg as a React component (SVGR).
@@ -82,8 +113,9 @@ const nextConfig = {
 	}
 };
 
-module.exports = withNx(
-	withPlausibleProxy({ customDomain: process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE })(
-		nextConfig
-	)
-);
+const plugins = [
+	withPlausibleProxy({ customDomain: process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE }),
+	withNx
+];
+
+module.exports = composePlugins(...plugins)(nextConfig);

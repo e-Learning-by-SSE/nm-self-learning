@@ -26,7 +26,7 @@ function SidebarHeader() {
 type NavItem = {
 	href: string;
 	label: string;
-	icon: React.ForwardRefExoticComponent<any>;
+	icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 };
 
 const navItems = [
