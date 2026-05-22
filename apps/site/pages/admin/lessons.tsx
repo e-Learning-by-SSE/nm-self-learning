@@ -19,15 +19,16 @@ import { keepPreviousData } from "@tanstack/react-query";
 export default function LessonManagementPage() {
 	const router = useRouter();
 	const { page = 1, title: titleRaw } = router.query;
+	const title = typeof titleRaw === "string" ? titleRaw : "";
+	const pageNumber = typeof page === "string" ? Number(page) : 1;
 	const { data } = trpc.lesson.findMany.useQuery(
-		{ title: titleRaw as string, page: Number(page) },
+		{ title, page: pageNumber },
 		{
 			staleTime: 10_000,
 			placeholderData: keepPreviousData,
 			enabled: router.isReady
 		}
 	);
-	console.log(data);
 
 	const session = useRequiredSession();
 	if (session.data?.user.role !== "ADMIN") {
@@ -37,8 +38,6 @@ export default function LessonManagementPage() {
 	if (!router.isReady) {
 		return <LoadingBox />;
 	}
-
-	const title = titleRaw as string;
 
 	return (
 		<CenteredSection>

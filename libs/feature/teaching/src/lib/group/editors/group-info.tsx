@@ -37,7 +37,6 @@ export function GroupInfoEditor({ fillInSingleGroup }: { fillInSingleGroup: bool
 
 	// If user creates a group, and has default group set - preset group parent (once)
 	const hasSetSingleGroup = useRef(false);
-	console.log(session.data?.user);
 	const defaultGroup = useDefaultGroup({
 		defaultGroupId: session.data?.user.defaultGroupId,
 		enabled: fillInSingleGroup && !form.getValues("parent")

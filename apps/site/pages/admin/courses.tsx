@@ -18,8 +18,10 @@ import { keepPreviousData } from "@tanstack/react-query";
 export default function CoursesPage() {
 	const router = useRouter();
 	const { page = 1, title: titleRaw } = router.query;
+	const title = typeof titleRaw === "string" ? titleRaw : "";
+	const pageNumber = typeof page === "string" ? Number(page) : 1;
 	const { data } = trpc.course.findMany.useQuery(
-		{ title: titleRaw as string, page: Number(page) },
+		{ title, page: pageNumber },
 		{
 			staleTime: 10_000,
 			placeholderData: keepPreviousData,
@@ -35,8 +37,6 @@ export default function CoursesPage() {
 	if (!router.isReady) {
 		return <LoadingBox />;
 	}
-
-	const title = titleRaw as string;
 
 	return (
 		<CenteredSection>

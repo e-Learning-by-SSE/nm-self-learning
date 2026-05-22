@@ -38,7 +38,7 @@ const nextConfig = {
 	productionBrowserSourceMaps: process.env.NODE_ENV === "development",
 	env: { APP_VERSION: packageJson.version },
 	experimental: {
-		swcPlugins: [["superjson-next", {}]],
+		swcPlugins: [["superjson-next", {}]]
 	},
 	turbopack: {
 		rules: {
@@ -47,7 +47,7 @@ const nextConfig = {
 					{
 						loader: "@svgr/webpack",
 						options: {
-							exportType: "named", // <--- ADD THIS
+							exportType: "named",
 							svgo: true,
 							svgoConfig: {
 								plugins: [

@@ -18,11 +18,8 @@ export function SecondarySidebarLayout({
 }) {
 	const [open, setOpen] = useSidebarState();
 	return (
-        <div
-			className="flex h-ful
-		l w-full"
-		>
-            {open ? (
+		<div className="flex h-full w-full">
+			{open ? (
 				<div className="relative">
 					<SecondarySidebar
 						footer={footer}
@@ -33,13 +30,13 @@ export function SecondarySidebarLayout({
 				</div>
 			) : (
 				// Sidebar is closed
-				(<button onClick={() => setOpen(true)} className="fixed top-20 right-20">
-                    <Bars4Icon height="24" />
-                </button>)
+				<button onClick={() => setOpen(true)} className="fixed top-20 right-20">
+					<Bars4Icon height="24" />
+				</button>
 			)}
-            <div className={`w-full`}>{children}</div>
-        </div>
-    );
+			<div className={`w-full`}>{children}</div>
+		</div>
+	);
 }
 
 /**
