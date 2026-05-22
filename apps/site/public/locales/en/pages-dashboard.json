@@ -12,5 +12,20 @@
     "No_Recent_Lessons": "You have not worked on any lessons yet.",
     "No_Enrolled_Course": "You are currently not enrolled in any course.",
     "Get_Started": "Get started",
-    "Completed": "Completed"
+    "Completed": "Completed",
+    "Course_Overview_Title": "Course overview",
+    "Course_Overview_Subtitle": "Overview of your courses and progress",
+    "Browse_Courses": "Browse courses",
+    "In_Progress": "In progress",
+    "Search_Courses_Placeholder": "Search courses...",
+    "No_Started_Course": "There are currently no started courses.",
+    "No_Started_Course_For_Search": "There are currently no started courses for this search query.",
+    "No_Completed_Course": "There are currently no completed courses.",
+    "No_Completed_Course_For_Search": "There are currently no completed courses for this search query.",
+    "Title": "Title",
+    "Author": "Author",
+    "Progress": "Progress",
+    "Last_Updated": "Last updated",
+    "No_Image": "No image",
+    "Unknown_Author": "Unknown author"
 }

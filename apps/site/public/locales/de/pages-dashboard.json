@@ -12,5 +12,20 @@
     "No_Recent_Lessons": "Du hast noch keine Lerneinheiten bearbeitet.",
     "No_Enrolled_Course": "Du bist momentan in keinem Kurs eingeschrieben.",
     "Get_Started": "Leg los",
-    "Completed": "Abgeschlossen"
+    "Completed": "Abgeschlossen",
+    "Course_Overview_Title": "Kursübersicht",
+    "Course_Overview_Subtitle": "Übersicht über deine Kurse und Fortschritte",
+    "Browse_Courses": "Kurse durchstöbern",
+    "In_Progress": "In Bearbeitung",
+    "Search_Courses_Placeholder": "Kurse durchsuchen...",
+    "No_Started_Course": "Derzeit ist kein Kurs angefangen.",
+    "No_Started_Course_For_Search": "Derzeit ist zu dieser Suchanfrage kein Kurs angefangen.",
+    "No_Completed_Course": "Derzeit ist kein Kurs abgeschlossen.",
+    "No_Completed_Course_For_Search": "Derzeit ist zu dieser Suchanfrage kein Kurs abgeschlossen.",
+    "Title": "Titel",
+    "Author": "Autor",
+    "Progress": "Fortschritt",
+    "Last_Updated": "Letzte Bearbeitung",
+    "No_Image": "Kein Bild",
+    "Unknown_Author": "Unbekannter Autor"
 }
