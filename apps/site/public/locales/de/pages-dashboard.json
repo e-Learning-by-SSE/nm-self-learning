@@ -1,6 +1,6 @@
 {
-    "Completed_Lessons_one": "Du hast bereits <count>{{count}}</count> Lerneinheit abgeschlossen.",
-    "Completed_Lessons_other": "Du hast bereits <count>{{count}}</count> Lerneinheiten abgeschlossen.",
+    "Completed_Lessons_one": "Du hast bereits <primary>{{count}}</primary> Lerneinheit abgeschlossen.",
+    "Completed_Lessons_other": "Du hast bereits <primary>{{count}}</primary> Lerneinheiten abgeschlossen.",
     "Last_Course": "Letzter Kurs",
     "Last_Learning_Diary_Entry": "Letzter Lerntagebucheintrag",
     "Recently_Viewed_Lessons": "Zuletzt bearbeitete Lerneinheiten",

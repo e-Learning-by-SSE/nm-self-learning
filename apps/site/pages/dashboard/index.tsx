@@ -13,6 +13,7 @@ import {
 	ImageCard,
 	ImageCardBadge,
 	ImageOrPlaceholder,
+	Trans,
 	Toggle
 } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
@@ -24,7 +25,7 @@ import {
 	formatTimeIntervalToString
 } from "@self-learning/util/common";
 import Link from "next/link";
-import { Trans, useTranslation } from "next-i18next";
+import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router";
 import { useReducer } from "react";
 
@@ -306,7 +307,7 @@ function DashboardPage(props: Props) {
 							</h1>
 							<span>
 								<Trans
-									ns="pages-dashboard"
+									namespace="pages-dashboard"
 									i18nKey="Completed_Lessons"
 									count={props.student._count.completedLessons}
 									values={{ count: props.student._count.completedLessons }}

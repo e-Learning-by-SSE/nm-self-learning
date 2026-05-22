@@ -1,6 +1,6 @@
 {
-    "Completed_Lessons_one": "You have already completed <count>{{count}}</count> lesson.",
-    "Completed_Lessons_other": "You have already completed <count>{{count}}</count> lessons.",
+    "Completed_Lessons_one": "You have already completed <primary>{{count}}</primary> lesson.",
+    "Completed_Lessons_other": "You have already completed <primary>{{count}}</primary> lessons.",
     "Last_Course": "Last course",
     "Last_Learning_Diary_Entry": "Last learning diary entry",
     "Recently_Viewed_Lessons": "Recently worked on lessons",
