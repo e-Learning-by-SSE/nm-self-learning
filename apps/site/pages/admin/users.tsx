@@ -122,4 +122,6 @@ function RoleLabel({ role }: { role: string }) {
 	return <span className={`rounded-full ${roleColor} px-3 py-[2px] text-white`}>{role}</span>;
 }
 
-export const getServerSideProps = withTranslations(Array.from(new Set(["common", ...NS_UI_COMMON])));
+export const getServerSideProps = withTranslations(
+	Array.from(new Set(["common", ...NS_UI_COMMON]))
+);
