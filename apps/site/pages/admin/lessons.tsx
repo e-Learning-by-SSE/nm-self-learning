@@ -1,36 +1,42 @@
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
-import { Paginator, Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
+import {
+	LoadingBox,
+	Paginator,
+	Table,
+	TableDataColumn,
+	TableHeaderColumn
+} from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { formatDateDistanceToNow } from "@self-learning/util/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
 import { withTranslations } from "@self-learning/api";
 import { LessonDeleteOption } from "@self-learning/ui/lesson";
 import { keepPreviousData } from "@tanstack/react-query";
 
 export default function LessonManagementPage() {
 	const router = useRouter();
-	const { page = 1, title = "" } = router.query;
-	const [titleFilter, setTitle] = useState(title);
+	const { page = 1, title: titleRaw } = router.query;
+	const title = typeof titleRaw === "string" ? titleRaw : "";
+	const pageNumber = typeof page === "string" ? Number(page) : 1;
 	const { data } = trpc.lesson.findMany.useQuery(
-		{ title: titleFilter as string, page: Number(page) },
+		{ title, page: pageNumber },
 		{
 			staleTime: 10_000,
-			placeholderData: keepPreviousData
+			placeholderData: keepPreviousData,
+			enabled: router.isReady
 		}
 	);
-
-	useEffect(() => {
-		// We need this effect, because router.query is empty on first render
-		setTitle(title as string);
-	}, [title]);
 
 	const session = useRequiredSession();
 	if (session.data?.user.role !== "ADMIN") {
 		return <AdminGuard></AdminGuard>;
+	}
+
+	if (!router.isReady) {
+		return <LoadingBox />;
 	}
 
 	return (
@@ -46,16 +52,20 @@ export default function LessonManagementPage() {
 
 			<SearchField
 				placeholder="Suche nach Titel"
-				value={titleFilter}
+				value={title}
 				onChange={e => {
-					setTitle(e.target.value);
-
-					router.query.title = e.target.value;
-					router.query.page = "1";
-
-					router.push(router, undefined, {
-						shallow: true
-					});
+					router.push(
+						{
+							pathname: router.pathname,
+							query: {
+								...router.query,
+								title: e.target.value,
+								page: 1
+							}
+						},
+						undefined,
+						{ shallow: true }
+					);
 				}}
 			/>
 
@@ -100,9 +110,7 @@ export default function LessonManagementPage() {
 				))}
 			</Table>
 
-			{data?.result && (
-				<Paginator pagination={data} url={`/admin/lessons?title=${titleFilter}`} />
-			)}
+			{data?.result && <Paginator pagination={data} url={`/admin/lessons?title=${title}`} />}
 		</CenteredSection>
 	);
 }

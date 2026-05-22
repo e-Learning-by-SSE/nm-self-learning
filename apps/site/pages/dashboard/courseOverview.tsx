@@ -43,8 +43,6 @@ export const getServerSideProps = withTranslations(
 
 export default function CourseOverview({ enrollments }: CourseOverviewProps) {
 	const [selectedTab, setSelectedTab] = useState(0);
-	const [inProgress, setInProgress] = useState<EnrollmentDetails[]>([]);
-	const [complete, setComplete] = useState<EnrollmentDetails[]>([]);
 	const [searchQuery, setSearchQuery] = useState("");
 
 	const filterEnrollments = (
@@ -67,21 +65,23 @@ export default function CourseOverview({ enrollments }: CourseOverviewProps) {
 		});
 	};
 
-	useMemo(() => {
-		if (enrollments) {
-			const filtered = filterEnrollments(enrollments, searchQuery);
+	const filteredEnrollments = useMemo(() => {
+		if (!enrollments) return [];
 
-			const inProgress = filtered.filter(
-				enrollment => enrollment.completions.courseCompletion.completionPercentage < 100
-			);
-			const complete = filtered.filter(
-				enrollment => enrollment.completions.courseCompletion.completionPercentage >= 100
-			);
+		return filterEnrollments(enrollments, searchQuery);
+	}, [enrollments, searchQuery]);
 
-			setInProgress(inProgress);
-			setComplete(complete);
-		}
-	}, [searchQuery, enrollments]);
+	const inProgress = useMemo(() => {
+		return filteredEnrollments.filter(
+			e => e.completions.courseCompletion.completionPercentage < 100
+		);
+	}, [filteredEnrollments]);
+
+	const complete = useMemo(() => {
+		return filteredEnrollments.filter(
+			e => e.completions.courseCompletion.completionPercentage >= 100
+		);
+	}, [filteredEnrollments]);
 
 	return (
 		<div className="flex h-screen justify-center overflow-hidden">
