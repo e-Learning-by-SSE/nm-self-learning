@@ -8,5 +8,6 @@
     "Manage Users": "Nutzer:innen verwalten",
     "REST API Documentation": "REST API Dokumentation (OpenAPI)",
     "LLM Configuration": "LLM Konfiguration",
-    "App Version": "App-Version: {{version}}"
+    "App Version": "App-Version: {{version}}",
+    "AI Tutor Profiles": "KI Tutor Profile"
 }
