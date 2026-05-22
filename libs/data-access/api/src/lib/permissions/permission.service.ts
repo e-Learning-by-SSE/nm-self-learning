@@ -21,7 +21,7 @@ import { TRPCError } from "@trpc/server";
  *
  * Working with user permissions in the best scenario should be limited to these 6 functions
  * - @see canCreate
- * - @see canView (always true for now)
+ * - @see canRead (always true for now)
  * - @see canEdit
  * - @see canDelete
  * - @see hasEffectiveAccess check if user has @see AccessLevel or higher
