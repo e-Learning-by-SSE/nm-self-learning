@@ -1,3 +1,4 @@
+import { I18N_NAMESPACE as NS_AI_TUTOR } from "@self-learning/ai-tutor";
 export * from "./lib/author/edit-author-dialog";
 export * from "./lib/course/course-editor";
 export * from "./lib/lesson/lesson-editor";
@@ -22,4 +23,4 @@ export * from "./lib/group/dialogs/promote-to-author";
 export * from "./lib/group/dialogs/related-permissions-dialog";
 export * from "./lib/group/misc/delete-option";
 export * from "./lib/group/misc/leave-option";
-export const I18N_NAMESPACE = ["common", "feature-teaching"];
+export const I18N_NAMESPACE = Array.from(new Set(["common", "feature-teaching", ...NS_AI_TUTOR]));

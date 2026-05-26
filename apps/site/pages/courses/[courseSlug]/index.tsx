@@ -26,7 +26,12 @@ import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo } from "react";
-import { useAiTutor, AiTutor, FloatingTutorButton } from "@self-learning/ai-tutor";
+import {
+	useAiTutor,
+	AiTutor,
+	FloatingTutorButton,
+	I18N_NAMESPACE as NS_AI_TUTOR
+} from "@self-learning/ai-tutor";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -132,7 +137,7 @@ type CourseProps = {
 };
 
 export const getServerSideProps = withTranslations(
-	["common", "ai-tutor"],
+	Array.from(new Set(["common", ...NS_AI_TUTOR])),
 	withAuth(async context => {
 		const { req, res, params } = context;
 		const courseSlug = params?.courseSlug as string | undefined;
