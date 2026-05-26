@@ -32,6 +32,3 @@ export type PermissionInput = {
 	groupId: number;
 	accessLevel: AccessLevel;
 } & ResourceInput;
-
-export type PermissionsForCreate = Awaited<ReturnType<typeof preparePermissionsForCreate>>;
-export type PermissionsForUpdate = Awaited<ReturnType<typeof preparePermissionsForUpdate>>;
