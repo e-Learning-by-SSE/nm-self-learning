@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function AiTutorInput({
 	isLoading,
@@ -12,11 +12,13 @@ export function AiTutorInput({
 	t: (key: string) => string;
 }) {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+	const [hasSendableInput, setHasSendableInput] = useState(false);
 
 	useEffect(() => {
 		if (textareaRef.current) {
 			textareaRef.current.value = "";
 			textareaRef.current.style.height = "auto";
+			setHasSendableInput(false);
 		}
 	}, [clearSignal]);
 
@@ -31,6 +33,7 @@ export function AiTutorInput({
 		if (wasSent && textareaRef.current) {
 			textareaRef.current.value = "";
 			textareaRef.current.style.height = "auto";
+			setHasSendableInput(false);
 		}
 	};
 
@@ -47,6 +50,7 @@ export function AiTutorInput({
 				<textarea
 					ref={textareaRef}
 					onChange={e => {
+						setHasSendableInput(e.target.value.trim().length > 0);
 						e.target.style.height = "auto";
 						e.target.style.height = `${e.target.scrollHeight}px`;
 					}}
@@ -58,7 +62,7 @@ export function AiTutorInput({
 				/>
 				<button
 					onClick={handleSend}
-					disabled={isLoading}
+					disabled={isLoading || !hasSendableInput}
 					className="btn btn-primary max-h-12 self-end disabled:opacity-50"
 					aria-label={t("Send message")}
 				>
