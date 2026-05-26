@@ -22,4 +22,4 @@ export * from "./lib/group/dialogs/promote-to-author";
 export * from "./lib/group/dialogs/related-permissions-dialog";
 export * from "./lib/group/misc/delete-option";
 export * from "./lib/group/misc/leave-option";
-export const I18N_NAMESPACE = ["common", "feature-teaching"];
+export const I18N_NAMESPACE = ["common", "feature-teaching", "feature-ai-tutor"];
