@@ -2,7 +2,7 @@ import { useSession } from "next-auth/react";
 import { AiTutorHeader } from "./ai-tutor-header";
 import { AiTutorMessages } from "./ai-tutor-messages";
 import { AiTutorInput } from "./ai-tutor-input";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "next-i18next";
 import { UseAiTutorReturn } from "../hooks/use-ai-tutor";
 
 /**
@@ -18,11 +18,9 @@ export function AiTutor({ tutorState }: { tutorState: UseAiTutorReturn }) {
 	const {
 		config,
 		messages,
-		input,
 		isLoading,
-		setInput,
 		sendMessage,
-		handleKeyDown,
+		inputClearSignal,
 		isTutorOpen,
 		closeTutor,
 		clearChat
@@ -31,7 +29,7 @@ export function AiTutor({ tutorState }: { tutorState: UseAiTutorReturn }) {
 	const session = useSession();
 	const user = session.data?.user;
 	const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-	const { t } = useTranslation("ai-tutor");
+	const { t } = useTranslation("feature-ai-tutor");
 
 	if (!config) {
 		return null;
@@ -62,11 +60,9 @@ export function AiTutor({ tutorState }: { tutorState: UseAiTutorReturn }) {
 						t={t}
 					/>
 					<AiTutorInput
-						input={input}
 						isLoading={isLoading}
-						setInput={setInput}
 						sendMessage={sendMessage}
-						handleKeyDown={handleKeyDown}
+						clearSignal={inputClearSignal}
 						t={t}
 					/>
 				</div>

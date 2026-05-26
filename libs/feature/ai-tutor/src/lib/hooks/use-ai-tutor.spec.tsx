@@ -97,7 +97,7 @@ jest.mock("@self-learning/ui/common", () => ({
 	showToast: jest.fn()
 }));
 
-jest.mock("react-i18next", () => ({
+jest.mock("next-i18next", () => ({
 	useTranslation: () => ({
 		t: (key: string) => key
 	})
@@ -206,7 +206,7 @@ describe("useAiTutor", () => {
 			const { result } = renderHook(() => useAiTutor());
 
 			// Verify
-			expect(result.current.input).toBe("");
+			expect(result.current.inputClearSignal).toBe(0);
 		});
 
 		it("initializes with the tutor closed", () => {
@@ -336,7 +336,7 @@ describe("useAiTutor", () => {
 	describe("sendMessage", () => {
 		// =========================================================================
 
-		it("appends a user message and an assistant reply, then clears the input", async () => {
+		it("appends a user message and an assistant reply", async () => {
 			// Setup
 			mockMutateAsync.mockResolvedValue({
 				content: "TypeScript is a typed superset of JavaScript."
@@ -351,16 +351,12 @@ describe("useAiTutor", () => {
 			];
 
 			// Exercise
-			act(() => {
-				result.current.setInput("What is TypeScript?");
-			});
 			await act(async () => {
-				await result.current.sendMessage();
+				await result.current.sendMessage("What is TypeScript?");
 			});
 
 			// Verify
 			expect(result.current.messages).toEqual(expectedMessages);
-			expect(result.current.input).toBe("");
 		});
 
 		it("does nothing when the input is blank or whitespace-only", async () => {
@@ -368,11 +364,8 @@ describe("useAiTutor", () => {
 			const { result } = renderHook(() => useAiTutor());
 
 			// Exercise
-			act(() => {
-				result.current.setInput("   ");
-			});
 			await act(async () => {
-				await result.current.sendMessage();
+				await result.current.sendMessage("   ");
 			});
 
 			// Verify
@@ -391,13 +384,9 @@ describe("useAiTutor", () => {
 				courseSlug: "intro-typescript"
 			});
 
-			act(() => {
-				result.current.setInput("Question");
-			});
-
 			// Exercise
 			await act(async () => {
-				await result.current.sendMessage();
+				await result.current.sendMessage("Question");
 			});
 
 			// Verify
@@ -407,22 +396,18 @@ describe("useAiTutor", () => {
 			});
 		});
 
-		it("restores the original input and shows an error toast when the API call fails", async () => {
+		it("shows an error toast and rolls back optimistic user message when the API call fails", async () => {
 			// Setup
 			mockMutateAsync.mockRejectedValue(new Error("API Error"));
 			const { result } = renderHook(() => useAiTutor());
 
 			// Exercise
-			act(() => {
-				result.current.setInput("What is TypeScript?");
-			});
 			await act(async () => {
-				await result.current.sendMessage();
+				await result.current.sendMessage("What is TypeScript?");
 			});
 
 			// Verify
 			expect(result.current.messages).toHaveLength(0);
-			expect(result.current.input).toBe("What is TypeScript?");
 			expect(showToast).toHaveBeenCalledWith({
 				type: "error",
 				title: "Message Failed",
@@ -436,11 +421,8 @@ describe("useAiTutor", () => {
 			const { result } = renderHook(() => useAiTutor());
 
 			// Exercise
-			act(() => {
-				result.current.setInput("Question");
-			});
 			await act(async () => {
-				await result.current.sendMessage();
+				await result.current.sendMessage("Question");
 			});
 
 			// Verify
@@ -457,11 +439,8 @@ describe("useAiTutor", () => {
 			const { result } = renderHook(() => useAiTutor());
 
 			// Exercise
-			act(() => {
-				result.current.setInput("  What is TypeScript?  ");
-			});
 			await act(async () => {
-				await result.current.sendMessage();
+				await result.current.sendMessage("  What is TypeScript?  ");
 			});
 
 			// Verify
@@ -476,18 +455,12 @@ describe("useAiTutor", () => {
 			const { result } = renderHook(() => useAiTutor());
 
 			// Exercise
-			act(() => {
-				result.current.setInput("First question");
-			});
 			await act(async () => {
-				await result.current.sendMessage();
+				await result.current.sendMessage("First question");
 			});
 
-			act(() => {
-				result.current.setInput("Second question");
-			});
 			await act(async () => {
-				await result.current.sendMessage();
+				await result.current.sendMessage("Second question");
 			});
 
 			// Verify
@@ -498,77 +471,6 @@ describe("useAiTutor", () => {
 				"Second question",
 				"Second response"
 			]);
-		});
-	});
-
-	// =========================================================================
-	describe("handleKeyDown", () => {
-		// =========================================================================
-
-		it("sends the message and prevents the default action on Enter (without Shift)", async () => {
-			// Setup
-			mockMutateAsync.mockResolvedValue({ content: "Response" });
-			const { result } = renderHook(() => useAiTutor());
-			act(() => {
-				result.current.setInput("Question");
-			});
-			const event = {
-				key: "Enter",
-				shiftKey: false,
-				preventDefault: jest.fn()
-			} as unknown as React.KeyboardEvent<HTMLTextAreaElement>;
-
-			// Exercise
-			await act(async () => {
-				result.current.handleKeyDown(event);
-			});
-
-			// Verify
-			expect(event.preventDefault).toHaveBeenCalled();
-			expect(mockMutateAsync).toHaveBeenCalled();
-		});
-
-		it("does not send the message on Shift+Enter (soft line break)", async () => {
-			// Setup
-			const { result } = renderHook(() => useAiTutor());
-			act(() => {
-				result.current.setInput("Question");
-			});
-			const event = {
-				key: "Enter",
-				shiftKey: true,
-				preventDefault: jest.fn()
-			} as unknown as React.KeyboardEvent<HTMLTextAreaElement>;
-
-			// Exercise
-			await act(async () => {
-				result.current.handleKeyDown(event);
-			});
-
-			// Verify
-			expect(event.preventDefault).not.toHaveBeenCalled();
-			expect(mockMutateAsync).not.toHaveBeenCalled();
-		});
-
-		it("does not trigger a send for any other key", async () => {
-			// Setup
-			const { result } = renderHook(() => useAiTutor());
-			act(() => {
-				result.current.setInput("Question");
-			});
-			const event = {
-				key: "a",
-				shiftKey: false,
-				preventDefault: jest.fn()
-			} as unknown as React.KeyboardEvent<HTMLTextAreaElement>;
-
-			// Exercise
-			await act(async () => {
-				result.current.handleKeyDown(event);
-			});
-
-			// Verify
-			expect(mockMutateAsync).not.toHaveBeenCalled();
 		});
 	});
 
@@ -655,17 +557,15 @@ describe("useAiTutor", () => {
 	describe("clearChat", () => {
 		// =========================================================================
 
-		it("empties the message list and resets the input field", async () => {
+		it("empties the message list and increments inputClearSignal", async () => {
 			// Setup
 			mockMutateAsync.mockResolvedValue({ content: "Response" });
 			const { result } = renderHook(() => useAiTutor());
-			act(() => {
-				result.current.setInput("Question");
-			});
 			await act(async () => {
-				await result.current.sendMessage();
+				await result.current.sendMessage("Question");
 			});
 			expect(result.current.messages.length).toBeGreaterThan(0);
+			expect(result.current.inputClearSignal).toBe(0);
 
 			// Exercise
 			act(() => {
@@ -674,7 +574,7 @@ describe("useAiTutor", () => {
 
 			// Verify
 			expect(result.current.messages).toEqual([]);
-			expect(result.current.input).toBe("");
+			expect(result.current.inputClearSignal).toBe(1);
 		});
 	});
 
@@ -702,24 +602,6 @@ describe("useAiTutor", () => {
 
 			// Verify
 			expect(result.current.isLoading).toBe(false);
-		});
-	});
-
-	// =========================================================================
-	describe("setInput", () => {
-		// =========================================================================
-
-		it("updates the input state to the provided value", () => {
-			// Setup
-			const { result } = renderHook(() => useAiTutor());
-
-			// Exercise
-			act(() => {
-				result.current.setInput("New input");
-			});
-
-			// Verify
-			expect(result.current.input).toBe("New input");
 		});
 	});
 
