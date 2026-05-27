@@ -7,20 +7,17 @@
  */
 
 import { TextArea } from "@self-learning/ui/forms";
+import { trpc } from "@self-learning/api-client";
 import { useState, useEffect } from "react";
 import { useTranslation } from "next-i18next";
 import { useQuestion } from "../../use-question-hook";
 import { evaluateTextAnswerWithAI } from "./evaluate";
-import { TextEvaluation, TextVerdict } from "./schema";
-
-const { t } = useTranslation("feature-question-types");
-
-const VERDICT_LABELS: Record<TextVerdict, string> = {
-	correct: t("Correct"),
-	"partially-correct": t("Partially Correct"),
-	"partially-wrong": t("Partially Wrong"),
-	wrong: t("Wrong")
-};
+import {
+	TextEvaluation,
+	TextVerdict,
+	TextEvaluateRouterInput,
+	TextEvaluateRouterOutput
+} from "./schema";
 
 const VERDICT_STYLES: Record<TextVerdict, string> = {
 	correct: "border-green-500 bg-green-50 text-green-800",
@@ -34,6 +31,7 @@ export default function TextAnswer() {
 	const [isEvaluating, setIsEvaluating] = useState(false);
 	const typedEvaluation = evaluation as TextEvaluation | null;
 	const isSubmitted = !!evaluation || isEvaluating;
+	const { mutateAsync: evaluateViaRouter } = trpc.textEvaluation.evaluate.useMutation();
 
 	useEffect(() => {
 		if (!typedEvaluation?.pending) return;
@@ -56,7 +54,12 @@ export default function TextAnswer() {
 		setIsEvaluating(true);
 
 		try {
-			const result = await evaluateTextAnswerWithAI(question, answer?.value ?? "");
+			const result = await evaluateTextAnswerWithAI(
+				question,
+				answer?.value ?? "",
+				(input: TextEvaluateRouterInput): Promise<TextEvaluateRouterOutput> =>
+					evaluateViaRouter(input)
+			);
 			if (!isIgnored()) {
 				setEvaluation(result);
 			}
@@ -110,6 +113,13 @@ function EvaluationResult({
 	hasAiConfig: boolean;
 }) {
 	const { t } = useTranslation("feature-question-types");
+
+	const VERDICT_LABELS: Record<TextVerdict, string> = {
+		correct: t("Correct"),
+		"partially-correct": t("Partially Correct"),
+		"partially-wrong": t("Partially Wrong"),
+		wrong: t("Wrong")
+	};
 
 	if (evaluation.evaluationError) {
 		return (

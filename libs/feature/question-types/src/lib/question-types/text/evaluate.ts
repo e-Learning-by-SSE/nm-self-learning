@@ -13,8 +13,13 @@
  *   or a default correct evaluation if not. Called from the registry and sets the initial state.
  */
 
-import { TextEvaluation, TextQuestion, TextVerdict } from "./schema";
-import { trpc } from "@self-learning/api-client";
+import {
+	TextEvaluation,
+	TextQuestion,
+	TextVerdict,
+	TextEvaluateRouterInput,
+	TextEvaluateRouterOutput
+} from "./schema";
 import { useTranslation } from "next-i18next";
 
 function verdictToIsCorrect(verdict: TextVerdict): boolean {
@@ -34,15 +39,15 @@ function buildErrorEvaluation(): TextEvaluation {
  */
 export async function evaluateTextAnswerWithAI(
 	question: TextQuestion,
-	studentAnswer: string
+	studentAnswer: string,
+	callRouter: (input: TextEvaluateRouterInput) => Promise<TextEvaluateRouterOutput>
 ): Promise<TextEvaluation> {
 	if (!question.aiEvaluation || !question.aiEvaluation.solutionOrConcepts.trim()) {
 		return evaluateTextWithoutAI();
 	}
-	const { mutateAsync: evaluateViaRouter } = trpc.textEvaluation.evaluate.useMutation();
 
 	try {
-		const result = await evaluateViaRouter({
+		const result = await callRouter({
 			questionStatement: question.statement,
 			solutionOrConcepts: question.aiEvaluation.solutionOrConcepts,
 			passingThreshold: question.aiEvaluation.passingThreshold,

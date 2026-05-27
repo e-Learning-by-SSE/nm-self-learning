@@ -61,7 +61,6 @@ export const textEvaluationRouter = t.router({
 
 	checkLlmConfig: authProcedure.output(z.object({ available: z.boolean() })).query(async () => {
 		const config = await database.llmConfiguration.findFirst({
-			where: { isActive: true },
 			select: { serverUrl: true }
 		});
 		return { available: !!config };
@@ -205,7 +204,6 @@ function parseLlmResponse(rawContent: string): z.infer<typeof evaluateOutputSche
 
 async function fetchLlmConfig(): Promise<LlmConfig> {
 	const config = await database.llmConfiguration.findFirst({
-		where: { isActive: true },
 		select: { serverUrl: true, apiKey: true, defaultModel: true }
 	});
 

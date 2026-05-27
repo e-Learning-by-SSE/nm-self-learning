@@ -113,7 +113,7 @@ export function QuizProvider({
 	const completionState: QuizCompletionState = useMemo(() => {
 		const allEvaluations = Object.values(evaluations);
 
-		if (allEvaluations.some(e => !e)) {
+		if (allEvaluations.some(e => !e || (e as { pending?: boolean }).pending)) {
 			return "in-progress";
 		}
 
