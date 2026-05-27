@@ -282,7 +282,7 @@ export function QuestionAnswerRenderer({
 
 	return (
 		<span className="text-c-danger">
-			Error: No implementation found for "{(question as { type: string }).type}".
+			Error: No implementation found for &quot;{(question as { type: string }).type}&quot;.
 		</span>
 	);
 }
@@ -327,7 +327,7 @@ export function QuestionFormRenderer({
 
 	return (
 		<span className="text-c-danger">
-			Error: No implementation found for "{(question as { type: string }).type}".
+			Error: No implementation found for &quot;{(question as { type: string }).type}&quot;.
 		</span>
 	);
 }

@@ -1,12 +1,12 @@
 import Link from "next/link";
-import React, { ReactElement } from "react";
+import React, { ReactElement, SVGProps } from "react";
 
 export function Card({
 	imageElement,
 	title,
 	href
 }: {
-	imageElement: ReactElement;
+	imageElement: ReactElement<SVGProps<SVGSVGElement>>;
 	title: string;
 	href: string;
 }) {

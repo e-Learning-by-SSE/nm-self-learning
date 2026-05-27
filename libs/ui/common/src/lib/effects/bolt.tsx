@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type JSX } from "react";
 import { TransparentDialog } from "../dialog/dialog";
 
 type AnimationMode = "static" | "continuous" | "once";

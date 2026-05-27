@@ -1,5 +1,5 @@
 /* eslint-disable */
-export default {
+module.exports = {
 	displayName: "site",
 	coverageDirectory: "../../coverage/apps/site",
 	setupFiles: ["<rootDir>/jest.setup.ts"],

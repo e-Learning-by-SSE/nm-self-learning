@@ -7,7 +7,7 @@ import { useTranslation } from "next-i18next";
 export function AiTutorConsent() {
 	const form = useFormContext<LessonFormModel>();
 	const { control } = form;
-	const { t } = useTranslation("ai-tutor");
+	const { t } = useTranslation("feature-ai-tutor");
 
 	return (
 		<Form.SidebarSection>
@@ -40,7 +40,7 @@ export function AiTutorConsent() {
 }
 
 function ContentConsentSection({ isEnabled }: { isEnabled: boolean }) {
-	const { t } = useTranslation("ai-tutor");
+	const { t } = useTranslation("feature-ai-tutor");
 	if (isEnabled) {
 		return (
 			<p className="text-sm text-green-600">

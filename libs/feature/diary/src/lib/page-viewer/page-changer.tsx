@@ -100,7 +100,7 @@ export function PageChanger({ pages, currentPageId }: { pages: PagesMeta; curren
 				<input
 					type="number"
 					value={pageInput}
-					onInput={handlePageInputChange}
+					onChange={handlePageInputChange}
 					className="flex w-12 sm:w-16 h-full text-center border rounded"
 					min={1}
 					max={pages.length}

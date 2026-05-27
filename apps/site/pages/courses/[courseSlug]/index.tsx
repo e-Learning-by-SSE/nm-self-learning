@@ -2,7 +2,7 @@ import { PlayIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
 import { LessonType } from "@prisma/client";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
-import { SmallGradeBadge } from "@self-learning/completion";
+import { SmallGradeBadge, useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
@@ -26,7 +26,12 @@ import { MDXRemote } from "next-mdx-remote";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo } from "react";
-import { useAiTutor, AiTutor, FloatingTutorButton } from "@self-learning/ai-tutor";
+import {
+	useAiTutor,
+	AiTutor,
+	FloatingTutorButton,
+	I18N_NAMESPACE as NS_AI_TUTOR
+} from "@self-learning/ai-tutor";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -132,7 +137,7 @@ type CourseProps = {
 };
 
 export const getServerSideProps = withTranslations(
-	["common", "ai-tutor"],
+	Array.from(new Set(["common", ...NS_AI_TUTOR])),
 	withAuth(async context => {
 		const { req, res, params } = context;
 		const courseSlug = params?.courseSlug as string | undefined;
@@ -412,8 +417,7 @@ function CourseHeader({
 }
 
 function TableOfContents({ content, course }: { content: ToC.Content; course: Course }) {
-	// const completion = useCourseCompletion(course.slug);
-	const completion: any = null;
+	const completion = useCourseCompletion(course.slug);
 	const hasContent = content.length > 0;
 
 	if (!hasContent) {

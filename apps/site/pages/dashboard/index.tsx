@@ -13,6 +13,7 @@ import {
 	ImageCard,
 	ImageCardBadge,
 	ImageOrPlaceholder,
+	Trans,
 	Toggle
 } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
@@ -24,6 +25,7 @@ import {
 	formatTimeIntervalToString
 } from "@self-learning/util/common";
 import Link from "next/link";
+import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router";
 import { useReducer } from "react";
 
@@ -206,7 +208,7 @@ async function loadMostRecentLessons({
 }
 
 export const getServerSideProps = withTranslations(
-	["common"],
+	["common", "pages-dashboard"],
 	withAuth<Props>(async (_, user) => {
 		// TODO: remove this when in case gamification is fully enabled
 		const isParticipant = user.featureFlags.experimental;
@@ -260,6 +262,8 @@ function ltbReducer(state: LtbState, action: LtbFeatureAction): LtbState {
 
 function DashboardPage(props: Props) {
 	const { mutateAsync: updateSettings } = trpc.me.updateFeatureFlags.useMutation();
+	const { t } = useTranslation("pages-dashboard");
+	const { t: t_common } = useTranslation("common");
 	const router = useRouter();
 	const [ltb, dispatch] = useReducer(ltbReducer, {
 		dialogOpen: false,
@@ -302,14 +306,17 @@ function DashboardPage(props: Props) {
 								{props.student.user.displayName}
 							</h1>
 							<span>
-								Du hast bereits{" "}
-								<span className="mx-1 font-semibold text-c-primary">
-									{props.student._count.completedLessons}
-								</span>{" "}
-								{props.student._count.completedLessons === 1
-									? "Lerneinheit"
-									: "Lerneinheiten"}{" "}
-								abgeschlossen.
+								<Trans
+									namespace="pages-dashboard"
+									i18nKey="Completed_Lessons"
+									count={props.student._count.completedLessons}
+									values={{ count: props.student._count.completedLessons }}
+									components={{
+										count: (
+											<span className="mx-1 font-semibold text-c-primary" />
+										)
+									}}
+								/>
 							</span>
 						</div>
 					</section>
@@ -318,7 +325,7 @@ function DashboardPage(props: Props) {
 						<div className="flex justify-end items-start">
 							<button
 								className="rounded-full p-2 hover:bg-c-neutral-muted"
-								title="Bearbeiten"
+								title={t_common("edit")}
 								onClick={openSettings}
 							>
 								<CogIcon className="h-6 text-c-text-muted" />
@@ -327,7 +334,7 @@ function DashboardPage(props: Props) {
 
 						<div className="flex items-end justify-end">
 							<Toggle
-								label="Lerntagebuch"
+								label={t_common("Learning-Diary")}
 								value={ltb.enabled}
 								onChange={handleClickLtbToggle}
 							/>
@@ -337,7 +344,7 @@ function DashboardPage(props: Props) {
 
 				<div className="grid grid-cols-1 gap-8 pt-10 lg:grid-cols-2">
 					<div className="rounded bg-white p-4 shadow">
-						<h2 className="text-xl py-2 px-2">Letzter Kurs</h2>
+						<h2 className="text-xl py-2 px-2">{t("Last_Course")}</h2>
 						<div className="mb-4 border-b border-c-border h-[6px]"></div>
 						<LastCourseProgress
 							lastEnrollment={
@@ -354,7 +361,7 @@ function DashboardPage(props: Props) {
 						{ltb.enabled ? (
 							<>
 								<StatusBadgeInfo
-									header="Letzter Lerntagebucheintrag"
+									header={t("Last_Learning_Diary_Entry")}
 									className="mb-4"
 								/>
 								<LastLearningDiaryEntry pages={props.student.learningDiaryEntrys} />
@@ -362,7 +369,7 @@ function DashboardPage(props: Props) {
 						) : (
 							<>
 								<h2 className="text-xl py-2 px-2">
-									Zuletzt bearbeitete Lerneinheiten
+									{t("Recently_Viewed_Lessons")}
 								</h2>
 								<div className="mb-4 border-b border-c-border h-[6px]"></div>
 								<LessonList lessons={props.recentLessons} />
@@ -374,20 +381,20 @@ function DashboardPage(props: Props) {
 					<Card
 						href="/dashboard/courseOverview"
 						imageElement={<OverviewSvg />}
-						title="Meine Kurse"
+						title={t("My_Courses")}
 					/>
 					{ltb.enabled && (
 						<>
 							<Card
 								href="/learning-diary"
 								imageElement={<MarketingSvg />}
-								title="Mein Lerntagebuch"
+								title={t("My_Learning_Diary")}
 							/>
 
 							<Card
 								href="/learning-diary/goals"
 								imageElement={<TargetSvg />}
-								title="Meine Lernziele"
+								title={t("My_Learning_Goals")}
 							/>
 						</>
 					)}
@@ -405,13 +412,11 @@ function DashboardPage(props: Props) {
 }
 
 function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys"] }) {
+	const { t } = useTranslation("pages-dashboard");
 	return (
 		<>
 			{pages.length == 0 ? (
-				<span className="text-sm text-c-text-muted">
-					Keine Lerntagebucheinträge vorhanden. Einträge werden erstellt, wenn du mit dem
-					Lernen beginnst.
-				</span>
+				<span className="text-sm text-c-text-muted">{t("No_Learning_Diary_Entries")}</span>
 			) : (
 				<>
 					<ul className="flex max-h-80 flex-col gap-2 overflow-auto overflow-x-hidden p-3">
@@ -436,7 +441,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 													{page.course.title}
 												</span>
 												<span className="text-xs text-gray-400 truncate block max-w-full">
-													Verbrachte Zeit:{" "}
+													{t("Time_Spent")}:{" "}
 													{formatTimeIntervalToString(
 														page.totalDurationLearnedMs ?? 0
 													)}
@@ -458,12 +463,11 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 }
 
 function LessonList({ lessons }: { lessons: RecentLesson[] }) {
+	const { t } = useTranslation("pages-dashboard");
 	return (
 		<>
 			{lessons.length === 0 ? (
-				<span className="text-sm text-c-text-muted">
-					Du hast noch keine Lerneinheiten bearbeitet.
-				</span>
+				<span className="text-sm text-c-text-muted">{t("No_Recent_Lessons")}</span>
 			) : (
 				<ul className="flex max-h-80 flex-col gap-2 overflow-auto overflow-x-hidden p-3">
 					{lessons.map((lesson, index) => (
@@ -521,17 +525,16 @@ function ProgressFooter({ progress }: { progress: number }) {
 }
 
 function LastCourseProgress({ lastEnrollment }: { lastEnrollment?: Student["enrollments"][0] }) {
+	const { t } = useTranslation("pages-dashboard");
 	if (!lastEnrollment) {
 		return (
 			<div>
-				<span className="text-sm text-c-text-muted">
-					Du bist momentan in keinem Kurs eingeschrieben.
-				</span>
+				<span className="text-sm text-c-text-muted">{t("No_Enrolled_Course")}</span>
 				<Link
 					href="/subjects"
 					className="text-sm ml-1 text-c-text-muted underline hover:text-c-primary"
 				>
-					Leg los
+					{t("Get_Started")}
 				</Link>
 			</div>
 		);
@@ -552,7 +555,7 @@ function LastCourseProgress({ lastEnrollment }: { lastEnrollment?: Student["enro
 							lastEnrollment.status === "COMPLETED" ? (
 								<ImageCardBadge
 									className="bg-c-primary text-white"
-									text="Abgeschlossen"
+									text={t("Completed")}
 								/>
 							) : (
 								<></>

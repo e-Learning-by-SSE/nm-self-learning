@@ -128,7 +128,7 @@ export function Dialog<TResult>({
 type GameifyDialogProps = {
 	title: string | React.ReactNode;
 	open?: boolean;
-	onClose: (result?: any) => void;
+	onClose: OnDialogCloseFn<void>;
 	children: React.ReactNode;
 	responsive?: boolean;
 	style?: RequiredSizeProps;

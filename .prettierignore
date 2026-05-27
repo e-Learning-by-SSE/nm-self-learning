@@ -5,3 +5,4 @@
 /coverage
 /.nx/workspace-data
 *.json
+.nx/self-healing
