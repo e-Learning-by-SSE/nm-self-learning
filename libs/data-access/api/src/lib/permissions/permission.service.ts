@@ -93,8 +93,8 @@ export async function canCreate(user: UserFromSession): Promise<boolean> {
 /**
  * A shortcut for @see hasResourceAccess
  * checks if the user is a website admin or has defined access to a specific resource.
- * @param ctx - trpc context with user information
- * @param input - resource input
+ * @param user - user from session (ctx.user)
+ * @param resource - resource input
  * @param accessLevel - required resource access level
  * @returns `true` if user is website admin or has access to the resource at specified access level
  */
