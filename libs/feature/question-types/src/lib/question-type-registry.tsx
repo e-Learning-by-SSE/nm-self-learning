@@ -89,7 +89,7 @@ export type QuestionTypeUnion =
 export const quizContentSchema = z.discriminatedUnion("type", [
 	multipleChoiceQuestionSchema,
 	exactQuestionSchema,
-	textQuestionSchema, // ← now includes optional aiEvaluation field
+	textQuestionSchema,
 	programmingQuestionSchema,
 	clozeQuestionSchema,
 	arrangeQuestionSchema,
