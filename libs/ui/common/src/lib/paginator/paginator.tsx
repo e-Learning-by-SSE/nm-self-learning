@@ -2,6 +2,8 @@ import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 import { Paginated } from "@self-learning/util/common";
 import Link from "next/link";
 import { useMemo } from "react";
+import { useTranslation } from "next-i18next";
+import { Trans } from "../i18n/trans";
 
 type PaginatedLinks = {
 	front: number[];
@@ -20,6 +22,8 @@ export function Paginator({
 	/** If defined, selecting a page will no longer cause a navigation! Callers are responsible for changing data.  */
 	onPageChange?: (page: number) => void;
 }) {
+	const { t } = useTranslation("features-ui-commons");
+
 	const pageLinks = useMemo(() => {
 		const arr = new Array(Math.ceil(pagination.totalCount / pagination.pageSize))
 			.fill(0)
@@ -67,20 +71,24 @@ export function Paginator({
 	return (
 		<div className="flex flex-wrap items-center justify-between gap-4 py-4">
 			<p className="text-sm text-c-text-muted">
-				Zeige{" "}
-				<span className="font-medium text-c-text-strong">
-					{Math.min(result.length, pageSize)}
-				</span>{" "}
-				von <span className="font-medium text-c-text-strong">{totalCount}</span> Ergebnissen
+				<Trans
+					namespace="features-ui-commons"
+					i18nKey="Pagination_Results"
+					values={{ shown: Math.min(result.length, pageSize), total: totalCount }}
+					components={{
+						strong: <span className="font-medium text-c-text-strong" />
+					}}
+				/>
 			</p>
 			<nav
 				className="isolate inline-flex -space-x-px rounded-lg shadow-sm"
-				aria-label="Pagination"
+				aria-label={t("Pagination")}
 			>
 				<ForwardBackwardLink
 					disabled={page === 1}
 					href={`${url}&page=${page - 1}`}
 					isForward={false}
+					srLabel={t("Previous")}
 					onPageChange={onPageChange ? () => onPageChange(page - 1) : undefined}
 				/>
 
@@ -132,6 +140,7 @@ export function Paginator({
 					disabled={page === pageLinks.maxPage || result.length === 0}
 					href={`${url}&page=${page + 1}`}
 					isForward={true}
+					srLabel={t("Next")}
 					onPageChange={onPageChange ? () => onPageChange(page + 1) : undefined}
 				/>
 			</nav>
@@ -143,12 +152,14 @@ function ForwardBackwardLink({
 	onPageChange,
 	href,
 	disabled,
-	isForward
+	isForward,
+	srLabel
 }: {
 	onPageChange?: () => void;
 	href: string;
 	isForward: boolean;
 	disabled: boolean;
+	srLabel: string;
 }) {
 	const className = `relative inline-flex items-center border border-c-border-strong bg-white px-2 py-2 text-sm font-medium ${
 		isForward ? "rounded-r-lg" : "rounded-l-lg"
@@ -163,7 +174,7 @@ function ForwardBackwardLink({
 	if (disabled) {
 		return (
 			<span className={className}>
-				<span className="sr-only">Previous</span>
+				<span className="sr-only">{srLabel}</span>
 				{icon}
 			</span>
 		);
@@ -172,7 +183,7 @@ function ForwardBackwardLink({
 	if (typeof onPageChange === "function") {
 		return (
 			<button className={className} onClick={onPageChange}>
-				<span className="sr-only">Previous</span>
+				<span className="sr-only">{srLabel}</span>
 				{icon}
 			</button>
 		);
@@ -180,7 +191,7 @@ function ForwardBackwardLink({
 
 	return (
 		<Link href={href} className={className}>
-			<span className="sr-only">Previous</span>
+			<span className="sr-only">{srLabel}</span>
 			{icon}
 		</Link>
 	);

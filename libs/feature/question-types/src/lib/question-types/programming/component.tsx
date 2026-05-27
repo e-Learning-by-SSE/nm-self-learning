@@ -2,7 +2,7 @@ import { CheckCircleIcon, QuestionMarkCircleIcon, XCircleIcon } from "@heroicons
 import { trpc } from "@self-learning/api-client";
 import { EditorField, LabeledField } from "@self-learning/ui/forms";
 import { TRPCClientError } from "@trpc/client";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuestion } from "../../use-question-hook";
 import { evaluateProgramming } from "./evaluate";
 import { Programming } from "./schema";
@@ -79,12 +79,10 @@ export default function ProgrammingAnswer() {
 	const { data: runtimes } = trpc.programming.runtimes.useQuery();
 	const { mutateAsync: execute } = trpc.programming.execute.useMutation();
 
-	const [version, setVersion] = useState<string | undefined>(undefined);
-
-	useEffect(() => {
-		console.log("Available runtimes:", runtimes);
-		setVersion(runtimes?.find(r => r.language === question.language)?.version);
-	}, [question.language, runtimes]);
+	const version = useMemo(
+		() => runtimes?.find(r => r.language === question.language)?.version,
+		[question.language, runtimes]
+	);
 
 	async function runCode() {
 		const language = question.language;
@@ -232,7 +230,7 @@ export default function ProgrammingAnswer() {
 										<span>Keine Ausgabe.</span>
 										{output.signal && (
 											<span className="text-xs text-c-danger">
-												Prozess wurde mit "{output.signal}" beendet.
+												Prozess wurde mit &quot;{output.signal}&quot; beendet.
 											</span>
 										)}
 									</span>

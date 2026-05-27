@@ -35,7 +35,7 @@ export function AchievementCard({
 }: {
 	achievement: AchievementWithProgress;
 	showDescription?: boolean;
-	progressBar?: ReactElement | null;
+	progressBar?: ReactElement<any> | null;
 	onRedeem?: (achievementId: string) => void;
 }) {
 	// Calculate progress percentage for the progress bar

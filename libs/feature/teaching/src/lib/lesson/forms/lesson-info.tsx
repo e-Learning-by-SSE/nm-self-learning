@@ -28,13 +28,6 @@ export function LessonInfoEditor({ isNew }: { isNew: boolean }) {
 	return (
 		<>
 			<Form.SidebarSection>
-				<button
-					className="btn btn-tertiary"
-					type="button"
-					onClick={() => console.log(form.getValues())}
-				>
-					Hallo
-				</button>
 				<Form.SidebarSectionTitle
 					title="Daten"
 					subtitle="Informationen über diese Lerneinheit"

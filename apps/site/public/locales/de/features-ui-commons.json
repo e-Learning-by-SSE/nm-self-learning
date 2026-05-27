@@ -1,0 +1,9 @@
+{
+    "Show": "Zeige",
+    "Of": "von",
+    "Results": "Ergebnissen",
+    "Pagination_Results": "Zeige <strong>{{shown}}</strong> von <strong>{{total}}</strong> Ergebnissen",
+    "Pagination": "Seitennavigation",
+    "Previous": "Vorherige Seite",
+    "Next": "Nächste Seite"
+}

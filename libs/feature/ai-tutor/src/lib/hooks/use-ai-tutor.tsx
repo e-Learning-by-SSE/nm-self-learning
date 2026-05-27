@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { trpc } from "@self-learning/api-client";
 import { showToast } from "@self-learning/ui/common";
 import { Message, PageContext } from "../utils/types";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "next-i18next";
 import { usePathname, useSearchParams } from "next/navigation";
 
 /**
@@ -15,12 +15,12 @@ import { usePathname, useSearchParams } from "next/navigation";
  * - User interactions (send, clear, toggle)
  */
 export function useAiTutor() {
-	const { t } = useTranslation("ai-tutor");
+	const { t } = useTranslation("feature-ai-tutor");
 	const [messages, setMessages] = useState<Message[]>([]);
-	const [input, setInput] = useState("");
 	const [isTutorOpen, setIsTutorOpen] = useState(false);
 	const [isAnimating, setIsAnimating] = useState(false);
 	const [hideToggle, setHideToggle] = useState(false);
+	const [inputClearSignal, setInputClearSignal] = useState(0);
 	const [pageContext, setPageContext] = useState<PageContext | null>(null);
 	const { data: config } = trpc.llmConfig.get.useQuery();
 	const sendMessageMutation = trpc.aiTutor.sendMessage.useMutation();
@@ -86,11 +86,11 @@ export function useAiTutor() {
 		setPageContext(null);
 	}, [pathname]);
 
-	const sendMessage = useCallback(async () => {
-		const trimmedInput = input.trim();
+	const sendMessage = useCallback(async (message: string) => {
+		const trimmedInput = message.trim();
 
 		if (!trimmedInput) {
-			return;
+			return false;
 		}
 
 		const userMessage: Message = {
@@ -99,7 +99,6 @@ export function useAiTutor() {
 		};
 
 		setMessages(prev => [...prev, userMessage]);
-		setInput("");
 
 		try {
 			const response = await sendMessageMutation.mutateAsync({
@@ -113,27 +112,19 @@ export function useAiTutor() {
 			};
 
 			setMessages(prev => [...prev, assistantMessage]);
+			return true;
 		} catch (error) {
 			setMessages(prev => prev.slice(0, -1));
-			setInput(trimmedInput);
 
 			showToast({
 				type: "error",
 				title: t("Message Failed"),
 				subtitle: error instanceof Error ? t(error.message) : t("Unknown error")
 			});
-		}
-	}, [input, messages, pageContext, sendMessageMutation, t]);
 
-	const handleKeyDown = useCallback(
-		(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-			if (e.key === "Enter" && !e.shiftKey) {
-				e.preventDefault();
-				sendMessage();
-			}
-		},
-		[sendMessage]
-	);
+			return false;
+		}
+	}, [messages, pageContext, sendMessageMutation, t]);
 
 	const toggleTutor = useCallback(() => {
 		setIsAnimating(true);
@@ -150,7 +141,7 @@ export function useAiTutor() {
 
 	const clearChat = useCallback(() => {
 		setMessages([]);
-		setInput("");
+		setInputClearSignal(prev => prev + 1);
 	}, []);
 
 	useEffect(() => {
@@ -167,15 +158,13 @@ export function useAiTutor() {
 
 	return {
 		messages,
-		input,
 		isTutorOpen,
 		isAnimating,
 		pageContext,
 		config,
 		isLoading,
-		setInput,
 		sendMessage,
-		handleKeyDown,
+		inputClearSignal,
 		toggleTutor,
 		closeTutor,
 		clearChat,

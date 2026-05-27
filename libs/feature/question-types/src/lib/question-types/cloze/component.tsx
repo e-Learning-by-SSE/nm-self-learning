@@ -1,4 +1,4 @@
-import React, { Fragment, useCallback, useRef } from "react";
+import React, { Fragment, useCallback, useMemo } from "react";
 import { Feedback } from "../../feedback";
 import { useQuestion } from "../../use-question-hook";
 import { createCloze, Gap } from "./cloze-parser";
@@ -8,7 +8,7 @@ import { MarkdownListboxMenu, rehypePlugins, remarkPlugins } from "@self-learnin
 export default function ClozeAnswer() {
 	const { question, answer, setAnswer, evaluation } = useQuestion("cloze");
 
-	const cloze = useRef(createCloze(question.clozeText)).current;
+	const cloze = useMemo(() => createCloze(question.clozeText), [question.clozeText]);
 	const onUpdateAnswer = useCallback(
 		(index: number, ans: string) => {
 			setAnswer(prev => ({

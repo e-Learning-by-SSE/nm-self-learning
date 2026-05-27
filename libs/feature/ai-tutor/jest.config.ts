@@ -1,7 +1,7 @@
-import { join } from "path";
+const { join } = require("path");
 
 /* eslint-disable */
-export default {
+module.exports = {
 	displayName: "feature-ai-tutor",
 	preset: "../../../jest.preset.js",
 	transform: {
