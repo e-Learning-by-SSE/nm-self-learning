@@ -31,7 +31,20 @@ const evaluateInputSchema = z.object({
 	studentAnswer: z.string().trim().min(1, "Student answer cannot be empty.")
 });
 
-const evaluateOutputSchema = z.object({
+// The router always resolves — never rejects. On any failure, ok: false is returned
+// so the client (evaluate.ts) can handle it without try/catch or onError wiring.
+const evaluateOutputSchema = z.discriminatedUnion("ok", [
+	z.object({
+		ok: z.literal(true),
+		verdict: z.enum(["correct", "partially-correct", "partially-wrong", "wrong"]),
+		feedback: z.string()
+	}),
+	z.object({
+		ok: z.literal(false)
+	})
+]);
+
+const parsedResponseSchema = z.object({
 	verdict: z.enum(["correct", "partially-correct", "partially-wrong", "wrong"]),
 	feedback: z.string()
 });
@@ -43,18 +56,21 @@ const evaluateOutputSchema = z.object({
  *  1. Fetching the LLM config from the database
  *  2. Building the system prompt (security-sensitive: must never leak the solution)
  *  3. Building the user message with all evaluation context
- *  4. Calling the LLM with temperature 0 (FR-09)
- *  5. Parsing and validating the structured JSON response (FR-11)
- *  6. Returning a typed { verdict, feedback } object
+ *  4. Calling the LLM with temperature 0
+ *  5. Parsing and validating the structured JSON response
+ *  6. Returning a typed result or an error state without throwing
  */
 
 export const textEvaluationRouter = t.router({
 	evaluate: authProcedure
 		.input(evaluateInputSchema)
 		.output(evaluateOutputSchema)
-		.mutation(async ({ input, ctx }) => {
+		.mutation(async ({ input }) => {
 			// Step 1: Fetch LLM configuration from DB
 			const llmConfig = await fetchLlmConfig();
+			if (!llmConfig) {
+				return { ok: false as const };
+			}
 
 			// Step 2: Build system prompt — evaluation-specific, never reveals solution
 			const systemPrompt = buildSystemPrompt();
@@ -69,14 +85,24 @@ export const textEvaluationRouter = t.router({
 			// Step 4: Send request to LLM server and get raw response
 			const rawContent = await sendEvaluationRequest(messages, llmConfig);
 
+			if (!rawContent) {
+				return { ok: false as const };
+			}
+
 			// Step 5: Parse and validate LLM response against expected schema
 			const parsed = parseLlmResponse(rawContent);
 
-			return parsed;
+			if (!parsed) {
+				return { ok: false as const };
+			}
+
+			return { ok: true as const, ...parsed };
 		}),
 
-	// Checks whether an LLM configuration exists on the platform.
-	// This is used to conditionally enable AI evaluation features in the UI.
+	/**
+	 * Returns whether an LLM config exists on the platform.
+	 * Used by form.tsx to decide whether to render the AI evaluation fields.
+	 */
 	checkLlmConfig: authProcedure.output(z.object({ available: z.boolean() })).query(async () => {
 		const config = await database.llmConfiguration.findFirst({
 			where: { isActive: true },
@@ -147,7 +173,10 @@ ${input.studentAnswer}`;
  * @param config The LLM configuration containing server URL and API key
  * @returns The raw content string from the LLM response, which still needs to be parsed and validated
  */
-async function sendEvaluationRequest(messages: Message[], config: LlmConfig): Promise<string> {
+async function sendEvaluationRequest(
+	messages: Message[],
+	config: LlmConfig
+): Promise<string | null> {
 	const TIMEOUT_MS = 30_000;
 	const controller = new AbortController();
 	const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -171,32 +200,21 @@ async function sendEvaluationRequest(messages: Message[], config: LlmConfig): Pr
 
 		clearTimeout(timeout);
 
-		if (!response.ok) throw handleHttpError(response.status);
+		if (!response.ok) {
+			return null;
+		}
 
 		const data = await response.json();
 		const validated = llmApiResponseSchema.safeParse(data);
 
 		if (!validated.success) {
-			console.error("[TextEvaluationRouter] Invalid LLM response format", {
-				errors: validated.error
-			});
-			throw new TRPCError({
-				code: "INTERNAL_SERVER_ERROR",
-				message: "Invalid response format from LLM server"
-			});
+			return null;
 		}
 
 		return validated.data.message.content;
 	} catch (error) {
 		clearTimeout(timeout);
-		if (error instanceof TRPCError) throw error;
-		if (error instanceof Error && error.name === "AbortError") {
-			throw new TRPCError({ code: "TIMEOUT", message: "LLM server request timed out" });
-		}
-		throw new TRPCError({
-			code: "INTERNAL_SERVER_ERROR",
-			message: "Failed to communicate with LLM server"
-		});
+		return null;
 	}
 }
 
@@ -206,71 +224,25 @@ async function sendEvaluationRequest(messages: Message[], config: LlmConfig): Pr
  * Some LLMs wrap JSON in markdown fences despite being told not to.
  * We strip those before parsing, then validate against the output schema.
  */
-function parseLlmResponse(rawContent: string): z.infer<typeof evaluateOutputSchema> {
+function parseLlmResponse(rawContent: string): z.infer<typeof parsedResponseSchema> | null {
 	const cleaned = rawContent.replace(/```json|```/gi, "").trim();
 
-	let parsed: unknown;
 	try {
-		parsed = JSON.parse(cleaned);
+		const parsed = JSON.parse(cleaned);
+		const result = parsedResponseSchema.safeParse(parsed);
+		if (!result.success) {
+			return null;
+		}
+		return result.data;
 	} catch {
-		console.error("[TextEvaluationRouter] LLM response is not valid JSON", { rawContent });
-		throw new TRPCError({
-			code: "INTERNAL_SERVER_ERROR",
-			message: "LLM returned an unparseable response"
-		});
+		return null;
 	}
-
-	const result = evaluateOutputSchema.safeParse(parsed);
-	if (!result.success) {
-		console.error("[TextEvaluationRouter] LLM response failed schema validation", {
-			errors: result.error.flatten(),
-			rawContent
-		});
-		throw new TRPCError({
-			code: "INTERNAL_SERVER_ERROR",
-			message: "LLM returned a response with an unexpected structure"
-		});
-	}
-
-	return result.data;
 }
 
-/**
- * Fetches the LLM configuration from the database.
- * Throws NOT_FOUND if no configuration has been set up.
- */
-async function fetchLlmConfig(): Promise<LlmConfig> {
-	const config = await database.llmConfiguration.findFirst({
+// Returns null instead of throwing when no config exists.
+async function fetchLlmConfig(): Promise<LlmConfig | null> {
+	return await database.llmConfiguration.findFirst({
 		where: { isActive: true },
 		select: { serverUrl: true, apiKey: true, defaultModel: true }
 	});
-
-	if (!config) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message:
-				"LLM configuration not found. Please configure an LLM server in the admin settings."
-		});
-	}
-
-	return config;
-}
-
-/**
- * Maps HTTP status codes from the LLM server response to appropriate TRPCError instances.
- */
-const errorMap: Record<number, { code: TRPCError["code"]; message: string }> = {
-	400: { code: "BAD_REQUEST", message: "Invalid request to LLM server" },
-	401: { code: "UNAUTHORIZED", message: "LLM API authentication failed" },
-	403: { code: "FORBIDDEN", message: "Access to LLM API forbidden" },
-	404: { code: "NOT_FOUND", message: "LLM API endpoint not found" },
-	429: { code: "TOO_MANY_REQUESTS", message: "LLM API rate limit exceeded" },
-	500: { code: "INTERNAL_SERVER_ERROR", message: "LLM server internal error" },
-	502: { code: "BAD_GATEWAY", message: "LLM server unavailable" },
-	503: { code: "SERVICE_UNAVAILABLE", message: "LLM server temporarily unavailable" }
-};
-
-function handleHttpError(status: number): TRPCError {
-	const error = errorMap[status] ?? errorMap[500];
-	return new TRPCError({ code: error.code, message: error.message });
 }

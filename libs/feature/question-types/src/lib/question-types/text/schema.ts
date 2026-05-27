@@ -55,7 +55,8 @@ export interface TextEvaluateRouterInput {
 	studentAnswer: string;
 }
 
-export interface TextEvaluateRouterOutput {
-	verdict: TextVerdict;
-	feedback: string;
-}
+// Discriminated union — the router always resolves, never rejects.
+// ok: false means any failure (no config, LLM error, parse error).
+export type TextEvaluateRouterOutput =
+	| { ok: true; verdict: TextVerdict; feedback: string }
+	| { ok: false };

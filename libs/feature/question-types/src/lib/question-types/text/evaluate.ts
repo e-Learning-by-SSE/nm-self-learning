@@ -64,26 +64,25 @@ export async function evaluateTextAnswerWithAI(
 		return evaluateTextWithoutAI();
 	}
 
-	try {
-		const result = await callRouter({
-			questionStatement: question.statement,
-			solutionOrConcepts: question.aiEvaluation.solutionOrConcepts,
-			passingThreshold: question.aiEvaluation.passingThreshold,
-			studentAnswer
-		});
+	const result = await callRouter({
+		questionStatement: question.statement,
+		solutionOrConcepts: question.aiEvaluation.solutionOrConcepts,
+		passingThreshold: question.aiEvaluation.passingThreshold,
+		studentAnswer
+	});
 
-		return {
-			isCorrect: verdictToIsCorrect(result.verdict),
-			verdict: result.verdict,
-			feedback: result.feedback
-		};
-	} catch (err) {
-		console.error("[TextEvaluate] AI evaluation failed:", err);
+	if (!result.ok) {
 		// In case of any error during the evaluation process (network issues, server errors, unexpected response format, etc.),
 		// we return a default evaluation indicating that the evaluation could not be completed,
 		// but we mark it as partially correct to avoid penalizing the student.
 		return buildErrorEvaluation();
 	}
+
+	return {
+		isCorrect: verdictToIsCorrect(result.verdict),
+		verdict: result.verdict,
+		feedback: result.feedback
+	};
 }
 
 /**
