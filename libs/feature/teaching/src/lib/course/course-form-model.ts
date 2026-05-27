@@ -1,5 +1,5 @@
 import { AccessLevel, Prisma } from "@prisma/client";
-import { PermissionsForCreate, PermissionsForUpdate } from "@self-learning/api";
+import type { PermissionsForCreate, PermissionsForUpdate } from "@self-learning/api";
 import { authorsRelationSchema, courseContentSchema, createCourseMeta } from "@self-learning/types";
 import { stringOrNull } from "@self-learning/util/common";
 import { z } from "zod";
