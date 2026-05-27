@@ -457,9 +457,6 @@ type PermissionOfResource = {
 	accessLevel: AccessLevel;
 };
 
-export type PermissionsForCreate = Awaited<ReturnType<typeof preparePermissionsForCreate>>;
-export type PermissionsForUpdate = Awaited<ReturnType<typeof preparePermissionsForUpdate>>;
-
 /**
  * Every resource has permissions array. If that array was created through create trpc
  * this method helps to perform necessary checks to create permissions
