@@ -266,7 +266,7 @@ export const lessonRouter = t.router({
 		}
 		// prepare permissions for create (can throw)
 		const permissions = await preparePermissionsForCreate(input.permissions);
-		//
+
 		const ragCheck = input.ragEnabled ?? true;
 		let hash: string | null = null;
 		if (ragCheck && input.content.length) {
