@@ -20,7 +20,6 @@ import {
 	TextEvaluateRouterInput,
 	TextEvaluateRouterOutput
 } from "./schema";
-import { useTranslation } from "next-i18next";
 
 /**
  * Converts the AI evaluation verdict into a boolean isCorrect value for the TextEvaluation.
@@ -93,13 +92,9 @@ export async function evaluateTextAnswerWithAI(
  * @returns A TextEvaluation object representing the default evaluation without AI.
  */
 export function evaluateTextWithoutAI(): TextEvaluation {
-	const { t } = useTranslation("feature-question-types");
 	return {
 		isCorrect: true,
-		verdict: "partially-correct",
-		feedback: t(
-			"AI evaluation is not available (answer accepted as correct without AI evaluation)"
-		)
+		verdict: "partially-correct"
 	};
 }
 
