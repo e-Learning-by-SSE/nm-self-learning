@@ -469,7 +469,7 @@ export async function preparePermissionsForCreate(newPermissions: PermissionOfRe
 	// make sure at least one permission is FULL
 	if (newPermissions.filter(p => p.accessLevel === AccessLevel.FULL).length === 0) {
 		throw new TRPCError({
-			code: "FORBIDDEN",
+			code: "BAD_REQUEST",
 			message: "requires at least one FULL permission."
 		});
 	}

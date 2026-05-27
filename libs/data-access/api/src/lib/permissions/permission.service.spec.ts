@@ -403,13 +403,13 @@ describe("permission.service", () => {
 			});
 		});
 
-		it("throws FORBIDDEN when no FULL permission is provided", async () => {
+		it("throws BAD_REQUEST when no FULL permission is provided", async () => {
 			await expect(
 				preparePermissionsForCreate([
 					{ groupId: 1, accessLevel: AccessLevel.VIEW },
 					{ groupId: 2, accessLevel: AccessLevel.EDIT }
 				])
-			).rejects.toMatchObject({ code: "FORBIDDEN" });
+			).rejects.toMatchObject({ code: "BAD_REQUEST" });
 		});
 	});
 

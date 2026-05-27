@@ -127,13 +127,13 @@ describe("tRPC API of Course Router", () => {
 			expect(database.course.create).toHaveBeenCalled();
 		});
 
-		it("should throw FORBIDDEN if course has not FULL permission assigned to it", async () => {
+		it("should throw BAD_REQUEST if course has not FULL permission assigned to it", async () => {
 			const { caller } = prepare({});
 
 			(canCreate as jest.Mock).mockResolvedValue(true);
 			(preparePermissionsForCreate as jest.Mock).mockRejectedValue(
 				new TRPCError({
-					code: "FORBIDDEN",
+					code: "BAD_REQUEST",
 					message: "requires at least one FULL permission."
 				})
 			);
@@ -145,7 +145,7 @@ describe("tRPC API of Course Router", () => {
 					]
 				})
 			).rejects.toMatchObject({
-				code: "FORBIDDEN",
+				code: "BAD_REQUEST",
 				message: "requires at least one FULL permission."
 			} as Partial<TRPCError>);
 			expect(database.course.create).not.toHaveBeenCalled();

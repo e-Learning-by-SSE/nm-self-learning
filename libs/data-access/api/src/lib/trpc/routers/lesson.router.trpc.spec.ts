@@ -153,7 +153,7 @@ describe("tRPC API of Lesson Router", () => {
 			(canCreate as jest.Mock).mockResolvedValue(true);
 			(preparePermissionsForCreate as jest.Mock).mockRejectedValue(
 				new TRPCError({
-					code: "FORBIDDEN",
+					code: "BAD_REQUEST",
 					message: "requires at least one FULL permission."
 				})
 			);
@@ -165,7 +165,7 @@ describe("tRPC API of Lesson Router", () => {
 					]
 				})
 			).rejects.toMatchObject({
-				code: "FORBIDDEN",
+				code: "BAD_REQUEST",
 				message: "requires at least one FULL permission."
 			} as Partial<TRPCError>);
 			expect(database.lesson.create).not.toHaveBeenCalled();
