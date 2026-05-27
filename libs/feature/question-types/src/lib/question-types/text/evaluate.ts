@@ -22,10 +22,22 @@ import {
 } from "./schema";
 import { useTranslation } from "next-i18next";
 
+/**
+ * Converts the AI evaluation verdict into a boolean isCorrect value for the TextEvaluation.
+ * Only "correct" verdicts are marked as true, all others (including partially correct/wrong) are false.
+ * @param verdict The AI evaluation verdict.
+ * @returns A boolean indicating whether the answer is correct.
+ */
 function verdictToIsCorrect(verdict: TextVerdict): boolean {
 	return verdict === "correct";
 }
 
+/**
+ * Builds a TextEvaluation object representing an error state when AI evaluation fails.
+ * The evaluation is marked as "partially-correct" to indicate that the system could not determine correctness,
+ * and an evaluationError flag is set to true for the UI to show an appropriate message.
+ * @returns A TextEvaluation object representing the error state.
+ */
 function buildErrorEvaluation(): TextEvaluation {
 	return {
 		isCorrect: true,
@@ -35,7 +47,14 @@ function buildErrorEvaluation(): TextEvaluation {
 }
 
 /**
- * Evaluates a student's answer using AI/LLM.
+ * Evaluates a student's free-text answer using the configured LLM by calling the provided router function.
+ * If no AI evaluation configuration is present, it falls back to a default evaluation without AI.
+ * The function handles the async call to the tRPC router, processes the response, and returns a TextEvaluation object
+ * that includes whether the answer is correct, the AI's verdict, feedback for the student, and any evaluation error state.
+ * @param question The TextQuestion object containing the question statement and AI evaluation configuration.
+ * @param studentAnswer The free-text answer provided by the student.
+ * @param callRouter A function that takes the input for the evaluation router and returns a promise of the output. This abstracts away the actual tRPC call for easier testing and separation of concerns.
+ * @returns A promise that resolves to a TextEvaluation object representing the result of the evaluation.
  */
 export async function evaluateTextAnswerWithAI(
 	question: TextQuestion,
@@ -61,12 +80,17 @@ export async function evaluateTextAnswerWithAI(
 		};
 	} catch (err) {
 		console.error("[TextEvaluate] AI evaluation failed:", err);
+		// In case of any error during the evaluation process (network issues, server errors, unexpected response format, etc.),
+		// we return a default evaluation indicating that the evaluation could not be completed,
+		// but we mark it as partially correct to avoid penalizing the student.
 		return buildErrorEvaluation();
 	}
 }
 
 /**
- * Evaluate Student's asnwer without AI by marking it true with static feedback
+ * Returns a default TextEvaluation when AI evaluation is not available, indicating that the answer is accepted as correct
+ * but without any AI-generated feedback. This is used when the teacher has not configured the AI evaluation (i.e., no solution or concepts provided).
+ * @returns A TextEvaluation object representing the default evaluation without AI.
  */
 export function evaluateTextWithoutAI(): TextEvaluation {
 	const { t } = useTranslation("feature-question-types");
@@ -80,7 +104,11 @@ export function evaluateTextWithoutAI(): TextEvaluation {
 }
 
 /**
- * Synchronous evaluation called by EVALUATION_FUNCTIONS["text"] in the registry.
+ * The synchronous evaluation function for text questions, used in the registry to set the initial evaluation state.
+ * If AI evaluation is configured (i.e., a solution or concepts are provided), it returns a placeholder evaluation with pending: true,
+ * which triggers the asynchronous evaluation process in the component. If no AI configuration is present, it returns a default correct evaluation.
+ * @param question The TextQuestion object containing the question statement and AI evaluation configuration.
+ * @returns A TextEvaluation object representing either the placeholder for pending AI evaluation or the default correct evaluation.
  */
 export function evaluateTextSync(question: TextQuestion): TextEvaluation {
 	const hasAiConfig = !!question.aiEvaluation?.solutionOrConcepts?.trim();

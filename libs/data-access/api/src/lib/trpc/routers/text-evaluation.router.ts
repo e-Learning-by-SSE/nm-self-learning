@@ -36,29 +36,47 @@ const evaluateOutputSchema = z.object({
 	feedback: z.string()
 });
 
+/**
+ * Evaluates a student's free-text answer using the configured LLM.
+ *
+ * * The router is responsible for:
+ *  1. Fetching the LLM config from the database
+ *  2. Building the system prompt (security-sensitive: must never leak the solution)
+ *  3. Building the user message with all evaluation context
+ *  4. Calling the LLM with temperature 0 (FR-09)
+ *  5. Parsing and validating the structured JSON response (FR-11)
+ *  6. Returning a typed { verdict, feedback } object
+ */
+
 export const textEvaluationRouter = t.router({
 	evaluate: authProcedure
 		.input(evaluateInputSchema)
 		.output(evaluateOutputSchema)
 		.mutation(async ({ input, ctx }) => {
+			// Step 1: Fetch LLM configuration from DB
 			const llmConfig = await fetchLlmConfig();
-			const messages: Message[] = [
-				{ role: "system", content: buildSystemPrompt() },
-				{ role: "user", content: buildUserMessage(input) }
-			];
-			const rawContent = await sendEvaluationRequest(messages, llmConfig);
-			const parsed = parseLlmResponse(rawContent);
 
-			console.info("[TextEvaluationRouter] Evaluation complete", {
-				questionLength: input.questionStatement.length,
-				answerLength: input.studentAnswer.length,
-				verdict: parsed.verdict,
-				username: ctx.user.name
-			});
+			// Step 2: Build system prompt — evaluation-specific, never reveals solution
+			const systemPrompt = buildSystemPrompt();
+
+			// Step 3: Build user message with all dynamic content
+			const userMessage = buildUserMessage(input);
+			const messages: Message[] = [
+				{ role: "system", content: systemPrompt },
+				{ role: "user", content: userMessage }
+			];
+
+			// Step 4: Send request to LLM server and get raw response
+			const rawContent = await sendEvaluationRequest(messages, llmConfig);
+
+			// Step 5: Parse and validate LLM response against expected schema
+			const parsed = parseLlmResponse(rawContent);
 
 			return parsed;
 		}),
 
+	// Checks whether an LLM configuration exists on the platform.
+	// This is used to conditionally enable AI evaluation features in the UI.
 	checkLlmConfig: authProcedure.output(z.object({ available: z.boolean() })).query(async () => {
 		const config = await database.llmConfiguration.findFirst({
 			where: { isActive: true },
@@ -69,6 +87,7 @@ export const textEvaluationRouter = t.router({
 });
 
 /**
+ * Builds the system prompt for the LLM evaluator.
  * Static prompt, all dynamic content goes in buildUserMessage().
  */
 function buildSystemPrompt(): string {
@@ -103,6 +122,10 @@ You will receive:
 {"verdict": "<correct|partially-correct|partially-wrong|wrong>", "feedback": "<your feedback here>"}`;
 }
 
+/**
+ * Builds the user-role message containing all four evaluation context pieces.
+ * question text, evaluation reference, threshold, and student answer.
+ */
 function buildUserMessage(input: z.infer<typeof evaluateInputSchema>): string {
 	return `## Question
 ${input.questionStatement}
@@ -117,6 +140,13 @@ ${input.passingThreshold}%
 ${input.studentAnswer}`;
 }
 
+/**
+ * Sends the evaluation request to the LLM server.
+ * Handles HTTP errors and timeouts, but does not do any parsing or validation of the response content.
+ * @param messages The system and user messages to send to the LLM
+ * @param config The LLM configuration containing server URL and API key
+ * @returns The raw content string from the LLM response, which still needs to be parsed and validated
+ */
 async function sendEvaluationRequest(messages: Message[], config: LlmConfig): Promise<string> {
 	const TIMEOUT_MS = 30_000;
 	const controller = new AbortController();
@@ -171,6 +201,8 @@ async function sendEvaluationRequest(messages: Message[], config: LlmConfig): Pr
 }
 
 /**
+ * Parses the raw string returned by the LLM into a typed { verdict, feedback } object.
+ *
  * Some LLMs wrap JSON in markdown fences despite being told not to.
  * We strip those before parsing, then validate against the output schema.
  */
@@ -203,6 +235,10 @@ function parseLlmResponse(rawContent: string): z.infer<typeof evaluateOutputSche
 	return result.data;
 }
 
+/**
+ * Fetches the LLM configuration from the database.
+ * Throws NOT_FOUND if no configuration has been set up.
+ */
 async function fetchLlmConfig(): Promise<LlmConfig> {
 	const config = await database.llmConfiguration.findFirst({
 		where: { isActive: true },
@@ -220,6 +256,9 @@ async function fetchLlmConfig(): Promise<LlmConfig> {
 	return config;
 }
 
+/**
+ * Maps HTTP status codes from the LLM server response to appropriate TRPCError instances.
+ */
 const errorMap: Record<number, { code: TRPCError["code"]; message: string }> = {
 	400: { code: "BAD_REQUEST", message: "Invalid request to LLM server" },
 	401: { code: "UNAUTHORIZED", message: "LLM API authentication failed" },

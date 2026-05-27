@@ -19,6 +19,7 @@ import {
 	TextEvaluateRouterOutput
 } from "./schema";
 
+// Tailwind colour classes per verdict for the result box. Kept separate for readability.
 const VERDICT_STYLES: Record<TextVerdict, string> = {
 	correct: "border-green-500 bg-green-50 text-green-800",
 	"partially-correct": "border-yellow-400 bg-yellow-50 text-yellow-800",
@@ -26,6 +27,15 @@ const VERDICT_STYLES: Record<TextVerdict, string> = {
 	wrong: "border-c-danger bg-c-danger-subtle text-c-danger"
 };
 
+/**
+ * The main component for rendering a text question, accepting the student's answer,
+ * and showing the AI evaluation result once available.
+ * The AI evaluation is triggered by a useEffect that watches for the placeholder { pending: true }
+ * set by the synchronous CheckResult function. The actual evaluation logic is in evaluateTextAnswerWithAI(),
+ * which calls the tRPC router and handles the response.
+ * The component also handles the loading state while waiting for the AI response, and shows appropriate messages
+ * if AI evaluation is not available or if an error occurs during evaluation.
+ */
 export default function TextAnswer() {
 	const { question, setAnswer, answer, evaluation, setEvaluation } = useQuestion("text");
 	const [isEvaluating, setIsEvaluating] = useState(false);
@@ -93,6 +103,7 @@ export default function TextAnswer() {
 	);
 }
 
+// A simple loading indicator component shown while waiting for the AI evaluation response.
 function LoadingIndicator() {
 	const { t } = useTranslation("feature-question-types");
 	return (
@@ -105,6 +116,14 @@ function LoadingIndicator() {
 	);
 }
 
+/**
+ * Component for displaying the result of the AI evaluation after it has completed.
+ * Shows different messages and styles based on the verdict returned by the AI, whether an error occurred,
+ * or if AI evaluation is not available due to missing configuration.
+ * @param evaluation The result of the AI evaluation, including verdict, feedback, and any evaluation error.
+ * @param hasAiConfig Boolean indicating whether AI evaluation is available (i.e., if the question has AI evaluation config)
+ * @returns A styled box showing the evaluation verdict and feedback, or appropriate messages if evaluation is not available or if an error occurred.
+ */
 function EvaluationResult({
 	evaluation,
 	hasAiConfig
@@ -121,6 +140,7 @@ function EvaluationResult({
 		wrong: t("Wrong")
 	};
 
+	// If the evaluation contains an error, show a warning message instead of the verdict.
 	if (evaluation.evaluationError) {
 		return (
 			<div className="rounded-lg border border-yellow-400 bg-yellow-50 p-4 text-yellow-800">
@@ -134,6 +154,7 @@ function EvaluationResult({
 		);
 	}
 
+	// If no AI configuration is available, inform the student that their answer is accepted but not automatically evaluated.
 	if (!hasAiConfig) {
 		return (
 			<div className="rounded-lg border border-green-500 bg-green-50 p-4 text-green-800">

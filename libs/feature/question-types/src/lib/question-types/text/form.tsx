@@ -1,9 +1,3 @@
-/**
- * AI evaluation is enabled or disabled by whether the teacher fills in
- * solutionOrConcepts — empty means disabled. The fields are only rendered
- * when an LLM config exists on the platform; otherwise the section is hidden.
- */
-
 import { LabeledField } from "@self-learning/ui/forms";
 import { trpc } from "@self-learning/api-client";
 import { Controller, useFormContext } from "react-hook-form";
@@ -13,6 +7,20 @@ import { TextQuestion } from "./schema";
 
 type TextForm = QuestionTypeForm<TextQuestion>;
 
+/**
+ * The form component for configuring a text question, including the AI evaluation settings.
+ * It checks if llm-config is available and shows the appropriate fields for entering the sample solution or expected concepts,
+ * as well as the passing threshold. If llm-configis not available, it does not show these fields,
+ * and the evaluation will default to accepting any answer.
+ *
+ * The main features of this component include:
+ * - Conditional rendering of AI evaluation fields based on the availability of the LLM configuration.
+ * - Validation rules for the passing threshold input.
+ * - An example box that shows how to format the AI evaluation input for both supported formats (sample solution and expected concepts).
+ *
+ * @param index The index of the question in the quiz, used to access the correct form fields for this question.
+ * @returns A React component rendering the form for configuring a text question and its AI evaluation settings.
+ */
 export default function TextForm({ index }: { index: number }) {
 	const { t } = useTranslation("feature-question-types");
 	const { control } = useFormContext<TextForm>();
@@ -52,7 +60,6 @@ export default function TextForm({ index }: { index: number }) {
 							</LabeledField>
 						)}
 					/>
-
 					<ExampleBox />
 
 					<Controller
@@ -90,6 +97,11 @@ export default function TextForm({ index }: { index: number }) {
 	);
 }
 
+/**
+ * A component that displays example formats for the AI evaluation input, showing both the sample solution format and the expected concepts format.
+ * This helps teachers understand how to configure the AI evaluation correctly.
+ * @returns A React component rendering the example box with formatting examples for AI evaluation input.
+ */
 function ExampleBox() {
 	const { t } = useTranslation("feature-question-types");
 	return (
