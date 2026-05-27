@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { authProcedure, t } from "../trpc";
 import { database } from "@self-learning/database";
 import { z } from "zod";
+
 interface LlmConfig {
 	serverUrl: string;
 	apiKey: string | null;
@@ -21,10 +22,13 @@ const llmApiResponseSchema = z.object({
 });
 
 const evaluateInputSchema = z.object({
-	questionStatement: z.string().min(1),
-	solutionOrConcepts: z.string().min(1),
+	questionStatement: z.string().trim().min(1, "Question statement is required."),
+	solutionOrConcepts: z
+		.string()
+		.trim()
+		.min(1, "Solution or concepts must be configured before evaluation."),
 	passingThreshold: z.number().int().min(0).max(100),
-	studentAnswer: z.string().min(1)
+	studentAnswer: z.string().trim().min(1, "Student answer cannot be empty.")
 });
 
 const evaluateOutputSchema = z.object({
@@ -33,43 +37,16 @@ const evaluateOutputSchema = z.object({
 });
 
 export const textEvaluationRouter = t.router({
-	/**
-	 * Evaluates a student's free-text answer using the configured LLM.
-	 *
-	 * The router is responsible for:
-	 *  1. Fetching the LLM config from the database
-	 *  2. Building the system prompt (security-sensitive: must never leak the solution)
-	 *  3. Building the user message with all evaluation context
-	 *  4. Calling the LLM with temperature 0
-	 *  5. Parsing and validating the structured JSON response
-	 *  6. Returning a typed { verdict, feedback } object
-	 *
-	 * All LLM communication errors are re-thrown as TRPCErrors so the client
-	 * (component.tsx) can catch them uniformly and show the fallback message.
-	 */
 	evaluate: authProcedure
 		.input(evaluateInputSchema)
 		.output(evaluateOutputSchema)
 		.mutation(async ({ input, ctx }) => {
-			// Step 1: Fetch LLM configuration from DB
-			// Throws NOT_FOUND if no config exists — caught by component.tsx
 			const llmConfig = await fetchLlmConfig();
-
-			// Step 2: Build system prompt — evaluation-specific, never reveals solution
-			const systemPrompt = buildSystemPrompt();
-
-			// Step 3: Build the user message with all four required pieces of context
-			const userMessage = buildUserMessage(input);
-
-			// Step 4: Send to LLM and get raw response string
 			const messages: Message[] = [
-				{ role: "system", content: systemPrompt },
-				{ role: "user", content: userMessage }
+				{ role: "system", content: buildSystemPrompt() },
+				{ role: "user", content: buildUserMessage(input) }
 			];
-
 			const rawContent = await sendEvaluationRequest(messages, llmConfig);
-
-			// Step 5: Parse and validate the structured JSON the LLM returned
 			const parsed = parseLlmResponse(rawContent);
 
 			console.info("[TextEvaluationRouter] Evaluation complete", {
@@ -82,15 +59,9 @@ export const textEvaluationRouter = t.router({
 			return parsed;
 		}),
 
-	/**
-	 * Checks whether an LLM configuration exists on the platform.
-	 * Used by form.tsx (teacher editor) to decide whether to enable the AI toggle (FR-05).
-	 *
-	 * Returns { available: true } if a config row exists, { available: false } otherwise.
-	 * Never throws — a missing config is a valid state, not an error.
-	 */
 	checkLlmConfig: authProcedure.output(z.object({ available: z.boolean() })).query(async () => {
 		const config = await database.llmConfiguration.findFirst({
+			where: { isActive: true },
 			select: { serverUrl: true }
 		});
 		return { available: !!config };
@@ -98,16 +69,7 @@ export const textEvaluationRouter = t.router({
 });
 
 /**
- * Builds the system prompt for the LLM evaluator.
- *
- * Security rules encoded here:
- *  - Must NEVER reveal, hint at, paraphrase, or quote the sample solution
- *  - Feedback must only address what the student actually wrote
- *
- * Evaluation rules:
- *  - LLM decides pass/fail itself based on the threshold — we do not decide for it
- *  - Response must be pure JSON with exactly the fields { verdict, feedback }
- *  - Feedback must be in the same language as the question
+ * Static prompt, all dynamic content goes in buildUserMessage().
  */
 function buildSystemPrompt(): string {
 	return `You are a strict but fair academic evaluator for an e-learning platform.
@@ -125,7 +87,7 @@ You will receive:
 3. Choose the appropriate verdict based on the coverage and correctness of the student's answer:
    - "correct": The student fully understood and addressed the question. Coverage meets or exceeds the passing threshold.
    - "partially-correct": Meaningful understanding shown, but some important aspects are missing. Coverage is close to but just below the threshold.
-   - "partially-wrong": Some relevant knowledge shown, but significant parts incorrect.
+   - "partially-wrong": Some relevant knowledge shown, but significant parts are incorrect or missing.
    - "wrong": The answer does not address the question, is off-topic, or is too vague to evaluate.
 4. Write a short feedback (1–3 sentences) that explains your verdict.
 
@@ -137,14 +99,10 @@ You will receive:
 - You decide whether the student passes based on the passing threshold. Do NOT ask the caller to decide.
 - Respond ONLY with a single valid JSON object. No explanation, no markdown, no code fences, no preamble.
 
-## Required JSON format (respond with exactly this structure)
+## Required JSON format (respond with exactly this structure, nothing else)
 {"verdict": "<correct|partially-correct|partially-wrong|wrong>", "feedback": "<your feedback here>"}`;
 }
 
-/**
- * Builds the user-role message containing all four evaluation context pieces.
- * question text, evaluation reference, threshold, and student answer must all be present.
- */
 function buildUserMessage(input: z.infer<typeof evaluateInputSchema>): string {
 	return `## Question
 ${input.questionStatement}
@@ -159,21 +117,8 @@ ${input.passingThreshold}%
 ${input.studentAnswer}`;
 }
 
-/**
- * Sends the evaluation request to the LLM server.
- *
- * Key differences from the AI Tutor's sendChatRequest:
- *  - temperature: 0  (deterministic, reproducible results)
- *  - maxTokens: 300  (feedback is short: 1–3 sentences)
- *  - No streaming
- *
- * Throws TRPCError on any failure (timeout, HTTP error, invalid response shape).
- * The caller (evaluate procedure) propagates these to the client, which shows
- * the unified fallback message.
- */
 async function sendEvaluationRequest(messages: Message[], config: LlmConfig): Promise<string> {
 	const TIMEOUT_MS = 30_000;
-
 	const controller = new AbortController();
 	const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
@@ -188,17 +133,15 @@ async function sendEvaluationRequest(messages: Message[], config: LlmConfig): Pr
 				messages,
 				model: config.defaultModel,
 				stream: false,
-				temperature: 0, // must be 0 for evaluation
-				maxTokens: 300 // short feedback only
+				temperature: 0,
+				maxTokens: 300
 			}),
 			signal: controller.signal
 		});
 
 		clearTimeout(timeout);
 
-		if (!response.ok) {
-			throw handleHttpError(response.status);
-		}
+		if (!response.ok) throw handleHttpError(response.status);
 
 		const data = await response.json();
 		const validated = llmApiResponseSchema.safeParse(data);
@@ -216,20 +159,10 @@ async function sendEvaluationRequest(messages: Message[], config: LlmConfig): Pr
 		return validated.data.message.content;
 	} catch (error) {
 		clearTimeout(timeout);
-
-		if (error instanceof TRPCError) {
-			throw error;
-		}
-
+		if (error instanceof TRPCError) throw error;
 		if (error instanceof Error && error.name === "AbortError") {
-			console.error("[TextEvaluationRouter] LLM request timed out");
-			throw new TRPCError({
-				code: "TIMEOUT",
-				message: "LLM server request timed out"
-			});
+			throw new TRPCError({ code: "TIMEOUT", message: "LLM server request timed out" });
 		}
-
-		console.error("[TextEvaluationRouter] Unexpected error during LLM call", error);
 		throw new TRPCError({
 			code: "INTERNAL_SERVER_ERROR",
 			message: "Failed to communicate with LLM server"
@@ -238,36 +171,24 @@ async function sendEvaluationRequest(messages: Message[], config: LlmConfig): Pr
 }
 
 /**
- * Parses the raw string returned by the LLM into a typed { verdict, feedback } object.
- *
- * The LLM is instructed to return pure JSON, but it may still occasionally wrap
- * the response in markdown code fences despite the instruction. We strip those
- * before parsing.
- *
- * Throws INTERNAL_SERVER_ERROR if the JSON is unparseable or the verdict is not
- * one of the four allowed values. The evaluate procedure propagates this to the
- * client.
+ * Some LLMs wrap JSON in markdown fences despite being told not to.
+ * We strip those before parsing, then validate against the output schema.
  */
 function parseLlmResponse(rawContent: string): z.infer<typeof evaluateOutputSchema> {
-	// Strip possible markdown code fences the LLM may add despite instructions
 	const cleaned = rawContent.replace(/```json|```/gi, "").trim();
 
 	let parsed: unknown;
 	try {
 		parsed = JSON.parse(cleaned);
 	} catch {
-		console.error("[TextEvaluationRouter] LLM response is not valid JSON", {
-			rawContent
-		});
+		console.error("[TextEvaluationRouter] LLM response is not valid JSON", { rawContent });
 		throw new TRPCError({
 			code: "INTERNAL_SERVER_ERROR",
 			message: "LLM returned an unparseable response"
 		});
 	}
 
-	// Validate against the output schema — catches wrong verdict values, missing fields, etc.
 	const result = evaluateOutputSchema.safeParse(parsed);
-
 	if (!result.success) {
 		console.error("[TextEvaluationRouter] LLM response failed schema validation", {
 			errors: result.error.flatten(),
@@ -282,18 +203,10 @@ function parseLlmResponse(rawContent: string): z.infer<typeof evaluateOutputSche
 	return result.data;
 }
 
-/**
- * Fetches the LLM configuration from the database.
- * Throws NOT_FOUND if no configuration has been set up.
- * Same pattern as fetchLlmConfig() in ai-tutor.router.ts.
- */
 async function fetchLlmConfig(): Promise<LlmConfig> {
 	const config = await database.llmConfiguration.findFirst({
-		select: {
-			serverUrl: true,
-			apiKey: true,
-			defaultModel: true
-		}
+		where: { isActive: true },
+		select: { serverUrl: true, apiKey: true, defaultModel: true }
 	});
 
 	if (!config) {

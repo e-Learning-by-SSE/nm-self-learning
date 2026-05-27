@@ -26,5 +26,11 @@
     "Format B: Expected Concepts": "Format B: Erwartete Konzepte",
     "An algorithm is a precise step-by-step procedure used to solve a problem or process data. Examples include search algorithms, sorting methods, or calculations in computer programs.": "Ein Algorithmus ist eine genaue Schritt-für-Schritt-Anleitung zur Lösung eines Problems oder zur Verarbeitung von Daten. Beispiele hierfür sind Suchalgorithmen, Sortierverfahren oder Berechnungen in Computerprogrammen.",
     "- An algorithm is a clear, finite sequence of steps: 30%\n- Serves for systematic problem-solving: 30%\n- The order and structure of steps are important: 20%\n- Each step must be clearly defined: 20%\n": "- Ein Algorithmus ist eine klare, endliche Abfolge von Schritten: 30 %\n- Dient der systematischen Problemlösung: 30 %\n- Die Reihenfolge und Struktur der Schritte sind wichtig: 20 %\n- Jeder Schritt muss klar definiert sein: 20 %\n",
-    "Solution": "Lösung"
+    "Solution": "Lösung",
+    "Correct": "Richtig",
+    "Partially Correct": "Teilweise richtig",
+    "Partially Wrong": "Überwiegend falsch",
+    "Wrong": "Falsch",
+    "Answer": "Antwort",
+    "AI evaluation is not available (answer accepted as correct without AI evaluation)": "KI-Bewertung nicht verfügbar (Antwort ohne KI-Bewertung als korrekt akzeptiert)"
 }

@@ -1,76 +1,48 @@
 /**
- * Client-side evaluation helper for open (text) questions.
+ * EVALUATION_FUNCTIONS["text"] in the registry is synchronous, but AI evaluation
+ * requires a network call. We bridge this by splitting into two functions:
  *
- * ARCHITECTURE:
- * -------------
- * Prompt building, LLM communication, response parsing, and temperature
- * settings all live in text-evaluation.router.ts (server-side).
- * This file has ONE responsibility: translate the router's typed response
- * into a TextEvaluation object the quiz engine understands, and handle
- * every failure case so the component never has to.
+ * - evaluateTextAnswerWithAI(): async, called directly from component.tsx after
+ *   the placeholder is detected. Overwrites the placeholder with the real result.
  *
- * SYNC vs ASYNC SPLIT:
- *   EVALUATION_FUNCTIONS["text"] in the registry is synchronous.
- *   AI evaluation is async (network call). We solve this by splitting:
+ * - evaluateTextWithoutAI(): sync, returns a default correct evaluation with feedback
+ *   explaining that AI evaluation is not available. Called from component.tsx when no
+ *   AI configuration is available.
  *
- *   1. EVALUATION_FUNCTIONS["text"] → evaluateTextLegacy()
- *      Used for old questions (no aiEvaluation config). Always returns
- *      { isCorrect: true }. The quiz engine sees this immediately.
- *
- *   2. evaluateTextAnswerWithAI() → called from component.tsx
- *      For questions WITH aiEvaluation config. The component detects the
- *      sync placeholder, calls this function, and overwrites the evaluation
- *      once the async result arrives. A spinner is shown in between.
+ * - evaluateTextSync(): synchronous, returns a placeholder if AI evaluation is configured,
+ *   or a default correct evaluation if not. Called from the registry and sets the initial state.
  */
 
-import {
-	TextEvaluation,
-	TextQuestion,
-	TextVerdict,
-	TextEvaluateRouterInput,
-	TextEvaluateRouterOutput
-} from "./schema";
+import { TextEvaluation, TextQuestion, TextVerdict } from "./schema";
+import { trpc } from "@self-learning/api-client";
+import { useTranslation } from "next-i18next";
 
 function verdictToIsCorrect(verdict: TextVerdict): boolean {
 	return verdict === "correct";
 }
 
-/**
- * Builds the error evaluation returned on any failure.
- * Accept the answer so quiz progress is never blocked.
- */
 function buildErrorEvaluation(): TextEvaluation {
 	return {
 		isCorrect: true,
-		verdict: "correct",
+		verdict: "partially-correct",
 		evaluationError: true
 	};
 }
 
 /**
- * Evaluates a student's text answer by calling textEvaluationRouter.evaluate.
- *
- * Called from component.tsx — NOT from EVALUATION_FUNCTIONS.
- * Never throws: all failure cases return buildErrorEvaluation().
- *
- * @param question         The full TextQuestion (contains aiEvaluation config)
- * @param studentAnswer    The raw string the student typed
- * @param callRouter       The tRPC mutateAsync function injected by component.tsx.
- *                         Accepts TextEvaluateRouterInput, returns TextEvaluateRouterOutput.
- *                         Injecting it keeps this file decoupled from the trpc client.
+ * Evaluates a student's answer using AI/LLM.
  */
 export async function evaluateTextAnswerWithAI(
 	question: TextQuestion,
-	studentAnswer: string,
-	callRouter: (input: TextEvaluateRouterInput) => Promise<TextEvaluateRouterOutput>
+	studentAnswer: string
 ): Promise<TextEvaluation> {
-	// Guard: should never happen if the component checks aiEvaluation first
-	if (!question.aiEvaluation) {
-		return buildErrorEvaluation();
+	if (!question.aiEvaluation || !question.aiEvaluation.solutionOrConcepts.trim()) {
+		return evaluateTextWithoutAI();
 	}
+	const { mutateAsync: evaluateViaRouter } = trpc.textEvaluation.evaluate.useMutation();
 
 	try {
-		const result = await callRouter({
+		const result = await evaluateViaRouter({
 			questionStatement: question.statement,
 			solutionOrConcepts: question.aiEvaluation.solutionOrConcepts,
 			passingThreshold: question.aiEvaluation.passingThreshold,
@@ -89,11 +61,33 @@ export async function evaluateTextAnswerWithAI(
 }
 
 /**
- * Synchronous evaluation for old questions without aiEvaluation config.
- * Used by EVALUATION_FUNCTIONS["text"] in question-type-registry.tsx.
- * FR-17: existing questions continue working exactly as before.
+ * Evaluate Student's asnwer without AI by marking it true with static feedback
  */
-export function evaluateTextLegacy(): TextEvaluation {
+export function evaluateTextWithoutAI(): TextEvaluation {
+	const { t } = useTranslation("feature-question-types");
+	return {
+		isCorrect: true,
+		verdict: "partially-correct",
+		feedback: t(
+			"AI evaluation is not available (answer accepted as correct without AI evaluation)"
+		)
+	};
+}
+
+/**
+ * Synchronous evaluation called by EVALUATION_FUNCTIONS["text"] in the registry.
+ */
+export function evaluateTextSync(question: TextQuestion): TextEvaluation {
+	const hasAiConfig = !!question.aiEvaluation?.solutionOrConcepts?.trim();
+
+	if (hasAiConfig) {
+		return {
+			isCorrect: false,
+			verdict: "wrong",
+			pending: true
+		};
+	}
+
 	return {
 		isCorrect: true,
 		verdict: "correct"

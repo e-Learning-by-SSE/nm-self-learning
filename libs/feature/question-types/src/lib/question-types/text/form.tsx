@@ -1,21 +1,22 @@
 /**
- * Teacher-facing form for configuring an open (text) question with optional AI evaluation.
- *
- * Example box showing both supported input formats
+ * AI evaluation is enabled or disabled by whether the teacher fills in
+ * solutionOrConcepts — empty means disabled. The fields are only rendered
+ * when an LLM config exists on the platform; otherwise the section is hidden.
  */
 
 import { LabeledField } from "@self-learning/ui/forms";
 import { trpc } from "@self-learning/api-client";
 import { Controller, useFormContext } from "react-hook-form";
+import { useTranslation } from "next-i18next";
 import { QuestionTypeForm } from "../../base-question";
 import { TextQuestion } from "./schema";
-import { useTranslation } from "next-i18next";
 
 type TextForm = QuestionTypeForm<TextQuestion>;
 
-export default function TextForm({ question, index }: { question: TextQuestion; index: number }) {
+export default function TextForm({ index }: { index: number }) {
 	const { t } = useTranslation("feature-question-types");
 	const { control } = useFormContext<TextForm>();
+
 	const { data: llmConfigData } = trpc.textEvaluation.checkLlmConfig.useQuery();
 	const llmAvailable = llmConfigData?.available ?? null;
 
@@ -24,17 +25,17 @@ export default function TextForm({ question, index }: { question: TextQuestion; 
 			<div className="mb-2">
 				<strong className="text-2xl">{t("Solution")}</strong>
 			</div>
+
 			{llmAvailable === true && (
 				<div className="flex flex-col gap-5 rounded-lg border border-c-border-strong bg-c-surface-3 p-5">
-					{/* Solution / Concepts textarea */}
+					{/*
+					 * No `required` rule here — an empty field means AI evaluation is
+					 * disabled, not a form error. The empty-check is done at runtime
+					 * in evaluateTextAnswerWithAI().
+					 */}
 					<Controller
 						control={control}
 						name={`quiz.questions.${index}.aiEvaluation.solutionOrConcepts`}
-						rules={{
-							required: t(
-								"Please enter either a sample solution or a list of expected concepts."
-							)
-						}}
 						render={({ field, fieldState }) => (
 							<LabeledField
 								label={t("Sample solution or expected concepts")}
@@ -52,10 +53,8 @@ export default function TextForm({ question, index }: { question: TextQuestion; 
 						)}
 					/>
 
-					{/* Show both supported formats as examples */}
 					<ExampleBox />
 
-					{/* Passing threshold number input */}
 					<Controller
 						control={control}
 						name={`quiz.questions.${index}.aiEvaluation.passingThreshold`}
@@ -90,8 +89,6 @@ export default function TextForm({ question, index }: { question: TextQuestion; 
 		</div>
 	);
 }
-
-// ─── Example Box (FR-06) ─────────────────────────────────────────────────────
 
 function ExampleBox() {
 	const { t } = useTranslation("feature-question-types");

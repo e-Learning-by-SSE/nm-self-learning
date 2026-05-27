@@ -8,11 +8,18 @@ export const textVerdictSchema = z.enum([
 	"wrong"
 ]);
 
+export const TEXT_AI_EVALUATION_PASSING_THRESHOLD_MIN = 1;
+export const TEXT_AI_EVALUATION_PASSING_THRESHOLD_MAX = 100;
+
 export type TextVerdict = z.infer<typeof textVerdictSchema>;
 
 export const aiEvaluationConfigSchema = z.object({
 	solutionOrConcepts: z.string(),
-	passingThreshold: z.number().int().min(0).max(100)
+	passingThreshold: z
+		.number()
+		.int()
+		.min(TEXT_AI_EVALUATION_PASSING_THRESHOLD_MIN)
+		.max(TEXT_AI_EVALUATION_PASSING_THRESHOLD_MAX)
 });
 
 export type AiEvaluationConfig = z.infer<typeof aiEvaluationConfigSchema>;
@@ -27,6 +34,7 @@ export type TextQuestion = z.infer<typeof textQuestionSchema>;
 export type TextEvaluation = BaseEvaluation & {
 	verdict: TextVerdict;
 	feedback?: string;
+	pending?: boolean;
 	evaluationError?: boolean;
 };
 
@@ -46,6 +54,7 @@ export interface TextEvaluateRouterInput {
 	passingThreshold: number;
 	studentAnswer: string;
 }
+
 export interface TextEvaluateRouterOutput {
 	verdict: TextVerdict;
 	feedback: string;

@@ -1,10 +1,3 @@
-// CHANGES FROM ORIGINAL:
-//   1. Import evaluateTextLegacy from text/evaluate
-//   2. Import updated Text type and textQuestionSchema (now includes aiEvaluation)
-//   3. Replace inline "text" dummy in EVALUATION_FUNCTIONS with evaluateTextLegacy
-//   4. INITIAL_QUESTION_CONFIGURATION_FUNCTIONS["text"] remains unchanged (aiEvaluation is optional/absent by default)
-// Everything else is IDENTICAL to the original file.
-
 /*
 	ALL QUESTION TYPES MUST BE REGISTERED IN THIS FILE!
 
@@ -47,9 +40,8 @@ import {
 } from "./question-types/multiple-choice/schema";
 import { evaluateProgramming } from "./question-types/programming/evaluate";
 import { Programming, programmingQuestionSchema } from "./question-types/programming/schema";
-// ↓ CHANGED: import both the type and the legacy evaluator from text/
 import { Text, textQuestionSchema } from "./question-types/text/schema";
-import { evaluateTextLegacy } from "./question-types/text/evaluate";
+import { evaluateTextSync } from "./question-types/text/evaluate";
 import { LessonLayoutProps } from "@self-learning/lesson";
 import { LanguageTree, languageTreeQuestionSchema } from "./question-types/tree/schema";
 import { evaluateLanguageTreeAnswer } from "./question-types/tree/evaluate";
@@ -115,8 +107,7 @@ export const quizContentSchema = z.discriminatedUnion("type", [
  */
 export const EVALUATION_FUNCTIONS: { [QType in QuestionType["type"]]: EvaluationFn<QType> } = {
 	"multiple-choice": evaluateMultipleChoice,
-	// ↓ CHANGED: replaced inline dummy with the proper legacy evaluator
-	text: (_question, _answer) => evaluateTextLegacy(),
+	text: (_question, _answer) => evaluateTextSync(_question),
 	exact: evaluateExactAnswer,
 	programming: evaluateProgramming,
 	cloze: evaluateCloze,
@@ -199,11 +190,7 @@ export const INITIAL_QUESTION_CONFIGURATION_FUNCTIONS: {
 	}),
 	text: () => ({
 		...createBaseQuestion(),
-		type: "text",
-		aiEvaluation: {
-			solutionOrConcepts: "",
-			passingThreshold: 80
-		}
+		type: "text"
 	}),
 	programming: () => ({
 		...createBaseQuestion(),
@@ -323,7 +310,7 @@ export function QuestionFormRenderer({
 	}
 
 	if (question.type === "text") {
-		return <TextForm question={question} index={index} />;
+		return <TextForm index={index} />;
 	}
 
 	if (question.type === "cloze") {
