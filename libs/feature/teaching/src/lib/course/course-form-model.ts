@@ -25,12 +25,15 @@ export const courseFormSchema = z.object({
 
 export type CourseFormModel = z.infer<typeof courseFormSchema>;
 
+export type PermissionsForCreate = NonNullable<Prisma.CourseCreateInput["permissions"]>;
+export type PermissionsForUpdate = Prisma.CourseUpdateInput["permissions"];
+
 export function mapCourseFormToInsert(
 	course: CourseFormModel,
-	courseId: string
+	courseId: string,
+	permissions: PermissionsForCreate
 ): Prisma.CourseCreateInput {
-	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors, permissions } =
-		course;
+	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors } = course;
 
 	const courseForDb: Prisma.CourseCreateInput = {
 		courseId,
@@ -43,26 +46,16 @@ export function mapCourseFormToInsert(
 		meta: createCourseMeta(course),
 		authors: { connect: authors.map(author => ({ username: author.username })) },
 		subject: subjectId ? { connect: { subjectId } } : undefined,
-		permissions: {
-			create: permissions.map(p => ({
-				accessLevel: p.accessLevel,
-				groupId: p.groupId
-			}))
-		}
+		permissions: permissions
 	};
 
 	return courseForDb;
 }
 
-export type CoursePermission = {
-	groupId: number;
-	accessLevel: AccessLevel;
-};
-
 export function mapCourseFormToUpdate(
 	course: CourseFormModel,
 	courseId: string,
-	perms: CoursePermission[]
+	permissions: PermissionsForUpdate
 ): Prisma.CourseUpdateInput {
 	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors } = course;
 
@@ -77,18 +70,7 @@ export function mapCourseFormToUpdate(
 		meta: createCourseMeta(course),
 		authors: { set: authors.map(author => ({ username: author.username })) },
 		subject: subjectId ? { connect: { subjectId } } : undefined,
-		permissions: {
-			deleteMany: { groupId: { notIn: perms.map(p => p.groupId) } },
-			upsert: perms.map(p => ({
-				where: {
-					groupId_courseId: { courseId, groupId: p.groupId }
-				},
-				create: p,
-				update: {
-					accessLevel: p.accessLevel
-				}
-			}))
-		}
+		permissions
 	};
 
 	return courseForDb;

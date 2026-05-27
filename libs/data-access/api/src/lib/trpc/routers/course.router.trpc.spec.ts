@@ -4,9 +4,15 @@ import { courseRouter } from "./course.router";
 import { t } from "../trpc";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { TRPCError } from "@trpc/server";
-import { canCreate, canDeleteBySlug, canEditBySlug } from "../../permissions/course.utils";
+import { getCourseResource } from "../../permissions/course.utils";
 import { AccessLevel } from "@prisma/client";
-import { getEffectiveAccess } from "../../permissions/permission.service";
+import {
+	canCreate,
+	canDelete,
+	hasEffectiveAccess,
+	preparePermissionsForCreate,
+	preparePermissionsForUpdate
+} from "../../permissions/permission.service";
 
 jest.mock("@self-learning/database", () => ({
 	__esModule: true,
@@ -24,13 +30,16 @@ jest.mock("@self-learning/database", () => ({
 }));
 
 jest.mock("../../permissions/course.utils", () => ({
-	canEditBySlug: jest.fn(),
-	canCreate: jest.fn(),
-	canDeleteBySlug: jest.fn()
+	getCourseResource: jest.fn()
 }));
 
 jest.mock("../../permissions/permission.service", () => ({
-	getEffectiveAccess: jest.fn()
+	canCreate: jest.fn(),
+	canDelete: jest.fn(),
+	canEdit: jest.fn(),
+	hasEffectiveAccess: jest.fn(),
+	preparePermissionsForCreate: jest.fn(),
+	preparePermissionsForUpdate: jest.fn()
 }));
 
 function prepare(user: Partial<UserFromSession>) {
@@ -79,6 +88,7 @@ describe("tRPC API of Course Router", () => {
 			const { caller } = prepare({});
 
 			(canCreate as jest.Mock).mockResolvedValue(false);
+			(preparePermissionsForCreate as jest.Mock).mockReturnValue(undefined);
 
 			await expect(caller.create(defaultCourse.course)).rejects.toMatchObject({
 				code: "FORBIDDEN",
@@ -102,9 +112,15 @@ describe("tRPC API of Course Router", () => {
 			const { caller } = prepare({});
 
 			(canCreate as jest.Mock).mockResolvedValue(true);
+			(preparePermissionsForCreate as jest.Mock).mockReturnValue({
+				create: defaultCourse.course.permissions.map(p => ({
+					accessLevel: p.accessLevel,
+					groupId: p.groupId
+				}))
+			});
 			(database.course.create as jest.Mock).mockResolvedValue({
-				lessonId: "test-lessonId",
-				slug: "test-lesson"
+				courseId: "test-course",
+				slug: "test-course"
 			});
 
 			await expect(caller.create(defaultCourse.course)).resolves.toBeDefined();
@@ -115,6 +131,12 @@ describe("tRPC API of Course Router", () => {
 			const { caller } = prepare({});
 
 			(canCreate as jest.Mock).mockResolvedValue(true);
+			(preparePermissionsForCreate as jest.Mock).mockRejectedValue(
+				new TRPCError({
+					code: "BAD_REQUEST",
+					message: "requires at least one FULL permission."
+				})
+			);
 			await expect(
 				caller.create({
 					...defaultCourse.course,
@@ -153,10 +175,8 @@ describe("tRPC API of Course Router", () => {
 		it("should throw FORBIDDEN if user has no access", async () => {
 			const { caller } = prepare({});
 
-			(getEffectiveAccess as jest.Mock).mockResolvedValue({
-				accessLevel: null,
-				groupId: null
-			});
+			(preparePermissionsForUpdate as jest.Mock).mockResolvedValue(undefined); // no change
+			(hasEffectiveAccess as jest.Mock).mockResolvedValue(false); // no access for EDIT
 
 			await expect(caller.edit(defaultCourse)).rejects.toMatchObject({
 				code: "FORBIDDEN"
@@ -167,10 +187,8 @@ describe("tRPC API of Course Router", () => {
 		it("should throw FORBIDDEN if user has insufficient access", async () => {
 			const { caller } = prepare({});
 
-			(getEffectiveAccess as jest.Mock).mockResolvedValue({
-				accessLevel: AccessLevel.VIEW,
-				groupId: 1
-			});
+			(preparePermissionsForUpdate as jest.Mock).mockResolvedValue(undefined); // no change
+			(hasEffectiveAccess as jest.Mock).mockResolvedValue(false); // no access for EDIT
 
 			await expect(caller.edit(defaultCourse)).rejects.toMatchObject({
 				code: "FORBIDDEN"
@@ -181,10 +199,12 @@ describe("tRPC API of Course Router", () => {
 		it("should throw BAD_REQUEST if course has not FULL permission assigned to it", async () => {
 			const { caller } = prepare({});
 
-			(getEffectiveAccess as jest.Mock).mockResolvedValue({
-				accessLevel: AccessLevel.EDIT,
-				groupId: 1
-			});
+			(preparePermissionsForUpdate as jest.Mock).mockRejectedValue(
+				new TRPCError({
+					code: "BAD_REQUEST",
+					message: "requires at least one FULL permission."
+				})
+			);
 
 			await expect(
 				caller.edit({
@@ -206,17 +226,15 @@ describe("tRPC API of Course Router", () => {
 		it("should throw FORBIDDEN if permissions were modified and user has not FULL access", async () => {
 			const { caller } = prepare({});
 
-			(getEffectiveAccess as jest.Mock).mockResolvedValue({
-				accessLevel: AccessLevel.EDIT,
-				groupId: 1
-			});
-			(database.permission.findMany as jest.Mock).mockResolvedValue([
-				{ groupId: 1, accessLevel: AccessLevel.VIEW }
-			]);
+			(preparePermissionsForUpdate as jest.Mock).mockResolvedValue({
+				deleteMany: { groupId: { notIn: [1] } },
+				upsert: []
+			}); // permissions changed
+			(hasEffectiveAccess as jest.Mock).mockResolvedValue(false); // no FULL access
 
 			await expect(caller.edit(defaultCourse)).rejects.toMatchObject({
 				code: "FORBIDDEN",
-				message: "Insufficient permissions to update permissions"
+				message: "Insufficient permissions"
 			} as Partial<TRPCError>);
 			expect(database.course.update).not.toHaveBeenCalled();
 		});
@@ -224,13 +242,8 @@ describe("tRPC API of Course Router", () => {
 		it("should update course if user has EDIT access and permissions are unchanged", async () => {
 			const { caller } = prepare({});
 
-			(getEffectiveAccess as jest.Mock).mockResolvedValue({
-				accessLevel: AccessLevel.EDIT,
-				groupId: 1
-			});
-			(database.permission.findMany as jest.Mock).mockResolvedValue([
-				{ groupId: 1, accessLevel: AccessLevel.FULL }
-			]);
+			(preparePermissionsForUpdate as jest.Mock).mockResolvedValue(undefined); // no change
+			(hasEffectiveAccess as jest.Mock).mockResolvedValue(true); // has EDIT access
 
 			await expect(caller.edit(defaultCourse)).resolves.toBeDefined();
 			expect(database.course.update).toHaveBeenCalledTimes(1);
@@ -239,13 +252,11 @@ describe("tRPC API of Course Router", () => {
 		it("should update course if user has FULL access and permissions were modified", async () => {
 			const { caller } = prepare({});
 
-			(getEffectiveAccess as jest.Mock).mockResolvedValue({
-				accessLevel: AccessLevel.FULL,
-				groupId: 1
-			});
-			(database.permission.findMany as jest.Mock).mockResolvedValue([
-				{ groupId: 1, accessLevel: AccessLevel.EDIT }
-			]);
+			(preparePermissionsForUpdate as jest.Mock).mockResolvedValue({
+				deleteMany: { groupId: { notIn: [1] } },
+				upsert: []
+			}); // permissions changed
+			(hasEffectiveAccess as jest.Mock).mockResolvedValue(true); // has FULL access
 
 			await expect(caller.edit(defaultCourse)).resolves.toBeDefined();
 			expect(database.course.update).toHaveBeenCalledTimes(1);
@@ -288,7 +299,8 @@ describe("tRPC API of Course Router", () => {
 			});
 			const input = { slug: "test-course" };
 
-			(canDeleteBySlug as jest.Mock).mockResolvedValue(true);
+			(getCourseResource as jest.Mock).mockResolvedValue({ courseId: "test-course" });
+			(canDelete as jest.Mock).mockResolvedValue(true);
 
 			// Course exists; user is author -> Success
 			await expect(caller.deleteCourse(input)).resolves.not.toThrow();
@@ -299,7 +311,8 @@ describe("tRPC API of Course Router", () => {
 			const { caller, ctx } = prepare({});
 			const input = { slug: "test-course" };
 
-			(canDeleteBySlug as jest.Mock).mockResolvedValue(false);
+			(getCourseResource as jest.Mock).mockResolvedValue({ courseId: "test-course" });
+			(canDelete as jest.Mock).mockResolvedValue(false);
 			// Course exists; user is foreign author -> TRPCError
 			await expect(caller.deleteCourse(input)).rejects.toThrow(TRPCError);
 			expect(database.course.delete).not.toHaveBeenCalled();
@@ -312,11 +325,19 @@ describe("tRPC API of Course Router", () => {
 			});
 			const input = { slug: "non-existing-course" };
 
-			(canDeleteBySlug as jest.Mock).mockResolvedValue(true);
+			(getCourseResource as jest.Mock).mockRejectedValue(
+				new TRPCError({
+					code: "NOT_FOUND",
+					message: "Course not found"
+				})
+			);
+			(canDelete as jest.Mock).mockResolvedValue(true);
 
-			// Course doesn't exists; user is author -> TRPCError
-			await expect(caller.deleteCourse(input)).rejects.toThrow(TRPCError);
-			assertWhereClause(input.slug, ctx.user.name);
+			// Course doesn't exist; getCourseResource drives NOT_FOUND
+			await expect(caller.deleteCourse(input)).rejects.toMatchObject({
+				code: "NOT_FOUND"
+			});
+			expect(database.course.delete).not.toHaveBeenCalled();
 		});
 	});
 });
