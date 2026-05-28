@@ -19,7 +19,8 @@
                 "tsConfig": "apps/worker-service/tsconfig.app.json",
 				"assets": ["apps/worker-service/src/assets"],
 				"generatePackageJson": true,
-				"esbuildOptions": {
+				"external": ["onnxruntime-node"],
+                "esbuildOptions": {
 					"sourcemap": true,
 					"outExtension": {
 						".js": ".js"
