@@ -2,11 +2,7 @@ import { adminProcedure, authProcedure, t } from "../trpc";
 import { database } from "@self-learning/database";
 import { TRPCError } from "@trpc/server";
 import { secondsToMilliseconds } from "date-fns";
-import {
-	llmConfigSchema,
-	llmConfigSchemaForFetching,
-	openAiModelList
-} from "@self-learning/types";
+import { llmConfigSchema, llmConfigSchemaForFetching, openAiModelList } from "@self-learning/types";
 
 /**
  * Fetches available models from the LLM server.
