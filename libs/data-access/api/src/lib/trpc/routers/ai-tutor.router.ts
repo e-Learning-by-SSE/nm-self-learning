@@ -99,16 +99,20 @@ async function fetchLlmConfig(): Promise<LlmConfig> {
  * Send a chat request to the LLM server with the given messages and configuration.
  *
  * This function handles the communication with the LLM server, including error handling and response validation.
- * It sends a POST request to the LLM server's /chat endpoint with the conversation history and configuration parameters.
- * The response is expected to contain a message object with the assistant's reply, which is then validated against a schema.
+ * It sends a POST request to the LLM server's /chat/completions endpoint with the conversation history and configuration parameters.
+ * The response is expected to contain a choices array with the assistant's reply, which is then validated against a schema.
  * If the response format is invalid or if there are any communication errors, appropriate TRPC errors are thrown.
  */
 
 const llmApiResponseSchema = z.object({
-	message: z.object({
-		content: z.string(),
-		role: z.string()
-	})
+	choices: z.array(
+		z.object({
+			message: z.object({
+				content: z.string(),
+				role: z.string()
+			})
+		})
+	)
 });
 
 interface LlmConfig {
@@ -123,7 +127,7 @@ async function sendChatRequest(messages: Message[], config: LlmConfig): Promise<
 		const controller = new AbortController();
 		const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-		const response = await fetch(`${config.serverUrl}/chat`, {
+		const response = await fetch(`${config.serverUrl}/chat/completions`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -132,10 +136,9 @@ async function sendChatRequest(messages: Message[], config: LlmConfig): Promise<
 			body: JSON.stringify({
 				messages,
 				model: config.defaultModel,
-				stream: false,
 				temperature: 0.7,
-				maxTokens: 2000,
-				timeout: TIMEOUT_MS
+				max_tokens: 2000,
+				stream: false
 			}),
 			signal: controller.signal
 		});
@@ -158,7 +161,7 @@ async function sendChatRequest(messages: Message[], config: LlmConfig): Promise<
 				message: "Invalid response format from LLM server"
 			});
 		}
-		return validated.data.message.content;
+		return validated.data.choices[0]?.message?.content ?? "";
 	} catch (error) {
 		if (error instanceof TRPCError) {
 			throw error;
