@@ -14,8 +14,8 @@ module.exports = {
 	globals: {},
 	moduleNameMapper: {
 		// for Jest (transform imports)
-		// @xenova/transformers is ESM-only and causes a __dirname redeclaration error
-		"^@xenova/transformers$": "libs/util/testing/src/lib/xenova-transformers.mock.ts"
+		// @huggingface/transformers is ESM-only and causes a __dirname redeclaration error
+		"^@huggingface/transformers$": "libs/util/testing/src/lib/transformers.mock.ts"
 	},
 	/* TODO: Update to latest Jest snapshotFormat
 	 * By default Nx has kept the older style of Jest Snapshot formats

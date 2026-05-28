@@ -1,10 +1,10 @@
-// Mock the heavy @xenova/transformers pipeline before importing the service so
+// Mock the heavy @huggingface/transformers pipeline before importing the service so
 // the real model is never loaded during tests.
-jest.mock("@xenova/transformers", () => ({
+jest.mock("@huggingface/transformers", () => ({
 	pipeline: jest.fn()
 }));
 
-import { pipeline } from "@xenova/transformers";
+import { pipeline } from "@huggingface/transformers";
 import { embeddingService, EmbeddingService } from "./embedding";
 
 // ---------------------------------------------------------------------------
@@ -63,7 +63,7 @@ describe("EmbeddingService", () => {
 			expect(pipeline).toHaveBeenCalledWith(
 				"feature-extraction",
 				expect.any(String),
-				expect.objectContaining({ quantized: expect.any(Boolean) })
+				expect.objectContaining({ dtype: expect.stringMatching("q8") })
 			);
 		});
 

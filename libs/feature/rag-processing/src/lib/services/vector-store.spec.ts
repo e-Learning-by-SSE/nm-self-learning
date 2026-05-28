@@ -1,5 +1,5 @@
-// Mock the heavy @xenova/transformers pipeline before any service import.
-jest.mock("@xenova/transformers", () => ({
+// Mock the heavy @huggingface/transformers pipeline before any service import.
+jest.mock("@huggingface/transformers", () => ({
 	pipeline: jest.fn()
 }));
 
