@@ -161,7 +161,18 @@ async function sendChatRequest(messages: Message[], config: LlmConfig): Promise<
 				message: "Invalid response format from LLM server"
 			});
 		}
-		return validated.data.choices[0]?.message?.content ?? "";
+
+		const firstChoice = validated.data.choices[0];
+
+		if (!firstChoice || typeof firstChoice.message?.content !== "string") {
+			console.error("[LlmClientService] LLM response missing first choice content");
+			throw new TRPCError({
+				code: "INTERNAL_SERVER_ERROR",
+				message: "Invalid response format from LLM server"
+			});
+		}
+
+		return firstChoice.message.content;
 	} catch (error) {
 		if (error instanceof TRPCError) {
 			throw error;
