@@ -133,11 +133,11 @@ export default function LlmConfigPage() {
 									{...register("serverUrl")}
 									required
 									className="textfield w-full"
-									placeholder="https://example.com/ollama/api"
+									placeholder="https://example.com/v1"
 								/>
 								<p className="text-sm text-c-text-muted mt-1">
 									{t("Base URL of your LLM server", {
-										url: "https://example.com/ollama/api"
+										url: "https://example.com/v1"
 									})}
 								</p>
 							</div>
