@@ -20,7 +20,7 @@
 				"assets": ["apps/worker-service/src/assets"],
 				"generatePackageJson": true,
 				"external": ["onnxruntime-node"],
-                "esbuildOptions": {
+				"esbuildOptions": {
 					"sourcemap": true,
 					"outExtension": {
 						".js": ".js"
