@@ -27,7 +27,7 @@ interface LlmConfig {
  * The response is expected to contain a choices array with the assistant's reply, which is then validated against a schema.
  * If the response format is invalid or if there are any communication errors, appropriate TRPC errors are thrown.
  *
- * @param messages Conversation with chat bot, containing of system prompt, user requests, and LLM responses.
+ * @param messages Conversation with chat bot, containing system prompt, user requests, and LLM responses.
  * @param config LLM server configuration including URL, API key, and default model.
  * @param options Additional options to customize the LLM request (e.g., temperature, max_tokens).
  * @returns The content of the LLM's response message. May contain a <think> tag, which is not intended to be rendered on (or even sent to) the client.
