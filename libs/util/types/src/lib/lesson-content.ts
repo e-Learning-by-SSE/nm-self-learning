@@ -40,7 +40,13 @@ export const pdfSchema = z.object({
 export const iframeSchema = z.object({
 	type: z.literal("iframe"),
 	value: z.object({
-		url: z.string()
+		url: z.string(),
+		// Optional fields for uploaded content (HTML, Zip, H5P)
+		// Only present when content was uploaded, not for external URLs
+		source: z.enum(["url", "html", "zip", "h5p"]).optional(),
+		entryPoint: z.string().optional(),       // e.g. "index.html" for zip
+		originalFileName: z.string().optional(), // e.g. "nano-demo.zip" for display
+		folderObjectName: z.string().optional()  // MinIO folder prefix for cleanup
 	}),
 	meta: z.object({
 		estimatedDuration: z.number()
