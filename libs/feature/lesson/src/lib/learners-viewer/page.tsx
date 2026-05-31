@@ -175,7 +175,7 @@ function ContentDisplayItem({
 				</div>
 			);
 		default:
-			return <ContentInfo error text={`unsupported content type: ${c?.type}`} />;
+			return <ContentInfo error text={`unsupported content type: ${(c as LessonContentType)?.type}`} />;
 	}
 }
 
