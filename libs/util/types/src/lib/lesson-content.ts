@@ -72,6 +72,7 @@ export function getContentTypeDisplayName(contentType: LessonContentMediaType): 
 export type Video = z.infer<typeof videoSchema>;
 export type Article = z.infer<typeof articleSchema>;
 export type PDF = z.infer<typeof pdfSchema>;
+export type IFrame = z.infer<typeof iframeSchema>;
 
 export type LessonContentType = z.infer<typeof lessonContentSchema>;
 export type LessonContentMediaType = LessonContentType["type"];

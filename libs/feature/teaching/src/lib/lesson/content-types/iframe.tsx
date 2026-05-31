@@ -1,11 +1,11 @@
-import { getContentTypeDisplayName, PDF } from "@self-learning/types";
+import { getContentTypeDisplayName, IFrame } from "@self-learning/types";
 import { SectionCard } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 
 export function IFrameInput({ index }: { index: number }) {
-	const { control } = useFormContext<{ content: PDF[] }>();
-	const { update } = useFieldArray<{ content: PDF[] }>({
+	const { control } = useFormContext<{ content: IFrame[] }>();
+	const { update } = useFieldArray<{ content: IFrame[] }>({
 		name: "content"
 	});
 
@@ -29,7 +29,7 @@ export function IFrameInput({ index }: { index: number }) {
 							value={url}
 							onChange={e =>
 								update(index, {
-									type: "pdf",
+									type: "iframe",
 									value: { url: e.target.value },
 									meta: {
 										estimatedDuration: 0
@@ -40,7 +40,13 @@ export function IFrameInput({ index }: { index: number }) {
 					</LabeledField>
 				</div>
 				{url && url.length > 0 ? (
-					<iframe src={url} title="iframe" width="100%" height="500px"></iframe>
+					<iframe
+						src={url}
+						title="iframe"
+						width="100%"
+						height="500px"
+						sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+					></iframe>
 				) : (
 					<div className="h-[500px] w-full bg-c-surface-3"></div>
 				)}

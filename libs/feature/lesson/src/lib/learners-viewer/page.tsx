@@ -161,6 +161,19 @@ function ContentDisplayItem({
 					</Button>
 				</div>
 			);
+		case "iframe":
+			if (!c.value.url) return <ContentInfo error text="Fehlende URL." />;
+			return (
+				<div className="flex flex-col w-full">
+					<iframe
+						key={c.value.url}
+						src={c.value.url}
+						title="HTML5 Viewer"
+						sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+						className="w-full h-[75vh] border border-light-border rounded"
+					/>
+				</div>
+			);
 		default:
 			return <ContentInfo error text={`unsupported content type: ${c?.type}`} />;
 	}
