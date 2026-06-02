@@ -1,21 +1,23 @@
 import { database } from "@self-learning/database";
-import { AccessLevel, Group, GroupRole, User } from "@prisma/client";
+import { AccessLevel, Group, GroupRole, Prisma, User } from "@prisma/client";
+import { add } from "date-fns";
+import { UserFromSession } from "../trpc/context";
+import { TRPCError } from "@trpc/server";
 import {
 	MembershipInput,
 	PermissionInput,
 	ResourceAccess,
 	ResourceInput,
-	ResourceInputSchema
-} from "./permission.types";
-import {
+	ResourceInputSchema,
 	greaterAccessLevel,
 	greaterOrEqAccessLevel,
-	greaterOrEqGroupRole
-} from "./permission.utils";
-import { add } from "date-fns";
-import { UserFromSession } from "../trpc/context";
-import { TRPCError } from "@trpc/server";
-import { ResourcePermissionsFormType } from "@self-learning/types";
+	greaterOrEqGroupRole,
+	ResourcePermissionsFormType
+} from "@self-learning/types";
+
+export function getActiveMembershipWhere(userId: string): Prisma.MemberWhereInput {
+	return { userId, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] };
+}
 
 /**
  * Readme
@@ -187,7 +189,6 @@ export async function createResourceAccess(params: PermissionInput) {
  * @returns the best access level + groupId via which access is given, or null level if no access
  */
 export async function getResourceAccess(userId: string, input: ResourceInput) {
-	const date = new Date();
 	// validate input (as it is used in where clause)
 	const validation = ResourceInputSchema.safeParse(input);
 	if (!validation.success) {
@@ -204,10 +205,7 @@ export async function getResourceAccess(userId: string, input: ResourceInput) {
 			...input,
 			group: {
 				members: {
-					some: {
-						userId: userId,
-						OR: [{ expiresAt: null }, { expiresAt: { gt: date } }]
-					}
+					some: getActiveMembershipWhere(userId)
 				}
 			}
 		},
@@ -247,10 +245,7 @@ export async function hasResourceAccessBatch(userId: string, checks: ResourceAcc
 			],
 			group: {
 				members: {
-					some: {
-						userId: userId,
-						OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }]
-					}
+					some: getActiveMembershipWhere(userId)
 				}
 			}
 		}
@@ -464,7 +459,7 @@ export async function createGroupAccess(
  */
 export async function getGroupRole(groupId: number, userId: string) {
 	const access = await database.member.findFirst({
-		where: { userId, groupId, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
+		where: { ...getActiveMembershipWhere(userId), groupId },
 		select: { role: true }
 	});
 	return access?.role ?? null;

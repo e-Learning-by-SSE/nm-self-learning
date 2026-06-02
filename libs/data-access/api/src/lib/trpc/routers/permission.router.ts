@@ -2,16 +2,20 @@ import { database } from "@self-learning/database";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
-import { AccessLevel, Group, GroupRole, Member, Permission, Prisma, User } from "@prisma/client";
+import { AccessLevel, Group, GroupRole, Member, Permission, Prisma } from "@prisma/client";
 import { paginate, Paginated, paginationSchema } from "@self-learning/util/common";
-import { GroupFormSchema, ResourceAccessFormType } from "@self-learning/types";
 import {
-	GroupRoleEnum,
+	GroupFormSchema,
+	ResourceAccessFormType,
+	ResourceSearchInputSchema,
 	ResourceAccess,
 	ResourceAccessSchema,
+	ResourceInputSchema,
 	ResourceInput,
-	ResourceInputSchema
-} from "../../permissions/permission.types";
+	greaterAccessLevel,
+	greaterGroupRole,
+	GroupRoleEnum
+} from "@self-learning/types";
 import {
 	createGroupAccess,
 	createResourceAccess,
@@ -24,14 +28,16 @@ import {
 	hasResourceAccessBatch,
 	testGroupCircularParent
 } from "../../permissions/permission.service";
-import { anyTrue, greaterAccessLevel, greaterGroupRole } from "../../permissions/permission.utils";
+import { anyTrue } from "../../permissions/permission.utils";
+import { searchMyResources, searchAllResources } from "../../permissions/resource-search.service";
 
 function getResourceKey(resource: ResourceInput): string {
-	if ("courseId" in resource) return `c:${resource.courseId}`;
-	if ("lessonId" in resource) return `l:${resource.lessonId}`;
-	if ("specializationId" in resource) return `sp:${resource.specializationId}`;
-	if ("subjectId" in resource) return `sb:${resource.subjectId}`;
-	throw new Error("Invalid resource input");
+	if (resource.courseId) return `course-${resource.courseId}`;
+	if (resource.lessonId) return `lesson-${resource.lessonId}`;
+	if (resource.specializationId) return `specialization-${resource.specializationId}`;
+	if (resource.subjectId) return `subject-${resource.subjectId}`;
+
+	throw new Error("Invalid resource input: No valid ID provided");
 }
 
 export function stripFormResourceAccess(data: ResourceAccessFormType): ResourceAccess {
@@ -46,6 +52,12 @@ export function stripFormResourceAccess(data: ResourceAccessFormType): ResourceA
 }
 
 export const permissionRouter = t.router({
+	searchResources: t.procedure.input(ResourceSearchInputSchema).query(async ({ input }) => {
+		return searchAllResources(input);
+	}),
+	getMyResources: authProcedure.input(ResourceSearchInputSchema).query(async ({ input, ctx }) => {
+		return searchMyResources(ctx.user.id, input);
+	}),
 	// Can be done by "parent" group admins or website admins
 	createGroup: authProcedure
 		.input(GroupFormSchema.omit({ id: true }))
@@ -218,21 +230,21 @@ export const permissionRouter = t.router({
 			where: { groupId: id }
 		});
 		// compute diffs - deletions and additions/updates
-		const diffs = new Map(perms.map(p => [getResourceKey(p), p]));
+		const incomingMap = new Map(perms.map(p => [getResourceKey(p), p]));
 		for (const existingPerm of existingPerms) {
 			const existing = ResourceAccessSchema.parse(existingPerm);
 			const key = getResourceKey(existing);
-			const diff = diffs.get(key);
-			if (!diff) {
-				diffs.set(key, existing);
-			} else if (diff.accessLevel === existing.accessLevel) {
-				diffs.delete(key);
+			const incoming = incomingMap.get(key);
+			if (!incoming) {
+				incomingMap.set(key, existing); // add deleted cases to check
+			} else if (incoming.accessLevel === existing.accessLevel) {
+				incomingMap.delete(key); // ignore non-changed
 			}
 		}
 		// check permission - must have full access at parent or be admin (only if permissions have changed)
-		if (diffs.size > 0) {
+		if (incomingMap.size > 0) {
 			// to change resource permission must have FULL access to each
-			const checks = Array.from(diffs.values()).map(p => {
+			const checks = Array.from(incomingMap.values()).map(p => {
 				return { ...p, accessLevel: AccessLevel.FULL };
 			});
 			const hasAccess =
