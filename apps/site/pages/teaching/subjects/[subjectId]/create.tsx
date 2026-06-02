@@ -16,6 +16,7 @@ import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { useRouter } from "next/router";
 import { FormProvider, useForm } from "react-hook-form";
 import { withTranslations } from "@self-learning/api";
+import { GroupAccessEditor } from "libs/feature/teaching/src/lib/group/forms/group-form";
 
 export default function SpecializationPage() {
 	useRequiredSession();
@@ -48,7 +49,9 @@ export default function SpecializationPage() {
 		<SpecializationEditor
 			onSubmit={onSubmit}
 			initialSpecialization={{
+				permissions: [],
 				specializationId: "",
+				subjectId: "",
 				title: "",
 				slug: "",
 				subtitle: "",
@@ -71,6 +74,8 @@ export function SpecializationEditor({
 		defaultValues: initialSpecialization
 	});
 
+	const isNew = initialSpecialization.specializationId === "";
+
 	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
 	const cardImgUrl = form.watch("cardImgUrl");
 	const imgUrlBanner = form.watch("imgUrlBanner");
@@ -88,25 +93,18 @@ export function SpecializationEditor({
 						<>
 							<div>
 								<span className="font-semibold text-c-primary">
-									Spezialisierung{" "}
-									{initialSpecialization.specializationId === ""
-										? "erstellen"
-										: "bearbeiten"}
+									Spezialisierung {isNew ? "erstellen" : "bearbeiten"}
 								</span>
 
 								<h1 className="text-2xl">
-									{initialSpecialization.specializationId === ""
-										? "Neue Spezialisierung"
-										: initialSpecialization.title}
+									{isNew ? "Neue Spezialisierung" : initialSpecialization.title}
 								</h1>
 							</div>
 
 							<OpenAsJsonButton form={form} validationSchema={specializationSchema} />
 
 							<button className="btn-primary w-full" type="submit">
-								{initialSpecialization.specializationId === ""
-									? "Erstellen"
-									: "Speichern"}
+								{isNew ? "Erstellen" : "Speichern"}
 							</button>
 
 							<Form.SidebarSection>
@@ -163,6 +161,10 @@ export function SpecializationEditor({
 										</FieldHint>
 									</LabeledField>
 								</div>
+								<GroupAccessEditor
+									subtitle="Gruppen, die auf diese Spezialisierung zugreifen können"
+									doUseDefaultGroup={isNew}
+								/>
 							</Form.SidebarSection>
 						</>
 					}

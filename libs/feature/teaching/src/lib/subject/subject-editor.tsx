@@ -13,6 +13,7 @@ import { SidebarEditorLayout } from "@self-learning/ui/layouts";
 import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { FormProvider, useForm } from "react-hook-form";
 import { Trans, useTranslation } from "next-i18next";
+import { GroupAccessEditor } from "../group/forms/group-form";
 
 export function SubjectEditor({
 	initialSubject,
@@ -25,6 +26,8 @@ export function SubjectEditor({
 		resolver: zodResolver(subjectSchema),
 		defaultValues: initialSubject
 	});
+
+	const isNew = initialSubject.subjectId === "";
 
 	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
 	const cardImgUrl = form.watch("cardImgUrl");
@@ -45,24 +48,18 @@ export function SubjectEditor({
 						<>
 							<div>
 								<span className="font-semibold text-c-primary">
-									{initialSubject.subjectId === ""
-										? t("Create Topic")
-										: t("Edit Topic")}
+									{isNew ? t("Create Topic") : t("Edit Topic")}
 								</span>
 
 								<h1 className="text-2xl">
-									{initialSubject.subjectId === ""
-										? t("New Topic")
-										: initialSubject.title}
+									{isNew ? t("New Topic") : initialSubject.title}
 								</h1>
 							</div>
 
 							<OpenAsJsonButton form={form} validationSchema={subjectSchema} />
 
 							<button className="btn-primary w-full" type="submit">
-								{initialSubject.subjectId === ""
-									? t_common("create")
-									: t_common("save")}
+								{isNew ? t_common("create") : t_common("save")}
 							</button>
 
 							<Form.SidebarSection>
@@ -126,6 +123,11 @@ export function SubjectEditor({
 										<FieldHint>{t("Description of the topic")}</FieldHint>
 									</LabeledField>
 								</div>
+
+								<GroupAccessEditor
+									subtitle="Gruppen, die auf diesen Kurs zugreifen können"
+									doUseDefaultGroup={isNew}
+								/>
 							</Form.SidebarSection>
 						</>
 					}
