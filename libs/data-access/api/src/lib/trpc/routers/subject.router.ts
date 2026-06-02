@@ -31,6 +31,17 @@ export const subjectRouter = t.router({
 				title: true,
 				subtitle: true,
 				cardImgUrl: true,
+				permissions: {
+					select: {
+						accessLevel: true,
+						group: {
+							select: {
+								id: true,
+								name: true
+							}
+						}
+					}
+				},
 				_count: { select: { courses: true, specializations: true } }
 			}
 		});
@@ -58,16 +69,18 @@ export const subjectRouter = t.router({
 				},
 				specializations: {
 					orderBy: { title: "asc" },
-					include: {
-						specializationAdmin: {
-							orderBy: { author: { displayName: "asc" } },
+					select: {
+						specializationId: true,
+						title: true,
+						subtitle: true,
+						cardImgUrl: true,
+						permissions: {
 							select: {
-								author: {
+								accessLevel: true,
+								group: {
 									select: {
-										username: true,
-										slug: true,
-										displayName: true,
-										imgUrl: true
+										id: true,
+										name: true
 									}
 								}
 							}
@@ -114,38 +127,5 @@ export const subjectRouter = t.router({
 				permissions
 			}
 		});
-	}),
-	setSpecializationPermissions: authProcedure
-		.input(
-			z.object({
-				subjectId: z.string(),
-				/** `{ [specializationId]: { [username]: boolean } }` */
-				specMap: z.record(z.string(), z.record(z.string(), z.boolean()))
-			})
-		)
-		.mutation(async ({ input, ctx }) => {
-			if (!(await canEdit(ctx.user, input))) {
-				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
-			}
-
-			const specIds = Object.keys(input.specMap);
-
-			const assigned: { username: string; specializationId: string }[] = specIds.flatMap(
-				specializationId =>
-					Object.entries(input.specMap[specializationId])
-						.filter(([_username, isChecked]) => isChecked)
-						.map(([username]) => ({ username, specializationId }))
-			);
-
-			await database.$transaction([
-				database.specializationAdmin.deleteMany({
-					where: {
-						OR: specIds.map(specializationId => ({ specializationId }))
-					}
-				}),
-				database.specializationAdmin.createMany({
-					data: assigned
-				})
-			]);
-		})
+	})
 });

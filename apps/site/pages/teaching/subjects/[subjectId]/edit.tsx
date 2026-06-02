@@ -40,24 +40,6 @@ export const getServerSideProps = withTranslations(
 							}
 						}
 					}
-				},
-				specializations: {
-					orderBy: { title: "asc" },
-					include: {
-						specializationAdmin: {
-							orderBy: { author: { displayName: "asc" } },
-							select: {
-								author: {
-									select: {
-										username: true,
-										slug: true,
-										displayName: true,
-										imgUrl: true
-									}
-								}
-							}
-						}
-					}
 				}
 			}
 		});

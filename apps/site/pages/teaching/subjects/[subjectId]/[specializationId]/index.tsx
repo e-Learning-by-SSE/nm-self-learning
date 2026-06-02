@@ -1,6 +1,7 @@
 import { LinkIcon, PencilIcon, PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { SearchCourseDialog } from "@self-learning/admin";
 import { trpc } from "@self-learning/api-client";
+import { ResourceGroupChips } from "@self-learning/teaching";
 import {
 	ImageOrPlaceholder,
 	I18N_NAMESPACE as NS_UI_COMMON,
@@ -140,6 +141,7 @@ export default function SpecializationManagementPage() {
 			</TopicHeader>
 
 			<CenteredContainerXL>
+				<ResourceGroupChips permissions={specialization.permissions} />
 				<SectionHeader
 					title="Kurse"
 					subtitle="Kurse, die dieser Spezialisierung zugeordnet sind."
@@ -236,4 +238,6 @@ export default function SpecializationManagementPage() {
 	return;
 }
 
-export const getServerSideProps = withTranslations(Array.from(new Set(["common", ...NS_UI_COMMON])));
+export const getServerSideProps = withTranslations(
+	Array.from(new Set(["common", ...NS_UI_COMMON]))
+);

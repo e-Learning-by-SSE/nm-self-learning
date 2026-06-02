@@ -1,22 +1,15 @@
-import { PencilIcon, PlusIcon, UserGroupIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
-import { SpecializationPermissionsDialog } from "@self-learning/teaching";
-import {
-	AuthorChip,
-	ImageOrPlaceholder,
-	LoadingBox,
-	SectionHeader
-} from "@self-learning/ui/common";
+import { ResourceGroupChips } from "@self-learning/teaching";
+import { ImageOrPlaceholder, LoadingBox, SectionHeader } from "@self-learning/ui/common";
 import { CenteredContainerXL, TopicHeader, Unauthorized } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useState } from "react";
 import { withTranslations } from "@self-learning/api";
 
 export default function SubjectManagementPage() {
 	const router = useRouter();
 
-	const [openPermissionDialog, setOpenPermissionDialog] = useState(false);
 	const { data: subject, isLoading } = trpc.subject.getForEdit.useQuery(
 		{ subjectId: router.query.subjectId as string },
 		{ enabled: !!router.query.subjectId }
@@ -25,14 +18,13 @@ export default function SubjectManagementPage() {
 	if (isLoading) {
 		return <LoadingBox />;
 	}
-	// TODO everybody can do it for now
-	// typescript is angry if I ignore !subject
+
 	if (!subject) {
 		return (
 			<Unauthorized>
 				<ul className="list-inside list-disc">
 					<li>Administratoren</li>
-					<li>Administratoren für Fachbereich ({router.query.subjectId})</li>
+					<li>Administratoren für Fachgebiet ({router.query.subjectId})</li>
 				</ul>
 			</Unauthorized>
 		);
@@ -57,6 +49,8 @@ export default function SubjectManagementPage() {
 			</TopicHeader>
 
 			<CenteredContainerXL>
+				<ResourceGroupChips permissions={subject.permissions} />
+
 				<SectionHeader
 					title="Spezialisierungen"
 					subtitle="Spezialisierungen dieses Fachgebiets."
@@ -70,23 +64,6 @@ export default function SubjectManagementPage() {
 						<PlusIcon className="icon h-5" />
 						<span>Spezialisierung erstellen</span>
 					</Link>
-
-					<button
-						className="btn-stroked h-fit"
-						type="button"
-						onClick={() => setOpenPermissionDialog(true)}
-					>
-						<UserGroupIcon className="icon h-5" />
-						<span>Autoren verwalten</span>
-					</button>
-
-					{openPermissionDialog && (
-						<SpecializationPermissionsDialog
-							subjectId={subject.subjectId}
-							specializations={subject.specializations}
-							onClose={() => setOpenPermissionDialog(false)}
-						/>
-					)}
 				</div>
 
 				<ul className="flex flex-col gap-4">
@@ -110,16 +87,7 @@ export default function SubjectManagementPage() {
 									<p className="text-sm text-c-text-muted">{spec.subtitle}</p>
 								</div>
 
-								<ul className="flex flex-wrap gap-4">
-									{spec.specializationAdmin.map(admin => (
-										<AuthorChip
-											imgUrl={admin.author.imgUrl}
-											displayName={admin.author.displayName}
-											key={admin.author.username}
-											slug={admin.author.slug}
-										/>
-									))}
-								</ul>
+								<ResourceGroupChips permissions={spec.permissions} />
 							</div>
 						</li>
 					))}
@@ -127,8 +95,6 @@ export default function SubjectManagementPage() {
 			</CenteredContainerXL>
 		</div>
 	);
-
-	return;
 }
 
 export const getServerSideProps = withTranslations(["common"]);
