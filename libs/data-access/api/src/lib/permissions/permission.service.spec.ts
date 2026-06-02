@@ -71,7 +71,7 @@ describe("permission.service", () => {
 				{ accessLevel: AccessLevel.FULL, groupId: 3 }
 			]);
 
-			const res = await getResourceAccess({ userId: "u1", courseId: "c1" });
+			const res = await getResourceAccess("u1", { courseId: "c1" });
 
 			expect(res).toEqual({ accessLevel: AccessLevel.FULL, groupId: 3 });
 		});
@@ -79,7 +79,7 @@ describe("permission.service", () => {
 		it("returns null access level and groupId when user has no permissions", async () => {
 			(database.permission.findMany as jest.Mock).mockResolvedValue([]);
 
-			const res = await getResourceAccess({ userId: "u1", courseId: "c1" });
+			const res = await getResourceAccess("u1", { courseId: "c1" });
 
 			expect(res).toEqual({ accessLevel: null, groupId: null });
 		});
@@ -132,8 +132,7 @@ describe("permission.service", () => {
 				{ accessLevel: AccessLevel.FULL, groupId: 1 }
 			]);
 
-			const ok = await hasResourceAccess({
-				userId: "u1",
+			const ok = await hasResourceAccess("u1", {
 				courseId: "c1",
 				accessLevel: AccessLevel.FULL
 			});
@@ -145,8 +144,7 @@ describe("permission.service", () => {
 				{ accessLevel: AccessLevel.FULL, groupId: 1 }
 			]);
 
-			const ok = await hasResourceAccess({
-				userId: "u1",
+			const ok = await hasResourceAccess("u1", {
 				courseId: "c1",
 				accessLevel: AccessLevel.EDIT
 			});
@@ -158,8 +156,7 @@ describe("permission.service", () => {
 				{ accessLevel: AccessLevel.VIEW, groupId: 1 }
 			]);
 
-			const ok = await hasResourceAccess({
-				userId: "u1",
+			const ok = await hasResourceAccess("u1", {
 				courseId: "c1",
 				accessLevel: AccessLevel.EDIT
 			});
@@ -169,8 +166,7 @@ describe("permission.service", () => {
 		it("returns false when user has no access", async () => {
 			(database.permission.findMany as jest.Mock).mockResolvedValue([]);
 
-			const ok = await hasResourceAccess({
-				userId: "u1",
+			const ok = await hasResourceAccess("u1", {
 				courseId: "c1",
 				accessLevel: AccessLevel.VIEW
 			});
@@ -567,12 +563,28 @@ describe("permission.service", () => {
 									none: { accessLevel: AccessLevel.FULL, NOT: { groupId: 1 } }
 								}
 							}
+						},
+						{
+							specialization: {
+								permissions: {
+									none: { accessLevel: AccessLevel.FULL, NOT: { groupId: 1 } }
+								}
+							}
+						},
+						{
+							subject: {
+								permissions: {
+									none: { accessLevel: AccessLevel.FULL, NOT: { groupId: 1 } }
+								}
+							}
 						}
 					]
 				},
 				select: {
-					course: { select: { title: true, courseId: true } },
-					lesson: { select: { title: true, lessonId: true } }
+					course: { select: { title: true, courseId: true, slug: true } },
+					lesson: { select: { title: true, lessonId: true, slug: true } },
+					specialization: { select: { title: true, specializationId: true, slug: true } },
+					subject: { select: { title: true, subjectId: true, slug: true } }
 				}
 			});
 			expect(result).toEqual(mockResult);

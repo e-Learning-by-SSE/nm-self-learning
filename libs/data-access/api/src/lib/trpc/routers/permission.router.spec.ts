@@ -1270,11 +1270,7 @@ describe("permissionRouter", () => {
 
 			const res = await caller.getResourceAccess({ courseId: "c1" });
 
-			expect(getResourceAccess).toHaveBeenCalledWith({
-				userId: "user-id",
-				courseId: "c1",
-				lessonId: undefined
-			});
+			expect(getResourceAccess).toHaveBeenCalledWith("user-id", { courseId: "c1" });
 			expect(res).toEqual([{ courseId: "c1", accessLevel: AccessLevel.VIEW }]);
 		});
 	});
@@ -1288,10 +1284,8 @@ describe("permissionRouter", () => {
 				courseId: "c2",
 				accessLevel: AccessLevel.EDIT
 			});
-			expect(hasResourceAccess).toHaveBeenCalledWith({
+			expect(hasResourceAccess).toHaveBeenCalledWith("user-id", {
 				courseId: "c2",
-				lessonId: undefined,
-				userId: "user-id",
 				accessLevel: AccessLevel.EDIT
 			});
 			expect(res).toEqual(true);
@@ -1503,8 +1497,7 @@ describe("permissionRouter", () => {
 				groupId: 3,
 				permission: { courseId: "c3", accessLevel: AccessLevel.FULL }
 			});
-			expect(hasResourceAccess).toHaveBeenCalledWith({
-				userId: ctx.user.id,
+			expect(hasResourceAccess).toHaveBeenCalledWith(ctx.user.id, {
 				courseId: "c3",
 				accessLevel: AccessLevel.FULL
 			});
@@ -1617,7 +1610,6 @@ describe("permissionRouter", () => {
 			expect(database.permission.count).toHaveBeenCalledWith({
 				where: {
 					accessLevel: AccessLevel.FULL,
-					lessonId: undefined,
 					courseId: "c1"
 				}
 			});
@@ -1875,8 +1867,7 @@ describe("permissionRouter", () => {
 				message: "Insufficient permissions"
 			} as Partial<TRPCError>);
 
-			expect(hasResourceAccess).toHaveBeenCalledWith({
-				userId: "user-id",
+			expect(hasResourceAccess).toHaveBeenCalledWith("user-id", {
 				courseId: "c1",
 				accessLevel: AccessLevel.FULL
 			});
@@ -1904,8 +1895,7 @@ describe("permissionRouter", () => {
 
 			const result = await caller.getEffectiveResourceAccesses({ lessonId: "l1" });
 
-			expect(hasResourceAccess).toHaveBeenCalledWith({
-				userId: "user-id",
+			expect(hasResourceAccess).toHaveBeenCalledWith("user-id", {
 				lessonId: "l1",
 				accessLevel: AccessLevel.FULL
 			});
@@ -2024,10 +2014,10 @@ describe("permissionRouter", () => {
 
 			const result = await caller.getEffectiveResourceAccesses({ courseId: "c1" });
 
-			expect(greaterAccessLevel).toHaveBeenCalledWith(AccessLevel.VIEW, AccessLevel.EDIT);
+			expect(greaterAccessLevel).toHaveBeenCalledWith(AccessLevel.EDIT, AccessLevel.VIEW);
 			expect(result).toHaveLength(1);
 			expect(result[0].accessLevel).toBe(AccessLevel.EDIT);
-			expect(result[0].id).toBe("p1"); // first one
+			expect(result[0].id).toBe("p2"); // first one
 		});
 
 		it("aggregates for multiple users", async () => {

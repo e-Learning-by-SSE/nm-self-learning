@@ -4,15 +4,18 @@ import { authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import { AccessLevel, Group, GroupRole, Member, Permission, Prisma, User } from "@prisma/client";
 import { paginate, Paginated, paginationSchema } from "@self-learning/util/common";
-import { GroupFormSchema } from "@self-learning/types";
+import { GroupFormSchema, ResourceAccessFormType } from "@self-learning/types";
 import {
 	GroupRoleEnum,
+	ResourceAccess,
 	ResourceAccessSchema,
+	ResourceInput,
 	ResourceInputSchema
 } from "../../permissions/permission.types";
 import {
 	createGroupAccess,
 	createResourceAccess,
+	getEffectiveResourceAccesses,
 	getGroup,
 	getResourceAccess,
 	getSingleOwnedResources,
@@ -22,6 +25,25 @@ import {
 	testGroupCircularParent
 } from "../../permissions/permission.service";
 import { anyTrue, greaterAccessLevel, greaterGroupRole } from "../../permissions/permission.utils";
+
+function getResourceKey(resource: ResourceInput): string {
+	if ("courseId" in resource) return `c:${resource.courseId}`;
+	if ("lessonId" in resource) return `l:${resource.lessonId}`;
+	if ("specializationId" in resource) return `sp:${resource.specializationId}`;
+	if ("subjectId" in resource) return `sb:${resource.subjectId}`;
+	throw new Error("Invalid resource input");
+}
+
+export function stripFormResourceAccess(data: ResourceAccessFormType): ResourceAccess {
+	const { accessLevel, course, lesson, specialization, subject } = data;
+
+	if (course) return { accessLevel, courseId: course.courseId };
+	if (lesson) return { accessLevel, lessonId: lesson.lessonId };
+	if (specialization) return { accessLevel, specializationId: specialization.specializationId };
+	if (subject) return { accessLevel, subjectId: subject.subjectId };
+
+	throw new Error("Invalid resource input");
+}
 
 export const permissionRouter = t.router({
 	// Can be done by "parent" group admins or website admins
@@ -43,14 +65,8 @@ export const permissionRouter = t.router({
 					adminCount++;
 				}
 			}
-			// map permissions to drop display data
-			const perms = permissions.map(p => {
-				return ResourceAccessSchema.parse({
-					accessLevel: p.accessLevel,
-					courseId: p.course?.courseId,
-					lessonId: p.lesson?.lessonId
-				});
-			});
+			// drop display data
+			const perms = permissions.map(stripFormResourceAccess);
 			// for every resource must have FULL access level
 			const checks = perms.map(p => {
 				return { ...p, accessLevel: AccessLevel.FULL };
@@ -196,30 +212,21 @@ export const permissionRouter = t.router({
 
 		// 2. Permissions
 		// map permissions to drop display data
-		const perms = permissions.map(p => {
-			return ResourceAccessSchema.parse({
-				accessLevel: p.accessLevel,
-				courseId: p.course?.courseId,
-				lessonId: p.lesson?.lessonId
-			});
-		});
+		const perms = permissions.map(stripFormResourceAccess);
 		// fetch existing permissions to determine diffs
 		const existingPerms = await database.permission.findMany({
-			where: { groupId: id },
-			select: { lessonId: true, courseId: true, accessLevel: true }
+			where: { groupId: id }
 		});
 		// compute diffs - deletions and additions/updates
-		const toKey = (p: { lessonId?: string | null; courseId?: string | null }) =>
-			p.courseId ? `c:${p.courseId}` : `l:${p.lessonId}`;
-		const diffs = new Map(perms.map(p => [toKey(p), p]));
-		for (const p of existingPerms) {
-			const d = diffs.get(toKey(p));
-			if (!d) {
-				// was removed - add to diffs
-				diffs.set(toKey(p), ResourceAccessSchema.parse(p));
-			} else if (d.accessLevel === p.accessLevel) {
-				// was unchanged - ignore
-				diffs.delete(toKey(p));
+		const diffs = new Map(perms.map(p => [getResourceKey(p), p]));
+		for (const existingPerm of existingPerms) {
+			const existing = ResourceAccessSchema.parse(existingPerm);
+			const key = getResourceKey(existing);
+			const diff = diffs.get(key);
+			if (!diff) {
+				diffs.set(key, existing);
+			} else if (diff.accessLevel === existing.accessLevel) {
+				diffs.delete(key);
 			}
 		}
 		// check permission - must have full access at parent or be admin (only if permissions have changed)
@@ -239,6 +246,11 @@ export const permissionRouter = t.router({
 			}
 		}
 
+		const activeCourseIds = perms.flatMap(p => p.courseId ?? []);
+		const activeLessonIds = perms.flatMap(p => p.lessonId ?? []);
+		const activeSpecIds = perms.flatMap(p => p.specializationId ?? []);
+		const activeSubjectIds = perms.flatMap(p => p.subjectId ?? []);
+
 		// 4. run update
 		return await database.group.update({
 			where: { id },
@@ -249,52 +261,76 @@ export const permissionRouter = t.router({
 				permissions: {
 					deleteMany: {
 						OR: [
-							// delete course permissions not present in new request
 							{
-								courseId: {
-									notIn: perms
-										.filter(p => p.courseId)
-										.map(p => p.courseId) as string[]
-								},
-								lessonId: null
+								courseId: { notIn: activeCourseIds },
+								lessonId: null,
+								specializationId: null,
+								subjectId: null
 							},
-							// delete lesson permissions not present in new request
 							{
-								lessonId: {
-									notIn: perms
-										.filter(p => p.lessonId)
-										.map(p => p.lessonId) as string[]
-								},
-								courseId: null
+								lessonId: { notIn: activeLessonIds },
+								courseId: null,
+								specializationId: null,
+								subjectId: null
+							},
+							{
+								specializationId: { notIn: activeSpecIds },
+								courseId: null,
+								lessonId: null,
+								subjectId: null
+							},
+							{
+								subjectId: { notIn: activeSubjectIds },
+								courseId: null,
+								lessonId: null,
+								specializationId: null
 							}
 						]
 					},
-					upsert: perms.map(p =>
-						p.courseId
-							? {
-									where: {
-										groupId_courseId: { groupId: id, courseId: p.courseId }
-									},
-									update: { accessLevel: p.accessLevel },
-									create: {
-										courseId: p.courseId,
-										accessLevel: p.accessLevel
+					upsert: perms.map(p => {
+						if ("courseId" in p && p.courseId) {
+							return {
+								where: { groupId_courseId: { groupId: id, courseId: p.courseId } },
+								update: { accessLevel: p.accessLevel },
+								create: { courseId: p.courseId, accessLevel: p.accessLevel }
+							};
+						}
+						if ("lessonId" in p && p.lessonId) {
+							return {
+								where: { groupId_lessonId: { groupId: id, lessonId: p.lessonId } },
+								update: { accessLevel: p.accessLevel },
+								create: { lessonId: p.lessonId, accessLevel: p.accessLevel }
+							};
+						}
+						if ("specializationId" in p && p.specializationId) {
+							return {
+								where: {
+									groupId_specializationId: {
+										groupId: id,
+										specializationId: p.specializationId
 									}
+								},
+								update: { accessLevel: p.accessLevel },
+								create: {
+									specializationId: p.specializationId,
+									accessLevel: p.accessLevel
 								}
-							: {
-									where: {
-										groupId_lessonId: {
-											groupId: id,
-											lessonId: p.lessonId as string
-										}
-									},
-									update: { accessLevel: p.accessLevel },
-									create: {
-										lessonId: p.lessonId as string,
-										accessLevel: p.accessLevel
-									}
-								}
-					)
+							};
+						}
+						if ("subjectId" in p && p.subjectId) {
+							return {
+								where: {
+									groupId_subjectId: { groupId: id, subjectId: p.subjectId }
+								},
+								update: { accessLevel: p.accessLevel },
+								create: { subjectId: p.subjectId, accessLevel: p.accessLevel }
+							};
+						}
+						throw new TRPCError({
+							code: "BAD_REQUEST",
+							message: "Invalid resource input for permission"
+						});
+					})
 				},
 				members: {
 					deleteMany: { userId: { notIn: membs.map(m => m.userId) } },
@@ -373,11 +409,12 @@ export const permissionRouter = t.router({
 						memberSet.set(m.userId, m);
 					}
 				});
-				group.permissions.forEach(p => {
-					const o = permissionSet.get(p.id);
-					// to prevent access loss, always use highest access level
-					if (!o || greaterAccessLevel(p.accessLevel, o.accessLevel)) {
-						permissionSet.set(p.id, p);
+				group.permissions.forEach(permission => {
+					const safe = ResourceAccessSchema.parse(permission);
+					const key = getResourceKey(safe);
+					const existing = permissionSet.get(key);
+					if (!existing || greaterAccessLevel(safe.accessLevel, existing.accessLevel)) {
+						permissionSet.set(key, permission);
 					}
 				});
 				group.children.forEach(c => {
@@ -404,7 +441,11 @@ export const permissionRouter = t.router({
 						accessLevel: v.accessLevel,
 						isPublic: v.isPublic,
 						lesson: v.lessonId ? { connect: { lessonId: v.lessonId } } : undefined,
-						course: v.courseId ? { connect: { courseId: v.courseId } } : undefined
+						course: v.courseId ? { connect: { courseId: v.courseId } } : undefined,
+						specialization: v.specializationId
+							? { connect: { specializationId: v.specializationId } }
+							: undefined,
+						subject: v.subjectId ? { connect: { subjectId: v.subjectId } } : undefined
 					}))
 				},
 				children: {
@@ -437,19 +478,6 @@ export const permissionRouter = t.router({
 				});
 			}
 		}),
-	getSingleOwnedResources: authProcedure
-		.input(z.object({ groupId: z.number() }))
-		.query(async ({ ctx, input }) => {
-			const userId = ctx.user.id;
-			const { groupId } = input;
-			// check if user is group admin or website admin
-			const isOwner =
-				ctx.user.role === "ADMIN" || (await hasGroupRole(groupId, userId, GroupRole.ADMIN));
-			if (!isOwner) {
-				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
-			}
-			return await getSingleOwnedResources(groupId);
-		}),
 	deleteGroup: authProcedure
 		.input(z.object({ groupId: z.number() }))
 		.mutation(async ({ input, ctx }) => {
@@ -472,90 +500,38 @@ export const permissionRouter = t.router({
 			// delete group
 			return await database.group.delete({ where: { id: groupId } });
 		}),
+	getSingleOwnedResources: authProcedure
+		.input(z.object({ groupId: z.number() }))
+		.query(async ({ ctx, input }) => {
+			const userId = ctx.user.id;
+			const { groupId } = input;
+			// check if user is group admin or website admin
+			const isOwner =
+				ctx.user.role === "ADMIN" || (await hasGroupRole(groupId, userId, GroupRole.ADMIN));
+			if (!isOwner) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
+			return await getSingleOwnedResources(groupId);
+		}),
 	getResourceAccess: authProcedure.input(ResourceInputSchema).query(async ({ input, ctx }) => {
 		const userId = ctx.user.id;
-		return await getResourceAccess({ userId, ...input });
+		return await getResourceAccess(userId, input);
 	}),
 	hasResourceAccess: authProcedure.input(ResourceAccessSchema).query(async ({ input, ctx }) => {
 		if (ctx.user.role === "ADMIN") return true;
-		return await hasResourceAccess({ userId: ctx.user.id, ...input });
+		return await hasResourceAccess(ctx.user.id, input);
 	}),
 	getEffectiveResourceAccesses: authProcedure
 		.input(ResourceInputSchema)
 		.query(async ({ input, ctx }) => {
-			const userId = ctx.user.id;
-
 			// must have FULL access to see all permissions
 			const hasFullAccess =
 				ctx.user.role === "ADMIN" ||
-				(await hasResourceAccess({ userId, ...input, accessLevel: AccessLevel.FULL }));
+				(await hasResourceAccess(ctx.user.id, { ...input, accessLevel: AccessLevel.FULL }));
 			if (!hasFullAccess) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 			}
-			const permissions = await database.permission.findMany({
-				where: {
-					...input // e.g., filter by courseId, lessonId, groupId, etc.
-				},
-				select: {
-					accessLevel: true,
-					id: true,
-					group: {
-						select: {
-							name: true,
-							slug: true,
-							id: true,
-							members: {
-								where: {
-									OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }]
-								},
-								select: {
-									user: {
-										select: {
-											displayName: true,
-											image: true,
-											name: true,
-											id: true
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			});
-			// Aggregate best access level per user
-			const users: Record<
-				string,
-				{
-					id: string;
-					accessLevel: AccessLevel;
-					user: Partial<User>;
-					group: Partial<Group> & { members: Partial<User>[] };
-				}
-			> = {};
-
-			// Compute best access per resource
-			for (const perm of permissions) {
-				for (const member of perm.group.members) {
-					if (!users[member.user.id]) {
-						users[member.user.id] = {
-							accessLevel: perm.accessLevel,
-							id: perm.id,
-							user: member.user,
-							group: {
-								id: perm.group.id,
-								name: perm.group.name,
-								slug: perm.group.slug,
-								members: perm.group.members.map(m => m.user)
-							}
-						};
-					}
-					if (greaterAccessLevel(users[member.user.id].accessLevel, perm.accessLevel)) {
-						users[member.user.id].accessLevel = perm.accessLevel;
-					}
-				}
-			}
-			return Object.values(users);
+			return getEffectiveResourceAccesses(input);
 		}),
 	// Done by group admins or website admins
 	grantGroupAccess: authProcedure
@@ -592,11 +568,13 @@ export const permissionRouter = t.router({
 		.input(z.object({ groupId: z.number(), permission: ResourceAccessSchema }))
 		.mutation(async ({ input, ctx }) => {
 			const { groupId, permission } = input;
-			const userId = ctx.user.id; // grantor
 			// check if grantor has FULL access level to that resource (does not need to be in the group)
 			const hasAccess =
 				ctx.user.role === "ADMIN" ||
-				(await hasResourceAccess({ userId, ...permission, accessLevel: AccessLevel.FULL }));
+				(await hasResourceAccess(ctx.user.id, {
+					...permission,
+					accessLevel: AccessLevel.FULL
+				}));
 			if (!hasAccess) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 			}
@@ -609,11 +587,9 @@ export const permissionRouter = t.router({
 		.input(z.object({ permissionId: z.string() }))
 		.mutation(async ({ input, ctx }) => {
 			const { permissionId } = input;
-			const userId = ctx.user.id;
 			// fetch permission which is revoked
 			const perm = await database.permission.findUnique({
-				where: { id: permissionId },
-				select: { groupId: true, courseId: true, lessonId: true, accessLevel: true }
+				where: { id: permissionId }
 			});
 			if (!perm) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Invalid permission" });
@@ -624,8 +600,8 @@ export const permissionRouter = t.router({
 			let hasAccess = ctx.user.role === "ADMIN";
 			if (!hasAccess) {
 				hasAccess = await anyTrue([
-					() => hasGroupRole(perm.groupId, userId, GroupRole.ADMIN),
-					() => hasResourceAccess({ userId, accessLevel: AccessLevel.FULL, ...data })
+					() => hasGroupRole(perm.groupId, ctx.user.id, GroupRole.ADMIN),
+					() => hasResourceAccess(ctx.user.id, { accessLevel: AccessLevel.FULL, ...data })
 				]);
 			}
 			if (!hasAccess) {
@@ -636,8 +612,7 @@ export const permissionRouter = t.router({
 				const fullAccesses = await database.permission.count({
 					where: {
 						accessLevel: AccessLevel.FULL,
-						lessonId: perm.lessonId,
-						courseId: perm.courseId
+						...data
 					}
 				});
 				if (fullAccesses <= 1) {
