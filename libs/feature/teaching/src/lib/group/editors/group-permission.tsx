@@ -1,20 +1,16 @@
-import { ArrowsUpDownIcon, TrashIcon, UsersIcon } from "@heroicons/react/24/solid";
+import { TrashIcon, UsersIcon } from "@heroicons/react/24/solid";
 import { AccessLevel } from "@prisma/client";
-import { CourseSearchEntry, SearchCourseDialog } from "@self-learning/admin";
+import { CourseSearchEntry } from "@self-learning/admin";
 import { ResourceAccessFormSchema, ResourceAccessFormType } from "@self-learning/types";
 import {
-	Chip,
-	DialogActions,
-	IconTextButton,
 	IconOnlyButton,
 	OnDialogCloseFn,
 	Table,
 	TableDataColumn,
 	TableHeaderColumn
 } from "@self-learning/ui/common";
-import { LabeledField } from "@self-learning/ui/forms";
-import { useState } from "react";
 import { GenericCombobox } from "./group-members";
+import { ResourceAccess } from "@self-learning/api";
 
 export type PermissionFormModel = ResourceAccessFormType;
 
@@ -24,26 +20,56 @@ const accessLevelOptions = [
 	{ label: "View", value: AccessLevel.VIEW }
 ];
 
-function normalizePermission(perm: ResourceAccessFormType) {
-	return perm.course
-		? {
-				type: "Kurs",
-				title: perm.course.title,
-				id: "c:" + perm.course.courseId,
-				slug: perm.course.slug,
-				accessLevel: perm.accessLevel
-			}
-		: {
-				type: "Lerninhalt",
-				title: perm.lesson.title,
-				id: "l:" + perm.lesson.lessonId,
-				slug: perm.lesson.slug,
-				accessLevel: perm.accessLevel
-			};
+// TODO copied from permissions.router.ts
+export function getPermKey(perm: ResourceAccessFormType) {
+	return normalizePermission(perm).id;
 }
 
-export function getPermKey(perm: ResourceAccessFormType) {
-	return perm.course ? "c:" + perm.course.courseId : "l:" + perm.lesson.lessonId;
+export function normalizePermission(perm: ResourceAccessFormType) {
+	if (perm.course)
+		return {
+			type: "Kurs",
+			title: perm.course.title,
+			id: "c:" + perm.course.courseId,
+			slug: perm.course.slug,
+			accessLevel: perm.accessLevel
+		};
+	if (perm.lesson)
+		return {
+			type: "Lerninhalt",
+			title: perm.lesson.title,
+			id: "l:" + perm.lesson.lessonId,
+			slug: perm.lesson.slug,
+			accessLevel: perm.accessLevel
+		};
+	if (perm.specialization)
+		return {
+			type: "Spezialisierung",
+			title: perm.specialization.title,
+			id: "sp:" + perm.specialization.specializationId,
+			slug: perm.specialization.slug,
+			accessLevel: perm.accessLevel
+		};
+	if (perm.subject)
+		return {
+			type: "Fachgebiet",
+			title: perm.subject.title,
+			id: "sb:" + perm.subject.subjectId,
+			slug: perm.subject.slug,
+			accessLevel: perm.accessLevel
+		};
+	throw Error("Invalid permission");
+}
+
+export function stripFormResourceAccess(data: ResourceAccessFormType): ResourceAccess {
+	const { accessLevel, course, lesson, specialization, subject } = data;
+
+	if (course) return { accessLevel, courseId: course.courseId };
+	if (lesson) return { accessLevel, lessonId: lesson.lessonId };
+	if (specialization) return { accessLevel, specializationId: specialization.specializationId };
+	if (subject) return { accessLevel, subjectId: subject.subjectId };
+
+	throw new Error("Invalid resource input");
 }
 
 /**
@@ -96,84 +122,86 @@ export function usePermissionEditor(
  * @param onSubmit - Optional callback for submit button; if provided, adds dialog action buttons
  * @param canEditResource - If true, shows resource selector; if false, resource is read-only
  */
-export function GroupPermissionEditor({
-	permission,
-	onChange,
-	onSubmit,
-	canEditResource
-}: {
-	permission?: PermissionFormModel;
-	onChange: OnDialogCloseFn<PermissionFormModel>;
-	onSubmit?: OnDialogCloseFn<PermissionFormModel>;
-	canEditResource?: boolean;
-}) {
-	const [searchCourseActive, setSearchCourseActive] = useState(false);
+// export function GroupPermissionEditor({
+// 	permission,
+// 	onChange,
+// 	onSubmit,
+// 	canEditResource
+// }: {
+// 	permission?: PermissionFormModel;
+// 	onChange: OnDialogCloseFn<PermissionFormModel>;
+// 	onSubmit?: OnDialogCloseFn<PermissionFormModel>;
+// 	canEditResource?: boolean;
+// }) {
+// 	const [searchCourseActive, setSearchCourseActive] = useState(false);
 
-	const { setLevel, setCourse } = usePermissionEditor(onChange, permission);
+// 	const { setLevel, setCourse } = usePermissionEditor(onChange, permission);
 
-	const onCancel = () => {
-		onSubmit && onSubmit(undefined);
-	};
+// 	const onCancel = () => {
+// 		onSubmit && onSubmit(undefined);
+// 	};
 
-	const onSelectCourse = (course?: CourseSearchEntry) => {
-		setSearchCourseActive(false);
-		if (course) {
-			setCourse(course);
-		}
-	};
+// 	const onSelectCourse = (course?: CourseSearchEntry) => {
+// 		setSearchCourseActive(false);
+// 		if (course) {
+// 			setCourse(course);
+// 		}
+// 	};
 
-	return (
-		<div className="flex flex-col gap-2">
-			{canEditResource && (
-				<div className="mb-16 flex items-center justify-between gap-4">
-					<h1 className="text-5xl">{permission?.course ? "Kurs" : "Lerneinheit"}</h1>
-					<IconTextButton
-						text="Kurs auswählen"
-						icon={<ArrowsUpDownIcon className="icon h-5" />}
-						onClick={() => setSearchCourseActive(true)}
-					/>
-					{searchCourseActive && (
-						<SearchCourseDialog open={searchCourseActive} onClose={onSelectCourse} />
-					)}
-				</div>
-			)}
-			{!canEditResource && permission?.course && (
-				<h1 className="text-xl">Kurs {permission?.course?.title}</h1>
-			)}
-			{!canEditResource && permission?.lesson && (
-				<h1 className="text-xl">Lerneinheit {permission?.lesson?.title}</h1>
-			)}
-			{permission?.course && (
-				<Chip displayImage={false}>
-					<span>{permission?.course?.title ?? "N/A"}</span>
-					<span className="text-sm text-light">{permission?.course?.slug}</span>
-				</Chip>
-			)}
-			{permission?.lesson && (
-				<Chip displayImage={false}>
-					<span>{permission?.lesson?.title ?? "N/A"}</span>
-					<span className="text-sm text-light">{permission?.lesson?.slug}</span>
-				</Chip>
-			)}
-			<LabeledField label="Zugriffsebene auswählen">
-				<GenericCombobox
-					value={permission?.accessLevel ?? null}
-					onChange={setLevel}
-					options={accessLevelOptions}
-					label={"Auswählen"}
-				/>
-			</LabeledField>
+// 	const perm = getPermKey(permission)
 
-			{onSubmit && (
-				<DialogActions onClose={onCancel}>
-					<button className="btn-primary" type="submit">
-						Speichern
-					</button>
-				</DialogActions>
-			)}
-		</div>
-	);
-}
+// 	return (
+// 		<div className="flex flex-col gap-2">
+// 			{canEditResource && (
+// 				<div className="mb-16 flex items-center justify-between gap-4">
+// 					<h1 className="text-5xl">{permission?.course ? "Kurs" : "Lerneinheit"}</h1>
+// 					<IconTextButton
+// 						text="Kurs auswählen"
+// 						icon={<ArrowsUpDownIcon className="icon h-5" />}
+// 						onClick={() => setSearchCourseActive(true)}
+// 					/>
+// 					{searchCourseActive && (
+// 						<SearchCourseDialog open={searchCourseActive} onClose={onSelectCourse} />
+// 					)}
+// 				</div>
+// 			)}
+// 			{!canEditResource && permission?.course && (
+// 				<h1 className="text-xl">Kurs {permission?.course?.title}</h1>
+// 			)}
+// 			{!canEditResource && permission?.lesson && (
+// 				<h1 className="text-xl">Lerneinheit {permission?.lesson?.title}</h1>
+// 			)}
+// 			{permission?.course && (
+// 				<Chip displayImage={false}>
+// 					<span>{permission?.course?.title ?? "N/A"}</span>
+// 					<span className="text-sm text-light">{permission?.course?.slug}</span>
+// 				</Chip>
+// 			)}
+// 			{permission?.lesson && (
+// 				<Chip displayImage={false}>
+// 					<span>{permission?.lesson?.title ?? "N/A"}</span>
+// 					<span className="text-sm text-light">{permission?.lesson?.slug}</span>
+// 				</Chip>
+// 			)}
+// 			<LabeledField label="Zugriffsebene auswählen">
+// 				<GenericCombobox
+// 					value={permission?.accessLevel ?? null}
+// 					onChange={setLevel}
+// 					options={accessLevelOptions}
+// 					label={"Auswählen"}
+// 				/>
+// 			</LabeledField>
+
+// 			{onSubmit && (
+// 				<DialogActions onClose={onCancel}>
+// 					<button className="btn-primary" type="submit">
+// 						Speichern
+// 					</button>
+// 				</DialogActions>
+// 			)}
+// 		</div>
+// 	);
+// }
 
 /**
  * GroupPermissionRowEditor - Editable table row displaying a permission with inline access level control.

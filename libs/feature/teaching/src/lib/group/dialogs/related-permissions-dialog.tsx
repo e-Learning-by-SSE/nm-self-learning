@@ -1,7 +1,11 @@
 import { trpc } from "@self-learning/api-client";
 import { AppRouter } from "@self-learning/api";
 import { inferProcedureOutput } from "@trpc/server";
-import { PermissionFormModel } from "../editors/group-permission";
+import {
+	normalizePermission,
+	PermissionFormModel,
+	stripFormResourceAccess
+} from "../editors/group-permission";
 import { useState } from "react";
 import {
 	Chip,
@@ -41,15 +45,10 @@ export function GroupPermissionRelationsDialog({
 	isOpen: boolean;
 	onClose: () => void;
 }) {
-	const q = permission.course
-		? { courseId: permission.course.courseId }
-		: { lessonId: permission.lesson?.lessonId };
-	const query = trpc.permission.getEffectiveResourceAccesses.useQuery(
-		{ ...q },
-		{
-			enabled: isOpen
-		}
-	);
+	const q = stripFormResourceAccess(permission);
+	const query = trpc.permission.getEffectiveResourceAccesses.useQuery(q, {
+		enabled: isOpen
+	});
 	const [revokeCandidate, setRevokeCandidate] = useState<EffectiveAccessType | undefined>(
 		undefined
 	);
@@ -81,16 +80,17 @@ export function GroupPermissionRelationsDialog({
 			});
 		}
 	});
-	const title = permission.course
-		? `Kurs ${permission.course.title}`
-		: `Lerneinheit ${permission.lesson?.title}`;
+	const perm = normalizePermission(permission);
 
 	return (
 		<Dialog title={"Effektive Berechtigungen"} onClose={onClose}>
 			<div className="flex flex-col gap-4 overflow-auto">
 				<p>
 					Folgende Benutzer haben Zugriff auf{" "}
-					<span className="font-semibold">"{title}"</span>:
+					<span className="font-semibold">
+						{perm.type} "{perm.title}"
+					</span>
+					:
 				</p>
 				{query.isLoading && <LoadingBox />}
 				{query.data?.length === 0 && <p>Keine Benutzer gefunden</p>}
@@ -113,13 +113,19 @@ export function GroupPermissionRelationsDialog({
 					<div className="flex flex-col gap-2 overflow-auto">
 						<span>
 							Möchten Sie die Berechtigung für{" "}
-							<span className="font-semibold">"{title}"</span> wirklich entfernen?
+							<span className="font-semibold">
+								{perm.type} "{perm.title}"
+							</span>{" "}
+							wirklich entfernen?
 						</span>
 						<span className="text-red-500">
 							Hinweis: Alle Benutzer der Gruppe{" "}
 							<span className="font-semibold">{revokeCandidate.group.name}</span>{" "}
 							verlieren ihren Zugriff für{" "}
-							<span className="font-semibold">"{title}"</span>:
+							<span className="font-semibold">
+								{perm.type} "{perm.title}"
+							</span>
+							:
 						</span>
 						{revokeCandidate.group.members.map(m => (
 							<Chip key={m.id} displayImage={true} imgUrl={m.image}>
