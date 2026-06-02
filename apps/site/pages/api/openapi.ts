@@ -17,6 +17,8 @@ export const openApiDocument = generateOpenApiDocument(appRouter, {
 	docsUrl: "/api-docs"
 });
 
+openApiDocument.openapi = "3.0.3";
+
 export default function handler(_: NextApiRequest, res: NextApiResponse) {
 	res.status(200).send(openApiDocument);
 }
