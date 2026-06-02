@@ -256,26 +256,3 @@ export function useAuthentication() {
 
 	return { withAuth, isAuthenticated };
 }
-
-/**
- * Checks if a user has editing permission on a educational resource:
- * - Admins have full access
- * - Authors have access if they are in the list of permitted authors
- *
- * @example
- * Redirect Non privileged authors
- * ```typescript
- * if (!hasAuthorPermission({ user, permittedAuthors: lesson.authors.map(a => a.username) })) {
- *     redirectTo("/403");
- * }
- * ```
- */
-export function hasAuthorPermission({
-	user,
-	permittedAuthors
-}: {
-	user: { role: "ADMIN" | "USER"; isAuthor: boolean; name: string };
-	permittedAuthors: string[];
-}) {
-	return user.role === "ADMIN" || (user.isAuthor && permittedAuthors.includes(user.name));
-}
