@@ -17,7 +17,7 @@ const minValidLesson: Lesson = {
 		{
 			groupId: 1,
 			groupName: "Group 1",
-			accessLevel: AccessLevel.EDIT
+			accessLevel: AccessLevel.FULL
 		}
 	],
 	ragEnabled: true
@@ -106,7 +106,7 @@ describe("lessonSchema", () => {
 			    "licenseId": 1,
 			    "permissions": Array [
 			      Object {
-			        "accessLevel": "EDIT",
+			        "accessLevel": "FULL",
 			        "groupId": 1,
 			        "groupName": "Group 1",
 			      },
