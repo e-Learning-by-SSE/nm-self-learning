@@ -62,9 +62,9 @@ export const getServerSideProps = withTranslations(
 		}
 
 		const hasAccess = testResourceGuard(
+			user,
 			AccessLevel.EDIT,
-			course.permissions.map(p => ({ accessLevel: p.accessLevel, groupId: p.group.id })),
-			new Set(user.memberships)
+			course.permissions.map(p => ({ accessLevel: p.accessLevel, groupId: p.group.id }))
 		);
 		if (!hasAccess) {
 			return {
@@ -158,9 +158,9 @@ export default function EditCoursePage({ course, lessons }: EditCourseProps) {
 
 	return (
 		<ResourceGuard
-			mode="fallback"
-			accessLevel={AccessLevel.EDIT}
-			allowedGroups={course.permissions}
+			fallback="unauthorized"
+			requiredAccess={AccessLevel.EDIT}
+			permittedGroups={course.permissions}
 		>
 			<CourseEditor course={course} onConfirm={onConfirm} />
 		</ResourceGuard>

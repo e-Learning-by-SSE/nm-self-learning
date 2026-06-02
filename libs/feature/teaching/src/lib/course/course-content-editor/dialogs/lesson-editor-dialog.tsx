@@ -13,9 +13,9 @@ export function LessonEditorDialogWithGuard({
 }) {
 	return (
 		<ResourceGuard
-			mode="fallback"
-			accessLevel={AccessLevel.EDIT}
-			allowedGroups={initialLesson?.permissions}
+			fallback="unauthorized"
+			requiredAccess={AccessLevel.EDIT}
+			permittedGroups={initialLesson?.permissions}
 		>
 			<LessonEditorDialog initialLesson={initialLesson} onClose={onClose} />
 		</ResourceGuard>

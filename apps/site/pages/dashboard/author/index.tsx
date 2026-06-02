@@ -272,9 +272,7 @@ function AuthorDashboardPage({ author }: Props) {
 									<div className="h-32 w-32">
 										<VoidSvg />
 									</div>
-									<p className="text-light">
-										{t("No_Accessible_Lessons")}
-									</p>
+									<p className="text-light">{t("No_Accessible_Lessons")}</p>
 								</div>
 							) : (
 								lessons?.result.map(lesson => (
@@ -342,10 +340,7 @@ function AuthorDashboardPage({ author }: Props) {
 
 			<section>
 				<div className="flex justify-between gap-4">
-					<SectionHeader
-						title={t("My_Groups")}
-						subtitle={t("My_Groups_Subtitle")}
-					/>
+					<SectionHeader title={t("My_Groups")} subtitle={t("My_Groups_Subtitle")} />
 					<Link href="/teaching/groups/create" className="mt-4">
 						<IconTextButton
 							text={t("Create_Group")}
@@ -362,9 +357,7 @@ function AuthorDashboardPage({ author }: Props) {
 							</div>
 							<div>
 								<p className="text-light">{t("No_Group_Membership")}</p>
-								<p>
-									{t("Group_Membership_Required")}
-								</p>
+								<p>{t("Group_Membership_Required")}</p>
 							</div>
 						</div>
 					) : (
@@ -451,8 +444,10 @@ function CourseDeleteOption({ slug }: { slug: string }) {
 }
 
 type CourseLinkedEntities = {
-	subject: Subject | null;
-	specializations: (Specialization & { subject: Subject })[];
+	subject: Omit<Subject, "permissions"> | null;
+	specializations: (Omit<Specialization, "permissions"> & {
+		subject: Omit<Subject, "permissions">;
+	})[];
 };
 
 function CourseDeletionDialog({
@@ -473,7 +468,7 @@ function CourseDeletionDialog({
 				{linkedEntities.subject && (
 					<>
 						<br />
-						{t("Used_In_Subject")} {" "}
+						{t("Used_In_Subject")}{" "}
 						<Link
 							href={`/subjects/${linkedEntities.subject.slug}`}
 							className="hover:text-c-primary"
