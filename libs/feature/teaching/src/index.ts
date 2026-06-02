@@ -1,5 +1,6 @@
 import { I18N_NAMESPACE as NS_AI_TUTOR } from "@self-learning/ai-tutor";
 export * from "./lib/author/edit-author-dialog";
+export * from "./lib/author/author-resource-section";
 export * from "./lib/course/course-editor";
 export * from "./lib/lesson/lesson-editor";
 export * from "./lib/lesson/lesson-form-model";

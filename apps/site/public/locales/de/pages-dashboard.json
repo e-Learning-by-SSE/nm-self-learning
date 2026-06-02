@@ -58,5 +58,16 @@
     "Used_In_Subjects": "Er wird in folgenden Fachgebieten genutzt:",
     "Delete": "Löschen",
     "Confirm_Delete_Course": "Möchten Sie diesen Kurs wirklich löschen?",
-    "Edit_Lesson": "Lerneinheit bearbeiten"
+    "Edit_Lesson": "Lerneinheit bearbeiten",
+    "My_Subjects": "Meine Fachgebiete",
+    "Author_Subjects_Subtitle": "Berechtigungen in den folgenden Fachgebieten:",
+    "Create_Subject": "Fachgebiet erstellen",
+    "Search_Subjects": "Suche nach Fachgebieten",
+    "No_Accessible_Subjects": "Sie haben derzeit keine Fachgebiete, auf die Sie Zugriff haben.",
+    "Edit_Subject": "Fachgebiet bearbeiten",
+    "My_Specializations": "Meine Spezialisierungen",
+    "Author_Specializations_Subtitle": "Berechtigungen in den folgenden Spezialisierungen:",
+    "Search_Specializations": "Suche nach Spezialisierungen",
+    "No_Accessible_Specializations": "Sie haben derzeit keine Spezialisierungen, auf die Sie Zugriff haben.",
+    "Edit_Specialization": "Spezialisierung bearbeiten"
 }

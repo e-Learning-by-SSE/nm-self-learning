@@ -42,6 +42,7 @@ type PermissionResourceRow = {
 	lesson: { lessonId: string; slug: string; title: string; imgUrl: string | null } | null;
 	specialization: {
 		specializationId: string;
+		subjectId: string;
 		slug: string;
 		title: string;
 		cardImgUrl: string | null;
@@ -67,7 +68,8 @@ function getSelectedKinds(input: ResourceSearchInput): ResourceKind[] {
 function toResourceEntry(
 	kind: ResourceKind,
 	resource: ResourceInfo,
-	accessLevel?: AccessLevel
+	accessLevel?: AccessLevel,
+	parentId?: string
 ): ResourceSearchEntry {
 	return {
 		kind,
@@ -76,7 +78,8 @@ function toResourceEntry(
 		title: resource.title,
 		slug: resource.slug,
 		imgUrl: resource.imgUrl,
-		accessLevel
+		accessLevel,
+		parentId
 	};
 }
 
@@ -181,15 +184,26 @@ const resourceSearch: Record<ResourceKind, ResourceSearchConfig> = {
 		findAll: async title => {
 			const specializations = await database.specialization.findMany({
 				where: { title },
-				select: { specializationId: true, slug: true, title: true, cardImgUrl: true }
+				select: {
+					specializationId: true,
+					subjectId: true,
+					slug: true,
+					title: true,
+					cardImgUrl: true
+				}
 			});
 			return specializations.map(specialization =>
-				toResourceEntry("specialization", {
-					id: specialization.specializationId,
-					slug: specialization.slug,
-					title: specialization.title,
-					imgUrl: specialization.cardImgUrl
-				})
+				toResourceEntry(
+					"specialization",
+					{
+						id: specialization.specializationId,
+						slug: specialization.slug,
+						title: specialization.title,
+						imgUrl: specialization.cardImgUrl
+					},
+					undefined,
+					specialization.subjectId
+				)
 			);
 		},
 		permissionWhere: title =>
@@ -204,7 +218,8 @@ const resourceSearch: Record<ResourceKind, ResourceSearchConfig> = {
 							title: permission.specialization.title,
 							imgUrl: permission.specialization.cardImgUrl
 						},
-						permission.accessLevel
+						permission.accessLevel,
+						permission.specialization.subjectId
 					)
 				: null
 	},
@@ -278,7 +293,13 @@ export async function searchMyResources(
 			course: { select: { courseId: true, slug: true, title: true, imgUrl: true } },
 			lesson: { select: { lessonId: true, slug: true, title: true, imgUrl: true } },
 			specialization: {
-				select: { specializationId: true, slug: true, title: true, cardImgUrl: true }
+				select: {
+					specializationId: true,
+					subjectId: true,
+					slug: true,
+					title: true,
+					cardImgUrl: true
+				}
 			},
 			subject: { select: { subjectId: true, slug: true, title: true, cardImgUrl: true } }
 		}
