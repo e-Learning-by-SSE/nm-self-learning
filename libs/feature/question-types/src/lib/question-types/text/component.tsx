@@ -79,12 +79,13 @@ export default function TextAnswer() {
 			}
 		}
 	}
+	const { t } = useTranslation("feature-question-types");
 
 	return (
 		<div className="flex flex-col gap-4">
 			<TextArea
 				rows={12}
-				label="Antwort"
+				label={t("Answer")}
 				value={answer?.value ?? ""}
 				disabled={isSubmitted}
 				onChange={e => setAnswer({ type: "text", value: e.target.value })}
@@ -96,7 +97,7 @@ export default function TextAnswer() {
 			{typedEvaluation && !isEvaluating && !typedEvaluation.pending && (
 				<EvaluationResult
 					evaluation={typedEvaluation}
-					hasAiConfig={!!question.aiEvaluation}
+					hasAiConfig={!!question.aiEvaluation?.solutionOrConcepts?.trim()}
 				/>
 			)}
 		</div>
@@ -142,7 +143,7 @@ function EvaluationResult({
 	if (evaluation.evaluationError) {
 		return (
 			<div className="rounded-lg border border-yellow-400 bg-yellow-50 p-4 text-yellow-800">
-				<p className="font-medium">{t("Evaluation Failed.")}</p>
+				<p className="font-medium">{t("Evaluation Failed")}</p>
 				<p className="mt-1 text-sm">
 					{t(
 						"An error occurred while evaluating the answer. Your answer was accepted anyway."
@@ -156,7 +157,7 @@ function EvaluationResult({
 	if (!hasAiConfig) {
 		return (
 			<div className="rounded-lg border border-gray-500 bg-gray-50 p-4 text-gray-800">
-				<p className="font-medium">{t("Answer submitted")}</p>
+				<p className="font-medium">{t("Evaluation is not available")}</p>
 				<p className="mt-1 text-sm">
 					{t(
 						"Evaluation is not available (answer accepted as correct without evaluation)"

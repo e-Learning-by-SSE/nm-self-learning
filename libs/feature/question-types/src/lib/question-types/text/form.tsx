@@ -5,12 +5,12 @@ import { useTranslation } from "next-i18next";
 import { QuestionTypeForm } from "../../base-question";
 import { TextQuestion } from "./schema";
 
-type TextForm = QuestionTypeForm<TextQuestion>;
+type TextFormType = QuestionTypeForm<TextQuestion>;
 
 /**
  * The form component for configuring a text question, including the AI evaluation settings.
  * It checks if llm-config is available and shows the appropriate fields for entering the sample solution or expected concepts,
- * as well as the passing threshold. If llm-configis not available, it does not show these fields,
+ * as well as the passing threshold. If llm-config is not available, it does not show these fields,
  * and the evaluation will default to accepting any answer.
  *
  * The main features of this component include:
@@ -23,7 +23,7 @@ type TextForm = QuestionTypeForm<TextQuestion>;
  */
 export default function TextForm({ index }: { index: number }) {
 	const { t } = useTranslation("feature-question-types");
-	const { control } = useFormContext<TextForm>();
+	const { control } = useFormContext<TextFormType>();
 
 	const { data: llmConfigData } = trpc.textEvaluation.checkLlmConfig.useQuery();
 	const llmAvailable = llmConfigData?.available ?? null;

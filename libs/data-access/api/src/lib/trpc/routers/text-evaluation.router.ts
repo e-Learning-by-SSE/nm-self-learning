@@ -1,4 +1,3 @@
-import { TRPCError } from "@trpc/server";
 import { authProcedure, t } from "../trpc";
 import { database } from "@self-learning/database";
 import { z } from "zod";
