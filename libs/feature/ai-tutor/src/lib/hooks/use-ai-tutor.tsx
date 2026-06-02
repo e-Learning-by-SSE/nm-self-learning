@@ -86,45 +86,48 @@ export function useAiTutor() {
 		setPageContext(null);
 	}, [pathname]);
 
-	const sendMessage = useCallback(async (message: string) => {
-		const trimmedInput = message.trim();
+	const sendMessage = useCallback(
+		async (message: string) => {
+			const trimmedInput = message.trim();
 
-		if (!trimmedInput) {
-			return false;
-		}
+			if (!trimmedInput) {
+				return false;
+			}
 
-		const userMessage: Message = {
-			role: "user",
-			content: trimmedInput
-		};
-
-		setMessages(prev => [...prev, userMessage]);
-
-		try {
-			const response = await sendMessageMutation.mutateAsync({
-				messages: [...messages, userMessage],
-				pageContext
-			});
-
-			const assistantMessage: Message = {
-				role: "assistant",
-				content: response.content
+			const userMessage: Message = {
+				role: "user",
+				content: trimmedInput
 			};
 
-			setMessages(prev => [...prev, assistantMessage]);
-			return true;
-		} catch (error) {
-			setMessages(prev => prev.slice(0, -1));
+			setMessages(prev => [...prev, userMessage]);
 
-			showToast({
-				type: "error",
-				title: t("Message Failed"),
-				subtitle: error instanceof Error ? t(error.message) : t("Unknown error")
-			});
+			try {
+				const response = await sendMessageMutation.mutateAsync({
+					messages: [...messages, userMessage],
+					pageContext
+				});
 
-			return false;
-		}
-	}, [messages, pageContext, sendMessageMutation, t]);
+				const assistantMessage: Message = {
+					role: "assistant",
+					content: response.content
+				};
+
+				setMessages(prev => [...prev, assistantMessage]);
+				return true;
+			} catch (error) {
+				setMessages(prev => prev.slice(0, -1));
+
+				showToast({
+					type: "error",
+					title: t("Message Failed"),
+					subtitle: error instanceof Error ? t(error.message) : t("Unknown error")
+				});
+
+				return false;
+			}
+		},
+		[messages, pageContext, sendMessageMutation, t]
+	);
 
 	const toggleTutor = useCallback(() => {
 		setIsAnimating(true);
@@ -146,7 +149,8 @@ export function useAiTutor() {
 
 	useEffect(() => {
 		const modalOpened = searchParams.get("modal");
-		if (modalOpened === "open" || !config) {
+		const onQuizPage = pathname?.includes("/quiz");
+		if (modalOpened === "open" || !config || onQuizPage) {
 			setHideToggle(true);
 			closeTutor();
 		} else {
