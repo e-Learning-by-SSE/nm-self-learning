@@ -34,5 +34,6 @@
     "Evaluation Failed": "Evaluation Failed",
     "An error occurred while evaluating the answer. Your answer was accepted anyway.": "An error occurred while evaluating the answer. Your answer was accepted anyway.",
     "Evaluation is not available (answer accepted as correct without evaluation)": "Evaluation is not available (answer accepted as correct without evaluation)",
-    "Answer submitted": "Answer submitted"
+    "Answer submitted": "Answer submitted",
+    "Evaluation is not available": "Evaluation is not available"
 }

@@ -34,5 +34,6 @@
     "Evaluation Failed": "Bewertung fehlgeschlagen",
     "An error occurred while evaluating the answer. Your answer was accepted anyway.": "Beim Bewerten der Antwort ist ein Fehler aufgetreten. Deine Antwort wurde trotzdem akzeptiert.",
     "Evaluation is not available (answer accepted as correct without evaluation)": "Bewertung nicht verfügbar (Antwort ohne Bewertung als korrekt akzeptiert)",
-    "Answer submitted": "Antwort eingereicht"
+    "Answer submitted": "Antwort eingereicht",
+    "Evaluation is not available": "Bewertung nicht verfügbar"
 }

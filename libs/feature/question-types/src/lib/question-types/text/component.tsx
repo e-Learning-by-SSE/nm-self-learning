@@ -80,6 +80,7 @@ export default function TextAnswer() {
 			}
 		}
 	}
+	const { t } = useTranslation("feature-question-types");
 
 	return (
 		<div className="flex flex-col gap-4">
@@ -156,7 +157,7 @@ function EvaluationResult({
 	if (!hasAiConfig) {
 		return (
 			<div className="rounded-lg border border-gray-500 bg-gray-50 p-4 text-gray-800">
-				<p className="font-medium">{t("Answer submitted")}</p>
+				<p className="font-medium">{t("Evaluation is not available")}</p>
 				<p className="mt-1 text-sm">
 					{t(
 						"Evaluation is not available (answer accepted as correct without evaluation)"

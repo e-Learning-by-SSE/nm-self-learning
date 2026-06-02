@@ -5,7 +5,7 @@ import { useTranslation } from "next-i18next";
 import { QuestionTypeForm } from "../../base-question";
 import { TextQuestion } from "./schema";
 
-type TextForm = QuestionTypeForm<TextQuestion>;
+type TextFormType = QuestionTypeForm<TextQuestion>;
 
 /**
  * The form component for configuring a text question, including the AI evaluation settings.
@@ -23,7 +23,7 @@ type TextForm = QuestionTypeForm<TextQuestion>;
  */
 export default function TextForm({ index }: { index: number }) {
 	const { t } = useTranslation("feature-question-types");
-	const { control } = useFormContext<TextForm>();
+	const { control } = useFormContext<TextFormType>();
 
 	const { data: llmConfigData } = trpc.textEvaluation.checkLlmConfig.useQuery();
 	const llmAvailable = llmConfigData?.available ?? null;
