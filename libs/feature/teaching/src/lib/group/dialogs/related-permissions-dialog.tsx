@@ -1,11 +1,7 @@
 import { trpc } from "@self-learning/api-client";
 import { AppRouter } from "@self-learning/api";
 import { inferProcedureOutput } from "@trpc/server";
-import {
-	normalizePermission,
-	PermissionFormModel,
-	stripFormResourceAccess
-} from "../editors/group-permission";
+import { PermissionFormModel } from "../editors/group-permission";
 import { useState } from "react";
 import {
 	Chip,
@@ -16,6 +12,7 @@ import {
 	showToast
 } from "@self-learning/ui/common";
 import { TrashIcon } from "@heroicons/react/24/solid";
+import { normalizeFormResourceAccess, stripFormResourceAccess } from "@self-learning/types";
 
 type EffectiveAccessType = inferProcedureOutput<
 	AppRouter["permission"]["getEffectiveResourceAccesses"]
@@ -80,7 +77,7 @@ export function GroupPermissionRelationsDialog({
 			});
 		}
 	});
-	const perm = normalizePermission(permission);
+	const perm = normalizeFormResourceAccess(permission);
 
 	return (
 		<Dialog title={"Effektive Berechtigungen"} onClose={onClose}>

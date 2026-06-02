@@ -6,8 +6,8 @@ import { AppRouter } from "libs/data-access/api/src/lib/trpc/app.router";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { normalizePermission } from "../editors/group-permission";
 import { AccessLevel } from "@prisma/client";
+import { normalizeFormResourceAccess } from "@self-learning/types";
 
 type SingleOwnedResources = inferProcedureOutput<
 	AppRouter["permission"]["getSingleOwnedResources"]
@@ -111,7 +111,7 @@ function GroupDeleteDialog({
 
 					<div className="flex flex-col gap-2">
 						{data?.map((resource, idx) => {
-							const p = normalizePermission({
+							const p = normalizeFormResourceAccess({
 								...resource,
 								accessLevel: AccessLevel.VIEW
 							});

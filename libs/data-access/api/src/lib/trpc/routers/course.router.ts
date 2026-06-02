@@ -6,13 +6,18 @@ import {
 	mapCourseFormToInsert,
 	mapCourseFormToUpdate
 } from "@self-learning/teaching";
-import { CourseContent, CourseMeta, extractLessonIds, LessonMeta } from "@self-learning/types";
+import {
+	CourseContent,
+	CourseMeta,
+	extractLessonIds,
+	greaterAccessLevel,
+	LessonMeta
+} from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 import { getCourseResource } from "../../permissions/course.utils";
-import { greaterAccessLevel } from "../../permissions/permission.utils";
 import {
 	canCreate,
 	canDelete,

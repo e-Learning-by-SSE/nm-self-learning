@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ResourcePermissionsFormSchema } from "./group";
+import { ResourcePermissionsFormSchema } from "./resource";
 
 export const specializationSchema = z.object({
 	specializationId: z.string(),

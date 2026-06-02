@@ -3,6 +3,7 @@ import { database, save_subtitle_for_lesson, logJobProgress } from "@self-learni
 import {
 	createLessonMeta,
 	EventTypeMap,
+	greaterAccessLevel,
 	lessonSchema,
 	LessonContentType,
 	subtitleSrcSchema
@@ -12,7 +13,6 @@ import { differenceInHours } from "date-fns";
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
-import { greaterAccessLevel } from "../../permissions/permission.utils";
 import {
 	canCreate,
 	canDelete,

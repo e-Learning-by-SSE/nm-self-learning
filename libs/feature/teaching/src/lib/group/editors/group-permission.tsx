@@ -1,7 +1,11 @@
 import { TrashIcon, UsersIcon } from "@heroicons/react/24/solid";
 import { AccessLevel } from "@prisma/client";
 import { CourseSearchEntry } from "@self-learning/admin";
-import { ResourceAccessFormSchema, ResourceAccessFormType } from "@self-learning/types";
+import {
+	normalizeFormResourceAccess,
+	ResourceAccessFormSchema,
+	ResourceAccessFormType
+} from "@self-learning/types";
 import {
 	IconOnlyButton,
 	OnDialogCloseFn,
@@ -10,7 +14,6 @@ import {
 	TableHeaderColumn
 } from "@self-learning/ui/common";
 import { GenericCombobox } from "./group-members";
-import { ResourceAccess } from "@self-learning/api";
 
 export type PermissionFormModel = ResourceAccessFormType;
 
@@ -19,58 +22,6 @@ const accessLevelOptions = [
 	{ label: "Edit", value: AccessLevel.EDIT },
 	{ label: "View", value: AccessLevel.VIEW }
 ];
-
-// TODO copied from permissions.router.ts
-export function getPermKey(perm: ResourceAccessFormType) {
-	return normalizePermission(perm).id;
-}
-
-export function normalizePermission(perm: ResourceAccessFormType) {
-	if (perm.course)
-		return {
-			type: "Kurs",
-			title: perm.course.title,
-			id: "c:" + perm.course.courseId,
-			slug: perm.course.slug,
-			accessLevel: perm.accessLevel
-		};
-	if (perm.lesson)
-		return {
-			type: "Lerninhalt",
-			title: perm.lesson.title,
-			id: "l:" + perm.lesson.lessonId,
-			slug: perm.lesson.slug,
-			accessLevel: perm.accessLevel
-		};
-	if (perm.specialization)
-		return {
-			type: "Spezialisierung",
-			title: perm.specialization.title,
-			id: "sp:" + perm.specialization.specializationId,
-			slug: perm.specialization.slug,
-			accessLevel: perm.accessLevel
-		};
-	if (perm.subject)
-		return {
-			type: "Fachgebiet",
-			title: perm.subject.title,
-			id: "sb:" + perm.subject.subjectId,
-			slug: perm.subject.slug,
-			accessLevel: perm.accessLevel
-		};
-	throw Error("Invalid permission");
-}
-
-export function stripFormResourceAccess(data: ResourceAccessFormType): ResourceAccess {
-	const { accessLevel, course, lesson, specialization, subject } = data;
-
-	if (course) return { accessLevel, courseId: course.courseId };
-	if (lesson) return { accessLevel, lessonId: lesson.lessonId };
-	if (specialization) return { accessLevel, specializationId: specialization.specializationId };
-	if (subject) return { accessLevel, subjectId: subject.subjectId };
-
-	throw new Error("Invalid resource input");
-}
 
 /**
  * usePermissionEditor - Hook providing state and handlers for permission form field changes.
@@ -227,7 +178,7 @@ export function GroupPermissionRowEditor({
 	onDelete?: OnDialogCloseFn<PermissionFormModel>;
 }) {
 	const { setLevel } = usePermissionEditor(onChange, permission);
-	const p = normalizePermission(permission);
+	const p = normalizeFormResourceAccess(permission);
 
 	return (
 		<tr>
@@ -317,7 +268,7 @@ export function GroupPermissionRow({
 	onDelete?: OnDialogCloseFn<PermissionFormModel>;
 	onRelations?: OnDialogCloseFn<PermissionFormModel>;
 }) {
-	const p = normalizePermission(ResourceAccessFormSchema.parse(permission));
+	const p = normalizeFormResourceAccess(ResourceAccessFormSchema.parse(permission));
 
 	return (
 		<tr>

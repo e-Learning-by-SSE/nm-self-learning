@@ -4,7 +4,7 @@ import { lessonContentSchema } from "./lesson-content";
 import { LessonMeta } from "./lesson-meta";
 import { LessonType } from "@prisma/client";
 import { skillFormSchema } from "./skill";
-import { ResourcePermissionsFormSchema } from "./group";
+import { ResourcePermissionsFormSchema } from "./resource";
 
 export type LessonInfo = {
 	lessonId: string;

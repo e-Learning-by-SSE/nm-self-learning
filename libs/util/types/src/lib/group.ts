@@ -1,6 +1,20 @@
 import { AccessLevel, GroupRole } from "@prisma/client";
 import { z } from "zod";
 import { add } from "date-fns";
+import { ResourceAccessFormSchema } from "./resource";
+import { GroupRoleEnum } from "./permissions";
+
+// === backend
+
+export const MembershipInputSchema = z.object({
+	groupId: z.number(),
+	expiresAt: z.date().nullable(),
+	userId: z.string(),
+	role: GroupRoleEnum
+});
+export type MembershipInput = z.infer<typeof MembershipInputSchema>;
+
+// === merging
 
 export enum MergeStrategy {
 	First = "first",
@@ -23,43 +37,6 @@ export const MergeGroupsSchema = z.object({
 
 export type MergeGroupsType = z.infer<typeof MergeGroupsSchema>;
 
-// TODO copied from permission.router.ts
-export const AccessLevelEnum = z.enum(AccessLevel);
-export const ResourceAccessFormSchema = z
-	.object({
-		accessLevel: AccessLevelEnum,
-		course: z
-			.object({ courseId: z.string(), slug: z.string(), title: z.string() })
-			.nullable()
-			.optional(),
-		lesson: z
-			.object({ lessonId: z.string(), slug: z.string(), title: z.string() })
-			.nullable()
-			.optional(),
-		specialization: z
-			.object({
-				specializationId: z.string(),
-				slug: z.string(),
-				title: z.string()
-			})
-			.nullable()
-			.optional(),
-		subject: z
-			.object({ subjectId: z.string(), slug: z.string(), title: z.string() })
-			.nullable()
-			.optional()
-	})
-	.refine(
-		p => {
-			const resources = [p.course, p.lesson, p.specialization, p.subject];
-			const providedResources = resources.filter(Boolean);
-			return providedResources.length === 1;
-		},
-		{
-			message: "Exactly one resource must be provided"
-		}
-	);
-
 export const MemberFormSchema = z.object({
 	role: z.enum(GroupRole),
 	expiresAt: z.coerce
@@ -76,25 +53,14 @@ export const MemberFormSchema = z.object({
 	})
 });
 
-export type ResourceAccessFormType = z.infer<typeof ResourceAccessFormSchema>;
-
-export const ResourcePermissionsFormSchema = z
-	.object({
-		accessLevel: z.enum(AccessLevel),
-		groupId: z.number(),
-		groupName: z.string()
-	})
-	.array()
-	.refine(perms => perms.some(p => p.accessLevel === AccessLevel.FULL), {
-		message: "At least one permission with FULL access level is required"
-	});
-
-export type ResourcePermissionsFormType = z.infer<typeof ResourcePermissionsFormSchema>;
+// ===
 
 export function computeExpiresAt(durationMinutes: number): Date {
 	const now = new Date();
 	return add(now, { minutes: durationMinutes });
 }
+
+// === group ui
 
 export const GroupFormSchema = z.object({
 	id: z.number().nullable(),
@@ -138,13 +104,3 @@ export const GroupEntrySchema = z.object({
 	slug: z.string().nullable()
 });
 export type GroupEntry = z.infer<typeof GroupEntrySchema>;
-
-//
-const accessLevelHierarchy: Record<AccessLevel, number> = { VIEW: 1, EDIT: 2, FULL: 3 };
-
-export function greaterAccessLevel(a: AccessLevel, b: AccessLevel): boolean {
-	return accessLevelHierarchy[a] > accessLevelHierarchy[b];
-}
-export function greaterOrEqAccessLevel(a: AccessLevel, b: AccessLevel): boolean {
-	return accessLevelHierarchy[a] >= accessLevelHierarchy[b];
-}

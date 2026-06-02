@@ -17,3 +17,5 @@ export * from "./lib/event-log";
 export * from "./lib/gamificationProfile";
 export * from "./lib/llm-config";
 export * from "./lib/group";
+export * from "./lib/resource";
+export * from "./lib/permissions";
