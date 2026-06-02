@@ -3,6 +3,11 @@ import { subjectSchema } from "@self-learning/types";
 import { z } from "zod";
 import { adminProcedure, authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
+import {
+	canEdit,
+	preparePermissionsForCreate,
+	prepareResourceUpdate
+} from "../../permissions/permission.service";
 
 export const subjectRouter = t.router({
 	getAllWithSpecializations: t.procedure.query(() => {
@@ -40,6 +45,17 @@ export const subjectRouter = t.router({
 				subtitle: true,
 				cardImgUrl: true,
 				imgUrlBanner: true,
+				permissions: {
+					select: {
+						accessLevel: true,
+						group: {
+							select: {
+								id: true,
+								name: true
+							}
+						}
+					}
+				},
 				specializations: {
 					orderBy: { title: "asc" },
 					include: {
@@ -62,6 +78,9 @@ export const subjectRouter = t.router({
 		});
 	}),
 	create: adminProcedure.input(subjectSchema).mutation(async ({ input }) => {
+		// prepare permissions for create (can throw)
+		const permissions = await preparePermissionsForCreate(input.permissions);
+		// only for admins
 		const subject = await database.subject.create({
 			data: {
 				subjectId: input.slug,
@@ -69,7 +88,8 @@ export const subjectRouter = t.router({
 				slug: input.slug,
 				subtitle: input.subtitle,
 				cardImgUrl: input.cardImgUrl,
-				imgUrlBanner: input.imgUrlBanner
+				imgUrlBanner: input.imgUrlBanner,
+				permissions
 			}
 		});
 
@@ -81,8 +101,8 @@ export const subjectRouter = t.router({
 
 		return subject;
 	}),
-	update: authProcedure.input(subjectSchema).mutation(async ({ input }) => {
-		// all can edit subjects for now
+	update: authProcedure.input(subjectSchema).mutation(async ({ ctx, input }) => {
+		const permissions = await prepareResourceUpdate(ctx.user, input, input.permissions);
 		return database.subject.update({
 			where: { subjectId: input.subjectId },
 			data: {
@@ -90,7 +110,8 @@ export const subjectRouter = t.router({
 				slug: input.slug,
 				subtitle: input.subtitle,
 				cardImgUrl: input.cardImgUrl,
-				imgUrlBanner: input.imgUrlBanner
+				imgUrlBanner: input.imgUrlBanner,
+				permissions
 			}
 		});
 	}),
@@ -103,15 +124,9 @@ export const subjectRouter = t.router({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
-			// TODO everyone can do this for now
-			// const canEdit = await canEditSubject(input.subjectId, ctx.user);
-
-			// if (!canEdit) {
-			// 	throw new TRPCError({
-			// 		code: "FORBIDDEN",
-			// 		message: `Requires ADMIN role or subjectAdmin in ${input.subjectId}.`
-			// 	});
-			// }
+			if (!(await canEdit(ctx.user, input))) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
+			}
 
 			const specIds = Object.keys(input.specMap);
 

@@ -11,7 +11,8 @@ import {
 	canDelete,
 	hasEffectiveAccess,
 	preparePermissionsForCreate,
-	preparePermissionsForUpdate
+	preparePermissionsForUpdate,
+	prepareResourceUpdate
 } from "../../permissions/permission.service";
 
 jest.mock("@self-learning/database", () => ({
@@ -39,7 +40,8 @@ jest.mock("../../permissions/permission.service", () => ({
 	canEdit: jest.fn(),
 	hasEffectiveAccess: jest.fn(),
 	preparePermissionsForCreate: jest.fn(),
-	preparePermissionsForUpdate: jest.fn()
+	preparePermissionsForUpdate: jest.fn(),
+	prepareResourceUpdate: jest.fn()
 }));
 
 function prepare(user: Partial<UserFromSession>) {
@@ -175,7 +177,7 @@ describe("tRPC API of Course Router", () => {
 		it("should throw FORBIDDEN if user has no access", async () => {
 			const { caller } = prepare({});
 
-			(preparePermissionsForUpdate as jest.Mock).mockResolvedValue(undefined); // no change
+			(prepareResourceUpdate as jest.Mock).mockResolvedValue(undefined); // no change
 			(hasEffectiveAccess as jest.Mock).mockResolvedValue(false); // no access for EDIT
 
 			await expect(caller.edit(defaultCourse)).rejects.toMatchObject({
@@ -271,8 +273,7 @@ describe("tRPC API of Course Router", () => {
 
 			expect(whereClause).toEqual({
 				where: {
-					slug,
-					authors: { some: { username: author } }
+					slug
 				}
 			});
 		}
@@ -293,7 +294,7 @@ describe("tRPC API of Course Router", () => {
 			});
 		});
 
-		it("should delete a course if user can edit this course", async () => {
+		it("should delete a course if user can delete this course", async () => {
 			const { caller, ctx } = prepare({
 				memberships: [1]
 			});

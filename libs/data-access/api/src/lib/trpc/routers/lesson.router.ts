@@ -16,9 +16,8 @@ import { greaterAccessLevel } from "../../permissions/permission.utils";
 import {
 	canCreate,
 	canDelete,
-	hasEffectiveAccess,
 	preparePermissionsForCreate,
-	preparePermissionsForUpdate
+	prepareResourceUpdate
 } from "../../permissions/permission.service";
 import {
 	getRagVersionHash,
@@ -306,12 +305,11 @@ export const lessonRouter = t.router({
 	edit: authProcedure
 		.input(z.object({ lessonId: z.string(), lesson: lessonSchema }))
 		.mutation(async ({ input, ctx }) => {
-			// For edit EDIT access required. But if permissions were updated - FULL access is required
-			const permissions = await preparePermissionsForUpdate(input, input.lesson.permissions);
-			const requiredAccess = permissions ? AccessLevel.FULL : AccessLevel.EDIT;
-			if (!(await hasEffectiveAccess(ctx.user, input, requiredAccess))) {
-				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
-			}
+			const permissions = await prepareResourceUpdate(
+				ctx.user,
+				input,
+				input.lesson.permissions
+			);
 			//
 			const ragCheck = input.lesson.ragEnabled ?? true;
 			const hash =
