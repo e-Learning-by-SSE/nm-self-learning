@@ -80,7 +80,6 @@ export default function TextAnswer() {
 			}
 		}
 	}
-	const { t } = useTranslation("feature-question-types");
 
 	return (
 		<div className="flex flex-col gap-4">
