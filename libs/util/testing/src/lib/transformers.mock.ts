@@ -1,6 +1,6 @@
 /**
- * Vector Store automatically loads the embedding service, which uses the @xenova/transformers library to generate embeddings.
- * This mocks xenova to avoid loading transformer model during tests.
+ * Vector Store automatically loads the embedding service, which uses the @huggingface/transformers library to generate embeddings.
+ * This mocks @huggingface/transformers to avoid loading transformer model during tests.
  *
  * Add this to jest.config.ts of any package (project / library) that may (transitively) import the embedding service as follows:
  * @example
@@ -8,15 +8,15 @@
  * module.exports = {
  *  // ...
  *   moduleNameMapper: {
- *   '^@xenova/transformers$':
- *     '<rootDir>/../../../libs/util/testing/src/lib/xenova-transformers.mock.ts',
+ *   '^@huggingface/transformers$':
+ *     '<rootDir>/../../../libs/util/testing/src/lib/transformers.mock.ts',
  *  },
  * };
  * ```
  *
  * This will prevent errors like:
  * ```ts
- *  /code/node_modules/@xenova/transformers/src/env.js:49
+ *  /code/node_modules/@huggingface/transformers/src/env.js:49
  *   const __dirname = RUNNING_LOCALLY ? _path.default.dirname(_path.default.dirname(_url.default.fileURLToPath(require("url").pathToFileURL(__filename).toString()))) : './';
  *         ^
  *

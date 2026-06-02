@@ -10,7 +10,7 @@ The library is composed of three main services and a set of utilities. Each serv
 
 **ContentProcessor** converts raw binary or text lesson content into plain text chunks. It is only invoked inside the `RagEmbedJob` worker and is not used during retrieval.
 
-**EmbeddingService** wraps the `@xenova/transformers` pipeline to turn text strings into numerical vectors. It is called both during ingestion (to embed chunks before storing them) and during retrieval (to embed the user's query before searching).
+**EmbeddingService** wraps the `@huggingface/transformers` pipeline to turn text strings into numerical vectors. It is called both during ingestion (to embed chunks before storing them) and during retrieval (to embed the user's query before searching).
 
 **VectorStore** manages the ChromaDB collections. It delegates all text-to-vector conversion to `EmbeddingService` and then either writes the resulting vectors to ChromaDB (ingestion) or queries ChromaDB with them (retrieval).
 
@@ -131,7 +131,7 @@ Back in Next.js, the router polls the job queue until the result is ready, build
 ### EmbeddingService
 
 - **Used by:** `VectorStore` (both ingestion and retrieval paths)
-- **Responsibility:** Generates float-vector embeddings from text strings using the `Xenova/all-MiniLM-L6-v2` model loaded through `@xenova/transformers`.
+- **Responsibility:** Generates float-vector embeddings from text strings using the `Xenova/all-MiniLM-L6-v2` model loaded through `@huggingface/transformers`.
     - `generateBatchEmbeddings` — used during ingestion to embed many chunks efficiently.
     - `generateEmbedding` — used during retrieval to embed a single user query.
 - The service is loaded lazily inside `VectorStore.getEmbeddingService()` so that the heavy transformer model is never parsed in the Next.js server process.
