@@ -1,10 +1,10 @@
 import { trpc } from "@self-learning/api-client";
 import { showToast } from "@self-learning/ui/common";
-import { testResourceGuard } from "@self-learning/ui/layouts";
+import { ResourceGuard, testResourceGuard } from "@self-learning/ui/layouts";
 import { TRPCClientError } from "@trpc/client";
 import { SpecializationEditor } from "../create";
 import { withTranslations } from "@self-learning/api";
-import { Specialization } from "@self-learning/types";
+import { resourcePermissionSelect, Specialization, toResourcePermissionsForm } from "@self-learning/types";
 import { database } from "@self-learning/database";
 import { withAuth } from "@self-learning/util/auth";
 import { AccessLevel } from "@prisma/client";
@@ -34,15 +34,7 @@ export const getServerSideProps = withTranslations(
 				cardImgUrl: true,
 				imgUrlBanner: true,
 				permissions: {
-					select: {
-						accessLevel: true,
-						group: {
-							select: {
-								id: true,
-								name: true
-							}
-						}
-					}
+					select: resourcePermissionSelect
 				}
 			}
 		});
@@ -50,11 +42,7 @@ export const getServerSideProps = withTranslations(
 		if (!specialization) {
 			return { notFound: true };
 		}
-		const permissions = specialization.permissions.map(p => ({
-			accessLevel: p.accessLevel,
-			groupId: p.group.id,
-			groupName: p.group.name
-		}));
+		const permissions = toResourcePermissionsForm(specialization.permissions);
 		const hasAccess = testResourceGuard(user, AccessLevel.EDIT, permissions);
 		if (!hasAccess) {
 			return {
@@ -100,10 +88,12 @@ export default function SpecializationEditPage({ specialization }: EditSpecializ
 	};
 
 	return (
-		<div>
-			{specialization && (
-				<SpecializationEditor onSubmit={onSubmit} initialSpecialization={specialization} />
-			)}
-		</div>
+		<ResourceGuard
+			fallback="unauthorized"
+			requiredAccess={AccessLevel.EDIT}
+			permittedGroups={specialization.permissions}
+		>
+			<SpecializationEditor onSubmit={onSubmit} initialSpecialization={specialization} />
+		</ResourceGuard>
 	);
 }

@@ -15,18 +15,26 @@ import {
 	TableHeaderColumn
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
-import { CenteredContainerXL, TopicHeader, Unauthorized } from "@self-learning/ui/layouts";
+import {
+	CenteredContainerXL,
+	TopicHeader,
+	useCanCreate,
+	useResourceGuard
+} from "@self-learning/ui/layouts";
+import { AccessLevel } from "@prisma/client";
 import { TRPCClientError } from "@trpc/client";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { withTranslations } from "@self-learning/api";
 import { keepPreviousData } from "@tanstack/react-query";
+import { toResourcePermissionsForm } from "@self-learning/types";
 
 export default function SpecializationManagementPage() {
 	const router = useRouter();
 	const { page = 1, title = "" } = router.query;
 	const [titleFilter, setTitle] = useState(title);
+	const canCreateCourse = useCanCreate();
 
 	const { data: specialization, isLoading } = trpc.specialization.getForEdit.useQuery(
 		{
@@ -48,6 +56,11 @@ export default function SpecializationManagementPage() {
 			placeholderData: keepPreviousData
 		}
 	);
+
+	const permittedGroups = specialization
+		? toResourcePermissionsForm(specialization.permissions)
+		: undefined;
+	const canEdit = useResourceGuard(AccessLevel.EDIT, permittedGroups);
 
 	const [addCourseDialog, setAddCourseDialog] = useState(false);
 	const { mutateAsync: addCourse } = trpc.specialization.addCourse.useMutation();
@@ -103,23 +116,9 @@ export default function SpecializationManagementPage() {
 			}
 		}
 	}
-	// TODO always can view
-	const canView = true;
 
-	if (isLoading) {
+	if (isLoading || !specialization) {
 		return <LoadingBox />;
-	}
-
-	if (!canView || !specialization) {
-		return (
-			<Unauthorized>
-				<ul className="list-inside list-disc">
-					<li>Administratoren</li>
-					<li>Administratoren für Fachbereich ({router.query.subjectId})</li>
-					<li>Administratoren für Spezialisierung ({router.query.specializationId})</li>
-				</ul>
-			</Unauthorized>
-		);
 	}
 
 	return (
@@ -131,13 +130,15 @@ export default function SpecializationManagementPage() {
 				title={specialization.title}
 				subtitle={specialization.subtitle}
 			>
-				<Link
-					href={`/teaching/subjects/${specialization.subjectId}/${specialization.specializationId}/edit`}
-					className="btn-primary absolute top-8 w-fit self-end"
-				>
-					<PencilIcon className="icon h-5" />
-					<span>Bearbeiten</span>
-				</Link>
+				{canEdit && (
+					<Link
+						href={`/teaching/subjects/${specialization.subjectId}/${specialization.specializationId}/edit`}
+						className="btn-primary absolute top-8 w-fit self-end"
+					>
+						<PencilIcon className="icon h-5" />
+						<span>Bearbeiten</span>
+					</Link>
+				)}
 			</TopicHeader>
 
 			<CenteredContainerXL>
@@ -148,18 +149,25 @@ export default function SpecializationManagementPage() {
 				/>
 
 				<div className="mb-8 flex flex-wrap gap-4">
-					<Link
-						className="btn-primary w-fit"
-						href={`/teaching/courses/create?specializationId=${specialization.specializationId}&subjectId=${specialization.subjectId}`}
-					>
-						<PlusIcon className="icon h-5" />
-						<span>Kurs erstellen</span>
-					</Link>
+					{canCreateCourse && (
+						<Link
+							className="btn-primary w-fit"
+							href={`/teaching/courses/create?specializationId=${specialization.specializationId}&subjectId=${specialization.subjectId}`}
+						>
+							<PlusIcon className="icon h-5" />
+							<span>Kurs erstellen</span>
+						</Link>
+					)}
 
-					<button className="btn-stroked w-fit" onClick={() => setAddCourseDialog(true)}>
-						<LinkIcon className="icon h-5" />
-						<span>Kurs verknüpfen</span>
-					</button>
+					{canEdit && (
+						<button
+							className="btn-stroked w-fit"
+							onClick={() => setAddCourseDialog(true)}
+						>
+							<LinkIcon className="icon h-5" />
+							<span>Kurs verknüpfen</span>
+						</button>
+					)}
 
 					{addCourseDialog && (
 						<SearchCourseDialog open={addCourseDialog} onClose={handleAddCourse} />
@@ -209,15 +217,17 @@ export default function SpecializationManagementPage() {
 										</span>
 									</TableDataColumn>
 									<TableDataColumn>
-										<div className="flex justify-end">
-											<button
-												className="rounded-full p-2 text-gray-400 hover:bg-c-neutral-muted hover:text-c-danger"
-												title="Aus Spezialisierung entfernen"
-												onClick={() => handleRemoveCourse(course)}
-											>
-												<XMarkIcon className="h-5" />
-											</button>
-										</div>
+										{canEdit && (
+											<div className="flex justify-end">
+												<button
+													className="rounded-full p-2 text-gray-400 hover:bg-c-neutral-muted hover:text-c-danger"
+													title="Aus Spezialisierung entfernen"
+													onClick={() => handleRemoveCourse(course)}
+												>
+													<XMarkIcon className="h-5" />
+												</button>
+											</div>
+										)}
 									</TableDataColumn>
 								</tr>
 							))}
@@ -234,8 +244,6 @@ export default function SpecializationManagementPage() {
 			</CenteredContainerXL>
 		</div>
 	);
-
-	return;
 }
 
 export const getServerSideProps = withTranslations(

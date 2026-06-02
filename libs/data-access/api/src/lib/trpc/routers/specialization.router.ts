@@ -1,5 +1,5 @@
 import { database } from "@self-learning/database";
-import { specializationSchema } from "@self-learning/types";
+import { resourcePermissionSelect, specializationSchema } from "@self-learning/types";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 import {
@@ -68,15 +68,7 @@ export const specializationRouter = t.router({
 					cardImgUrl: true,
 					imgUrlBanner: true,
 					permissions: {
-						select: {
-							accessLevel: true,
-							group: {
-								select: {
-									id: true,
-									name: true
-								}
-							}
-						}
+						select: resourcePermissionSelect
 					}
 				}
 			});

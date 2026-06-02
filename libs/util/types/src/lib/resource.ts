@@ -1,6 +1,6 @@
 import { AccessLevel } from "@prisma/client";
 import { z } from "zod";
-import { AccessLevelEnum } from "./permissions";
+import { AccessLevelEnum, PrismaResourcePermission } from "./permissions";
 
 // === for backend (ResourceInput & ResourceAccess)
 
@@ -101,6 +101,22 @@ export const ResourcePermissionsFormSchema = z
 	});
 
 export type ResourcePermissionsFormType = z.infer<typeof ResourcePermissionsFormSchema>;
+
+// less strict type alias for guards
+export type ResourcePermissionForm = ResourcePermissionsFormType[number];
+export type ResourceGuardPermissions = ReadonlyArray<
+	Pick<ResourcePermissionForm, "groupId" | "accessLevel">
+>;
+
+export function toResourcePermissionsForm(
+	permissions: PrismaResourcePermission[]
+): ResourcePermissionsFormType {
+	return permissions.map(p => ({
+		accessLevel: p.accessLevel,
+		groupId: p.group.id,
+		groupName: p.group.name
+	}));
+}
 
 // ===
 

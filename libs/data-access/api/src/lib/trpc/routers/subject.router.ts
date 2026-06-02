@@ -1,10 +1,8 @@
 import { database } from "@self-learning/database";
-import { subjectSchema } from "@self-learning/types";
+import { resourcePermissionSelect, subjectSchema } from "@self-learning/types";
 import { z } from "zod";
 import { adminProcedure, authProcedure, t } from "../trpc";
-import { TRPCError } from "@trpc/server";
 import {
-	canEdit,
 	preparePermissionsForCreate,
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
@@ -32,15 +30,7 @@ export const subjectRouter = t.router({
 				subtitle: true,
 				cardImgUrl: true,
 				permissions: {
-					select: {
-						accessLevel: true,
-						group: {
-							select: {
-								id: true,
-								name: true
-							}
-						}
-					}
+					select: resourcePermissionSelect
 				},
 				_count: { select: { courses: true, specializations: true } }
 			}
@@ -57,15 +47,7 @@ export const subjectRouter = t.router({
 				cardImgUrl: true,
 				imgUrlBanner: true,
 				permissions: {
-					select: {
-						accessLevel: true,
-						group: {
-							select: {
-								id: true,
-								name: true
-							}
-						}
-					}
+					select: resourcePermissionSelect
 				},
 				specializations: {
 					orderBy: { title: "asc" },
@@ -75,15 +57,7 @@ export const subjectRouter = t.router({
 						subtitle: true,
 						cardImgUrl: true,
 						permissions: {
-							select: {
-								accessLevel: true,
-								group: {
-									select: {
-										id: true,
-										name: true
-									}
-								}
-							}
+							select: resourcePermissionSelect
 						}
 					}
 				}

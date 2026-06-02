@@ -78,7 +78,7 @@ function AuthorDashboardPage({ author }: Props) {
 	const session = useRequiredSession();
 	const isAdmin = session.data?.user.role === "ADMIN";
 	const userId = session.data?.user.id;
-	const canCreate = author.memberships.length > 0;
+	const canCreate = isAdmin || author.memberships.length > 0;
 
 	return (
 		<CenteredSection className="bg-gray-50">
@@ -92,6 +92,7 @@ function AuthorDashboardPage({ author }: Props) {
 						emptyMessage={t("No_Accessible_Courses")}
 						createLabel={t("Create_Course")}
 						isAdmin={isAdmin}
+						canCreate={canCreate}
 					/>
 
 					<Divider />
@@ -104,6 +105,7 @@ function AuthorDashboardPage({ author }: Props) {
 						emptyMessage={t("No_Accessible_Lessons")}
 						createLabel={t("Create_Lesson")}
 						isAdmin={isAdmin}
+						canCreate={canCreate}
 					/>
 
 					<Divider />
@@ -167,13 +169,15 @@ function AuthorDashboardPage({ author }: Props) {
 			<section>
 				<div className="flex justify-between gap-4">
 					<SectionHeader title={t("My_Groups")} subtitle={t("My_Groups_Subtitle")} />
-					<Link href="/teaching/groups/create" className="mt-4">
-						<IconTextButton
-							text={t("Create_Group")}
-							className="btn-secondary"
-							icon={<PlusIcon className="icon h-5" />}
-						/>
-					</Link>
+					{canCreate && (
+						<Link href="/teaching/groups/create" className="mt-4">
+							<IconTextButton
+								text={t("Create_Group")}
+								className="btn-secondary"
+								icon={<PlusIcon className="icon h-5" />}
+							/>
+						</Link>
+					)}
 				</div>
 				<ul className="flex flex-col gap-1 py-4">
 					{author.memberships.length === 0 ? (

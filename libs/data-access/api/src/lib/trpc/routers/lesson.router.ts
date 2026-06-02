@@ -6,7 +6,8 @@ import {
 	greaterAccessLevel,
 	lessonSchema,
 	LessonContentType,
-	subtitleSrcSchema
+	subtitleSrcSchema,
+	resourcePermissionSelect
 } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { differenceInHours } from "date-fns";
@@ -62,6 +63,9 @@ export const lessonRouter = t.router({
 			where: { lessonId: input.lessonId },
 			include: {
 				authors: { select: { username: true } },
+				permissions: {
+					select: resourcePermissionSelect
+				},
 				requires: {
 					select: {
 						id: true,

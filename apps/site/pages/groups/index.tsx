@@ -15,7 +15,7 @@ import {
 	TableHeaderColumn
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
-import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
+import { CenteredSection, useCanCreate, useRequiredSession } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
 import { keepPreviousData } from "@tanstack/react-query";
 import { TRPCClientError } from "@trpc/client";
@@ -68,6 +68,7 @@ export default function GroupsPage() {
 
 	const session = useRequiredSession();
 	const isAdmin = session.data?.user.role === "ADMIN";
+	const canCreateGroup = useCanCreate();
 
 	const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
 	const [groupSearchDialogOpen, setGroupSearchDialogOpen] = useState(false);
@@ -111,10 +112,12 @@ export default function GroupsPage() {
 				<h1 className="text-5xl">Meine Gruppen</h1>
 
 				<div className="flex gap-2">
-					<Link href="/teaching/groups/create" className="btn-primary flex">
-						<PlusIcon className="h-5" />
-						<span>Gruppe erstellen</span>
-					</Link>
+					{canCreateGroup && (
+						<Link href="/teaching/groups/create" className="btn-primary flex">
+							<PlusIcon className="h-5" />
+							<span>Gruppe erstellen</span>
+						</Link>
+					)}
 
 					<IconTextButton
 						text="Gruppen zusammenführen"
@@ -162,10 +165,12 @@ export default function GroupsPage() {
 			<div className="mb-16 flex items-center justify-between gap-4">
 				<h1 className="text-5xl">Alle Gruppen</h1>
 
-				<Link href="/teaching/groups/create" className="btn-primary flex w-fit">
-					<PlusIcon className="h-5" />
-					<span>Gruppe erstellen</span>
-				</Link>
+				{canCreateGroup && (
+					<Link href="/teaching/groups/create" className="btn-primary flex w-fit">
+						<PlusIcon className="h-5" />
+						<span>Gruppe erstellen</span>
+					</Link>
+				)}
 			</div>
 
 			<SearchField

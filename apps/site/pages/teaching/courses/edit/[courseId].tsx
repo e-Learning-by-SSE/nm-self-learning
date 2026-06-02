@@ -3,7 +3,7 @@ import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
-import { CourseContent, extractLessonIds } from "@self-learning/types";
+import { CourseContent, extractLessonIds, resourcePermissionSelect, toResourcePermissionsForm } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -42,15 +42,7 @@ export const getServerSideProps = withTranslations(
 					}
 				},
 				permissions: {
-					select: {
-						accessLevel: true,
-						group: {
-							select: {
-								id: true,
-								name: true
-							}
-						}
-					}
+					select: resourcePermissionSelect
 				}
 			}
 		});
@@ -61,11 +53,8 @@ export const getServerSideProps = withTranslations(
 			};
 		}
 
-		const hasAccess = testResourceGuard(
-			user,
-			AccessLevel.EDIT,
-			course.permissions.map(p => ({ accessLevel: p.accessLevel, groupId: p.group.id }))
-		);
+		const permissions = toResourcePermissionsForm(course.permissions);
+		const hasAccess = testResourceGuard(user, AccessLevel.EDIT, permissions);
 		if (!hasAccess) {
 			return {
 				redirect: {
@@ -105,11 +94,7 @@ export const getServerSideProps = withTranslations(
 			subjectId: course.subject?.subjectId ?? null,
 			authors: course.authors.map(author => ({ username: author.username })),
 			content: content,
-			permissions: course.permissions.map(p => ({
-				accessLevel: p.accessLevel,
-				groupId: p.group.id,
-				groupName: p.group.name
-			}))
+			permissions
 		};
 
 		return {

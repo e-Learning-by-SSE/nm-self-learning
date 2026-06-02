@@ -1,3 +1,4 @@
+"use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Subject, subjectSchema } from "@self-learning/types";
 import { ImageOrPlaceholder, SectionHeader } from "@self-learning/ui/common";
@@ -9,11 +10,12 @@ import {
 	Upload,
 	useSlugify
 } from "@self-learning/ui/forms";
-import { SidebarEditorLayout } from "@self-learning/ui/layouts";
+import { SidebarEditorLayout, useResourceGuard } from "@self-learning/ui/layouts";
 import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { FormProvider, useForm } from "react-hook-form";
 import { Trans, useTranslation } from "next-i18next";
 import { GroupAccessEditor } from "../group/forms/group-form";
+import { AccessLevel } from "@prisma/client";
 
 export function SubjectEditor({
 	initialSubject,
@@ -39,6 +41,9 @@ export function SubjectEditor({
 		register,
 		formState: { errors }
 	} = form;
+
+	const hasFull = useResourceGuard(AccessLevel.FULL, initialSubject.permissions);
+	const showGroupAccessEditor = isNew || hasFull;
 
 	return (
 		<FormProvider {...form}>
@@ -124,10 +129,12 @@ export function SubjectEditor({
 									</LabeledField>
 								</div>
 
-								<GroupAccessEditor
-									subtitle="Gruppen, die auf diesen Kurs zugreifen können"
-									doUseDefaultGroup={isNew}
-								/>
+								{showGroupAccessEditor && (
+									<GroupAccessEditor
+										subtitle="Gruppen, die auf diesen Kurs zugreifen können"
+										doUseDefaultGroup={isNew}
+									/>
+								)}
 							</Form.SidebarSection>
 						</>
 					}

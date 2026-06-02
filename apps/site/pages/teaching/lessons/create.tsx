@@ -1,26 +1,30 @@
-import { Unauthorized, useRequiredSession } from "@self-learning/ui/layouts";
-import { LessonEditor, LessonFormModel, onLessonCreatorSubmit } from "@self-learning/teaching";
-import { useRouter } from "next/router";
+import { canCreate } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
-import { withTranslations } from "@self-learning/api";
+import { LessonEditor, LessonFormModel, onLessonCreatorSubmit } from "@self-learning/teaching";
 import { LoadingBox } from "@self-learning/ui/common";
+import { Unauthorized, useCanCreate, useRequiredSession } from "@self-learning/ui/layouts";
+import { withAuth } from "@self-learning/util/auth";
+import { useRouter } from "next/router";
+import { withTranslations } from "@self-learning/api";
 
 export default function CreateLessonPage() {
 	const session = useRequiredSession();
-	const authorUsername = session.data?.user.name;
+	const canCreateResource = useCanCreate();
 	const router = useRouter();
 	const { mutateAsync: createLessonAsync } = trpc.lesson.create.useMutation();
+
 	if (session.status === "loading") {
 		return <LoadingBox />;
 	}
-	if (!authorUsername) {
+
+	if (!canCreateResource) {
 		return (
-			<Unauthorized>Um eine Lerneinheit zu erstellen, musst du ein Autor sein.</Unauthorized>
+			<Unauthorized>
+				Um eine Lerneinheit zu erstellen, musst du Mitglied einer Gruppe sein.
+			</Unauthorized>
 		);
 	}
 
-	// This function is triggered when the Editor is closed.
-	// It sets the TRPC mutation and the url where the user is directed after submission
 	async function handleCreateClose(lesson?: LessonFormModel) {
 		await onLessonCreatorSubmit(
 			() => {
@@ -34,4 +38,12 @@ export default function CreateLessonPage() {
 	return <LessonEditor onSubmit={handleCreateClose} isFullScreen={true} />;
 }
 
-export const getServerSideProps = withTranslations(["common", "feature-question-types"]);
+export const getServerSideProps = withTranslations(
+	["common", "feature-question-types"],
+	withAuth(async (_ctx, user) => {
+		if (!(await canCreate(user))) {
+			return { redirect: { destination: "/403", permanent: false } };
+		}
+		return { props: {} };
+	})
+);

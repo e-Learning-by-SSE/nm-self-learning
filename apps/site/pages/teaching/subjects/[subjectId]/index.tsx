@@ -1,11 +1,13 @@
 import { PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { AccessLevel } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { ResourceGroupChips } from "@self-learning/teaching";
 import { ImageOrPlaceholder, LoadingBox, SectionHeader } from "@self-learning/ui/common";
-import { CenteredContainerXL, TopicHeader, Unauthorized } from "@self-learning/ui/layouts";
+import { CenteredContainerXL, TopicHeader, useResourceGuard } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { withTranslations } from "@self-learning/api";
+import { toResourcePermissionsForm } from "@self-learning/types";
 
 export default function SubjectManagementPage() {
 	const router = useRouter();
@@ -15,19 +17,11 @@ export default function SubjectManagementPage() {
 		{ enabled: !!router.query.subjectId }
 	);
 
-	if (isLoading) {
-		return <LoadingBox />;
-	}
+	const permittedGroups = subject ? toResourcePermissionsForm(subject.permissions) : undefined;
+	const canEdit = useResourceGuard(AccessLevel.EDIT, permittedGroups);
 
-	if (!subject) {
-		return (
-			<Unauthorized>
-				<ul className="list-inside list-disc">
-					<li>Administratoren</li>
-					<li>Administratoren für Fachgebiet ({router.query.subjectId})</li>
-				</ul>
-			</Unauthorized>
-		);
+	if (isLoading || !subject) {
+		return <LoadingBox />;
 	}
 
 	return (
@@ -39,13 +33,15 @@ export default function SubjectManagementPage() {
 				title={subject.title}
 				subtitle={subject.subtitle}
 			>
-				<Link
-					href={`/teaching/subjects/${subject.subjectId}/edit`}
-					className="btn-primary absolute top-8 w-fit self-end"
-				>
-					<PencilIcon className="icon h-5" />
-					<span>Bearbeiten</span>
-				</Link>
+				{canEdit && (
+					<Link
+						href={`/teaching/subjects/${subject.subjectId}/edit`}
+						className="btn-primary absolute top-8 w-fit self-end"
+					>
+						<PencilIcon className="icon h-5" />
+						<span>Bearbeiten</span>
+					</Link>
+				)}
 			</TopicHeader>
 
 			<CenteredContainerXL>
@@ -56,15 +52,17 @@ export default function SubjectManagementPage() {
 					subtitle="Spezialisierungen dieses Fachgebiets."
 				/>
 
-				<div className="mb-8 flex flex-wrap gap-4">
-					<Link
-						className="btn-primary w-fit"
-						href={`/teaching/subjects/${subject.subjectId}/create`}
-					>
-						<PlusIcon className="icon h-5" />
-						<span>Spezialisierung erstellen</span>
-					</Link>
-				</div>
+				{canEdit && (
+					<div className="mb-8 flex flex-wrap gap-4">
+						<Link
+							className="btn-primary w-fit"
+							href={`/teaching/subjects/${subject.subjectId}/create`}
+						>
+							<PlusIcon className="icon h-5" />
+							<span>Spezialisierung erstellen</span>
+						</Link>
+					</div>
+				)}
 
 				<ul className="flex flex-col gap-4">
 					{subject.specializations.map(spec => (

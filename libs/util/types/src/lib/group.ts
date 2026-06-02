@@ -1,4 +1,4 @@
-import { AccessLevel, GroupRole } from "@prisma/client";
+import { GroupRole } from "@prisma/client";
 import { z } from "zod";
 import { add } from "date-fns";
 import { ResourceAccessFormSchema } from "./resource";
@@ -90,12 +90,6 @@ export function createEmptyGroup(): Group {
 		members: []
 	};
 }
-
-// Group Access
-export type GroupAccess = {
-	groupId: number;
-	accessLevel: AccessLevel;
-};
 
 // Display Group Entry
 export const GroupEntrySchema = z.object({

@@ -75,7 +75,8 @@ export function AuthorResourceSection({
 	searchPlaceholder,
 	emptyMessage,
 	createLabel,
-	isAdmin
+	isAdmin,
+	canCreate = false
 }: {
 	kind: ResourceKind;
 	title: string;
@@ -84,6 +85,7 @@ export function AuthorResourceSection({
 	emptyMessage: string;
 	createLabel?: string;
 	isAdmin: boolean;
+	canCreate?: boolean;
 }) {
 	const [filterTitle, setFilterTitle] = useState("");
 	const [page, setPage] = useState(1);
@@ -102,7 +104,7 @@ export function AuthorResourceSection({
 		<section>
 			<div className="flex justify-between gap-4">
 				<SectionHeader title={title} subtitle={subtitle} />
-				{createLabel && createHref && (
+				{createLabel && createHref && canCreate && (
 					<Link href={createHref} className="mt-4">
 						<IconTextButton
 							className="btn-secondary"

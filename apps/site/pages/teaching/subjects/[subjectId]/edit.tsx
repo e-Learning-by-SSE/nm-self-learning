@@ -1,6 +1,6 @@
 import { trpc } from "@self-learning/api-client";
 import { SubjectEditor } from "@self-learning/teaching";
-import { Subject, subjectSchema } from "@self-learning/types";
+import { resourcePermissionSelect, Subject, subjectSchema, toResourcePermissionsForm } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { withTranslations } from "@self-learning/api";
 import { withAuth } from "@self-learning/util/auth";
@@ -31,15 +31,7 @@ export const getServerSideProps = withTranslations(
 				cardImgUrl: true,
 				imgUrlBanner: true,
 				permissions: {
-					select: {
-						accessLevel: true,
-						group: {
-							select: {
-								id: true,
-								name: true
-							}
-						}
-					}
+					select: resourcePermissionSelect
 				}
 			}
 		});
@@ -47,11 +39,7 @@ export const getServerSideProps = withTranslations(
 		if (!subject) {
 			return { notFound: true };
 		}
-		const permissions = subject.permissions.map(p => ({
-			accessLevel: p.accessLevel,
-			groupId: p.group.id,
-			groupName: p.group.name
-		}));
+		const permissions = toResourcePermissionsForm(subject.permissions);
 		const hasAccess = testResourceGuard(user, AccessLevel.EDIT, permissions);
 		if (!hasAccess) {
 			return {

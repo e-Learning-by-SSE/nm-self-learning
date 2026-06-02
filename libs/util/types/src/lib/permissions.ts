@@ -1,4 +1,4 @@
-import { AccessLevel, GroupRole } from "@prisma/client";
+import { AccessLevel, GroupRole, Prisma } from "@prisma/client";
 import z from "zod";
 import type { ResourceInput } from "./resource";
 
@@ -6,6 +6,20 @@ export type PermissionInput = {
 	groupId: number;
 	accessLevel: AccessLevel;
 } & ResourceInput;
+
+export const resourcePermissionSelect = {
+	accessLevel: true,
+	group: {
+		select: {
+			id: true,
+			name: true
+		}
+	}
+} as const satisfies Prisma.PermissionSelect;
+
+export type PrismaResourcePermission = Prisma.PermissionGetPayload<{
+	select: typeof resourcePermissionSelect;
+}>;
 
 // ===
 export const AccessLevelEnum = z.enum(AccessLevel);
