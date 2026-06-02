@@ -10,6 +10,36 @@ import {
 } from "../../permissions/permission.service";
 import { TRPCError } from "@trpc/server";
 import { AccessLevel } from "@prisma/client";
+import { UserFromSession } from "../context";
+
+const attachmentSchema = z.object({
+	subjectId: z.string(),
+	specializationId: z.string(),
+	courseId: z.string()
+});
+
+type AttachmentType = z.infer<typeof attachmentSchema>;
+
+async function canAttachCourse(user: UserFromSession, input: AttachmentType) {
+	// Is website ADMIN or ( full(course) ^ ( edit(specialization) v edit(subject) ) )
+	if (user.role === "ADMIN") {
+		return true;
+	}
+	const { courseId, specializationId, subjectId } = input;
+	const hasCourseAccess = await hasResourceAccess(user.id, {
+		accessLevel: AccessLevel.FULL,
+		courseId
+	});
+	const hasSpAccess = await hasResourceAccess(user.id, {
+		accessLevel: AccessLevel.EDIT,
+		specializationId
+	});
+	const hasSbAccess = await hasResourceAccess(user.id, {
+		accessLevel: AccessLevel.EDIT,
+		subjectId
+	});
+	return hasCourseAccess && (hasSpAccess || hasSbAccess);
+}
 
 export const specializationRouter = t.router({
 	getById: authProcedure.input(z.object({ specializationId: z.string() })).query(({ input }) => {
@@ -113,66 +143,49 @@ export const specializationRouter = t.router({
 
 			return specialization;
 		}),
-	addCourse: authProcedure
-		.input(
-			z.object({ subjectId: z.string(), specializationId: z.string(), courseId: z.string() })
-		)
-		.mutation(async ({ input: { subjectId, specializationId, courseId }, ctx }) => {
-			// Is website ADMIN or ( full(course) ^ ( edit(specialization) v edit(subject) ) )
-			if (ctx.user.role !== "ADMIN") {
-				const hasCourseAccess = await hasResourceAccess(ctx.user.id, {
-					accessLevel: AccessLevel.FULL,
-					courseId
-				});
-				const hasSpAccess = await hasResourceAccess(ctx.user.id, {
-					accessLevel: AccessLevel.EDIT,
-					specializationId
-				});
-				const hasSbAccess = await hasResourceAccess(ctx.user.id, {
-					accessLevel: AccessLevel.EDIT,
-					subjectId
-				});
-				if (hasCourseAccess && (hasSpAccess || hasSbAccess)) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
-						message: "Insufficient permissions."
-					});
-				}
-			}
-
-			const added = await database.specialization.update({
-				where: { specializationId },
-				data: { courses: { connect: { courseId } } },
-				select: { specializationId: true }
+	addCourse: authProcedure.input(attachmentSchema).mutation(async ({ input, ctx }) => {
+		if (!(await canAttachCourse(ctx.user, input))) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: "Insufficient permissions."
 			});
+		}
 
-			console.log(
-				"[specializationRouter.addCourse]: Course added to specialization by",
-				ctx.user.name,
-				{ specializationId, courseId }
-			);
-			return added;
-		}),
-	removeCourse: authProcedure
-		.input(
-			z.object({ subjectId: z.string(), specializationId: z.string(), courseId: z.string() })
-		)
-		.mutation(async ({ input: { specializationId, courseId }, ctx }) => {
-			if (!(await canEdit(ctx.user, { specializationId }))) {
-				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
-			}
+		const { specializationId, courseId } = input;
 
-			const added = await database.specialization.update({
-				where: { specializationId },
-				data: { courses: { disconnect: { courseId } } },
-				select: { specializationId: true }
+		const added = await database.specialization.update({
+			where: { specializationId },
+			data: { courses: { connect: { courseId } } },
+			select: { specializationId: true }
+		});
+
+		console.log(
+			"[specializationRouter.addCourse]: Course added to specialization by",
+			ctx.user.name,
+			{ specializationId, courseId }
+		);
+		return added;
+	}),
+	removeCourse: authProcedure.input(attachmentSchema).mutation(async ({ input, ctx }) => {
+		if (!(await canAttachCourse(ctx.user, input))) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: "Insufficient permissions."
 			});
+		}
+		const { specializationId, courseId } = input;
 
-			console.log(
-				"[specializationRouter.removeCourse]: Course removed from specialization by",
-				ctx.user.name,
-				{ specializationId, courseId }
-			);
-			return added;
-		})
+		const added = await database.specialization.update({
+			where: { specializationId },
+			data: { courses: { disconnect: { courseId } } },
+			select: { specializationId: true }
+		});
+
+		console.log(
+			"[specializationRouter.removeCourse]: Course removed from specialization by",
+			ctx.user.name,
+			{ specializationId, courseId }
+		);
+		return added;
+	})
 });

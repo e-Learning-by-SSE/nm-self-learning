@@ -372,7 +372,10 @@ export async function getEffectiveResourceAccesses(input: ResourceInput) {
 	// Compute best access per resource
 	for (const perm of permissions) {
 		for (const member of perm.group.members) {
-			if (!users[member.user.id]) {
+			if (
+				!users[member.user.id] ||
+				greaterAccessLevel(perm.accessLevel, users[member.user.id].accessLevel)
+			) {
 				users[member.user.id] = {
 					accessLevel: perm.accessLevel,
 					id: perm.id,
@@ -384,9 +387,6 @@ export async function getEffectiveResourceAccesses(input: ResourceInput) {
 						members: perm.group.members.map(m => m.user)
 					}
 				};
-			}
-			if (greaterAccessLevel(users[member.user.id].accessLevel, perm.accessLevel)) {
-				users[member.user.id].accessLevel = perm.accessLevel;
 			}
 		}
 	}
