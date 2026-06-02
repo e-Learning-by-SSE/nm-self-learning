@@ -2,24 +2,8 @@ import { TRPCError } from "@trpc/server";
 import { authProcedure, t } from "../trpc";
 import { database } from "@self-learning/database";
 import { z } from "zod";
-
-interface LlmConfig {
-	serverUrl: string;
-	apiKey: string | null;
-	defaultModel: string;
-}
-
-type Message = {
-	role: "system" | "user";
-	content: string;
-};
-
-const llmApiResponseSchema = z.object({
-	message: z.object({
-		content: z.string(),
-		role: z.string()
-	})
-});
+import { Message } from "@self-learning/ai-tutor";
+import { sendChatRequest, LlmConfig } from "../../llm/openai_api_handler";
 
 const evaluateInputSchema = z.object({
 	questionStatement: z.string().trim().min(1, "Question statement is required."),
@@ -83,7 +67,7 @@ export const textEvaluationRouter = t.router({
 			];
 
 			// Step 4: Send request to LLM server and get raw response
-			const rawContent = await sendEvaluationRequest(messages, llmConfig);
+			const rawContent = await sendChatRequest(messages, llmConfig);
 
 			if (!rawContent) {
 				return { ok: false as const };
@@ -164,58 +148,6 @@ ${input.passingThreshold}%
 
 ## Student's Answer
 ${input.studentAnswer}`;
-}
-
-/**
- * Sends the evaluation request to the LLM server.
- * Handles HTTP errors and timeouts, but does not do any parsing or validation of the response content.
- * @param messages The system and user messages to send to the LLM
- * @param config The LLM configuration containing server URL and API key
- * @returns The raw content string from the LLM response, which still needs to be parsed and validated
- */
-async function sendEvaluationRequest(
-	messages: Message[],
-	config: LlmConfig
-): Promise<string | null> {
-	const TIMEOUT_MS = 30_000;
-	const controller = new AbortController();
-	const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
-	try {
-		const response = await fetch(`${config.serverUrl}/chat`, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				...(config.apiKey ? { Authorization: `Bearer ${config.apiKey}` } : {})
-			},
-			body: JSON.stringify({
-				messages,
-				model: config.defaultModel,
-				stream: false,
-				temperature: 0,
-				maxTokens: 300
-			}),
-			signal: controller.signal
-		});
-
-		clearTimeout(timeout);
-
-		if (!response.ok) {
-			return null;
-		}
-
-		const data = await response.json();
-		const validated = llmApiResponseSchema.safeParse(data);
-
-		if (!validated.success) {
-			return null;
-		}
-
-		return validated.data.message.content;
-	} catch (error) {
-		clearTimeout(timeout);
-		return null;
-	}
 }
 
 /**

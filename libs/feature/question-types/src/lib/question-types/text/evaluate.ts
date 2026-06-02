@@ -64,25 +64,29 @@ export async function evaluateTextAnswerWithAI(
 		return evaluateTextWithoutAI();
 	}
 
-	const result = await callRouter({
-		questionStatement: question.statement,
-		solutionOrConcepts: question.aiEvaluation.solutionOrConcepts,
-		passingThreshold: question.aiEvaluation.passingThreshold,
-		studentAnswer
-	});
+	try {
+		const result = await callRouter({
+			questionStatement: question.statement,
+			solutionOrConcepts: question.aiEvaluation.solutionOrConcepts,
+			passingThreshold: question.aiEvaluation.passingThreshold,
+			studentAnswer
+		});
 
-	if (!result.ok) {
-		// In case of any error during the evaluation process (network issues, server errors, unexpected response format, etc.),
-		// we return a default evaluation indicating that the evaluation could not be completed,
-		// but we mark it as partially correct to avoid penalizing the student.
+		if (!result.ok) {
+			// In case of any error during the evaluation process (network issues, server errors, unexpected response format, etc.),
+			// we return a default evaluation indicating that the evaluation could not be completed,
+			// but we mark it as partially correct to avoid penalizing the student.
+			return buildErrorEvaluation();
+		}
+
+		return {
+			isCorrect: verdictToIsCorrect(result.verdict),
+			verdict: result.verdict,
+			feedback: result.feedback
+		};
+	} catch (error) {
 		return buildErrorEvaluation();
 	}
-
-	return {
-		isCorrect: verdictToIsCorrect(result.verdict),
-		verdict: result.verdict,
-		feedback: result.feedback
-	};
 }
 
 /**

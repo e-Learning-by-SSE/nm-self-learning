@@ -6,10 +6,9 @@
     "categoryNamePlaceholder": "Category name (e.g. Noun)",
     "restrictNodeTypesHint": "⚠️ Note: When node types are restricted, the values in the initial tree should match the defined category words. Otherwise it may cause inconsistent display for students.",
     "Enable AI evaluation": "Enable AI evaluation",
-    "The AI evaluation could not be performed. Your answer was accepted anyway.": "The AI evaluation could not be performed. Your answer was accepted anyway. A tutor can manually review your answer.",
     "Automatic evaluation is not available": "Automatic evaluation is not available",
     "Free-text questions are not automatically evaluated and are therefore always considered correct.": "Free-text questions are not automatically evaluated and are therefore always considered correct.",
-    "The AI is processing your response. Please wait!": "The AI is processing your response. Please wait!",
+    "Evaluating... Please wait!": "Evaluating... Please wait!",
     "Checking LLM configuration…": "Checking LLM configuration…",
     "AI evaluation is not available (no LLM configuration available)": "AI evaluation is not available (no LLM configuration available)",
     "When enabled, the AI will automatically evaluate the open-ended responses of the students based on your sample solution or expected concepts.": "When enabled, the AI will automatically evaluate the open-ended responses of the students based on your sample solution or expected concepts.",
@@ -32,5 +31,7 @@
     "Partially Wrong": "Partially Wrong",
     "Wrong": "Wrong",
     "Answer": "Answer",
-    "AI evaluation is not available (answer accepted as correct without AI evaluation)": "AI evaluation is not available (answer accepted as correct without AI evaluation)"
+    "Evaluation Failed": "Evaluation Failed",
+    "An error occurred while evaluating the answer. Your answer was accepted anyway.": "An error occurred while evaluating the answer. Your answer was accepted anyway.",
+    "Evaluation is not available (answer accepted as correct without evaluation)": "Evaluation is not available (answer accepted as correct without evaluation)"
 }

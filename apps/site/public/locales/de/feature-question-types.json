@@ -6,10 +6,9 @@
     "categoryNamePlaceholder": "Kategoriename (z. B. Nomen)",
     "restrictNodeTypesHint": "⚠️ Hinweis: Wenn Knotentypen eingeschränkt sind, sollten die Werte im Anfangsbaum mit den definierten Kategoriewörtern übereinstimmen. Andernfalls kann es zu inkonsistenter Darstellung für Studierende kommen.",
     "Enable AI evaluation": "KI-Bewertung aktivieren",
-    "The AI evaluation could not be performed. Your answer was accepted anyway.": "Die KI-Bewertung konnte nicht durchgeführt werden. Deine Antwort wurde trotzdem akzeptiert. Ein Betreuer kann deine Antwort manuell prüfen.",
     "Automatic evaluation is not available": "Automatische Bewertung nicht verfügbar",
     "Freitextfragen werden nicht automatisch bewertet und daher immer als korrekt gewertet.": "Freitextfragen werden nicht automatisch bewertet und daher immer als korrekt gewertet.",
-    "The AI is processing your response. Please wait!": "KI wertet deine Antwort aus, bitte warte…",
+    "Evaluating... Please wait!": "Bewerte... Bitte warten!",
     "Checking LLM configuration…": "Prüfe LLM-Konfiguration…",
     "AI evaluation is not available (no LLM configuration available)": "KI-Bewertung nicht verfügbar (keine LLM-Konfiguration vorhanden)",
     "When enabled, the AI will automatically evaluate the open-ended responses of the students based on your sample solution or expected concepts.": "Wenn aktiviert, bewertet die KI automatisch die offenen Antworten der Studierenden basierend auf deiner Musterlösung oder den erwarteten Konzepten.",
@@ -32,5 +31,7 @@
     "Partially Wrong": "Überwiegend falsch",
     "Wrong": "Falsch",
     "Answer": "Antwort",
-    "AI evaluation is not available (answer accepted as correct without AI evaluation)": "KI-Bewertung nicht verfügbar (Antwort ohne KI-Bewertung als korrekt akzeptiert)"
+    "Evaluation Failed": "Bewertung fehlgeschlagen",
+    "An error occurred while evaluating the answer. Your answer was accepted anyway.": "Beim Bewerten der Antwort ist ein Fehler aufgetreten. Deine Antwort wurde trotzdem akzeptiert.",
+    "Evaluation is not available (answer accepted as correct without evaluation)": "Bewertung nicht verfügbar (Antwort ohne Bewertung als korrekt akzeptiert)"
 }

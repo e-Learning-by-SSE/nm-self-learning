@@ -109,9 +109,7 @@ function LoadingIndicator() {
 	return (
 		<div className="flex items-center gap-3 rounded-lg border border-c-border bg-c-surface-2 p-4">
 			<div className="h-5 w-5 animate-spin rounded-full border-2 border-c-primary border-t-transparent" />
-			<span className="text-sm text-c-text-muted">
-				{t("The AI is processing your response. Please wait!")}
-			</span>
+			<span className="text-sm text-c-text-muted">{t("Evaluating... Please wait!")}</span>
 		</div>
 	);
 }
@@ -144,10 +142,10 @@ function EvaluationResult({
 	if (evaluation.evaluationError) {
 		return (
 			<div className="rounded-lg border border-yellow-400 bg-yellow-50 p-4 text-yellow-800">
-				<p className="font-medium">{t("Automatic evaluation is not available")}</p>
+				<p className="font-medium">{t("Evaluation Failed.")}</p>
 				<p className="mt-1 text-sm">
 					{t(
-						"The AI evaluation could not be performed. Your answer was accepted anyway."
+						"An error occurred while evaluating the answer. Your answer was accepted anyway."
 					)}
 				</p>
 			</div>
@@ -157,11 +155,11 @@ function EvaluationResult({
 	// If no AI configuration is available, inform the student that their answer is accepted but not automatically evaluated.
 	if (!hasAiConfig) {
 		return (
-			<div className="rounded-lg border border-green-500 bg-green-50 p-4 text-green-800">
+			<div className="rounded-lg border border-gray-500 bg-gray-50 p-4 text-gray-800">
 				<p className="font-medium">{t("Answer submitted")}</p>
 				<p className="mt-1 text-sm">
 					{t(
-						"Open-ended questions are not automatically evaluated and are therefore always marked as correct."
+						"Evaluation is not available (answer accepted as correct without evaluation)"
 					)}
 				</p>
 			</div>
