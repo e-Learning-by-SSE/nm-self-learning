@@ -13,7 +13,7 @@ const llmApiResponseSchema = z.object({
 	)
 });
 
-interface LlmConfig {
+export interface LlmConfig {
 	serverUrl: string;
 	apiKey: string | null;
 	defaultModel: string;
