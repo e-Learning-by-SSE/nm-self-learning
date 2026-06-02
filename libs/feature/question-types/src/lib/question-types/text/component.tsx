@@ -37,6 +37,7 @@ const VERDICT_STYLES: Record<TextVerdict, string> = {
  * if AI evaluation is not available or if an error occurs during evaluation.
  */
 export default function TextAnswer() {
+	const { t } = useTranslation("feature-question-types");
 	const { question, setAnswer, answer, evaluation, setEvaluation } = useQuestion("text");
 	const [isEvaluating, setIsEvaluating] = useState(false);
 	const typedEvaluation = evaluation as TextEvaluation | null;
@@ -84,7 +85,7 @@ export default function TextAnswer() {
 		<div className="flex flex-col gap-4">
 			<TextArea
 				rows={12}
-				label="Antwort"
+				label={t("Answer")}
 				value={answer?.value ?? ""}
 				disabled={isSubmitted}
 				onChange={e => setAnswer({ type: "text", value: e.target.value })}
@@ -96,7 +97,7 @@ export default function TextAnswer() {
 			{typedEvaluation && !isEvaluating && !typedEvaluation.pending && (
 				<EvaluationResult
 					evaluation={typedEvaluation}
-					hasAiConfig={!!question.aiEvaluation}
+					hasAiConfig={!!question.aiEvaluation?.solutionOrConcepts?.trim()}
 				/>
 			)}
 		</div>
@@ -130,7 +131,6 @@ function EvaluationResult({
 	hasAiConfig: boolean;
 }) {
 	const { t } = useTranslation("feature-question-types");
-
 	const VERDICT_LABELS: Record<TextVerdict, string> = {
 		correct: t("Correct"),
 		"partially-correct": t("Partially Correct"),
@@ -142,7 +142,7 @@ function EvaluationResult({
 	if (evaluation.evaluationError) {
 		return (
 			<div className="rounded-lg border border-yellow-400 bg-yellow-50 p-4 text-yellow-800">
-				<p className="font-medium">{t("Evaluation Failed.")}</p>
+				<p className="font-medium">{t("Evaluation Failed")}</p>
 				<p className="mt-1 text-sm">
 					{t(
 						"An error occurred while evaluating the answer. Your answer was accepted anyway."

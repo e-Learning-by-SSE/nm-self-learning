@@ -67,7 +67,9 @@ export const textEvaluationRouter = t.router({
 			];
 
 			// Step 4: Send request to LLM server and get raw response
-			const rawContent = await sendChatRequest(messages, llmConfig);
+			const rawContent = await sendChatRequest(messages, llmConfig, { temperature: 0 }).catch(
+				() => null
+			);
 
 			if (!rawContent) {
 				return { ok: false as const };

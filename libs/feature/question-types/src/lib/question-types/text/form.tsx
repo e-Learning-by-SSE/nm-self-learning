@@ -10,7 +10,7 @@ type TextForm = QuestionTypeForm<TextQuestion>;
 /**
  * The form component for configuring a text question, including the AI evaluation settings.
  * It checks if llm-config is available and shows the appropriate fields for entering the sample solution or expected concepts,
- * as well as the passing threshold. If llm-configis not available, it does not show these fields,
+ * as well as the passing threshold. If llm-config is not available, it does not show these fields,
  * and the evaluation will default to accepting any answer.
  *
  * The main features of this component include:
@@ -66,9 +66,31 @@ export default function TextForm({ index }: { index: number }) {
 						control={control}
 						name={`quiz.questions.${index}.aiEvaluation.passingThreshold`}
 						rules={{
-							required: t("Please enter the passing threshold percentage."),
-							min: { value: 1, message: t("Minimum 1%") },
-							max: { value: 100, message: t("Maximum 100%") }
+							validate: value => {
+								// Only validate if there's a non-empty solution or concepts provided
+								const solutionOrConcepts =
+									control._formValues.quiz.questions[index].aiEvaluation
+										.solutionOrConcepts;
+								if (
+									solutionOrConcepts === undefined ||
+									solutionOrConcepts === null ||
+									solutionOrConcepts === ""
+								) {
+									return true; // No solution/concepts means no AI evaluation, so threshold is irrelevant
+								}
+
+								if (value === undefined || value === null) {
+									return t("Please enter the passing threshold percentage.");
+								}
+
+								const num = Number(value);
+								if (Number.isNaN(num))
+									return t("Please enter the passing threshold percentage.");
+								if (num < 0) return t("Minimum 0%");
+								if (num > 100) return t("Maximum 100%");
+
+								return true;
+							}
 						}}
 						render={({ field, fieldState }) => (
 							<LabeledField
@@ -79,7 +101,7 @@ export default function TextForm({ index }: { index: number }) {
 									<input
 										{...field}
 										type="number"
-										min={1}
+										min={0}
 										max={100}
 										className="textfield w-24"
 										onChange={e => field.onChange(Number(e.target.value))}

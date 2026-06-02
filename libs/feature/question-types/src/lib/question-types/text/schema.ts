@@ -8,7 +8,7 @@ export const textVerdictSchema = z.enum([
 	"wrong"
 ]);
 
-export const TEXT_AI_EVALUATION_PASSING_THRESHOLD_MIN = 1;
+export const TEXT_AI_EVALUATION_PASSING_THRESHOLD_MIN = 0;
 export const TEXT_AI_EVALUATION_PASSING_THRESHOLD_MAX = 100;
 
 export type TextVerdict = z.infer<typeof textVerdictSchema>;
