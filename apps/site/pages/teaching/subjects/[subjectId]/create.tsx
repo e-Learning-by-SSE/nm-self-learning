@@ -16,6 +16,7 @@ import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { useRouter } from "next/router";
 import { FormProvider, useForm } from "react-hook-form";
 import { withTranslations } from "@self-learning/api";
+import { useWatch } from "react-hook-form";
 
 export default function SpecializationPage() {
 	useRequiredSession();
@@ -72,8 +73,8 @@ export function SpecializationEditor({
 	});
 
 	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
-	const cardImgUrl = form.watch("cardImgUrl");
-	const imgUrlBanner = form.watch("imgUrlBanner");
+	const cardImgUrl = useWatch({ name: "cardImgUrl", control: form.control });
+	const imgUrlBanner = useWatch({ name: "imgUrlBanner", control: form.control });
 
 	const {
 		register,
