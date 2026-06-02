@@ -1,5 +1,5 @@
 import { DropdownMenu, IconTextButton, SectionHeader } from "@self-learning/ui/common";
-import { Controller, useFieldArray, useFormContext, useFormState } from "react-hook-form";
+import { Controller, useFieldArray, useFormContext, useFormState, useWatch } from "react-hook-form";
 import { GroupFormModel } from "../group-editor";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { PlusIcon } from "@heroicons/react/24/solid";
@@ -13,7 +13,12 @@ import {
 	ResourceSearchEntry,
 	toResourceAccessForm
 } from "@self-learning/types";
-import { GroupPermissionRowEditor, GroupPermissionTable } from "../editors/group-permission";
+import {
+	GroupPermissionRow,
+	GroupPermissionRowEditor,
+	GroupPermissionTable
+} from "../editors/group-permission";
+import { useArrayDiff } from "../misc/use-array-diff";
 
 /**
  * GroupPermissionsEditor - Section for editing a group's resource permissions.
@@ -55,6 +60,18 @@ export function GroupPermissionsEditor() {
 		setSearchResourceKinds(kinds);
 		setSearchResourceActive(true);
 	}
+
+	const permissions = useWatch({
+		control,
+		name: "permissions"
+	});
+	const diff = useArrayDiff({
+		current: permissions,
+		getKey: getResourceAccessFormKey,
+		isEqual: (left, right) =>
+			getResourceAccessFormKey(left) === getResourceAccessFormKey(right) &&
+			left.accessLevel === right.accessLevel
+	});
 
 	return (
 		<CenteredSection>
@@ -109,6 +126,7 @@ export function GroupPermissionsEditor() {
 							<>
 								<GroupPermissionRowEditor
 									permission={field.value}
+									diffStatus={diff.getStatus(field.value)}
 									onChange={field.onChange}
 									onDelete={() => editor.remove(index)}
 								/>
@@ -123,6 +141,13 @@ export function GroupPermissionsEditor() {
 								)}
 							</>
 						)}
+					/>
+				))}
+				{diff.deleted.map(item => (
+					<GroupPermissionRow
+						key={item.key}
+						permission={item.value}
+						diffStatus="deleted"
 					/>
 				))}
 			</GroupPermissionTable>

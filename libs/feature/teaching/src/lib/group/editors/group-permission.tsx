@@ -14,6 +14,7 @@ import {
 	TableHeaderColumn
 } from "@self-learning/ui/common";
 import { GenericCombobox } from "./group-members";
+import { ArrayDiffStatus, TableDiffColumn } from "../misc/use-array-diff";
 
 export type PermissionFormModel = ResourceAccessFormType;
 
@@ -170,10 +171,12 @@ export function usePermissionEditor(
  */
 export function GroupPermissionRowEditor({
 	permission,
+	diffStatus,
 	onChange,
 	onDelete
 }: {
 	permission: PermissionFormModel;
+	diffStatus?: ArrayDiffStatus;
 	onChange: OnDialogCloseFn<PermissionFormModel>;
 	onDelete?: OnDialogCloseFn<PermissionFormModel>;
 }) {
@@ -182,9 +185,9 @@ export function GroupPermissionRowEditor({
 
 	return (
 		<tr>
-			<TableDataColumn>
+			<TableDiffColumn status={diffStatus}>
 				<span className="text-light">{p.type}</span>
-			</TableDataColumn>
+			</TableDiffColumn>
 
 			<TableDataColumn>
 				<span className="text-light">{p.title}</span>
@@ -259,11 +262,13 @@ export function GroupPermissionTable({ children }: { children: React.ReactNode[]
  */
 export function GroupPermissionRow({
 	permission,
+	diffStatus,
 	onEdit,
 	onDelete,
 	onRelations
 }: {
 	permission: PermissionFormModel;
+	diffStatus?: ArrayDiffStatus;
 	onEdit?: OnDialogCloseFn<PermissionFormModel>;
 	onDelete?: OnDialogCloseFn<PermissionFormModel>;
 	onRelations?: OnDialogCloseFn<PermissionFormModel>;
@@ -272,9 +277,9 @@ export function GroupPermissionRow({
 
 	return (
 		<tr>
-			<TableDataColumn>
+			<TableDiffColumn status={diffStatus}>
 				<span className="text-light">{p.type}</span>
-			</TableDataColumn>
+			</TableDiffColumn>
 
 			<TableDataColumn>
 				<span className="text-light">{p.title}</span>

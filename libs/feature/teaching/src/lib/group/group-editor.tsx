@@ -124,9 +124,15 @@ export function GroupEditor({
 							<Tab>Mitglieder</Tab>
 							<Tab>Berechtigungen</Tab>
 						</Tabs>
-						{selectedTab === 0 && <GroupInfoEditor fillInSingleGroup={isNew} />}
-						{selectedTab === 1 && <GroupMembersEditor />}
-						{selectedTab === 2 && <GroupPermissionsEditor />}
+						<div className={selectedTab !== 0 ? "hidden" : undefined}>
+							<GroupInfoEditor fillInSingleGroup={isNew} />
+						</div>
+						<div className={selectedTab !== 1 ? "hidden" : undefined}>
+							<GroupMembersEditor />
+						</div>
+						<div className={selectedTab !== 2 ? "hidden" : undefined}>
+							<GroupPermissionsEditor />
+						</div>
 						{/*{selectedTab === 3 && <GroupGrantsEditor />} */}
 					</div>
 				</div>
