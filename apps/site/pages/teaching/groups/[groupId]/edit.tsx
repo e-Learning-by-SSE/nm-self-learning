@@ -74,6 +74,7 @@ export default function EditGroupPage({ group }: EditGroupProps) {
 					title: "Fehler",
 					subtitle: JSON.stringify(error, null, 2)
 				});
+				throw error;
 			}
 		}
 		await update();

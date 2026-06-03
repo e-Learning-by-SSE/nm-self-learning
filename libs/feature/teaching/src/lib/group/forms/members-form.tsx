@@ -31,7 +31,7 @@ export function GroupMembersEditor() {
 		name: "members",
 		control
 	});
-	const { errors } = useFormState({ control });
+	const { errors, submitCount } = useFormState({ control });
 	const error = errors.members?.message;
 
 	const onSelectUser = (user?: UserSearchEntry) => {
@@ -56,10 +56,10 @@ export function GroupMembersEditor() {
 	function getMemberKey(member: MemberFormModel) {
 		return member.user.id;
 	}
-
 	const members = useWatch({ control, name: "members" }) ?? [];
 	const diff = useArrayDiff({
 		current: members,
+		diffKey: submitCount,
 		getKey: getMemberKey,
 		isEqual: isSameMember
 	});

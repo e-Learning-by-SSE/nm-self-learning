@@ -19,15 +19,19 @@ const diffCellClass = "bg-c-surface-0 py-2 px-4 text-sm";
 
 export function useArrayDiff<T>({
 	current,
+	diffKey, // use to force restart diff when form was updated
 	getKey,
 	isEqual
 }: {
 	current: T[];
+	diffKey: number;
 	getKey: (item: T) => string;
 	isEqual: (left: T, right: T) => boolean;
 }) {
 	const originalByKey = useRef<Map<string, T> | null>(null);
-	if (!originalByKey.current) {
+	const diffKeyRef = useRef(diffKey);
+	if (!originalByKey.current || diffKeyRef.current !== diffKey) {
+		diffKeyRef.current = diffKey;
 		originalByKey.current = new Map(current.map(item => [getKey(item), item]));
 	}
 	const currentKeys = new Set(current.map(getKey));

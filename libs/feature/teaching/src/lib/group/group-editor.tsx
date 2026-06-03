@@ -97,7 +97,7 @@ export function GroupEditor({
 	return (
 		<FormProvider {...form}>
 			<form
-				id="lessonform"
+				id="groupform"
 				onSubmit={form.handleSubmit(onSubmit, console.log)}
 				className="w-full bg-gray-100"
 			>
@@ -124,6 +124,7 @@ export function GroupEditor({
 							<Tab>Mitglieder</Tab>
 							<Tab>Berechtigungen</Tab>
 						</Tabs>
+						{/* I use hidden here to prevent useArrayDiff from loosing diff data*/}
 						<div className={selectedTab !== 0 ? "hidden" : undefined}>
 							<GroupInfoEditor fillInSingleGroup={isNew} />
 						</div>

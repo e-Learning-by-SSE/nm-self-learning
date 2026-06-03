@@ -38,7 +38,7 @@ export function GroupPermissionsEditor() {
 		name: "permissions",
 		control
 	});
-	const { errors } = useFormState({ control });
+	const { errors, submitCount } = useFormState({ control });
 	const error = errors.permissions?.message;
 	const onSelectResource = (resource?: ResourceSearchEntry) => {
 		setSearchResourceActive(false);
@@ -67,6 +67,7 @@ export function GroupPermissionsEditor() {
 	});
 	const diff = useArrayDiff({
 		current: permissions,
+		diffKey: submitCount,
 		getKey: getResourceAccessFormKey,
 		isEqual: (left, right) =>
 			getResourceAccessFormKey(left) === getResourceAccessFormKey(right) &&
