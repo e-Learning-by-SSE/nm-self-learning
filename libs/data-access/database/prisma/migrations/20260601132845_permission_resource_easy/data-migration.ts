@@ -140,15 +140,11 @@ export async function migrateAutorsToGroups(tx: Prisma.TransactionClient): Promi
 				});
 			}
 		} else {
-			//
-			if (await tx.group.findUnique({ where: { id: collab.groupId } })) {
-			}
-			const skey = key + "-000";
 			// CREATE entirely new group
 			await tx.group.create({
 				data: {
-					name: skey,
-					slug: skey,
+					name: key,
+					slug: key,
 					members: {
 						create: collab.userIds.map(userId => ({
 							userId,

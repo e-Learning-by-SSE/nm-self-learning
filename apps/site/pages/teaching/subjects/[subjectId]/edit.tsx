@@ -66,7 +66,6 @@ export default function SubjectEditPage({ subject }: EditSubjectProps) {
 
 	async function onSubmit(subjectFromForm: Subject) {
 		try {
-			console.log("Updating subject", subjectFromForm);
 			const res = await updateSubject(subjectFromForm);
 			showToast({
 				type: "success",

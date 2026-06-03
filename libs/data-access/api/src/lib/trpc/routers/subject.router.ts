@@ -21,7 +21,7 @@ export const subjectRouter = t.router({
 			}
 		});
 	}),
-	getAllForAdminPage: t.procedure.query(() => {
+	getAllForAdminPage: adminProcedure.query(() => {
 		return database.subject.findMany({
 			orderBy: { title: "asc" },
 			select: {

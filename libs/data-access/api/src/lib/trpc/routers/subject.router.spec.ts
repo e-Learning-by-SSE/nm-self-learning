@@ -75,7 +75,7 @@ describe("subjectRouter", () => {
 		});
 
 		it("getAllForAdminPage returns admin listing", async () => {
-			const caller = t.createCallerFactory(subjectRouter)({});
+			const { caller } = prepare({ role: "ADMIN" });
 			(database.subject.findMany as jest.Mock).mockResolvedValue([defaultSubject]);
 
 			const result = await caller.getAllForAdminPage();
@@ -124,7 +124,10 @@ describe("subjectRouter", () => {
 		it("propagates BAD_REQUEST from preparePermissionsForCreate", async () => {
 			const { caller } = prepare({ role: "ADMIN" });
 			(preparePermissionsForCreate as jest.Mock).mockRejectedValue(
-				new TRPCError({ code: "BAD_REQUEST", message: "requires at least one FULL permission." })
+				new TRPCError({
+					code: "BAD_REQUEST",
+					message: "requires at least one FULL permission."
+				})
 			);
 
 			await expect(caller.create(defaultSubject)).rejects.toMatchObject({
@@ -140,7 +143,9 @@ describe("subjectRouter", () => {
 				new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" })
 			);
 
-			await expect(caller.update(defaultSubject)).rejects.toMatchObject({ code: "FORBIDDEN" });
+			await expect(caller.update(defaultSubject)).rejects.toMatchObject({
+				code: "FORBIDDEN"
+			});
 			expect(database.subject.update).not.toHaveBeenCalled();
 		});
 
