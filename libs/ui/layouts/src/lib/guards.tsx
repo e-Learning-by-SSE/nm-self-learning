@@ -128,6 +128,14 @@ export function testResourceGuard(
 	);
 }
 
+export function useAccessGuard(userAccess: AccessLevel, requiredAccess: AccessLevel) {
+	const session = useRequiredSession();
+	const user = session.data?.user;
+	if (!user) return false;
+	if (user.role === "ADMIN") return true;
+	return greaterOrEqAccessLevel(userAccess, requiredAccess);
+}
+
 export function useResourceGuard(
 	requiredAccess: AccessLevel,
 	permittedGroups?: ResourcePermission[]

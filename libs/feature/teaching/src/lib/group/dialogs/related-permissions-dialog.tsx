@@ -103,6 +103,9 @@ export function GroupPermissionRelationsDialog({
 						</div>
 					</Chip>
 				))}
+				{query.error && (
+					<span className="text-red-500">Insufficient permissions to view</span>
+				)}
 				<DialogActions onClose={onClose} abortLabel="OK" />
 			</div>
 			{revokeCandidate && (
