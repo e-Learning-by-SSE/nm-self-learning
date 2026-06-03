@@ -19,6 +19,7 @@ import {
 	GroupPermissionTable
 } from "../editors/group-permission";
 import { useArrayDiff } from "../misc/use-array-diff";
+import { Button } from "@headlessui/react";
 
 /**
  * GroupPermissionsEditor - Section for editing a group's resource permissions.
@@ -89,22 +90,22 @@ export function GroupPermissionsEditor() {
 							/>
 						}
 					>
-						<button
+						<Button
 							type="button"
 							className="w-full px-3 py-2 text-left"
 							onClick={() => openSearchResourceDialog()}
 						>
 							Alle Ressourcen
-						</button>
+						</Button>
 						{allResourceKinds.map(kind => (
-							<button
+							<Button
 								key={kind}
 								type="button"
 								className="w-full px-3 py-2 text-left"
 								onClick={() => openSearchResourceDialog([kind])}
 							>
 								{resourceLabels[kind]}
-							</button>
+							</Button>
 						))}
 					</DropdownMenu>
 				}
