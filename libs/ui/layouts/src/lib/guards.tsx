@@ -9,7 +9,7 @@ import { IconTextButton, LoadingBox } from "@self-learning/ui/common";
 import {
 	greaterAccessLevel,
 	greaterOrEqAccessLevel,
-	ResourceGuardPermissions
+	ResourcePermission
 } from "@self-learning/types";
 import { AccessLevel, GroupRole } from "@prisma/client";
 import { useRouter } from "next/router";
@@ -105,7 +105,7 @@ export function MemberGuard({
 export function testResourceGuard(
 	user: UserFromSession,
 	requiredAccess: AccessLevel,
-	permittedGroups?: ResourceGuardPermissions
+	permittedGroups?: ResourcePermission[]
 ) {
 	// if permittedGroups is undefined, assume "always allow"
 	if (user.role === "ADMIN" || permittedGroups === undefined) {
@@ -117,7 +117,7 @@ export function testResourceGuard(
 	const userGroups = new Set(user.memberships);
 	const bestMatchingPerm = permittedGroups
 		.filter(g => userGroups.has(g.groupId))
-		.reduce((best: ResourceGuardPermissions[number] | null, g) => {
+		.reduce((best: ResourcePermission | null, g) => {
 			if (!best || greaterAccessLevel(g.accessLevel, best.accessLevel)) {
 				return g;
 			}
@@ -130,7 +130,7 @@ export function testResourceGuard(
 
 export function useResourceGuard(
 	requiredAccess: AccessLevel,
-	permittedGroups?: ResourceGuardPermissions
+	permittedGroups?: ResourcePermission[]
 ) {
 	const session = useRequiredSession();
 	return useMemo(() => {
@@ -157,7 +157,7 @@ export function ResourceGuard({
 }: {
 	requiredAccess: AccessLevel;
 	// resource: ResourceInput;
-	permittedGroups?: ResourceGuardPermissions;
+	permittedGroups?: ResourcePermission[];
 	children?: React.ReactNode;
 	fallback: "hidden" | "unauthorized";
 }) {

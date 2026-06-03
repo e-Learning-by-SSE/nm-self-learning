@@ -102,11 +102,13 @@ export const ResourcePermissionsFormSchema = z
 
 export type ResourcePermissionsFormType = z.infer<typeof ResourcePermissionsFormSchema>;
 
-// less strict type alias for guards
-export type ResourcePermissionForm = ResourcePermissionsFormType[number];
-export type ResourceGuardPermissions = ReadonlyArray<
-	Pick<ResourcePermissionForm, "groupId" | "accessLevel">
->;
+// strict type alias for backend checks
+export const ResourcePermissionSchema = z.object({
+	accessLevel: z.enum(AccessLevel),
+	groupId: z.number()
+});
+export type ResourcePermission = z.infer<typeof ResourcePermissionSchema>;
+export type ResourcePermissions = ResourcePermission[];
 
 export function toResourcePermissionsForm(
 	permissions: PrismaResourcePermission[]

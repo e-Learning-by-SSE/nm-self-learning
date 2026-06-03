@@ -1,5 +1,5 @@
 import { database } from "@self-learning/database";
-import { permissionRouter, stripFormResourceAccess } from "./permission.router";
+import { permissionRouter } from "./permission.router";
 import { TRPCError } from "@trpc/server";
 import { AccessLevel, GroupRole, Prisma } from "@prisma/client";
 import { t } from "../trpc";
@@ -16,8 +16,12 @@ import {
 	testGroupCircularParent,
 	getEffectiveResourceAccesses
 } from "../../permissions/permission.service";
-import { greaterAccessLevel, greaterGroupRole } from "../../permissions/permission.utils";
 import { searchAllResources, searchMyResources } from "../../permissions/resource-search.service";
+import {
+	greaterAccessLevel,
+	greaterGroupRole,
+	stripFormResourceAccess
+} from "@self-learning/types";
 
 jest.mock("@self-learning/database", () => ({
 	__esModule: true,
@@ -60,8 +64,8 @@ jest.mock("../../permissions/permission.service", () => ({
 	getEffectiveResourceAccesses: jest.fn()
 }));
 
-jest.mock("../../permissions/permission.utils", () => {
-	const actual = jest.requireActual("../../permissions/permission.utils");
+jest.mock("@self-learning/types", () => {
+	const actual = jest.requireActual("@self-learning/types");
 	return {
 		...actual,
 		greaterAccessLevel: jest.fn(),
@@ -132,9 +136,17 @@ describe("permissionRouter", () => {
 
 	describe("searchResources", () => {
 		it("delegates to searchAllResources", async () => {
-			const caller = t.createCallerFactory(permissionRouter)({});
+			const { caller, ctx } = prepare({ id: "my-user" });
 			const payload = {
-				result: [{ kind: "subject" as const, id: "sb1", key: "subject:sb1", title: "S", slug: "sb1" }],
+				result: [
+					{
+						kind: "subject" as const,
+						id: "sb1",
+						key: "subject:sb1",
+						title: "S",
+						slug: "sb1"
+					}
+				],
 				pageSize: 15,
 				page: 1,
 				totalCount: 1

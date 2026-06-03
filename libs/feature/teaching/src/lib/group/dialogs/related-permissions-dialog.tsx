@@ -53,7 +53,7 @@ export function GroupPermissionRelationsDialog({
 		if (isRevoke && revokeCandidate) {
 			try {
 				await revokePermission({
-					permissionId: revokeCandidate.id
+					permissionId: revokeCandidate.permissionId
 				});
 			} catch (error) {
 				console.log(error);

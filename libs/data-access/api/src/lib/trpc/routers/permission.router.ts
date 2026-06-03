@@ -6,15 +6,14 @@ import { AccessLevel, Group, GroupRole, Member, Permission, Prisma } from "@pris
 import { paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import {
 	GroupFormSchema,
-	ResourceAccessFormType,
 	ResourceSearchInputSchema,
-	ResourceAccess,
 	ResourceAccessSchema,
 	ResourceInputSchema,
 	ResourceInput,
 	greaterAccessLevel,
 	greaterGroupRole,
-	GroupRoleEnum
+	GroupRoleEnum,
+	stripFormResourceAccess
 } from "@self-learning/types";
 import {
 	createGroupAccess,
@@ -40,19 +39,8 @@ function getResourceKey(resource: ResourceInput): string {
 	throw new Error("Invalid resource input: No valid ID provided");
 }
 
-export function stripFormResourceAccess(data: ResourceAccessFormType): ResourceAccess {
-	const { accessLevel, course, lesson, specialization, subject } = data;
-
-	if (course) return { accessLevel, courseId: course.courseId };
-	if (lesson) return { accessLevel, lessonId: lesson.lessonId };
-	if (specialization) return { accessLevel, specializationId: specialization.specializationId };
-	if (subject) return { accessLevel, subjectId: subject.subjectId };
-
-	throw new Error("Invalid resource input");
-}
-
 export const permissionRouter = t.router({
-	searchResources: t.procedure.input(ResourceSearchInputSchema).query(async ({ input }) => {
+	searchResources: authProcedure.input(ResourceSearchInputSchema).query(async ({ input }) => {
 		return searchAllResources(input);
 	}),
 	getMyResources: authProcedure.input(ResourceSearchInputSchema).query(async ({ input, ctx }) => {
@@ -96,7 +84,6 @@ export const permissionRouter = t.router({
 					hasGroupRole(parent.id, userId, GroupRole.ADMIN),
 					hasResourceAccessBatch(userId, checks)
 				]);
-				console.log("groupOk", groupOk, "resourceOk", resourceOk);
 				hasAccess = groupOk && resourceOk;
 			}
 
