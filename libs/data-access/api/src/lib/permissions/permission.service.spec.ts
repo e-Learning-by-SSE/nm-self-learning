@@ -1,7 +1,7 @@
 import { database } from "@self-learning/database";
 import { AccessLevel, GroupRole } from "@prisma/client";
 import { UserFromSession } from "../trpc/context";
-import type { ResourceInput } from "@self-learning/types";
+import type { ResourceInput, ResourcePermission } from "@self-learning/types";
 
 jest.mock("@self-learning/database", () => ({
 	__esModule: true,
@@ -585,7 +585,6 @@ describe("permission.service", () => {
 				groupId_subjectId: { groupId: 2, subjectId: "sb1" }
 			});
 		});
-
 	});
 
 	describe("prepareResourceUpdate", () => {
@@ -602,7 +601,11 @@ describe("permission.service", () => {
 
 			await expect(
 				prepareResourceUpdate(user, { courseId: "c1" }, [
-					{ groupId: 1, groupName: "G1", accessLevel: AccessLevel.FULL }
+					{
+						groupId: 1,
+						groupName: "G1",
+						accessLevel: AccessLevel.FULL
+					} as ResourcePermission
 				])
 			).rejects.toMatchObject({ code: "FORBIDDEN" });
 		});
@@ -613,7 +616,7 @@ describe("permission.service", () => {
 				.mockResolvedValueOnce([{ accessLevel: AccessLevel.EDIT, groupId: 1 }]);
 
 			const result = await prepareResourceUpdate(user, { courseId: "c1" }, [
-				{ groupId: 1, groupName: "G1", accessLevel: AccessLevel.FULL }
+				{ groupId: 1, groupName: "G1", accessLevel: AccessLevel.FULL } as ResourcePermission
 			]);
 
 			expect(result).toBeUndefined();
@@ -626,7 +629,11 @@ describe("permission.service", () => {
 
 			await expect(
 				prepareResourceUpdate(user, { subjectId: "sb1" }, [
-					{ groupId: 1, groupName: "G1", accessLevel: AccessLevel.FULL }
+					{
+						groupId: 1,
+						groupName: "G1",
+						accessLevel: AccessLevel.FULL
+					} as ResourcePermission
 				])
 			).rejects.toMatchObject({ code: "FORBIDDEN" });
 		});
@@ -637,7 +644,7 @@ describe("permission.service", () => {
 				.mockResolvedValueOnce([{ accessLevel: AccessLevel.FULL, groupId: 1 }]);
 
 			const result = await prepareResourceUpdate(user, { lessonId: "l1" }, [
-				{ groupId: 1, groupName: "G1", accessLevel: AccessLevel.FULL }
+				{ groupId: 1, groupName: "G1", accessLevel: AccessLevel.FULL } as ResourcePermission
 			]);
 
 			expect(result?.upsert).toHaveLength(1);
@@ -650,7 +657,7 @@ describe("permission.service", () => {
 			]);
 
 			const result = await prepareResourceUpdate(adminUser, { courseId: "c1" }, [
-				{ groupId: 1, groupName: "G1", accessLevel: AccessLevel.FULL }
+				{ groupId: 1, groupName: "G1", accessLevel: AccessLevel.FULL } as ResourcePermission
 			]);
 
 			expect(result?.upsert).toHaveLength(1);
@@ -735,7 +742,9 @@ describe("permission.service", () => {
 						name: "G1",
 						slug: "g1",
 						id: 1,
-						members: [{ user: { displayName: "U1", image: null, name: "u1", id: "u1" } }]
+						members: [
+							{ user: { displayName: "U1", image: null, name: "u1", id: "u1" } }
+						]
 					}
 				},
 				{
@@ -745,7 +754,9 @@ describe("permission.service", () => {
 						name: "G2",
 						slug: "g2",
 						id: 2,
-						members: [{ user: { displayName: "U1", image: null, name: "u1", id: "u1" } }]
+						members: [
+							{ user: { displayName: "U1", image: null, name: "u1", id: "u1" } }
+						]
 					}
 				}
 			]);

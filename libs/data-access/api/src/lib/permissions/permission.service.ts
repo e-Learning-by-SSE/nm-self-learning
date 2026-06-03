@@ -12,7 +12,8 @@ import {
 	greaterAccessLevel,
 	greaterOrEqAccessLevel,
 	greaterOrEqGroupRole,
-	ResourcePermissionsFormType
+	ResourcePermission,
+	ResourcePermissionSchema
 } from "@self-learning/types";
 
 export function getActiveMembershipWhere(userId: string): Prisma.MemberWhereInput {
@@ -357,7 +358,7 @@ export async function getEffectiveResourceAccesses(input: ResourceInput) {
 	const users: Record<
 		string,
 		{
-			id: string;
+			permissionId: string;
 			accessLevel: AccessLevel;
 			user: Partial<User>;
 			group: Partial<Group> & { members: Partial<User>[] };
@@ -373,7 +374,7 @@ export async function getEffectiveResourceAccesses(input: ResourceInput) {
 			) {
 				users[member.user.id] = {
 					accessLevel: perm.accessLevel,
-					id: perm.id,
+					permissionId: perm.id,
 					user: member.user,
 					group: {
 						id: perm.group.id,
@@ -387,44 +388,6 @@ export async function getEffectiveResourceAccesses(input: ResourceInput) {
 	}
 	return Object.values(users);
 }
-
-/**
- * Fetches all resources to which a user has access TODO.
- * @param userId - user ID to check access for
- * @param resource - resources where
- * @returns map of resource IDs to the best access level
- */
-// export async function getAccessibleResources(
-// 	userId: string,
-// 	resource: Prisma.PermissionWhereInput
-// ) {
-// 	const permissions = await database.permission.findMany({
-// 		where: {
-// 			resource,
-// 			group: {
-// 				members: {
-// 					some: {
-// 						userId,
-// 						OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }]
-// 					}
-// 				}
-// 			}
-// 		},
-// 		select: {
-// 			resourceId: true,
-// 			accessLevel: true
-// 		}
-// 	});
-
-// 	const bestAccesses = new Map<string, AccessLevel>();
-// 	for (const permission of permissions) {
-// 		const current = bestAccesses.get(permission);
-// 		if (!current || greaterAccessLevel(permission.accessLevel, current)) {
-// 			bestAccesses.set(permission.resourceId, permission.accessLevel);
-// 		}
-// 	}
-// 	return bestAccesses;
-// }
 
 //---------------------------------------------------------------------------
 
@@ -573,11 +536,6 @@ export async function testGroupCircularParent(groupId: number, parentId: number)
 	return false;
 }
 
-type PermissionOfResource = {
-	groupId: number;
-	accessLevel: AccessLevel;
-};
-
 /**
  * Every resource has permissions array. If that array was created through create trpc
  * this method helps to perform necessary checks to create permissions
@@ -585,7 +543,7 @@ type PermissionOfResource = {
  * @throws @see TRPCError if permissions do not follow the schema
  * @returns db create ready json
  */
-export async function preparePermissionsForCreate(newPermissions: PermissionOfResource[]) {
+export async function preparePermissionsForCreate(newPermissions: ResourcePermission[]) {
 	// make sure at least one permission is FULL
 	if (newPermissions.filter(p => p.accessLevel === AccessLevel.FULL).length === 0) {
 		throw new TRPCError({
@@ -614,7 +572,7 @@ export async function preparePermissionsForCreate(newPermissions: PermissionOfRe
 export async function prepareResourceUpdate(
 	user: UserFromSession,
 	resource: ResourceInput,
-	newPermissions: ResourcePermissionsFormType
+	newPermissions: ResourcePermission[]
 ) {
 	const permissions = await preparePermissionsForUpdate(resource, newPermissions);
 	const requiredAccess = permissions ? AccessLevel.FULL : AccessLevel.EDIT;
@@ -632,15 +590,15 @@ export async function prepareResourceUpdate(
  * If changed: Requires FULL access
  * If not changed: Requires EDIT access
  * @param resource - @see ResourceInput - specifies resource permissions are attached to
- * @param newPermissions - list of edited permissions
+ * @param newPermissions - list of edited permissions from the form
  * @throws @see TRPCError if permissions or resource do not follow the schema
  * @returns db upsert ready json or undefined (if no changes are required)
  */
 export async function preparePermissionsForUpdate(
 	resource: ResourceInput,
-	newPermissions: ResourcePermissionsFormType
+	newPermissions: ResourcePermission[]
 ) {
-	// safe parse input (as its used in where clause)
+	// prevent malformed resources (as its used in where clause)
 	const validation = ResourceInputSchema.safeParse(resource);
 	if (!validation.success) {
 		throw new TRPCError({
@@ -650,13 +608,8 @@ export async function preparePermissionsForUpdate(
 		});
 	}
 	resource = validation.data;
-	// drop display fields
-	const perms = newPermissions.map(p => {
-		return {
-			accessLevel: p.accessLevel,
-			groupId: p.groupId
-		};
-	});
+	// drop display fields  (as its used in where clause)
+	const perms = newPermissions.map(p => ResourcePermissionSchema.parse(p));
 	// make sure at least one permission is FULL
 	if (perms.filter(p => p.accessLevel === AccessLevel.FULL).length === 0) {
 		throw new TRPCError({
@@ -669,7 +622,7 @@ export async function preparePermissionsForUpdate(
 		where: resource
 	});
 	// compute if permissions are equal
-	const toKey = (p: PermissionOfResource) => `${p.groupId}|${p.accessLevel}`;
+	const toKey = (p: ResourcePermission) => `${p.groupId}|${p.accessLevel}`;
 	const keys = new Set(perms.map(toKey));
 	const equal =
 		existingPerms.length === perms.length && existingPerms.every(ep => keys.has(toKey(ep)));
@@ -678,7 +631,7 @@ export async function preparePermissionsForUpdate(
 		return undefined;
 	}
 	// TODO make this through common base
-	const getUpsertWhere = (p: PermissionOfResource) => {
+	const getUpsertWhere = (p: ResourcePermission) => {
 		if ("lessonId" in resource && resource.lessonId) {
 			return {
 				groupId_lessonId: {
