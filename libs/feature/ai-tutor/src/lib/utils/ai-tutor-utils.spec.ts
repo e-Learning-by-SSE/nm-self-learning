@@ -218,19 +218,24 @@ describe("fetchContextPayload", () => {
 		});
 	});
 
-	// =========================================================================
 	describe("error handling", () => {
-		// =========================================================================
-
 		it("throws a TRPCError when a database call rejects unexpectedly", async () => {
 			// Setup
 			const pageContext: PageContext = { type: "course", courseSlug: "bad-course" };
 			(database.course.findUnique as jest.Mock).mockRejectedValue(
 				new Error("DB connection lost")
 			);
+			const spy = jest.spyOn(console, "error").mockImplementation();
 
 			// Exercise & Verify
 			await expect(fetchContextPayload(pageContext)).rejects.toBeInstanceOf(TRPCError);
+			expect(spy).toHaveBeenCalledWith(
+				"[AiTutorService] Failed to fetch context payload",
+				expect.any(Object)
+			);
+
+			// Teardown
+			spy.mockRestore();
 		});
 	});
 });
