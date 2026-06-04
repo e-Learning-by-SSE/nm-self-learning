@@ -7,17 +7,20 @@ import { AlreadyExists } from "./error";
 describe("apiHandler", () => {
 	// TODO: disabled, because error will be logged to the console (which is correct, but confusing when inspecting test logs)
 	it("Throw Error", async () => {
-		return testApiHandler({
-			pagesHandler: (req, res) =>
-				apiHandler(req, res, "GET", async () => {
-					throw new Error("test");
-				}),
-			test: async ({ fetch }) => {
-				const res = await fetch({ method: "GET" });
-				const json = await res.json();
+		const spy = jest.spyOn(console, "error").mockImplementation();
 
-				expect(res.status).toEqual(500);
-				expect(json).toMatchInlineSnapshot(`
+		try {
+			await testApiHandler({
+				pagesHandler: (req, res) =>
+					apiHandler(req, res, "GET", async () => {
+						throw new Error("test");
+					}),
+				test: async ({ fetch }) => {
+					const res = await fetch({ method: "GET" });
+					const json = await res.json();
+
+					expect(res.status).toEqual(500);
+					expect(json).toMatchInlineSnapshot(`
 Object {
   "error": Object {
     "message": "Something went wrong.",
@@ -26,8 +29,13 @@ Object {
   },
 }
 `);
-			}
-		});
+				}
+			});
+
+			expect(spy).toHaveBeenCalled();
+		} finally {
+			spy.mockRestore();
+		}
 	});
 
 	it("Catches ValidationFailed", () => {
