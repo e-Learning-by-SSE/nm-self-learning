@@ -80,7 +80,7 @@ function SelectSkillForm({
 				}}
 			/>
 			<div className="flex flex-col justify-between overflow-auto">
-				<section className="flex h-64 flex-col rounded-lg border border-light-border p-4">
+				<section className="flex h-64 flex-col rounded-lg border border-c-border p-4">
 					<div className="flex flex-col">
 						{skills.length === 0 && <p>Keine Skills vorhanden</p>}
 						{skills.length > 0 && (

@@ -21,5 +21,9 @@
     "Your account data has been successfully deleted from the system.": "Deine Account-Daten wurden erfolgreich aus dem System gelöscht.",
     "The Account Could Not Be Deleted": "Der Account konnte nicht gelöscht werden.",
     "Please try again later or contact the system administrator.": "Bitte versuche es später erneut oder kontaktiere einen Administrator.",
-    "All data, including the created courses and learning units, will be deleted.": "<strong>Es werden alle Daten inklusive der erstellen $t(common:Course_other) und $t(common:Nano-Module_other) gelöscht. Wenn nur deine Nutzerdaten löschen möchtest, klicke auf <i>\"$t(Delete-User-Data)\"</i>.</strong><br/><red>Diese Funktion steht aktuell nicht zur Verfügung. Wenden sie sich an den Systemadministrator um ihre gesamten Daten zu löschen.</red>"
+    "All data, including the created courses and learning units, will be deleted.": "<strong>Es werden alle Daten inklusive der erstellen $t(common:Course_other) und $t(common:Nano-Module_other) gelöscht. Wenn nur deine Nutzerdaten löschen möchtest, klicke auf <i>\"$t(Delete-User-Data)\"</i>.</strong><br/><red>Diese Funktion steht aktuell nicht zur Verfügung. Wenden sie sich an den Systemadministrator um ihre gesamten Daten zu löschen.</red>",
+    "Select a group...": "Gruppe auswählen...",
+    "Default Group": "Standardgruppe",
+    "No default group selected": "Keine Standardgruppe ausgewählt",
+    "When selected, every new course and lesson you create will be assigned to said group, unless other specified": "Wenn ausgewählt, wird jede neue $t(common:Course_other) und $t(common:Lesson_other) die du erstellst, dieser Gruppe zugeordnet, außer du gibst eine andere Gruppe an."
 }

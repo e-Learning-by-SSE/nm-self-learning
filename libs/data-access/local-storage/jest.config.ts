@@ -1,5 +1,5 @@
 /* eslint-disable */
-export default {
+module.exports = {
 	displayName: "local-storage-api",
 	preset: "../../../jest.preset.js",
 	testEnvironment: "jsdom",

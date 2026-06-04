@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, type JSX } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { slugify } from "@self-learning/util/common";
 import { LabeledField } from "./labeled-field";
@@ -67,6 +67,7 @@ export function InputWithButton(
  *		</LabeledField>
  * </>);
  */
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 export function useSlugify<T extends Record<string, unknown>>(
 	form: UseFormReturn<T, unknown>,
 	field: keyof T,
@@ -78,7 +79,6 @@ export function useSlugify<T extends Record<string, unknown>>(
 			const slug = slugify(title as any, { lower: true });
 			form.setValue(slugField as any, slug as any);
 		};
-
 		return {
 			slugifyField,
 			slugifyIfEmpty: () => {

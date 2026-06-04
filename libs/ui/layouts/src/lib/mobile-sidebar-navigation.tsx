@@ -2,8 +2,6 @@ import { ChevronLeftIcon, ChevronRightIcon, ListBulletIcon } from "@heroicons/re
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
-
-
 export function MobileSidebarNavigation({
 	next,
 	prev,
@@ -48,11 +46,11 @@ export function MobileSidebarNavigation({
 						transition={{
 							type: "spring"
 						}}
-						className="fixed bottom-12 left-1/2 -translate-x-1/2  w-[50%] max-w-md bg-white shadow-lg rounded-full flex justify-between items-center p-2 z-50 border border-gray-300"
+						className="fixed bottom-12 left-1/2 -translate-x-1/2  w-[50%] max-w-md bg-white shadow-lg rounded-full flex justify-between items-center p-2 z-50 border border-c-border-strong"
 					>
 						<button
 							title="left-chevron"
-							className="p-2 bg-gray-200 rounded-full disabled:invisible"
+							className="p-2 bg-c-surface-3 rounded-full disabled:invisible"
 							onClick={prev}
 							disabled={!(hasPrev ?? true)}
 						>
@@ -61,7 +59,7 @@ export function MobileSidebarNavigation({
 
 						<button
 							title="menu"
-							className="p-2 bg-secondary text-white rounded-full shadow-lg"
+							className="p-2 bg-c-primary text-white rounded-full shadow-lg"
 							onClick={() => setIsOpen(!isOpen)}
 						>
 							<ListBulletIcon className="h-6 w-6" />
@@ -69,7 +67,7 @@ export function MobileSidebarNavigation({
 
 						<button
 							title="right-chevron"
-							className="p-2 bg-gray-200 rounded-full disabled:invisible"
+							className="p-2 bg-c-surface-3 rounded-full disabled:invisible"
 							onClick={next}
 							disabled={!(hasNext ?? true)}
 						>
@@ -95,9 +93,9 @@ export function MobileSidebarNavigation({
 							exit={{ y: 50, opacity: 0 }}
 							onClick={e => e.stopPropagation()}
 						>
-								{content(() => {
-									setIsOpen(false);
-								})}
+							{content(() => {
+								setIsOpen(false);
+							})}
 						</motion.div>
 					</motion.div>
 				)}

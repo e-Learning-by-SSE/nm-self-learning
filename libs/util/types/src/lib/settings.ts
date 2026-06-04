@@ -1,5 +1,6 @@
 import { NotificationChannel, NotificationType } from "@prisma/client";
 import * as z from "zod";
+import { GroupEntrySchema } from "./group";
 
 export const editFeatureSettingsSchema = z
 	.object({
@@ -15,6 +16,11 @@ export const editPersonalSettingSchema = z.object({
 	displayName: z.string().min(3).max(50)
 });
 export type EditPersonalSettings = z.infer<typeof editPersonalSettingSchema>;
+
+export const editPermissionsSettingsSchema = z.object({
+	defaultGroup: GroupEntrySchema.nullable()
+});
+export type EditPermissionsSettings = z.infer<typeof editPermissionsSettingsSchema>;
 
 export const editUserSchema = z
 	.object({

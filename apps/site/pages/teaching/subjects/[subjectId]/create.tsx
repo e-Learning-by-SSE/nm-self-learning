@@ -16,6 +16,7 @@ import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { useRouter } from "next/router";
 import { FormProvider, useForm } from "react-hook-form";
 import { withTranslations } from "@self-learning/api";
+import { useWatch } from "react-hook-form";
 
 export default function SpecializationPage() {
 	useRequiredSession();
@@ -45,19 +46,17 @@ export default function SpecializationPage() {
 	};
 
 	return (
-		<div className="bg-gray-50">
-			<SpecializationEditor
-				onSubmit={onSubmit}
-				initialSpecialization={{
-					specializationId: "",
-					title: "",
-					slug: "",
-					subtitle: "",
-					cardImgUrl: null,
-					imgUrlBanner: null
-				}}
-			/>
-		</div>
+		<SpecializationEditor
+			onSubmit={onSubmit}
+			initialSpecialization={{
+				specializationId: "",
+				title: "",
+				slug: "",
+				subtitle: "",
+				cardImgUrl: null,
+				imgUrlBanner: null
+			}}
+		/>
 	);
 }
 
@@ -74,8 +73,8 @@ export function SpecializationEditor({
 	});
 
 	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
-	const cardImgUrl = form.watch("cardImgUrl");
-	const imgUrlBanner = form.watch("imgUrlBanner");
+	const cardImgUrl = useWatch({ name: "cardImgUrl", control: form.control });
+	const imgUrlBanner = useWatch({ name: "imgUrlBanner", control: form.control });
 
 	const {
 		register,
@@ -89,7 +88,7 @@ export function SpecializationEditor({
 					sidebar={
 						<>
 							<div>
-								<span className="font-semibold text-secondary">
+								<span className="font-semibold text-c-primary">
 									Spezialisierung{" "}
 									{initialSpecialization.specializationId === ""
 										? "erstellen"

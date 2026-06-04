@@ -1,6 +1,7 @@
 /* eslint-disable */
-export default {
+module.exports = {
 	displayName: "util-auth",
 	preset: "../../../jest.preset.js",
-	coverageDirectory: "../../../coverage/libs/util/auth"
+	coverageDirectory: "../../../coverage/libs/util/auth",
+	setupFiles: ["<rootDir>/jest.setup.ts"]
 };

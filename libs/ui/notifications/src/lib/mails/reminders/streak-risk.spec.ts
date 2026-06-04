@@ -28,7 +28,7 @@ jest.mock("../email-service", () => {
 const mockCurrentTime = (hour: number) => {
 	const fixed = new Date();
 	fixed.setUTCHours(hour, 0, 0, 0);
-	jest.spyOn(global, "Date").mockImplementation(() => fixed as any);
+	jest.spyOn(global, "Date").mockImplementation((value: Date | string | number) => fixed);
 	return fixed;
 };
 
@@ -44,10 +44,14 @@ describe("checkStreakRisks integration", () => {
 			streakReminders: 0,
 			errors: 0
 		};
+		// Required by sendStreakReminderToUser to build tracking URLs
+		if (process.env.NEXT_PUBLIC_SITE_BASE_URL === undefined) {
+			process.env.NEXT_PUBLIC_SITE_BASE_URL = "https://example.com";
+		}
 	});
 
-	it("should send reminders to eligible users at 12:00 UTC", async () => {
-		mockCurrentTime(12);
+	it("should send reminders to eligible users at 10:00 UTC", async () => {
+		mockCurrentTime(10);
 		const yesterday = subDays(new Date(), 1);
 
 		(database.user.findMany as jest.Mock).mockResolvedValue([
@@ -56,8 +60,6 @@ describe("checkStreakRisks integration", () => {
 				email: "test@example.com",
 				displayName: "User",
 				name: "User",
-				enabledLearningStatistics: true,
-				acceptedExperimentTerms: true,
 				gamificationProfile: {
 					lastLogin: yesterday,
 					loginStreak: { count: 5, status: "active", pausedUntil: null }
@@ -96,8 +98,6 @@ describe("checkStreakRisks integration", () => {
 				email: "test@example.com",
 				displayName: "User",
 				name: "User",
-				enabledLearningStatistics: true,
-				acceptedExperimentTerms: true,
 				gamificationProfile: {
 					lastLogin: yesterday,
 					loginStreak: { count: 5, status: "active", pausedUntil: null }
@@ -129,8 +129,6 @@ describe("getUsersWithStreakRisks", () => {
 				email: "test@example.com",
 				displayName: "User",
 				name: "User",
-				acceptedExperimentTerms: true,
-				enabledLearningStatistics: true,
 				gamificationProfile: {
 					lastLogin: yesterday,
 					loginStreak: { count: 3, status: "active", pausedUntil: null }

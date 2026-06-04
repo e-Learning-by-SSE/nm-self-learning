@@ -3,6 +3,14 @@ import "@testing-library/jest-dom";
 import { SearchUserDialog } from "@self-learning/admin";
 import userEvent from "@testing-library/user-event";
 
+const exampleUser = {
+	name: "NotAnAuthor",
+	email: null,
+	role: "USER",
+	image: null,
+	displayName: "NotAnAuthor"
+};
+
 jest.mock("@self-learning/api-client", () => ({
 	trpc: {
 		admin: {
@@ -12,14 +20,7 @@ jest.mock("@self-learning/api-client", () => ({
 						page: 1,
 						pageSize: 15,
 						totalCount: 13,
-						result: [
-							{
-								name: "NotAnAuthor",
-								email: null,
-								role: "USER",
-								image: null
-							}
-						]
+						result: [exampleUser]
 					}
 				}))
 			}
@@ -36,7 +37,7 @@ describe("searchUserDialog", () => {
 		};
 	});
 
-	it("should return user name in onClose", async () => {
+	it("should return selected user in onClose", async () => {
 		// Arrange
 		const name = "NotAnAuthor";
 		const onCloseMock = jest.fn();
@@ -49,7 +50,7 @@ describe("searchUserDialog", () => {
 
 		// Assert
 		await waitFor(() => {
-			expect(onCloseMock).toHaveBeenCalledWith(name);
+			expect(onCloseMock).toHaveBeenCalledWith(exampleUser);
 		});
 	});
 });

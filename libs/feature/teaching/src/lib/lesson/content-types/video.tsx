@@ -1,7 +1,8 @@
 import { Video } from "@self-learning/types";
 import { SectionCard } from "@self-learning/ui/common";
-import { LabeledField, Upload } from "@self-learning/ui/forms";
-import { VideoPlayer } from "@self-learning/ui/lesson";
+import { GenerateSubtitle, LabeledField, ModifySubtile, Upload } from "@self-learning/ui/forms";
+import { VideoPlayer, VideoPlayerHandle } from "@self-learning/ui/lesson";
+import { useRef } from "react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 
 export function VideoInput({ index }: { index: number }) {
@@ -9,10 +10,14 @@ export function VideoInput({ index }: { index: number }) {
 	const { update } = useFieldArray<{ content: Video[] }>({
 		name: "content"
 	});
+	const { watch } = useFormContext<{ lessonId: string }>();
+	const reactPlayer = useRef<VideoPlayerHandle | null>(null);
 
 	const {
-		value: { url }
+		value: { url, subtitle },
+		meta: { duration }
 	} = useWatch({ control, name: `content.${index}` });
+	const transcriptionServiceUrl = process.env.NEXT_PUBLIC_TRANSCRIPTION_SERVICE_URL;
 
 	return (
 		<SectionCard>
@@ -42,7 +47,9 @@ export function VideoInput({ index }: { index: number }) {
 						mediaType="video"
 						preview={
 							<div className="aspect-video w-full bg-black">
-								{url && <VideoPlayer url={url} />}
+								{url && (
+									<VideoPlayer url={url} subtitle={subtitle} ref={reactPlayer} />
+								)}
 							</div>
 						}
 						onUploadCompleted={(publicUrl, meta) => {
@@ -55,6 +62,44 @@ export function VideoInput({ index }: { index: number }) {
 							});
 						}}
 					/>
+					{url && subtitle && (
+						<div className="max-h-64 overflow-y-auto">
+							<ModifySubtile
+								subtitle={subtitle}
+								onClick={seconds => {
+									console.log(
+										"Seeking to",
+										seconds,
+										"Player ref:",
+										reactPlayer.current
+									);
+									if (reactPlayer.current) {
+										reactPlayer.current.setCurrentTime(seconds);
+									}
+								}}
+								onChange={newSubtitle => {
+									update(index, {
+										type: "video",
+										value: { url, subtitle: newSubtitle },
+										meta: { duration }
+									});
+								}}
+							/>
+						</div>
+					)}
+					{url && !subtitle && transcriptionServiceUrl && (
+						<GenerateSubtitle
+							video_url={url}
+							lessonId={watch().lessonId}
+							onTranscriptionCompleted={createdSubtitle => {
+								update(index, {
+									type: "video",
+									value: { url, subtitle: createdSubtitle },
+									meta: { duration }
+								});
+							}}
+						/>
+					)}
 				</div>
 			</div>
 		</SectionCard>

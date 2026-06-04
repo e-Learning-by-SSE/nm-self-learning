@@ -2,7 +2,7 @@ import { getRandomId } from "@self-learning/util/common";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { QuestionTypeForm } from "../../base-question";
 import { ExactQuestion } from "./schema";
-import { IconOnlyButton } from "@self-learning/ui/common";
+import { IconOnlyButton, Toggle } from "@self-learning/ui/common";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 
 export default function ExactForm({
@@ -11,7 +11,8 @@ export default function ExactForm({
 	question: { type: ExactQuestion["type"] };
 	index: number;
 }) {
-	const { control, register } = useFormContext<QuestionTypeForm<ExactQuestion>>();
+	const { control, watch, setValue, register } =
+		useFormContext<QuestionTypeForm<ExactQuestion>>();
 	const {
 		fields: acceptedAnswers,
 		append,
@@ -39,25 +40,20 @@ export default function ExactForm({
 					<h5 className="text-2xl font-semibold tracking-tight">Akzeptierte Antworten</h5>
 
 					<IconOnlyButton
-						icon={<PlusIcon className="h-5 w-5"/>}
-						variant = "primary"
+						icon={<PlusIcon className="h-5 w-5" />}
 						onClick={addAnswer}
 						title={"Antwort hinzufügen"}
-						className={"h-fit w-fit items-center"}
+						className={"btn-primary h-fit w-fit items-center"}
 					/>
 				</div>
 
-				<span className="flex items-center gap-4">
-					<input
-						type="checkbox"
-						className="checkbox"
-						id="caseSensitive"
-						{...register(`quiz.questions.${index}.caseSensitive`)}
+				<div className="flex items-center gap-2">
+					<Toggle
+						value={watch(`quiz.questions.${index}.caseSensitive`)}
+						onChange={value => setValue(`quiz.questions.${index}.caseSensitive`, value)}
+						label="Groß-/Kleinschreibung berücksichtigen"
 					/>
-					<label className="select-none text-sm" htmlFor="caseSensitive">
-						Groß-/Kleinschreibung berücksichtigen
-					</label>
-				</span>
+				</div>
 			</div>
 
 			{acceptedAnswers.length > 0 && (
@@ -76,7 +72,7 @@ export default function ExactForm({
 
 							<IconOnlyButton
 								icon={<TrashIcon className="h-5 w-5" />}
-								variant = "danger" 
+								className="btn-danger"
 								onClick={() => removeAnswer(acceptedAnswerIndex)}
 								title={"Antwort entfernen"}
 							/>

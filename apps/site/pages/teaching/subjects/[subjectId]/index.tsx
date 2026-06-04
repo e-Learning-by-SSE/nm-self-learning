@@ -1,7 +1,12 @@
 import { PencilIcon, PlusIcon, UserGroupIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { SpecializationPermissionsDialog } from "@self-learning/teaching";
-import { AuthorChip, ImageOrPlaceholder, SectionHeader } from "@self-learning/ui/common";
+import {
+	AuthorChip,
+	ImageOrPlaceholder,
+	LoadingBox,
+	SectionHeader
+} from "@self-learning/ui/common";
 import { CenteredContainerXL, TopicHeader, Unauthorized } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -12,37 +17,31 @@ export default function SubjectManagementPage() {
 	const router = useRouter();
 
 	const [openPermissionDialog, setOpenPermissionDialog] = useState(false);
-	const { data: permissions } = trpc.me.permissions.useQuery();
-	const { data: subject } = trpc.subject.getForEdit.useQuery(
-		{
-			subjectId: router.query.subjectId as string
-		},
-		{
-			enabled: !!router.query.subjectId
-		}
+	const { data: subject, isLoading } = trpc.subject.getForEdit.useQuery(
+		{ subjectId: router.query.subjectId as string },
+		{ enabled: !!router.query.subjectId }
 	);
 
-	const canView =
-		!!subject &&
-		!!permissions &&
-		(permissions.role === "ADMIN" ||
-			permissions.author?.subjectAdmin.find(s => s.subjectId === subject.subjectId));
-
-	if (!canView) {
+	if (isLoading) {
+		return <LoadingBox />;
+	}
+	// TODO everybody can do it for now
+	// typescript is angry if I ignore !subject
+	if (!subject) {
 		return (
 			<Unauthorized>
 				<ul className="list-inside list-disc">
-					<li>Admininstratoren</li>
-					<li>Admininstratoren für Fachbereich ({router.query.subjectId})</li>
+					<li>Administratoren</li>
+					<li>Administratoren für Fachbereich ({router.query.subjectId})</li>
 				</ul>
 			</Unauthorized>
 		);
 	}
 
 	return (
-		<div className="flex flex-col gap-8 bg-gray-50 pb-32">
+		<div className="flex flex-col gap-8 pb-32">
 			<TopicHeader
-				imgUrlBanner={subject?.imgUrlBanner}
+				imgUrlBanner={subject.imgUrlBanner}
 				parentLink="/subjects"
 				parentTitle="Fachgebiet"
 				title={subject.title}
@@ -94,7 +93,7 @@ export default function SubjectManagementPage() {
 					{subject.specializations.map(spec => (
 						<li
 							key={spec.specializationId}
-							className="flex rounded-lg border border-light-border bg-white"
+							className="flex rounded-lg border border-c-border bg-white"
 						>
 							<ImageOrPlaceholder
 								src={spec.cardImgUrl ?? undefined}
@@ -104,11 +103,11 @@ export default function SubjectManagementPage() {
 								<div className="flex flex-col gap-2">
 									<Link
 										href={`/teaching/subjects/${subject.subjectId}/${spec.specializationId}`}
-										className="text-lg font-semibold hover:text-secondary"
+										className="text-lg font-semibold hover:text-c-primary"
 									>
 										{spec.title}
 									</Link>
-									<p className="text-sm text-light">{spec.subtitle}</p>
+									<p className="text-sm text-c-text-muted">{spec.subtitle}</p>
 								</div>
 
 								<ul className="flex flex-wrap gap-4">

@@ -1,5 +1,5 @@
 /* eslint-disable */
-export default {
+module.exports = {
 	displayName: "data-access-api",
 	setupFiles: ["<rootDir>/jest.setup.ts"],
 	testEnvironment: "node",

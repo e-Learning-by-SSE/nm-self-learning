@@ -1,9 +1,7 @@
 import { database } from "@self-learning/database";
 import { specializationSchema } from "@self-learning/types";
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
-import { UserFromSession } from "../context";
 
 export const specializationRouter = t.router({
 	getById: authProcedure.input(z.object({ specializationId: z.string() })).query(({ input }) => {
@@ -14,13 +12,7 @@ export const specializationRouter = t.router({
 				slug: true,
 				cardImgUrl: true,
 				title: true,
-				subject: {
-					select: {
-						subjectId: true,
-						slug: true,
-						title: true
-					}
-				}
+				subject: { select: { subjectId: true, slug: true, title: true } }
 			}
 		});
 	}),
@@ -41,21 +33,15 @@ export const specializationRouter = t.router({
 			});
 		}),
 	create: authProcedure
-		.input(
-			z.object({
-				subjectId: z.string(),
-				data: specializationSchema
-			})
-		)
+		.input(z.object({ subjectId: z.string(), data: specializationSchema }))
 		.mutation(async ({ ctx, input }) => {
-			const canCreate = await canCreateSpecializationInSubject(input.subjectId, ctx.user);
-
-			if (!canCreate) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: `Requires ADMIN role or subjectAdmin in ${input.subjectId}.`
-				});
-			}
+			// All can create and edit for now
+			// if (!canEdit) {
+			// 	throw new TRPCError({
+			// 		code: "FORBIDDEN",
+			// 		message: `Requires ADMIN role or EDIT in ${input.subjectId}.`
+			// 	});
+			// }
 
 			const specialization = await database.specialization.create({
 				data: {
@@ -79,25 +65,15 @@ export const specializationRouter = t.router({
 			return specialization;
 		}),
 	update: authProcedure
-		.input(
-			z.object({
-				subjectId: z.string(),
-				data: specializationSchema
-			})
-		)
+		.input(z.object({ subjectId: z.string(), data: specializationSchema }))
 		.mutation(async ({ ctx, input }) => {
-			const canEdit = await canEditSpecializationInSubject(
-				input.subjectId,
-				input.data.specializationId,
-				ctx.user
-			);
-
-			if (!canEdit) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: `Requires ADMIN role or subjectAdmin in ${input.subjectId} or specializationAdmin in ${input.data.specializationId}.`
-				});
-			}
+			// All can create and edit for now
+			// if (!canEdit) {
+			// 	throw new TRPCError({
+			// 		code: "FORBIDDEN",
+			// 		message: `Requires ADMIN role or EDIT in ${input.subjectId}.`
+			// 	});
+			// }
 
 			const specialization = await database.specialization.update({
 				where: { specializationId: input.data.specializationId },
@@ -123,24 +99,19 @@ export const specializationRouter = t.router({
 		.input(
 			z.object({ subjectId: z.string(), specializationId: z.string(), courseId: z.string() })
 		)
-		.mutation(async ({ input: { subjectId, specializationId, courseId }, ctx }) => {
-			if (!canEditSpecializationInSubject(subjectId, specializationId, ctx.user)) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: `Requires ADMIN role or subjectAdmin in ${subjectId} or specializationAdmin in ${specializationId}.`
-				});
-			}
+		.mutation(async ({ input: { specializationId, courseId }, ctx }) => {
+			// All can create and edit for now
+			// if (!(await canCreateOrEdit(ctx.user, subjectId))) {
+			// 	throw new TRPCError({
+			// 		code: "FORBIDDEN",
+			// 		message: `Requires ADMIN role or EDIT in ${subjectId}.`
+			// 	});
+			// }
 
 			const added = await database.specialization.update({
 				where: { specializationId },
-				data: {
-					courses: {
-						connect: { courseId }
-					}
-				},
-				select: {
-					specializationId: true
-				}
+				data: { courses: { connect: { courseId } } },
+				select: { specializationId: true }
 			});
 
 			console.log(
@@ -154,24 +125,19 @@ export const specializationRouter = t.router({
 		.input(
 			z.object({ subjectId: z.string(), specializationId: z.string(), courseId: z.string() })
 		)
-		.mutation(async ({ input: { subjectId, specializationId, courseId }, ctx }) => {
-			if (!canEditSpecializationInSubject(subjectId, specializationId, ctx.user)) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: `Requires ADMIN role or subjectAdmin in ${subjectId} or specializationAdmin in ${specializationId}.`
-				});
-			}
+		.mutation(async ({ input: { specializationId, courseId }, ctx }) => {
+			// All can create and edit for now
+			// if (!(await canCreateOrEdit(ctx.user, subjectId))) {
+			// 	throw new TRPCError({
+			// 		code: "FORBIDDEN",
+			// 		message: `Requires ADMIN role or EDIT in ${subjectId}.`
+			// 	});
+			// }
 
 			const added = await database.specialization.update({
 				where: { specializationId },
-				data: {
-					courses: {
-						disconnect: { courseId }
-					}
-				},
-				select: {
-					specializationId: true
-				}
+				data: { courses: { disconnect: { courseId } } },
+				select: { specializationId: true }
 			});
 
 			console.log(
@@ -182,48 +148,3 @@ export const specializationRouter = t.router({
 			return added;
 		})
 });
-
-async function canCreateSpecializationInSubject(
-	subjectId: string,
-	user: UserFromSession
-): Promise<boolean> {
-	if (user.role === "ADMIN") {
-		return true;
-	}
-
-	const subjectAdmin = await database.subjectAdmin.findUnique({
-		where: {
-			subjectId_username: { subjectId, username: user.name }
-		}
-	});
-
-	if (subjectAdmin) {
-		return true;
-	}
-
-	return false;
-}
-
-async function canEditSpecializationInSubject(
-	subjectId: string,
-	specializationId: string,
-	user: UserFromSession
-): Promise<boolean> {
-	const canCreate = await canCreateSpecializationInSubject(subjectId, user);
-
-	if (canCreate) {
-		return true;
-	}
-
-	const specializationAdmin = await database.specializationAdmin.findUnique({
-		where: {
-			specializationId_username: { specializationId, username: user.name }
-		}
-	});
-
-	if (specializationAdmin) {
-		return true;
-	}
-
-	return false;
-}

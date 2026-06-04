@@ -1,4 +1,4 @@
-import { createOpenApiNextHandler } from "trpc-openapi";
+import { createOpenApiNextHandler } from "trpc-to-openapi";
 import { Context } from "./context";
 import { appRouter } from "./app.router";
 import { TRPCError } from "@trpc/server";

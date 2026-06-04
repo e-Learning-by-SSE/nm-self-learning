@@ -72,7 +72,7 @@ export class ExampleDataGenerator {
 			slug: slugify(title, { lower: true, strict: true }),
 			subtitle: faker.lorem.paragraph(1),
 			description: faker.lorem.paragraphs(3),
-			imgUrl: faker.image.image()
+			imgUrl: faker.image.url()
 		}));
 	}
 
@@ -84,7 +84,7 @@ export class ExampleDataGenerator {
 				slug: "the-beginners-guide-to-react",
 				subtitle: faker.lorem.paragraph(2),
 				description: faker.lorem.paragraphs(3),
-				imgUrl: faker.image.image()
+				imgUrl: faker.image.url()
 			}
 		];
 	}

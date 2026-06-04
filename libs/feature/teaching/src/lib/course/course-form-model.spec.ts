@@ -1,12 +1,13 @@
 import { ZodError } from "zod";
 import { CourseFormModel, courseFormSchema } from "./course-form-model";
+import { AccessLevel } from "@prisma/client";
 
 function getErrors(value: unknown) {
 	try {
 		courseFormSchema.parse(value);
 		throw Error("Expected validation error.");
 	} catch (error) {
-		return (error as ZodError).errors;
+		return (error as ZodError).issues;
 	}
 }
 
@@ -19,7 +20,14 @@ const minValidCourse: CourseFormModel = {
 	description: null,
 	imgUrl: null,
 	subjectId: null,
-	authors: []
+	authors: [],
+	permissions: [
+		{
+			groupId: 1,
+			groupName: "Group 1",
+			accessLevel: AccessLevel.VIEW
+		}
+	]
 };
 
 describe("courseFormSchema", () => {
@@ -30,9 +38,8 @@ describe("courseFormSchema", () => {
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "object",
-			    "message": "Expected object, received null",
+			    "message": "Invalid input: expected object, received null",
 			    "path": Array [],
-			    "received": "null",
 			  },
 			]
 		`);
@@ -44,83 +51,82 @@ describe("courseFormSchema", () => {
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "string",
-			    "message": "Required",
+			    "message": "Invalid input: expected string, received undefined",
 			    "path": Array [
 			      "courseId",
 			    ],
-			    "received": "undefined",
 			  },
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "string",
-			    "message": "Required",
+			    "message": "Invalid input: expected string, received undefined",
 			    "path": Array [
 			      "subjectId",
 			    ],
-			    "received": "undefined",
 			  },
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "string",
-			    "message": "Required",
+			    "message": "Invalid input: expected string, received undefined",
 			    "path": Array [
 			      "slug",
 			    ],
-			    "received": "undefined",
 			  },
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "string",
-			    "message": "Required",
+			    "message": "Invalid input: expected string, received undefined",
 			    "path": Array [
 			      "title",
 			    ],
-			    "received": "undefined",
 			  },
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "string",
-			    "message": "Required",
+			    "message": "Invalid input: expected string, received undefined",
 			    "path": Array [
 			      "subtitle",
 			    ],
-			    "received": "undefined",
 			  },
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "string",
-			    "message": "Required",
+			    "message": "Invalid input: expected string, received undefined",
 			    "path": Array [
 			      "description",
 			    ],
-			    "received": "undefined",
 			  },
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "string",
-			    "message": "Required",
+			    "message": "Invalid input: expected string, received undefined",
 			    "path": Array [
 			      "imgUrl",
 			    ],
-			    "received": "undefined",
 			  },
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "array",
-			    "message": "Required",
+			    "message": "Invalid input: expected array, received undefined",
 			    "path": Array [
 			      "authors",
 			    ],
-			    "received": "undefined",
 			  },
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "array",
-			    "message": "Required",
+			    "message": "Invalid input: expected array, received undefined",
 			    "path": Array [
 			      "content",
 			    ],
-			    "received": "undefined",
+			  },
+			  Object {
+			    "code": "invalid_type",
+			    "expected": "array",
+			    "message": "Invalid input: expected array, received undefined",
+			    "path": Array [
+			      "permissions",
+			    ],
 			  },
 			]
 		`);
@@ -137,11 +143,10 @@ describe("courseFormSchema", () => {
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "string",
-			    "message": "Required",
+			    "message": "Invalid input: expected string, received undefined",
 			    "path": Array [
 			      "title",
 			    ],
-			    "received": "undefined",
 			  },
 			]
 		`);
@@ -158,11 +163,10 @@ describe("courseFormSchema", () => {
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "string",
-			    "message": "Required",
+			    "message": "Invalid input: expected string, received undefined",
 			    "path": Array [
 			      "slug",
 			    ],
-			    "received": "undefined",
 			  },
 			]
 		`);
@@ -179,11 +183,10 @@ describe("courseFormSchema", () => {
 			  Object {
 			    "code": "invalid_type",
 			    "expected": "array",
-			    "message": "Required",
+			    "message": "Invalid input: expected array, received undefined",
 			    "path": Array [
 			      "content",
 			    ],
-			    "received": "undefined",
 			  },
 			]
 		`);
@@ -212,7 +215,8 @@ describe("courseFormSchema", () => {
 				imgUrl: "http://example.com/image.png",
 				subjectId: "subject-1",
 
-				authors: [{ username: "author-a" }, { username: "author-b" }]
+				authors: [{ username: "author-a" }, { username: "author-b" }],
+				permissions: []
 			};
 
 			expect(courseFormSchema.safeParse(course).success).toBeDefined();

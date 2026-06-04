@@ -14,9 +14,7 @@ export function DashboardSidebarLayout({ children }: { children: React.ReactNode
 			header={<SidebarHeader />}
 			content={<SidebarLinks />}
 		>
-			<div className="bg-gray-50">
-				<CenteredSection>{children}</CenteredSection>
-			</div>
+			<CenteredSection>{children}</CenteredSection>
 		</SecondarySidebarLayout>
 	);
 }
@@ -28,7 +26,7 @@ function SidebarHeader() {
 type NavItem = {
 	href: string;
 	label: string;
-	icon: React.ForwardRefExoticComponent<any>;
+	icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 };
 
 const navItems = [

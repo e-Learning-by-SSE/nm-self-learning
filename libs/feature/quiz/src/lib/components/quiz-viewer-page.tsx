@@ -1,4 +1,3 @@
-import { LessonType } from "@prisma/client";
 import {
 	calculateAverageQuizScore,
 	QuizCompletionDialog,
@@ -12,10 +11,8 @@ import {
 	LessonLayoutProps,
 	StandaloneLessonLayoutProps,
 	useLessonContext,
-	getCourse,
 	useLessonSession
 } from "@self-learning/lesson";
-import { ArrowPathIcon, PlayIcon } from "@heroicons/react/24/solid";
 import { MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuizContent } from "@self-learning/question-types";
 import {

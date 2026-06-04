@@ -2,6 +2,8 @@ import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 import { Paginated } from "@self-learning/util/common";
 import Link from "next/link";
 import { useMemo } from "react";
+import { useTranslation } from "next-i18next";
+import { Trans } from "../i18n/trans";
 
 type PaginatedLinks = {
 	front: number[];
@@ -20,6 +22,8 @@ export function Paginator({
 	/** If defined, selecting a page will no longer cause a navigation! Callers are responsible for changing data.  */
 	onPageChange?: (page: number) => void;
 }) {
+	const { t } = useTranslation("features-ui-commons");
+
 	const pageLinks = useMemo(() => {
 		const arr = new Array(Math.ceil(pagination.totalCount / pagination.pageSize))
 			.fill(0)
@@ -66,19 +70,25 @@ export function Paginator({
 
 	return (
 		<div className="flex flex-wrap items-center justify-between gap-4 py-4">
-			<p className="text-sm text-light">
-				Zeige{" "}
-				<span className="font-medium text-black">{Math.min(result.length, pageSize)}</span>{" "}
-				von <span className="font-medium text-black">{totalCount}</span> Ergebnissen
+			<p className="text-sm text-c-text-muted">
+				<Trans
+					namespace="features-ui-commons"
+					i18nKey="Pagination_Results"
+					values={{ shown: Math.min(result.length, pageSize), total: totalCount }}
+					components={{
+						strong: <span className="font-medium text-c-text-strong" />
+					}}
+				/>
 			</p>
 			<nav
 				className="isolate inline-flex -space-x-px rounded-lg shadow-sm"
-				aria-label="Pagination"
+				aria-label={t("Pagination")}
 			>
 				<ForwardBackwardLink
 					disabled={page === 1}
 					href={`${url}&page=${page - 1}`}
 					isForward={false}
+					srLabel={t("Previous")}
 					onPageChange={onPageChange ? () => onPageChange(page - 1) : undefined}
 				/>
 
@@ -93,7 +103,7 @@ export function Paginator({
 				))}
 
 				{pageLinks.back.length > 0 && (
-					<span className="relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700">
+					<span className="relative inline-flex items-center border border-c-border-strong bg-white px-4 py-2 text-sm font-medium text-c-text">
 						...
 					</span>
 				)}
@@ -109,7 +119,7 @@ export function Paginator({
 								onPageChange={onPageChange}
 							/>
 						))}
-						<span className="relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700">
+						<span className="relative inline-flex items-center border border-c-border-strong bg-white px-4 py-2 text-sm font-medium text-c-text">
 							...
 						</span>
 					</>
@@ -130,6 +140,7 @@ export function Paginator({
 					disabled={page === pageLinks.maxPage || result.length === 0}
 					href={`${url}&page=${page + 1}`}
 					isForward={true}
+					srLabel={t("Next")}
 					onPageChange={onPageChange ? () => onPageChange(page + 1) : undefined}
 				/>
 			</nav>
@@ -141,16 +152,18 @@ function ForwardBackwardLink({
 	onPageChange,
 	href,
 	disabled,
-	isForward
+	isForward,
+	srLabel
 }: {
 	onPageChange?: () => void;
 	href: string;
 	isForward: boolean;
 	disabled: boolean;
+	srLabel: string;
 }) {
-	const className = `relative inline-flex items-center border border-gray-300 bg-white px-2 py-2 text-sm font-medium ${
+	const className = `relative inline-flex items-center border border-c-border-strong bg-white px-2 py-2 text-sm font-medium ${
 		isForward ? "rounded-r-lg" : "rounded-l-lg"
-	} ${disabled ? "text-gray-300" : "text-gray-500"}`;
+	} ${disabled ? "text-gray-300" : "text-c-text"}`;
 
 	const icon = isForward ? (
 		<ChevronRightIcon className="h-5" />
@@ -161,7 +174,7 @@ function ForwardBackwardLink({
 	if (disabled) {
 		return (
 			<span className={className}>
-				<span className="sr-only">Previous</span>
+				<span className="sr-only">{srLabel}</span>
 				{icon}
 			</span>
 		);
@@ -170,7 +183,7 @@ function ForwardBackwardLink({
 	if (typeof onPageChange === "function") {
 		return (
 			<button className={className} onClick={onPageChange}>
-				<span className="sr-only">Previous</span>
+				<span className="sr-only">{srLabel}</span>
 				{icon}
 			</button>
 		);
@@ -178,7 +191,7 @@ function ForwardBackwardLink({
 
 	return (
 		<Link href={href} className={className}>
-			<span className="sr-only">Previous</span>
+			<span className="sr-only">{srLabel}</span>
 			{icon}
 		</Link>
 	);
@@ -198,10 +211,10 @@ function PageLink({
 	if (typeof onPageChange === "function") {
 		return (
 			<button
-				className={`relative inline-flex items-center border  px-4 py-2 text-sm font-medium text-secondary focus:z-20 ${
+				className={`relative inline-flex items-center border px-4 py-2 text-sm font-medium text-c-primary focus:z-20 ${
 					isActive
-						? "z-10 border-secondary bg-emerald-50 hover:bg-emerald-100"
-						: "border-gray-300 bg-white text-gray-500 hover:bg-gray-50"
+						? "z-10 border-c-primary bg-c-primary-subtle hover:bg-c-primary-muted"
+						: "border-c-border-strong bg-white text-c-text bg-c-text-muted hover:bg-c-neutral-subtle"
 				}`}
 				onClick={() => onPageChange(page)}
 			>
@@ -214,10 +227,10 @@ function PageLink({
 		<Link
 			href={url}
 			aria-current="page"
-			className={`relative inline-flex items-center border  px-4 py-2 text-sm font-medium text-secondary focus:z-20 ${
+			className={`relative inline-flex items-center border px-4 py-2 text-sm font-medium text-c-primary focus:z-20 ${
 				isActive
-					? "z-10 border-secondary bg-emerald-50 hover:bg-emerald-100"
-					: "border-gray-300 bg-white text-gray-500 hover:bg-gray-50"
+					? "z-10 border-c-primary bg-c-primary-subtle hover:bg-emerald-100"
+					: "border-c-border-strong bg-white text-c-text-muted hover:bg-c-neutral-subtle"
 			}`}
 		>
 			{page}

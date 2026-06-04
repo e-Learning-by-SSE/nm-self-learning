@@ -193,7 +193,7 @@ async function checkMinioServer() {
 	try {
 		// Calls a function that requires few configuration (e.g., no access key, bucket, ...)
 		await minioClient.listBuckets();
-	} catch (error) {
+	} catch (_error) {
 		throw new TRPCError({
 			code: "INTERNAL_SERVER_ERROR",
 			message: `Minio Server not reachable at ${minioConfig.endPoint}:${minioConfig.port}`

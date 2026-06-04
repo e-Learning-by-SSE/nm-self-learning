@@ -2,35 +2,115 @@
 	"migrations": [
 		{
 			"cli": "nx",
-			"version": "19.2.0-beta.2",
-			"description": "Updates the default workspace data directory to .nx/workspace-data",
-			"implementation": "./src/migrations/update-19-2-0/move-workspace-data-directory",
-			"package": "nx",
-			"name": "19-2-0-move-graph-cache-directory"
-		},
-		{
-			"cli": "nx",
-			"version": "19.2.2-beta.0",
+			"version": "22.1.0-beta.5",
 			"description": "Updates the nx wrapper.",
-			"implementation": "./src/migrations/update-17-3-0/update-nxw",
+			"implementation": "./dist/src/migrations/update-22-1-0/update-nx-wrapper",
 			"package": "nx",
-			"name": "19-2-2-update-nx-wrapper"
-		},
-		{
-			"version": "19.2.4-beta.0",
-			"description": "Set project name in nx.json explicitly",
-			"implementation": "./src/migrations/update-19-2-4/set-project-name",
-			"x-repair-skip": true,
-			"package": "nx",
-			"name": "19-2-4-set-project-name"
+			"name": "22-1-0-update-nx-wrapper"
 		},
 		{
 			"cli": "nx",
-			"version": "19.1.0-beta.6",
-			"description": "Migrate no-extra-semi rules into user config, out of nx extendable configs",
-			"implementation": "./src/migrations/update-19-1-0-migrate-no-extra-semi/migrate-no-extra-semi",
-			"package": "@nx/eslint-plugin",
-			"name": "update-19-1-0-rename-no-extra-semi"
+			"version": "22.6.0-beta.10",
+			"description": "Adds .claude/worktrees to .gitignore",
+			"implementation": "./dist/src/migrations/update-22-6-0/add-claude-worktrees-to-git-ignore",
+			"package": "nx",
+			"name": "22-6-1-add-claude-worktrees-to-git-ignore"
+		},
+		{
+			"cli": "nx",
+			"version": "22.7.0-beta.0",
+			"description": "Adds .nx/polygraph to .gitignore",
+			"implementation": "./dist/src/migrations/update-22-7-0/add-polygraph-to-git-ignore",
+			"package": "nx",
+			"name": "22-7-0-add-polygraph-to-git-ignore"
+		},
+		{
+			"cli": "nx",
+			"version": "22.6.0-rc.0",
+			"description": "Adds .claude/settings.local.json to .gitignore",
+			"implementation": "./dist/src/migrations/update-17-3-0/update-nxw",
+			"package": "nx",
+			"name": "22-6-0-add-claude-settings-local-to-git-ignore"
+		},
+		{
+			"cli": "nx",
+			"version": "22.7.0-beta.0",
+			"description": "Adds .nx/self-healing to .gitignore",
+			"implementation": "./dist/src/migrations/update-22-2-0/add-self-healing-to-gitignore",
+			"package": "nx",
+			"name": "22-7-0-add-self-healing-to-gitignore"
+		},
+		{
+			"version": "22.7.0-beta.12",
+			"description": "Add missing inputs to @nx/eslint:lint executor target defaults",
+			"implementation": "./src/migrations/update-21-6-0/update-executor-lint-inputs",
+			"package": "@nx/eslint",
+			"name": "update-executor-lint-inputs"
+		},
+		{
+			"version": "22.1.0-rc.1",
+			"description": "Removes redundant TypeScript project references from project's tsconfig.json files when runtime tsconfig files (e.g., tsconfig.lib.json, tsconfig.app.json) exist.",
+			"factory": "./src/migrations/update-22-1-0/remove-redundant-ts-project-references",
+			"package": "@nx/js",
+			"name": "remove-redundant-ts-project-references"
+		},
+		{
+			"version": "22.1.0-beta.6",
+			"requires": {
+				"cypress": ">=15.0.0"
+			},
+			"description": "Renames `cy.exec().its('code')` usages to the new `exitCode` property introduced in Cypress v15.",
+			"implementation": "./src/migrations/update-22-1-0/rename-cy-exec-code-property",
+			"package": "@nx/cypress",
+			"name": "rename-cy-exec-code-property"
+		},
+		{
+			"version": "22.1.0-beta.6",
+			"requires": {
+				"cypress": ">=15.0.0"
+			},
+			"description": "Updates the deprecated `Cypress.SelectorPlayground` API to `Cypress.ElementSelector` and removes the unsupported `onElement` option.",
+			"implementation": "./src/migrations/update-22-1-0/update-selector-playground-api",
+			"package": "@nx/cypress",
+			"name": "update-selector-playground-api"
+		},
+		{
+			"version": "22.1.0-beta.6",
+			"requires": {
+				"cypress": ">=15.0.0"
+			},
+			"description": "For Angular component testing projects below v18, switches to the fallback `@cypress/angular` harness required by Cypress v15.",
+			"implementation": "./src/migrations/update-22-1-0/update-angular-component-testing-support",
+			"package": "@nx/cypress",
+			"name": "update-angular-component-testing-support"
+		},
+		{
+			"version": "22.2.0-beta.2",
+			"description": "Convert jest.config.ts files from ESM to CJS syntax (export default -> module.exports, import -> require) for projects using CommonJS resolution to ensure correct loading under Node.js type-stripping.",
+			"implementation": "./src/migrations/update-22-2-0/convert-jest-config-to-cjs",
+			"package": "@nx/jest",
+			"name": "convert-jest-config-to-cjs"
+		},
+		{
+			"version": "22.3.2-beta.0",
+			"requires": {
+				"jest": ">=30.0.0"
+			},
+			"description": "Replace removed matcher aliases in Jest v30 with their corresponding matcher",
+			"implementation": "./src/migrations/update-21-3-0/replace-removed-matcher-aliases",
+			"package": "@nx/jest",
+			"name": "replace-removed-matcher-aliases-v22-3"
+		},
+		{
+			"cli": "nx",
+			"version": "22.2.0-beta.1",
+			"requires": {
+				"next": ">=16.0.0"
+			},
+			"description": "Create AI Instructions to help migrate users workspaces to Next.js 16.",
+			"factory": "./src/migrations/update-22-2-0/create-ai-instructions-for-next-16",
+			"package": "@nx/next",
+			"name": "update-22-2-0-create-ai-instructions-for-next-16"
 		}
 	]
 }

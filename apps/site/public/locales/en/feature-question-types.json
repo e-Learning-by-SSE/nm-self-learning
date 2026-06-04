@@ -1,0 +1,8 @@
+{
+    "displayName": "Tree-based Task",
+    "selectNodeType": "Select a node type",
+    "selectPlaceholder": "-- select --",
+    "addCategory": "+ Add category",
+    "categoryNamePlaceholder": "Category name (e.g. Noun)",
+    "restrictNodeTypesHint": "⚠️ Note: When node types are restricted, the values in the initial tree should match the defined category words. Otherwise it may cause inconsistent display for students."
+}

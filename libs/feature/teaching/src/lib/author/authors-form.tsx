@@ -1,5 +1,5 @@
 import { trpc } from "@self-learning/api-client";
-import { ImageChip, OnDialogCloseFn, IconButton } from "@self-learning/ui/common";
+import { ImageChip, OnDialogCloseFn, IconTextButton } from "@self-learning/ui/common";
 import { Form } from "@self-learning/ui/forms";
 import Link from "next/link";
 import { useState } from "react";
@@ -42,15 +42,16 @@ export function AuthorsForm({ subtitle, emptyString }: { subtitle: string; empty
 	return (
 		<Form.SidebarSection>
 			<Form.SidebarSectionTitle title="Autoren" subtitle={subtitle}>
-				<IconButton
+				<IconTextButton
 					text="Hinzufügen"
 					icon={<PlusIcon className="h-5" />}
+					className="btn-secondary"
 					onClick={() => setOpenAddDialog(true)}
 				/>
 			</Form.SidebarSectionTitle>
 
 			{authors.length === 0 ? (
-				<p className="text-sm text-light">{emptyString}</p>
+				<p className="text-sm text-c-text-muted">{emptyString}</p>
 			) : (
 				<ul className="grid gap-4">
 					{authors.map(({ username }, index) => (
@@ -76,7 +77,7 @@ function Author({ username, onRemove }: { username: string; onRemove: (() => voi
 	const { data: author } = trpc.author.getByUsername.useQuery({ username });
 
 	if (!author) {
-		return <li className="rounded-lg border border-light-border bg-white p-2">Loading...</li>;
+		return <li className="rounded-lg border border-c-border bg-white p-2">Loading...</li>;
 	}
 
 	return (
@@ -84,7 +85,7 @@ function Author({ username, onRemove }: { username: string; onRemove: (() => voi
 			<Link
 				href={`/authors/${author.slug}`}
 				target="_blank"
-				className="font-medium hover:text-secondary"
+				className="font-medium hover:text-c-primary"
 				rel="noopener noreferrer"
 			>
 				{author.displayName}

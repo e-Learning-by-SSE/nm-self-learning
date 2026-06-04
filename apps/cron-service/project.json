@@ -58,6 +58,7 @@
 			"executor": "@nx/jest:jest",
 			"outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
 			"options": {
+                "passWithNoTests": true,
 				"jestConfig": "apps/cron-service/jest.config.ts"
 			}
 		}

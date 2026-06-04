@@ -15,6 +15,7 @@
 	},
 	"files": [],
 	"include": [],
+    "exclude": ["prisma/migrations/**"],
 	"references": [
 		{
 			"path": "./tsconfig.lib.json"

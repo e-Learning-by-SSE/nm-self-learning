@@ -42,8 +42,8 @@ import { evaluateProgramming } from "./question-types/programming/evaluate";
 import { Programming, programmingQuestionSchema } from "./question-types/programming/schema";
 import { Text, textQuestionSchema } from "./question-types/text/schema";
 import { LessonLayoutProps } from "@self-learning/lesson";
-import { LanguageTree, languageTreeQuestionSchema } from "./question-types/language-tree/schema";
-import { evaluateLanguageTreeAnswer } from "./question-types/language-tree/evaluate";
+import { LanguageTree, languageTreeQuestionSchema } from "./question-types/tree/schema";
+import { evaluateLanguageTreeAnswer } from "./question-types/tree/evaluate";
 
 const ProgrammingAnswer = dynamic(() => import("./question-types/programming/component"), {
 	ssr: false
@@ -69,10 +69,10 @@ const ClozeAnswer = dynamic(() => import("./question-types/cloze/component"), { 
 const ClozeForm = dynamic(() => import("./question-types/cloze/form"), { ssr: false });
 const ArrangeAnswer = dynamic(() => import("./question-types/arrange/component"), { ssr: false });
 const ArrangeForm = dynamic(() => import("./question-types/arrange/form"), { ssr: false });
-const LanguageTextForm = dynamic(() => import("./question-types/language-tree/form"), {
+const LanguageTextForm = dynamic(() => import("./question-types/tree/form"), {
 	ssr: false
 });
-const LanguageTextAnswer = dynamic(() => import("./question-types/language-tree/component"), {
+const LanguageTextAnswer = dynamic(() => import("./question-types/tree/component"), {
 	ssr: false
 });
 
@@ -215,7 +215,9 @@ export const INITIAL_QUESTION_CONFIGURATION_FUNCTIONS: {
 		type: "language-tree",
 		caseSensitive: false,
 		customTextInputInParentNodes: true,
-		initialTree: "",
+		restrictNodeTypes: false,
+		nodeTypeCategories: [],
+		initialTree: "[Root]",
 		answer: []
 	})
 };
@@ -233,7 +235,7 @@ export const QUESTION_TYPE_DISPLAY_NAMES: {
 	programming: "Programmierung",
 	cloze: "Lückentext",
 	arrange: "Ordnen",
-	"language-tree": "Sprachbaum"
+	"language-tree": "Baumstruktur-Aufgabe"
 };
 
 /**
@@ -275,8 +277,8 @@ export function QuestionAnswerRenderer({
 	}
 
 	return (
-		<span className="text-red-500">
-			Error: No implementation found for "{(question as { type: string }).type}".
+		<span className="text-c-danger">
+			Error: No implementation found for &quot;{(question as { type: string }).type}&quot;.
 		</span>
 	);
 }
@@ -320,8 +322,8 @@ export function QuestionFormRenderer({
 	}
 
 	return (
-		<span className="text-red-500">
-			Error: No implementation found for "{(question as { type: string }).type}".
+		<span className="text-c-danger">
+			Error: No implementation found for &quot;{(question as { type: string }).type}&quot;.
 		</span>
 	);
 }

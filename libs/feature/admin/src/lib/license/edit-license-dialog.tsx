@@ -29,7 +29,7 @@ export function CreateLicenseDialog({ onClose }: { onClose: OnDialogCloseFn<Lice
 				subtitle: result.name
 			});
 			onClose(result);
-		} catch (err) {
+		} catch {
 			showToast({
 				type: "error",
 				title: "Lizenz konnte nicht erstellt werden!",
@@ -78,7 +78,7 @@ export function EditLicenseDialog({
 				subtitle: result.name
 			});
 			onClose(result);
-		} catch (err) {
+		} catch {
 			showToast({
 				type: "error",
 				title: "Lizenz konnte nicht gespeichert werden!",
@@ -196,7 +196,7 @@ function LicenseDataEditSection() {
 	const errors = formState.errors;
 
 	return (
-		<section className="flex flex-col rounded-lg border border-light-border p-4">
+		<section className="flex flex-col rounded-lg border border-c-border p-4">
 			<h2 className="mb-4 text-2xl">Daten</h2>
 			<div className="flex flex-col gap-4">
 				<LabeledField label="Name" error={errors.name?.message}>

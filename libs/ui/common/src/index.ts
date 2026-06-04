@@ -32,6 +32,7 @@ export * from "./lib/progress-bar/progress-bar";
 export * from "./lib/table/table-menu";
 export * from "./lib/star-rating/star-rating";
 export * from "./lib/use-first-render";
+export * from "./lib/details-dropdown/details-dropdown";
 
 export * from "./lib/effects/FlameParticle";
 export * from "./lib/effects/SlotCounter";
@@ -48,3 +49,6 @@ export * from "./lib/transition/minor-scale-fade-in";
 export * from "./lib/button/button";
 export * from "./lib/dropdown-menu/dropdown-menu";
 export * from "./lib/i18n/trans";
+export * from "./lib/help/online-help-link";
+
+export const I18N_NAMESPACE = ["common", "features-ui-commons"];

@@ -3,6 +3,7 @@ import { database } from "@self-learning/database";
 import { getServerSession } from "next-auth";
 import { createMockContext } from "../../context-utils";
 import { createCourseMock, createLessonMock } from "@self-learning/util/testing";
+import { testResourceGuard } from "@self-learning/ui/layouts";
 
 // Mocks getServerSession of withAuth procedure to mock User object
 // ESM support & default mock required by NextAuth
@@ -20,6 +21,10 @@ jest.mock("@self-learning/database", () => ({
 	}
 }));
 
+jest.mock("@self-learning/ui/layouts", () => ({
+	testResourceGuard: jest.fn()
+}));
+
 describe("getServerSideProps", () => {
 	const mockCtx = createMockContext({ params: { courseId: "course1" } });
 
@@ -30,7 +35,6 @@ describe("getServerSideProps", () => {
 		});
 
 		const courseMock = createCourseMock({
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			courseId: mockCtx.params!.courseId as string,
 			authors: ["Author1"],
 			content: [
@@ -48,7 +52,7 @@ describe("getServerSideProps", () => {
 			(database.lesson.findMany as jest.Mock).mockResolvedValue([lessonMock]);
 		});
 
-		it("should redirect non Admins/Authors to 403", async () => {
+		it("should return not found if cource not found", async () => {
 			(getServerSession as jest.Mock).mockResolvedValue({
 				user: {
 					isAuthor: false,
@@ -56,19 +60,22 @@ describe("getServerSideProps", () => {
 					name: "user1"
 				}
 			});
+			(database.course.findUnique as jest.Mock).mockResolvedValue(null);
+			(testResourceGuard as jest.Mock).mockReturnValue(false);
 
 			const result = await getServerSideProps(mockCtx);
-			expect(result).toEqual({ redirect: { destination: "/403", permanent: false } });
+			expect(result).toEqual({ notFound: true });
 		});
 
-		it("should redirect foreign Author to 403", async () => {
+		it("should redirect users without access to 403", async () => {
 			(getServerSession as jest.Mock).mockResolvedValue({
 				user: {
-					isAuthor: true,
+					isAuthor: false,
 					role: "USER",
 					name: "user1"
 				}
 			});
+			(testResourceGuard as jest.Mock).mockReturnValue(false);
 
 			const result = await getServerSideProps(mockCtx);
 			expect(result).toEqual({ redirect: { destination: "/403", permanent: false } });
@@ -80,25 +87,7 @@ describe("getServerSideProps", () => {
 					role: "ADMIN"
 				}
 			});
-
-			const result = await getServerSideProps(mockCtx);
-			expect(result).toMatchObject({
-				notFound: false,
-				props: {
-					course: expect.any(Object),
-					lessons: expect.any(Array)
-				}
-			});
-		});
-
-		it("should grant access to Author of Lesson", async () => {
-			(getServerSession as jest.Mock).mockResolvedValue({
-				user: {
-					isAuthor: true,
-					role: "USER",
-					name: courseMock.authors[0].username
-				}
-			});
+			(testResourceGuard as jest.Mock).mockReturnValue(true);
 
 			const result = await getServerSideProps(mockCtx);
 			expect(result).toMatchObject({

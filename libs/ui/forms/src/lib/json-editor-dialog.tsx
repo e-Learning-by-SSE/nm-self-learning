@@ -48,7 +48,7 @@ export function JsonEditorDialog<T>({
 	}
 
 	return (
-		<Dialog open={true} onClose={handleOutsideClick()} className="relative z-50">
+		<Dialog open={true} onClose={handleOutsideClick} className="relative z-50">
 			{/* The backdrop, rendered as a fixed sibling to the panel container */}
 			<div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 
@@ -62,7 +62,7 @@ export function JsonEditorDialog<T>({
 
 						{error && (
 							<div className="mb-8 max-h-32 overflow-auto">
-								<pre className="rounded-lg bg-red-50 p-4 pb-4 text-xs text-red-500">
+								<pre className="rounded-lg bg-c-danger-subtle p-4 pb-4 text-xs text-c-danger">
 									{error}
 								</pre>
 							</div>
@@ -75,21 +75,21 @@ export function JsonEditorDialog<T>({
 							onChange={value => setJsonValue(value ?? "{}")}
 						/>
 
-						<div className="mt-8 flex gap-4">
-							<button
-								type="button"
-								className="btn-primary w-fit"
-								onClick={closeWithReturn}
-							>
-								{t("save")}
-							</button>
-
+						<div className="mt-8 flex gap-4 justify-end">
 							<button
 								type="button"
 								className="btn-stroked w-fit"
 								onClick={() => onClose(undefined)}
 							>
 								{t("Abort")}
+							</button>
+
+							<button
+								type="button"
+								className="btn-primary w-fit"
+								onClick={closeWithReturn}
+							>
+								{t("save")}
 							</button>
 						</div>
 					</DialogPanel>
@@ -140,7 +140,7 @@ export function OpenAsJsonButton({
 	const { t } = useTranslation("common");
 
 	return (
-		<button className="btn btn-tertiary" onClick={openJsonEditor}>
+		<button className="btn btn-tertiary" onClick={openJsonEditor} type="button">
 			<span className={"text-gray-600"}>{t("Edit as JSON")}</span>
 			{isJsonEditorOpen && (
 				<JsonEditorDialog onClose={onCloseJsonEditor} validationSchema={validationSchema} />

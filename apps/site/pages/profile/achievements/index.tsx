@@ -9,7 +9,7 @@ function AchievementLayout(
 	pageProps: Record<string, never>
 ) {
 	return (
-		<CenteredSection className="bg-gray-50">
+		<CenteredSection>
 			<Component {...pageProps} />
 		</CenteredSection>
 	);
@@ -17,7 +17,7 @@ function AchievementLayout(
 
 function AchievementsPage() {
 	return (
-		<div className="bg-gray-50">
+		<div>
 			<div className="max-w-7xl mx-auto py-8">
 				<AchievementOverview />
 			</div>

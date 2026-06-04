@@ -1,8 +1,17 @@
-import { restQuery, createCourseMock } from "@self-learning/util/testing";
+import { createCourseMock, callOpenApi } from "@self-learning/util/testing";
 import { database } from "@self-learning/database";
 import { UserFromSession } from "../context";
+import { getCourseResource } from "../../permissions/course.utils";
+import { canEdit } from "../../permissions/permission.service";
+import { TRPCError } from "@trpc/server";
 
-// Mock the database
+jest.mock("../../permissions/course.utils", () => ({
+	getCourseResource: jest.fn()
+}));
+
+jest.mock("../../permissions/permission.service", () => ({
+	canEdit: jest.fn()
+}));
 jest.mock("@self-learning/database", () => ({
 	__esModule: true,
 	database: {
@@ -27,8 +36,12 @@ describe("REST API of Course Router", () => {
 		role: "ADMIN",
 		isAuthor: true,
 		avatarUrl: null,
-		enabledFeatureLearningDiary: false,
-		enabledLearningStatistics: false
+		featureFlags: {
+			experimental: false,
+			learningDiary: false,
+			learningStatistics: false
+		},
+		memberships: []
 	};
 
 	describe("[GET]: /courses", () => {
@@ -72,15 +85,11 @@ describe("REST API of Course Router", () => {
 		it("should list all courses (paginated) if no filter specified", async () => {
 			const pageSize = 20;
 
-			// Query parameters must use JSON.stringify
-			// See: https://trpc.io/docs/rpc#methods---type-mapping
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
-				query: {
-					trpc: ["courses"],
-					page: JSON.stringify(1),
-					pageSize: JSON.stringify(pageSize)
-				},
+				path: "/courses",
+				query: { page: 1, pageSize },
+				headers: { "content-type": "application/json" },
 				user: privilegedUser
 			});
 
@@ -101,16 +110,11 @@ describe("REST API of Course Router", () => {
 		it("should accept filter parameter: authorId", async () => {
 			const pageSize = 20;
 
-			// Query parameters must use JSON.stringify
-			// See: https://trpc.io/docs/rpc#methods---type-mapping
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
-				query: {
-					trpc: ["courses"],
-					page: JSON.stringify(1),
-					pageSize: JSON.stringify(pageSize),
-					authorId: "Author1"
-				},
+				path: "/courses",
+				query: { page: 1, pageSize, authorId: "Author1" },
+				headers: { "content-type": "application/json" },
 				user: privilegedUser
 			});
 
@@ -133,15 +137,11 @@ describe("REST API of Course Router", () => {
 		it("should return 404 on unauthorized calls", async () => {
 			const pageSize = 20;
 
-			// Query parameters must use JSON.stringify
-			// See: https://trpc.io/docs/rpc#methods---type-mapping
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
-				query: {
-					trpc: ["courses"],
-					page: JSON.stringify(1),
-					pageSize: JSON.stringify(pageSize)
-				}
+				path: "/courses",
+				query: { page: 1, pageSize, authorId: "Author1" },
+				headers: { "content-type": "application/json" }
 			});
 
 			expect(response.statusCode).toBe(401);
@@ -178,9 +178,9 @@ describe("REST API of Course Router", () => {
 		});
 
 		it("should return course information for valid slug", async () => {
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
-				query: { trpc: ["courses", courseMock.slug] },
+				path: `/courses/${courseMock.slug}`,
 				user: privilegedUser
 			});
 
@@ -198,9 +198,9 @@ describe("REST API of Course Router", () => {
 		});
 
 		it("should return 404 for invalid slug", async () => {
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
-				query: { trpc: ["courses", "invalid-slug-id"] },
+				path: `/courses/invalid-slug-id`,
 				user: privilegedUser
 			});
 
@@ -208,9 +208,9 @@ describe("REST API of Course Router", () => {
 		});
 
 		it("should return 401 on unauthorized calls", async () => {
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
-				query: { trpc: ["courses", courseMock.slug] }
+				path: `/courses/${courseMock.slug}`
 			});
 
 			expect(response.statusCode).toBe(401);
@@ -239,8 +239,12 @@ describe("REST API of Course Router", () => {
 			role: "USER",
 			isAuthor: true,
 			avatarUrl: null,
-			enabledFeatureLearningDiary: false,
-			enabledLearningStatistics: false
+			featureFlags: {
+				experimental: false,
+				learningDiary: false,
+				learningStatistics: false
+			},
+			memberships: [1]
 		};
 
 		const courseAuthor2: UserFromSession = {
@@ -249,8 +253,12 @@ describe("REST API of Course Router", () => {
 			role: "USER",
 			isAuthor: true,
 			avatarUrl: null,
-			enabledFeatureLearningDiary: false,
-			enabledLearningStatistics: false
+			featureFlags: {
+				experimental: false,
+				learningDiary: false,
+				learningStatistics: false
+			},
+			memberships: [2]
 		};
 
 		const nonAuthor: UserFromSession = {
@@ -259,8 +267,12 @@ describe("REST API of Course Router", () => {
 			role: "USER",
 			isAuthor: true,
 			avatarUrl: null,
-			enabledFeatureLearningDiary: false,
-			enabledLearningStatistics: false
+			featureFlags: {
+				experimental: false,
+				learningDiary: false,
+				learningStatistics: false
+			},
+			memberships: []
 		};
 
 		const adminNonAuthor: UserFromSession = {
@@ -269,29 +281,37 @@ describe("REST API of Course Router", () => {
 			role: "ADMIN",
 			isAuthor: true,
 			avatarUrl: null,
-			enabledFeatureLearningDiary: false,
-			enabledLearningStatistics: false
+			featureFlags: {
+				experimental: false,
+				learningDiary: false,
+				learningStatistics: false
+			},
+			memberships: []
 		};
 
 		beforeEach(() => {
 			jest.clearAllMocks();
 
-			// Mock course.findFirst for authorization check
-			(database.course.findFirst as jest.Mock).mockImplementation(async query => {
-				// Check if the requesting user is one of the course authors
-				const requestingUser = query.where.authors?.some?.username;
-				const courseAuthors = ["teacher1", "teacher2"]; // Multiple authors
-
-				if (courseAuthors.includes(requestingUser)) {
-					return {
-						courseId: courseMock.courseId,
-						content: courseMock.content
-					};
+			// Mock getCourseResource
+			(getCourseResource as jest.Mock).mockImplementation(async slug => {
+				if (slug === "test-course") {
+					return { courseId: courseMock.courseId };
 				}
-				return null; // User is not an author (includes admins who aren't authors)
+				throw new TRPCError({
+					code: "NOT_FOUND"
+				});
 			});
 
-			// Mock course.findUnique for 404 check
+			// Mock canEdit - true for authors, false for non-authors (including admin non-author)
+			(canEdit as jest.Mock).mockImplementation(async (user, resource) => {
+				const courseAuthors = ["teacher1", "teacher2"];
+				return (
+					courseAuthors.includes(user.name) ||
+					(user.role === "ADMIN" && courseAuthors.includes(user.name))
+				);
+			});
+
+			// Mock course.findUnique for 404 check - not used anymore
 			(database.course.findUnique as jest.Mock).mockImplementation(async query => {
 				if (query.where.slug === "test-course") {
 					return {
@@ -331,13 +351,12 @@ describe("REST API of Course Router", () => {
 		});
 
 		it("should return progress for enrolled students only", async () => {
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
-				query: {
-					trpc: ["courses", "test-course", "progress"],
-					usernames: "student1,student2,student3" // student3 not enrolled
-				},
-				user: courseAuthor1 // First author
+				path: `/courses/${courseMock.slug}/progress`,
+				query: { usernames: "student1,student2,student3" }, // student3 not enrolled
+				headers: { "content-type": "application/json" },
+				user: courseAuthor1
 			});
 
 			expect(response.statusCode).toBe(200);
@@ -348,13 +367,12 @@ describe("REST API of Course Router", () => {
 			]);
 		});
 
-		it("should allow access for second course author", async () => {
-			const response = await restQuery({
+		it("should allow access for user with edit+ permissions", async () => {
+			const response = await callOpenApi({
 				method: "GET",
-				query: {
-					trpc: ["courses", "test-course", "progress"],
-					usernames: "student1,student2"
-				},
+				path: `/courses/${courseMock.slug}/progress`,
+				query: { usernames: "student1,student2" },
+				headers: { "content-type": "application/json" },
 				user: courseAuthor2 // Second author should also have access
 			});
 
@@ -366,12 +384,11 @@ describe("REST API of Course Router", () => {
 		});
 
 		it("should return empty array when no usernames provided", async () => {
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
-				query: {
-					trpc: ["courses", "test-course", "progress"]
-					// No usernames parameter
-				},
+				path: `/courses/${courseMock.slug}/progress`,
+				query: {},
+				headers: { "content-type": "application/json" },
 				user: courseAuthor1
 			});
 
@@ -380,46 +397,41 @@ describe("REST API of Course Router", () => {
 		});
 
 		it("should return 403 for non-author users", async () => {
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
-				query: {
-					trpc: ["courses", "test-course", "progress"],
-					usernames: "student1,student2"
-				},
+				path: `/courses/${courseMock.slug}/progress`,
+				query: { usernames: "student1,student2" },
+				headers: { "content-type": "application/json" },
 				user: nonAuthor // This user is NOT an author of the course
 			});
 
 			expect(response.statusCode).toBe(403);
 			expect(response.body).toMatchObject({
-				code: "FORBIDDEN",
-				message: "You are not an author of this course."
+				code: "FORBIDDEN"
 			});
 		});
 
 		it("should return 403 for admin users who are not course authors", async () => {
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
-				query: {
-					trpc: ["courses", "test-course", "progress"],
-					usernames: "student1,student2"
-				},
+				path: `/courses/${courseMock.slug}/progress`,
+				query: { usernames: "student1,student2" },
+				headers: { "content-type": "application/json" },
 				user: adminNonAuthor // Admin but NOT author of this course
 			});
 
 			expect(response.statusCode).toBe(403);
 			expect(response.body).toMatchObject({
-				code: "FORBIDDEN",
-				message: "You are not an author of this course."
+				code: "FORBIDDEN"
 			});
 		});
 
 		it("should return 401 for unauthorized requests", async () => {
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
-				query: {
-					trpc: ["courses", "test-course", "progress"],
-					usernames: "student1,student2"
-				}
+				path: `/courses/${courseMock.slug}/progress`,
+				query: { usernames: "student1,student2" },
+				headers: { "content-type": "application/json" }
 				// No user provided at all
 			});
 
@@ -432,12 +444,11 @@ describe("REST API of Course Router", () => {
 				return []; // No completed lessons
 			});
 
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
-				query: {
-					trpc: ["courses", "test-course", "progress"],
-					usernames: "student1"
-				},
+				path: `/courses/${courseMock.slug}/progress`,
+				query: { usernames: "student1" },
+				headers: { "content-type": "application/json" },
 				user: courseAuthor1
 			});
 
@@ -451,12 +462,11 @@ describe("REST API of Course Router", () => {
 			// Override the findUnique mock to return null (course doesn't exist)
 			(database.course.findUnique as jest.Mock).mockImplementationOnce(async () => null);
 
-			const response = await restQuery({
+			const response = await callOpenApi({
 				method: "GET",
-				query: {
-					trpc: ["courses", "non-existent-course", "progress"],
-					usernames: "student1,student2"
-				},
+				path: `/courses/non-existent-course/progress`,
+				query: { usernames: "student1,student2" },
+				headers: { "content-type": "application/json" },
 				user: courseAuthor1
 			});
 

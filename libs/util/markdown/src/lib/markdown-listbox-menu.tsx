@@ -1,5 +1,5 @@
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
-import React, { useRef } from "react";
+import { useRef } from "react";
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
 import ReactMarkdown from "react-markdown";
 import { rehypePlugins, remarkPlugins } from "./markdown";
@@ -25,7 +25,7 @@ import { MinorScaleFadeIn } from "@self-learning/ui/common";
  *   displayValue={selectedLevel}
  *   options={["**Easy**", "**Medium**", "**Hard**"]}
  *   onChange={setSelectedLevel}
- *   customFocusStyle={(focus) => (focus ? "bg-blue-500 text-white" : "text-gray-800")}
+ *   customFocusStyle={(focus) => (focus ? "bg-blue-500 text-white" : "text-c-text-strong")}
  *   constomButtonStyle="w-full border px-4 py-2 text-left rounded"
  * />
  */
@@ -63,19 +63,20 @@ export function MarkdownListboxMenu({
 				className={
 					customButtonStyle
 						? customButtonStyle
-						: "items-center justify-between px-3 py-2 border rounded space-x-2 w-full"
+						: "items-center justify-between px-3 py-2 border rounded space-x-2 w-full bg-c-surface-0"
 				}
 			>
 				{({ open }) => (
 					<div className={"flex flex-row justify-between gap-1"}>
 						<div className={"justify-start"}>
-							<ReactMarkdown
-								remarkPlugins={remarkPlugins}
-								rehypePlugins={rehypePlugins}
-								className="prose prose-sm max-w-none"
-							>
-								{displayValue === "" ? "Select an option" : displayValue}
-							</ReactMarkdown>
+							<div className="prose prose-sm max-w-none">
+								<ReactMarkdown
+									remarkPlugins={remarkPlugins}
+									rehypePlugins={rehypePlugins}
+								>
+									{displayValue === "" ? "Select an option" : displayValue}
+								</ReactMarkdown>
+							</div>
 						</div>
 						{open ? (
 							<ChevronUpIcon className="h-5 w-5 justify-end" aria-hidden="true" />
@@ -104,8 +105,8 @@ export function MarkdownListboxMenu({
 										customFocusStyle
 											? customFocusStyle(focus)
 											: focus
-												? "text-white bg-secondary"
-												: "text-gray-700"
+												? "text-white bg-c-primary"
+												: "text-c-text"
 									}`}
 								>
 									{selected ? (
@@ -120,9 +121,7 @@ export function MarkdownListboxMenu({
 										/>
 									)}
 
-									<ReactMarkdown
-										remarkPlugins={remarkPlugins}
-										rehypePlugins={rehypePlugins}
+									<div
 										className={`prose prose-sm max-w-none ml-2 cursor-default ${
 											customFocusStyle
 												? customFocusStyle(focus)
@@ -131,8 +130,13 @@ export function MarkdownListboxMenu({
 													: ""
 										}`}
 									>
-										{option}
-									</ReactMarkdown>
+										<ReactMarkdown
+											remarkPlugins={remarkPlugins}
+											rehypePlugins={rehypePlugins}
+										>
+											{option}
+										</ReactMarkdown>
+									</div>
 								</div>
 							)}
 						</ListboxOption>

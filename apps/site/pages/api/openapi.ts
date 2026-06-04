@@ -1,5 +1,5 @@
-import { generateOpenApiDocument } from "trpc-openapi";
-import { appRouter } from "@self-learning/api";
+import { generateOpenApiDocument } from "trpc-to-openapi";
+import { appRouter, API_PATH } from "@self-learning/api";
 import { type NextApiRequest, type NextApiResponse } from "next";
 
 function getBaseUrl() {
@@ -13,9 +13,11 @@ export const openApiDocument = generateOpenApiDocument(appRouter, {
 	title: "REST API of SelfLearn",
 	version: process.env.APP_VERSION || "Version not available",
 	description: `OpenAPI Specification available at: <a href="${getBaseUrl()}/api/openapi">${getBaseUrl()}/api/openapi</a>`,
-	baseUrl: "/api/rest",
+	baseUrl: API_PATH,
 	docsUrl: "/api-docs"
 });
+
+openApiDocument.openapi = "3.0.3";
 
 export default function handler(_: NextApiRequest, res: NextApiResponse) {
 	res.status(200).send(openApiDocument);

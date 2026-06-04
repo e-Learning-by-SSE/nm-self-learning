@@ -11,7 +11,7 @@ import {
 } from "@self-learning/ui/common";
 import { DashboardSidebarLayout, UniversalSearchBar } from "@self-learning/ui/layouts";
 import { withAuth } from "@self-learning/util/auth";
-import { formatDateAgo } from "@self-learning/util/common";
+import { formatDateDistanceToNow } from "@self-learning/util/common";
 import { NextComponentType, NextPageContext } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -55,8 +55,6 @@ CourseOverview.getLayout = CourseOverviewLayout;
 
 export default function CourseOverview({ enrollments }: CourseOverviewProps) {
 	const [selectedTab, setSelectedTab] = useState(0);
-	const [inProgress, setInProgress] = useState<EnrollmentDetails[]>([]);
-	const [complete, setComplete] = useState<EnrollmentDetails[]>([]);
 	const [searchQuery, setSearchQuery] = useState("");
 
 	const filterEnrollments = (
@@ -79,21 +77,23 @@ export default function CourseOverview({ enrollments }: CourseOverviewProps) {
 		});
 	};
 
-	useMemo(() => {
-		if (enrollments) {
-			const filtered = filterEnrollments(enrollments, searchQuery);
+	const filteredEnrollments = useMemo(() => {
+		if (!enrollments) return [];
 
-			const inProgress = filtered.filter(
-				enrollment => enrollment.completions.courseCompletion.completionPercentage < 100
-			);
-			const complete = filtered.filter(
-				enrollment => enrollment.completions.courseCompletion.completionPercentage >= 100
-			);
+		return filterEnrollments(enrollments, searchQuery);
+	}, [enrollments, searchQuery]);
 
-			setInProgress(inProgress);
-			setComplete(complete);
-		}
-	}, [searchQuery, enrollments]);
+	const inProgress = useMemo(() => {
+		return filteredEnrollments.filter(
+			e => e.completions.courseCompletion.completionPercentage < 100
+		);
+	}, [filteredEnrollments]);
+
+	const complete = useMemo(() => {
+		return filteredEnrollments.filter(
+			e => e.completions.courseCompletion.completionPercentage >= 100
+		);
+	}, [filteredEnrollments]);
 
 	return (
 		<div className="flex h-screen justify-center overflow-hidden">
@@ -148,7 +148,7 @@ function TabContent({
 }) {
 	return (
 		<div className="flex h-full flex-col">
-			<div className="flex items-center justify-between border-b border-gray-300 pb-2">
+			<div className="flex items-center justify-between border-b border-c-border-strong pb-2">
 				<div className="flex">
 					<Tabs selectedIndex={selectedTab} onChange={setSelectedTab}>
 						<Tab>In Bearbeitung</Tab>
@@ -263,7 +263,7 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 					<tr key={enrollment.course.slug}>
 						<TableDataColumn key={"title"}>
 							<Link href={`/courses/${enrollment.course.slug}/`} className="block">
-								<div className="flex items-center space-x-4 p-2 hover:bg-gray-100">
+								<div className="flex items-center space-x-4 p-2 hover:bg-c-neutral-muted">
 									{enrollment.course.imgUrl ? (
 										<Image
 											src={enrollment.course.imgUrl}
@@ -273,12 +273,12 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 											height={48}
 										/>
 									) : (
-										<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
-											<span className="text-gray-500">Kein Bild</span>
+										<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-c-surface-2">
+											<span className="text-c-text-muted">Kein Bild</span>
 										</div>
 									)}
 									<div>
-										<span className="flex items-center justify-center text-gray-800 hover:text-secondary">
+										<span className="flex items-center justify-center text-c-text-strong hover:text-c-primary">
 											<span className="truncate">
 												{enrollment.course.title}
 											</span>
@@ -301,7 +301,7 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 							/>
 						</TableDataColumn>
 						<TableDataColumn>
-							{formatDateAgo(enrollment.lastProgressUpdate)}
+							{formatDateDistanceToNow(enrollment.lastProgressUpdate)}
 						</TableDataColumn>
 					</tr>
 				))}

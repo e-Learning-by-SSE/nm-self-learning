@@ -1,15 +1,18 @@
-import { Prisma } from "@prisma/client";
+import { GroupRole, Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import { paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { adminProcedure, t } from "../trpc";
+import { adminProcedure, authProcedure, t } from "../trpc";
 import { userSchema } from "@self-learning/types";
 import { deleteUser, deleteUserAndDependentData } from "@self-learning/admin";
+import { GroupRoleEnum } from "../../permissions/permission.types";
 
 export const adminRouter = t.router({
-	findUsers: adminProcedure
-		.input(paginationSchema.extend({ name: z.string().optional() }))
+	findUsers: authProcedure
+		.input(
+			paginationSchema.extend({ name: z.string().optional(), email: z.string().optional() })
+		)
 		.query(async ({ input }) => {
 			const page = input.page;
 			const pageSize = 15;
@@ -20,6 +23,11 @@ export const adminRouter = t.router({
 							contains: input.name,
 							mode: "insensitive"
 						}
+					: undefined,
+				email: input.email
+					? {
+							contains: input.email
+						}
 					: undefined
 			};
 
@@ -27,7 +35,9 @@ export const adminRouter = t.router({
 				database.user.findMany({
 					where,
 					select: {
+						id: true,
 						name: true,
+						displayName: true,
 						email: true,
 						role: true,
 						image: true
@@ -59,7 +69,8 @@ export const adminRouter = t.router({
 				notificationSettings: true,
 				acceptedExperimentTerms: true,
 				declinedExperimentTerms: true,
-				featureFlags: true
+				featureFlags: true,
+				defaultGroupId: true
 			}
 		});
 	}),
@@ -90,13 +101,29 @@ export const adminRouter = t.router({
 	promoteToAuthor: adminProcedure
 		.input(
 			z.object({
-				username: z.string()
+				username: z.string(),
+				membership: z
+					.object({
+						role: GroupRoleEnum,
+						expiresAt: z.date().nullable(),
+						group: z.union([
+							z.object({
+								id: z.number()
+							}),
+							z.object({
+								name: z.string().min(3),
+								slug: z.string().min(3)
+							})
+						])
+					})
+					.optional()
 			})
 		)
 		.mutation(async ({ input }) => {
 			const user = await database.user.findUniqueOrThrow({
 				where: { name: input.username },
 				select: {
+					id: true,
 					name: true,
 					image: true,
 					author: true
@@ -110,17 +137,81 @@ export const adminRouter = t.router({
 				});
 			}
 
-			const created = await database.author.create({
-				data: {
-					username: user.name,
-					displayName: user.name,
-					slug: user.name,
-					imgUrl: user.image
+			const result = await database.$transaction(async tx => {
+				const created = await tx.author.create({
+					data: {
+						username: user.name,
+						displayName: user.name,
+						slug: user.name,
+						imgUrl: user.image
+					}
+				});
+
+				console.log("[adminRouter.promoteToAuthor] tx: created author:", created);
+
+				if (input.membership) {
+					if (input.membership.expiresAt && input.membership.role === GroupRole.ADMIN) {
+						throw new TRPCError({
+							code: "BAD_REQUEST",
+							message: "Group ADMIN role cannot expire"
+						});
+					}
+					if ("id" in input.membership.group) {
+						// Link to existing group
+						const groupId = input.membership.group.id;
+						const group = await tx.group.findUnique({
+							where: { id: groupId }
+						});
+						if (!group) {
+							throw new TRPCError({
+								code: "NOT_FOUND",
+								message: `Group with id ${groupId} not found.`
+							});
+						}
+						const existingRole = await tx.member.findFirst({
+							where: {
+								userId: user.id,
+								groupId,
+								OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }]
+							},
+							select: { role: true }
+						});
+						if (existingRole) {
+							throw new TRPCError({
+								code: "CONFLICT",
+								message: `User "${input.username}" is already a member of the group.`
+							});
+						}
+						await tx.member.create({
+							data: {
+								groupId,
+								userId: user.id,
+								role: input.membership.role,
+								expiresAt: input.membership.expiresAt
+							}
+						});
+					} else {
+						// Create new group
+						await tx.group.create({
+							data: {
+								name: input.membership.group.name,
+								slug: input.membership.group.slug,
+								members: {
+									create: {
+										userId: user.id,
+										role: input.membership.role,
+										expiresAt: input.membership.expiresAt
+									}
+								}
+							}
+						});
+					}
 				}
+
+				return created;
 			});
 
-			console.log("[adminRouter.promoteToAuthor] Created author:", created);
-			return created;
+			return result;
 		}),
 	getAccessToken: adminProcedure.query(async input => {
 		console.log("[adminRouter.getAccessToken] input.ctx.user", input.ctx.user);
