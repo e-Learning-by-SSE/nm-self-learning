@@ -95,7 +95,7 @@ pipeline {
         NX_BRANCH = env.BRANCH_NAME.replace('PR-', '')
         NX_REJECT_UNKNOWN_LOCAL_CACHE = 0
 
-        NODE_DOCKER_IMAGE = 'node:21-bullseye'
+        NODE_DOCKER_IMAGE = 'node:22-bookworm'
         TARGET_PREFIX = 'ghcr.io/e-learning-by-sse/nm-self-learning'
         // we need the .npm and .cache folders in a separate volume to avoid permission issues during npm install
         DOCKER_ARGS = "--tmpfs /.npm -v ${env.WORKSPACE}/build-caches/npm:${env.WORKSPACE}/.npm -v $HOME/build-caches/cache:/.cache -v $HOME/build-caches/nx:${env.WORKSPACE}/.nx"
