@@ -15,6 +15,7 @@ import {
 	XMarkIcon
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "next-i18next";
+import type { ReactElement } from "react";
 
 export function Feedback() {
 	const { t } = useTranslation("student-analytics");
@@ -38,7 +39,7 @@ export function Feedback() {
 	];
 
 	const recommendations = useMemo(() => {
-		const recs: { icon: JSX.Element; text: string }[] = [];
+		const recs: { icon: ReactElement; text: string }[] = [];
 
 		// Learning streak (handles singular/plural)
 		const streak = streakData?.currentStreakDays ?? 0;
@@ -53,8 +54,10 @@ export function Feedback() {
 		// Average daily learning time
 		if (dailyLearning && dailyLearning.length > 0) {
 			const avgSeconds =
-				dailyLearning.reduce((a: number, b: any) => a + (b.timeSeconds ?? 0), 0) /
-				dailyLearning.length;
+				dailyLearning.reduce(
+					(a: number, b: { timeSeconds?: number }) => a + (b.timeSeconds ?? 0),
+					0
+				) / dailyLearning.length;
 			const hours = Math.floor(avgSeconds / 3600);
 			const minutes = Math.round((avgSeconds % 3600) / 60);
 
@@ -78,7 +81,7 @@ export function Feedback() {
 			}
 
 			const max = Math.max(morning, afternoon, evening);
-			let icon: JSX.Element;
+			let icon: ReactElement;
 			let timeKey = "";
 
 			if (max === morning) {
@@ -165,7 +168,7 @@ export function Feedback() {
 			const evening = accForSlot(h => h >= 16);
 
 			let bestSlot = "";
-			let icon: JSX.Element;
+			let icon: ReactElement;
 
 			if (morning >= afternoon && morning >= evening) {
 				bestSlot = "morning";
