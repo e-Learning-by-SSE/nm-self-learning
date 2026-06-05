@@ -38,7 +38,9 @@ import { keepPreviousData } from "@tanstack/react-query";
 const MediaType = {
 	image: "image",
 	video: "video",
-	pdf: "pdf"
+	pdf: "pdf",
+	zip: "zip",
+	h5p: "h5p"
 } as const;
 
 type MediaType = keyof typeof MediaType;
@@ -50,7 +52,7 @@ export function Upload({
 	hideAssetPicker
 }: {
 	mediaType?: MediaType;
-	onUploadCompleted: (publicUrl: string, meta?: { duration: number }) => void;
+	onUploadCompleted: (publicUrl: string, meta?: { duration: number }, fileName?: string) => void;
 	preview?: ReactElement;
 	/** If `true`, button to open asset picker is not rendered. */
 	hideAssetPicker?: boolean;
@@ -67,7 +69,9 @@ export function Upload({
 		const mediaTypes = {
 			image: "image/*",
 			video: "video/*",
-			pdf: "application/pdf"
+			pdf: "application/pdf",
+			zip: ".zip,.h5p,.html,.htm",
+			h5p: ".h5p,.zip"
 		};
 
 		let accept: string | undefined;
@@ -115,7 +119,7 @@ export function Upload({
 				const status = e.type === "loadend" ? "finished" : "failed";
 				console.log(`File upload to ${downloadUrl} ${status}.`);
 				setFileName("");
-				onUploadCompleted(downloadUrl, meta);
+				onUploadCompleted(downloadUrl, meta, fileName);
 				setViewProgressDialog(false);
 			};
 			await uploadWithProgress(

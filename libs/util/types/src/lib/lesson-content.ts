@@ -69,7 +69,7 @@ export function getContentTypeDisplayName(contentType: LessonContentMediaType): 
 		video: "Video",
 		article: "Artikel",
 		pdf: "PDF",
-		iframe: "Externe Webseite"
+		iframe: "Webseite"
 	};
 
 	return names[contentType] ?? "Unknown Type";

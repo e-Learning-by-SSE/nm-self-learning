@@ -3,6 +3,20 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { FormProvider, useForm } from "react-hook-form";
 import { IFrameInput } from "./iframe";
 
+// Mock tRPC to avoid needing a full provider in tests
+jest.mock("@self-learning/api-client", () => ({
+	trpc: {
+		storage: {
+			unpackArchive: {
+				useMutation: jest.fn(() => ({
+					mutateAsync: jest.fn(),
+					isPending: false
+				}))
+			}
+		}
+	}
+}));
+
 function FormWrapper({
 	defaultValues,
 	children
