@@ -12,6 +12,22 @@ jest.mock("@self-learning/api-client", () => ({
 					mutateAsync: jest.fn(),
 					isPending: false
 				}))
+			},
+			getPresignedUrl: {
+				useMutation: jest.fn(() => ({
+					mutateAsync: jest.fn()
+				}))
+			},
+			registerAsset: {
+				useMutation: jest.fn(() => ({
+					mutateAsync: jest.fn()
+				}))
+			},
+			getMyAssets: {
+				useQuery: jest.fn(() => ({
+					data: { result: [], totalCount: 0, page: 1, pageSize: 5 },
+					isLoading: false
+				}))
 			}
 		}
 	}
@@ -30,7 +46,7 @@ function FormWrapper({
 }
 
 describe("IFrameInput", () => {
-	it("renders an empty placeholder when no URL is set", () => {
+	it("renders upload tab by default with upload button visible", () => {
 		render(
 			<FormWrapper
 				defaultValues={{
@@ -47,17 +63,20 @@ describe("IFrameInput", () => {
 			</FormWrapper>
 		);
 
-		expect(screen.queryByTitle("iframe")).toBeNull();
+		// Upload tab is default — upload button should be visible
+		expect(screen.getByText("Upload File")).toBeDefined();
+		// URL input should not be visible on upload tab
+		expect(screen.queryByRole("textbox")).toBeNull();
 	});
 
-	it("renders a sandboxed preview iframe when a URL is provided", () => {
+	it("renders URL input when Externe URL tab is clicked", () => {
 		render(
 			<FormWrapper
 				defaultValues={{
 					content: [
 						{
 							type: "iframe",
-							value: { url: "https://example.com" },
+							value: { url: "https://example.com", source: "url" },
 							meta: { estimatedDuration: 0 }
 						}
 					]
@@ -67,10 +86,12 @@ describe("IFrameInput", () => {
 			</FormWrapper>
 		);
 
-		const iframe = screen.getByTitle("iframe");
-		expect(iframe).toBeDefined();
-		expect(iframe.getAttribute("src")).toBe("https://example.com");
-		expect(iframe.getAttribute("sandbox")).toContain("allow-scripts");
+		// Click the URL tab
+		fireEvent.click(screen.getByText("Externe URL"));
+
+		// URL input should now be visible
+		const input = screen.getByRole("textbox");
+		expect(input).toBeDefined();
 	});
 
 	it("keeps content type as 'iframe' after editing the URL (regression: previously set type to 'pdf')", () => {
@@ -81,7 +102,7 @@ describe("IFrameInput", () => {
 					content: [
 						{
 							type: "iframe",
-							value: { url: "" },
+							value: { url: "", source: "url" },
 							meta: { estimatedDuration: 0 }
 						}
 					]
@@ -96,6 +117,9 @@ describe("IFrameInput", () => {
 		}
 
 		render(<Capture />);
+
+		// Switch to URL tab first
+		fireEvent.click(screen.getByText("Externe URL"));
 
 		const input = screen.getByRole("textbox");
 		fireEvent.change(input, { target: { value: "https://h5p.org/example" } });
