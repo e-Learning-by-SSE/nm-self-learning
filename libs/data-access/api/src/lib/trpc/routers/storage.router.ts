@@ -309,9 +309,19 @@ export const storageRouter = t.router({
 				// Delete the original archive now that it's been unpacked
 				await minioClient.removeObject(minioConfig.bucketName, objectName);
 
-				console.log(
-					`[storageRouter.unpackArchive] Unpacked ${entryCount} files from ${objectName} to ${folderPrefix}`
-				);
+				// For zip: store full viewer URL including entry point
+				// For h5p: store folder URL (h5p-standalone handles the rest)
+				const viewerUrl = kind === "zip" ? `${folderUrl}/${entryPoint}` : folderUrl;
+
+				const originalPublicUrl = `${process.env.NEXT_PUBLIC_MINIO_PUBLIC_URL}/${minioConfig.bucketName}/${objectName}`;
+				await database.uploadedAssets.updateMany({
+					where: { publicUrl: originalPublicUrl },
+					data: {
+						objectName: folderPrefix,
+						publicUrl: viewerUrl,
+						fileType: kind
+					}
+				});
 
 				return {
 					folderUrl,

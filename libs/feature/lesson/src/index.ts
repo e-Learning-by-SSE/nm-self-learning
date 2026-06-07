@@ -12,3 +12,4 @@ export * from "./lib/learning-time/time-tracker";
 export * from "./lib/learners-viewer/page";
 export * from "./lib/learners-viewer/standalone-lesson-layout";
 export * from "./lib/learners-viewer/course-lesson-layout";
+export * from "./lib/learners-viewer/h5p-viewer";

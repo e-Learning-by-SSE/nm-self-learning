@@ -4,6 +4,7 @@ import { SectionCard } from "@self-learning/ui/common";
 import { LabeledField, Upload } from "@self-learning/ui/forms";
 import { useState } from "react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
+import { H5PViewer } from "@self-learning/lesson";
 
 export function IFrameInput({ index }: { index: number }) {
 	const { control } = useFormContext<{ content: IFrame[] }>();
@@ -145,10 +146,25 @@ export function IFrameInput({ index }: { index: number }) {
 							key="html-upload"
 							mediaType="zip"
 							onUploadCompleted={(downloadUrl, _meta, fileName) => {
-								console.log("downloadUrl:", downloadUrl, "fileName:", fileName);
 								const name = (fileName ?? "").toLowerCase();
 
-								// Single HTML files don't need unpacking — use URL directly
+								// Already-unpacked content selected from asset picker
+								// URL contains /content/ meaning it was previously unpacked
+								if (downloadUrl.includes("/content/")) {
+									const source = name.endsWith(".h5p") ? "h5p" : "zip";
+									update(index, {
+										type: "iframe",
+										value: {
+											url: downloadUrl,
+											source,
+											originalFileName: fileName ?? ""
+										},
+										meta: { estimatedDuration: 0 }
+									});
+									return;
+								}
+
+								// Single HTML files don't need unpacking
 								if (name.endsWith(".html") || name.endsWith(".htm")) {
 									update(index, {
 										type: "iframe",
@@ -168,16 +184,22 @@ export function IFrameInput({ index }: { index: number }) {
 							}}
 							preview={
 								url && source && source !== "url" ? (
-									<div className="h-[500px] w-full overflow-hidden rounded border border-light-border">
-										<iframe
-											key={url}
-											src={url}
-											title="HTML5 Viewer"
-											width="100%"
-											height="100%"
-											sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-										/>
-									</div>
+									source === "h5p" ? (
+										<div className="w-full rounded border border-light-border overflow-hidden">
+											<H5PViewer folderUrl={url} />
+										</div>
+									) : (
+										<div className="h-[500px] w-full overflow-hidden rounded border border-light-border">
+											<iframe
+												key={url}
+												src={url}
+												title="HTML5 Viewer"
+												width="100%"
+												height="100%"
+												sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+											/>
+										</div>
+									)
 								) : (
 									<div className="h-[500px] w-full bg-c-surface-3 rounded" />
 								)

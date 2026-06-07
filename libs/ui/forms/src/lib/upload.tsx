@@ -115,12 +115,18 @@ export function Upload({
 		try {
 			const { presignedUrl, downloadUrl } = await getPresignedUrl({ filename: objectName });
 
-			const onFinish = (e: ProgressEvent<XMLHttpRequestEventTarget>) => {
-				const status = e.type === "loadend" ? "finished" : "failed";
-				console.log(`File upload to ${downloadUrl} ${status}.`);
-				setFileName("");
-				onUploadCompleted(downloadUrl, meta, fileName);
+			const onFinish = (xhr: XMLHttpRequest) => {
+				const success = xhr.status >= 200 && xhr.status < 300;
+				console.log(
+					`File upload to ${downloadUrl} ${success ? "finished" : "failed"} (status: ${xhr.status}).`
+				);
 				setViewProgressDialog(false);
+				setFileName("");
+				if (!success) {
+					console.error("Upload failed with status:", xhr.status, xhr.responseText);
+					return;
+				}
+				onUploadCompleted(downloadUrl, meta, fileName);
 			};
 			await uploadWithProgress(
 				presignedUrl,
@@ -172,7 +178,7 @@ export function Upload({
 				{!hideAssetPicker && (
 					<AssetPickerButton
 						mediaType={mediaType}
-						onClose={url => url && onUploadCompleted(url)}
+						onClose={(url, fileName) => url && onUploadCompleted(url, undefined, fileName)}
 					/>
 				)}
 			</div>
@@ -453,7 +459,7 @@ async function uploadWithProgress(
 	file: File,
 	showDialog: () => void,
 	onProgress: (bytes: number) => void,
-	onComplete: (e: ProgressEvent<XMLHttpRequestEventTarget>) => void
+	onComplete: (xhr: XMLHttpRequest) => void
 ) {
 	showDialog();
 
@@ -475,7 +481,7 @@ async function uploadWithProgress(
 
 	// Event listener for (un)successful finishing the task.
 	// List of listener types: https://stackoverflow.com/a/15491086
-	xhr.upload.addEventListener("loadend", onComplete, false);
+	xhr.addEventListener("loadend", () => onComplete(xhr), false);
 
 	// start upload
 	//Returns the filename containing only ASCII letters, numbers and dots.
@@ -510,9 +516,9 @@ export function AssetPickerButton({
 				<AssetPickerDialog
 					copyToClipboard={copyToClipboard}
 					mediaType={mediaType}
-					onClose={url => {
+					onClose={(url, fileName) => {
 						setShowAssetPicker(false);
-						onClose(url);
+						onClose(url, fileName);
 					}}
 				/>
 			)}
@@ -529,7 +535,7 @@ function AssetPickerDialog({
 }: {
 	mediaType?: MediaType;
 	/** Returns the URL of the selected asset.  */
-	onClose: OnDialogCloseFn<string>;
+	onClose: (url?: string, fileName?: string) => void;
 	/** If `true`, choosing an assets will copy its URL to the clipboard. */
 	copyToClipboard?: boolean;
 }) {
@@ -660,7 +666,7 @@ function AssetPickerDialog({
 																});
 															}
 
-															onClose(asset.publicUrl);
+															onClose(asset.publicUrl, asset.fileName);
 														}}
 													>
 														{copyToClipboard

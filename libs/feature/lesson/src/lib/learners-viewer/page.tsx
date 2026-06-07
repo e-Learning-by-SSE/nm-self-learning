@@ -1,3 +1,4 @@
+import { H5PViewer } from "./h5p-viewer";
 import { Button } from "@headlessui/react";
 import {
 	CheckCircleIcon,
@@ -163,6 +164,13 @@ function ContentDisplayItem({
 			);
 		case "iframe":
 			if (!c.value.url) return <ContentInfo error text="Fehlende URL." />;
+			if (c.value.source === "h5p") {
+				return (
+					<div className="flex flex-col w-full">
+						<H5PViewer folderUrl={c.value.url} />
+					</div>
+				);
+			}
 			return (
 				<div className="flex flex-col w-full">
 					<iframe
