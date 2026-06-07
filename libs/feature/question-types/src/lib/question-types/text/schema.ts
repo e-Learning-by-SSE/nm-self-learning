@@ -34,7 +34,6 @@ export type TextQuestion = z.infer<typeof textQuestionSchema>;
 export type TextEvaluation = BaseEvaluation & {
 	verdict: TextVerdict;
 	feedback?: string;
-	pending?: boolean;
 	evaluationError?: boolean;
 };
 

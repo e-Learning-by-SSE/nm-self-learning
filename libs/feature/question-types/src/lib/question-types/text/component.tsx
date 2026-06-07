@@ -1,8 +1,8 @@
 /**
  * ASYNC EVALUATION FLOW
  * CheckResult in question.tsx calls EVALUATION_FUNCTIONS["text"] synchronously,
- * which sets a placeholder: { pending: true } — no feedback, no evaluationError.
- * The useEffect below detects this placeholder via pending check, kicks off the async tRPC call,
+ * which sets a placeholder: { isInProgress: true } — no feedback, no evaluationError.
+ * The useEffect below detects this placeholder via isInProgress check, kicks off the async tRPC call,
  * and overwrites the result once the AI responds. A spinner is shown in between.
  */
 
@@ -30,7 +30,7 @@ const VERDICT_STYLES: Record<TextVerdict, string> = {
 /**
  * The main component for rendering a text question, accepting the student's answer,
  * and showing the AI evaluation result once available.
- * The AI evaluation is triggered by a useEffect that watches for the placeholder { pending: true }
+ * The AI evaluation is triggered by a useEffect that watches for the placeholder { isInProgress: true }
  * set by the synchronous CheckResult function. The actual evaluation logic is in evaluateTextAnswerWithAI(),
  * which calls the tRPC router and handles the response.
  * The component also handles the loading state while waiting for the AI response, and shows appropriate messages
@@ -45,7 +45,7 @@ export default function TextAnswer() {
 	const { mutateAsync: evaluateViaRouter } = trpc.textEvaluation.evaluate.useMutation();
 
 	useEffect(() => {
-		if (!typedEvaluation?.pending) return;
+		if (!typedEvaluation?.isInProgress) return;
 		if (isEvaluating) return;
 
 		// Prevents a stale in-flight request from writing state after the student
@@ -94,7 +94,7 @@ export default function TextAnswer() {
 			{isEvaluating && <LoadingIndicator />}
 
 			{/* Don't render while loading or while the placeholder is still in place */}
-			{typedEvaluation && !isEvaluating && !typedEvaluation.pending && (
+			{typedEvaluation && !isEvaluating && !typedEvaluation.isInProgress && (
 				<EvaluationResult
 					evaluation={typedEvaluation}
 					hasAiConfig={!!question.aiEvaluation?.solutionOrConcepts?.trim()}

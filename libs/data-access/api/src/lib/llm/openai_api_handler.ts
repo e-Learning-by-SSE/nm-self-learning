@@ -52,7 +52,7 @@ export async function sendChatRequest(
 			body: JSON.stringify({
 				messages,
 				model: config.defaultModel,
-				temperature: 0.7,
+				temperature: options.temperature ?? 0.7,
 				max_tokens: 2000,
 				stream: false,
 

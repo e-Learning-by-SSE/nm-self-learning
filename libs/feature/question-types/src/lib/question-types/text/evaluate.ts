@@ -103,10 +103,10 @@ export function evaluateTextWithoutAI(): TextEvaluation {
 
 /**
  * The synchronous evaluation function for text questions, used in the registry to set the initial evaluation state.
- * If AI evaluation is configured (i.e., a solution or concepts are provided), it returns a placeholder evaluation with pending: true,
+ * If AI evaluation is configured (i.e., a solution or concepts are provided), it returns a placeholder evaluation with isInProgress: true,
  * which triggers the asynchronous evaluation process in the component. If no AI configuration is present, it returns a default correct evaluation.
  * @param question The TextQuestion object containing the question statement and AI evaluation configuration.
- * @returns A TextEvaluation object representing either the placeholder for pending AI evaluation or the default correct evaluation.
+ * @returns A TextEvaluation object representing either the placeholder for isInProgress AI evaluation or the default correct evaluation.
  */
 export function evaluateTextSync(question: TextQuestion): TextEvaluation {
 	const hasAiConfig = !!question.aiEvaluation?.solutionOrConcepts?.trim();
@@ -115,7 +115,7 @@ export function evaluateTextSync(question: TextQuestion): TextEvaluation {
 		return {
 			isCorrect: false,
 			verdict: "wrong",
-			pending: true
+			isInProgress: true
 		};
 	}
 

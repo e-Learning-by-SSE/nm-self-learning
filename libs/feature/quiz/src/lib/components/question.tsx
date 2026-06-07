@@ -53,7 +53,7 @@ export function Question({
 	const evaluation = evaluations[question.questionId];
 
 	const [_, setCookie] = useCookies(["quiz_answers_save"]);
- 
+
 	function setAnswer(v: unknown) {
 		const value = typeof v === "function" ? v(answer) : v;
 		setAnswers(prev => {
@@ -211,15 +211,23 @@ function CheckResult({
 	return returnButton[completionState];
 }
 
-export function QuestionTab(props: { evaluation: { isCorrect: boolean } | null; index: number }) {
+export function QuestionTab(props: {
+	evaluation: { isCorrect: boolean; isInProgress?: boolean } | null;
+	index: number;
+}) {
 	const isCorrect = props.evaluation?.isCorrect === true;
 	const isIncorrect = props.evaluation?.isCorrect === false;
+	const isInProgress = props.evaluation?.isInProgress === true;
 
 	return (
 		<span className="flex items-center gap-4">
 			{isCorrect ? (
 				<QuestionTabIcon>
 					<CheckCircleIcon className="h-5 text-c-primary" />
+				</QuestionTabIcon>
+			) : isInProgress ? (
+				<QuestionTabIcon>
+					<div className="h-5 w-5 animate-spin rounded-full border-2 border-c-primary border-t-transparent" />
 				</QuestionTabIcon>
 			) : isIncorrect ? (
 				<QuestionTabIcon>
