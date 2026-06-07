@@ -4,36 +4,55 @@ interface H5PViewerProps {
 	folderUrl: string;
 }
 
+declare global {
+	interface Window {
+		H5PStandalone?: {
+			H5P: new (element: HTMLElement, options: object) => void;
+		};
+	}
+}
+
 export function H5PViewer({ folderUrl }: H5PViewerProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 
+	const initializedRef = useRef(false);
+
 	useEffect(() => {
 		if (!folderUrl) return;
-
-		let initialized = false;
+		if (initializedRef.current) return;
+		initializedRef.current = true;
 
 		const url = new URL(folderUrl);
 		const pathWithoutBucket = url.pathname.replace(/^\/[^/]+\//, "");
 		const proxyPath = `/api/h5p-content/${pathWithoutBucket}`;
 
-		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-		// @ts-ignore
-		import("h5p-standalone").then(({ H5P: H5PStandalone }) => {
+		function initH5P() {
 			const container = containerRef.current;
 			if (!container) return;
-			if (initialized) return;
-			initialized = true;
 			container.innerHTML = "";
-			new H5PStandalone(container, {
+
+			const H5PStandalone = (
+				window as unknown as {
+					H5PStandalone: { H5P: new (el: HTMLElement, opts: object) => void };
+				}
+			).H5PStandalone;
+			if (!H5PStandalone) return;
+
+			new H5PStandalone.H5P(container, {
 				h5pJsonPath: proxyPath,
 				frameJs: "/h5p/frame.bundle.js",
 				frameCss: "/h5p/styles/h5p.css"
 			});
-		});
+		}
 
-		return () => {
-			initialized = true;
-		};
+		if (!(window as unknown as { H5PStandalone?: unknown }).H5PStandalone) {
+			const script = document.createElement("script");
+			script.src = "/h5p/main.bundle.js";
+			script.onload = initH5P;
+			document.head.appendChild(script);
+		} else {
+			initH5P();
+		}
 	}, [folderUrl]);
 
 	return (
