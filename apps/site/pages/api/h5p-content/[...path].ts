@@ -30,7 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 		res.setHeader("Cache-Control", "public, max-age=3600");
 
 		stream.pipe(res);
-	} catch (error) {
+	} catch (_error) {
 		res.status(404).json({ error: "Not found", path: objectName });
 	}
 }

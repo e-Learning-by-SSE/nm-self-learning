@@ -43,6 +43,7 @@ const MediaType = {
 	h5p: "h5p"
 } as const;
 
+// eslint-disable-next-line no-redeclare
 type MediaType = keyof typeof MediaType;
 
 export function Upload({
