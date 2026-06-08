@@ -149,8 +149,7 @@ export function useAiTutor() {
 
 	useEffect(() => {
 		const modalOpened = searchParams.get("modal");
-		const onQuizPage = pathname?.includes("/quiz");
-		if (modalOpened === "open" || !config || onQuizPage) {
+		if (modalOpened === "open" || !config) {
 			setHideToggle(true);
 			closeTutor();
 		} else {
