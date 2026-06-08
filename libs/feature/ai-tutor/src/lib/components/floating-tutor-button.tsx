@@ -1,6 +1,6 @@
 import { IconTextButton } from "@self-learning/ui/common";
 import { ChatBubbleLeftIcon } from "@heroicons/react/24/outline";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "next-i18next";
 
 export function FloatingTutorButton({
 	onToggle,
@@ -11,7 +11,7 @@ export function FloatingTutorButton({
 	disabled?: boolean;
 	hideToggle?: boolean;
 }) {
-	const { t } = useTranslation("ai-tutor");
+	const { t } = useTranslation("feature-ai-tutor");
 
 	if (hideToggle) return null;
 

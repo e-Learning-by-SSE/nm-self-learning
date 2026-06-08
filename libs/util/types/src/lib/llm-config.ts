@@ -11,10 +11,10 @@ export const llmConfigSchemaForFetching = z.object({
 	apiKey: z.string().optional()
 });
 
-export const ollamaModelList = z.object({
-	models: z.array(
+export const openAiModelList = z.object({
+	data: z.array(
 		z.object({
-			name: z.string()
+			id: z.string()
 		})
 	)
 });

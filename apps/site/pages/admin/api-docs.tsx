@@ -4,6 +4,7 @@ import "swagger-ui-react/swagger-ui.css";
 import { AdminGuard } from "@self-learning/ui/layouts";
 import { trpc } from "@self-learning/api-client";
 import { CollapsibleBox } from "@self-learning/ui/common";
+import { withTranslations } from "@self-learning/api";
 
 /**
  * Retrieves the OpenAPI spec from the server and renders SwaggerUI for testing.
@@ -53,3 +54,5 @@ function Swagger() {
 
 	return <SwaggerUI spec={spec} />;
 }
+
+export const getServerSideProps = withTranslations(["common"]);

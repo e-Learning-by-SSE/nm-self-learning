@@ -1,9 +1,17 @@
 import { createCourseMock, callOpenApi } from "@self-learning/util/testing";
 import { database } from "@self-learning/database";
 import { UserFromSession } from "../context";
-import { canEditBySlug } from "../../permissions/course.utils";
+import { getCourseResource } from "../../permissions/course.utils";
+import { canEdit } from "../../permissions/permission.service";
+import { TRPCError } from "@trpc/server";
 
-// Mock the database
+jest.mock("../../permissions/course.utils", () => ({
+	getCourseResource: jest.fn()
+}));
+
+jest.mock("../../permissions/permission.service", () => ({
+	canEdit: jest.fn()
+}));
 jest.mock("@self-learning/database", () => ({
 	__esModule: true,
 	database: {
@@ -19,10 +27,6 @@ jest.mock("@self-learning/database", () => ({
 			groupBy: jest.fn()
 		}
 	}
-}));
-
-jest.mock("../../permissions/course.utils", () => ({
-	canEditBySlug: jest.fn()
 }));
 
 describe("REST API of Course Router", () => {
@@ -288,22 +292,26 @@ describe("REST API of Course Router", () => {
 		beforeEach(() => {
 			jest.clearAllMocks();
 
-			// Mock course.findFirst for authorization check
-			(database.course.findFirst as jest.Mock).mockImplementation(async query => {
-				// Check if the requesting user is one of the course authors
-				const requestingUser = query.where.authors?.some?.username;
-				const courseAuthors = ["teacher1", "teacher2"]; // Multiple authors
-
-				if (courseAuthors.includes(requestingUser)) {
-					return {
-						courseId: courseMock.courseId,
-						content: courseMock.content
-					};
+			// Mock getCourseResource
+			(getCourseResource as jest.Mock).mockImplementation(async slug => {
+				if (slug === "test-course") {
+					return { courseId: courseMock.courseId };
 				}
-				return null; // User is not an author (includes admins who aren't authors)
+				throw new TRPCError({
+					code: "NOT_FOUND"
+				});
 			});
 
-			// Mock course.findUnique for 404 check
+			// Mock canEdit - true for authors, false for non-authors (including admin non-author)
+			(canEdit as jest.Mock).mockImplementation(async (user, resource) => {
+				const courseAuthors = ["teacher1", "teacher2"];
+				return (
+					courseAuthors.includes(user.name) ||
+					(user.role === "ADMIN" && courseAuthors.includes(user.name))
+				);
+			});
+
+			// Mock course.findUnique for 404 check - not used anymore
 			(database.course.findUnique as jest.Mock).mockImplementation(async query => {
 				if (query.where.slug === "test-course") {
 					return {
@@ -343,8 +351,6 @@ describe("REST API of Course Router", () => {
 		});
 
 		it("should return progress for enrolled students only", async () => {
-			(canEditBySlug as jest.Mock).mockResolvedValue(true); // has access
-
 			const response = await callOpenApi({
 				method: "GET",
 				path: `/courses/${courseMock.slug}/progress`,
@@ -362,8 +368,6 @@ describe("REST API of Course Router", () => {
 		});
 
 		it("should allow access for user with edit+ permissions", async () => {
-			(canEditBySlug as jest.Mock).mockResolvedValue(true); // has access
-
 			const response = await callOpenApi({
 				method: "GET",
 				path: `/courses/${courseMock.slug}/progress`,
@@ -393,8 +397,6 @@ describe("REST API of Course Router", () => {
 		});
 
 		it("should return 403 for non-author users", async () => {
-			(canEditBySlug as jest.Mock).mockResolvedValue(false); // has not access
-
 			const response = await callOpenApi({
 				method: "GET",
 				path: `/courses/${courseMock.slug}/progress`,
@@ -410,7 +412,6 @@ describe("REST API of Course Router", () => {
 		});
 
 		it("should return 403 for admin users who are not course authors", async () => {
-			(canEditBySlug as jest.Mock).mockResolvedValue(false); // has not access
 			const response = await callOpenApi({
 				method: "GET",
 				path: `/courses/${courseMock.slug}/progress`,
@@ -438,7 +439,6 @@ describe("REST API of Course Router", () => {
 		});
 
 		it("should handle students with zero progress", async () => {
-			(canEditBySlug as jest.Mock).mockResolvedValue(true); // has access
 			// Override the completedLesson mock for this test
 			(database.completedLesson.groupBy as jest.Mock).mockImplementationOnce(async () => {
 				return []; // No completed lessons

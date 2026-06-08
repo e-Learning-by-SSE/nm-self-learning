@@ -4,7 +4,8 @@ import {
 	MembershipInput,
 	PermissionInput,
 	ResourceAccess,
-	ResourceInput
+	ResourceInput,
+	ResourceInputSchema
 } from "./permission.types";
 import {
 	greaterAccessLevel,
@@ -13,6 +14,74 @@ import {
 } from "./permission.utils";
 import { add } from "date-fns";
 import { UserFromSession } from "../trpc/context";
+import { TRPCError } from "@trpc/server";
+
+/**
+ * Readme
+ *
+ * Working with user permissions in the best scenario should be limited to these 6 functions
+ * - @see canCreate
+ * - @see canRead (always true for now)
+ * - @see canEdit
+ * - @see canDelete
+ * - @see hasEffectiveAccess check if user has @see AccessLevel or higher
+ * - @see getEffectiveAccess allows to get exact @see AccessLevel
+ *
+ * They all accept @see UserFromSession and @see ResourceInput
+ *
+ * If more sophisticated functionality is required - see functions below
+ *
+ * Other stuff may be available in permission.router.tsx
+ */
+
+/**
+ * Ensures that user can read a specified resource (has VIEW+ access)
+ * @note TODO for now all can read
+ * @param user - user from session (ctx.user)
+ * @param resource - defined resource following ResourceInputSchema
+ * @returns `true` if can read specified resource
+ */
+async function canRead(user: UserFromSession, resource: ResourceInput): Promise<boolean> {
+	return true;
+	// return hasEffectiveResourceAccess(user, resource, AccessLevel.VIEW );
+}
+
+/**
+ * Ensures that user can edit a specified resource (has EDIT+ access)
+ * @param user - user from session (ctx.user)
+ * @param resource - defined resource following ResourceInputSchema
+ * @returns `true` if can edit specified resource
+ */
+export async function canEdit(user: UserFromSession, resource: ResourceInput): Promise<boolean> {
+	return hasEffectiveAccess(user, resource, AccessLevel.EDIT);
+}
+
+/**
+ * Ensures that user can delete a specified resource (has FULL+ access)
+ * @param user - user from session (ctx.user)
+ * @param resource - defined resource following ResourceInputSchema
+ * @returns `true` if can delete specified resource
+ */
+export async function canDelete(user: UserFromSession, resource: ResourceInput): Promise<boolean> {
+	return hasEffectiveAccess(user, resource, AccessLevel.FULL);
+}
+
+/**
+ * Ensures that user can create a resource
+ * @note any group user can create lessons
+ * @param user - user from session (ctx.user)
+ * @returns `true` if can create a resource
+ */
+export async function canCreate(user: UserFromSession): Promise<boolean> {
+	if (user.role === "ADMIN") return true;
+	const canCreate = await database.member.findFirst({
+		where: {
+			userId: user.id
+		},
+		select: { userId: true } // do not select unnecessary data
+	});
+	return !!canCreate;
+}
 
 /**
  * "Effective" access means:
@@ -20,6 +89,23 @@ import { UserFromSession } from "../trpc/context";
  * - group-derived permissions are resolved
  * - the highest applicable access level is returned
  */
+
+/**
+ * A shortcut for @see hasResourceAccess
+ * checks if the user is a website admin or has defined access to a specific resource.
+ * @param user - user from session (ctx.user)
+ * @param resource - resource input
+ * @param accessLevel - required resource access level
+ * @returns `true` if user is website admin or has access to the resource at specified access level
+ */
+export async function hasEffectiveAccess(
+	user: UserFromSession,
+	resource: ResourceInput,
+	accessLevel: AccessLevel
+) {
+	if (user.role === "ADMIN") return true;
+	return await hasResourceAccess({ userId: user.id, accessLevel, ...resource });
+}
 
 /**
  * A shortcut for @see hasResourceAccessBatch
@@ -364,4 +450,124 @@ export async function testGroupCircularParent(groupId: number, parentId: number)
 		currentId = parent?.parentId ?? null;
 	}
 	return false;
+}
+
+type PermissionOfResource = {
+	groupId: number;
+	accessLevel: AccessLevel;
+};
+
+/**
+ * Every resource has permissions array. If that array was created through create trpc
+ * this method helps to perform necessary checks to create permissions
+ * @note Checks if permissions are to be changed:
+ * @param newPermissions - list of created permissions
+ * @throws TRPCError if permissions do not follow the schema
+ * @returns db create ready json
+ */
+export async function preparePermissionsForCreate(newPermissions: PermissionOfResource[]) {
+	// make sure at least one permission is FULL
+	if (newPermissions.filter(p => p.accessLevel === AccessLevel.FULL).length === 0) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "requires at least one FULL permission."
+		});
+	}
+	//
+	return {
+		create: newPermissions.map(p => ({
+			accessLevel: p.accessLevel,
+			groupId: p.groupId
+		}))
+	};
+}
+
+/**
+ * Every resource has permissions array. If that array was modified through update trpc
+ * this method helps to perform necessary checks to update permissions
+ * Usage inside transaction is possible
+ * @note Checks if permissions are to be changed:
+ * If changed: Requires FULL access
+ * If not changed: Requires EDIT access
+ * @param resource - @see ResourceInput - specifies resource permissions are attached to
+ * @param newPermissions - list of edited permissions
+ * @throws TRPCError if permissions or resource do not follow the schema
+ * @returns db upsert ready json or undefined (if no changes are required)
+ */
+export async function preparePermissionsForUpdate(
+	resource: ResourceInput,
+	newPermissions: PermissionOfResource[]
+) {
+	// safe parse input (as its used in where clause)
+	const validation = ResourceInputSchema.safeParse(resource);
+	if (!validation.success) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Invalid resource identifiers provided.",
+			cause: validation.error
+		});
+	}
+	resource = validation.data;
+	// drop display fields
+	const perms = newPermissions.map(p => {
+		return {
+			accessLevel: p.accessLevel,
+			groupId: p.groupId
+		};
+	});
+	// make sure at least one permission is FULL
+	if (perms.filter(p => p.accessLevel === AccessLevel.FULL).length === 0) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "requires at least one FULL permission."
+		});
+	}
+	// fetch existing permissions to determine diffs
+	const existingPerms = await database.permission.findMany({
+		where: resource,
+		select: { groupId: true, lessonId: true, accessLevel: true }
+	});
+	// compute if permissions are equal
+	const toKey = (p: PermissionOfResource) => `${p.groupId}|${p.accessLevel}`;
+	const keys = new Set(perms.map(toKey));
+	const equal =
+		existingPerms.length === perms.length && existingPerms.every(ep => keys.has(toKey(ep)));
+	// no update required
+	if (equal) {
+		return undefined;
+	}
+	// TODO make this through common base
+	const getUpsertWhere = (p: PermissionOfResource) => {
+		if (resource.lessonId) {
+			return {
+				groupId_lessonId: {
+					groupId: p.groupId,
+					lessonId: resource.lessonId
+				}
+			};
+		}
+		if (resource.courseId) {
+			return {
+				groupId_courseId: {
+					groupId: p.groupId,
+					courseId: resource.courseId
+				}
+			};
+		}
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "invalid resource input."
+		});
+	};
+
+	return {
+		deleteMany: { groupId: { notIn: perms.map(p => p.groupId) } },
+		upsert: perms.map(p => ({
+			where: getUpsertWhere(p),
+			create: p,
+			update: {
+				accessLevel: p.accessLevel
+			}
+		}))
+	};
 }
