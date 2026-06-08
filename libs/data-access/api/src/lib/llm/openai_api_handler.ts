@@ -29,7 +29,7 @@ export interface LlmConfig {
  *
  * @param messages Conversation with chat bot, containing system prompt, user requests, and LLM responses.
  * @param config LLM server configuration including URL, API key, and default model.
- * @param options Additional options to customize the LLM request (e.g., temperature, max_tokens).
+ * @param options Additional options to customize the LLM request (e.g., temperature (default: 0.7), max_tokens (default: 2000)).
  * @returns The content of the LLM's response message. May contain a <think> tag, which is not intended to be rendered on (or even sent to) the client.
  * @throws TRPCError if there are communication issues with the LLM server or if the response format is invalid.
  */
@@ -52,7 +52,7 @@ export async function sendChatRequest(
 			body: JSON.stringify({
 				messages,
 				model: config.defaultModel,
-				temperature: options.temperature ?? 0.7,
+				temperature: 0.7,
 				max_tokens: 2000,
 				stream: false,
 
