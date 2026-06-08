@@ -1,10 +1,10 @@
-import { pipeline, FeatureExtractionPipeline } from "@xenova/transformers";
+import { pipeline, FeatureExtractionPipeline } from "@huggingface/transformers";
 import { RAG_CONFIG } from "../config/rag-config";
 
 /**
  * Service for generating text embeddings using transformers
  *
- * Uses the Xenova/transformers library with a pre-trained model to generate vector embeddings for text content.
+ * Uses the @huggingface/transformers library with a pre-trained model to generate vector embeddings for text content.
  *
  * The field `embedder` is typed as `FeatureExtractionPipeline | null`, which is exactly what
  * `pipeline("feature-extraction", ...)` returns.
@@ -25,7 +25,7 @@ export class EmbeddingService {
 		}
 		try {
 			this.embedder = await pipeline("feature-extraction", RAG_CONFIG.EMBEDDING.MODEL_NAME, {
-				quantized: RAG_CONFIG.EMBEDDING.QUANTIZED
+				dtype: RAG_CONFIG.EMBEDDING.QUANTIZED
 			});
 
 			this.initialized = true;

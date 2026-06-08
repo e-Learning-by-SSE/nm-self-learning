@@ -11,7 +11,7 @@ export const RAG_CONFIG = {
 		BATCH_SIZE: 10,
 		MAX_RETRIES: 3,
 		TIMEOUT_MS: 30000,
-		QUANTIZED: true,
+		QUANTIZED: "q8",
 		POOLING: "mean" as const,
 		NORMALIZE: true
 	},
