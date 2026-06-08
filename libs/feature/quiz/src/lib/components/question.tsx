@@ -20,6 +20,7 @@ import {
 	XCircleIcon
 } from "@heroicons/react/24/outline";
 import { useEventLog } from "@self-learning/util/eventlog";
+import { useEffect } from "react";
 
 export type QuizSavedAnswers = { answers: unknown; lessonSlug: string };
 
@@ -56,19 +57,23 @@ export function Question({
 
 	function setAnswer(v: unknown) {
 		const value = typeof v === "function" ? v(answer) : v;
-		setAnswers(prev => {
-			const updatedAnswers = {
-				...prev,
-				[question.questionId]: value
-			};
-			const cookieContent: QuizSavedAnswers = {
-				answers: updatedAnswers,
-				lessonSlug: lesson.slug
-			};
-			setCookie(`quiz_answers_save`, JSON.stringify(cookieContent), { path: "/" });
-			return updatedAnswers;
-		});
+
+		setAnswers(prev => ({
+			...prev,
+			[question.questionId]: value
+		}));
 	}
+
+	useEffect(() => {
+		const cookieContent: QuizSavedAnswers = {
+			answers,
+			lessonSlug: lesson.slug
+		};
+
+		setCookie("quiz_answers_save", JSON.stringify(cookieContent), {
+			path: "/"
+		});
+	}, [answers, lesson.slug, setCookie]);
 
 	async function setEvaluation(e: BaseEvaluation | null) {
 		setEvaluations(prev => ({
