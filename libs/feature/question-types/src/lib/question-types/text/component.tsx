@@ -8,7 +8,7 @@
 
 import { TextArea } from "@self-learning/ui/forms";
 import { trpc } from "@self-learning/api-client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "next-i18next";
 import { useQuestion } from "../../use-question-hook";
 import { evaluateTextAnswerWithAI } from "./evaluate";
@@ -38,11 +38,21 @@ const VERDICT_STYLES: Record<TextVerdict, string> = {
  */
 export default function TextAnswer() {
 	const { t } = useTranslation("feature-question-types");
-	const { question, setAnswer, answer, evaluation, setEvaluation } = useQuestion("text");
+	const {
+		question,
+		setAnswer,
+		answer,
+		evaluation,
+		setEvaluation,
+		setCanSubmitAnswer,
+		setPrepareAnswerForEvaluation
+	} = useQuestion("text");
 	const [isEvaluating, setIsEvaluating] = useState(false);
 	const typedEvaluation = evaluation as TextEvaluation | null;
 	const isSubmitted = !!evaluation || isEvaluating;
 	const { mutateAsync: evaluateViaRouter } = trpc.textEvaluation.evaluate.useMutation();
+	const answerRef = useRef(answer?.value ?? "");
+	const hasTextRef = useRef(answerRef.current.trim().length > 0);
 
 	useEffect(() => {
 		if (!typedEvaluation?.isInProgress) return;
@@ -59,6 +69,21 @@ export default function TextAnswer() {
 		};
 	}, [evaluation]);
 
+	useEffect(() => {
+		setCanSubmitAnswer(hasTextRef.current);
+		setPrepareAnswerForEvaluation(() => {
+			const preparedAnswer = { type: "text" as const, value: answerRef.current };
+			setAnswer(preparedAnswer);
+
+			return preparedAnswer;
+		});
+
+		return () => {
+			setCanSubmitAnswer(true);
+			setPrepareAnswerForEvaluation(null);
+		};
+	}, [setAnswer, setCanSubmitAnswer, setPrepareAnswerForEvaluation]);
+
 	async function runAiEvaluation(isIgnored: () => boolean) {
 		if (!question.aiEvaluation) return;
 
@@ -67,7 +92,7 @@ export default function TextAnswer() {
 		try {
 			const result = await evaluateTextAnswerWithAI(
 				question,
-				answer?.value ?? "",
+				answerRef.current,
 				(input: TextEvaluateRouterInput): Promise<TextEvaluateRouterOutput> =>
 					evaluateViaRouter(input)
 			);
@@ -86,9 +111,24 @@ export default function TextAnswer() {
 			<TextArea
 				rows={12}
 				label={t("Answer")}
-				value={answer?.value ?? ""}
+				defaultValue={answer?.value ?? ""}
 				disabled={isSubmitted}
-				onChange={e => setAnswer({ type: "text", value: e.target.value })}
+				onChange={e => {
+					const value = e.target.value;
+					answerRef.current = value;
+
+					const nextHasText = value.trim().length > 0;
+
+					if (nextHasText !== hasTextRef.current) {
+						hasTextRef.current = nextHasText;
+						setCanSubmitAnswer(nextHasText);
+					}
+				}}
+				onBlur={e => {
+					const value = e.target.value;
+					answerRef.current = value;
+					setAnswer({ type: "text", value });
+				}}
 			/>
 
 			{isEvaluating && <LoadingIndicator />}
