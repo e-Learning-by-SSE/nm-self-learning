@@ -15,6 +15,15 @@ import { PropsWithChildren } from "react";
 import superjson from "superjson";
 import { GlobalFeatures } from "../_features";
 import "./styles.css";
+import { GetStaticProps } from "next";
+
+export const getStaticProps: GetStaticProps = async ({ locale }) => {
+	return {
+		props: {
+			locale
+		}
+	};
+};
 
 export default withTRPC<AppRouter>({
 	transformer: superjson,
@@ -51,7 +60,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 		: null;
 
 	const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-	
+
 	return (
 		<>
 			{process.env.NODE_ENV === "development" && (
