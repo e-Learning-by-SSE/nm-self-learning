@@ -40,7 +40,7 @@ export const lessonSchema = z.object({
 		.object({
 			questions: z.array(z.any()),
 			questionOrder: z.array(z.string()),
-			config: z.any().nullable()
+			config: z.any().nullable().optional()
 		})
 		.nullable(),
 	ragEnabled: z.boolean(),
