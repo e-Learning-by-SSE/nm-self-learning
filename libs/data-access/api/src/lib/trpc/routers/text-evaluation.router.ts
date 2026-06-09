@@ -71,7 +71,7 @@ export const textEvaluationRouter = t.router({
 			try {
 				rawContent = await sendChatRequest(messages, llmConfig, { temperature: 0 });
 			} catch (error) {
-				console.error("[LLM Text evaluation] Error communicating with LLM server", error);
+				console.warn("[LLM Text evaluation] Error communicating with LLM server", error);
 				return { ok: false as const };
 			}
 
