@@ -4,7 +4,7 @@
     "An unknown error occurred": "Ein unbekannter Fehler ist aufgetreten",
     "Available models have been fetched successfully.": "Verfügbare Modelle wurden erfolgreich abgerufen.",
     "Delete Profile Failed": "Löschen des Profils fehlgeschlagen",
-    "New Profile": "Neues Profil",
+    "Add New Profile": "Neues Profil hinzufügen",
     "Saved Profiles": "Gespeicherte Profile",
     "No saved profiles found": "Keine gespeicherten Profile gefunden",
     "AI Tutor Profile": "KI-Tutor-Profil",
@@ -20,7 +20,10 @@
     "Deleting...": "Löschen...",
     "Delete Profile": "Profil löschen",
     "Psychology-Tutor": "Psychologie-Tutor",
-    "LLM configuration not found": "LLM-Konfiguration nicht gefunden",
-    "No default model configured": "Kein Standardmodell konfiguriert",
-    "Failed to save profile data": "Speichern der Profildaten fehlgeschlagen"
+    "profile ok msg": "Profil erfolgreich gespeichert.",
+    "save failed msg": "Fehler beim Speichern des Profils. Bitte versuchen Sie es erneut.",
+    "fetch failed msg": "Fehler beim Abrufen der verfügbaren Modelle. Bitte versuchen Sie es erneut.",
+    "delete ok msg": "Profil Daten erfolgreich gelöscht.",
+    "delete failed msg": "Fehler beim Löschen des Profils. Bitte versuchen Sie es erneut.",
+    "Last Updated": "Zuletzt aktualisiert"
 }

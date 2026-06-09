@@ -4,7 +4,7 @@
     "An unknown error occurred": "An unknown error occurred",
     "Available models have been fetched successfully.": "Available models have been fetched successfully.",
     "Delete Profile Failed": "Delete Profile Failed",
-    "New Profile": "New Profile",
+    "Add New Profile": "Add New Profile",
     "Saved Profiles": "Saved Profiles",
     "No saved profiles found": "No saved profiles found",
     "AI Tutor Profile": "AI Tutor Profile",
@@ -20,7 +20,10 @@
     "Deleting...": "Deleting...",
     "Delete Profile": "Delete Profile",
     "Psychology-Tutor": "Psychology-Tutor",
-    "LLM configuration not found": "LLM configuration not found",
-    "No default model configured": "No default model configured",
-    "Failed to save profile data": "Failed to save profile data"
+    "profile ok msg": "Profile saved successfully.",
+    "save failed msg": "Failed to save profile data. Please try again.",
+    "fetch failed msg": "Failed to fetch available models. Please try again.",
+    "delete ok msg": "Profile data deleted successfully.",
+    "delete failed msg": "Failed to delete profile. Please try again.",
+    "Last Updated": "Last Updated"
 }

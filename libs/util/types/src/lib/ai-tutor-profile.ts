@@ -19,8 +19,8 @@ export const defaultAITutorProfile: AITutorProfile = {
 	name: "",
 	description: "",
 	author: "",
-	model: undefined,
-	avatarUrl: undefined,
+	model: "",
+	avatarUrl: "",
 	systemPrompt: "",
 	updatedAt: undefined
 };
@@ -32,10 +32,10 @@ export const deleteProfileSchema = z.object({
 export type ProfileListItem = {
 	id: string;
 	name: string;
-	description: string | null;
-	avatarUrl: string | null;
+	description?: string;
+	avatarUrl?: string;
 	systemPrompt: string;
-	model: string | null;
+	model?: string;
 	author: string;
 	createdAt: Date;
 	updatedAt: Date;
@@ -52,5 +52,6 @@ export type ProfileFormHandle = {
 };
 
 export type ProfileFormProps = {
-	userName: string | null | undefined;
+	userName?: string;
+	selectedProfile?: AITutorProfile | null;
 };

@@ -26,7 +26,12 @@ export const aiTutorProfileRouter = t.router({
 				updatedAt: true
 			}
 		});
-		return profiles;
+		return profiles.map(p => ({
+			...p,
+			description: p.description ?? undefined,
+			avatarUrl: p.avatarUrl ?? undefined,
+			model: p.model ?? undefined
+		}));
 	}),
 
 	// Creates or updates a profile. Falls back to the active LLM default model when no model is explicitly provided.
@@ -35,18 +40,13 @@ export const aiTutorProfileRouter = t.router({
 
 		if (!model) {
 			const llmConfig = await fetchLlmConfig();
-			if (!llmConfig) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: "No default model configured"
-				});
-			}
 			model = llmConfig.defaultModel;
 		}
 
 		try {
+			const id = input.id ?? crypto.randomUUID();
 			const profile = await database.aiTutorProfile.upsert({
-				where: { id: input.id || crypto.randomUUID() },
+				where: { id },
 				update: {
 					name: input.name,
 					description: input.description,
@@ -56,6 +56,7 @@ export const aiTutorProfileRouter = t.router({
 					author: input.author
 				},
 				create: {
+					id,
 					name: input.name,
 					description: input.description,
 					avatarUrl: input.avatarUrl,
@@ -79,6 +80,7 @@ export const aiTutorProfileRouter = t.router({
 			if (error instanceof TRPCError) {
 				throw error;
 			}
+			console.warn("Failed to save profile data", error);
 			throw new TRPCError({
 				code: "INTERNAL_SERVER_ERROR",
 				message: "Failed to save profile data"
@@ -88,11 +90,29 @@ export const aiTutorProfileRouter = t.router({
 
 	// Deletes a profile by ID. The author guard ensures only the profile's creator can delete it.
 	delete: adminProcedure.input(deleteProfileSchema).mutation(async ({ input, ctx }) => {
+		const profile = await database.aiTutorProfile.findUnique({
+			where: {
+				id: input.id
+			}
+		});
+
+		if (!profile) {
+			throw new TRPCError({
+				code: "NOT_FOUND",
+				message: "Profile not found"
+			});
+		}
+
+		if (profile.author !== ctx.user.name) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: "You do not have permission to delete this profile"
+			});
+		}
 		try {
 			return await database.aiTutorProfile.delete({
 				where: {
-					id: input.id,
-					author: ctx.user.name
+					id: input.id
 				}
 			});
 		} catch (error) {
@@ -118,6 +138,6 @@ export async function getModels() {
 	const models = await fetchAvailableModels(config.serverUrl, config.apiKey ?? undefined);
 	return {
 		valid: true,
-		models: models.models.map(m => m.name)
+		models: models.data.map(m => m.id)
 	};
 }
