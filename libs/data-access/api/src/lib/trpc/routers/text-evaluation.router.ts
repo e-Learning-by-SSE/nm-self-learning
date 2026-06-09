@@ -130,7 +130,10 @@ You will receive:
 - Respond ONLY with a single valid JSON object. No explanation, no markdown, no code fences, no preamble.
 
 ## Required JSON format (respond with exactly this structure, nothing else)
-{"verdict": "<correct|partially-correct|partially-wrong|wrong>", "feedback": "<your feedback here>"}`;
+{"verdict": "<correct|partially-correct|partially-wrong|wrong>", "feedback": "<your feedback here>"}
+
+## Response Language
+Respond in the same language as the question and student answer. If the question is in German, respond in German. If the question is in English, respond in English.`;
 }
 
 /**

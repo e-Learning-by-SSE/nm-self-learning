@@ -110,7 +110,7 @@ function LoadingIndicator() {
 	return (
 		<div className="flex items-center gap-3 rounded-lg border border-c-border bg-c-surface-2 p-4">
 			<div className="h-5 w-5 animate-spin rounded-full border-2 border-c-primary border-t-transparent" />
-			<span className="text-sm text-c-text-muted">{t("Evaluating... Please wait!")}</span>
+			<span className="text-sm text-c-text-muted">{t("Evaluating... Please wait")}</span>
 		</div>
 	);
 }
