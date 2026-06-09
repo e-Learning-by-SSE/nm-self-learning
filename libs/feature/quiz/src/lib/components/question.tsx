@@ -177,23 +177,12 @@ function CheckResult({
 	nextQuestionStep: () => void;
 }) {
 	// We only use "multiple-choice" to get better types ... works for all question types
-	const {
-		question,
-		answer,
-		evaluation: currentEvaluation,
-		canSubmitAnswer,
-		prepareAnswerForEvaluation
-	} = useQuestion("multiple-choice");
+	const { question, answer, evaluation: currentEvaluation } = useQuestion("multiple-choice");
 	const { completionState, reload } = useQuiz();
 
 	async function checkResult() {
-		if (!canSubmitAnswer) return;
-
 		console.debug("checking...");
-		const evaluation = EVALUATION_FUNCTIONS[question.type](
-			question,
-			prepareAnswerForEvaluation() ?? answer
-		);
+		const evaluation = EVALUATION_FUNCTIONS[question.type](question, answer);
 		setEvaluation(evaluation);
 		//here?
 	}
@@ -206,7 +195,6 @@ function CheckResult({
 	const renderInProgressButton = () => (
 		<button
 			className="btn-primary"
-			disabled={!canGoToNextQuestion && !canSubmitAnswer}
 			onClick={canGoToNextQuestion ? nextQuestionStep : checkResult}
 		>
 			{canGoToNextQuestion ? "Nächste Frage" : "Überprüfen"}
