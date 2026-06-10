@@ -56,7 +56,6 @@ export const aiTutorProfileRouter = t.router({
 					author: input.author
 				},
 				create: {
-					id,
 					name: input.name,
 					description: input.description,
 					avatarUrl: input.avatarUrl,

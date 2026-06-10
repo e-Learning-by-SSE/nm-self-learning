@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const aiTutorProfileSchema = z.object({
-	id: z.string().cuid("Invalid ID").optional(),
+	id: z.string().min(1).optional(),
 	name: z.string().min(1, "Name is required"),
 	author: z.string().min(1, "Author is required"),
 	model: z.string().optional(),
@@ -17,10 +17,10 @@ export type AITutorProfile = z.infer<typeof aiTutorProfileSchema>;
 export const defaultAITutorProfile: AITutorProfile = {
 	id: undefined,
 	name: "",
-	description: "",
+	description: undefined,
 	author: "",
-	model: "",
-	avatarUrl: "",
+	model: undefined,
+	avatarUrl: undefined,
 	systemPrompt: "",
 	updatedAt: undefined
 };
@@ -42,7 +42,6 @@ export type ProfileListItem = {
 };
 
 export type SavedProfilesProps = {
-	profiles: ProfileListItem[];
 	onSelect: (profile: ProfileListItem) => void;
 	onNew: () => void;
 };
@@ -52,6 +51,5 @@ export type ProfileFormHandle = {
 };
 
 export type ProfileFormProps = {
-	userName?: string;
 	selectedProfile?: AITutorProfile | null;
 };

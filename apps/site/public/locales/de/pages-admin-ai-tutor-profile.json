@@ -1,6 +1,6 @@
 {
     "Profile Saved": "Profil gespeichert",
-    "Error creating profile": "Fehler beim Erstellen des Profils",
+    "Failed to save": "Speichern fehlgeschlagen",
     "An unknown error occurred": "Ein unbekannter Fehler ist aufgetreten",
     "Models fetched": "Modelle abgerufen",
     "Available models have been fetched successfully.": "Verfügbare Modelle wurden erfolgreich abgerufen.",
