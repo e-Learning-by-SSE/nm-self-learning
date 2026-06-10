@@ -1,11 +1,12 @@
 import { useCallback, useState, memo } from "react";
-import { useForm, useWatch, UseFormRegister, Control } from "react-hook-form";
+import { useForm, useWatch, UseFormRegister, Control, Controller } from "react-hook-form";
 import {
 	AITutorProfile,
 	defaultAITutorProfile,
 	ProfileListItem,
 	ProfileFormProps
 } from "@self-learning/types";
+import { MarkdownField } from "@self-learning/ui/forms";
 import { AdminGuard, CenteredSection } from "@self-learning/ui/layouts";
 import { LabeledField, Upload } from "@self-learning/ui/forms";
 import { ImageOrPlaceholder, showToast } from "@self-learning/ui/common";
@@ -192,11 +193,18 @@ function ProfileForm({ selectedProfile }: ProfileFormProps) {
 				<ModelSelector register={register} control={control} />
 
 				<LabeledField label={t("System Prompt") + " *"}>
-					<textarea
-						{...register("systemPrompt")}
-						className="w-full max-h-60 min-h-36"
-						placeholder={t("System context...")}
-					/>
+					<Controller
+						control={control}
+						name="systemPrompt"
+						render={({ field }) => (
+							<MarkdownField
+								content={field.value as string}
+								setValue={field.onChange}
+								inline={true}
+								placeholder={t("System context...")}
+							/>
+						)}
+					></Controller>
 				</LabeledField>
 
 				<LabeledField label={t("Description")}>
