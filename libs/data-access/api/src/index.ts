@@ -7,6 +7,5 @@ export * from "./lib/internationalization/withTranslation";
 export * from "./lib/permissions/permission.utils";
 export * from "./lib/permissions/permission.types";
 export * from "./lib/permissions/permission.service";
-export { minioClient, minioConfig } from "./lib/trpc/routers/storage.router";
 
 export const API_PATH = "/api/rest";

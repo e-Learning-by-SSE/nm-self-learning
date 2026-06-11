@@ -1,9 +1,23 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { minioClient, minioConfig } from "@self-learning/api";
+import { minioClient, minioConfig } from "../../../../../libs/data-access/api/src/lib/trpc/routers/storage.router";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-	const pathSegments = req.query.path as string[];
+	const pathSegments = Array.isArray(req.query.path) ? (req.query.path as string[]) : [];
+
+	// Security: reject path traversal and empty paths
+	if (
+		pathSegments.length === 0 ||
+		pathSegments.some(s => s.includes("..") || s.includes("\\") || s.startsWith("/"))
+	) {
+		return res.status(400).json({ error: "Invalid path" });
+	}
+
 	const objectName = pathSegments.join("/");
+
+	// Security: only serve content from the content/ prefix
+	if (!objectName.startsWith("content/")) {
+		return res.status(403).json({ error: "Forbidden" });
+	}
 
 	try {
 		const stream = await minioClient.getObject(minioConfig.bucketName, objectName);

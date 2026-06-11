@@ -7,11 +7,12 @@ import { Client, ClientOptions } from "minio";
 import * as unzipper from "unzipper";
 import { z } from "zod";
 import { adminProcedure, authProcedure, t } from "../trpc";
+import { hoursToSeconds } from "date-fns";
 
 /**
  * Time in seconds after which the presigned URL expires.
  */
-const uploadTimeOut = 60 * 60 * 4; // 7 hours
+const uploadTimeOut = hoursToSeconds(4);
 
 /** Max allowed uncompressed size per archive (200 MB) */
 const MAX_UNCOMPRESSED_BYTES = 200 * 1024 * 1024;
@@ -192,9 +193,11 @@ export const storageRouter = t.router({
 
 				// Parse the zip stream and upload each entry to MinIO
 				await new Promise<void>((resolve, reject) => {
+					const uploadPromises: Promise<void>[] = [];
+
 					archiveStream
 						.pipe(unzipper.Parse())
-						.on("entry", async (entry: unzipper.Entry) => {
+						.on("entry", (entry: unzipper.Entry) => {
 							const entryPath = entry.path;
 							const entryType = entry.type;
 
@@ -228,8 +231,10 @@ export const storageRouter = t.router({
 							}
 
 							// Track uncompressed size
-							const { compressedSize } = entry.vars;
-							totalBytes += compressedSize ?? 0;
+							const uncompressedSize =
+								(entry.vars as unknown as { uncompressedSize?: number })
+									.uncompressedSize ?? 0;
+							totalBytes += uncompressedSize;
 							if (totalBytes > MAX_UNCOMPRESSED_BYTES) {
 								entry.autodrain();
 								return reject(
@@ -248,17 +253,15 @@ export const storageRouter = t.router({
 								}
 							} else if (kind === "h5p" && !entryPoint) {
 								if (fileName === "h5p.json") {
-									// For H5P, the entry point is the folder root
-									// h5p-standalone reads h5p.json from the folder URL
 									entryPoint = "";
 								}
 							}
 
-							// Upload the entry to MinIO
-							const targetObjectName = `${folderPrefix}/${entryPath}`;
-							const entryBuffer = await entry.buffer();
-
-							try {
+							// Collect upload promise — do NOT await here
+							// The entry handler is synchronous; uploads run concurrently
+							const uploadPromise = (async () => {
+								const entryBuffer = await entry.buffer();
+								const targetObjectName = `${folderPrefix}/${entryPath}`;
 								await minioClient.putObject(
 									minioConfig.bucketName,
 									targetObjectName,
@@ -266,16 +269,23 @@ export const storageRouter = t.router({
 									entryBuffer.length,
 									{ "Content-Type": getMimeType(entryPath) }
 								);
-							} catch (uploadErr) {
-								reject(
-									new TRPCError({
-										code: "INTERNAL_SERVER_ERROR",
-										message: `Failed to upload entry ${entryPath}: ${(uploadErr as Error).message}`
-									})
-								);
-							}
+							})();
+
+							uploadPromises.push(uploadPromise);
 						})
-						.on("finish", resolve)
+						.on("finish", () => {
+							// Wait for ALL uploads to complete before resolving
+							Promise.all(uploadPromises)
+								.then(() => resolve())
+								.catch(err =>
+									reject(
+										new TRPCError({
+											code: "INTERNAL_SERVER_ERROR",
+											message: `Failed to upload entry: ${(err as Error).message}`
+										})
+									)
+								);
+						})
 						.on("error", (err: Error) => {
 							reject(
 								new TRPCError({
@@ -304,6 +314,12 @@ export const storageRouter = t.router({
 
 				// Build the public folder URL
 				const publicUrl = process.env.NEXT_PUBLIC_MINIO_PUBLIC_URL;
+				if (!publicUrl) {
+					throw new TRPCError({
+						code: "INTERNAL_SERVER_ERROR",
+						message: "NEXT_PUBLIC_MINIO_PUBLIC_URL is not configured."
+					});
+				}
 				const folderUrl = `${publicUrl}/${minioConfig.bucketName}/${folderPrefix}`;
 
 				// Delete the original archive now that it's been unpacked

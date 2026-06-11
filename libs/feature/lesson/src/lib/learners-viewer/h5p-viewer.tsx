@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface H5PViewerProps {
 	folderUrl: string;
@@ -14,19 +14,20 @@ declare global {
 
 export function H5PViewer({ folderUrl }: H5PViewerProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
-
-	const initializedRef = useRef(false);
+	const [isLoading, setIsLoading] = useState(true);
 
 	useEffect(() => {
 		if (!folderUrl) return;
-		if (initializedRef.current) return;
-		initializedRef.current = true;
+		setIsLoading(true);
+
+		let cancelled = false;
 
 		const url = new URL(folderUrl);
 		const pathWithoutBucket = url.pathname.replace(/^\/[^/]+\//, "");
 		const proxyPath = `/api/h5p-content/${pathWithoutBucket}`;
 
 		function initH5P() {
+			if (cancelled) return;
 			const container = containerRef.current;
 			if (!container) return;
 			container.innerHTML = "";
@@ -43,23 +44,53 @@ export function H5PViewer({ folderUrl }: H5PViewerProps) {
 				frameJs: "/h5p/frame.bundle.js",
 				frameCss: "/h5p/styles/h5p.css"
 			});
+			if (!cancelled) setIsLoading(false);
 		}
 
+		const windowWithAmd = window as unknown as { define?: { amd?: unknown } };
+		const savedDefine = windowWithAmd.define;
+
 		if (!(window as unknown as { H5PStandalone?: unknown }).H5PStandalone) {
+			if (windowWithAmd.define) {
+				windowWithAmd.define = undefined as unknown as typeof windowWithAmd.define;
+			}
 			const script = document.createElement("script");
 			script.src = "/h5p/main.bundle.js";
-			script.onload = initH5P;
+			script.onload = () => {
+				if (savedDefine !== undefined) {
+					windowWithAmd.define = savedDefine;
+				}
+				initH5P();
+			};
 			document.head.appendChild(script);
 		} else {
 			initH5P();
 		}
+
+		return () => {
+			cancelled = true;
+		};
 	}, [folderUrl]);
 
 	return (
-		<div
-			ref={containerRef}
-			className="w-full"
-			style={{ minHeight: "500px" }}
-		/>
+		<div className="w-full" style={{ minHeight: "500px" }}>
+			{isLoading && (
+				<div className="flex h-[500px] w-full items-center justify-center bg-c-surface-2 rounded">
+					<div className="text-center text-c-text-muted">
+						<div className="animate-spin text-3xl mb-2">
+							<span role="img" aria-label="Loading">
+								⏳
+							</span>
+						</div>
+						<p className="text-sm">H5P Inhalt wird geladen...</p>
+					</div>
+				</div>
+			)}
+			<div
+				ref={containerRef}
+				className="w-full"
+				style={{ display: isLoading ? "none" : "block" }}
+			/>
+		</div>
 	);
 }
