@@ -198,7 +198,7 @@ export const storageRouter = t.router({
 					archiveStream
 						.pipe(unzipper.Parse())
 						.on("entry", (entry: unzipper.Entry) => {
-							const entryPath = entry.path;
+							const entryPath = entry.path.replace(/\\/g, "/");
 							const entryType = entry.type;
 
 							// Security: reject path traversal attempts
