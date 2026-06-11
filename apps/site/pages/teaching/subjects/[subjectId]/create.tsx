@@ -29,6 +29,7 @@ import { GroupAccessEditor } from "libs/feature/teaching/src/lib/group/forms/gro
 import { withAuth } from "@self-learning/util/auth";
 import { database } from "@self-learning/database";
 import { AccessLevel } from "@prisma/client";
+import { useWatch } from "react-hook-form";
 
 type CreateSpecializationProps = {
 	subjectId: string;
@@ -90,8 +91,8 @@ export function SpecializationEditor({
 	const showGroupAccessEditor = isNew || hasFull;
 
 	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
-    const cardImgUrl = form.watch("cardImgUrl");
-    const imgUrlBanner = form.watch("imgUrlBanner");
+	const cardImgUrl = useWatch({ name: "cardImgUrl", control: form.control });
+	const imgUrlBanner = useWatch({ name: "imgUrlBanner", control: form.control });
 
     const {
         register,
