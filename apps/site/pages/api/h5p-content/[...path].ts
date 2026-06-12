@@ -22,6 +22,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 	try {
 		const stream = await minioClient.getObject(minioConfig.bucketName, objectName);
 
+		stream.on("error", err => {
+			console.error("[h5p-content] stream error:", err);
+			if (!res.headersSent) {
+				res.status(500).json({ error: "Stream error" });
+			} else {
+				res.end();
+			}
+		});
+
 		// Set content type based on extension
 		const ext = objectName.split(".").pop()?.toLowerCase() ?? "";
 		const contentTypes: Record<string, string> = {

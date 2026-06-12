@@ -230,20 +230,6 @@ export const storageRouter = t.router({
 								);
 							}
 
-							// Track uncompressed size
-							const uncompressedSize =
-								(entry.vars as unknown as { uncompressedSize?: number })
-									.uncompressedSize ?? 0;
-							totalBytes += uncompressedSize;
-							if (totalBytes > MAX_UNCOMPRESSED_BYTES) {
-								entry.autodrain();
-								return reject(
-									new TRPCError({
-										code: "BAD_REQUEST",
-										message: `Archive exceeds maximum uncompressed size of ${MAX_UNCOMPRESSED_BYTES / 1024 / 1024} MB.`
-									})
-								);
-							}
 
 							// Detect the entry point
 							const fileName = entryPath.split("/").pop()?.toLowerCase() ?? "";
@@ -259,8 +245,20 @@ export const storageRouter = t.router({
 
 							// Collect upload promise — do NOT await here
 							// The entry handler is synchronous; uploads run concurrently
+							// Size limit is enforced on actual extracted bytes, not zip metadata
+							// which can be missing or falsified in crafted archives
 							const uploadPromise = (async () => {
 								const entryBuffer = await entry.buffer();
+
+								// Enforce size limit based on actual extracted bytes
+								totalBytes += entryBuffer.length;
+								if (totalBytes > MAX_UNCOMPRESSED_BYTES) {
+									throw new TRPCError({
+										code: "BAD_REQUEST",
+										message: `Archive exceeds maximum uncompressed size of ${MAX_UNCOMPRESSED_BYTES / 1024 / 1024} MB.`
+									});
+								}
+
 								const targetObjectName = `${folderPrefix}/${entryPath}`;
 								await minioClient.putObject(
 									minioConfig.bucketName,

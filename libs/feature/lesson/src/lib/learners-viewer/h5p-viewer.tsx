@@ -15,10 +15,12 @@ declare global {
 export function H5PViewer({ folderUrl }: H5PViewerProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [isLoading, setIsLoading] = useState(true);
+	const [loadError, setLoadError] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (!folderUrl) return;
 		setIsLoading(true);
+		setLoadError(null);
 
 		let cancelled = false;
 
@@ -62,6 +64,18 @@ export function H5PViewer({ folderUrl }: H5PViewerProps) {
 				}
 				initH5P();
 			};
+			script.onerror = () => {
+				// Restore AMD define in case it was removed before the error
+				if (savedDefine !== undefined) {
+					windowWithAmd.define = savedDefine;
+				}
+				if (!cancelled) {
+					setIsLoading(false);
+					setLoadError(
+						"H5P Inhalt konnte nicht geladen werden. Bitte versuchen Sie es erneut."
+					);
+				}
+			};
 			document.head.appendChild(script);
 		} else {
 			initH5P();
@@ -74,7 +88,12 @@ export function H5PViewer({ folderUrl }: H5PViewerProps) {
 
 	return (
 		<div className="w-full" style={{ minHeight: "500px" }}>
-			{isLoading && (
+			{loadError && (
+				<div className="flex h-[200px] w-full items-center justify-center rounded border border-red-300 bg-red-50">
+					<p className="text-sm text-red-700">{loadError}</p>
+				</div>
+			)}
+			{isLoading && !loadError && (
 				<div className="flex h-[500px] w-full items-center justify-center bg-c-surface-2 rounded">
 					<div className="text-center text-c-text-muted">
 						<div className="animate-spin text-3xl mb-2">
@@ -89,7 +108,7 @@ export function H5PViewer({ folderUrl }: H5PViewerProps) {
 			<div
 				ref={containerRef}
 				className="w-full"
-				style={{ display: isLoading ? "none" : "block" }}
+				style={{ display: isLoading || loadError ? "none" : "block" }}
 			/>
 		</div>
 	);
