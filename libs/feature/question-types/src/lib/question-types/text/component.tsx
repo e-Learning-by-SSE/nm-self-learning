@@ -83,12 +83,10 @@ export default function TextAnswer() {
 
 	return (
 		<div className="flex flex-col gap-4">
-			<TextArea
-				rows={12}
-				label={t("Answer")}
+			<AnswerInput
 				value={answer?.value ?? ""}
 				disabled={isSubmitted}
-				onChange={e => setAnswer({ type: "text", value: e.target.value })}
+				onCommit={value => setAnswer({ type: "text", value })}
 			/>
 
 			{isEvaluating && <LoadingIndicator />}
@@ -101,6 +99,43 @@ export default function TextAnswer() {
 				/>
 			)}
 		</div>
+	);
+}
+
+/**
+ * Holds a local draft and commits to shared state via onCommit (on blur) instead
+ * of writing to setAnswer() on every keystroke. The TextArea is controlled by a
+ * quiz-scoped store, so per-keystroke writes would re-render the whole quiz.
+ */
+function AnswerInput({
+	value: external,
+	disabled,
+	onCommit
+}: {
+	value: string;
+	disabled: boolean;
+	onCommit: (value: string) => void;
+}) {
+	const { t } = useTranslation("feature-question-types");
+	const [draft, setDraft] = useState(external);
+
+	// Resync only when the answer changes *externally* (e.g. Reset clears it).
+	// Our own blur-commits set external === draft, so this is a no-op then — no loop.
+	useEffect(() => {
+		setDraft(external);
+	}, [external]);
+
+	return (
+		<TextArea
+			rows={12}
+			label={t("Answer")}
+			value={draft}
+			disabled={disabled}
+			onChange={e => setDraft(e.target.value)}
+			onBlur={() => {
+				if (draft !== external) onCommit(draft);
+			}}
+		/>
 	);
 }
 
