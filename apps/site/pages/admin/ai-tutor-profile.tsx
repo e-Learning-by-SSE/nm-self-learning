@@ -124,7 +124,7 @@ function ProfileForm({ selectedProfile }: ProfileFormProps) {
 				subtitle: t("profile ok msg")
 			});
 			reset(defaultAITutorProfile);
-		} catch (error) {
+		} catch {
 			showToast({
 				type: "error",
 				title: t("Failed to save"),
@@ -143,14 +143,14 @@ function ProfileForm({ selectedProfile }: ProfileFormProps) {
 				title: t("Profile Deleted"),
 				subtitle: t("delete ok msg")
 			});
-		} catch (error) {
+		} catch {
 			showToast({
 				type: "error",
 				title: t("Delete Profile Failed"),
 				subtitle: t("delete failed msg")
 			});
 		}
-	}, [selectedProfile?.id, deleteProfile, reset, t]);
+	}, [selectedProfile, deleteProfile, reset, t]);
 
 	return (
 		<div className="w-full md:w-3/4 bg-white p-6 rounded shadow">
