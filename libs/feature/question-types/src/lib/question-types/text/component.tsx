@@ -57,6 +57,7 @@ export default function TextAnswer() {
 		return () => {
 			ignored = true;
 		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [evaluation]);
 
 	async function runAiEvaluation(isIgnored: () => boolean) {
