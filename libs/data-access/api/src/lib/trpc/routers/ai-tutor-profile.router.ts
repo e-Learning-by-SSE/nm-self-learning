@@ -88,7 +88,7 @@ export const aiTutorProfileRouter = t.router({
 	}),
 
 	// Deletes a profile by ID. The author guard ensures only the profile's creator can delete it.
-	delete: adminProcedure.input(deleteProfileSchema).mutation(async ({ input, ctx }) => {
+	delete: adminProcedure.input(deleteProfileSchema).mutation(async ({ input }) => {
 		const profile = await database.aiTutorProfile.findUnique({
 			where: {
 				id: input.id
@@ -102,12 +102,6 @@ export const aiTutorProfileRouter = t.router({
 			});
 		}
 
-		if (profile.author !== ctx.user.name) {
-			throw new TRPCError({
-				code: "FORBIDDEN",
-				message: "You do not have permission to delete this profile"
-			});
-		}
 		try {
 			return await database.aiTutorProfile.delete({
 				where: {
