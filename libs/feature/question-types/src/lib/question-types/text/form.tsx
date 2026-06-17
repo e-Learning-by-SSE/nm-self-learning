@@ -23,7 +23,7 @@ type TextFormType = QuestionTypeForm<TextQuestion>;
  */
 export default function TextForm({ index }: { index: number }) {
 	const { t } = useTranslation("feature-question-types");
-	const { control } = useFormContext<TextFormType>();
+	const { control, getValues } = useFormContext<TextFormType>();
 
 	const { data: llmConfigData } = trpc.textEvaluation.checkLlmConfig.useQuery();
 	const llmAvailable = llmConfigData?.available ?? null;
