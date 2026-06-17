@@ -68,9 +68,9 @@ export default function TextForm({ index }: { index: number }) {
 						rules={{
 							validate: value => {
 								// Only validate if there's a non-empty solution or concepts provided
-								const solutionOrConcepts =
-									control._formValues.quiz.questions[index].aiEvaluation
-										.solutionOrConcepts;
+								const solutionOrConcepts = getValues(
+									`quiz.questions.${index}.aiEvaluation.solutionOrConcepts`
+								);
 								if (
 									solutionOrConcepts === undefined ||
 									solutionOrConcepts === null ||
