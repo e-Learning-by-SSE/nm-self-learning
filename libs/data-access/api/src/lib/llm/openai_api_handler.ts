@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { Message } from "@self-learning/ai-tutor";
 import z from "zod";
+import { secondsToMilliseconds } from "date-fns";
 
 const llmApiResponseSchema = z.object({
 	choices: z.array(
@@ -30,7 +31,7 @@ export interface LlmConfig {
  * @param messages Conversation with chat bot, containing system prompt, user requests, and LLM responses.
  * @param config LLM server configuration including URL, API key, and default model.
  * @param options Additional options to customize the LLM request (e.g., temperature (default: 0.7), max_tokens (default: unlimited)).
- * @returns The content of the LLM's response message. May contain a <think> tag, which is not intended to be rendered on (or even sent to) the client.
+ * @returns The content of the LLM's response message.
  * @throws TRPCError if there are communication issues with the LLM server or if the response format is invalid.
  */
 export async function sendChatRequest(
@@ -38,7 +39,7 @@ export async function sendChatRequest(
 	config: LlmConfig,
 	options: Record<string, unknown> = {}
 ) {
-	const TIMEOUT_MS = 30000; // 30 seconds timeout for LLM response
+	const TIMEOUT_MS = secondsToMilliseconds(30);
 	try {
 		const controller = new AbortController();
 		const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
