@@ -173,7 +173,7 @@ function ProfileForm({ selectedProfile }: ProfileFormProps) {
 								{...register("author")}
 								type="text"
 								className="textfield w-full"
-								placeholder={userName || t("Author Name")}
+								placeholder={userName || t("Author")}
 								readOnly={Boolean(userName)}
 							/>
 						</LabeledField>
