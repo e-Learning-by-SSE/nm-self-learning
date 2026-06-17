@@ -65,7 +65,6 @@ export const textEvaluationRouter = t.router({
 				{ role: "user", content: userMessage }
 			];
 
-			console.log("Received evaluation request", input);
 			// Step 4: Send request to LLM server and get raw response
 			let rawContent: string;
 			try {
