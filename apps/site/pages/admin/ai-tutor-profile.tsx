@@ -18,7 +18,8 @@ import { useTranslation } from "next-i18next";
 
 /**
  * Sidebar component that lists saved AI tutor profiles and allows selecting one for editing or creating a new profile.
- * @param param0 \selection handlers are passed as props.
+ * @param onSelect Handler to display the selected profile in the form for editing.
+ * @param onNew Handler for creating a new profile.
  * @returns Sidebar UI element for managing AI tutor profiles.
  */
 function SavedProfilesSidebar({
@@ -50,7 +51,8 @@ function SavedProfilesSidebar({
 
 /**
  * Button component for displaying a single AI tutor profile in the sidebar.
- * @param param0 Profile data and selection handler passed as props.
+ * @param onSelect Handler to display the selected profile in the form for editing.
+ * @param profile Profile data passed as props.
  * @returns Button UI element for selecting an AI tutor profile.
  */
 const ProfileButton = memo(function ProfileButton({
@@ -185,7 +187,7 @@ function ProfileForm({ selectedProfile }: ProfileFormProps) {
 						<Upload
 							mediaType="image"
 							onUploadCompleted={handleUploadCompleted}
-							hideAssetPicker={true}
+							hideAssetPicker={false}
 						/>
 					</div>
 				</div>
