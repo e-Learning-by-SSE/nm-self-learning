@@ -67,6 +67,7 @@
 	"Groups": "Gruppen",
 	"Author Dashboard": "$t(common:Author_other)bereich",
 	"Admin Dashboard": "$t(common:Admin)bereich",
+	"Login": "Login",
 	"Logout": "Abmelden",
     "Learning-Statistics_one": "Lernstatistik",
     "Learning-Statistics_other": "Lernstatistiken",
@@ -82,5 +83,6 @@
     "Information Updated": "Informationen aktualisiert",
     "Settings Could not be Saved!": "Einstellungen konnten nicht gespeichert werden!",
     "Close": "Schließen",
-    "Help": "Hilfe"
+    "Help": "Hilfe",
+    "Open_Menu": "Menü öffnen"
 }
