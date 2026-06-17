@@ -22,6 +22,7 @@ import { llmConfigRouter } from "./routers/llm-config.router";
 import { userEventRouter } from "./routers/event-log.router";
 import { notificationRouter } from "./routers/notification.router";
 import { gamificationRouter } from "./routers/achievement.router";
+import { aiTutorProfileRouter } from "./routers/ai-tutor-profile.router";
 import { permissionRouter } from "./routers/permission.router";
 import { aiTutorRouter } from "./routers/ai-tutor.router";
 import { textEvaluationRouter } from "./routers/text-evaluation.router";
@@ -48,6 +49,7 @@ export const appRouter = t.router({
 	events: userEventRouter,
 	notification: notificationRouter,
 	llmConfig: llmConfigRouter,
+	aiTutorProfile: aiTutorProfileRouter,
 	permission: permissionRouter,
 	aiTutor: aiTutorRouter,
 	textEvaluation: textEvaluationRouter
