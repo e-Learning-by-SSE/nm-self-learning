@@ -27,7 +27,7 @@
     "Create Profile": "Profil erstellen",
     "Deleting...": "Löschen...",
     "Delete Profile": "Profil löschen",
-    "Psychology-Tutor": "Psychologie-Tutor",
+    "Example-Tutor": "Beispiel-Tutor",
     "profile ok msg": "Profil erfolgreich gespeichert.",
     "save failed msg": "Fehler beim Speichern des Profils. Bitte versuchen Sie es erneut.",
     "fetch failed msg": "Fehler beim Abrufen der verfügbaren Modelle. Bitte versuchen Sie es erneut.",

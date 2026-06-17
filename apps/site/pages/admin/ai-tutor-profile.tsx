@@ -165,7 +165,7 @@ function ProfileForm({ selectedProfile }: ProfileFormProps) {
 								{...register("name")}
 								type="text"
 								className="textfield w-full mb-4"
-								placeholder={t("Psychology-Tutor")}
+								placeholder={t("Example-Tutor")}
 							/>
 						</LabeledField>
 						<LabeledField label={t("Author")}>
