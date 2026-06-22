@@ -64,7 +64,8 @@ export function GroupPermissionsEditor() {
 
 	const permissions = useWatch({
 		control,
-		name: "permissions"
+		name: "permissions",
+		defaultValue: []
 	});
 	const diff = useArrayDiff({
 		current: permissions,

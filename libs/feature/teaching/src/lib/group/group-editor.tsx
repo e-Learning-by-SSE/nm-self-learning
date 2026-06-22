@@ -124,7 +124,7 @@ export function GroupEditor({
 							<Tab>Mitglieder</Tab>
 							<Tab>Berechtigungen</Tab>
 						</Tabs>
-						{/* I use hidden here to prevent useArrayDiff from loosing diff data*/}
+						{/* I use hidden here to prevent useArrayDiff from losing diff data*/}
 						<div className={selectedTab !== 0 ? "hidden" : undefined}>
 							<GroupInfoEditor fillInSingleGroup={isNew} />
 						</div>

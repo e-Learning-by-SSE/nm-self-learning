@@ -133,7 +133,7 @@ function GroupDeleteDialog({
 									)}
 									{resource.course && (
 										<div className="flex items-center gap-2">
-											<span className="font-semibold">Kurs:</span>
+											<span className="font-semibold">{p.type}</span>
 											<Link
 												href={`/teaching/courses/edit/${resource.course.courseId}`}
 												className="text-c-primary hover:underline"
@@ -144,9 +144,9 @@ function GroupDeleteDialog({
 									)}
 									{resource.specialization && (
 										<div className="flex items-center gap-2">
-											<span className="font-semibold">Kurs:</span>
+											<span className="font-semibold">{p.type}</span>
 											<Link
-												href={`/teaching/subjects/TODO/${resource.specialization.specializationId}/edit`}
+												href={`/teaching/subjects/${resource.specialization.subjectId}/${resource.specialization.specializationId}/edit`}
 												className="text-c-primary hover:underline"
 											>
 												{p.title}
@@ -155,7 +155,7 @@ function GroupDeleteDialog({
 									)}
 									{resource.subject && (
 										<div className="flex items-center gap-2">
-											<span className="font-semibold">Kurs:</span>
+											<span className="font-semibold">{p.type}</span>
 											<Link
 												href={`/teaching/subjects/${resource.subject.subjectId}/edit`}
 												className="text-c-primary hover:underline"

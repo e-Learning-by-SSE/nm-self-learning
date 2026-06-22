@@ -507,7 +507,9 @@ export async function getSingleOwnedResources(groupId: number) {
 		select: {
 			course: { select: { title: true, courseId: true, slug: true } },
 			lesson: { select: { title: true, lessonId: true, slug: true } },
-			specialization: { select: { title: true, specializationId: true, slug: true } },
+			specialization: {
+				select: { title: true, specializationId: true, slug: true, subjectId: true }
+			},
 			subject: { select: { title: true, subjectId: true, slug: true } }
 		}
 	});
