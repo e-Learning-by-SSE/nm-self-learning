@@ -13,7 +13,8 @@ export default [
 			"apps/site/jest.config.ts",
 			"**/*.config.ts",
 			"**/*.config.js",
-			"libs/data-access/database/prisma/migrations/**/data-migration.ts"
+			"libs/data-access/database/prisma/migrations/**/data-migration.ts",
+			"apps/site/public/h5p/**"
 		]
 	}, // Base JS rules
 	js.configs.recommended, // TypeScript rules (non–type-aware; switch to recommendedTypeChecked if you want)

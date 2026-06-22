@@ -60,6 +60,11 @@ export default function AdminPage() {
 						imageElement={<ServerSvg />}
 						title={t("LLM Configuration")}
 					/>
+					<Card
+						href="/admin/ai-tutor-profile"
+						imageElement={<SoftwareEngineerSvg />}
+						title={t("AI Tutor Profile")}
+					/>
 				</div>
 				<div className="text-center text-sm text-c-text-muted mt-8">
 					{t("App Version: {{version}}", { version: appVersion })}

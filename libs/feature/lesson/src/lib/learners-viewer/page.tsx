@@ -1,3 +1,4 @@
+import { H5PViewer } from "./h5p-viewer";
 import { Button } from "@headlessui/react";
 import {
 	CheckCircleIcon,
@@ -161,8 +162,28 @@ function ContentDisplayItem({
 					</Button>
 				</div>
 			);
+		case "iframe":
+			if (!c.value.url) return <ContentInfo error text="Fehlende URL." />;
+			if (c.value.source === "h5p") {
+				return (
+					<div className="flex flex-col w-full">
+						<H5PViewer folderUrl={c.value.url} />
+					</div>
+				);
+			}
+			return (
+				<div className="flex flex-col w-full">
+					<iframe
+						key={c.value.url}
+						src={c.value.url}
+						title="HTML5 Viewer"
+						sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+						className="w-full h-[75vh] border border-light-border rounded"
+					/>
+				</div>
+			);
 		default:
-			return <ContentInfo error text={`unsupported content type: ${c?.type}`} />;
+			return <ContentInfo error text={`unsupported content type: ${(c as LessonContentType)?.type}`} />;
 	}
 }
 
