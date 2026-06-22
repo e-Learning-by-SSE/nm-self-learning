@@ -1,4 +1,4 @@
-import { PlusIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import {
 	I18N_NAMESPACE as NS_UI_COMMON,
@@ -7,7 +7,8 @@ import {
 	Paginator,
 	Table,
 	TableDataColumn,
-	TableHeaderColumn
+	TableHeaderColumn,
+	IconOnlyButton
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
@@ -15,6 +16,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { withTranslations } from "@self-learning/api";
 import { keepPreviousData } from "@tanstack/react-query";
+import { CourseDeleteOption } from "libs/feature/teaching/src/lib/author/course-delete-option";
 
 export default function CoursesPage() {
 	const router = useRouter();
@@ -75,6 +77,7 @@ export default function CoursesPage() {
 						<TableHeaderColumn></TableHeaderColumn>
 						<TableHeaderColumn>Titel</TableHeaderColumn>
 						<TableHeaderColumn>Von</TableHeaderColumn>
+						<TableHeaderColumn></TableHeaderColumn>
 					</>
 				}
 			>
@@ -90,7 +93,7 @@ export default function CoursesPage() {
 						<TableDataColumn>
 							<Link
 								className="text-sm font-medium hover:text-c-primary"
-								href={`/teaching/courses/edit/${course.courseId}`}
+								href={`/courses/${course.slug}`}
 							>
 								{course.title}
 							</Link>
@@ -101,6 +104,17 @@ export default function CoursesPage() {
 								{course.authors.map(a => a.displayName).join(", ")}
 							</span>
 						</TableDataColumn>
+
+						<TableDataColumn>
+							<Link href={`/teaching/courses/edit/${course.courseId}`}>
+								<IconOnlyButton
+									icon={<PencilIcon className="h-5 w-5" />}
+									className="btn-stroked"
+									title={"Kurs bearbeiten"}
+								/>
+							</Link>
+							<CourseDeleteOption slug={course.slug} />
+						</TableDataColumn>
 					</tr>
 				))}
 			</Table>
@@ -110,4 +124,6 @@ export default function CoursesPage() {
 	);
 }
 
-export const getServerSideProps = withTranslations(Array.from(new Set(["common", ...NS_UI_COMMON])));
+export const getServerSideProps = withTranslations(
+	Array.from(new Set(["common", ...NS_UI_COMMON]))
+);

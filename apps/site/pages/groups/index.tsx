@@ -1,4 +1,5 @@
-import { ArrowsPointingInIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { ArrowsPointingInIcon, PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { GroupRole } from "@prisma/client";
 import { UserSearchEntry } from "@self-learning/admin";
 import { AppRouter, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
@@ -12,10 +13,16 @@ import {
 	showToast,
 	Table,
 	TableDataColumn,
-	TableHeaderColumn
+	TableHeaderColumn,
+	IconOnlyButton
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
-import { CenteredSection, useCanCreate, useRequiredSession } from "@self-learning/ui/layouts";
+import {
+	CenteredSection,
+	MemberGuard,
+	useCanCreate,
+	useRequiredSession
+} from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
 import { keepPreviousData } from "@tanstack/react-query";
 import { TRPCClientError } from "@trpc/client";
@@ -228,6 +235,7 @@ function GroupsPaginatedView({
 					<>
 						<TableHeaderColumn>Name</TableHeaderColumn>
 						<TableHeaderColumn>Anzahl Mitglieder</TableHeaderColumn>
+						<TableHeaderColumn></TableHeaderColumn>
 					</>
 				}
 			>
@@ -245,6 +253,18 @@ function GroupsPaginatedView({
 						<TableDataColumn>
 							<span className="text-light">{group.members.length}</span>
 						</TableDataColumn>
+
+						<TableDataColumn>
+							<MemberGuard groupId={group.groupId} groupRole={GroupRole.MEMBER}>
+								<Link href={`/teaching/groups/${group.groupId}/edit`}>
+									<IconOnlyButton
+										icon={<PencilIcon className="h-5 w-5" />}
+										className="btn-stroked"
+										title={"Gruppe bearbeiten"}
+									/>
+								</Link>
+							</MemberGuard>
+						</TableDataColumn>
 					</tr>
 				))}
 			</Table>
@@ -255,4 +275,6 @@ function GroupsPaginatedView({
 	);
 }
 
-export const getServerSideProps = withTranslations(Array.from(new Set(["common", ...NS_UI_COMMON])));
+export const getServerSideProps = withTranslations(
+	Array.from(new Set(["common", ...NS_UI_COMMON]))
+);

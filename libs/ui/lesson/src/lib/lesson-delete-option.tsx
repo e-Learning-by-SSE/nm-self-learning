@@ -6,10 +6,10 @@ import Link from "next/link";
 
 export function LessonDeleteOption({ lessonId }: { lessonId: string }) {
 	const { mutateAsync: deleteLesson } = trpc.lesson.deleteLesson.useMutation();
-	const {
-		data: linkedEntities,
-		refetch
-	} = trpc.lesson.findLinkedLessonEntities.useQuery({ lessonId }, { enabled: false }); // Prevent DB call on page load
+	const { data: linkedEntities, refetch } = trpc.lesson.findLinkedLessonEntities.useQuery(
+		{ lessonId },
+		{ enabled: false }
+	); // Prevent DB call on page load
 	const [showConfirmation, setShowConfirmation] = useState(false);
 
 	const handleDelete = async () => {
