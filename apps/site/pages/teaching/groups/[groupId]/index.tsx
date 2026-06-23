@@ -52,7 +52,7 @@ export default function GroupPage() {
 	if (!group) {
 		return (
 			<Unauthorized>
-				<span>Du muss Mitglieder*in dieser Gruppe sein</span>
+				<span>Du musst ein Mitglied dieser Gruppe sein</span>
 			</Unauthorized>
 		);
 	}
