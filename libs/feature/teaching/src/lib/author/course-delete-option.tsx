@@ -107,7 +107,7 @@ function CourseDeletionDialog({
 		<Dialog title={t("Delete")} onClose={onCancel}>
 			{t("Confirm_Delete_Course")}
 			<DialogActions onClose={onCancel}>
-				<button className="btn-primary hover:bg-c-danger" onClick={onSubmit}>
+				<button type="button" className="btn-primary hover:bg-c-danger" onClick={onSubmit}>
 					{t("Delete")}
 				</button>
 			</DialogActions>
