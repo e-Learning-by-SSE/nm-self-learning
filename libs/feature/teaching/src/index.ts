@@ -1,6 +1,7 @@
 import { I18N_NAMESPACE as NS_AI_TUTOR } from "@self-learning/ai-tutor";
 export * from "./lib/author/edit-author-dialog";
 export * from "./lib/author/author-resource-section";
+export * from "./lib/author/course-delete-option";
 export * from "./lib/course/course-editor";
 export * from "./lib/lesson/lesson-editor";
 export * from "./lib/lesson/lesson-form-model";
@@ -13,6 +14,7 @@ export * from "./lib/course/full-course-export";
 export * from "./lib/course/course-export/course-export-dialog";
 export * from "./lib/group/group-editor";
 export * from "./lib/group/forms/members-form";
+export * from "./lib/group/forms/group-form";
 export * from "./lib/group/editors/group-info";
 export * from "./lib/group/editors/group-members";
 export * from "./lib/group/editors/group-permission";

@@ -16,7 +16,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { withTranslations } from "@self-learning/api";
 import { keepPreviousData } from "@tanstack/react-query";
-import { CourseDeleteOption } from "libs/feature/teaching/src/lib/author/course-delete-option";
+import { CourseDeleteOption } from "@self-learning/teaching";
 
 export default function CoursesPage() {
 	const router = useRouter();

@@ -25,7 +25,7 @@ import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { useRouter } from "next/router";
 import { FormProvider, useForm } from "react-hook-form";
 import { withTranslations } from "@self-learning/api";
-import { GroupAccessEditor } from "libs/feature/teaching/src/lib/group/forms/group-form";
+import { GroupAccessEditor } from "@self-learning/teaching";
 import { withAuth } from "@self-learning/util/auth";
 import { database } from "@self-learning/database";
 import { AccessLevel } from "@prisma/client";
@@ -94,10 +94,10 @@ export function SpecializationEditor({
 	const cardImgUrl = useWatch({ name: "cardImgUrl", control: form.control });
 	const imgUrlBanner = useWatch({ name: "imgUrlBanner", control: form.control });
 
-    const {
-        register,
-        formState: { errors }
-    } = form;
+	const {
+		register,
+		formState: { errors }
+	} = form;
 
 	return (
 		<FormProvider {...form}>
