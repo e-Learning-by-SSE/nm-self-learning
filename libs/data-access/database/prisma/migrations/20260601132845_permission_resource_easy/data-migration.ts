@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
 	AccessLevel,
 	GroupRole,
@@ -9,6 +10,9 @@ import {
 
 const prisma = new PrismaClient();
 
+/**
+ * **Permission Resource Migration Script.**
+ */
 type AuthorCollab = {
 	groupId?: number;
 	userNames: string[];
@@ -17,7 +21,14 @@ type AuthorCollab = {
 	subjectIds: string[];
 };
 
-export async function migrateAutorsToGroups(tx: Prisma.TransactionClient): Promise<void> {
+/**
+ * **Permission Resource Migration Script.**
+ *
+ * This migration script is designed to migrate authors to groups and update permissions accordingly.
+ * It creates a map of unique author collaborations, checks for existing groups, and either updates existing groups or creates new ones based on the authors' collaborations.
+ * It also logs the total number of unique author collaborations and their associated specializations and subjects.
+ */
+export async function migrateAuthorsToGroups(tx: Prisma.TransactionClient): Promise<void> {
 	// create a map of unique authors collaborations
 	const authorCollabs = new Map<string, AuthorCollab>();
 	// groups already exist, do attach matching groups by members
@@ -169,6 +180,9 @@ export async function migrateAutorsToGroups(tx: Prisma.TransactionClient): Promi
 	}
 }
 
+/**
+ * **Permission Resource Migration Script.**
+ */
 export function getDefaultNotificationData(defaultValue?: boolean) {
 	const types = Object.values(NotificationType);
 	const channels = Object.values(NotificationChannel);
@@ -181,6 +195,9 @@ export function getDefaultNotificationData(defaultValue?: boolean) {
 	);
 }
 
+/**
+ * **Permission Resource Migration Script.**
+ */
 export async function createInitialNotificationSettings(
 	user: { id: string },
 	client: Prisma.TransactionClient | PrismaClient
@@ -194,14 +211,122 @@ export async function createInitialNotificationSettings(
 	});
 }
 
-async function main() {
+/**
+ * **Permission Resource Migration Script.**
+ */
+async function migratePermissionResources() {
 	try {
 		await prisma.$transaction(async tx => {
-			await migrateAutorsToGroups(tx);
+			await migrateAuthorsToGroups(tx);
 		});
 	} finally {
 		await prisma.$disconnect();
 	}
+}
+
+/**
+ * **Arrange Migration Script.**
+ *
+ * Minimal alternative of QuizContent that supports also
+ * legacy arrange questions that are missing the categoryOrder property.
+ */
+type LegacyQuizContent = {
+	questions?: Array<{
+		type?: string;
+		categoryOrder?: unknown;
+	}>;
+	questionOrder?: string[];
+};
+
+/**
+ * **Arrange Migration Script.**
+ *
+ * Relevant properties of a lesson that are needed for the migration.
+ */
+type LessonWithQuiz = {
+	lessonId: string;
+	quiz: LegacyQuizContent;
+};
+
+/**
+ * **Arrange Migration Script.**
+ *
+ * Filters lessons that have at least one arrange question that is missing the categoryOrder property
+ * and need to be fixed.
+ */
+function hasDefectiveArrangeQuestion(lesson: unknown): boolean {
+	const quiz = (lesson as { quiz?: unknown }).quiz;
+	if (!quiz || typeof quiz !== "object") {
+		return false;
+	}
+
+	const content = quiz as LegacyQuizContent;
+
+	if (!Array.isArray(content.questions)) {
+		return false;
+	}
+
+	return content.questions.some(question => {
+		return question.type === "arrange" && !("categoryOrder" in question);
+	});
+}
+
+/**
+ * **Arrange Migration Script.**
+ *
+ * Adds the missing categoryOrder property to arrange questions to fix them.
+ */
+function fixLessonQuiz(lesson: LessonWithQuiz): LessonWithQuiz {
+	if (!lesson.quiz.questions) {
+		return lesson;
+	}
+
+	for (const question of lesson.quiz.questions) {
+		if (question.type === "arrange" && !("categoryOrder" in question)) {
+			const items = (question as any).items;
+
+			if (items && typeof items === "object" && !Array.isArray(items)) {
+				(question as any).categoryOrder = Object.keys(items);
+			}
+		}
+	}
+
+	return lesson;
+}
+
+/**
+ * **Arrange Migration Script.**
+ *
+ * Full repair implementation:
+ * Filters for broken arrange questions, applies the fix, and updates the lessons in the database.
+ */
+async function migrateArrangeQuestions() {
+	const allLessons = await prisma.lesson.findMany();
+
+	const patchedLessons = allLessons
+		.filter(hasDefectiveArrangeQuestion)
+		.map(lesson => fixLessonQuiz(lesson as unknown as LessonWithQuiz));
+
+	if (patchedLessons.length > 0) {
+		console.log(
+			`Created patches for \x1b[31m${patchedLessons.length}\x1b[0m lessons with arrange questions that missed categoryOrder.`
+		);
+		for (const lesson of patchedLessons) {
+			await prisma.lesson.update({
+				where: { lessonId: lesson.lessonId },
+				data: { quiz: lesson.quiz as any }
+			});
+		}
+
+		console.log(`\x1b[32mSuccessfully applied all ${patchedLessons.length} patches.\x1b[0m`);
+	} else {
+		console.log(`\x1b[32mNo lessons with broken arrange questions found.\x1b[0m`);
+	}
+}
+
+async function main() {
+	await migratePermissionResources();
+	await migrateArrangeQuestions();
 }
 
 main().catch(e => {
