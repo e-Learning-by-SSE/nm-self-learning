@@ -47,7 +47,7 @@ export const MemberFormSchema = z.object({
 		}) as z.ZodNullable<z.ZodDate>,
 	user: z.object({
 		id: z.string(),
-		displayName: z.string().nullable(),
+		displayName: z.string(),
 		email: z.email().nullable(),
 		author: z.object({ id: z.number() }).nullable()
 	})

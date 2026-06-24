@@ -64,7 +64,7 @@ export function createDefaultMember(onlyAdmin?: boolean): MemberFormModel {
 		durationId: "inf",
 		user: {
 			id: "",
-			displayName: null,
+			displayName: "",
 			email: null,
 			author: null
 		}
