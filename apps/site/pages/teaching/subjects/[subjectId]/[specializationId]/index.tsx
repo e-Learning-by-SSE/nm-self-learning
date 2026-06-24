@@ -1,7 +1,7 @@
-import { LinkIcon, PencilIcon, PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { LinkIcon, LinkSlashIcon, PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { SearchCourseDialog } from "@self-learning/admin";
 import { trpc } from "@self-learning/api-client";
-import { ResourceGroupChips } from "@self-learning/teaching";
+import { I18N_NAMESPACE as NS_TEACHING, ResourceGroupChips } from "@self-learning/teaching";
 import {
 	ImageOrPlaceholder,
 	I18N_NAMESPACE as NS_UI_COMMON,
@@ -29,9 +29,15 @@ import { useState } from "react";
 import { withTranslations } from "@self-learning/api";
 import { keepPreviousData } from "@tanstack/react-query";
 import { toResourcePermissionsForm } from "@self-learning/types";
+import { useTranslation } from "next-i18next";
+
+const I18N_NAMESPACE = "pages-specialization-management";
 
 export default function SpecializationManagementPage() {
 	const router = useRouter();
+	const { t: t_common } = useTranslation("common");
+	const { t: t_teaching } = useTranslation("feature-teaching");
+	const { t } = useTranslation(I18N_NAMESPACE);
 	const { page = 1, title = "" } = router.query;
 	const [titleFilter, setTitle] = useState(title);
 	const canCreateCourse = useCanCreate();
@@ -78,22 +84,20 @@ export default function SpecializationManagementPage() {
 			});
 			showToast({
 				type: "success",
-				title: "Kurs hinzugefügt",
-				subtitle: `Kurs "${course.title}" wurde erfolgreich hinzugefügt.`
+				title: t("Course_Added_Toast_Title"),
+				subtitle: t("Course_Added_Toast_Subtitle", { title: course.title })
 			});
 		} catch (error) {
 			console.error(error);
 
 			if (error instanceof TRPCClientError) {
-				showToast({ type: "error", title: "Fehler", subtitle: error.message });
+				showToast({ type: "error", title: t_common("Error"), subtitle: error.message });
 			}
 		}
 	};
 
 	async function handleRemoveCourse(course: { title: string; courseId: string }): Promise<void> {
-		const confirmed = window.confirm(
-			`Kurs "${course.title}" wirklich aus dieser Spezialisierung entfernen?}"`
-		);
+		const confirmed = window.confirm(t("Remove_Course_Confirm", { title: course.title }));
 
 		if (!specialization || !confirmed) return;
 
@@ -105,14 +109,14 @@ export default function SpecializationManagementPage() {
 			});
 			showToast({
 				type: "success",
-				title: "Kurs entfernt",
-				subtitle: `Kurs "${course.title}" wurde entfernt.`
+				title: t("Course_Removed_Toast_Title"),
+				subtitle: t("Course_Removed_Toast_Subtitle", { title: course.title })
 			});
 		} catch (error) {
 			console.error(error);
 
 			if (error instanceof TRPCClientError) {
-				showToast({ type: "error", title: "Fehler", subtitle: error.message });
+				showToast({ type: "error", title: t_common("Error"), subtitle: error.message });
 			}
 		}
 	}
@@ -126,7 +130,7 @@ export default function SpecializationManagementPage() {
 			<TopicHeader
 				imgUrlBanner={specialization.imgUrlBanner}
 				parentLink="/subjects"
-				parentTitle="Fachgebiet"
+				parentTitle={t_common("Topic")}
 				title={specialization.title}
 				subtitle={specialization.subtitle}
 			>
@@ -136,7 +140,7 @@ export default function SpecializationManagementPage() {
 						className="btn-primary absolute top-8 w-fit self-end"
 					>
 						<PencilIcon className="icon h-5" />
-						<span>Bearbeiten</span>
+						<span>{t_common("edit")}</span>
 					</Link>
 				)}
 			</TopicHeader>
@@ -144,8 +148,8 @@ export default function SpecializationManagementPage() {
 			<CenteredContainerXL>
 				<ResourceGroupChips permissions={specialization.permissions} />
 				<SectionHeader
-					title="Kurse"
-					subtitle="Kurse, die dieser Spezialisierung zugeordnet sind."
+					title={t_common("Course_other")}
+					subtitle={t("Courses_Section_Subtitle")}
 				/>
 
 				<div className="mb-8 flex flex-wrap gap-4">
@@ -155,7 +159,7 @@ export default function SpecializationManagementPage() {
 							href={`/teaching/courses/create?specializationId=${specialization.specializationId}&subjectId=${specialization.subjectId}`}
 						>
 							<PlusIcon className="icon h-5" />
-							<span>Kurs erstellen</span>
+							<span>{t_teaching("Create_Course")}</span>
 						</Link>
 					)}
 
@@ -165,7 +169,7 @@ export default function SpecializationManagementPage() {
 							onClick={() => setAddCourseDialog(true)}
 						>
 							<LinkIcon className="icon h-5" />
-							<span>Kurs verknüpfen</span>
+							<span>{t("Link_Course")}</span>
 						</button>
 					)}
 
@@ -175,7 +179,7 @@ export default function SpecializationManagementPage() {
 				</div>
 
 				<SearchField
-					placeholder="Suche nach Titel"
+					placeholder={t_common("Search_By_Title_Placeholder")}
 					onChange={e => setTitle(e.target.value)}
 				/>
 
@@ -187,8 +191,8 @@ export default function SpecializationManagementPage() {
 							head={
 								<>
 									<TableHeaderColumn></TableHeaderColumn>
-									<TableHeaderColumn>Titel</TableHeaderColumn>
-									<TableHeaderColumn>Von</TableHeaderColumn>
+									<TableHeaderColumn>{t_common("Title")}</TableHeaderColumn>
+									<TableHeaderColumn>{t_common("By")}</TableHeaderColumn>
 									<TableHeaderColumn></TableHeaderColumn>
 								</>
 							}
@@ -221,10 +225,10 @@ export default function SpecializationManagementPage() {
 											<div className="flex justify-end">
 												<button
 													className="rounded-full p-2 text-gray-400 hover:bg-c-neutral-muted hover:text-c-danger"
-													title="Aus Spezialisierung entfernen"
+													title={t("Remove_From_Specialization")}
 													onClick={() => handleRemoveCourse(course)}
 												>
-													<XMarkIcon className="h-5" />
+													<LinkSlashIcon className="h-5" />
 												</button>
 											</div>
 										)}
@@ -247,5 +251,5 @@ export default function SpecializationManagementPage() {
 }
 
 export const getServerSideProps = withTranslations(
-	Array.from(new Set(["common", ...NS_UI_COMMON]))
+	Array.from(new Set(["common", I18N_NAMESPACE, ...NS_UI_COMMON, ...NS_TEACHING]))
 );
