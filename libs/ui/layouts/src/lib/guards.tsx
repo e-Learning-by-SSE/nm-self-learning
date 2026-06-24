@@ -2,13 +2,18 @@
 import { ArrowLeftIcon } from "@heroicons/react/24/solid";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { CenteredSection } from "./containers/centered-section";
 import { useLoginRedirect } from "@self-learning/util/auth";
 import { IconTextButton, LoadingBox } from "@self-learning/ui/common";
-import { greaterAccessLevel, greaterOrEqAccessLevel, GroupAccess } from "@self-learning/types";
+import {
+	greaterAccessLevel,
+	greaterOrEqAccessLevel,
+	ResourcePermission
+} from "@self-learning/types";
 import { AccessLevel, GroupRole } from "@prisma/client";
 import { useRouter } from "next/router";
+import { UserFromSession } from "@self-learning/api";
 
 /**
  * Wrapper for `useSession` from `next-auth` that redirects the user to the login page if they are not authenticated.
@@ -98,63 +103,88 @@ export function MemberGuard({
 }
 
 export function testResourceGuard(
-	accessLevel: AccessLevel,
-	allowedGroups: GroupAccess[],
-	userGroups: Set<number>
+	user: UserFromSession,
+	requiredAccess: AccessLevel,
+	permittedGroups?: ResourcePermission[]
 ) {
-	const perm = allowedGroups
+	// if permittedGroups is undefined, assume "always allow"
+	if (user.role === "ADMIN" || permittedGroups === undefined) {
+		return true;
+	}
+	if (!user.memberships) {
+		return false;
+	}
+	const userGroups = new Set(user.memberships);
+	const bestMatchingPerm = permittedGroups
 		.filter(g => userGroups.has(g.groupId))
-		.reduce((best: GroupAccess | null, g) => {
+		.reduce((best: ResourcePermission | null, g) => {
 			if (!best || greaterAccessLevel(g.accessLevel, best.accessLevel)) {
-				// if better - return g
 				return g;
 			}
 			return best;
 		}, null);
-	return !!perm && greaterOrEqAccessLevel(perm.accessLevel, accessLevel);
+	return (
+		!!bestMatchingPerm && greaterOrEqAccessLevel(bestMatchingPerm.accessLevel, requiredAccess)
+	);
+}
+
+export function useAccessGuard(userAccess: AccessLevel, requiredAccess: AccessLevel) {
+	const session = useRequiredSession();
+	const user = session.data?.user;
+	if (!user) return false;
+	if (user.role === "ADMIN") return true;
+	return greaterOrEqAccessLevel(userAccess, requiredAccess);
+}
+
+export function useResourceGuard(
+	requiredAccess: AccessLevel,
+	permittedGroups?: ResourcePermission[]
+) {
+	const session = useRequiredSession();
+	return useMemo(() => {
+		const user = session.data?.user;
+		if (!user) return false;
+		return testResourceGuard(user, requiredAccess, permittedGroups);
+	}, [session.data?.user, requiredAccess, permittedGroups]);
+}
+
+export function useCanCreate(): boolean {
+	const session = useRequiredSession();
+	return useMemo(() => {
+		const user = session.data?.user;
+		if (!user) return false;
+		return user.role === "ADMIN" || (user.memberships?.length ?? 0) > 0;
+	}, [session.data?.user]);
 }
 
 export function ResourceGuard({
 	children,
-	accessLevel,
-	// resource, TODO fallback to load data from server?
-	allowedGroups, // if undefined - always allow
-	mode
+	requiredAccess,
+	permittedGroups, // if undefined - always allow
+	fallback
 }: {
-	accessLevel: AccessLevel;
+	requiredAccess: AccessLevel;
 	// resource: ResourceInput;
-	allowedGroups?: GroupAccess[];
+	permittedGroups?: ResourcePermission[];
 	children?: React.ReactNode;
-	mode: "hide" | "fallback";
+	fallback: "hidden" | "unauthorized";
 }) {
-	const error = `Um darauf zugreifen zu können, müssen Sie Mitglied einer Gruppe mit der Berechtigung '${accessLevel}' für die Ressource sein.`;
 	const session = useRequiredSession();
-	const isAdmin = session.data?.user.role === "ADMIN";
-	const userGroups = new Set(session.data?.user.memberships);
-	// TODO now I sacrifize expiresAt to make it simple; const now = new Date();
+	const hasAccess = useResourceGuard(requiredAccess, permittedGroups);
 
-	if (session.status === "loading" || allowedGroups === undefined || userGroups === undefined) {
-		return mode === "fallback" ? <LoadingBox /> : null;
+	if (session.status === "loading") {
+		return fallback === "unauthorized" ? <LoadingBox /> : null;
 	}
-
-	const hasAccess = isAdmin || testResourceGuard(accessLevel, allowedGroups, userGroups);
-	if (hasAccess) {
+	if (permittedGroups === undefined || hasAccess) {
 		// eslint-disable-next-line react/jsx-no-useless-fragment
 		return <>{children}</>;
 	}
 
-	return mode === "fallback" ? <Unauthorized>{error}</Unauthorized> : null;
-
-	// const { data: hasEditAccess, isLoading } =
-	// 		trpc.permission.hasResourceAccess.useQuery(
-	// 			{
-	// 				lessonId: initialLesson?.lessonId!,
-	// 				accessLevel: "EDIT"
-	// 			},
-	// 			{
-	// 				enabled: !isNew && !isAdmin && isAuthor,
-	// 			}
-	// 		);
+	if (fallback === "unauthorized") {
+		const error = `Um darauf zugreifen zu können, müssen Sie Mitglied einer Gruppe mit der Berechtigung '${requiredAccess}' für die Ressource sein.`;
+		return <Unauthorized>{error}</Unauthorized>;
+	}
+	return null; // hide
 }
 
 /**
@@ -233,27 +263,4 @@ export function useAuthentication() {
 	);
 
 	return { withAuth, isAuthenticated };
-}
-
-/**
- * Checks if a user has editing permission on a educational resource:
- * - Admins have full access
- * - Authors have access if they are in the list of permitted authors
- *
- * @example
- * Redirect Non privileged authors
- * ```typescript
- * if (!hasAuthorPermission({ user, permittedAuthors: lesson.authors.map(a => a.username) })) {
- *     redirectTo("/403");
- * }
- * ```
- */
-export function hasAuthorPermission({
-	user,
-	permittedAuthors
-}: {
-	user: { role: "ADMIN" | "USER"; isAuthor: boolean; name: string };
-	permittedAuthors: string[];
-}) {
-	return user.role === "ADMIN" || (user.isAuthor && permittedAuthors.includes(user.name));
 }

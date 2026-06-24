@@ -71,7 +71,11 @@ export const meRouter = t.router({
 									select: {
 										accessLevel: true,
 										course: { select: { courseId: true, title: true } },
-										lesson: { select: { lessonId: true, title: true } }
+										lesson: { select: { lessonId: true, title: true } },
+										specialization: {
+											select: { specializationId: true, title: true }
+										},
+										subject: { select: { subjectId: true, title: true } }
 									}
 								}
 							}

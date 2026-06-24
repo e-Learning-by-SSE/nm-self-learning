@@ -1,4 +1,5 @@
-import { ArrowsPointingInIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { ArrowsPointingInIcon, PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { GroupRole } from "@prisma/client";
 import { UserSearchEntry } from "@self-learning/admin";
 import { AppRouter, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
@@ -12,10 +13,16 @@ import {
 	showToast,
 	Table,
 	TableDataColumn,
-	TableHeaderColumn
+	TableHeaderColumn,
+	IconOnlyButton
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
-import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
+import {
+	CenteredSection,
+	MemberGuard,
+	useCanCreate,
+	useRequiredSession
+} from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
 import { keepPreviousData } from "@tanstack/react-query";
 import { TRPCClientError } from "@trpc/client";
@@ -68,6 +75,7 @@ export default function GroupsPage() {
 
 	const session = useRequiredSession();
 	const isAdmin = session.data?.user.role === "ADMIN";
+	const canCreateGroup = useCanCreate();
 
 	const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
 	const [groupSearchDialogOpen, setGroupSearchDialogOpen] = useState(false);
@@ -111,10 +119,12 @@ export default function GroupsPage() {
 				<h1 className="text-5xl">Meine Gruppen</h1>
 
 				<div className="flex gap-2">
-					<Link href="/teaching/groups/create" className="btn-primary flex">
-						<PlusIcon className="h-5" />
-						<span>Gruppe erstellen</span>
-					</Link>
+					{canCreateGroup && (
+						<Link href="/teaching/groups/create" className="btn-primary flex">
+							<PlusIcon className="h-5" />
+							<span>Gruppe erstellen</span>
+						</Link>
+					)}
 
 					<IconTextButton
 						text="Gruppen zusammenführen"
@@ -162,10 +172,12 @@ export default function GroupsPage() {
 			<div className="mb-16 flex items-center justify-between gap-4">
 				<h1 className="text-5xl">Alle Gruppen</h1>
 
-				<Link href="/teaching/groups/create" className="btn-primary flex w-fit">
-					<PlusIcon className="h-5" />
-					<span>Gruppe erstellen</span>
-				</Link>
+				{canCreateGroup && (
+					<Link href="/teaching/groups/create" className="btn-primary flex w-fit">
+						<PlusIcon className="h-5" />
+						<span>Gruppe erstellen</span>
+					</Link>
+				)}
 			</div>
 
 			<SearchField
@@ -223,6 +235,7 @@ function GroupsPaginatedView({
 					<>
 						<TableHeaderColumn>Name</TableHeaderColumn>
 						<TableHeaderColumn>Anzahl Mitglieder</TableHeaderColumn>
+						<TableHeaderColumn></TableHeaderColumn>
 					</>
 				}
 			>
@@ -240,6 +253,18 @@ function GroupsPaginatedView({
 						<TableDataColumn>
 							<span className="text-light">{group.members.length}</span>
 						</TableDataColumn>
+
+						<TableDataColumn>
+							<MemberGuard groupId={group.groupId} groupRole={GroupRole.MEMBER}>
+								<Link href={`/teaching/groups/${group.groupId}/edit`}>
+									<IconOnlyButton
+										icon={<PencilIcon className="h-5 w-5" />}
+										className="btn-stroked"
+										title={"Gruppe bearbeiten"}
+									/>
+								</Link>
+							</MemberGuard>
+						</TableDataColumn>
 					</tr>
 				))}
 			</Table>
@@ -250,4 +275,6 @@ function GroupsPaginatedView({
 	);
 }
 
-export const getServerSideProps = withTranslations(Array.from(new Set(["common", ...NS_UI_COMMON])));
+export const getServerSideProps = withTranslations(
+	Array.from(new Set(["common", ...NS_UI_COMMON]))
+);

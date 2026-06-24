@@ -2,7 +2,7 @@ import { withTranslations } from "@self-learning/api";
 import { database } from "@self-learning/database";
 import { Quiz } from "@self-learning/quiz";
 import { LessonEditor, LessonFormModel, onLessonEditorSubmit } from "@self-learning/teaching";
-import { LessonContent } from "@self-learning/types";
+import { LessonContent, resourcePermissionSelect, toResourcePermissionsForm } from "@self-learning/types";
 import { OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";
@@ -42,15 +42,7 @@ export const getServerSideProps = withTranslations(
 				lessonType: true,
 				selfRegulatedQuestion: true,
 				permissions: {
-					select: {
-						accessLevel: true,
-						group: {
-							select: {
-								id: true,
-								name: true
-							}
-						}
-					}
+					select: resourcePermissionSelect
 				},
 				ragEnabled: true
 			}
@@ -59,12 +51,8 @@ export const getServerSideProps = withTranslations(
 		if (!lesson) {
 			return { notFound: true };
 		}
-
-		const hasAccess = testResourceGuard(
-			AccessLevel.EDIT,
-			lesson.permissions.map(p => ({ accessLevel: p.accessLevel, groupId: p.group.id })),
-			new Set(user.memberships)
-		);
+		const permissions = toResourcePermissionsForm(lesson.permissions);
+		const hasAccess = testResourceGuard(user, AccessLevel.EDIT, permissions);
 		if (!hasAccess) {
 			return {
 				redirect: {
@@ -98,11 +86,7 @@ export const getServerSideProps = withTranslations(
 			quiz: lesson.quiz as Quiz,
 			lessonType: lesson.lessonType,
 			selfRegulatedQuestion: lesson.selfRegulatedQuestion,
-			permissions: lesson.permissions.map(p => ({
-				accessLevel: p.accessLevel,
-				groupId: p.group.id,
-				groupName: p.group.name
-			})),
+			permissions: permissions,
 			ragEnabled: lesson.ragEnabled
 		};
 
@@ -129,9 +113,9 @@ export default function EditLessonPage({ lesson }: EditLessonProps) {
 
 	return (
 		<ResourceGuard
-			mode="fallback"
-			accessLevel={AccessLevel.EDIT}
-			allowedGroups={lesson.permissions}
+			fallback="unauthorized"
+			requiredAccess={AccessLevel.EDIT}
+			permittedGroups={lesson.permissions}
 		>
 			<LessonEditor initialLesson={lesson} onSubmit={handleEditClose} isFullScreen={true} />
 		</ResourceGuard>

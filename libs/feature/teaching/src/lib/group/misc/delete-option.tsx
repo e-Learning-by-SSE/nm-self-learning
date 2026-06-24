@@ -6,6 +6,8 @@ import { AppRouter } from "libs/data-access/api/src/lib/trpc/app.router";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { AccessLevel } from "@prisma/client";
+import { normalizeFormResourceAccess } from "@self-learning/types";
 
 type SingleOwnedResources = inferProcedureOutput<
 	AppRouter["permission"]["getSingleOwnedResources"]
@@ -17,7 +19,7 @@ export function GroupDeleteOption({
 	group: { id: number; name: string; children: { id: number; name: string }[] };
 }) {
 	const router = useRouter();
-    const query = trpc.permission.getSingleOwnedResources.useQuery(
+	const query = trpc.permission.getSingleOwnedResources.useQuery(
 		{ groupId: group.id },
 		{
 			enabled: false
@@ -38,7 +40,7 @@ export function GroupDeleteOption({
 				title: "Fehler",
 				subtitle: `Die Gruppe ${group.name} konnte nicht gelöscht werden`
 			});
-		},
+		}
 	});
 	const [showConfirmation, setShowConfirmation] = useState(false);
 
@@ -108,36 +110,63 @@ function GroupDeleteDialog({
 					</p>
 
 					<div className="flex flex-col gap-2">
-						{data?.map((resource, idx) => (
-							<div
-								key={idx}
-								className="flex flex-col gap-1 p-2 border rounded bg-gray-50"
-							>
-								{resource.lesson && (
-									<div className="flex items-center gap-2">
-										<span className="font-semibold">Lerneinheit:</span>
-										<Link
-											href={`/teaching/lessons/edit/${resource.lesson.lessonId}`}
-											className="text-c-primary hover:underline"
-										>
-											{resource.lesson.title}
-										</Link>
-									</div>
-								)}
-
-								{resource.course && (
-									<div className="flex items-center gap-2">
-										<span className="font-semibold">Kurs:</span>
-										<Link
-											href={`/teaching/courses/edit/${resource.course.courseId}`}
-											className="text-c-primary hover:underline"
-										>
-											{resource.course.title}
-										</Link>
-									</div>
-								)}
-							</div>
-						))}
+						{data?.map((resource, idx) => {
+							const p = normalizeFormResourceAccess({
+								...resource,
+								accessLevel: AccessLevel.VIEW
+							});
+							return (
+								<div
+									key={idx}
+									className="flex flex-col gap-1 p-2 border rounded bg-gray-50"
+								>
+									{resource.lesson && (
+										<div className="flex items-center gap-2">
+											<span className="font-semibold">{p.type}</span>
+											<Link
+												href={`/teaching/lessons/edit/${resource.lesson.lessonId}`}
+												className="text-c-primary hover:underline"
+											>
+												{p.title}
+											</Link>
+										</div>
+									)}
+									{resource.course && (
+										<div className="flex items-center gap-2">
+											<span className="font-semibold">{p.type}</span>
+											<Link
+												href={`/teaching/courses/edit/${resource.course.courseId}`}
+												className="text-c-primary hover:underline"
+											>
+												{p.title}
+											</Link>
+										</div>
+									)}
+									{resource.specialization && (
+										<div className="flex items-center gap-2">
+											<span className="font-semibold">{p.type}</span>
+											<Link
+												href={`/teaching/subjects/${resource.specialization.subjectId}/${resource.specialization.specializationId}/edit`}
+												className="text-c-primary hover:underline"
+											>
+												{p.title}
+											</Link>
+										</div>
+									)}
+									{resource.subject && (
+										<div className="flex items-center gap-2">
+											<span className="font-semibold">{p.type}</span>
+											<Link
+												href={`/teaching/subjects/${resource.subject.subjectId}/edit`}
+												className="text-c-primary hover:underline"
+											>
+												{p.title}
+											</Link>
+										</div>
+									)}
+								</div>
+							);
+						})}
 					</div>
 
 					<DialogActions onClose={onClose} />

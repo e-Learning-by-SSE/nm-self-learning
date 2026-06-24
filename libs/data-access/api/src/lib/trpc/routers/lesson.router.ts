@@ -3,22 +3,22 @@ import { database, save_subtitle_for_lesson, logJobProgress } from "@self-learni
 import {
 	createLessonMeta,
 	EventTypeMap,
+	greaterAccessLevel,
 	lessonSchema,
 	LessonContentType,
-	subtitleSrcSchema
+	subtitleSrcSchema,
+	resourcePermissionSelect
 } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { differenceInHours } from "date-fns";
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
-import { greaterAccessLevel } from "../../permissions/permission.utils";
 import {
 	canCreate,
 	canDelete,
-	hasEffectiveAccess,
 	preparePermissionsForCreate,
-	preparePermissionsForUpdate
+	prepareResourceUpdate
 } from "../../permissions/permission.service";
 import {
 	getRagVersionHash,
@@ -63,6 +63,9 @@ export const lessonRouter = t.router({
 			where: { lessonId: input.lessonId },
 			include: {
 				authors: { select: { username: true } },
+				permissions: {
+					select: resourcePermissionSelect
+				},
 				requires: {
 					select: {
 						id: true,
@@ -306,12 +309,11 @@ export const lessonRouter = t.router({
 	edit: authProcedure
 		.input(z.object({ lessonId: z.string(), lesson: lessonSchema }))
 		.mutation(async ({ input, ctx }) => {
-			// For edit EDIT access required. But if permissions were updated - FULL access is required
-			const permissions = await preparePermissionsForUpdate(input, input.lesson.permissions);
-			const requiredAccess = permissions ? AccessLevel.FULL : AccessLevel.EDIT;
-			if (!(await hasEffectiveAccess(ctx.user, input, requiredAccess))) {
-				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
-			}
+			const permissions = await prepareResourceUpdate(
+				ctx.user,
+				input,
+				input.lesson.permissions
+			);
 			//
 			const ragCheck = input.lesson.ragEnabled ?? true;
 			const hash =

@@ -97,7 +97,7 @@ export function GroupEditor({
 	return (
 		<FormProvider {...form}>
 			<form
-				id="lessonform"
+				id="groupform"
 				onSubmit={form.handleSubmit(onSubmit, console.log)}
 				className="w-full bg-gray-100"
 			>
@@ -124,9 +124,16 @@ export function GroupEditor({
 							<Tab>Mitglieder</Tab>
 							<Tab>Berechtigungen</Tab>
 						</Tabs>
-						{selectedTab === 0 && <GroupInfoEditor fillInSingleGroup={isNew} />}
-						{selectedTab === 1 && <GroupMembersEditor />}
-						{selectedTab === 2 && <GroupPermissionsEditor />}
+						{/* I use hidden here to prevent useArrayDiff from losing diff data*/}
+						<div className={selectedTab !== 0 ? "hidden" : undefined}>
+							<GroupInfoEditor fillInSingleGroup={isNew} />
+						</div>
+						<div className={selectedTab !== 1 ? "hidden" : undefined}>
+							<GroupMembersEditor />
+						</div>
+						<div className={selectedTab !== 2 ? "hidden" : undefined}>
+							<GroupPermissionsEditor />
+						</div>
 						{/*{selectedTab === 3 && <GroupGrantsEditor />} */}
 					</div>
 				</div>

@@ -25,7 +25,7 @@ const minValidCourse: CourseFormModel = {
 		{
 			groupId: 1,
 			groupName: "Group 1",
-			accessLevel: AccessLevel.VIEW
+			accessLevel: AccessLevel.FULL
 		}
 	]
 };

@@ -17,6 +17,7 @@ import { LabeledField } from "@self-learning/ui/forms";
 import { useEffect, useMemo, useState } from "react";
 import { add } from "date-fns";
 import { formatDateDistanceToNow, isInThePast } from "@self-learning/util/common";
+import { ArrayDiffStatus, TableDiffColumn } from "../misc/use-array-diff";
 
 type DurationId = "inf" | "1m" | "3m" | "6m" | "1y" | "custom";
 export type MemberFormModel = Member & {
@@ -63,7 +64,7 @@ export function createDefaultMember(onlyAdmin?: boolean): MemberFormModel {
 		durationId: "inf",
 		user: {
 			id: "",
-			displayName: null,
+			displayName: "",
 			email: null,
 			author: null
 		}
@@ -378,10 +379,12 @@ export function GroupMemberTable({ children }: { children: React.ReactNode[] }) 
  */
 export function GroupMemberRowEditor({
 	member,
+	diffStatus,
 	onChange,
 	onDelete
 }: {
 	member: MemberFormModel;
+	diffStatus?: ArrayDiffStatus;
 	onChange: OnDialogCloseFn<MemberFormModel>;
 	onDelete?: OnDialogCloseFn<MemberFormModel>;
 }) {
@@ -402,9 +405,9 @@ export function GroupMemberRowEditor({
 
 	return (
 		<tr key={member.user.id}>
-			<TableDataColumn>
+			<TableDiffColumn status={diffStatus}>
 				<span className="text-light">{member.user.displayName}</span>
-			</TableDataColumn>
+			</TableDiffColumn>
 
 			<TableDataColumn>
 				<GenericCombobox
@@ -461,18 +464,20 @@ export function GroupMemberRowEditor({
  */
 export function GroupMemberRow({
 	member,
+	diffStatus,
 	onEdit,
 	onDelete
 }: {
 	member: MemberFormModel;
+	diffStatus?: ArrayDiffStatus;
 	onEdit?: OnDialogCloseFn<MemberFormModel>;
 	onDelete?: OnDialogCloseFn<MemberFormModel>;
 }) {
 	return (
-		<tr>
-			<TableDataColumn>
+		<tr key={member.user.id}>
+			<TableDiffColumn status={diffStatus}>
 				<span className="text-light">{member.user.displayName}</span>
-			</TableDataColumn>
+			</TableDiffColumn>
 
 			<TableDataColumn>
 				<span className="text-light">{member.role}</span>

@@ -1,20 +1,24 @@
 import { database } from "@self-learning/database";
-import { AccessLevel, GroupRole } from "@prisma/client";
+import { AccessLevel, Group, GroupRole, Prisma, User } from "@prisma/client";
+import { add } from "date-fns";
+import { UserFromSession } from "../trpc/context";
+import { TRPCError } from "@trpc/server";
 import {
 	MembershipInput,
 	PermissionInput,
 	ResourceAccess,
 	ResourceInput,
-	ResourceInputSchema
-} from "./permission.types";
-import {
+	ResourceInputSchema,
 	greaterAccessLevel,
 	greaterOrEqAccessLevel,
-	greaterOrEqGroupRole
-} from "./permission.utils";
-import { add } from "date-fns";
-import { UserFromSession } from "../trpc/context";
-import { TRPCError } from "@trpc/server";
+	greaterOrEqGroupRole,
+	ResourcePermission,
+	ResourcePermissionSchema
+} from "@self-learning/types";
+
+export function getActiveMembershipWhere(userId: string): Prisma.MemberWhereInput {
+	return { userId, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] };
+}
 
 /**
  * Readme
@@ -41,7 +45,7 @@ import { TRPCError } from "@trpc/server";
  * @param resource - defined resource following ResourceInputSchema
  * @returns `true` if can read specified resource
  */
-async function canRead(user: UserFromSession, resource: ResourceInput): Promise<boolean> {
+export async function canRead(user: UserFromSession, resource: ResourceInput): Promise<boolean> {
 	return true;
 	// return hasEffectiveResourceAccess(user, resource, AccessLevel.VIEW );
 }
@@ -104,7 +108,7 @@ export async function hasEffectiveAccess(
 	accessLevel: AccessLevel
 ) {
 	if (user.role === "ADMIN") return true;
-	return await hasResourceAccess({ userId: user.id, accessLevel, ...resource });
+	return await hasResourceAccess(user.id, { accessLevel, ...resource });
 }
 
 /**
@@ -131,7 +135,7 @@ export async function hasEffectiveResourceAccessBatch(
  */
 export async function hasEffectiveResourceAccess(user: UserFromSession, input: ResourceAccess) {
 	if (user.role === "ADMIN") return true;
-	return await hasResourceAccess({ userId: user.id, ...input });
+	return await hasResourceAccess(user.id, input);
 }
 
 /**
@@ -145,7 +149,7 @@ export async function hasEffectiveResourceAccess(user: UserFromSession, input: R
  */
 export async function getEffectiveAccess(user: UserFromSession, input: ResourceInput) {
 	if (user.role === "ADMIN") return { accessLevel: AccessLevel.FULL, groupId: null };
-	return await getResourceAccess({ userId: user.id, ...input });
+	return await getResourceAccess(user.id, input);
 }
 
 /**
@@ -182,27 +186,27 @@ export async function createResourceAccess(params: PermissionInput) {
  * Fetches the best access level a user has for a given resource.
  * Set either courseId or lessonId
  * @param userId - ID of the user to check access for
- * @param courseId - ID of the course resource
- * @param lessonId - ID of the lesson resource
+ * @param input - Resource input specifying the resource to check access for
  * @returns the best access level + groupId via which access is given, or null level if no access
  */
-export async function getResourceAccess({
-	userId,
-	courseId,
-	lessonId
-}: { userId: string } & ResourceInput) {
-	const date = new Date();
+export async function getResourceAccess(userId: string, input: ResourceInput) {
+	// validate input (as it is used in where clause)
+	const validation = ResourceInputSchema.safeParse(input);
+	if (!validation.success) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Invalid resource identifiers provided.",
+			cause: validation.error
+		});
+	}
+	input = validation.data;
 	// Find membership
 	const perms = await database.permission.findMany({
 		where: {
-			courseId,
-			lessonId,
+			...input,
 			group: {
 				members: {
-					some: {
-						userId: userId,
-						OR: [{ expiresAt: null }, { expiresAt: { gt: date } }]
-					}
+					some: getActiveMembershipWhere(userId)
 				}
 			}
 		},
@@ -228,51 +232,43 @@ export async function getResourceAccess({
  * @returns `true` if user has access to all resources at specified access levels
  */
 export async function hasResourceAccessBatch(userId: string, checks: ResourceAccess[]) {
-	const courseIds = checks
-		.filter(
-			(r): r is { courseId: string; accessLevel: AccessLevel } =>
-				"courseId" in r && !!r.courseId
-		)
-		.map(r => r.courseId);
-	const lessonIds = checks
-		.filter(
-			(r): r is { lessonId: string; accessLevel: AccessLevel } =>
-				"lessonId" in r && !!r.lessonId
-		)
-		.map(r => r.lessonId);
+	const courseIds = checks.flatMap(c => c.courseId ?? []);
+	const lessonIds = checks.flatMap(c => c.lessonId ?? []);
+	const specializationIds = checks.flatMap(c => c.specializationId ?? []);
+	const subjectIds = checks.flatMap(c => c.subjectId ?? []);
 	const perms = await database.permission.findMany({
 		where: {
 			OR: [
-				{
-					courseId: { in: courseIds },
-					lessonId: null
-				},
-				{
-					lessonId: { in: lessonIds },
-					courseId: null
-				}
+				{ courseId: { in: courseIds } },
+				{ lessonId: { in: lessonIds } },
+				{ specializationId: { in: specializationIds } },
+				{ subjectId: { in: subjectIds } }
 			],
 			group: {
 				members: {
-					some: {
-						userId: userId,
-						OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }]
-					}
+					some: getActiveMembershipWhere(userId)
 				}
 			}
-		},
-		select: { accessLevel: true, courseId: true, lessonId: true }
+		}
 	});
 
 	// Aggregate best access level per resource
 	// separate to avoid id conflicts
 	const lessons: Record<string, AccessLevel> = {};
 	const courses: Record<string, AccessLevel> = {};
+	const specializations: Record<string, AccessLevel> = {};
+	const subjects: Record<string, AccessLevel> = {};
 
 	// Compute best access per resource
 	for (const perm of perms) {
-		const target = perm.courseId ? courses : lessons;
-		const key = perm.courseId ?? perm.lessonId;
+		const target = perm.courseId
+			? courses
+			: perm.lessonId
+				? lessons
+				: perm.specializationId
+					? specializations
+					: subjects;
+		const key = perm.courseId ?? perm.lessonId ?? perm.specializationId ?? perm.subjectId;
 		if (!key) continue; // should not happen
 		if (!target[key] || greaterAccessLevel(perm.accessLevel, target[key])) {
 			target[key] = perm.accessLevel;
@@ -280,28 +276,117 @@ export async function hasResourceAccessBatch(userId: string, checks: ResourceAcc
 	}
 	// Run checks
 	return checks.every(check => {
-		const target = check.courseId ? courses : lessons;
-		const key = check.courseId ?? check.lessonId;
-		if (!key) return; // should not happen
+		let key, target;
+		if ("courseId" in check && check.courseId) {
+			target = courses;
+			key = check.courseId;
+		} else if ("lessonId" in check && check.lessonId) {
+			target = lessons;
+			key = check.lessonId;
+		} else if ("specializationId" in check && check.specializationId) {
+			target = specializations;
+			key = check.specializationId;
+		} else if ("subjectId" in check && check.subjectId) {
+			target = subjects;
+			key = check.subjectId;
+		}
+		if (!key || !target) return false; // should not happen
 		return !!target[key] && greaterOrEqAccessLevel(target[key], check.accessLevel);
 	});
 }
 
 /**
- * Pefrorms a single resource access check for a user.
+ * Performs a single resource access check for a user.
  * For bulk checks use `hasResourcesAccess`.
  * @param userId - ID of the user to check access for
  * @param accessLevel - Required access level
- * @param courseId - ID of the course resource
- * @param lessonId - ID of the lesson resource
  * @returns `true` if user has required access level or better for the resource
  */
-export async function hasResourceAccess(
-	params: { userId: string; accessLevel: AccessLevel } & ResourceInput
-) {
-	const { accessLevel: actualLevel } = await getResourceAccess(params);
+export async function hasResourceAccess(userId: string, input: ResourceAccess) {
+	const { accessLevel, ...resourceInput } = input;
+	const { accessLevel: actualLevel } = await getResourceAccess(userId, resourceInput);
 	if (!actualLevel) return false;
-	return greaterOrEqAccessLevel(actualLevel, params.accessLevel);
+	return greaterOrEqAccessLevel(actualLevel, accessLevel);
+}
+
+/**
+ * Fetches all users which have effective access to a resource.
+ * @param input - @see ResourceInput
+ * @returns all users which have effective access to a resource (along their best access group)
+ */
+export async function getEffectiveResourceAccesses(input: ResourceInput) {
+	// safe parse input (as its used in where clause)
+	const validation = ResourceInputSchema.safeParse(input);
+	if (!validation.success) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Invalid resource identifiers provided.",
+			cause: validation.error
+		});
+	}
+	input = validation.data;
+	const permissions = await database.permission.findMany({
+		where: input,
+		select: {
+			accessLevel: true,
+			id: true,
+			group: {
+				select: {
+					name: true,
+					slug: true,
+					id: true,
+					members: {
+						where: {
+							OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }]
+						},
+						select: {
+							user: {
+								select: {
+									displayName: true,
+									image: true,
+									name: true,
+									id: true
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	});
+	// Aggregate best access level per user
+	const users: Record<
+		string,
+		{
+			permissionId: string;
+			accessLevel: AccessLevel;
+			user: Partial<User>;
+			group: Partial<Group> & { members: Partial<User>[] };
+		}
+	> = {};
+
+	// Compute best access per resource
+	for (const perm of permissions) {
+		for (const member of perm.group.members) {
+			if (
+				!users[member.user.id] ||
+				greaterAccessLevel(perm.accessLevel, users[member.user.id].accessLevel)
+			) {
+				users[member.user.id] = {
+					accessLevel: perm.accessLevel,
+					permissionId: perm.id,
+					user: member.user,
+					group: {
+						id: perm.group.id,
+						name: perm.group.name,
+						slug: perm.group.slug,
+						members: perm.group.members.map(m => m.user)
+					}
+				};
+			}
+		}
+	}
+	return Object.values(users);
 }
 
 //---------------------------------------------------------------------------
@@ -337,7 +422,7 @@ export async function createGroupAccess(
  */
 export async function getGroupRole(groupId: number, userId: string) {
 	const access = await database.member.findFirst({
-		where: { userId, groupId, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
+		where: { ...getActiveMembershipWhere(userId), groupId },
 		select: { role: true }
 	});
 	return access?.role ?? null;
@@ -373,7 +458,9 @@ export async function getGroup(groupId: number) {
 				select: {
 					accessLevel: true,
 					course: { select: { courseId: true, title: true, slug: true } },
-					lesson: { select: { lessonId: true, title: true, slug: true } }
+					lesson: { select: { lessonId: true, title: true, slug: true } },
+					specialization: { select: { specializationId: true, title: true, slug: true } },
+					subject: { select: { subjectId: true, title: true, slug: true } }
 				}
 			},
 			members: {
@@ -401,30 +488,29 @@ export async function getGroup(groupId: number) {
  * @returns a list of resources FULL owned by the group
  */
 export async function getSingleOwnedResources(groupId: number) {
+	const permissions = {
+		permissions: {
+			none: { accessLevel: AccessLevel.FULL, NOT: { groupId } }
+		}
+	};
 	return await database.permission.findMany({
 		where: {
 			groupId,
 			accessLevel: AccessLevel.FULL,
 			OR: [
-				{
-					course: {
-						permissions: {
-							none: { accessLevel: AccessLevel.FULL, NOT: { groupId } }
-						}
-					}
-				},
-				{
-					lesson: {
-						permissions: {
-							none: { accessLevel: AccessLevel.FULL, NOT: { groupId } }
-						}
-					}
-				}
+				{ course: permissions },
+				{ lesson: permissions },
+				{ specialization: permissions },
+				{ subject: permissions }
 			]
 		},
 		select: {
-			course: { select: { title: true, courseId: true } },
-			lesson: { select: { title: true, lessonId: true } }
+			course: { select: { title: true, courseId: true, slug: true } },
+			lesson: { select: { title: true, lessonId: true, slug: true } },
+			specialization: {
+				select: { title: true, specializationId: true, slug: true, subjectId: true }
+			},
+			subject: { select: { title: true, subjectId: true, slug: true } }
 		}
 	});
 }
@@ -452,20 +538,14 @@ export async function testGroupCircularParent(groupId: number, parentId: number)
 	return false;
 }
 
-type PermissionOfResource = {
-	groupId: number;
-	accessLevel: AccessLevel;
-};
-
 /**
  * Every resource has permissions array. If that array was created through create trpc
  * this method helps to perform necessary checks to create permissions
- * @note Checks if permissions are to be changed:
  * @param newPermissions - list of created permissions
- * @throws TRPCError if permissions do not follow the schema
+ * @throws @see TRPCError if permissions do not follow the schema
  * @returns db create ready json
  */
-export async function preparePermissionsForCreate(newPermissions: PermissionOfResource[]) {
+export async function preparePermissionsForCreate(newPermissions: ResourcePermission[]) {
 	// make sure at least one permission is FULL
 	if (newPermissions.filter(p => p.accessLevel === AccessLevel.FULL).length === 0) {
 		throw new TRPCError({
@@ -483,6 +563,28 @@ export async function preparePermissionsForCreate(newPermissions: PermissionOfRe
 }
 
 /**
+ * If resource with permissions ( @see ResourceFormModel ) is edited, use this helper function
+ * to check necessary permissions and prepare them for update
+ * @note Usage inside transaction is possible
+ * @param user - user from session (ctx.user)
+ * @param resource - validated against @see ResourceEditModel
+ * @throws @see TRPCError if insufficient permissions, if permissions do not follow the schema
+ * @returns - db upsert ready json or undefined (if no changes are required)
+ */
+export async function prepareResourceUpdate(
+	user: UserFromSession,
+	resource: ResourceInput,
+	newPermissions: ResourcePermission[]
+) {
+	const permissions = await preparePermissionsForUpdate(resource, newPermissions);
+	const requiredAccess = permissions ? AccessLevel.FULL : AccessLevel.EDIT;
+	if (!(await hasEffectiveAccess(user, resource, requiredAccess))) {
+		throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+	}
+	return permissions;
+}
+
+/**
  * Every resource has permissions array. If that array was modified through update trpc
  * this method helps to perform necessary checks to update permissions
  * Usage inside transaction is possible
@@ -490,15 +592,15 @@ export async function preparePermissionsForCreate(newPermissions: PermissionOfRe
  * If changed: Requires FULL access
  * If not changed: Requires EDIT access
  * @param resource - @see ResourceInput - specifies resource permissions are attached to
- * @param newPermissions - list of edited permissions
- * @throws TRPCError if permissions or resource do not follow the schema
+ * @param newPermissions - list of edited permissions from the form
+ * @throws @see TRPCError if permissions or resource do not follow the schema
  * @returns db upsert ready json or undefined (if no changes are required)
  */
 export async function preparePermissionsForUpdate(
 	resource: ResourceInput,
-	newPermissions: PermissionOfResource[]
+	newPermissions: ResourcePermission[]
 ) {
-	// safe parse input (as its used in where clause)
+	// prevent malformed resources (as its used in where clause)
 	const validation = ResourceInputSchema.safeParse(resource);
 	if (!validation.success) {
 		throw new TRPCError({
@@ -508,13 +610,8 @@ export async function preparePermissionsForUpdate(
 		});
 	}
 	resource = validation.data;
-	// drop display fields
-	const perms = newPermissions.map(p => {
-		return {
-			accessLevel: p.accessLevel,
-			groupId: p.groupId
-		};
-	});
+	// drop display fields  (as its used in where clause)
+	const perms = newPermissions.map(p => ResourcePermissionSchema.parse(p));
 	// make sure at least one permission is FULL
 	if (perms.filter(p => p.accessLevel === AccessLevel.FULL).length === 0) {
 		throw new TRPCError({
@@ -524,11 +621,10 @@ export async function preparePermissionsForUpdate(
 	}
 	// fetch existing permissions to determine diffs
 	const existingPerms = await database.permission.findMany({
-		where: resource,
-		select: { groupId: true, lessonId: true, accessLevel: true }
+		where: resource
 	});
 	// compute if permissions are equal
-	const toKey = (p: PermissionOfResource) => `${p.groupId}|${p.accessLevel}`;
+	const toKey = (p: ResourcePermission) => `${p.groupId}|${p.accessLevel}`;
 	const keys = new Set(perms.map(toKey));
 	const equal =
 		existingPerms.length === perms.length && existingPerms.every(ep => keys.has(toKey(ep)));
@@ -537,8 +633,8 @@ export async function preparePermissionsForUpdate(
 		return undefined;
 	}
 	// TODO make this through common base
-	const getUpsertWhere = (p: PermissionOfResource) => {
-		if (resource.lessonId) {
+	const getUpsertWhere = (p: ResourcePermission) => {
+		if ("lessonId" in resource && resource.lessonId) {
 			return {
 				groupId_lessonId: {
 					groupId: p.groupId,
@@ -546,11 +642,27 @@ export async function preparePermissionsForUpdate(
 				}
 			};
 		}
-		if (resource.courseId) {
+		if ("courseId" in resource && resource.courseId) {
 			return {
 				groupId_courseId: {
 					groupId: p.groupId,
 					courseId: resource.courseId
+				}
+			};
+		}
+		if ("specializationId" in resource && resource.specializationId) {
+			return {
+				groupId_specializationId: {
+					groupId: p.groupId,
+					specializationId: resource.specializationId
+				}
+			};
+		}
+		if ("subjectId" in resource && resource.subjectId) {
+			return {
+				groupId_subjectId: {
+					groupId: p.groupId,
+					subjectId: resource.subjectId
 				}
 			};
 		}

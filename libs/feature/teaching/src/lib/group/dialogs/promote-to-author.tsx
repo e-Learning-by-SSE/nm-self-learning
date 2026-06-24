@@ -57,7 +57,7 @@ const ADD_AUTHOR_DEFAULTS: AddAuthorForm = {
 		expiresAt: null,
 		user: {
 			id: "",
-			displayName: null,
+			displayName: "",
 			email: null,
 			author: null
 		}

@@ -65,11 +65,11 @@ export function DropdownMenu({
 				</MenuButton>
 
 				<MinorScaleFadeIn>
-					{menuWidth && (
+					{menuWidth !== null && (
 						<MenuItems
 							anchor={dropdownPosition}
 							style={{
-								minWidth: menuWidth ?? "auto"
+								minWidth: menuWidth > 0 ? menuWidth : "auto"
 							}}
 							className={`absolute z-${z_index} bg-white shadow-lg max-h-64 overflow-auto text-sm rounded`}
 						>

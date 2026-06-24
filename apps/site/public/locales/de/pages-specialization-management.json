@@ -1,0 +1,10 @@
+{
+	"Courses_Section_Subtitle": "Kurse, die dieser $t(common:Focus) zugeordnet sind.",
+	"Link_Course": "Kurs verknüpfen",
+	"Course_Added_Toast_Title": "Kurs hinzugefügt",
+	"Course_Added_Toast_Subtitle": "Kurs \"{{title}}\" wurde erfolgreich hinzugefügt.",
+	"Remove_Course_Confirm": "Kurs \"{{title}}\" wirklich aus dieser $t(common:Focus) entfernen?",
+	"Course_Removed_Toast_Title": "Kurs entfernt",
+	"Course_Removed_Toast_Subtitle": "Kurs \"{{title}}\" wurde entfernt.",
+	"Remove_From_Specialization": "Aus $t(common:Focus) entfernen"
+}
