@@ -130,10 +130,10 @@ export function SubjectEditor({
 								</div>
 
 								{showGroupAccessEditor && (
-									<GroupAccessEditor
-										subtitle="Gruppen, die auf diesen Kurs zugreifen können"
-										doUseDefaultGroup={isNew}
-									/>
+								<GroupAccessEditor
+									subtitle="Gruppen, die auf dieses Fachgebiet zugreifen können"
+									doUseDefaultGroup={isNew}
+								/>
 								)}
 							</Form.SidebarSection>
 						</>
