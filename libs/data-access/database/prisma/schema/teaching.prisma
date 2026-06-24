@@ -63,6 +63,7 @@ model Subject {
     courses         Course[]
     specializations Specialization[]
     subjectAdmin    SubjectAdmin[]
+    permissions     Permission[]
 }
 
 model Specialization {
@@ -76,6 +77,7 @@ model Specialization {
     subject             Subject               @relation(fields: [subjectId], references: [subjectId], onDelete: Cascade)
     specializationAdmin SpecializationAdmin[]
     courses             Course[]              @relation("CourseToSpecialization")
+    permissions         Permission[]
 }
 
 model Course {
@@ -137,8 +139,8 @@ model Lesson {
     licenseId             Int?
     lessonType            LessonType                    @default(TRADITIONAL)
     selfRegulatedQuestion String?
-    requires              Skill[]           @relation("requiredSkills")
-    provides              Skill[]           @relation("providedSkills")
+    requires              Skill[]                       @relation("requiredSkills")
+    provides              Skill[]                       @relation("providedSkills")
     permissions           Permission[]
     lessonStart           LearningDiaryLearnedLessons[]
     ragEnabled            Boolean                       @default(true)

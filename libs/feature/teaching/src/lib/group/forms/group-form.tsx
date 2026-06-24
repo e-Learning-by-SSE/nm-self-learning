@@ -12,11 +12,12 @@ import {
 import { AccessLevel } from "@prisma/client";
 import { GenericCombobox } from "../editors/group-members";
 import { useRequiredSession } from "@self-learning/ui/layouts";
+import { ResourcePermissionsFormType } from "@self-learning/types";
 
 /**
  * GroupAccessEditor - Sidebar form section for selecting group access and auto-filling default group.
  *
- * Note: Must be used within a form with field `permissions: LessonFormModel["permissions"]` in context.
+ * Note: Must be used within a form with field `permissions: @see ResourcePermissionsFormSchema` in context.
  *
  * Usage: Used for permission forms that require one or more groups. It shows the current group access
  * list, allows adding new groups via SearchGroupDialog, and can auto-add the user's default group once.
@@ -37,7 +38,7 @@ export function GroupAccessEditor({
 	doUseDefaultGroup: boolean;
 }) {
 	const [isGroupDialogOpen, setGroupDialogOpen] = useState(false);
-	const { control } = useFormContext<{ permissions: LessonFormModel["permissions"] }>();
+	const { control } = useFormContext<{ permissions: ResourcePermissionsFormType }>();
 
 	// Admin can assign any group as main
 	const session = useRequiredSession();

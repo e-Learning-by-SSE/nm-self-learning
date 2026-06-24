@@ -4,9 +4,8 @@ import { paginate, Paginated, paginationSchema } from "@self-learning/util/commo
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { adminProcedure, authProcedure, t } from "../trpc";
-import { userSchema } from "@self-learning/types";
+import { GroupRoleEnum, userSchema } from "@self-learning/types";
 import { deleteUser, deleteUserAndDependentData } from "@self-learning/admin";
-import { GroupRoleEnum } from "../../permissions/permission.types";
 
 export const adminRouter = t.router({
 	findUsers: authProcedure

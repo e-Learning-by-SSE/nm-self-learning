@@ -1,31 +1,75 @@
-import { hasAuthorPermission } from "./guards";
+import { AccessLevel } from "@prisma/client";
+import { testResourceGuard } from "./guards";
+import type { UserFromSession } from "@self-learning/api";
 
-describe("hasAuthorPermission", () => {
-	it("should return true for admin users", () => {
-		const user = { role: "ADMIN" as const, isAuthor: false, name: "adminUser" };
-		const permittedAuthors: string[] = [];
-		const result = hasAuthorPermission({ user, permittedAuthors });
-		expect(result).toBe(true);
+function sessionUser(overrides: Partial<UserFromSession> = {}): UserFromSession {
+	return {
+		id: "u1",
+		name: "user1",
+		role: "USER",
+		isAuthor: false,
+		avatarUrl: null,
+		featureFlags: {
+			learningDiary: false,
+			learningStatistics: false,
+			experimental: false
+		},
+		memberships: [1],
+		...overrides
+	};
+}
+
+describe("testResourceGuard", () => {
+	it("allows ADMIN regardless of group permissions", () => {
+		expect(
+			testResourceGuard(sessionUser({ role: "ADMIN", memberships: [] }), AccessLevel.FULL, [])
+		).toBe(true);
 	});
 
-	it("should return true for authors in the permitted list", () => {
-		const user = { role: "USER" as const, isAuthor: true, name: "authorUser" };
-		const permittedAuthors = ["authorUser"];
-		const result = hasAuthorPermission({ user, permittedAuthors });
-		expect(result).toBe(true);
+	it("allows any user when permittedGroups is undefined", () => {
+		expect(testResourceGuard(sessionUser({ memberships: [] }), AccessLevel.EDIT, undefined)).toBe(
+			true
+		);
 	});
 
-	it("should return false for authors not in the permitted list", () => {
-		const user = { role: "USER" as const, isAuthor: true, name: "authorUser" };
-		const permittedAuthors = ["otherAuthor"];
-		const result = hasAuthorPermission({ user, permittedAuthors });
-		expect(result).toBe(false);
+	it("denies user without memberships", () => {
+		expect(
+			testResourceGuard(sessionUser({ memberships: [] }), AccessLevel.EDIT, [
+				{ groupId: 1, accessLevel: AccessLevel.FULL }
+			])
+		).toBe(false);
 	});
 
-	it("should return false for non-author users", () => {
-		const user = { role: "USER" as const, isAuthor: false, name: "regularUser" };
-		const permittedAuthors: string[] = [];
-		const result = hasAuthorPermission({ user, permittedAuthors });
-		expect(result).toBe(false);
+	it("denies user not in any permitted group", () => {
+		expect(
+			testResourceGuard(sessionUser({ memberships: [2] }), AccessLevel.EDIT, [
+				{ groupId: 1, accessLevel: AccessLevel.FULL }
+			])
+		).toBe(false);
 	});
+
+	it("uses best access level across matching groups", () => {
+		expect(
+			testResourceGuard(sessionUser({ memberships: [1, 2] }), AccessLevel.EDIT, [
+				{ groupId: 1, accessLevel: AccessLevel.VIEW },
+				{ groupId: 2, accessLevel: AccessLevel.EDIT }
+			])
+		).toBe(true);
+	});
+
+	it.each([
+		[AccessLevel.VIEW, AccessLevel.EDIT, true],
+		[AccessLevel.EDIT, AccessLevel.EDIT, true],
+		[AccessLevel.FULL, AccessLevel.EDIT, false],
+		[AccessLevel.FULL, AccessLevel.FULL, true]
+	])(
+		"required %s with held %s → %s",
+		(required, held, expected) => {
+			expect(
+				testResourceGuard(sessionUser({ memberships: [1] }), required, [
+					{ groupId: 1, accessLevel: held }
+				])
+			).toBe(expected);
+		}
+	);
 });

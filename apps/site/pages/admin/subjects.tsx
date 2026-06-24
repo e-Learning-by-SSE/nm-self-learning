@@ -5,6 +5,7 @@ import { AdminGuard, CenteredSection } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { withTranslations } from "@self-learning/api";
 import { useTranslation } from "next-i18next";
+import { ResourceGroupChips } from "@self-learning/teaching";
 
 export default function SubjectsPage() {
 	const { data: subjects } = trpc.subject.getAllForAdminPage.useQuery();
@@ -47,19 +48,8 @@ export default function SubjectsPage() {
 										<p className="text-sm text-c-text-muted">
 											{subject.subtitle}
 										</p>
+										<ResourceGroupChips permissions={subject.permissions} />
 									</div>
-									{/* TODO who created subject - do we care
-									<ul className="flex flex-wrap gap-4">
-										{subject.permissions.map(admin => (
-											<AuthorChip
-												key={admin.author.slug}
-												imgUrl={admin.author.imgUrl}
-												displayName={admin.author.displayName}
-												slug={admin.author.slug}
-											/>
-										))}
-									</ul>
-									*/}
 								</div>
 							</li>
 						))}

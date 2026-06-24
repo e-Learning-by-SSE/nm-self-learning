@@ -6,20 +6,24 @@ import {
 	mapCourseFormToInsert,
 	mapCourseFormToUpdate
 } from "@self-learning/teaching";
-import { CourseContent, CourseMeta, extractLessonIds, LessonMeta } from "@self-learning/types";
+import {
+	CourseContent,
+	CourseMeta,
+	extractLessonIds,
+	greaterAccessLevel,
+	LessonMeta
+} from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 import { getCourseResource } from "../../permissions/course.utils";
-import { greaterAccessLevel } from "../../permissions/permission.utils";
 import {
 	canCreate,
 	canDelete,
 	canEdit,
-	hasEffectiveAccess,
 	preparePermissionsForCreate,
-	preparePermissionsForUpdate
+	prepareResourceUpdate
 } from "../../permissions/permission.service";
 
 export const courseRouter = t.router({
@@ -299,13 +303,11 @@ export const courseRouter = t.router({
 	edit: authProcedure
 		.input(z.object({ courseId: z.string(), course: courseFormSchema }))
 		.mutation(async ({ input, ctx }) => {
-			// For edit EDIT access required. But if permissions were updated - FULL access is required
-			const permissions = await preparePermissionsForUpdate(input, input.course.permissions);
-			const requiredAccess = permissions ? AccessLevel.FULL : AccessLevel.EDIT;
-			if (!(await hasEffectiveAccess(ctx.user, input, requiredAccess))) {
-				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
-			}
-
+			const permissions = await prepareResourceUpdate(
+				ctx.user,
+				input,
+				input.course.permissions
+			);
 			const courseForDb = mapCourseFormToUpdate(input.course, input.courseId, permissions);
 
 			return await database.course.update({
@@ -322,7 +324,7 @@ export const courseRouter = t.router({
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 			}
 			return database.course.delete({
-				where: { slug: input.slug, authors: { some: { username: ctx.user.name } } }
+				where: { slug: input.slug }
 			});
 		}),
 	findLinkedEntities: authProcedure

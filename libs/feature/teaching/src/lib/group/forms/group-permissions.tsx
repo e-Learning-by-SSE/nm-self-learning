@@ -1,29 +1,37 @@
-import { IconTextButton, SectionHeader } from "@self-learning/ui/common";
-import { Controller, useFieldArray, useFormContext, useFormState } from "react-hook-form";
+import { DropdownMenu, IconTextButton, SectionHeader } from "@self-learning/ui/common";
+import { Controller, useFieldArray, useFormContext, useFormState, useWatch } from "react-hook-form";
 import { GroupFormModel } from "../group-editor";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { PlusIcon } from "@heroicons/react/24/solid";
-import { AccessLevel } from "@prisma/client";
 import { useState } from "react";
+import { SearchResourceDialog } from "@self-learning/admin";
 import {
-	CourseSearchEntry,
-	LessonSearchEntry,
-	SearchCourseDialog,
-	SearchLessonDialog
-} from "@self-learning/admin";
-import { GroupPermissionRowEditor, GroupPermissionTable } from "../editors/group-permission";
+	allResourceKinds,
+	getResourceAccessFormKey,
+	resourceLabels,
+	ResourceKind,
+	ResourceSearchEntry,
+	toResourceAccessForm
+} from "@self-learning/types";
+import {
+	GroupPermissionRow,
+	GroupPermissionRowEditor,
+	GroupPermissionTable
+} from "../editors/group-permission";
+import { useArrayDiff } from "../misc/use-array-diff";
+import { Button } from "@headlessui/react";
 
 /**
  * GroupPermissionsEditor - Section for editing a group's resource permissions.
  *
  * Note: Must be used within a form with field `permissions: GroupFormModel["permissions"]` in context.
  *
- * Usage: Used in group edit/create flows to add courses or lessons to a group's permissions list.
- * It opens course and lesson search dialogs, appends selected resources, and renders editable rows
+ * Usage: Used in group edit/create flows to add resources to a group's permissions list.
+ * It opens a resource search dialog, appends selected resources, and renders editable rows
  * for each permission.
  *
- * UI: Header with add buttons, SearchCourseDialog/SearchLessonDialog overlays, and a permission table.
- * Related: GroupPermissionTable, GroupPermissionRowEditor, SearchCourseDialog, SearchLessonDialog
+ * UI: Header with add button, SearchResourceDialog overlay, and a permission table.
+ * Related: GroupPermissionTable, GroupPermissionRowEditor, SearchResourceDialog
  */
 export function GroupPermissionsEditor() {
 	const { control } = useFormContext<{ permissions: GroupFormModel["permissions"] }>();
@@ -31,35 +39,41 @@ export function GroupPermissionsEditor() {
 		name: "permissions",
 		control
 	});
-	const { errors } = useFormState({ control });
+	const { errors, submitCount } = useFormState({ control });
 	const error = errors.permissions?.message;
-	const onSelectCourse = (course?: CourseSearchEntry) => {
-		setSearchCourseActive(false);
-		if (!course) return;
-		// check if already appended
-		const duplicate = editor.fields.find(u => u.course?.courseId === course.courseId);
+	const onSelectResource = (resource?: ResourceSearchEntry) => {
+		setSearchResourceActive(false);
+		if (!resource) return;
+
+		const permission = toResourceAccessForm(resource);
+		const duplicate = editor.fields.find(
+			field => getResourceAccessFormKey(field) === getResourceAccessFormKey(permission)
+		);
 		if (duplicate) return;
-		//
-		editor.append({
-			course,
-			accessLevel: AccessLevel.FULL
-		});
-	};
-	const onSelectLesson = (lesson?: LessonSearchEntry) => {
-		setSearchLessonActive(false);
-		if (!lesson) return;
-		// check if already appended
-		const duplicate = editor.fields.find(u => u.lesson?.lessonId === lesson.lessonId);
-		if (duplicate) return;
-		//
-		editor.append({
-			lesson,
-			accessLevel: AccessLevel.FULL
-		});
+
+		editor.append(permission);
 	};
 
-	const [searchCourseActive, setSearchCourseActive] = useState(false);
-	const [searchLessonActive, setSearchLessonActive] = useState(false);
+	const [searchResourceActive, setSearchResourceActive] = useState(false);
+	const [searchResourceKinds, setSearchResourceKinds] = useState<ResourceKind[]>();
+
+	function openSearchResourceDialog(kinds?: ResourceKind[]) {
+		setSearchResourceKinds(kinds);
+		setSearchResourceActive(true);
+	}
+
+	const permissions = useWatch({
+		control,
+		name: "permissions"
+	});
+	const diff = useArrayDiff({
+		current: permissions,
+		diffKey: submitCount,
+		getKey: getResourceAccessFormKey,
+		isEqual: (left, right) =>
+			getResourceAccessFormKey(left) === getResourceAccessFormKey(right) &&
+			left.accessLevel === right.accessLevel
+	});
 
 	return (
 		<CenteredSection>
@@ -67,25 +81,41 @@ export function GroupPermissionsEditor() {
 				title="Ressourcen"
 				subtitle="Alle Ressourcen dieser Gruppe."
 				button={
-					<>
-						<IconTextButton
-							text="Kurs hinzufügen"
-							icon={<PlusIcon className="icon w-5" />}
-							onClick={() => setSearchCourseActive(true)}
-						/>
-						<IconTextButton
-							text="Lerneinheit hinzufügen"
-							icon={<PlusIcon className="icon w-5" />}
-							onClick={() => setSearchLessonActive(true)}
-						/>
-					</>
+					<DropdownMenu
+						title="Ressource hinzufügen"
+						button={
+							<IconTextButton
+								text="Ressource hinzufügen"
+								icon={<PlusIcon className="icon w-5" />}
+							/>
+						}
+					>
+						<Button
+							type="button"
+							className="w-full px-3 py-2 text-left"
+							onClick={() => openSearchResourceDialog()}
+						>
+							Alle Ressourcen
+						</Button>
+						{allResourceKinds.map(kind => (
+							<Button
+								key={kind}
+								type="button"
+								className="w-full px-3 py-2 text-left"
+								onClick={() => openSearchResourceDialog([kind])}
+							>
+								{resourceLabels[kind]}
+							</Button>
+						))}
+					</DropdownMenu>
 				}
 			/>
-			{searchCourseActive && (
-				<SearchCourseDialog open={searchCourseActive} onClose={onSelectCourse} />
-			)}
-			{searchLessonActive && (
-				<SearchLessonDialog open={searchLessonActive} onClose={onSelectLesson} />
+			{searchResourceActive && (
+				<SearchResourceDialog
+					open={searchResourceActive}
+					kinds={searchResourceKinds}
+					onClose={onSelectResource}
+				/>
 			)}
 
 			<GroupPermissionTable>
@@ -98,6 +128,7 @@ export function GroupPermissionsEditor() {
 							<>
 								<GroupPermissionRowEditor
 									permission={field.value}
+									diffStatus={diff.getStatus(field.value)}
 									onChange={field.onChange}
 									onDelete={() => editor.remove(index)}
 								/>
@@ -112,6 +143,13 @@ export function GroupPermissionsEditor() {
 								)}
 							</>
 						)}
+					/>
+				))}
+				{diff.deleted.map(item => (
+					<GroupPermissionRow
+						key={item.key}
+						permission={item.value}
+						diffStatus="deleted"
 					/>
 				))}
 			</GroupPermissionTable>

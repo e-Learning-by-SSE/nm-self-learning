@@ -1,6 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { trpc } from "@self-learning/api-client";
-import { Specialization, specializationSchema } from "@self-learning/types";
+import {
+	resourcePermissionSelect,
+	Specialization,
+	specializationSchema,
+	toResourcePermissionsForm
+} from "@self-learning/types";
 import { ImageOrPlaceholder, SectionHeader, showToast } from "@self-learning/ui/common";
 import {
 	FieldHint,
@@ -10,27 +15,34 @@ import {
 	Upload,
 	useSlugify
 } from "@self-learning/ui/forms";
-import { SidebarEditorLayout, useRequiredSession } from "@self-learning/ui/layouts";
+import {
+	SidebarEditorLayout,
+	testResourceGuard,
+	useResourceGuard
+} from "@self-learning/ui/layouts";
 import { TRPCClientError } from "@trpc/client";
 import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { useRouter } from "next/router";
 import { FormProvider, useForm } from "react-hook-form";
 import { withTranslations } from "@self-learning/api";
+import { GroupAccessEditor } from "@self-learning/teaching";
+import { withAuth } from "@self-learning/util/auth";
+import { database } from "@self-learning/database";
+import { AccessLevel } from "@prisma/client";
 import { useWatch } from "react-hook-form";
 
-export default function SpecializationPage() {
-	useRequiredSession();
+type CreateSpecializationProps = {
+	subjectId: string;
+};
+
+export default function SpecializationPage({ subjectId }: CreateSpecializationProps) {
 	const router = useRouter();
-
-	const { subjectId } = router.query;
-
 	const { mutateAsync: createSpecialization } = trpc.specialization.create.useMutation();
 
 	const onSubmit: Parameters<typeof SpecializationEditor>[0]["onSubmit"] = async specFromForm => {
 		try {
-			console.log("Creating specialization", specFromForm);
 			const spec = await createSpecialization({
-				subjectId: subjectId as string,
+				subjectId,
 				data: specFromForm
 			});
 
@@ -49,7 +61,9 @@ export default function SpecializationPage() {
 		<SpecializationEditor
 			onSubmit={onSubmit}
 			initialSpecialization={{
+				permissions: [],
 				specializationId: "",
+				subjectId,
 				title: "",
 				slug: "",
 				subtitle: "",
@@ -72,6 +86,10 @@ export function SpecializationEditor({
 		defaultValues: initialSpecialization
 	});
 
+	const isNew = initialSpecialization.specializationId === "";
+	const hasFull = useResourceGuard(AccessLevel.FULL, initialSpecialization.permissions);
+	const showGroupAccessEditor = isNew || hasFull;
+
 	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
 	const cardImgUrl = useWatch({ name: "cardImgUrl", control: form.control });
 	const imgUrlBanner = useWatch({ name: "imgUrlBanner", control: form.control });
@@ -89,25 +107,18 @@ export function SpecializationEditor({
 						<>
 							<div>
 								<span className="font-semibold text-c-primary">
-									Spezialisierung{" "}
-									{initialSpecialization.specializationId === ""
-										? "erstellen"
-										: "bearbeiten"}
+									Spezialisierung {isNew ? "erstellen" : "bearbeiten"}
 								</span>
 
 								<h1 className="text-2xl">
-									{initialSpecialization.specializationId === ""
-										? "Neue Spezialisierung"
-										: initialSpecialization.title}
+									{isNew ? "Neue Spezialisierung" : initialSpecialization.title}
 								</h1>
 							</div>
 
 							<OpenAsJsonButton form={form} validationSchema={specializationSchema} />
 
 							<button className="btn-primary w-full" type="submit">
-								{initialSpecialization.specializationId === ""
-									? "Erstellen"
-									: "Speichern"}
+								{isNew ? "Erstellen" : "Speichern"}
 							</button>
 
 							<Form.SidebarSection>
@@ -164,6 +175,12 @@ export function SpecializationEditor({
 										</FieldHint>
 									</LabeledField>
 								</div>
+								{showGroupAccessEditor && (
+									<GroupAccessEditor
+										subtitle="Gruppen, die auf diese Spezialisierung zugreifen können"
+										doUseDefaultGroup={isNew}
+									/>
+								)}
 							</Form.SidebarSection>
 						</>
 					}
@@ -209,4 +226,33 @@ export function SpecializationEditor({
 	);
 }
 
-export const getServerSideProps = withTranslations(["common"]);
+export const getServerSideProps = withTranslations(
+	["common"],
+	withAuth<CreateSpecializationProps>(async (ctx, user) => {
+		const subjectId = ctx.params?.subjectId;
+
+		if (typeof subjectId !== "string") {
+			return { notFound: true };
+		}
+
+		const subject = await database.subject.findUnique({
+			where: { subjectId },
+			select: {
+				permissions: {
+					select: resourcePermissionSelect
+				}
+			}
+		});
+
+		if (!subject) {
+			return { notFound: true };
+		}
+
+		const permissions = toResourcePermissionsForm(subject.permissions);
+		if (!testResourceGuard(user, AccessLevel.EDIT, permissions)) {
+			return { redirect: { destination: "/403", permanent: false } };
+		}
+
+		return { props: { subjectId } };
+	})
+);
