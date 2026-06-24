@@ -174,7 +174,7 @@ function AuthorResourceRow({
 	isAdmin: boolean;
 	onExport?: () => void;
 }) {
-	const { t } = useTranslation("pages-dashboard");
+	const { t } = useTranslation("feature-teaching");
 	const accessLevel = resource.accessLevel ?? AccessLevel.VIEW;
 	const links = getAuthorResourceLinks(resource);
 	const canEdit = isAdmin || greaterOrEqAccessLevel(accessLevel, AccessLevel.EDIT);

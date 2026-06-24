@@ -2,11 +2,7 @@
 import { TrashIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { Specialization, Subject } from "@self-learning/types";
-import {
-	Dialog,
-	DialogActions,
-	IconOnlyButton
-} from "@self-learning/ui/common";
+import { Dialog, DialogActions, IconOnlyButton } from "@self-learning/ui/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -66,7 +62,7 @@ function CourseDeletionDialog({
 	onSubmit: () => void;
 	linkedEntities?: CourseLinkedEntities | null;
 }) {
-	const { t } = useTranslation("pages-dashboard");
+	const { t } = useTranslation("feature-teaching");
 
 	if (linkedEntities && (linkedEntities.subject || linkedEntities.specializations.length > 0)) {
 		return (

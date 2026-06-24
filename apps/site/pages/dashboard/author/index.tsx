@@ -6,6 +6,7 @@ import {
 	AuthorResourceSection,
 	GroupDeleteOption,
 	GroupLeaveOption,
+	I18N_NAMESPACE as NS_FEATURE_TEACHING,
 	SkillRepositoryOverview
 } from "@self-learning/teaching";
 import {
@@ -59,7 +60,9 @@ export function getAuthor(username: string) {
 }
 
 export const getServerSideProps = withTranslations(
-	Array.from(new Set(["common", "pages-dashboard", ...NS_UI_COMMON])),
+	Array.from(
+		new Set(["common", "pages-dashboard", ...NS_UI_COMMON, ...NS_FEATURE_TEACHING])
+	),
 	withAuth<Props>(async (context, user) => {
 		if (user.isAuthor) {
 			return { props: { author: await getAuthor(user.name) } };
