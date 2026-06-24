@@ -31,7 +31,7 @@ export function LicenseChip({
 	const iconBox = imgUrl ? (
 		<ImageOrPlaceholder
 			src={imgUrl ?? defaultLogoUrl}
-			className="h-8 w-8 rounded object-cover"
+			className="h-8 w-32 rounded object-contain"
 		/>
 	) : (
 		<div className="flex h-8 w-8 items-center justify-center rounded bg-c-surface-2">

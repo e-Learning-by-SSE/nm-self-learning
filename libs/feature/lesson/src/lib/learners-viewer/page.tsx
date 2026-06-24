@@ -45,7 +45,6 @@ import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
 import { useEventLog } from "@self-learning/util/eventlog";
 import { useAttemptSubmission } from "libs/feature/quiz/src/lib/quiz-submit-attempt";
 import { Session } from "next-auth";
-import { useSession } from "next-auth/react";
 import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -126,7 +125,6 @@ function ContentDisplayItem({
 	course: LessonLearnersViewProps["course"];
 	addMediaDisplay: (idx: number) => void;
 }) {
-
 	if (!c || index === undefined) {
 		return <ContentInfo text="Diese Lerneinheit hat keinen Inhalt." />;
 	}
@@ -149,7 +147,9 @@ function ContentDisplayItem({
 						courseId={course?.courseId}
 						subtitle={c.value.subtitle}
 					/>
-					{c.value.subtitle?.src && <ShowTranskript webvttTranscript={c.value.subtitle.src} />}
+					{c.value.subtitle?.src && (
+						<ShowTranskript webvttTranscript={c.value.subtitle.src} />
+					)}
 				</div>
 			);
 		case "pdf":
@@ -434,7 +434,7 @@ function LessonNavigation({
 			<button
 				onClick={() => previous && navigateToLesson(previous)}
 				disabled={!previous}
-				className="rounded-lg bg-white flex items-center  gap-4 border border-c-border px-4 py-2 disabled:text-gray-300 rounded-lg bg-white hidden"
+				className="rounded-lg bg-white items-center  gap-4 border border-c-border px-4 py-2 disabled:text-gray-300 hidden"
 				title="Vorherige Lerneinheit"
 				data-testid="previousLessonButton"
 			>
@@ -544,9 +544,9 @@ function LessonHeader({
 function AuthorEditButton({ lesson }: { lesson: LessonLearnersViewProps["lesson"] }) {
 	return (
 		<ResourceGuard
-			mode="hide"
-			accessLevel={AccessLevel.EDIT}
-			allowedGroups={lesson.permissions}
+			fallback="hidden"
+			requiredAccess={AccessLevel.EDIT}
+			permittedGroups={lesson.permissions}
 		>
 			<Link
 				href={`/teaching/lessons/edit/${lesson.lessonId}`}
@@ -638,22 +638,14 @@ function LessonControls({
 }
 
 function StandaloneLessonControls({ lesson }: { lesson: LessonLearnersViewProps["lesson"] }) {
-    const session = useSession();
-    const hasQuiz = (lesson.meta as LessonMeta).hasQuiz;
-    // TODO - separate issue -  find out am I an author? lesson provides no uid
+	const hasQuiz = (lesson.meta as LessonMeta).hasQuiz;
 
-    if (session.data?.user.role === "ADMIN" || session.data?.user.isAuthor)
-        return (
-            <div className="flex w-full flex-wrap gap-2 xl:w-fit flex-row">
-                <AuthorEditButton lesson={lesson} />
-                {hasQuiz && <LinkToQuiz url={`lessons/${lesson.slug}`} />}
-            </div>
-        );
-    else return (
-        <div className="flex w-full flex-wrap gap-2 xl:w-fit flex-row">
-            {hasQuiz && <LinkToQuiz url={`lessons/${lesson.slug}`} />}
-        </div>
-    );
+	return (
+		<div className="flex w-full flex-wrap gap-2 xl:w-fit flex-row">
+			<AuthorEditButton lesson={lesson} />
+			{hasQuiz && <LinkToQuiz url={`lessons/${lesson.slug}`} />}
+		</div>
+	);
 }
 
 function LinkToQuiz({ url }: { url: string }) {
@@ -785,7 +777,7 @@ function SelfRegulatedPreQuestion({
 				/>
 			</div>
 			<div className="mt-2 flex justify-end gap-2">
-				{userAnswer.length == 0 ? (
+				{userAnswer.length === 0 ? (
 					<button type="button" className="btn-secondary" onClick={handleSkipQuestion}>
 						Schritt Überspringen
 					</button>

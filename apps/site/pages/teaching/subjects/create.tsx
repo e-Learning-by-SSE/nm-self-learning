@@ -43,6 +43,7 @@ export default function SubjectCreatePage() {
 			<div className="flex flex-col">
 				<SubjectEditor
 					initialSubject={{
+						permissions: [],
 						subjectId: "",
 						title: "",
 						slug: "",

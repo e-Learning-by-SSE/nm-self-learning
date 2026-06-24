@@ -110,20 +110,26 @@ model Permission {
     id      String @id @default(uuid())
     groupId Int
 
-    courseId String?
-    lessonId String?
+    courseId         String?
+    lessonId         String?
+    specializationId String?
+    subjectId        String?
 
     accessLevel AccessLevel
 
     isPublic Boolean @default(false) // this permission applies to all groups
 
-    group  Group   @relation(fields: [groupId], references: [id], onDelete: Cascade)
-    course Course? @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
-    lesson Lesson? @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
+    group          Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+    course         Course?         @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
+    lesson         Lesson?         @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
+    specialization Specialization? @relation(fields: [specializationId], references: [specializationId], onDelete: Cascade)
+    subject        Subject?        @relation(fields: [subjectId], references: [subjectId], onDelete: Cascade)
 
     // Prohibit multiple permissions per one content
     @@unique([groupId, courseId])
     @@unique([groupId, lessonId])
+    @@unique([groupId, specializationId])
+    @@unique([groupId, subjectId])
 }
 
 model Features {

@@ -15,7 +15,12 @@ import { TRPCClientError } from "@trpc/client";
 import Link from "next/link";
 import { Fragment, useMemo, useState } from "react";
 import { withTranslations } from "@self-learning/api";
-import { AddAuthorDialog, PromoteRequest } from "@self-learning/teaching";
+import {
+	AddAuthorDialog,
+	GroupChipList,
+	GroupMembershipChip,
+	PromoteRequest
+} from "@self-learning/teaching";
 
 export default function AuthorsPage() {
 	useRequiredSession();
@@ -126,36 +131,16 @@ export default function AuthorsPage() {
 											</div>
 										</TableDataColumn>
 										<TableDataColumn>
-											<span className="flex flex-wrap gap-2 text-xs">
-												{user.memberships.map(
-													({ role, expiresAt, group }) => {
-														const isExpired =
-															expiresAt &&
-															new Date(expiresAt) < new Date();
-
-														let classes =
-															"rounded-full px-2 py-[2px] text-sm font-medium border";
-
-														if (isExpired) {
-															classes +=
-																" bg-gray-200 text-gray-500 border-gray-300 line-through";
-														} else {
-															classes +=
-																" bg-green-100 text-green-700 border-green-300";
-														}
-
-														return (
-															<Link
-																key={group.name}
-																className={classes}
-																href={`/teaching/groups/${group.id}`}
-															>
-																{group.name} als {role}
-															</Link>
-														);
-													}
-												)}
-											</span>
+											<GroupChipList>
+												{user.memberships.map(({ role, expiresAt, group }) => (
+													<GroupMembershipChip
+														key={group.id}
+														group={group}
+														role={role}
+														expiresAt={expiresAt}
+													/>
+												))}
+											</GroupChipList>
 										</TableDataColumn>
 										<TableDataColumn>
 											<div className="flex flex-wrap justify-end gap-4">
