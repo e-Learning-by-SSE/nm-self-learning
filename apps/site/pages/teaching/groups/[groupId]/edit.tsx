@@ -1,6 +1,10 @@
 import { getGroup, hasEffectiveGroupRole, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
-import { GroupEditor, GroupFormModel } from "@self-learning/teaching";
+import {
+	GroupEditor,
+	GroupFormModel,
+	I18N_NAMESPACE as NS_TEACHING
+} from "@self-learning/teaching";
 import { OnDialogCloseFn, showToast } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
@@ -14,7 +18,7 @@ type EditGroupProps = {
 };
 
 export const getServerSideProps = withTranslations(
-	["common"],
+	Array.from(new Set(["common", ...NS_TEACHING])),
 	withAuth<EditGroupProps>(async (ctx, user) => {
 		if (!ctx.params?.groupId) {
 			return {

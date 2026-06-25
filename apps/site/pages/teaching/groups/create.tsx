@@ -1,6 +1,11 @@
 import { canCreate } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
-import { GroupEditor, GroupFormModel, onGroupCreatorSubmit } from "@self-learning/teaching";
+import {
+	GroupEditor,
+	GroupFormModel,
+	onGroupCreatorSubmit,
+	I18N_NAMESPACE as NS_TEACHING
+} from "@self-learning/teaching";
 import { LoadingBox } from "@self-learning/ui/common";
 import { Unauthorized, useCanCreate, useRequiredSession } from "@self-learning/ui/layouts";
 import { withAuth } from "@self-learning/util/auth";
@@ -39,7 +44,7 @@ export default function CreateGroupPage() {
 }
 
 export const getServerSideProps = withTranslations(
-	["common"],
+	Array.from(new Set(["common", ...NS_TEACHING])),
 	withAuth(async (_ctx, user) => {
 		if (!(await canCreate(user))) {
 			return { redirect: { destination: "/403", permanent: false } };
