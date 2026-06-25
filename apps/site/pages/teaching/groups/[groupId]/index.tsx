@@ -15,7 +15,8 @@ import {
 	GroupMemberTable,
 	GroupDeleteOption,
 	GroupPermissionRelationsDialog,
-	PermissionFormModel
+	PermissionFormModel,
+	I18N_NAMESPACE as NS_TEACHING
 } from "@self-learning/teaching";
 
 export default function GroupPage() {
@@ -150,4 +151,4 @@ export default function GroupPage() {
 	);
 }
 
-export const getServerSideProps = withTranslations(["common"]);
+export const getServerSideProps = withTranslations(Array.from(new Set(["common", ...NS_TEACHING])));

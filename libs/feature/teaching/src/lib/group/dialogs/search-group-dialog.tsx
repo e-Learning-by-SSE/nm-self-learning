@@ -11,6 +11,7 @@ import {
 	Paginator
 } from "@self-learning/ui/common";
 import { keepPreviousData } from "@tanstack/react-query";
+import { useTranslation } from "next-i18next";
 import { Fragment, useState } from "react";
 
 export type GroupSearchEntry = {
@@ -51,8 +52,10 @@ export function SearchGroupDialog({
 	const [addMemberDialog, setMemberDialog] = useState(false);
 	const [selectedUsers, setSelectedUsers] = useState<UserSearchEntry[]>([]);
 	const members = selectedUsers.map(u => u.id);
+	const { t } = useTranslation("feature-teaching");
 
 	const [checkGlobalSearch, setGlobalSearch] = useState(isGlobalSearch);
+	const addMemberToSearchLabel = t("Add_Member_To_Search");
 
 	function onAddMember(user?: UserSearchEntry): void {
 		setMemberDialog(false);
@@ -86,7 +89,7 @@ export function SearchGroupDialog({
 				<DropdownDialog.SearchInput
 					filter={filterName}
 					setFilter={setFilterName}
-					placeholder="Suche nach Gruppe"
+					placeholder={t("Search_Group_Placeholder")}
 				/>
 				<div className="mt-4 flex items-center flex-wrap gap-2 px-4">
 					{selectedUsers.map(user => (
@@ -102,9 +105,9 @@ export function SearchGroupDialog({
 					))}
 					<IconTextButton
 						icon={<PlusIcon className="icon h-5" />}
-						text={"Add member to search"}
+						text={addMemberToSearchLabel}
 						className="btn-primary"
-						title="Add member to search1"
+						title={addMemberToSearchLabel}
 						onClick={() => setMemberDialog(true)}
 					/>
 					{addMemberDialog && (
@@ -119,7 +122,7 @@ export function SearchGroupDialog({
 							onChange={e => setGlobalSearch(!e.target.checked)}
 							className="checkbox"
 						/>
-						<label className="text-light">Nur meine Gruppen anzeigen</label>
+						<label className="text-light">{t("Show_Only_My_Groups")}</label>
 					</div>
 				)}
 
@@ -205,6 +208,8 @@ export function MemberFilter({
 	onChange: (users: UserSearchEntry[]) => void;
 }) {
 	const [addMemberDialog, setMemberDialog] = useState(false);
+	const { t } = useTranslation("feature-teaching");
+	const addMemberToSearchLabel = t("Add_Member_To_Search");
 
 	function onRemoveMember(id: string) {
 		onChange(value.filter(u => u.id !== id));
@@ -230,9 +235,9 @@ export function MemberFilter({
 
 			<IconTextButton
 				icon={<PlusIcon className="icon h-5" />}
-				text="Add member to search"
+				text={addMemberToSearchLabel}
 				className="btn-primary"
-				title="Add member to search"
+				title={addMemberToSearchLabel}
 				onClick={() => setMemberDialog(true)}
 			/>
 

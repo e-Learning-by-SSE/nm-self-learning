@@ -3,7 +3,11 @@ import { GroupRole } from "@prisma/client";
 import { UserSearchEntry } from "@self-learning/admin";
 import { AppRouter, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
-import { MemberFilter, MergeGroupsDialog } from "@self-learning/teaching";
+import {
+	MemberFilter,
+	MergeGroupsDialog,
+	I18N_NAMESPACE as NS_TEACHING
+} from "@self-learning/teaching";
 import { MergeGroupsType } from "@self-learning/types";
 import {
 	IconTextButton,
@@ -276,5 +280,5 @@ function GroupsPaginatedView({
 }
 
 export const getServerSideProps = withTranslations(
-	Array.from(new Set(["common", ...NS_UI_COMMON]))
+	Array.from(new Set(["common", ...NS_UI_COMMON, ...NS_TEACHING]))
 );

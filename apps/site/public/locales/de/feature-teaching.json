@@ -35,5 +35,8 @@
     "Used_In_Subject": "Er wird im folgenden $t(common:Topic) verwendet:",
     "Used_In_Subjects": "Er wird in folgenden $t(common:Topic_other) genutzt:",
     "Delete": "$t(common:delete)",
-    "Confirm_Delete_Course": "Möchten Sie diesen $t(common:Course) wirklich löschen?"
+    "Confirm_Delete_Course": "Möchten Sie diesen $t(common:Course) wirklich löschen?",
+    "Search_Group_Placeholder": "Suche nach $t(common:Groups)",
+    "Add_Member_To_Search": "Mitglied zur Suche hinzufügen",
+    "Show_Only_My_Groups": "Nur meine $t(common:Groups) anzeigen"
 }
