@@ -353,6 +353,7 @@ pipeline {
                                 sh 'rm -rf dist/apps/site/.next dist/apps/site/.next/export || true'
                                 sh 'npm run seed'
                                 sh "env TZ=${env.TZ} npx nx run-many --target=build --all --skip-nx-cache"
+								sh "git restore apps/site/next-env.d.ts"
                                 sh "npm version ${newVersion}"
                             }
                             buildSphinxDocs(dockerTag: "latest", version: newVersion)
