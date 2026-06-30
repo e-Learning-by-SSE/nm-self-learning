@@ -328,16 +328,16 @@ export const courseRouter = t.router({
 			});
 		}),
 	findLinkedEntities: authProcedure
-		.input(z.object({ slug: z.string() }))
+		.input(z.object({ courseId: z.string() }))
 		.query(async ({ input, ctx }) => {
-			const resource = await getCourseResource(input.slug);
-			if (!(await canEdit(ctx.user, resource))) {
+			if (!(await canEdit(ctx.user, input))) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 			}
-			return database.course.findUnique({
-				where: { slug: input.slug },
-				select: { subject: true, specializations: { include: { subject: true } } }
+			const course = await database.course.findUnique({
+				where: input,
+				select: { specializations: { include: { subject: true } } }
 			});
+			return course?.specializations;
 		}),
 
 	getProgress: authProcedure
@@ -428,5 +428,26 @@ export const courseRouter = t.router({
 				const progressPercent = Math.round((completedCount / totalLessons) * 100);
 				return { username: enrollment.username, progress: progressPercent };
 			});
-		})
+		}),
+	removeLesson: authProcedure
+		.input(z.object({ courseId: z.string(), lessonId: z.string() }))
+		.mutation(async ({ input, ctx }) => {
+			if (!(await canEdit(ctx.user, { courseId: input.courseId }))) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
+			const course = await database.course.findUniqueOrThrow({
+				where: { courseId: input.courseId },
+				select: { content: true }
+			});
+			const content = (course.content ?? []) as CourseContent;
+			const newContent = content.map(chapter => ({
+				...chapter,
+				content: chapter.content.filter(lesson => lesson.lessonId !== input.lessonId)
+			}));
+			return database.course.update({
+				where: { courseId: input.courseId },
+				data: { content: newContent },
+				select: { courseId: true }
+			});
+		}),
 });

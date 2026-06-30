@@ -17,6 +17,7 @@ import { TRPCError } from "@trpc/server";
 import {
 	canCreate,
 	canDelete,
+	canEdit,
 	preparePermissionsForCreate,
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
@@ -372,9 +373,12 @@ export const lessonRouter = t.router({
 
 			return updatedLesson;
 		}),
-	findLinkedLessonEntities: authorProcedure
+	findLinkedLessonEntities: authProcedure
 		.input(z.object({ lessonId: z.string() }))
-		.query(async ({ input }) => {
+		.query(async ({ ctx, input }) => {
+			if (!(await canEdit(ctx.user, input))) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
 			const courses = await database.$queryRaw`
 				SELECT *
 				FROM "Course"
