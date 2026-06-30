@@ -27,11 +27,24 @@ import { ResourceGuard, testResourceGuard, useRequiredSession } from "@self-lear
 type Permissions = { permissions?: ResourcePermissions };
 export type ResourceDeleteEntry = ResourceSearchEntry & Permissions;
 
+/**
+ * Defines whether delete is available for a certain resource.
+ * If you change it, change also @see useDeletionBlockers
+ * @param resource
+ * @returns
+ */
 function isDeleteAvailable(
 	resource: ResourceDeleteEntry
 ): resource is ResourceDeleteEntry & { kind: "course" | "lesson" } {
 	return resource.kind === "course" || resource.kind === "lesson";
 }
+/**
+ * Defines whether delete is available for a pair of resources.
+ * If you change it, change also @see useDeletionBlockers
+ * @param resource - what user wants to delete
+ * @param blocker - what user wants to unlink from the resource
+ * @returns
+ */
 function isUnlinkAvailable(resource: ResourceDeleteEntry, blocker: ResourceDeleteEntry): boolean {
 	return (
 		(resource.kind === "lesson" && blocker.kind === "course") ||
@@ -110,6 +123,12 @@ function useDeletionBlockers(step: DeleteFlowStep) {
 	return { blockers, isLoading, refetch, isError };
 }
 
+/**
+ * Joint resolver for resource deletion
+ * TODO would be nice just to have single resource management entries in the backend
+ * @param step - current deletion step with action and resources in question
+ * @returns
+ */
 function useDeletionActions(step: DeleteFlowStep) {
 	const { mutateAsync: deleteCourse, isPending: deletingCourse } =
 		trpc.course.deleteCourse.useMutation();
@@ -151,6 +170,12 @@ type DeleteFlowStep =
 	| { action: "delete"; resource: ResourceDeleteEntry }
 	| { action: "unlink"; resource: ResourceDeleteEntry; blocker: ResourceDeleteEntry };
 
+/**
+ * recursive delete dialog which holds stack of resource delete request resolution
+ * It will gather all dependencies and present options for their resolution
+ * @param resource - @see ResourceDeleteEntry
+ * @returns
+ */
 export function ResourceDeleteStackDialog({
 	resource,
 	onExit
@@ -179,7 +204,7 @@ export function ResourceDeleteStackDialog({
 				subtitle: ""
 			});
 			goBack();
-			await refetch();
+			await refetch(); // item was removed from dependencies - request update
 		} catch (error) {
 			showToast({
 				type: "error",
@@ -205,7 +230,8 @@ export function ResourceDeleteStackDialog({
 		);
 	}
 
-	// will be empty on unlink step
+	// force user to resolve all dependencies first
+	// blockers will be empty on unlink step
 	if (blockers.length > 0) {
 		return (
 			<Dialog title={t("Delete_Not_Possible")} onClose={goBack}>
@@ -244,6 +270,12 @@ export function ResourceDeleteStackDialog({
 	);
 }
 
+/**
+ * ResourceDeleteOption - red trash icon button which opens deletion dialog
+ * @param props - most of the props are just resource info, where id, slug & key are important.
+ * If you specify permissions - it will hide the button when user has insufficient access [ full(resource) ]
+ * @returns
+ */
 export function ResourceDeleteOption(props: Omit<ResourceDeleteEntry, "key">) {
 	const { t } = useTranslation("pages-dashboard");
 	const [open, setOpen] = useState(false);
@@ -270,6 +302,12 @@ export function ResourceDeleteOption(props: Omit<ResourceDeleteEntry, "key">) {
 	);
 }
 
+/**
+ * table display of resources
+ * guards delete and unlink actions
+ * @param param0
+ * @returns
+ */
 function DeletionBlockersTable({
 	blockers,
 	resource,
