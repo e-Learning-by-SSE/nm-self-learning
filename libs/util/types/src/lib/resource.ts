@@ -275,3 +275,16 @@ export function normalizeFormResourceAccess(
 	}
 	throw new Error("Invalid resource input");
 }
+
+export function toResourceInput(entry: Pick<ResourceSearchEntry, "kind" | "id">): ResourceInput {
+	switch (entry.kind) {
+		case "course":
+			return { courseId: entry.id };
+		case "lesson":
+			return { lessonId: entry.id };
+		case "specialization":
+			return { specializationId: entry.id };
+		case "subject":
+			return { subjectId: entry.id };
+	}
+}
