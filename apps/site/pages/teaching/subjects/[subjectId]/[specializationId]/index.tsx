@@ -12,7 +12,8 @@ import {
 	showToast,
 	Table,
 	TableDataColumn,
-	TableHeaderColumn
+	TableHeaderColumn,
+	IconOnlyButton
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import {
@@ -223,13 +224,20 @@ export default function SpecializationManagementPage() {
 									<TableDataColumn>
 										{canEdit && (
 											<div className="flex justify-end">
-												<button
-													className="rounded-full p-2 text-gray-400 hover:bg-c-neutral-muted hover:text-c-danger"
+												<Link
+													href={`/teaching/courses/edit/${course.courseId}`}
+												>
+													<IconOnlyButton
+														icon={<PencilIcon className="h-5 w-5" />}
+														className="btn-stroked"
+														title={"Kurs bearbeiten"}
+													/>
+												</Link>
+												<IconOnlyButton
+													icon={<LinkSlashIcon className="h-5 w-5" />}
 													title={t("Remove_From_Specialization")}
 													onClick={() => handleRemoveCourse(course)}
-												>
-													<LinkSlashIcon className="h-5" />
-												</button>
+												/>
 											</div>
 										)}
 									</TableDataColumn>
