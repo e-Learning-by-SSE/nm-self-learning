@@ -6,6 +6,7 @@ import {
 	getResourceSearchEntryKey,
 	ResourceKind,
 	resourceLabels,
+	ResourcePermissions,
 	ResourceSearchEntry
 } from "@self-learning/types";
 import {
@@ -20,37 +21,55 @@ import {
 } from "@self-learning/ui/common";
 import { useMemo, useState } from "react";
 import { useTranslation } from "next-i18next";
-import { Course, Specialization, Subject } from "@prisma/client";
+import { AccessLevel, Course, Specialization, Subject } from "@prisma/client";
+import { ResourceGuard, testResourceGuard, useRequiredSession } from "@self-learning/ui/layouts";
 
-function canDelete(
-	resource: ResourceSearchEntry
-): resource is ResourceSearchEntry & { kind: "course" | "lesson" } {
+type Permissions = { permissions?: ResourcePermissions };
+export type ResourceDeleteEntry = ResourceSearchEntry & Permissions;
+
+function isDeleteAvailable(
+	resource: ResourceDeleteEntry
+): resource is ResourceDeleteEntry & { kind: "course" | "lesson" } {
 	return resource.kind === "course" || resource.kind === "lesson";
 }
-function canUnlink(resource: ResourceSearchEntry, blocker: ResourceSearchEntry): boolean {
+function isUnlinkAvailable(resource: ResourceDeleteEntry, blocker: ResourceDeleteEntry): boolean {
 	return (
 		(resource.kind === "lesson" && blocker.kind === "course") ||
 		(resource.kind === "course" && blocker.kind === "specialization" && !!blocker.parentId)
 	);
 }
 
-function toCourseEntry(course: Course): ResourceSearchEntry {
+function toCourseEntry(course: Course & Permissions): ResourceDeleteEntry {
 	return {
 		kind: "course",
 		id: course.courseId,
 		key: getResourceSearchEntryKey({ kind: "course", id: course.courseId }),
 		title: course.title,
-		slug: course.slug
+		slug: course.slug,
+		permissions: course.permissions
 	};
 }
-function toSpecializationEntry(spec: Specialization & { subject: Subject }): ResourceSearchEntry {
+function toSpecializationEntry(
+	spec: Specialization & Permissions & { subject: Subject }
+): ResourceDeleteEntry {
 	return {
 		kind: "specialization",
 		id: spec.specializationId,
 		key: getResourceSearchEntryKey({ kind: "specialization", id: spec.specializationId }),
 		title: `${spec.subject.title} / ${spec.title}`,
 		slug: spec.slug,
-		parentId: spec.subjectId
+		parentId: spec.subjectId,
+		permissions: spec.permissions
+	};
+}
+function toSubjectEntry(subject: Subject & Permissions): ResourceDeleteEntry {
+	return {
+		kind: "subject",
+		id: subject.subjectId,
+		key: getResourceSearchEntryKey({ kind: "subject", id: subject.subjectId }),
+		title: subject.title,
+		slug: subject.slug,
+		permissions: subject.permissions
 	};
 }
 
@@ -67,7 +86,11 @@ function useDeletionBlockers(step: DeleteFlowStep) {
 	const blockers = useMemo(() => {
 		if (action !== "delete") return [];
 		if (resource.kind === "course" && courseQuery.data) {
-			return courseQuery.data.map(toSpecializationEntry);
+			const { subject, specializations } = courseQuery.data;
+			return [
+				...(subject ? [toSubjectEntry(subject)] : []),
+				...specializations.map(toSpecializationEntry)
+			];
 		}
 		if (resource.kind === "lesson" && lessonQuery.data) {
 			return lessonQuery.data.map(toCourseEntry);
@@ -104,12 +127,12 @@ function useDeletionActions(step: DeleteFlowStep) {
 		execute: async () => {
 			if (step.action === "delete") {
 				const { resource } = step;
-				if (!canDelete(resource)) throw new Error("invalid delete");
+				if (!isDeleteAvailable(resource)) throw new Error("invalid delete");
 				if (resource.kind === "course") await deleteCourse({ slug: resource.slug });
 				else await deleteLesson({ lessonId: resource.id });
 			} else if (step.action === "unlink") {
 				const { resource, blocker } = step;
-				if (!canUnlink(resource, blocker)) throw new Error("invalid unlink");
+				if (!isUnlinkAvailable(resource, blocker)) throw new Error("invalid unlink");
 				if (resource.kind === "lesson") {
 					await removeLesson({ courseId: blocker.id, lessonId: resource.id });
 				} else {
@@ -125,23 +148,21 @@ function useDeletionActions(step: DeleteFlowStep) {
 }
 
 type DeleteFlowStep =
-	| { action: "delete"; resource: ResourceSearchEntry }
-	| { action: "unlink"; resource: ResourceSearchEntry; blocker: ResourceSearchEntry };
+	| { action: "delete"; resource: ResourceDeleteEntry }
+	| { action: "unlink"; resource: ResourceDeleteEntry; blocker: ResourceDeleteEntry };
 
 export function ResourceDeleteStackDialog({
 	resource,
 	onExit
 }: {
-	resource: ResourceSearchEntry;
+	resource: ResourceDeleteEntry;
 	onExit: () => void;
 }) {
-	//
+	// action stack
 	const [steps, setSteps] = useState<DeleteFlowStep[]>([{ action: "delete", resource }]);
 	const step = steps[steps.length - 1];
 	const goBack = () => (steps.length > 1 ? setSteps(s => s.slice(0, -1)) : onExit());
 	const push = (step: DeleteFlowStep) => setSteps(prev => [...prev, step]);
-
-	console.log(step);
 
 	const { t } = useTranslation("pages-dashboard");
 	const { blockers, isLoading, isError, refetch } = useDeletionBlockers(step);
@@ -189,7 +210,7 @@ export function ResourceDeleteStackDialog({
 		return (
 			<Dialog title={t("Delete_Not_Possible")} onClose={goBack}>
 				<p className="mb-2">{t(blockedMessageKey(step.resource.kind))}</p>
-				<p className="mb-4">{t(blockersIntroKey(step.resource.kind))}</p>
+				<p className="mb-4">{t("Used_In_Resources")}</p>
 				<DeletionBlockersTable
 					blockers={blockers}
 					resource={step.resource}
@@ -223,15 +244,19 @@ export function ResourceDeleteStackDialog({
 	);
 }
 
-export function ResourceDeleteOption(props: Omit<ResourceSearchEntry, "key">) {
+export function ResourceDeleteOption(props: Omit<ResourceDeleteEntry, "key">) {
 	const { t } = useTranslation("pages-dashboard");
 	const [open, setOpen] = useState(false);
-	const resource: ResourceSearchEntry = {
+	const resource: ResourceDeleteEntry = {
 		...props,
 		key: getResourceSearchEntryKey(props)
 	};
 	return (
-		<>
+		<ResourceGuard
+			requiredAccess={AccessLevel.FULL}
+			permittedGroups={props.permissions}
+			fallback="hidden"
+		>
 			<IconOnlyButton
 				icon={<TrashIcon className="h-5 w-5" />}
 				className="btn-danger"
@@ -241,7 +266,7 @@ export function ResourceDeleteOption(props: Omit<ResourceSearchEntry, "key">) {
 			{open && (
 				<ResourceDeleteStackDialog resource={resource} onExit={() => setOpen(false)} />
 			)}
-		</>
+		</ResourceGuard>
 	);
 }
 
@@ -251,12 +276,24 @@ function DeletionBlockersTable({
 	onDelete,
 	onUnlink
 }: {
-	blockers: ResourceSearchEntry[];
-	resource: ResourceSearchEntry;
-	onDelete: (blocker: ResourceSearchEntry) => void;
-	onUnlink: (blocker: ResourceSearchEntry) => void;
+	blockers: ResourceDeleteEntry[];
+	resource: ResourceDeleteEntry;
+	onDelete: (blocker: ResourceDeleteEntry) => void;
+	onUnlink: (blocker: ResourceDeleteEntry) => void;
 }) {
 	const { t } = useTranslation("pages-dashboard");
+	const session = useRequiredSession();
+	const user = session.data?.user;
+
+	// Must have full(blocker)
+	const canDelete = (blocker: ResourceDeleteEntry) =>
+		user &&
+		isDeleteAvailable(blocker) &&
+		testResourceGuard(user, AccessLevel.FULL, blocker.permissions);
+
+	// TODO unlink rules are inconsistent!
+	const canUnlink = (blocker: ResourceDeleteEntry) => isUnlinkAvailable(resource, blocker);
+
 	return (
 		<Table
 			head={
@@ -276,7 +313,7 @@ function DeletionBlockersTable({
 						<span className="text-light">{blocker.title}</span>
 					</TableDataColumn>
 					<TableDataColumn className="flex gap-2 p-2">
-						{canUnlink(resource, blocker) && (
+						{canUnlink(blocker) && (
 							<IconOnlyButton
 								icon={<LinkSlashIcon className="h-5 w-5" />}
 								className="btn-stroked"
@@ -310,16 +347,6 @@ function blockedMessageKey(kind: ResourceKind): string {
 			return "Course_Cannot_Be_Deleted";
 	}
 }
-function blockersIntroKey(kind: ResourceKind): string {
-	switch (kind) {
-		case "course":
-			return "Used_In_Specializations";
-		case "lesson":
-			return "Used_In_Courses";
-		default:
-			return "Used_In_Specializations";
-	}
-}
 function confirmDeleteKey(kind: ResourceKind): string {
 	switch (kind) {
 		case "course":
@@ -330,7 +357,7 @@ function confirmDeleteKey(kind: ResourceKind): string {
 			return "Confirm_Delete_Course";
 	}
 }
-function confirmUnlinkKey(resource: ResourceSearchEntry, blocker: ResourceSearchEntry): string {
+function confirmUnlinkKey(resource: ResourceDeleteEntry, blocker: ResourceDeleteEntry): string {
 	if (resource.kind === "lesson" && blocker.kind === "course") {
 		return "Confirm_Unlink_Lesson_From_Course";
 	}

@@ -1,10 +1,9 @@
 "use client";
 
-import { ResourceSearchEntry } from "@self-learning/types";
-import { ResourceDeleteOption } from "../resource/resource-delete-dialog";
+import { ResourceDeleteEntry, ResourceDeleteOption } from "../resource/resource-delete-dialog";
 
-type LessonDeleteProps = Pick<ResourceSearchEntry, "id" | "slug" | "title">;
+type LessonDeleteProps = Pick<ResourceDeleteEntry, "id" | "slug" | "title" | "permissions">;
 
-export function LessonDeleteOption({ id, slug, title }: LessonDeleteProps) {
-	return <ResourceDeleteOption kind="lesson" id={id} slug={slug} title={title} />;
+export function LessonDeleteOption(props: LessonDeleteProps) {
+	return <ResourceDeleteOption kind="lesson" {...props} />;
 }

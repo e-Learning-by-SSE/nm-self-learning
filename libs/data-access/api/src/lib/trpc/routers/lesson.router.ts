@@ -7,7 +7,8 @@ import {
 	lessonSchema,
 	LessonContentType,
 	subtitleSrcSchema,
-	resourcePermissionSelect
+	resourcePermissionSelect,
+	ResourcePermissions
 } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { differenceInHours } from "date-fns";
@@ -380,14 +381,27 @@ export const lessonRouter = t.router({
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 			}
 			const courses = await database.$queryRaw`
-				SELECT *
-				FROM "Course"
-				WHERE EXISTS (SELECT 1
-							  FROM jsonb_array_elements("Course".content) AS chapter
-									   CROSS JOIN jsonb_array_elements(chapter->'content') AS lesson
-							  WHERE lesson ->>'lessonId' = ${input.lessonId})
+				SELECT 
+					c.*, 
+					COALESCE(
+						json_agg(
+							json_build_object(
+								'accessLevel', p."accessLevel",
+								'groupId', p."groupId"
+							)
+						) FILTER (WHERE p.id IS NOT NULL),
+						'[]'
+					) AS permissions
+				FROM "Course" c
+				LEFT JOIN "Permission" p ON c."courseId" = p."courseId"
+				WHERE EXISTS (
+					SELECT 1
+					FROM jsonb_array_elements(c.content) AS chapter
+					CROSS JOIN jsonb_array_elements(chapter->'content') AS lesson
+					WHERE lesson->>'lessonId' = ${input.lessonId}
+				);
 			`;
-			return courses as Course[];
+			return courses as (Course & { permissions: ResourcePermissions })[];
 		}),
 	deleteLesson: authProcedure
 		.input(z.object({ lessonId: z.string() }))

@@ -335,9 +335,31 @@ export const courseRouter = t.router({
 			}
 			const course = await database.course.findUnique({
 				where: input,
-				select: { specializations: { include: { subject: true } } }
+				include: {
+					specializations: {
+						include: {
+							subject: true,
+							permissions: {
+								select: {
+									accessLevel: true,
+									groupId: true
+								}
+							}
+						}
+					},
+					subject: {
+						include: {
+							permissions: {
+								select: {
+									accessLevel: true,
+									groupId: true
+								}
+							}
+						}
+					}
+				}
 			});
-			return course?.specializations;
+			return course;
 		}),
 
 	getProgress: authProcedure
@@ -449,5 +471,5 @@ export const courseRouter = t.router({
 				data: { content: newContent },
 				select: { courseId: true }
 			});
-		}),
+		})
 });
