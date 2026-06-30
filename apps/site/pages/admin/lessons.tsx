@@ -15,7 +15,7 @@ import { formatDateDistanceToNow } from "@self-learning/util/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { withTranslations } from "@self-learning/api";
-import { LessonDeleteOption } from "@self-learning/ui/lesson";
+import { LessonDeleteOption } from "@self-learning/teaching";
 import { keepPreviousData } from "@tanstack/react-query";
 
 export default function LessonManagementPage() {
@@ -109,7 +109,11 @@ export default function LessonManagementPage() {
 									title={"Lerninhalt bearbeiten"}
 								/>
 							</Link>
-							<LessonDeleteOption lessonId={lesson.lessonId} />
+							<LessonDeleteOption
+								id={lesson.lessonId}
+								slug={lesson.slug}
+								title={lesson.title}
+							/>
 						</TableDataColumn>
 					</tr>
 				))}
@@ -121,5 +125,5 @@ export default function LessonManagementPage() {
 }
 
 export const getServerSideProps = withTranslations(
-	Array.from(new Set(["common", ...NS_UI_COMMON]))
+	Array.from(new Set(["common", "pages-dashboard", ...NS_UI_COMMON]))
 );

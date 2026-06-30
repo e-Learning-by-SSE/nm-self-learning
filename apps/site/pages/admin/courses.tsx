@@ -113,7 +113,11 @@ export default function CoursesPage() {
 									title={"Kurs bearbeiten"}
 								/>
 							</Link>
-							<CourseDeleteOption slug={course.slug} />
+							<CourseDeleteOption
+								id={course.courseId}
+								slug={course.slug}
+								title={course.title}
+							/>
 						</TableDataColumn>
 					</tr>
 				))}
@@ -125,5 +129,5 @@ export default function CoursesPage() {
 }
 
 export const getServerSideProps = withTranslations(
-	Array.from(new Set(["common", ...NS_UI_COMMON]))
+	Array.from(new Set(["common", "pages-dashboard", ...NS_UI_COMMON]))
 );
