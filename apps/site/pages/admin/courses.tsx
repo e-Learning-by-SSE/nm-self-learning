@@ -1,43 +1,48 @@
-import { PlusIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import {
+	I18N_NAMESPACE as NS_UI_COMMON,
 	ImageOrPlaceholder,
+	LoadingBox,
 	Paginator,
 	Table,
 	TableDataColumn,
-	TableHeaderColumn
+	TableHeaderColumn,
+	IconOnlyButton
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
 import { withTranslations } from "@self-learning/api";
+import { keepPreviousData } from "@tanstack/react-query";
+import { CourseDeleteOption } from "@self-learning/teaching";
 
 export default function CoursesPage() {
 	const router = useRouter();
-	const { page = 1, title = "" } = router.query;
-	const [titleFilter, setTitle] = useState(title);
+	const { page = 1, title: titleRaw } = router.query;
+	const title = typeof titleRaw === "string" ? titleRaw : "";
+	const pageNumber = typeof page === "string" ? Number(page) : 1;
 	const { data } = trpc.course.findMany.useQuery(
-		{ title: titleFilter as string, page: Number(page) },
+		{ title, page: pageNumber },
 		{
 			staleTime: 10_000,
-			keepPreviousData: true
+			placeholderData: keepPreviousData,
+			enabled: router.isReady
 		}
 	);
-
-	useEffect(() => {
-		// We need this effect, because router.query is empty on first render
-		setTitle(title as string);
-	}, [title]);
 
 	const session = useRequiredSession();
 	if (session.data?.user.role !== "ADMIN") {
 		return <AdminGuard></AdminGuard>;
 	}
 
+	if (!router.isReady) {
+		return <LoadingBox />;
+	}
+
 	return (
-		<CenteredSection className="bg-gray-50">
+		<CenteredSection>
 			<div className="mb-16 flex items-center justify-between gap-4">
 				<h1 className="text-5xl">Kurse</h1>
 
@@ -47,7 +52,24 @@ export default function CoursesPage() {
 				</Link>
 			</div>
 
-			<SearchField placeholder="Suche nach Titel" onChange={e => setTitle(e.target.value)} />
+			<SearchField
+				placeholder="Suche nach Titel"
+				value={title}
+				onChange={e => {
+					router.push(
+						{
+							pathname: router.pathname,
+							query: {
+								...router.query,
+								title: e.target.value,
+								page: 1
+							}
+						},
+						undefined,
+						{ shallow: true }
+					);
+				}}
+			/>
 
 			<Table
 				head={
@@ -55,6 +77,7 @@ export default function CoursesPage() {
 						<TableHeaderColumn></TableHeaderColumn>
 						<TableHeaderColumn>Titel</TableHeaderColumn>
 						<TableHeaderColumn>Von</TableHeaderColumn>
+						<TableHeaderColumn></TableHeaderColumn>
 					</>
 				}
 			>
@@ -69,27 +92,38 @@ export default function CoursesPage() {
 
 						<TableDataColumn>
 							<Link
-								className="text-sm font-medium hover:text-secondary"
-								href={`/teaching/courses/edit/${course.courseId}`}
+								className="text-sm font-medium hover:text-c-primary"
+								href={`/courses/${course.slug}`}
 							>
 								{course.title}
 							</Link>
 						</TableDataColumn>
 
 						<TableDataColumn>
-							<span className="text-light">
+							<span className="text-c-text-muted">
 								{course.authors.map(a => a.displayName).join(", ")}
 							</span>
+						</TableDataColumn>
+
+						<TableDataColumn>
+							<Link href={`/teaching/courses/edit/${course.courseId}`}>
+								<IconOnlyButton
+									icon={<PencilIcon className="h-5 w-5" />}
+									className="btn-stroked"
+									title={"Kurs bearbeiten"}
+								/>
+							</Link>
+							<CourseDeleteOption slug={course.slug} />
 						</TableDataColumn>
 					</tr>
 				))}
 			</Table>
 
-			{data?.result && (
-				<Paginator pagination={data} url={`/admin/courses?title=${titleFilter}`} />
-			)}
+			{data?.result && <Paginator pagination={data} url={`/admin/courses?title=${title}`} />}
 		</CenteredSection>
 	);
 }
 
-export const getServerSideProps = withTranslations(["common"]);
+export const getServerSideProps = withTranslations(
+	Array.from(new Set(["common", ...NS_UI_COMMON]))
+);

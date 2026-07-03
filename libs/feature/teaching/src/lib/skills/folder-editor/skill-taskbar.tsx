@@ -3,12 +3,11 @@ import {
 	ButtonActions,
 	dispatchDialog,
 	freeDialog,
-	IconButton,
 	IconOnlyButton,
 	showToast,
 	SimpleDialog
 } from "@self-learning/ui/common";
-import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { TrashIcon } from "@heroicons/react/24/solid";
 import { FolderPlusIcon } from "@heroicons/react/24/outline";
 import { SkillSelectHandler, UpdateVisuals } from "./skill-display";
 import { trpc } from "@self-learning/api-client";
@@ -83,13 +82,12 @@ export function AddChildButton({
 		});
 
 	return (
-		<button
+		<IconOnlyButton
 			title="Neuen Skill in dieser Skillgruppe erstellen"
-			className="hover:text-secondary"
+			icon={<FolderPlusIcon className="h-5 text-lg" />}
+			className="hover:text-c-primary !px-2 !py-0"
 			onClick={handleAddSkill}
-		>
-			<FolderPlusIcon className="icon h-5 text-lg" style={{ cursor: "pointer" }} />
-		</button>
+		/>
 	);
 }
 
@@ -140,8 +138,7 @@ export function SkillDeleteOption({
 	if (!inline) {
 		return (
 			<IconOnlyButton
-				icon={<TrashIcon className="h-5 w-5" />}
-				variant="danger"
+				icon={<TrashIcon className="h-5 w-5 btn-danger" />}
 				onClick={handleDelete}
 			/>
 		);
@@ -182,10 +179,8 @@ export function NewSkillButton({
 		await onSuccess?.(createdSkill ?? null);
 	};
 	return (
-		<IconButton
-			text="Skill erstellen"
-			icon={<PlusIcon className="icon h-5" />}
-			onClick={onCreateSkill}
-		/>
+		<button type="button" className="btn btn-primary" onClick={onCreateSkill}>
+			Skill erstellen
+		</button>
 	);
 }

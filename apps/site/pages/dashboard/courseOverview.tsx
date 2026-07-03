@@ -8,20 +8,22 @@ import {
 	Table,
 	TableDataColumn,
 	TableHeaderColumn,
-	Tabs
+	Tabs,
+	SectionHeader
 } from "@self-learning/ui/common";
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
 import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
-import { formatDateAgo } from "@self-learning/util/common";
+import { formatDateDistanceToNow } from "@self-learning/util/common";
 import { withTranslations } from "@self-learning/api";
 import { withAuth } from "@self-learning/util/auth";
+import { useTranslation } from "next-i18next";
 
 interface CourseOverviewProps {
 	enrollments: EnrollmentDetails[] | null;
 }
 
 export const getServerSideProps = withTranslations(
-	["common"],
+	["common", "pages-dashboard"],
 	withAuth<CourseOverviewProps>(async (context, user) => {
 		try {
 			return {
@@ -41,9 +43,8 @@ export const getServerSideProps = withTranslations(
 );
 
 export default function CourseOverview({ enrollments }: CourseOverviewProps) {
+	const { t } = useTranslation("pages-dashboard");
 	const [selectedTab, setSelectedTab] = useState(0);
-	const [inProgress, setInProgress] = useState<EnrollmentDetails[]>([]);
-	const [complete, setComplete] = useState<EnrollmentDetails[]>([]);
 	const [searchQuery, setSearchQuery] = useState("");
 
 	const filterEnrollments = (
@@ -66,21 +67,23 @@ export default function CourseOverview({ enrollments }: CourseOverviewProps) {
 		});
 	};
 
-	useMemo(() => {
-		if (enrollments) {
-			const filtered = filterEnrollments(enrollments, searchQuery);
+	const filteredEnrollments = useMemo(() => {
+		if (!enrollments) return [];
 
-			const inProgress = filtered.filter(
-				enrollment => enrollment.completions.courseCompletion.completionPercentage < 100
-			);
-			const complete = filtered.filter(
-				enrollment => enrollment.completions.courseCompletion.completionPercentage >= 100
-			);
+		return filterEnrollments(enrollments, searchQuery);
+	}, [enrollments, searchQuery]);
 
-			setInProgress(inProgress);
-			setComplete(complete);
-		}
-	}, [searchQuery, enrollments]);
+	const inProgress = useMemo(() => {
+		return filteredEnrollments.filter(
+			e => e.completions.courseCompletion.completionPercentage < 100
+		);
+	}, [filteredEnrollments]);
+
+	const complete = useMemo(() => {
+		return filteredEnrollments.filter(
+			e => e.completions.courseCompletion.completionPercentage >= 100
+		);
+	}, [filteredEnrollments]);
 
 	return (
 		<div className="flex h-screen justify-center overflow-hidden">
@@ -92,8 +95,8 @@ export default function CourseOverview({ enrollments }: CourseOverviewProps) {
 						enrollments={inProgress}
 						notFoundMessage={
 							searchQuery == ""
-								? "Derzeit ist kein Kurs angefangen."
-								: "Derzeit ist zu dieser Suchanfrage kein Kurs angefangen."
+								? t("No_Started_Course")
+								: t("No_Started_Course_For_Search")
 						}
 						searchQuery={searchQuery}
 						setSearchQuery={setSearchQuery}
@@ -106,8 +109,8 @@ export default function CourseOverview({ enrollments }: CourseOverviewProps) {
 						enrollments={complete}
 						notFoundMessage={
 							searchQuery == ""
-								? "Derzeit ist kein Kurs abgeschlossen."
-								: "Derzeit ist zu dieser Suchanfrage kein Kurs abgeschlossen."
+								? t("No_Completed_Course")
+								: t("No_Completed_Course_For_Search")
 						}
 						searchQuery={searchQuery}
 						setSearchQuery={setSearchQuery}
@@ -133,36 +136,55 @@ function TabContent({
 	searchQuery: string;
 	setSearchQuery: (v: string) => void;
 }) {
+	const { t } = useTranslation("pages-dashboard");
+
 	return (
-		<div className="flex h-full flex-col">
-			<div className="flex items-center justify-between border-b border-gray-300 pb-2">
-				<div className="flex">
-					<Tabs selectedIndex={selectedTab} onChange={setSelectedTab}>
-						<Tab>In Bearbeitung</Tab>
-						<Tab>Abgeschlossen</Tab>
-					</Tabs>
+		<>
+			<div className="flex justify-between gap-4">
+				<SectionHeader
+					title={t("Course_Overview_Title")}
+					subtitle={t("Course_Overview_Subtitle")}
+				/>
+				<div className="mt-4">
+					<Link href="/subjects">
+						<button className="btn btn-primary" type="button">
+							<span>{t("Browse_Courses")}</span>
+						</button>
+					</Link>
 				</div>
 			</div>
-			<div className="py-2">
-				<UniversalSearchBar
-					searchQuery={searchQuery}
-					setSearchQuery={setSearchQuery}
-					placeHolder={"Kurse durchsuchen..."}
-				/>
-			</div>
 
-			<div className="flex-1 overflow-y-auto">
-				{enrollments && enrollments.length > 0 ? (
-					<SortedTable enrollments={enrollments} />
-				) : (
-					<p className="py-4 text-center">{notFoundMessage}</p>
-				)}
+			<div className="py-2">
+				<div className="flex items-center justify-between border-b border-c-border-strong pb-2">
+					<div className="flex">
+						<Tabs selectedIndex={selectedTab} onChange={setSelectedTab}>
+							<Tab>{t("In_Progress")}</Tab>
+							<Tab>{t("Completed")}</Tab>
+						</Tabs>
+					</div>
+				</div>
+				<div className="py-2">
+					<UniversalSearchBar
+						searchQuery={searchQuery}
+						setSearchQuery={setSearchQuery}
+						placeHolder={t("Search_Courses_Placeholder")}
+					/>
+				</div>
+				{/* TODO: is the overflow and flex necessary? Appears too wide atm */}
+				<div className="flex-1 overflow-y-auto">
+					{enrollments && enrollments.length > 0 ? (
+						<SortedTable enrollments={enrollments} />
+					) : (
+						<p className="py-4 text-center">{notFoundMessage}</p>
+					)}
+				</div>
 			</div>
-		</div>
+		</>
 	);
 }
 
 function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
+	const { t } = useTranslation("pages-dashboard");
 	const [sortConfig, setSortConfig] = useState<{
 		key: string;
 		direction: "ascending" | "descending";
@@ -176,26 +198,26 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 	const columns: Column[] = [
 		{
 			key: "title",
-			label: "Titel",
+			label: t("Title"),
 			sortingFunction: (a: EnrollmentDetails, b: EnrollmentDetails) =>
 				a.course.title.localeCompare(b.course.title)
 		},
 		{
 			key: "author",
-			label: "Autor",
+			label: t("Author"),
 			sortingFunction: (a: EnrollmentDetails, b: EnrollmentDetails) =>
 				a.course.authors[0].displayName.localeCompare(b.course.authors[0].displayName)
 		},
 		{
 			key: "progress",
-			label: "Fortschritt",
+			label: t("Progress"),
 			sortingFunction: (a: EnrollmentDetails, b: EnrollmentDetails) =>
 				b.completions.courseCompletion.completionPercentage -
 				a.completions.courseCompletion.completionPercentage
 		},
 		{
 			key: "update",
-			label: "Letzte Bearbeitung",
+			label: t("Last_Updated"),
 			sortingFunction: (a: EnrollmentDetails, b: EnrollmentDetails) =>
 				new Date(b.lastProgressUpdate).getTime() - new Date(a.lastProgressUpdate).getTime()
 		}
@@ -250,7 +272,7 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 					<tr key={enrollment.course.slug}>
 						<TableDataColumn key={"title"}>
 							<Link href={`/courses/${enrollment.course.slug}/`} className="block">
-								<div className="flex items-center space-x-4 p-2 hover:bg-gray-100">
+								<div className="flex items-center space-x-4 p-2 hover:bg-c-neutral-muted">
 									{enrollment.course.imgUrl ? (
 										<Image
 											src={enrollment.course.imgUrl}
@@ -260,12 +282,12 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 											height={48}
 										/>
 									) : (
-										<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
-											<span className="text-gray-500">Kein Bild</span>
+										<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-c-surface-2">
+											<span className="text-c-text-muted">{t("No_Image")}</span>
 										</div>
 									)}
 									<div>
-										<span className="flex items-center justify-center text-gray-800 hover:text-secondary">
+										<span className="flex items-center justify-center text-c-text-strong hover:text-c-primary">
 											<span className="truncate">
 												{enrollment.course.title}
 											</span>
@@ -276,7 +298,7 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 						</TableDataColumn>
 						<TableDataColumn key={"author"}>
 							<span className="text-sm text-gray-600">
-								{enrollment.course.authors[0]?.displayName ?? "Unbekannter Autor"}
+								{enrollment.course.authors[0]?.displayName ?? t("Unknown_Author")}
 							</span>
 						</TableDataColumn>
 						<TableDataColumn key={"progress"}>
@@ -288,7 +310,7 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 							/>
 						</TableDataColumn>
 						<TableDataColumn>
-							{formatDateAgo(enrollment.lastProgressUpdate)}
+							{formatDateDistanceToNow(enrollment.lastProgressUpdate)}
 						</TableDataColumn>
 					</tr>
 				))}

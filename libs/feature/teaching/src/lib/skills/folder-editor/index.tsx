@@ -97,7 +97,7 @@ export function SkillFolderEditor({
 		[updateSkillDisplay]
 	);
 	return (
-		<div className="bg-gray-50">
+		<div>
 			<SidebarEditorLayout
 				sidebar={
 					<SidebarContentEditor

@@ -1,7 +1,7 @@
 generator client {
-    provider        = "prisma-client-js"
-    binaryTargets   = ["native", "linux-musl"]
-    previewFeatures = ["prismaSchemaFolder"]
+    provider      = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl"]
+    Features      = ["prismaSchemaFolder"]
 }
 
 datasource db {
@@ -161,4 +161,35 @@ model LlmConfiguration {
     isActive     Boolean  @default(true)
     createdAt    DateTime @default(now())
     updatedAt    DateTime @updatedAt
+}
+
+model AiTutorProfile {
+    id           String   @id @default(cuid())
+    name         String
+    description  String?
+    systemPrompt String
+    model        String?
+    avatarUrl    String?
+    author       String
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+}
+
+enum JobStatus {
+    QUEUED
+    STARTED
+    ABORTED
+    FINISHED
+}
+
+// Stored progress of jobs, may be deleted after a while (e.g. 1 day); can be used to watch if job is still running
+// context stores JSON result for ragRetrieve jobs
+model JobQueue {
+    id        String    @id
+    jobType   String
+    status    JobStatus
+    // Only to report errors when job is aborted
+    cause     String?
+    context   String?
+    updatedAt DateTime  @updatedAt
 }

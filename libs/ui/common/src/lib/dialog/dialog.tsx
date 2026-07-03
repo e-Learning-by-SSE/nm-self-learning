@@ -88,7 +88,7 @@ export function Dialog<TResult>({
 	className,
 	open = true
 }: {
-	title: string;
+	title?: string;
 	onClose: OnDialogCloseFn<TResult>;
 	children: React.ReactNode;
 	style?: CSSProperties;
@@ -110,9 +110,11 @@ export function Dialog<TResult>({
 								style={style ?? DEFAULT_DIALOG_STYLE_SIZE}
 								data-testid="Dialog"
 							>
-								<HeadlessDialogTitle className="mb-8 text-2xl">
-									{title}
-								</HeadlessDialogTitle>
+								{title && (
+									<HeadlessDialogTitle className="mb-8 text-2xl">
+										{title}
+									</HeadlessDialogTitle>
+								)}
 								{children}
 							</HeadlessDialogPanel>
 						</div>
@@ -126,7 +128,7 @@ export function Dialog<TResult>({
 type GameifyDialogProps = {
 	title: string | React.ReactNode;
 	open?: boolean;
-	onClose: (result?: any) => void;
+	onClose: OnDialogCloseFn<void>;
 	children: React.ReactNode;
 	responsive?: boolean;
 	style?: RequiredSizeProps;
@@ -185,7 +187,7 @@ export function GameifyDialog({
 									{onClose && (
 										<button
 											type="button"
-											className="rounded-full p-1 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
+											className="rounded-full p-1 hover:bg-c-neutral-muted focus:outline-none focus:ring-2 focus:ring-gray-300"
 											onClick={() => onClose(undefined)}
 											aria-label="Close"
 										>

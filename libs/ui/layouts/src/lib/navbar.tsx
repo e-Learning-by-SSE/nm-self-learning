@@ -6,6 +6,7 @@ import {
 	ArrowRightStartOnRectangleIcon,
 	Bars4Icon,
 	PencilSquareIcon,
+	UserGroupIcon,
 	UserIcon,
 	WrenchIcon,
 	XMarkIcon
@@ -24,13 +25,14 @@ import { useTranslation } from "next-i18next";
 export function Navbar() {
 	const session = useSession();
 	const { loginRedirect, logoutRedirect } = useLoginRedirect();
+	const { t } = useTranslation("common");
 
 	const user = session.data?.user;
 
 	return (
 		<Disclosure
 			as="nav"
-			className="sticky top-0 z-30 w-full border-b border-b-gray-200 bg-white"
+			className="sticky top-0 z-30 w-full border-b border-b-c-border bg-white"
 		>
 			{({ open }) => (
 				<>
@@ -38,8 +40,8 @@ export function Navbar() {
 						<div className="relative flex h-16 items-center justify-between">
 							<div className="absolute inset-y-0 left-0 flex items-center lg:hidden">
 								{/* Mobile dropdown-menu button*/}
-								<DisclosureButton className="inline-flex items-center justify-center rounded-md p-2 py-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
-									<span className="sr-only">Menü Öffnen</span>
+								<DisclosureButton className="inline-flex items-center justify-center rounded-md p-2 py-2 text-c-text-muted hover:bg-c-neutral hover:text-c-text focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+									<span className="sr-only">{t("Open_Menu")}</span>
 									{open ? (
 										<XMarkIcon className="block h-6 w-6" aria-hidden="true" />
 									) : (
@@ -50,15 +52,15 @@ export function Navbar() {
 							<div className="flex flex-1 items-center justify-center lg:items-stretch lg:justify-start">
 								<div className="flex flex-shrink-0 items-center">
 									<Link href="/" className="flex items-center gap-4">
-										<div className="rounded-full bg-secondary p-1">
+										<div className="rounded-full bg-c-primary p-1">
 											<AcademicCapIcon className="h-8 shrink-0 text-white" />
 										</div>
 										<div className="hidden w-0 flex-col lg:flex lg:w-fit">
-											<span className="whitespace-nowrap text-sm text-light">
-												Universität Hildesheim
+											<span className="whitespace-nowrap text-sm text-c-text-muted">
+												{t("Operator_Name")}
 											</span>
-											<span className="whitespace-nowrap font-bold text-secondary">
-												SELF-le@rning
+											<span className="whitespace-nowrap font-bold text-c-primary">
+												{t("Platform_Name")}
 											</span>
 										</div>
 									</Link>
@@ -72,16 +74,16 @@ export function Navbar() {
 								{/* Profile dropdown */}
 								{!user ? (
 									<button
-										className="text-w rounded-lg bg-emerald-500 px-8 py-2 font-semibold text-white"
+										className="text-w rounded-lg bg-c-primary px-8 py-2 font-semibold text-white"
 										onClick={() => loginRedirect()}
 									>
-										Login
+										{t("Login")}
 									</button>
 								) : (
 									<div className="flex items-center gap-1 xl:gap-4">
 										{user.role === "ADMIN" && (
-											<span title="Admin">
-												<StarIcon className="h-5 text-secondary" />
+											<span title={t("Admin")}>
+												<StarIcon className="h-5 text-c-primary" />
 											</span>
 										)}
 										<Link href="/dashboard">
@@ -93,6 +95,7 @@ export function Navbar() {
 											avatarUrl={user.avatarUrl}
 											isAuthor={user.isAuthor}
 											isAdmin={user.role === "ADMIN"}
+											isMember={user.memberships.length > 0}
 											signOut={() => logoutRedirect("/")}
 										/>
 									</div>
@@ -105,10 +108,10 @@ export function Navbar() {
 						<div className="space-y-1 px-2 pb-3 pt-2">
 							<DisclosureButton
 								as="a"
-								href="subjects"
-								className="block rounded-md px-3 py-2 text-base font-medium hover:text-gray-500"
+								href="/subjects"
+								className="block rounded-md px-3 py-2 text-base font-medium hover:text-c-text-muted"
 							>
-								Fachgebiete
+								{t("Topic_other")}
 							</DisclosureButton>
 						</div>
 					</DisclosurePanel>
@@ -119,13 +122,14 @@ export function Navbar() {
 }
 
 function NavbarNavigationLink() {
-	const [navigation, setNavigation] = useState([{ name: "Fachgebiete", href: "/subjects" }]);
+	const { t } = useTranslation("common");
+	const [navigation, setNavigation] = useState([{ name: t("Topic_other"), href: "/subjects" }]);
 	const router = useRouter();
 
 	const setNavigationLink = useCallback(
 		(query: ParsedUrlQuery) => {
 			let newNavigation: { name: string; href: string }[] = [];
-			newNavigation.push({ name: "Fachgebiete", href: "/subjects" });
+			newNavigation.push({ name: t("Topic_other"), href: "/subjects" });
 
 			if (query.subjectSlug) {
 				newNavigation.push({
@@ -142,7 +146,7 @@ function NavbarNavigationLink() {
 			} else if (query.courseSlug) {
 				newNavigation = JSON.parse(localStorage.getItem("navigation") ?? "[]");
 				if (newNavigation.length < 1) {
-					newNavigation.push({ name: "Fachgebiete", href: "/subjects" });
+					newNavigation.push({ name: t("Topic_other"), href: "/subjects" });
 					return;
 				}
 				newNavigation.push({
@@ -152,7 +156,7 @@ function NavbarNavigationLink() {
 			}
 			setNavigation(newNavigation);
 		},
-		[setNavigation]
+		[setNavigation, t]
 	);
 
 	useEffect(() => {
@@ -165,13 +169,15 @@ function NavbarNavigationLink() {
 			{navigation.map((item, index) => (
 				<div key={item.name + index} className="flex items-center">
 					<Link
-						className={`hover:text-gray-500 ${index === navigation.length - 1 ? "text-gray-700 font-semibold" : ""}`}
+						className={`hover:text-c-text-muted ${index === navigation.length - 1 ? "text-c-text font-semibold" : ""}`}
 						key={item.name + index}
 						href={item.href}
 					>
 						{item.name}
 					</Link>
-					{index < navigation.length - 1 && <span className="mx-2 text-gray-400">/</span>}
+					{index < navigation.length - 1 && (
+						<span className="mx-2 text-c-text-muted">/</span>
+					)}
 				</div>
 			))}
 		</div>
@@ -182,11 +188,13 @@ export function NavbarDropdownMenu({
 	signOut,
 	isAuthor,
 	isAdmin,
+	isMember,
 	avatarUrl
 }: {
 	avatarUrl?: string | null;
 	isAuthor: boolean;
 	isAdmin: boolean;
+	isMember: boolean;
 	signOut: () => void;
 }) {
 	const { t } = useTranslation("common");
@@ -206,11 +214,12 @@ export function NavbarDropdownMenu({
 							height={42}
 						/>
 					) : (
-						<div className="h-[42px] w-[42px] rounded-full bg-gray-200"></div>
+						<div className="h-[42px] w-[42px] rounded-full bg-c-surface-3"></div>
 					)}
-					<ChevronDownIcon className="h-6 w-6 text-gray-400" />
+					<ChevronDownIcon className="h-6 w-6 text-c-text-muted" />
 				</div>
 			}
+			z_index={30}
 		>
 			<Link
 				href="/dashboard"
@@ -227,6 +236,16 @@ export function NavbarDropdownMenu({
 				<AdjustmentsHorizontalIcon className="h-5" />
 				<span>{t("Settings")}</span>
 			</Link>
+
+			{(isMember || isAdmin || isAuthor) && (
+				<Link
+					href="/groups"
+					className={` flex w-full items-center gap-2 rounded-md px-3 py-3`}
+				>
+					<UserGroupIcon className="h-5" />
+					<span>{t("Groups")}</span>
+				</Link>
+			)}
 
 			{isAuthor && (
 				<Link

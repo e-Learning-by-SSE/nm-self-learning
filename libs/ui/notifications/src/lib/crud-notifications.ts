@@ -43,7 +43,7 @@ export async function createNotification<K extends keyof NotificationPropsMap>(
 		const newNotification = await client.notification.create({
 			data: {
 				component,
-				props: props ?? {},
+				props: (props ?? {}) as Prisma.InputJsonValue,
 				displayFrom: new Date(),
 				displayUntil: addBusinessDays(new Date(), 5),
 				targetAudience,

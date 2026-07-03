@@ -1,0 +1,770 @@
+import { database } from "@self-learning/database";
+import { z } from "zod";
+import { authProcedure, t } from "../trpc";
+import { TRPCError } from "@trpc/server";
+import { AccessLevel, Group, GroupRole, Member, Permission, Prisma } from "@prisma/client";
+import { paginate, Paginated, paginationSchema } from "@self-learning/util/common";
+import {
+	GroupFormSchema,
+	ResourceSearchInputSchema,
+	ResourceAccessSchema,
+	ResourceInputSchema,
+	ResourceInput,
+	greaterAccessLevel,
+	greaterGroupRole,
+	GroupRoleEnum,
+	stripFormResourceAccess
+} from "@self-learning/types";
+import {
+	createGroupAccess,
+	createResourceAccess,
+	getEffectiveResourceAccesses,
+	getGroup,
+	getResourceAccess,
+	getSingleOwnedResources,
+	hasGroupRole,
+	hasResourceAccess,
+	hasResourceAccessBatch,
+	testGroupCircularParent
+} from "../../permissions/permission.service";
+import { anyTrue } from "../../permissions/permission.utils";
+import { searchMyResources, searchAllResources } from "../../permissions/resource-search.service";
+
+function getResourceKey(resource: ResourceInput): string {
+	if (resource.courseId) return `course-${resource.courseId}`;
+	if (resource.lessonId) return `lesson-${resource.lessonId}`;
+	if (resource.specializationId) return `specialization-${resource.specializationId}`;
+	if (resource.subjectId) return `subject-${resource.subjectId}`;
+
+	throw new Error("Invalid resource input: No valid ID provided");
+}
+
+export const permissionRouter = t.router({
+	searchResources: authProcedure.input(ResourceSearchInputSchema).query(async ({ input }) => {
+		return searchAllResources(input);
+	}),
+	getMyResources: authProcedure.input(ResourceSearchInputSchema).query(async ({ input, ctx }) => {
+		return searchMyResources(ctx.user.id, input);
+	}),
+	// Can be done by "parent" group admins or website admins
+	createGroup: authProcedure
+		.input(GroupFormSchema.omit({ id: true }))
+		.mutation(async ({ input, ctx }) => {
+			const { parent, name, slug, permissions, members } = input;
+			const userId = ctx.user.id;
+			// check if ADMIN has no limit
+			let adminCount = 0;
+			for (const m of members) {
+				if (m.role === GroupRole.ADMIN) {
+					if (m.expiresAt) {
+						throw new TRPCError({
+							code: "BAD_REQUEST",
+							message: "Group ADMIN role cannot expire"
+						});
+					}
+					adminCount++;
+				}
+			}
+			// drop display data
+			const perms = permissions.map(stripFormResourceAccess);
+			// for every resource must have FULL access level
+			const checks = perms.map(p => {
+				return { ...p, accessLevel: AccessLevel.FULL };
+			});
+
+			// map members to drop display data
+			const membs = members.map(m => {
+				return { userId: m.user.id, role: m.role, expiresAt: m.expiresAt };
+			});
+			// check permission - must have full access at parent or be admin
+			let hasAccess = ctx.user.role === "ADMIN";
+			if (!hasAccess && !!parent?.id) {
+				// only website admins can create root groups
+				const [groupOk, resourceOk] = await Promise.all([
+					hasGroupRole(parent.id, userId, GroupRole.ADMIN),
+					hasResourceAccessBatch(userId, checks)
+				]);
+				hasAccess = groupOk && resourceOk;
+			}
+
+			if (!hasAccess) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
+			// find if already self added
+			const idx = membs.findIndex(m => m.userId === userId);
+			if (idx === -1) {
+				adminCount++;
+				membs.push({ userId, role: GroupRole.ADMIN, expiresAt: null });
+			}
+			// check if at least one ADMIN
+			if (adminCount === 0) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Group must have ADMIN without expiration"
+				});
+			}
+			// create
+			return database.group.create({
+				data: {
+					name,
+					slug,
+					parentId: parent?.id,
+					permissions: { create: perms },
+					members: { create: membs }
+				}
+			});
+		}),
+	updateGroup: authProcedure.input(GroupFormSchema).mutation(async ({ input, ctx }) => {
+		const { id, permissions, members, name, parent, slug } = input;
+		const userId = ctx.user.id;
+		const isAdmin = ctx.user.role === "ADMIN";
+		if (!id) {
+			throw new TRPCError({ code: "BAD_REQUEST", message: "Group id is required" });
+		}
+		// 3. Group name update
+		const {
+			name: oldName,
+			parentId: oldParentId,
+			slug: oldSlug
+		} = await database.group.findUniqueOrThrow({
+			where: { id },
+			select: { name: true, parentId: true, slug: true }
+		});
+		// restrict changing parentId (parent?.id produces undefined !== null)
+		if ((parent && parent.id) !== oldParentId) {
+			if (!isAdmin) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Cannot change parent of the group"
+				});
+			}
+			// run circular dependency check
+			if (parent && (await testGroupCircularParent(id, parent.id))) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Group parent cannot have circular dependencies"
+				});
+			}
+		}
+		// check if update name or slug
+		if (name !== oldName || slug !== oldSlug) {
+			const hasAccess = isAdmin || (await hasGroupRole(id, userId, GroupRole.ADMIN));
+			if (!hasAccess) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Insufficient permissions to update group name"
+				});
+			}
+		}
+
+		// 1. Members
+		// check if ADMIN has no limit
+		let adminCount = 0;
+		for (const m of members) {
+			if (m.role === GroupRole.ADMIN) {
+				if (m.expiresAt) {
+					throw new TRPCError({
+						code: "BAD_REQUEST",
+						message: "Group ADMIN role cannot expire"
+					});
+				}
+				adminCount++;
+			}
+		}
+		// check if at least one ADMIN remains
+		if (adminCount === 0) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: "Group must have ADMIN without expiration"
+			});
+		}
+		// map members to drop display data
+		const membs = members.map(m => {
+			return { userId: m.user.id, role: m.role, expiresAt: m.expiresAt };
+		});
+		// fetch old members to check if something changed
+		const oldMembers = await database.member.findMany({
+			where: { groupId: id },
+			select: { userId: true, role: true, expiresAt: true }
+		});
+		const memberDiffs = new Map(membs.map(m => [m.userId, m]));
+		for (const m of oldMembers) {
+			const d = memberDiffs.get(m.userId);
+			if (!d) {
+				// was removed - keep in diffs
+				memberDiffs.set(m.userId, m);
+			} else if (d.role === m.role && d.expiresAt?.getTime() === m.expiresAt?.getTime()) {
+				// if unchanged - ignore
+				memberDiffs.delete(m.userId);
+			}
+		}
+		// check if has ADMIN permission (only if members have changed)
+		if (memberDiffs.size > 0) {
+			const hasAccess = isAdmin || (await hasGroupRole(id, userId, GroupRole.ADMIN));
+			if (!hasAccess) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Insufficient permissions to update members"
+				});
+			}
+		}
+
+		// 2. Permissions
+		// map permissions to drop display data
+		const perms = permissions.map(stripFormResourceAccess);
+		// fetch existing permissions to determine diffs
+		const existingPerms = await database.permission.findMany({
+			where: { groupId: id }
+		});
+		// compute diffs - deletions and additions/updates
+		const incomingMap = new Map(perms.map(p => [getResourceKey(p), p]));
+		for (const existingPerm of existingPerms) {
+			const existing = ResourceAccessSchema.parse(existingPerm);
+			const key = getResourceKey(existing);
+			const incoming = incomingMap.get(key);
+			if (!incoming) {
+				incomingMap.set(key, existing); // add deleted cases to check
+			} else if (incoming.accessLevel === existing.accessLevel) {
+				incomingMap.delete(key); // ignore non-changed
+			}
+		}
+		// check permission - must have full access at parent or be admin (only if permissions have changed)
+		if (incomingMap.size > 0) {
+			// to change resource permission must have FULL access to each
+			const checks = Array.from(incomingMap.values()).map(p => {
+				return { ...p, accessLevel: AccessLevel.FULL };
+			});
+			const hasAccess =
+				ctx.user.role === "ADMIN" || (await hasResourceAccessBatch(userId, checks));
+
+			if (!hasAccess) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Insufficient permissions to update permissions"
+				});
+			}
+		}
+
+		const activeCourseIds = perms.flatMap(p => p.courseId ?? []);
+		const activeLessonIds = perms.flatMap(p => p.lessonId ?? []);
+		const activeSpecIds = perms.flatMap(p => p.specializationId ?? []);
+		const activeSubjectIds = perms.flatMap(p => p.subjectId ?? []);
+
+		// 4. run update
+		return await database.group.update({
+			where: { id },
+			data: {
+				name,
+				slug,
+				parentId: parent?.id,
+				permissions: {
+					deleteMany: {
+						OR: [
+							{
+								courseId: { notIn: activeCourseIds },
+								lessonId: null,
+								specializationId: null,
+								subjectId: null
+							},
+							{
+								lessonId: { notIn: activeLessonIds },
+								courseId: null,
+								specializationId: null,
+								subjectId: null
+							},
+							{
+								specializationId: { notIn: activeSpecIds },
+								courseId: null,
+								lessonId: null,
+								subjectId: null
+							},
+							{
+								subjectId: { notIn: activeSubjectIds },
+								courseId: null,
+								lessonId: null,
+								specializationId: null
+							}
+						]
+					},
+					upsert: perms.map(p => {
+						if ("courseId" in p && p.courseId) {
+							return {
+								where: { groupId_courseId: { groupId: id, courseId: p.courseId } },
+								update: { accessLevel: p.accessLevel },
+								create: { courseId: p.courseId, accessLevel: p.accessLevel }
+							};
+						}
+						if ("lessonId" in p && p.lessonId) {
+							return {
+								where: { groupId_lessonId: { groupId: id, lessonId: p.lessonId } },
+								update: { accessLevel: p.accessLevel },
+								create: { lessonId: p.lessonId, accessLevel: p.accessLevel }
+							};
+						}
+						if ("specializationId" in p && p.specializationId) {
+							return {
+								where: {
+									groupId_specializationId: {
+										groupId: id,
+										specializationId: p.specializationId
+									}
+								},
+								update: { accessLevel: p.accessLevel },
+								create: {
+									specializationId: p.specializationId,
+									accessLevel: p.accessLevel
+								}
+							};
+						}
+						if ("subjectId" in p && p.subjectId) {
+							return {
+								where: {
+									groupId_subjectId: { groupId: id, subjectId: p.subjectId }
+								},
+								update: { accessLevel: p.accessLevel },
+								create: { subjectId: p.subjectId, accessLevel: p.accessLevel }
+							};
+						}
+						throw new TRPCError({
+							code: "BAD_REQUEST",
+							message: "Invalid resource input for permission"
+						});
+					})
+				},
+				members: {
+					deleteMany: { userId: { notIn: membs.map(m => m.userId) } },
+					upsert: membs.map(m => ({
+						where: { userId_groupId: { groupId: id, userId: m.userId } },
+						update: { role: m.role, expiresAt: m.expiresAt },
+						create: m
+					}))
+				}
+			}
+		});
+	}),
+	mergeGroups: authProcedure
+		.input(
+			z.object({
+				name: z.string().min(3),
+				slug: z.string().nullable(),
+				groupIds: z.number().array(),
+				strategy: z.enum(["first", "highest", "lowest"])
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const { groupIds, strategy } = input;
+			const { id: userId } = ctx.user;
+
+			// Must be website admin or have ADMIN role in all merging groups
+			const hasAccess =
+				ctx.user.role === "ADMIN" ||
+				(
+					await Promise.all(
+						groupIds.map(groupId => hasGroupRole(groupId, userId, GroupRole.ADMIN))
+					)
+				).every(v => v);
+			if (!hasAccess) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Insufficient permissions to merge groups"
+				});
+			}
+
+			let base: Group | null = null;
+			const childrenSet = new Set<number>();
+			const memberSet = new Map<string, Member>();
+			const permissionSet = new Map<string, Permission>();
+
+			// Merge members and permissions
+			const groups = await Promise.all(
+				groupIds.map(id =>
+					database.group.findUnique({
+						where: { id },
+						select: {
+							id: true,
+							name: true,
+							slug: true,
+							parentId: true,
+							members: true,
+							permissions: true,
+							children: true
+						}
+					})
+				)
+			);
+			for (const group of groups) {
+				if (group === null) continue;
+				//
+				if (base === null) {
+					base = group; // take first group name, id, and parent
+				}
+				group.members.forEach(m => {
+					const o = memberSet.get(m.userId);
+					if (
+						!o ||
+						(strategy === "highest" && greaterGroupRole(m.role, o.role)) ||
+						(strategy === "lowest" && greaterGroupRole(o.role, m.role))
+					) {
+						memberSet.set(m.userId, m);
+					}
+				});
+				group.permissions.forEach(permission => {
+					const safe = ResourceAccessSchema.parse(permission);
+					const key = getResourceKey(safe);
+					const existing = permissionSet.get(key);
+					if (!existing || greaterAccessLevel(safe.accessLevel, existing.accessLevel)) {
+						permissionSet.set(key, permission);
+					}
+				});
+				group.children.forEach(c => {
+					if (!childrenSet.has(c.id)) {
+						childrenSet.add(c.id);
+					}
+				});
+			}
+			//
+			if (!base) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "No valid groups found"
+				});
+			}
+			// remove groups stated for deletion from children
+			groupIds.forEach(id => childrenSet.delete(id));
+			// create
+			const data: Prisma.GroupCreateInput = {
+				name: input.name,
+				slug: input.slug,
+				permissions: {
+					create: Array.from(permissionSet.values(), v => ({
+						accessLevel: v.accessLevel,
+						isPublic: v.isPublic,
+						lesson: v.lessonId ? { connect: { lessonId: v.lessonId } } : undefined,
+						course: v.courseId ? { connect: { courseId: v.courseId } } : undefined,
+						specialization: v.specializationId
+							? { connect: { specializationId: v.specializationId } }
+							: undefined,
+						subject: v.subjectId ? { connect: { subjectId: v.subjectId } } : undefined
+					}))
+				},
+				children: {
+					connect: Array.from(childrenSet).map(id => ({ id }))
+				},
+				members: {
+					create: Array.from(memberSet.values(), v => ({
+						role: v.role,
+						expiresAt: v.expiresAt,
+						createdAt: v.createdAt,
+						user: { connect: { id: v.userId } }
+					}))
+				}
+			};
+			if (base.parentId) {
+				data.parent = { connect: { id: base.parentId } };
+			}
+			try {
+				return await database.group.create({ data });
+			} catch (error) {
+				if (error instanceof Prisma.PrismaClientKnownRequestError) {
+					throw new TRPCError({
+						code: "BAD_REQUEST",
+						message: `Database error: ${error.message}`
+					});
+				}
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Failed to merge groups"
+				});
+			}
+		}),
+	deleteGroup: authProcedure
+		.input(z.object({ groupId: z.number() }))
+		.mutation(async ({ input, ctx }) => {
+			const { groupId } = input;
+			const userId = ctx.user.id;
+			// check if user is group admin or website admin
+			const isOwner =
+				ctx.user.role === "ADMIN" || (await hasGroupRole(groupId, userId, GroupRole.ADMIN));
+			if (!isOwner) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
+			const resources = await getSingleOwnedResources(groupId);
+			if (resources.length > 0) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: `Cannot delete group with exclusive FULL access to resources`
+				});
+			}
+
+			// delete group
+			return await database.group.delete({ where: { id: groupId } });
+		}),
+	getSingleOwnedResources: authProcedure
+		.input(z.object({ groupId: z.number() }))
+		.query(async ({ ctx, input }) => {
+			const userId = ctx.user.id;
+			const { groupId } = input;
+			// check if user is group admin or website admin
+			const isOwner =
+				ctx.user.role === "ADMIN" || (await hasGroupRole(groupId, userId, GroupRole.ADMIN));
+			if (!isOwner) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
+			return await getSingleOwnedResources(groupId);
+		}),
+	getResourceAccess: authProcedure.input(ResourceInputSchema).query(async ({ input, ctx }) => {
+		const userId = ctx.user.id;
+		return await getResourceAccess(userId, input);
+	}),
+	hasResourceAccess: authProcedure.input(ResourceAccessSchema).query(async ({ input, ctx }) => {
+		if (ctx.user.role === "ADMIN") return true;
+		return await hasResourceAccess(ctx.user.id, input);
+	}),
+	getEffectiveResourceAccesses: authProcedure
+		.input(ResourceInputSchema)
+		.query(async ({ input, ctx }) => {
+			// must have FULL access to see all permissions
+			const hasFullAccess =
+				ctx.user.role === "ADMIN" ||
+				(await hasResourceAccess(ctx.user.id, { ...input, accessLevel: AccessLevel.FULL }));
+			if (!hasFullAccess) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
+			return getEffectiveResourceAccesses(input);
+		}),
+	// Done by group admins or website admins
+	grantGroupAccess: authProcedure
+		.input(
+			z.object({
+				groupId: z.number(),
+				userId: z.string(),
+				role: GroupRoleEnum,
+				durationMinutes: z.number().optional()
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const { groupId, userId, role, durationMinutes } = input;
+			const grantorId = ctx.user.id; // grantor
+			// first check if grantor has ADMIN permission
+			const hasAccess =
+				ctx.user.role === "ADMIN" ||
+				(await hasGroupRole(groupId, grantorId, GroupRole.ADMIN));
+			if (!hasAccess) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
+			// now add user to the group
+			return await createGroupAccess(groupId, userId, role, durationMinutes);
+			// TODO make log of access created
+		}),
+	hasGroupRole: authProcedure
+		.input(z.object({ groupId: z.number(), role: GroupRoleEnum }))
+		.query(async ({ input, ctx }) => {
+			if (ctx.user.role === "ADMIN") return true;
+			return await hasGroupRole(input.groupId, ctx.user.id, input.role);
+		}),
+	// Done by resource owners or website admins
+	grantGroupPermission: authProcedure
+		.input(z.object({ groupId: z.number(), permission: ResourceAccessSchema }))
+		.mutation(async ({ input, ctx }) => {
+			const { groupId, permission } = input;
+			// check if grantor has FULL access level to that resource (does not need to be in the group)
+			const hasAccess =
+				ctx.user.role === "ADMIN" ||
+				(await hasResourceAccess(ctx.user.id, {
+					...permission,
+					accessLevel: AccessLevel.FULL
+				}));
+			if (!hasAccess) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
+			// now create new permission
+			return await createResourceAccess({ groupId, ...permission });
+			// TODO make log of permission created
+		}),
+	// Done by resource owners, grantor group admins, group admins, or website admins
+	revokeGroupPermission: authProcedure
+		.input(z.object({ permissionId: z.string() }))
+		.mutation(async ({ input, ctx }) => {
+			const { permissionId } = input;
+			// fetch permission which is revoked
+			const perm = await database.permission.findUnique({
+				where: { id: permissionId }
+			});
+			if (!perm) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Invalid permission" });
+			}
+			const data = ResourceInputSchema.parse(perm);
+
+			// can revoke if has full access to resource or group admin
+			let hasAccess = ctx.user.role === "ADMIN";
+			if (!hasAccess) {
+				hasAccess = await anyTrue([
+					() => hasGroupRole(perm.groupId, ctx.user.id, GroupRole.ADMIN),
+					() => hasResourceAccess(ctx.user.id, { accessLevel: AccessLevel.FULL, ...data })
+				]);
+			}
+			if (!hasAccess) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
+			// check if last FULL access is deleted
+			if (perm.accessLevel === AccessLevel.FULL) {
+				const fullAccesses = await database.permission.count({
+					where: {
+						accessLevel: AccessLevel.FULL,
+						...data
+					}
+				});
+				if (fullAccesses <= 1) {
+					throw new TRPCError({
+						code: "BAD_REQUEST",
+						message: "Cannot remove last FULL access"
+					});
+				}
+			}
+			// delete permission
+			return await database.permission.delete({ where: { id: permissionId } });
+			// TODO make log of permission revoked
+		}),
+	// Done by group admins or website admins
+	revokeGroupAccess: authProcedure
+		.input(z.object({ userId: z.string(), groupId: z.number() }))
+		.mutation(async ({ input, ctx }) => {
+			const userId = ctx.user.id;
+			// fetch membership which is revoked
+			const membership = await database.member.findUnique({
+				where: { userId_groupId: input },
+				select: { groupId: true, userId: true, role: true }
+			});
+			if (!membership) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Invalid membership" });
+			}
+			// check if user has ADMIN role in that group
+			const hasAccess =
+				ctx.user.role === "ADMIN" ||
+				(await hasGroupRole(membership.groupId, userId, GroupRole.ADMIN));
+			if (!hasAccess) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
+			// check if last admin is removed
+			if (membership.role === GroupRole.ADMIN) {
+				const adminCount = await database.member.count({
+					where: { groupId: input.groupId, role: GroupRole.ADMIN }
+				});
+				if (adminCount <= 1) {
+					throw new TRPCError({
+						code: "FORBIDDEN",
+						message: "Cannot leave group as you are the only ADMIN"
+					});
+				}
+			}
+			// delete membership
+			return await database.member.delete({ where: { userId_groupId: input } });
+			// TODO make log of access revoked
+		}),
+	leaveGroup: authProcedure
+		.input(z.object({ groupId: z.number() }))
+		.mutation(async ({ input, ctx }) => {
+			const userId = ctx.user.id;
+			// fetch membership which is revoked
+			const membership = await database.member.findUnique({
+				where: { userId_groupId: { groupId: input.groupId, userId } },
+				select: { groupId: true, userId: true, role: true }
+			});
+			if (!membership) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Invalid membership" });
+			}
+			// check if user is not the only ADMIN in that group
+			if (membership.role === GroupRole.ADMIN) {
+				const adminCount = await database.member.count({
+					where: { groupId: input.groupId, role: GroupRole.ADMIN }
+				});
+				if (adminCount <= 1) {
+					throw new TRPCError({
+						code: "FORBIDDEN",
+						message: "Cannot leave group as you are the only ADMIN"
+					});
+				}
+			}
+			// delete membership
+			return await database.member.delete({
+				where: { userId_groupId: { groupId: input.groupId, userId } }
+			});
+			// TODO make log of access revoked
+		}),
+	// deletePermission: adminProcedure
+	// 	.input(z.object({ permissionId: z.string() }))
+	// 	.mutation(async ({ input }) => {
+	// 		const { permissionId } = input;
+	// 		return await database.permission.delete({ where: { id: permissionId } });
+	// 	}),
+	getGroup: authProcedure.input(z.object({ id: z.number() })).query(async ({ input, ctx }) => {
+		const hasAccess =
+			ctx.user.role === "ADMIN" ||
+			(await hasGroupRole(input.id, ctx.user.id, GroupRole.MEMBER));
+		return hasAccess ? await getGroup(input.id) : null;
+	}),
+	findGroups: t.procedure
+		.input(
+			paginationSchema.extend({
+				name: z.string().optional(),
+				slug: z.string().optional(),
+				exclude: z.number().array().optional(),
+				members: z.string().array().optional(),
+				isGlobal: z.boolean()
+			})
+		)
+		.query(async ({ ctx, input }) => {
+			// if local query, require user
+			const userId = !input.isGlobal && ctx?.user?.id;
+			if (userId === undefined) {
+				throw new TRPCError({ code: "UNAUTHORIZED" });
+			}
+			if (userId) {
+				input.members = input.members || [];
+				input.members.push(userId);
+			}
+			//
+			const pageSize = 15;
+
+			const where: Prisma.GroupWhereInput = {};
+			if (input.name && input.name.length > 0) {
+				where.name = { contains: input.name, mode: "insensitive" };
+			}
+			if (input.members && input.members.length > 0) {
+				where.AND = input.members.map(id => ({
+					members: { some: { userId: id } }
+				}));
+			}
+			if (input.exclude && input.exclude?.length > 0) {
+				where.id = { notIn: input.exclude };
+			}
+
+			const [groupsRaw, count] = await database.$transaction([
+				database.group.findMany({
+					include: {
+						members: {
+							select: { user: { select: { name: true } } }
+						}
+					},
+					...paginate(pageSize, input.page),
+					orderBy: { name: "asc" },
+					where
+				}),
+				database.group.count({ where })
+			]);
+			// flatten result
+			const result = groupsRaw.map(g => ({
+				groupId: g.id,
+				name: g.name,
+				slug: g.slug,
+				members: g.members.map(m => m.user.name)
+			}));
+
+			return {
+				result,
+				pageSize: pageSize,
+				page: input.page,
+				totalCount: count
+			} satisfies Paginated<unknown>;
+		})
+});

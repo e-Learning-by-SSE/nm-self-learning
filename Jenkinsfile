@@ -1,5 +1,60 @@
 @Library('web-service-helper-lib') _
 
+def buildSphinxDocs(Map cfg = [:]) {
+    // Function parameters
+    // Mandatory: Version (version or unstable)
+    def version     = cfg.get('version', env.VERSION ?: "unstable")
+    // Optional: Additional Docker tag
+    def dockerTag   = cfg.get('dockerTag', version)
+
+    // Script parameters
+    def ws  = pwd()
+    def uid = sh(script: 'id -u', returnStdout: true).trim()
+    def gid = sh(script: 'id -g', returnStdout: true).trim()
+
+    // Create build directory
+    sh "mkdir -p ${ws}/docs/sphinx/build"
+    sh "chown -R ${uid}:${gid} ${ws}/docs/sphinx/build || true"
+    sh "chmod -R u+rwX,g+rwX ${ws}/docs/sphinx/build || true"
+    
+    // Build Sphinx documentation
+    docker.image('sphinxdoc/sphinx:8.2.3')
+        .inside("-u ${uid}:${gid} -v ${ws}/docs/sphinx/docs:/docs -v ${ws}/docs/sphinx/build:/build") {
+            for (l in ['de','en']) {
+                stage("Build docs: ${l}") {
+                    sh "sphinx-build -b html /docs/${l}/source /build/${l}"
+                }
+            }
+        }
+    
+    // Build and publish Docker image
+    docker.withRegistry('https://ghcr.io', 'github-ssejenkins') {
+        sh """
+            docker build \
+                -t ghcr.io/e-learning-by-sse/nm-self-learn-docs:${version} \
+                -t ghcr.io/e-learning-by-sse/nm-self-learn-docs:latest \
+                docs/sphinx
+
+            docker push ghcr.io/e-learning-by-sse/nm-self-learn-docs:${version}
+            docker push ghcr.io/e-learning-by-sse/nm-self-learn-docs:latest
+        """
+    }
+
+    // Clean up build directory
+    sh "set +e"
+    sh "rm -rf ${ws}/docs/sphinx/build"
+}
+
+def fullTest(Map cfg = [:]) {
+    def resultDir = cfg.get('resultDir', 'output/test')
+    sh """
+        set -e
+        rm -f ${resultDir}/junit-*.xml || true
+        npm run test:ci
+    """
+    junit testResults: "${resultDir}/junit*.xml", allowEmptyResults: true, skipPublishingChecks: true, skipMarkingBuildUnstable : true
+}
+
 pipeline {
     agent { label 'docker' }
     parameters {
@@ -38,16 +93,22 @@ pipeline {
         NX_BRANCH = env.BRANCH_NAME.replace('PR-', '')
         NX_REJECT_UNKNOWN_LOCAL_CACHE = 0
 
-        NODE_DOCKER_IMAGE = 'node:21-bullseye'
+        NODE_DOCKER_IMAGE = 'node:22-bookworm'
         TARGET_PREFIX = 'ghcr.io/e-learning-by-sse/nm-self-learning'
         // we need the .npm and .cache folders in a separate volume to avoid permission issues during npm install
         DOCKER_ARGS = "--tmpfs /.npm -v ${env.WORKSPACE}/build-caches/npm:${env.WORKSPACE}/.npm -v $HOME/build-caches/cache:/.cache -v $HOME/build-caches/nx:${env.WORKSPACE}/.nx"
+        DOCKER_BUILDKIT = '1'
     }
 
     options {
         ansiColor('xterm')
     }
     stages {
+        stage('Cleanup') {
+            steps {
+                sh 'rm -rf dist .next'
+            }
+        }
         stage('NPM Install') {
             agent {
                 docker {
@@ -67,6 +128,28 @@ pipeline {
             }
         }
 
+        stage('Test') {
+            when {
+                expression {
+                    return params.RELEASE_LATEST_VERSION == ''
+                }
+            }
+            environment {
+                POSTGRES_DB = 'SelfLearningDb'
+                POSTGRES_USER = 'username'
+                POSTGRES_PASSWORD = 'password'
+                DATABASE_URL = "postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@db:5432/${env.POSTGRES_DB}"
+            }
+            steps {
+                script {
+                    withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
+                        .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
+                            sh 'npm run seed'
+                            fullTest()
+                    }
+                }
+            }
+        }
         stage('Pipeline') {
             environment {
                 POSTGRES_DB = 'SelfLearningDb'
@@ -94,16 +177,32 @@ pipeline {
                                 returnStdout: true
                             ).trim()
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
-                             .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
+                                .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
                                     sh 'npm run seed' // this can be changed in the future to "npx prisma migrate reset" to test the migration files
                                     sh "env TZ=${env.TZ} npx nx affected --base=${lastSuccessSHA} -t lint build e2e-ci"
                                 }
-                        }
-                        ssedocker {
-                            create {
-                                target "${env.TARGET_PREFIX}:unstable"
+                            buildSphinxDocs(dockerTag: 'unstable')
+                        
+                            withCredentials([string(credentialsId: 'GitHub-NPM', variable: 'NPM_TOKEN')]) {
+                                withEnv(["DOCKER_BUILDKIT=1"]) {
+                                    writeFile file: '.npmrc.build', text: """
+@e-learning-by-sse:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${env.NPM_TOKEN}
+"""
+
+                                    try {
+                                        ssedocker {
+                                            create {
+                                                target "${env.TARGET_PREFIX}:unstable"
+                                                args "--secret id=npmrc,src=.npmrc.build"
+                                            }
+                                            publish {}
+                                        }
+                                    } finally {
+                                        sh 'rm -f .npmrc.build'
+                                    }
+                                }
                             }
-                            publish {}
                         }
                     }
                     post {
@@ -130,15 +229,31 @@ pipeline {
                     steps {
                         script {
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
-                             .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
-                                sh 'npm run format:check'
-                                sh 'npm run seed'
-                                sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
+                                .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
+                                    sh 'npm run format:check'
+                                    sh 'npm run seed'
+                                    sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
                             }
-                        }
-                        ssedocker {
-                            create {
-                                target "${env.TARGET_PREFIX}:${env.VERSION}"
+                            //buildSphinxDocs()
+                        
+                            withCredentials([string(credentialsId: 'GitHub-NPM', variable: 'NPM_TOKEN')]) {
+                                withEnv(["DOCKER_BUILDKIT=1"]) {
+                                    writeFile file: '.npmrc.build', text: """
+@e-learning-by-sse:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${env.NPM_TOKEN}
+"""
+
+                                    try {
+                                        ssedocker {
+                                            create {
+                                                target "${env.TARGET_PREFIX}:${env.VERSION}"
+                                                args "--secret id=npmrc,src=.npmrc.build"
+                                            }
+                                        }
+                                    } finally {
+                                        sh 'rm -f .npmrc.build'
+                                    }
+                                }
                             }
                         }
                     }
@@ -182,12 +297,27 @@ pipeline {
                                 } else {
                                     releaseTag = "${params.PUBLISH_IMAGE_TAG}"
                                 }
-                                ssedocker {
-                                    create {
-                                        target "${env.TARGET_PREFIX}:${apiVersion}"
-                                    }
-                                    publish {
-                                        tag "${releaseTag}"
+
+                                withCredentials([string(credentialsId: 'GitHub-NPM', variable: 'NPM_TOKEN')]) {
+                                    withEnv(["DOCKER_BUILDKIT=1"]) {
+                                        writeFile file: '.npmrc.build', text: """
+@e-learning-by-sse:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${env.NPM_TOKEN}
+"""
+
+                                        try {
+                                            ssedocker {
+                                                create {
+                                                    target "${env.TARGET_PREFIX}:${apiVersion}"
+                                                    args "--secret id=npmrc,src=.npmrc.build"
+                                                }
+                                                publish {
+                                                    tag "${releaseTag}"
+                                                }
+                                            }
+                                        } finally {
+                                            sh 'rm -f .npmrc.build'
+                                        }
                                     }
                                 }
                             }
@@ -200,45 +330,62 @@ pipeline {
                             return params.RELEASE_LATEST_VERSION != ''
                         }
                     }
+
                     steps {
                         script {
                             def newVersion = params.RELEASE_LATEST_VERSION
                             currentBuild.displayName = "Release ${newVersion}"
 
-                            // Git vorbereiten
+                            // Prepare GIT for tagging and pushing
                             sh 'git restore .'
                             sh 'git config user.name "ssejenkins"'
                             sh 'git config user.email "jenkins@sse.uni-hildesheim.de"'
-							// would be nicer if URL is not hardcoded here but comes directly from the checkout stage
+                            // would be nicer if URL is not hardcoded here but comes directly from the checkout stage
                             sh 'git remote set-url origin git@github.com:e-learning-by-sse/nm-self-learning.git'
 
 
-                            // Postgres + Sidecar für Build und Tests
+                            // Postgres + Sidecar for Build and Tests
                             withPostgres([
                                 dbUser: env.POSTGRES_USER,
                                 dbPassword: env.POSTGRES_PASSWORD,
                                 dbName: env.POSTGRES_DB
                             ]).insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
+                                sh 'rm -rf dist/apps/site/.next dist/apps/site/.next/export || true'
                                 sh 'npm run seed'
                                 sh "env TZ=${env.TZ} npx nx run-many --target=build --all --skip-nx-cache"
+								sh "git restore apps/site/next-env.d.ts"
                                 sh "npm version ${newVersion}"
                             }
+                            buildSphinxDocs(dockerTag: "latest", version: newVersion)
 
                             sshagent(['STM-SSH-DEMO']) {
                                  sh "GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=no' git push origin v${newVersion}"
                             }
 
                             // Docker-Build und Publish
-                            ssedocker {
-                                create {
-                                    target "${env.TARGET_PREFIX}:${params.RELEASE_LATEST_VERSION}"
-                                }
-                                publish {
-                                    tag "latest"
+                            withCredentials([string(credentialsId: 'GitHub-NPM', variable: 'NPM_TOKEN')]) {
+                                withEnv(["DOCKER_BUILDKIT=1"]) {
+                                    writeFile file: '.npmrc.build', text: """
+@e-learning-by-sse:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${env.NPM_TOKEN}
+"""
+
+                                    try {
+                                        ssedocker {
+                                            create {
+                                                target "${env.TARGET_PREFIX}:${params.RELEASE_LATEST_VERSION}"
+                                                args "--secret id=npmrc,src=.npmrc.build"
+                                            }
+                                            publish {
+                                                tag "latest"
+                                            }
+                                        }
+                                    } finally {
+                                        sh 'rm -f .npmrc.build'
+                                    }
                                 }
                             }
                         }
-
                     }
                 }
             }

@@ -90,7 +90,7 @@ async function getSpecialization(specializationSlug: string, username: string) {
 export default function SpecializationPage({ specialization }: SpecializationPageProps) {
 	const { title, subtitle, imgUrlBanner, subject, courses, dynCourses } = specialization;
 	return (
-		<div className="bg-gray-50 pb-32">
+		<div className="pb-32">
 			<TopicHeader
 				imgUrlBanner={imgUrlBanner}
 				parentLink={`/subjects/${subject.slug}`}
@@ -134,9 +134,9 @@ function CourseCard({
 				imgUrl={course.imgUrl}
 				title={course.title}
 				subtitle={course.subtitle}
-				badge={<ImageCardBadge text="Lernkurs" className="bg-emerald-500" />}
+				badge={<ImageCardBadge text="Lernkurs" className="bg-c-primary" />}
 				footer={
-					<span className="flex items-center gap-3 text-sm font-semibold text-emerald-500">
+					<span className="flex items-center gap-3 text-sm font-semibold text-c-primary">
 						<PuzzlePieceIcon className="h-5" />
 						<span>
 							{meta.lessonCount}{" "}

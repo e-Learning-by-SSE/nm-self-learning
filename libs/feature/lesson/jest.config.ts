@@ -1,5 +1,5 @@
 /* eslint-disable */
-export default {
+module.exports = {
 	displayName: "feature-lesson",
 	preset: "../../../jest.preset.js",
 	coverageDirectory: "../../../coverage/libs/feature/lesson"

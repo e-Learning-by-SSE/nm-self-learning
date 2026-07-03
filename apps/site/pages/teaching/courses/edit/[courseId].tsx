@@ -1,13 +1,13 @@
-import { Prisma } from "@prisma/client";
+import { AccessLevel, Prisma } from "@prisma/client";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
-import { CourseContent, extractLessonIds } from "@self-learning/types";
+import { CourseContent, extractLessonIds, resourcePermissionSelect, toResourcePermissionsForm } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
-import { useRef } from "react";
-import { hasAuthorPermission } from "@self-learning/ui/layouts";
+import { useEffect } from "react";
+import { ResourceGuard, testResourceGuard } from "@self-learning/ui/layouts";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { withAuth } from "@self-learning/util/auth";
 
@@ -17,7 +17,7 @@ type EditCourseProps = {
 };
 
 export const getServerSideProps = withTranslations(
-	["pages-course-info", "common"],
+	["pages-course-info", "common", "feature-question-types"],
 	withAuth<EditCourseProps>(async (ctx, user) => {
 		const courseId = ctx.params?.courseId as string;
 		const { locale } = ctx;
@@ -46,6 +46,9 @@ export const getServerSideProps = withTranslations(
 						subjectId: true,
 						title: true
 					}
+				},
+				permissions: {
+					select: resourcePermissionSelect
 				}
 			}
 		});
@@ -60,7 +63,9 @@ export const getServerSideProps = withTranslations(
 			};
 		}
 
-		if (!hasAuthorPermission({ user, permittedAuthors: course.authors.map(a => a.username) })) {
+		const permissions = toResourcePermissionsForm(course.permissions);
+		const hasAccess = testResourceGuard(user, AccessLevel.EDIT, permissions);
+		if (!hasAccess) {
 			return {
 				redirect: {
 					destination: "/403",
@@ -98,7 +103,8 @@ export const getServerSideProps = withTranslations(
 			slug: course.slug,
 			subjectId: course.subject?.subjectId ?? null,
 			authors: course.authors.map(author => ({ username: author.username })),
-			content: content
+			content: content,
+			permissions
 		};
 
 		return {
@@ -116,17 +122,13 @@ export default function EditCoursePage({ course, lessons }: EditCourseProps) {
 	const { mutateAsync: updateCourse } = trpc.course.edit.useMutation();
 	const router = useRouter();
 	const trpcContext = trpc.useUtils();
-	const isInitialRender = useRef(true);
-
-	if (isInitialRender.current) {
-		isInitialRender.current = false;
-
+	// do it once
+	useEffect(() => {
 		// Populate query cache with existing lessons
-		// This way, we only need to fetch newly added lessons
 		for (const lesson of lessons) {
 			trpcContext.lesson.findOne.setData({ lessonId: lesson.lessonId }, lesson);
 		}
-	}
+	}, [lessons, trpcContext]);
 
 	function onConfirm(updatedCourse: CourseFormModel) {
 		async function update() {
@@ -149,5 +151,13 @@ export default function EditCoursePage({ course, lessons }: EditCourseProps) {
 		update();
 	}
 
-	return <CourseEditor course={course} onConfirm={onConfirm} />;
+	return (
+		<ResourceGuard
+			fallback="unauthorized"
+			requiredAccess={AccessLevel.EDIT}
+			permittedGroups={course.permissions}
+		>
+			<CourseEditor course={course} onConfirm={onConfirm} />
+		</ResourceGuard>
+	);
 }

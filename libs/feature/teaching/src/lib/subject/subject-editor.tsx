@@ -1,3 +1,4 @@
+"use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Subject, subjectSchema } from "@self-learning/types";
 import { ImageOrPlaceholder, SectionHeader } from "@self-learning/ui/common";
@@ -9,10 +10,12 @@ import {
 	Upload,
 	useSlugify
 } from "@self-learning/ui/forms";
-import { SidebarEditorLayout } from "@self-learning/ui/layouts";
+import { SidebarEditorLayout, useResourceGuard } from "@self-learning/ui/layouts";
 import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { FormProvider, useForm } from "react-hook-form";
 import { Trans, useTranslation } from "next-i18next";
+import { GroupAccessEditor } from "../group/forms/group-form";
+import { AccessLevel } from "@prisma/client";
 
 export function SubjectEditor({
 	initialSubject,
@@ -26,6 +29,8 @@ export function SubjectEditor({
 		defaultValues: initialSubject
 	});
 
+	const isNew = initialSubject.subjectId === "";
+
 	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
 	const cardImgUrl = form.watch("cardImgUrl");
 	const imgUrlBanner = form.watch("imgUrlBanner");
@@ -37,6 +42,9 @@ export function SubjectEditor({
 		formState: { errors }
 	} = form;
 
+	const hasFull = useResourceGuard(AccessLevel.FULL, initialSubject.permissions);
+	const showGroupAccessEditor = isNew || hasFull;
+
 	return (
 		<FormProvider {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)}>
@@ -44,25 +52,19 @@ export function SubjectEditor({
 					sidebar={
 						<>
 							<div>
-								<span className="font-semibold text-secondary">
-									{initialSubject.subjectId === ""
-										? t("Create Topic")
-										: t("Edit Topic")}
+								<span className="font-semibold text-c-primary">
+									{isNew ? t("Create Topic") : t("Edit Topic")}
 								</span>
 
 								<h1 className="text-2xl">
-									{initialSubject.subjectId === ""
-										? t("New Topic")
-										: initialSubject.title}
+									{isNew ? t("New Topic") : initialSubject.title}
 								</h1>
 							</div>
 
 							<OpenAsJsonButton form={form} validationSchema={subjectSchema} />
 
 							<button className="btn-primary w-full" type="submit">
-								{initialSubject.subjectId === ""
-									? t_common("create")
-									: t_common("save")}
+								{isNew ? t_common("create") : t_common("save")}
 							</button>
 
 							<Form.SidebarSection>
@@ -126,6 +128,13 @@ export function SubjectEditor({
 										<FieldHint>{t("Description of the topic")}</FieldHint>
 									</LabeledField>
 								</div>
+
+								{showGroupAccessEditor && (
+								<GroupAccessEditor
+									subtitle="Gruppen, die auf dieses Fachgebiet zugreifen können"
+									doUseDefaultGroup={isNew}
+								/>
+								)}
 							</Form.SidebarSection>
 						</>
 					}

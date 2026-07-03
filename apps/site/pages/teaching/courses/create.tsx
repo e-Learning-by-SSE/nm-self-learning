@@ -1,7 +1,9 @@
+import { canCreate } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
-import { showToast } from "@self-learning/ui/common";
-import { Unauthorized, useRequiredSession } from "@self-learning/ui/layouts";
+import { LoadingBox, showToast } from "@self-learning/ui/common";
+import { Unauthorized, useCanCreate, useRequiredSession } from "@self-learning/ui/layouts";
+import { withAuth } from "@self-learning/util/auth";
 import { useRouter } from "next/router";
 import { withTranslations } from "@self-learning/api";
 
@@ -11,6 +13,7 @@ export default function CreateCoursePage() {
 	const router = useRouter();
 	const { subjectId, specializationId } = router.query;
 	const session = useRequiredSession();
+	const canCreateResource = useCanCreate();
 	const author = session.data?.user.name;
 
 	async function onConfirm(course: CourseFormModel) {
@@ -36,16 +39,25 @@ export default function CreateCoursePage() {
 		}
 	}
 
-	if (!author) {
-		return <Unauthorized>Um einen Kurs zu erstellen, musst du ein Autor sein.</Unauthorized>;
+	if (session.status === "loading") {
+		return <LoadingBox />;
+	}
+
+	if (!canCreateResource) {
+		return (
+			<Unauthorized>
+				Um einen Kurs zu erstellen, musst du Mitglied einer Gruppe sein.
+			</Unauthorized>
+		);
 	}
 
 	return (
 		<>
-			{router.isReady && ( // Query params are not available on first render -> Wait for router to be ready
+			{router.isReady && (
 				<CourseEditor
 					onConfirm={onConfirm}
 					course={{
+						permissions: [],
 						courseId: "",
 						title: "",
 						slug: "",
@@ -54,7 +66,7 @@ export default function CreateCoursePage() {
 						imgUrl: "",
 						subjectId: null,
 						content: [],
-						authors: [{ username: author }]
+						authors: author ? [{ username: author }] : []
 					}}
 				/>
 			)}
@@ -62,4 +74,12 @@ export default function CreateCoursePage() {
 	);
 }
 
-export const getServerSideProps = withTranslations(["pages-course-info", "common"]);
+export const getServerSideProps = withTranslations(
+	["pages-course-info", "common", "feature-question-types"],
+	withAuth(async (_ctx, user) => {
+		if (!(await canCreate(user))) {
+			return { redirect: { destination: "/403", permanent: false } };
+		}
+		return { props: {} };
+	})
+);

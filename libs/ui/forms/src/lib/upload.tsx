@@ -1,7 +1,12 @@
 "use client";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
-import { EllipsisVerticalIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { StarIcon } from "@heroicons/react/24/outline";
+import {
+	CloudArrowUpIcon,
+	EllipsisVerticalIcon,
+	PencilIcon,
+	TrashIcon
+} from "@heroicons/react/24/solid";
 import { AppRouter } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import {
@@ -15,20 +20,30 @@ import {
 	TableDataColumn,
 	TableHeaderColumn
 } from "@self-learning/ui/common";
-import { formatDateAgo } from "@self-learning/util/common";
+import {
+	formatDateDistanceToNow,
+	ConvertTranscriptionToSubtitle
+} from "@self-learning/util/common";
 import { TRPCClientError } from "@trpc/client";
 import { inferRouterOutputs } from "@trpc/server";
-import { ReactElement, useId, useMemo, useState } from "react";
+import { ReactElement, useEffect, useId, useMemo, useState } from "react";
 import { SearchField } from "./searchfield";
 import { UploadProgressDialog } from "./upload-progress-dialog";
+import { CenteredContainer } from "@self-learning/ui/layouts";
+import io, { Socket } from "socket.io-client";
+import { Subtitle, SubtitleSrc, subtitleSrcSchema } from "@self-learning/types";
 import { useTranslation } from "next-i18next";
+import { keepPreviousData } from "@tanstack/react-query";
 
 const MediaType = {
 	image: "image",
 	video: "video",
-	pdf: "pdf"
+	pdf: "pdf",
+	zip: "zip",
+	h5p: "h5p"
 } as const;
 
+// eslint-disable-next-line no-redeclare
 type MediaType = keyof typeof MediaType;
 
 export function Upload({
@@ -38,7 +53,7 @@ export function Upload({
 	hideAssetPicker
 }: {
 	mediaType?: MediaType;
-	onUploadCompleted: (publicUrl: string, meta?: { duration: number }) => void;
+	onUploadCompleted: (publicUrl: string, meta?: { duration: number }, fileName?: string) => void;
 	preview?: ReactElement;
 	/** If `true`, button to open asset picker is not rendered. */
 	hideAssetPicker?: boolean;
@@ -55,7 +70,9 @@ export function Upload({
 		const mediaTypes = {
 			image: "image/*",
 			video: "video/*",
-			pdf: "application/pdf"
+			pdf: "application/pdf",
+			zip: ".zip,.h5p,.html,.htm",
+			h5p: ".h5p,.zip"
 		};
 
 		let accept: string | undefined;
@@ -99,12 +116,18 @@ export function Upload({
 		try {
 			const { presignedUrl, downloadUrl } = await getPresignedUrl({ filename: objectName });
 
-			const onFinish = (e: ProgressEvent<XMLHttpRequestEventTarget>) => {
-				const status = e.type === "loadend" ? "finished" : "failed";
-				console.log(`File upload to ${downloadUrl} ${status}.`);
-				setFileName("");
-				onUploadCompleted(downloadUrl, meta);
+			const onFinish = (xhr: XMLHttpRequest) => {
+				const success = xhr.status >= 200 && xhr.status < 300;
+				console.log(
+					`File upload to ${downloadUrl} ${success ? "finished" : "failed"} (status: ${xhr.status}).`
+				);
 				setViewProgressDialog(false);
+				setFileName("");
+				if (!success) {
+					console.error("Upload failed with status:", xhr.status, xhr.responseText);
+					return;
+				}
+				onUploadCompleted(downloadUrl, meta, fileName);
 			};
 			await uploadWithProgress(
 				presignedUrl,
@@ -156,7 +179,7 @@ export function Upload({
 				{!hideAssetPicker && (
 					<AssetPickerButton
 						mediaType={mediaType}
-						onClose={url => url && onUploadCompleted(url)}
+						onClose={(url, fileName) => url && onUploadCompleted(url, undefined, fileName)}
 					/>
 				)}
 			</div>
@@ -172,6 +195,249 @@ export function Upload({
 			/>
 			{preview}
 		</div>
+	);
+}
+
+export function ModifySubtile({
+	subtitle,
+	onChange,
+	onClick
+}: {
+	subtitle: Subtitle;
+	onClick: (seconds: number) => void;
+	onChange: (subtitle: Subtitle) => void;
+}) {
+	const parseVTT = (vtt: string) => {
+		const lines = vtt.split("\n\n").filter(line => line.trim() !== "");
+		let metadata = "";
+		if (lines[0].startsWith("WEBVTT")) {
+			metadata = lines.shift() || "";
+		} else {
+			throw new Error("Invalid VTT format");
+		}
+		const subtitleLines = lines.map(line => {
+			const [timestamp, ...text] = line.split("\n");
+			return { timestamp, text: text.join(" ") };
+		});
+
+		return { metadata, subtitles: subtitleLines };
+	};
+
+	const [subtitles, setSubtitles] = useState(parseVTT(subtitle.src));
+
+	const handleTextChange = (index: number, newText: string) => {
+		const updatedSubtitles = [...subtitles.subtitles];
+		updatedSubtitles[index].text = newText;
+		setSubtitles({
+			...subtitles,
+			subtitles: updatedSubtitles
+		});
+
+		const updatedSubtitleContent = updatedSubtitles
+			.map(({ timestamp, text }) => `${timestamp}\n${text}`)
+			.join("\n\n");
+		const updatetSubtitleVTT = `${subtitles.metadata}\n\n${updatedSubtitleContent}`;
+		onChange({
+			...subtitle,
+			src: updatetSubtitleVTT
+		});
+	};
+
+	const onClickTimeStamp = (timestamp: string) => {
+		const [hours, minutes, seconds] = timestamp.split(":").map(parseFloat);
+		const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+		onClick(totalSeconds);
+	};
+
+	const removeMillisecondsFromRange = (input: string) => {
+		return input.replace(/\.\d{3}/g, "");
+	};
+
+	return (
+		<div>
+			<ul>
+				{subtitles.subtitles.map((subtitle, index) => (
+					<li key={index} className="flex items-center mb-2 p-2">
+						<span
+							className="w-1/4 text-right pr-4 hover:text-secondary hover:cursor-pointer"
+							onClick={() => {
+								onClickTimeStamp(subtitle.timestamp);
+							}}
+						>
+							{removeMillisecondsFromRange(subtitle.timestamp)}
+						</span>
+
+						<textarea
+							className="w-3/4 p-2 border border-gray-300 rounded"
+							value={subtitle.text}
+							onChange={e => handleTextChange(index, e.target.value)}
+						/>
+					</li>
+				))}
+			</ul>
+		</div>
+	);
+}
+
+export function GenerateSubtitle({
+	video_url,
+	lessonId,
+	onTranscriptionCompleted
+}: {
+	video_url: string;
+	lessonId: string;
+	onTranscriptionCompleted: (subtitle: Subtitle) => void;
+}) {
+	const [showDialog, setShowDialog] = useState(false);
+
+	console.log("GenerateSubtitle", { video_url, lessonId });
+
+	return (
+		<>
+			{showDialog && (
+				<GenerateSubtileDialog
+					video_url={video_url}
+					lessonId={lessonId}
+					onClose={async transcription => {
+						setShowDialog(false);
+						if (!transcription) return;
+						try {
+							const subtitle = {
+								src: await ConvertTranscriptionToSubtitle(transcription),
+								label: "Deutsch",
+								srcLang: transcription?.language
+							};
+							onTranscriptionCompleted(subtitle);
+						} catch {
+							showToast({
+								type: "error",
+								title: "Fehler beim Erstellen des Untertitels",
+								subtitle: "Fehler beim Erstellen des Untertitels"
+							});
+						}
+					}}
+				/>
+			)}
+			<button
+				className="btn-primary"
+				type="button"
+				onClick={() => {
+					setShowDialog(true);
+				}}
+			>
+				<StarIcon className="h-5" />
+				Generate Subtitle
+			</button>
+		</>
+	);
+}
+
+function GenerateSubtileDialog({
+	video_url,
+	lessonId,
+	onClose
+}: {
+	video_url: string;
+	lessonId: string;
+	onClose: OnDialogCloseFn<SubtitleSrc>;
+}) {
+	const [progress, setProgress] = useState<string>("Initializing...");
+	const [transcription, setTranscription] = useState<string | null>(null);
+	const [socket, setSocket] = useState<Socket | null>(null);
+	const [isSocketConnected, setIsSocketConnected] = useState(false);
+	const { data: sessionToken } = trpc.me.getJWTToken.useQuery();
+
+	useEffect(() => {
+		const socket = io(
+			process.env["NEXT_PUBLIC_TRANSCRIPTION_SERVICE_URL"] ?? "http://localhost:5000"
+		);
+		setSocket(socket);
+
+		socket.on("connect", () => {
+			setIsSocketConnected(true);
+
+			socket.emit("transcribe", {
+				video_url,
+				realtime: true,
+				lessonId: lessonId,
+				bearer_token: sessionToken
+			});
+		});
+
+		socket.on("connect_error", err => {
+			setProgress(
+				`Verbindung zum Transkription-Server fehlgeschlagen: <tt>${err.message}</tt>.\nWahrscheinlichste Ursache ist eine fehlerhafte Konfiguration oder der Server ist offline. Bitte kontaktieren Sie einen Administrator.`
+			);
+			setIsSocketConnected(false);
+			socket.disconnect();
+		});
+
+		socket.on("progress", (data: { message: string }) => {
+			setProgress(data.message);
+		});
+
+		socket.on("complete", (data: { transcription: string }) => {
+			setTranscription(data.transcription);
+			setProgress("Transkription übermittelt");
+		});
+
+		socket.on("error", (data: { message: string }) => {
+			setProgress(`Error: ${data.message}`);
+			setIsSocketConnected(false);
+		});
+
+		return () => {
+			socket.disconnect();
+		};
+	}, [lessonId, sessionToken, video_url]);
+
+	return (
+		<CenteredContainer>
+			<Dialog
+				style={{ height: "35vh", width: "30vw", overflow: "auto" }}
+				title={"Generate Subtitle"}
+				onClose={onClose}
+			>
+				<CenteredContainer>
+					<div>
+						<p
+							style={{ whiteSpace: "pre-line" }}
+							dangerouslySetInnerHTML={{ __html: progress }}
+						/>
+						{!transcription && isSocketConnected && (
+							<div className="h-5 w-5 mt-5 justify-center animate-spin rounded-full border-b-2 border-black" />
+						)}
+						{transcription && (
+							<div>
+								<h3>Transkription ist abgeschlossen</h3>
+							</div>
+						)}
+					</div>
+				</CenteredContainer>
+
+				<div className="mt-auto">
+					<DialogActions onClose={onClose}>
+						<button
+							disabled={!isSocketConnected && !transcription}
+							className="btn-primary"
+							onClick={() => {
+								if (transcription) {
+									if (socket) socket.disconnect();
+									onClose(subtitleSrcSchema.parse(transcription));
+								} else {
+									if (socket) {
+										socket.disconnect();
+									}
+									onClose();
+								}
+							}}
+						>
+							{transcription ? "Speichern" : "Im Hintergrund laufen lassen"}
+						</button>
+					</DialogActions>
+				</div>
+			</Dialog>
+		</CenteredContainer>
 	);
 }
 
@@ -194,7 +460,7 @@ async function uploadWithProgress(
 	file: File,
 	showDialog: () => void,
 	onProgress: (bytes: number) => void,
-	onComplete: (e: ProgressEvent<XMLHttpRequestEventTarget>) => void
+	onComplete: (xhr: XMLHttpRequest) => void
 ) {
 	showDialog();
 
@@ -216,7 +482,7 @@ async function uploadWithProgress(
 
 	// Event listener for (un)successful finishing the task.
 	// List of listener types: https://stackoverflow.com/a/15491086
-	xhr.upload.addEventListener("loadend", onComplete, false);
+	xhr.addEventListener("loadend", () => onComplete(xhr), false);
 
 	// start upload
 	//Returns the filename containing only ASCII letters, numbers and dots.
@@ -251,9 +517,9 @@ export function AssetPickerButton({
 				<AssetPickerDialog
 					copyToClipboard={copyToClipboard}
 					mediaType={mediaType}
-					onClose={url => {
+					onClose={(url, fileName) => {
 						setShowAssetPicker(false);
-						onClose(url);
+						onClose(url, fileName);
 					}}
 				/>
 			)}
@@ -270,7 +536,7 @@ function AssetPickerDialog({
 }: {
 	mediaType?: MediaType;
 	/** Returns the URL of the selected asset.  */
-	onClose: OnDialogCloseFn<string>;
+	onClose: (url?: string, fileName?: string) => void;
 	/** If `true`, choosing an assets will copy its URL to the clipboard. */
 	copyToClipboard?: boolean;
 }) {
@@ -282,7 +548,7 @@ function AssetPickerDialog({
 			page
 		},
 		{
-			keepPreviousData: true
+			placeholderData: keepPreviousData
 		}
 	);
 
@@ -308,7 +574,7 @@ function AssetPickerDialog({
 			onClose={onClose}
 			className="max-h-[80vh] w-[80vw] overflow-auto 2xl:w-[60vw]"
 		>
-			<span className="absolute bottom-8 left-8 text-xs text-light">
+			<span className="absolute bottom-8 left-8 text-xs text-c-text-muted">
 				type: {mediaType ? mediaType : "all"}
 			</span>
 
@@ -336,7 +602,9 @@ function AssetPickerDialog({
 						{!data ? (
 							<LoadingBox height={256} />
 						) : filteredAssets.length === 0 ? (
-							<span className="text-sm text-light">Keine Dateien gefunden.</span>
+							<span className="text-sm text-c-text-muted">
+								Keine Dateien gefunden.
+							</span>
 						) : (
 							<>
 								<Table
@@ -364,12 +632,12 @@ function AssetPickerDialog({
 														alt="Preview"
 													/>
 												) : (
-													<div className="h-16 w-24 shrink-0 rounded-lg bg-gray-200"></div>
+													<div className="h-16 w-24 shrink-0 rounded-lg bg-c-surface-3"></div>
 												)}
 											</TableDataColumn>
 											<TableDataColumn>
 												<a
-													className="font-medium hover:text-secondary"
+													className="font-medium hover:text-c-primary"
 													target="blank"
 													rel="noreferrer"
 													href={asset.publicUrl}
@@ -380,7 +648,7 @@ function AssetPickerDialog({
 											<TableDataColumn>{asset.fileType}</TableDataColumn>
 											<TableDataColumn>
 												<span title={asset.createdAt.toLocaleString()}>
-													{formatDateAgo(asset.createdAt)}
+													{formatDateDistanceToNow(asset.createdAt)}
 												</span>
 											</TableDataColumn>
 											<TableDataColumn>
@@ -399,7 +667,7 @@ function AssetPickerDialog({
 																});
 															}
 
-															onClose(asset.publicUrl);
+															onClose(asset.publicUrl, asset.fileName);
 														}}
 													>
 														{copyToClipboard
@@ -454,15 +722,15 @@ function AssetOptionsMenu({ asset }: { asset: Asset }) {
 
 	return (
 		<Menu as="div" className="relative flex">
-			<MenuButton className="rounded-full p-2 hover:bg-gray-50">
+			<MenuButton className="rounded-full p-2 hover:bg-c-neutral-subtle">
 				<EllipsisVerticalIcon className="h-5 text-gray-400" />
 			</MenuButton>
-			<MenuItems className="absolute left-4 top-4 divide-y divide-gray-100 rounded-md bg-white object-left-top text-sm shadow-lg ring-1 ring-emerald-500 ring-opacity-5 focus:outline-none">
+			<MenuItems className="absolute left-4 top-4 divide-y divide-c-border-muted rounded-md bg-white object-left-top text-sm shadow-lg ring-1 ring-c-primary ring-opacity-5 focus:outline-none">
 				<MenuItem as="div" className="p-1">
 					{({ focus }) => (
 						<button
 							className={`${
-								focus ? "bg-secondary text-white" : ""
+								focus ? "bg-c-primary text-white" : ""
 							} flex w-full items-center gap-4 whitespace-nowrap rounded-md px-4 py-2 opacity-25`}
 						>
 							<PencilIcon className="h-5" />
@@ -475,7 +743,7 @@ function AssetOptionsMenu({ asset }: { asset: Asset }) {
 						<button
 							onClick={onDelete}
 							className={`${
-								focus ? "bg-secondary text-white" : "text-red-500"
+								focus ? "bg-c-primary text-white" : "text-c-danger"
 							} flex w-full items-center gap-4 whitespace-nowrap rounded-md px-4 py-2`}
 						>
 							<TrashIcon className="h-5" />

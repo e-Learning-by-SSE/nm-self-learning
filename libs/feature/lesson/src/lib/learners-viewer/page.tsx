@@ -1,3 +1,4 @@
+import { H5PViewer } from "./h5p-viewer";
 import { Button } from "@headlessui/react";
 import {
 	CheckCircleIcon,
@@ -5,9 +6,9 @@ import {
 	ChevronDoubleRightIcon,
 	DocumentIcon,
 	PencilIcon,
-	PlayIcon
+	QuestionMarkCircleIcon
 } from "@heroicons/react/24/solid";
-import { LessonType } from "@prisma/client";
+import { AccessLevel, LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 //import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
 import { getCombinedSmallCourse, useLessonContext } from "@self-learning/lesson";
@@ -18,6 +19,7 @@ import {
 	useMarkAsCompleted
 } from "@self-learning/completion";
 import { database } from "@self-learning/database";
+import { ShowTranskript } from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
 	Article,
@@ -39,13 +41,13 @@ import {
 	MarkdownContainer,
 	NavigableContentViewer,
 	useNavigableContent,
+	ResourceGuard,
 	useRequiredSession
 } from "@self-learning/ui/layouts";
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
 import { useEventLog } from "@self-learning/util/eventlog";
 import { useAttemptSubmission } from "libs/feature/quiz/src/lib/quiz-submit-attempt";
 import { Session } from "next-auth";
-import { useSession } from "next-auth/react";
 import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -116,7 +118,6 @@ export async function getSspLearnersView(
 
 // id is required by Navigable. Content id is required to map this to lesson.content pos
 type OpenedMediaInfo = LessonContentType & { id: number; content_id: number };
-//
 type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta };
 type LessonNavigationItem = { slug: string; lessonId: string };
 type LessonNavigationData = LessonNavigationItem[];
@@ -149,12 +150,16 @@ function ContentDisplayItem({
 		case "video":
 			if (!c.value.url) return <ContentInfo error text="Fehlende Video-URL." />;
 			return (
-				<div className="aspect-video w-full xl:max-h-[75vh]">
+				<div className="flex flex-col gap-4 aspect-video w-full xl:max-h-[75vh]">
 					<VideoPlayer
 						parentLessonId={lesson.lessonId}
 						url={c.value.url}
 						courseId={course?.courseId}
+						subtitle={c.value.subtitle}
 					/>
+					{c.value.subtitle?.src && (
+						<ShowTranskript webvttTranscript={c.value.subtitle.src} />
+					)}
 				</div>
 			);
 		case "pdf":
@@ -167,8 +172,28 @@ function ContentDisplayItem({
 					</Button>
 				</div>
 			);
+		case "iframe":
+			if (!c.value.url) return <ContentInfo error text="Fehlende URL." />;
+			if (c.value.source === "h5p") {
+				return (
+					<div className="flex flex-col w-full">
+						<H5PViewer folderUrl={c.value.url} />
+					</div>
+				);
+			}
+			return (
+				<div className="flex flex-col w-full">
+					<iframe
+						key={c.value.url}
+						src={c.value.url}
+						title="HTML5 Viewer"
+						sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+						className="w-full h-[75vh] border border-light-border rounded"
+					/>
+				</div>
+			);
 		default:
-			return <ContentInfo error text={`unsupported content type: ${c?.type}`} />;
+			return <ContentInfo error text={`unsupported content type: ${(c as LessonContentType)?.type}`} />;
 	}
 }
 
@@ -243,10 +268,7 @@ function extractNavigationInfo(
 ): LessonNavigationData {
 	const tmp = courseContent.map(chapter => ({
 		content: chapter.content.map(lesson => {
-			const lessonInfo = lessons[lesson.lessonId] ?? {
-				slug: undefined,
-				lessonId: undefined
-			};
+			const lessonInfo = lessons[lesson.lessonId] ?? { slug: undefined, lessonId: undefined };
 			return lessonInfo;
 		})
 	}));
@@ -297,10 +319,7 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonLearnersV
 	const INITIAL_PDF: OpenedMediaInfo[] = useMemo(
 		() =>
 			lessonContent
-				.map((m, idx) => ({
-					...m,
-					content_id: idx
-				}))
+				.map((m, idx) => ({ ...m, content_id: idx }))
 				.filter(m => m.type === "pdf") as OpenedMediaInfo[],
 		[lessonContent]
 	);
@@ -312,9 +331,7 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonLearnersV
 
 	const handleCloseDialog = () => {
 		setShowDialog(false);
-		router.push({ pathname: path, query: { modal: "closed" } }, undefined, {
-			shallow: true
-		});
+		router.push({ pathname: path, query: { modal: "closed" } }, undefined, { shallow: true });
 	};
 
 	if (showDialog && markdown.preQuestion) {
@@ -379,7 +396,7 @@ function LessonArticle({ article }: { article: Article }) {
 function ContentInfo({ text, error }: { text: string; error?: boolean }) {
 	return (
 		<SectionCard>
-			<span className={`text-light text-center ${error && "text-red-500"}`}>
+			<span className={`text-c-text-muted text-center ${error && "text-c-danger"}`}>
 				{error && "Error: "}
 				{text}
 			</span>
@@ -427,7 +444,7 @@ function LessonNavigation({
 			<button
 				onClick={() => previous && navigateToLesson(previous)}
 				disabled={!previous}
-				className="rounded-lg bg-white flex items-center gap-4 border border-light-border px-4 py-2 disabled:text-gray-300"
+				className="rounded-lg bg-white items-center  gap-4 border border-c-border px-4 py-2 disabled:text-gray-300 hidden"
 				title="Vorherige Lerneinheit"
 				data-testid="previousLessonButton"
 			>
@@ -438,7 +455,7 @@ function LessonNavigation({
 			<button
 				onClick={() => next && navigateToLesson(next)}
 				disabled={!next}
-				className="rounded-lg bg-white flex items-center gap-4 border border-light-border px-4 py-2 disabled:text-gray-300"
+				className="rounded-lg bg-white hidden lg:flex items-center gap-4 border border-c-border px-4 py-2 disabled:text-gray-300"
 				title="Nächste Lerneinheit"
 				data-testid="nextLessonButton"
 			>
@@ -472,7 +489,7 @@ function LessonHeader({
 					<span className="flex flex-wrap-reverse justify-between gap-4">
 						<span className="flex flex-col gap-2">
 							<h1 className="text-4xl">{lesson.title}</h1>
-							<div className="font-semibold text-secondary min-h-[24px]">
+							<div className="font-semibold text-c-primary min-h-[24px]">
 								{!isStandalone && <ChapterName course={course} lesson={lesson} />}
 							</div>
 						</span>
@@ -484,7 +501,7 @@ function LessonHeader({
 						)}
 					</span>
 					{mdSubtitle && (
-						<MarkdownContainer className="mt-2 text-light">
+						<MarkdownContainer className="mt-2 text-c-text-muted">
 							<MDXRemote {...mdSubtitle} />
 						</MarkdownContainer>
 					)}
@@ -508,7 +525,7 @@ function LessonHeader({
 						</div>
 						{isExperimentParticipant && (
 							<div className="flex flex-col items-center">
-								<span className="mb-1 text-xs text-gray-500 text-center font-semibold">
+								<span className="mb-1 text-xs text-c-text-muted text-center font-semibold">
 									Bisherige Bewertung
 								</span>
 								{lesson.performanceScore ? (
@@ -517,7 +534,7 @@ function LessonHeader({
 										sizeClassName="px-4 py-2"
 									/>
 								) : (
-									<span className="text-gray-500 text-sm">Keine</span>
+									<span className="text-c-text-muted text-sm">Keine</span>
 								)}
 							</div>
 						)}
@@ -535,20 +552,20 @@ function LessonHeader({
 }
 
 function AuthorEditButton({ lesson }: { lesson: LessonLearnersViewProps["lesson"] }) {
-	const session = useRequiredSession();
-
-	if (session.data?.user.isAuthor || session.data?.user.role === "ADMIN") {
-		return (
+	return (
+		<ResourceGuard
+			fallback="hidden"
+			requiredAccess={AccessLevel.EDIT}
+			permittedGroups={lesson.permissions}
+		>
 			<Link
 				href={`/teaching/lessons/edit/${lesson.lessonId}`}
 				className="btn-stroked h-fit xl:w-fit"
 			>
 				<PencilIcon className="h-6" />
 			</Link>
-		);
-	}
-
-	return null;
+		</ResourceGuard>
+	);
 }
 
 function LessonControls({
@@ -631,16 +648,14 @@ function LessonControls({
 }
 
 function StandaloneLessonControls({ lesson }: { lesson: LessonLearnersViewProps["lesson"] }) {
-	const session = useSession();
-	// TODO - separate issue -  find out am I an author? lesson provides no uid
+	const hasQuiz = (lesson.meta as LessonMeta).hasQuiz;
 
-	if (session.data?.user.role === "ADMIN" || session.data?.user.isAuthor)
-		return (
-			<div className="flex w-full flex-wrap gap-2 xl:w-fit flex-row">
-				<AuthorEditButton lesson={lesson} />
-			</div>
-		);
-	else return <div></div>;
+	return (
+		<div className="flex w-full flex-wrap gap-2 xl:w-fit flex-row">
+			<AuthorEditButton lesson={lesson} />
+			{hasQuiz && <LinkToQuiz url={`lessons/${lesson.slug}`} />}
+		</div>
+	);
 }
 
 function LinkToQuiz({ url }: { url: string }) {
@@ -651,8 +666,8 @@ function LinkToQuiz({ url }: { url: string }) {
 				className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
 				data-testid="quizLink"
 			>
-				<span>Zur Lernkontrolle</span>
-				<PlayIcon className="h-6 shrink-0" />
+				<span>Lernkontrolle</span>
+				<QuestionMarkCircleIcon className="h-6 shrink-0" />
 			</Link>
 		</div>
 	);

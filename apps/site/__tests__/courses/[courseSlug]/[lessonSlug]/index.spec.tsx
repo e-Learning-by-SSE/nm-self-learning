@@ -1,7 +1,7 @@
 import { getServerSideProps } from "../../../../pages/courses/[courseSlug]/[lessonSlug]";
 import { database } from "@self-learning/database";
 import { getServerSession } from "next-auth";
-import { createMockContext, MockRequest } from "../../../context-utils";
+import { createMockContext } from "../../../context-utils";
 
 import { compileMarkdown } from "@self-learning/markdown";
 import { createCourseMock, createLessonMock } from "@self-learning/util/testing";
@@ -19,6 +19,7 @@ jest.mock("@self-learning/database", () => ({
 	database: {
 		course: { findUnique: jest.fn(), findFirst: jest.fn() },
 		lesson: { findUnique: jest.fn() },
+		completedLesson: { findMany: jest.fn() },
 		dynCourse: { findFirst: jest.fn() }
 	}
 }));
@@ -33,7 +34,6 @@ describe("getServerSideProps", () => {
 	describe("Authorization", () => {
 		// For the test required properties of Lesson
 		const lessonMock = createLessonMock({
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			lessonId: mockCtx.params!.lessonId as string,
 			authors: ["Author1", "Author2"]
 		});
@@ -57,6 +57,7 @@ describe("getServerSideProps", () => {
 			(database.course.findUnique as jest.Mock).mockResolvedValue(courseMock);
 			(database.course.findFirst as jest.Mock).mockResolvedValue(courseMock);
 			(database.lesson.findUnique as jest.Mock).mockResolvedValue(lessonMock);
+			(database.completedLesson.findMany as jest.Mock).mockResolvedValue([]);
 			(database.dynCourse.findFirst as jest.Mock).mockResolvedValue(courseMock);
 			(compileMarkdown as jest.Mock).mockResolvedValue("");
 			global.encodeURIComponent = jest.fn().mockReturnValue("loginPage");
@@ -70,7 +71,7 @@ describe("getServerSideProps", () => {
 			const result = await getServerSideProps(mockCtx);
 			expect(result).toEqual({
 				redirect: {
-					destination: `/api/auth/signin?callbackUrl=${redirectPage}`,
+					destination: `/login?callbackUrl=${redirectPage}`,
 					permanent: false
 				}
 			});

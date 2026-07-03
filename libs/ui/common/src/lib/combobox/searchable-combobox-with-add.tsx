@@ -49,7 +49,7 @@ export function SearchableComboboxWithAdd<T>({
 				/>
 				<button
 					onClick={handleAddClick}
-					className="rounded bg-emerald-500 px-3 py-1 text-sm text-white hover:bg-emerald-600"
+					className="rounded bg-c-primary px-3 py-1 text-sm text-white hover:bg-emerald-600"
 				>
 					{addButtonLabel}
 				</button>

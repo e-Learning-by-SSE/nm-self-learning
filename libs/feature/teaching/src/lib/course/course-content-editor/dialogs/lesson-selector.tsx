@@ -2,6 +2,7 @@ import { Combobox, ComboboxOption } from "@headlessui/react";
 import { trpc } from "@self-learning/api-client";
 import { DropdownDialog, Paginator } from "@self-learning/ui/common";
 import { Fragment, useState } from "react";
+import { keepPreviousData } from "@tanstack/react-query";
 
 export function LessonSelector({
 	open,
@@ -16,7 +17,7 @@ export function LessonSelector({
 		{ title, page },
 		{
 			staleTime: 10_000,
-			keepPreviousData: true
+			placeholderData: keepPreviousData
 		}
 	);
 
@@ -25,7 +26,10 @@ export function LessonSelector({
 			<Combobox value={null}>
 				<DropdownDialog.SearchInput
 					filter={title}
-					setFilter={setTitle}
+					setFilter={value => {
+						setTitle(value);
+						setPage(1);
+					}}
 					placeholder="Suche nach Titel"
 				/>
 
@@ -41,13 +45,13 @@ export function LessonSelector({
 									type="button"
 									onClick={() => onClose(lesson)}
 									className={`flex flex-col gap-1 rounded px-4 py-2 ${
-										focus ? "bg-secondary text-white" : ""
+										focus ? "bg-c-primary text-white" : ""
 									}`}
 								>
 									<span className="text-sm font-medium ">{lesson.title}</span>
 									<span
 										className={`text-xs font-normal ${
-											focus ? "text-white" : "text-light"
+											focus ? "text-white" : "text-c-text-muted"
 										}`}
 									>
 										von {lesson.authors.map(a => a.displayName).join(", ")}

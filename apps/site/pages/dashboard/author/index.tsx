@@ -1,71 +1,53 @@
-import { ArrowDownTrayIcon, PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { ArrowDownTrayIcon, PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { TeacherView } from "@self-learning/analysis";
 import { withTranslations } from "@self-learning/api";
-import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
-import { Specialization, Subject } from "@self-learning/types";
 import {
-	Dialog,
-	DialogActions,
+	AuthorResourceSection,
+	GroupDeleteOption,
+	GroupLeaveOption,
+	I18N_NAMESPACE as NS_FEATURE_TEACHING,
+	ParentSkillOverview,
+	ExportCourseDialog,
+	CourseDeleteOption
+} from "@self-learning/teaching";
+import {
 	Divider,
-	IconButton,
-	ImageChip,
-	ImageOrPlaceholder,
-	LoadingBox,
-	Paginator,
+	I18N_NAMESPACE as NS_UI_COMMON,
+	IconTextButton,
 	SectionHeader,
-	Table,
-	TableDataColumn,
-	TableHeaderColumn
+	ImageOrPlaceholder
 } from "@self-learning/ui/common";
-import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
 import { withAuth } from "@self-learning/util/auth";
-import { formatDateAgo } from "@self-learning/util/common";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { GroupRole } from "@prisma/client";
+import { useTranslation } from "next-i18next";
 import { useState } from "react";
-import { ParentSkillOverview } from "@self-learning/teaching";
-import { LessonDeleteOption } from "@self-learning/ui/lesson";
-import { ExportCourseDialog } from "@self-learning/teaching";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
 
-type Props = {
-	author: Author;
-};
+type Props = { author: Author };
 
 export function getAuthor(username: string) {
-	return database.author.findUniqueOrThrow({
-		where: { username },
+	return database.user.findUniqueOrThrow({
+		where: { name: username },
 		select: {
-			slug: true,
-			displayName: true,
-			imgUrl: true,
-			subjectAdmin: {
-				orderBy: { subject: { title: "asc" } },
+			author: {
 				select: {
-					subject: {
+					slug: true,
+					displayName: true,
+					imgUrl: true,
+					dynCourse: {
+						orderBy: { title: "asc" },
 						select: {
-							subjectId: true,
+							courseId: true,
+							slug: true,
 							title: true,
-							cardImgUrl: true
-						}
-					}
-				}
-			},
-			specializationAdmin: {
-				orderBy: { specialization: { title: "asc" } },
-				select: {
-					specialization: {
-						select: {
-							specializationId: true,
-							title: true,
-							cardImgUrl: true,
-							subject: {
+							imgUrl: true,
+							specializations: {
 								select: {
-									subjectId: true,
 									title: true
 								}
 							}
@@ -73,30 +55,20 @@ export function getAuthor(username: string) {
 					}
 				}
 			},
-			courses: {
-				orderBy: { title: "asc" },
+			memberships: {
 				select: {
-					courseId: true,
-					slug: true,
-					title: true,
-					imgUrl: true,
-					specializations: {
+					role: true,
+					group: {
 						select: {
-							title: true
-						}
-					}
-				}
-			},
-			dynCourse: {
-				orderBy: { title: "asc" },
-				select: {
-					courseId: true,
-					slug: true,
-					title: true,
-					imgUrl: true,
-					specializations: {
-						select: {
-							title: true
+							name: true,
+							id: true,
+							children: true,
+							members: {
+								where: { role: GroupRole.ADMIN },
+								select: {
+									userId: true
+								}
+							}
 						}
 					}
 				}
@@ -106,22 +78,13 @@ export function getAuthor(username: string) {
 }
 
 export const getServerSideProps = withTranslations(
-	["common"],
+	Array.from(new Set(["common", "pages-dashboard", ...NS_UI_COMMON, ...NS_FEATURE_TEACHING])),
 	withAuth<Props>(async (context, user) => {
 		if (user.isAuthor) {
-			return {
-				props: {
-					author: await getAuthor(user.name)
-				}
-			};
+			return { props: { author: await getAuthor(user.name) } };
 		}
 
-		return {
-			redirect: {
-				destination: "/",
-				permanent: false
-			}
-		};
+		return { redirect: { destination: "/", permanent: false } };
 	})
 );
 
@@ -130,82 +93,77 @@ export default function Start(props: Props) {
 }
 
 function AuthorDashboardPage({ author }: Props) {
+	const { t } = useTranslation("pages-dashboard");
 	const session = useRequiredSession();
-	const authorName = session.data?.user.name;
+	const isAdmin = session.data?.user.role === "ADMIN";
+	const userId = session.data?.user.id;
+	const canCreate = isAdmin || author.memberships.length > 0;
 
+	// TODO SE: Required by KEE branch, check if this is still needed
 	const [viewExportDialog, setViewExportDialog] = useState(false);
 
 	return (
-		<div className="bg-gray-50">
-			<CenteredSection>
-				<div className="flex flex-col gap-10">
-					{author.subjectAdmin.length > 0 && (
-						<>
-							<section>
-								<SectionHeader
-									title="Fachgebiete"
-									subtitle="Administrator der folgenden Fachgebiete:"
-								/>
+		<CenteredSection className="bg-gray-50">
+			{canCreate && (
+				<>
+					<AuthorResourceSection
+						kind="course"
+						title={t("My_Courses")}
+						subtitle={t("Author_Courses_Subtitle")}
+						searchPlaceholder={t("Search_Course_Name")}
+						emptyMessage={t("No_Accessible_Courses")}
+						createLabel={t("Create_Course")}
+						isAdmin={isAdmin}
+						canCreate={canCreate}
+					/>
 
-								<ul className="flex flex-wrap gap-4">
-									{author.subjectAdmin.map(({ subject }) => (
-										<ImageChip
-											key={subject.subjectId}
-											imgUrl={subject.cardImgUrl}
-										>
-											<Link
-												href={`/teaching/subjects/${subject.subjectId}`}
-												className="font-medium hover:text-secondary"
-											>
-												{subject.title}
-											</Link>
-										</ImageChip>
-									))}
-								</ul>
-							</section>
-						</>
-					)}
+					<Divider />
 
-					{author.specializationAdmin.length > 0 && (
-						<>
-							<Divider />
-							<section>
-								<SectionHeader
-									title="Spezialisierungen"
-									subtitle="Administrator der folgenden Spezialisierungen:"
-								/>
+					<AuthorResourceSection
+						kind="lesson"
+						title={t("My_Lessons")}
+						subtitle={t("Author_Lessons_Subtitle")}
+						searchPlaceholder={t("Search_Lessons")}
+						emptyMessage={t("No_Accessible_Lessons")}
+						createLabel={t("Create_Lesson")}
+						isAdmin={isAdmin}
+						canCreate={canCreate}
+					/>
 
-								<ul className="flex flex-wrap gap-4">
-									{author.specializationAdmin.map(({ specialization }) => (
-										<ImageChip
-											key={specialization.specializationId}
-											imgUrl={specialization.cardImgUrl}
-										>
-											<Link
-												href={`/teaching/subjects/${specialization.subject.subjectId}/${specialization.specializationId}`}
-												className="font-medium hover:text-secondary"
-											>
-												{specialization.title}
-											</Link>
-										</ImageChip>
-									))}
-								</ul>
-							</section>
-						</>
-					)}
+					<Divider />
+
+					<AuthorResourceSection
+						kind="specialization"
+						title={t("My_Specializations")}
+						subtitle={t("Author_Specializations_Subtitle")}
+						searchPlaceholder={t("Search_Specializations")}
+						emptyMessage={t("No_Accessible_Specializations")}
+						isAdmin={isAdmin}
+					/>
+
+					<Divider />
+
+					<AuthorResourceSection
+						kind="subject"
+						title={t("My_Subjects")}
+						subtitle={t("Author_Subjects_Subtitle")}
+						searchPlaceholder={t("Search_Subjects")}
+						emptyMessage={t("No_Accessible_Subjects")}
+						isAdmin={isAdmin}
+					/>
 
 					<Divider />
 
 					<section>
 						<div className="flex justify-between gap-4">
 							<SectionHeader
-								title="Meine Kurse"
-								subtitle="Autor der folgenden Kurse:"
+								title={t("My_Skill_Cards")}
+								subtitle={t("Author_Skill_Cards_Subtitle")}
 							/>
 
 							<div className="flex flex-row items-center gap-4">
 								<Link href="/teaching/courses/new">
-									<IconButton
+									<IconTextButton
 										text="Kurs erstellen"
 										icon={<PlusIcon className="icon h-5" />}
 									/>
@@ -214,17 +172,21 @@ function AuthorDashboardPage({ author }: Props) {
 						</div>
 
 						<ul className="flex flex-col gap-4 py-4">
-							{author.courses.length === 0 && author.dynCourse.length === 0 ? (
+							{author.author?.dynCourse.length === 0 ? (
 								<div className="mx-auto flex items-center gap-8">
 									<div className="h-32 w-32">
 										<VoidSvg />
 									</div>
-									<p className="text-light">Du hast noch keine Kurse erstellt.</p>
+									<p className="text-light">
+										Du hast noch keine dynamischen Kurse erstellt.
+									</p>
 								</div>
 							) : (
 								[
-									...author.courses.map(c => ({ ...c, type: "static" })),
-									...author.dynCourse.map(c => ({ ...c, type: "dynamic" }))
+									...(author.author?.dynCourse ?? []).map(c => ({
+										...c,
+										type: "dynamic"
+									}))
 								].map(course => (
 									<li
 										key={course.courseId}
@@ -290,7 +252,7 @@ function AuthorDashboardPage({ author }: Props) {
 
 					<Divider />
 
-					<section>
+					{/* <section>
 						<div className="flex justify-between gap-4">
 							<SectionHeader
 								title="Meine Lerneinheiten"
@@ -298,7 +260,7 @@ function AuthorDashboardPage({ author }: Props) {
 							/>
 
 							<Link href="/teaching/lessons/create">
-								<IconButton
+								<IconTextButton
 									text="Lerneinheit erstellen"
 									icon={<PlusIcon className="icon h-5" />}
 								/>
@@ -306,7 +268,7 @@ function AuthorDashboardPage({ author }: Props) {
 						</div>
 
 						{authorName && <Lessons authorName={authorName} />}
-					</section>
+					</section> */}
 
 					<Divider />
 
@@ -327,217 +289,80 @@ function AuthorDashboardPage({ author }: Props) {
 					</section>
 
 					<Divider />
+
 					<section>
 						<div className="flex justify-between gap-4">
 							<SectionHeader
-								title="Teilnahmeübersicht"
-								subtitle="Es werden aus datenschutzgründen nur Angaben bei mindestens 10
-				teilnehmenden Studierenden angezeigt."
+								title={t("Participation_Overview")}
+								subtitle={t("Participation_Overview_Subtitle")}
 							/>
 						</div>
 						<TeacherView />
+						<div className="mb-4" />
 					</section>
-				</div>
-			</CenteredSection>
-		</div>
-	);
-}
 
-function CourseDeleteOption({ slug }: { slug: string }) {
-	const { mutateAsync: deleteCourse } = trpc.course.deleteCourse.useMutation();
-	const { data: linkedEntities, isLoading } = trpc.course.findLinkedEntities.useQuery({ slug });
-	const [showConfirmation, setShowConfirmation] = useState(false);
-	const { reload } = useRouter();
-
-	const handleDelete = async () => {
-		await deleteCourse({ slug });
-		// Refresh page
-		reload();
-	};
-
-	const handleConfirm = () => {
-		handleDelete();
-		setShowConfirmation(false);
-	};
-
-	const handleCancel = () => {
-		setShowConfirmation(false);
-	};
-
-	// Don't show delete button -> Empty option
-	if (isLoading) {
-		return <></>;
-	}
-
-	return (
-		<>
-			<button
-				className="rounded bg-red-500 font-medium text-white hover:bg-red-600"
-				onClick={() => setShowConfirmation(true)}
-			>
-				<div className="ml-4">
-					<TrashIcon className="icon " />
-				</div>
-			</button>
-			{showConfirmation && (
-				<CourseDeletionDialog
-					onCancel={handleCancel}
-					onSubmit={handleConfirm}
-					linkedEntities={linkedEntities}
-				/>
-			)}
-		</>
-	);
-}
-
-type CourseLinkedEntities = {
-	subject: Subject | null;
-	specializations: (Specialization & { subject: Subject })[];
-};
-
-function CourseDeletionDialog({
-	onCancel,
-	onSubmit,
-	linkedEntities
-}: {
-	onCancel: () => void;
-	onSubmit: () => void;
-	linkedEntities?: CourseLinkedEntities | null;
-}) {
-	if (linkedEntities && (linkedEntities.subject || linkedEntities.specializations.length > 0)) {
-		return (
-			<Dialog title={"Löschen nicht möglich"} onClose={onCancel}>
-				Kurs kann nicht gelöscht werden.
-				{linkedEntities.subject && (
-					<>
-						<br />
-						Er wird im folgenden Fachgebiet verwendet:{" "}
-						<Link
-							href={`/subjects/${linkedEntities.subject.slug}`}
-							className="hover:text-secondary"
-						>
-							{linkedEntities.subject.title}
-						</Link>
-					</>
-				)}
-				<br />
-				Er wird in folgenden Fachgebieten genutzt:
-				<ul className="flex flex-wrap gap-4 list-inside list-disc text-sm font-medium">
-					{linkedEntities.specializations.map(specialization => (
-						<li key={specialization.slug}>
-							<Link
-								href={`/subjects/${specialization.subject.slug}/${specialization.slug}`}
-								className="hover:text-secondary"
-							>
-								{specialization.subject.title} / {specialization.title}
-							</Link>
-						</li>
-					))}
-				</ul>
-				<DialogActions onClose={onCancel} />
-			</Dialog>
-		);
-	}
-
-	return (
-		<Dialog title={"Löschen"} onClose={onCancel}>
-			Möchten Sie diesen Kurs wirklich löschen?
-			<DialogActions onClose={onCancel}>
-				<button className="btn-primary hover:bg-red-500" onClick={onSubmit}>
-					Löschen
-				</button>
-			</DialogActions>
-		</Dialog>
-	);
-}
-
-function LessonTaskbar({ lessonId }: { lessonId: string }) {
-	return (
-		<div className="flex flex-wrap justify-end gap-4">
-			<Link href={`/teaching/lessons/edit/${lessonId}`}>
-				<button type="button" className="btn-stroked w-fit self-end">
-					<PencilIcon className="icon" />
-					<span>Bearbeiten</span>
-				</button>
-			</Link>
-			<LessonDeleteOption lessonId={lessonId} />
-		</div>
-	);
-}
-
-function Lessons({ authorName }: { authorName: string }) {
-	const router = useRouter();
-	const { title = "", page = 1 } = router.query;
-
-	const { data: lessons } = trpc.lesson.findMany.useQuery(
-		{
-			page: Number(page),
-			title: title as string,
-			authorName
-		},
-		{
-			keepPreviousData: true,
-			staleTime: 10_000
-		}
-	);
-
-	return (
-		<div className="flex min-h-[200px] flex-col">
-			{!lessons ? (
-				<LoadingBox />
-			) : (
-				<>
-					<SearchField
-						placeholder="Suche nach Lerneinheiten"
-						value={title}
-						onChange={e => {
-							router.push(
-								{
-									query: {
-										title: e.target.value,
-										page: 1
-									}
-								},
-								undefined,
-								{ shallow: true }
-							);
-						}}
-					/>
-
-					<Table
-						head={
-							<>
-								<TableHeaderColumn>Titel</TableHeaderColumn>
-								<TableHeaderColumn>Letzte Änderung</TableHeaderColumn>
-								<TableHeaderColumn></TableHeaderColumn>
-							</>
-						}
-					>
-						{lessons.result.map(lesson => (
-							<tr key={lesson.lessonId}>
-								<TableDataColumn>
-									<Link
-										href={`/lessons/${lesson.slug}`}
-										className="font-medium hover:text-secondary"
-									>
-										{lesson.title}
-									</Link>
-								</TableDataColumn>
-								<TableDataColumn>
-									<span className="text-light">
-										{formatDateAgo(lesson.updatedAt)}
-									</span>
-								</TableDataColumn>
-								<TableDataColumn>
-									<LessonTaskbar lessonId={lesson.lessonId} />
-								</TableDataColumn>
-							</tr>
-						))}
-					</Table>
-
-					<Paginator pagination={lessons} url={`${router.route}?title=${title}`} />
+					<Divider />
 				</>
 			)}
-		</div>
+
+			<section>
+				<div className="flex justify-between gap-4">
+					<SectionHeader title={t("My_Groups")} subtitle={t("My_Groups_Subtitle")} />
+					{canCreate && (
+						<Link href="/teaching/groups/create" className="mt-4">
+							<IconTextButton
+								text={t("Create_Group")}
+								className="btn-secondary"
+								icon={<PlusIcon className="icon h-5" />}
+							/>
+						</Link>
+					)}
+				</div>
+				<ul className="flex flex-col gap-1 py-4">
+					{author.memberships.length === 0 ? (
+						<div className="mx-auto flex items-center gap-8">
+							<div className="h-32 w-32">
+								<VoidSvg />
+							</div>
+							<div>
+								<p className="text-light">{t("No_Group_Membership")}</p>
+								<p>{t("Group_Membership_Required")}</p>
+							</div>
+						</div>
+					) : (
+						author.memberships.map(membership => (
+							<li
+								key={membership.group.name}
+								className="flex px-4 py-2 w-full items-center justify-between rounded-lg border border-light-border bg-white"
+							>
+								<Link
+									className="text-sm font-medium hover:text-c-primary"
+									href={`/teaching/groups/${membership.group.id}`}
+								>
+									{membership.group.name}
+								</Link>
+								<div className="flex flex-wrap justify-end gap-4">
+									<i className="flex items-center">{membership.role}</i>
+									{(isAdmin || membership.role === GroupRole.ADMIN) && (
+										<Link href={`/teaching/groups/${membership.group.id}/edit`}>
+											<IconTextButton
+												icon={<PencilIcon className="h-5 w-5" />}
+												text={t("Edit")}
+												className="btn-stroked"
+												title={t("Edit_Group")}
+											/>
+										</Link>
+									)}
+									<GroupLeaveOption group={membership.group} userId={userId} />
+									{(isAdmin || membership.role === GroupRole.ADMIN) && (
+										<GroupDeleteOption group={membership.group} />
+									)}
+								</div>
+							</li>
+						))
+					)}
+				</ul>
+			</section>
+		</CenteredSection>
 	);
 }

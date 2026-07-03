@@ -2,7 +2,7 @@ import { CheckCircleIcon, QuestionMarkCircleIcon, XCircleIcon } from "@heroicons
 import { trpc } from "@self-learning/api-client";
 import { EditorField, LabeledField } from "@self-learning/ui/forms";
 import { TRPCClientError } from "@trpc/client";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuestion } from "../../use-question-hook";
 import { evaluateProgramming } from "./evaluate";
 import { Programming } from "./schema";
@@ -79,12 +79,10 @@ export default function ProgrammingAnswer() {
 	const { data: runtimes } = trpc.programming.runtimes.useQuery();
 	const { mutateAsync: execute } = trpc.programming.execute.useMutation();
 
-	const [version, setVersion] = useState<string | undefined>(undefined);
-
-	useEffect(() => {
-		console.log("Available runtimes:", runtimes);
-		setVersion(runtimes?.find(r => r.language === question.language)?.version);
-	}, [question.language, runtimes]);
+	const version = useMemo(
+		() => runtimes?.find(r => r.language === question.language)?.version,
+		[question.language, runtimes]
+	);
 
 	async function runCode() {
 		const language = question.language;
@@ -184,8 +182,8 @@ export default function ProgrammingAnswer() {
 
 	return (
 		<div>
-			<div className="flex items-center justify-between rounded-t-lg bg-gray-200 p-4">
-				<span className="text-xs text-light">
+			<div className="flex items-center justify-between rounded-t-lg bg-c-surface-3 p-4">
+				<span className="text-xs text-c-text-muted">
 					{question.language} ({version ?? "not installed"}) (mode: {question.custom.mode}
 					)
 				</span>
@@ -217,22 +215,22 @@ export default function ProgrammingAnswer() {
 
 				{output.isError && (
 					<LabeledField label="Ausgabe">
-						<div className="flex h-fit max-h-[400px] w-full shrink-0 flex-col gap-4 rounded-lg border border-light-border bg-white">
+						<div className="flex h-fit max-h-[400px] w-full shrink-0 flex-col gap-4 rounded-lg border border-c-border bg-white">
 							<div className="playlist-scroll h-full overflow-auto p-4">
 								{output.text !== "" ? (
 									<pre
 										className={`font-mono ${
-											output.isError ? "text-red-500" : ""
+											output.isError ? "text-c-danger" : ""
 										}`}
 									>
 										{output.text}
 									</pre>
 								) : (
-									<span className="flex flex-col gap-2 text-light">
+									<span className="flex flex-col gap-2 text-c-text-muted">
 										<span>Keine Ausgabe.</span>
 										{output.signal && (
-											<span className="text-xs text-light text-red-500">
-												Prozess wurde mit "{output.signal}" beendet.
+											<span className="text-xs text-c-danger">
+												Prozess wurde mit &quot;{output.signal}&quot; beendet.
 											</span>
 										)}
 									</span>
@@ -271,16 +269,16 @@ function TestCaseResult({
 	}
 
 	return (
-		<section className="flex w-full flex-col gap-4 rounded-lg border border-light-border bg-white p-4">
+		<section className="flex w-full flex-col gap-4 rounded-lg border border-c-border bg-white p-4">
 			<span className="flex items-center gap-2 text-xl font-semibold tracking-tighter">
 				{isExecuting ? (
 					<LoadingCircle />
 				) : !evaluation || evaluation.testCases.length === 0 ? (
 					<QuestionMarkCircleIcon className="h-6 text-slate-400" />
 				) : successCases.length < evaluation?.testCases.length ? (
-					<XCircleIcon className="h-6 text-red-500" />
+					<XCircleIcon className="h-6 text-c-danger" />
 				) : (
-					<CheckCircleIcon className="h-6 text-emerald-500" />
+					<CheckCircleIcon className="h-6 text-c-primary" />
 				)}
 				<span>Testfälle:</span>
 				<span>
@@ -291,7 +289,7 @@ function TestCaseResult({
 			{firstFailedTest && (
 				<>
 					<span className="font-semibold">
-						<p className="text-red-500">Test #{firstFailedTestIndex + 1}</p>
+						<p className="text-c-danger">Test #{firstFailedTestIndex + 1}</p>
 					</span>
 
 					<ProgramOutput label="Eingabe" output={firstFailedTest.title} />
@@ -306,8 +304,8 @@ function TestCaseResult({
 function ProgramOutput({ label, output }: { label: string; output: string }) {
 	return (
 		<span className="">
-			<span className="text-sm font-medium text-light">{label}:</span>
-			<pre className="playlist-scroll min-h-[32px] overflow-auto rounded bg-gray-50 px-2 py-1">
+			<span className="text-sm font-medium text-c-text-muted">{label}:</span>
+			<pre className="playlist-scroll min-h-[32px] overflow-auto rounded bg-c-surface-1 px-2 py-1">
 				{output}
 			</pre>
 		</span>
@@ -317,7 +315,7 @@ function ProgramOutput({ label, output }: { label: string; output: string }) {
 function LoadingCircle() {
 	return (
 		<svg
-			className="h-6 w-6 animate-spin text-secondary"
+			className="h-6 w-6 animate-spin text-c-primary"
 			xmlns="http://www.w3.org/2000/svg"
 			fill="none"
 			viewBox="0 0 24 24"

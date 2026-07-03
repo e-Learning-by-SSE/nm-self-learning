@@ -4,7 +4,7 @@ import {
 	courseContentSchema,
 	createCourseMeta,
 	skillFormSchema,
-	specializationSchema
+	ResourcePermissionsFormSchema
 } from "@self-learning/types";
 import { stringOrNull } from "@self-learning/util/common";
 import { z } from "zod";
@@ -21,14 +21,19 @@ export const courseFormSchema = z.object({
 	content: courseContentSchema,
 	specializationId: z.string().nullable().optional(),
 	provides: z.array(skillFormSchema).nullable().optional(),
-	requires: z.array(skillFormSchema).nullable().optional()
+	requires: z.array(skillFormSchema).nullable().optional(),
+	permissions: ResourcePermissionsFormSchema
 });
 
 export type CourseFormModel = z.infer<typeof courseFormSchema>;
 
+export type PermissionsForCreate = NonNullable<Prisma.CourseCreateInput["permissions"]>;
+export type PermissionsForUpdate = Prisma.CourseUpdateInput["permissions"];
+
 export function mapCourseFormToInsert(
 	course: CourseFormModel,
-	courseId: string
+	courseId: string,
+	permissions: PermissionsForCreate
 ): Prisma.CourseCreateInput {
 	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors } = course;
 
@@ -41,10 +46,9 @@ export function mapCourseFormToInsert(
 		imgUrl: stringOrNull(imgUrl),
 		description: stringOrNull(description),
 		meta: createCourseMeta(course),
-		authors: {
-			connect: authors.map(author => ({ username: author.username }))
-		},
-		subject: subjectId ? { connect: { subjectId } } : undefined
+		authors: { connect: authors.map(author => ({ username: author.username })) },
+		subject: subjectId ? { connect: { subjectId } } : undefined,
+		permissions
 	};
 
 	return courseForDb;
@@ -52,7 +56,8 @@ export function mapCourseFormToInsert(
 
 export function mapCourseFormToUpdate(
 	course: CourseFormModel,
-	courseId: string
+	courseId: string,
+	permissions: PermissionsForUpdate
 ): Prisma.CourseUpdateInput {
 	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors } = course;
 
@@ -65,10 +70,9 @@ export function mapCourseFormToUpdate(
 		imgUrl: stringOrNull(imgUrl),
 		description: stringOrNull(description),
 		meta: createCourseMeta(course),
-		authors: {
-			set: authors.map(author => ({ username: author.username }))
-		},
-		subject: subjectId ? { connect: { subjectId } } : undefined
+		authors: { set: authors.map(author => ({ username: author.username })) },
+		subject: subjectId ? { connect: { subjectId } } : undefined,
+		permissions
 	};
 
 	return courseForDb;

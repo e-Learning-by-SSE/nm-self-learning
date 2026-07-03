@@ -1,0 +1,55 @@
+import { z } from "zod";
+
+export const aiTutorProfileSchema = z.object({
+	id: z.string().min(1).optional(),
+	name: z.string().min(1, "Name is required"),
+	author: z.string().min(1, "Author is required"),
+	model: z.string().optional(),
+	avatarUrl: z.string().url("Must be a valid URL").optional(),
+	systemPrompt: z.string().min(1, "System context is required"),
+	description: z.string().optional(),
+	updatedAt: z.date().optional()
+});
+
+export type AITutorProfile = z.infer<typeof aiTutorProfileSchema>;
+
+// set default values for a new profile
+export const defaultAITutorProfile: AITutorProfile = {
+	id: undefined,
+	name: "",
+	description: undefined,
+	author: "",
+	model: undefined,
+	avatarUrl: undefined,
+	systemPrompt: "",
+	updatedAt: undefined
+};
+
+export const deleteProfileSchema = z.object({
+	id: z.string().cuid("Invalid ID")
+});
+
+export type ProfileListItem = {
+	id: string;
+	name: string;
+	description?: string;
+	avatarUrl?: string;
+	systemPrompt: string;
+	model?: string;
+	author: string;
+	createdAt: Date;
+	updatedAt: Date;
+};
+
+export type SavedProfilesProps = {
+	onSelect: (profile: ProfileListItem) => void;
+	onNew: () => void;
+};
+
+export type ProfileFormHandle = {
+	resetForm: (values?: AITutorProfile) => void;
+};
+
+export type ProfileFormProps = {
+	selectedProfile?: AITutorProfile | null;
+};

@@ -1,8 +1,8 @@
-import { adminProcedure, t } from "../trpc";
+import { adminProcedure, authProcedure, t } from "../trpc";
 import { database } from "@self-learning/database";
 import { TRPCError } from "@trpc/server";
 import { secondsToMilliseconds } from "date-fns";
-import { llmConfigSchema, llmConfigSchemaForFetching, ollamaModelList } from "@self-learning/types";
+import { llmConfigSchema, llmConfigSchemaForFetching, openAiModelList } from "@self-learning/types";
 
 /**
  * Fetches available models from the LLM server.
@@ -10,7 +10,11 @@ import { llmConfigSchema, llmConfigSchemaForFetching, ollamaModelList } from "@s
  * @param apiKey Optional API key for authentication.
  * @param timeoutSeconds Optional timeout in seconds (default: 10).
  */
-async function fetchAvailableModels(serverUrl: string, apiKey?: string, timeoutSeconds = 10) {
+export async function fetchAvailableModels(
+	serverUrl: string,
+	apiKey?: string,
+	timeoutSeconds = 10
+) {
 	const headers: Record<string, string> = {
 		"Content-Type": "application/json"
 	};
@@ -21,7 +25,7 @@ async function fetchAvailableModels(serverUrl: string, apiKey?: string, timeoutS
 
 	const controller = new AbortController();
 	const timeoutId = setTimeout(() => controller.abort(), secondsToMilliseconds(timeoutSeconds));
-	const response = await fetch(serverUrl + "/tags", {
+	const response = await fetch(serverUrl + "/models", {
 		method: "GET",
 		headers,
 		signal: controller.signal
@@ -35,7 +39,7 @@ async function fetchAvailableModels(serverUrl: string, apiKey?: string, timeoutS
 	}
 
 	const data = await response.json();
-	return ollamaModelList.parse(data);
+	return openAiModelList.parse(data);
 }
 
 export async function fetchLlmConfig() {
@@ -49,11 +53,21 @@ export async function fetchLlmConfig() {
 		}
 	});
 
-	return config;
+	if (config) {
+		return {
+			...config,
+			apiKey: config.apiKey ?? undefined
+		};
+	} else {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "No configuration data found."
+		});
+	}
 }
 
 export const llmConfigRouter = t.router({
-	get: adminProcedure.query(async () => {
+	get: authProcedure.query(async () => {
 		const config = await fetchLlmConfig();
 		if (!config) {
 			return null;
@@ -73,9 +87,7 @@ export const llmConfigRouter = t.router({
 
 			try {
 				const availableModels = await fetchAvailableModels(serverUrl, apiKey);
-				const modelExists = availableModels.models.some(
-					m => m.name === defaultModel || m.name.startsWith(defaultModel + ":")
-				);
+				const modelExists = availableModels.data.some(m => m.id === defaultModel);
 
 				if (!modelExists) {
 					throw new TRPCError({
@@ -143,7 +155,7 @@ export const llmConfigRouter = t.router({
 				const availableModels = await fetchAvailableModels(serverUrl, apiKey);
 				return {
 					valid: true,
-					availableModels: availableModels.models.map(m => m.name)
+					availableModels: availableModels.data.map(m => m.id)
 				};
 			} catch (error) {
 				if (error instanceof TRPCError) {

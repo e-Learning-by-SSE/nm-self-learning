@@ -1,6 +1,6 @@
-const { getJestProjects } = require("@nx/jest");
+const { getJestProjectsAsync } = require("@nx/jest");
 
-export default {
-	projects: getJestProjects(),
+module.exports = async () => ({
+	projects: await getJestProjectsAsync(),
 	coverageReporters: ["cobertura", "text", "html"]
-};
+});

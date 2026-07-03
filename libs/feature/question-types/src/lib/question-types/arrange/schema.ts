@@ -10,7 +10,7 @@ export type ArrangeItem = z.infer<typeof itemSchema>;
 
 export const arrangeQuestionSchema = baseQuestionSchema.extend({
 	type: z.literal("arrange"),
-	items: z.record(z.array(itemSchema)),
+	items: z.record(z.string(), z.array(itemSchema)),
 	randomizeItems: z.boolean().optional().default(false),
 	categoryOrder: z.array(z.string())
 });
@@ -19,7 +19,7 @@ export type ArrangeQuestion = z.infer<typeof arrangeQuestionSchema>;
 
 export const arrangeAnswerSchema = z.object({
 	type: z.literal("arrange"),
-	value: z.record(z.array(itemSchema))
+	value: z.record(z.string(), z.array(itemSchema))
 });
 
 type ArrangeAnswer = z.infer<typeof arrangeAnswerSchema>;

@@ -1,20 +1,19 @@
 import { z } from "zod";
+import { GroupEntrySchema } from "./group";
+import { GroupRoleEnum } from "./permissions";
 
-const subjectAdminSchema = z.object({
-	subjectId: z.string()
-});
-
-const specializationSchema = z.object({
-	specializationId: z.string()
+export const membershipSchema = z.object({
+	group: GroupEntrySchema,
+	expiresAt: z.date().nullable(),
+	role: GroupRoleEnum
 });
 
 export const authorSchema = z.object({
 	displayName: z.string().min(3),
 	slug: z.string().min(3),
-	imgUrl: z.string().url().nullable(),
-	subjectAdmin: z.array(subjectAdminSchema),
-	specializationAdmin: z.array(specializationSchema),
-	username: z.string().optional()
+	imgUrl: z.url().nullable(),
+	memberships: z.array(membershipSchema),
+	defaultGroupId: z.number().nullable()
 });
 
 /**
@@ -28,10 +27,6 @@ export const authorSchema = z.object({
  *		authors: authorsRelationSchema,
  * });
  */
-export const authorsRelationSchema = z.array(
-	z.object({
-		username: z.string()
-	})
-);
+export const authorsRelationSchema = z.array(z.object({ username: z.string() }));
 
 export type Author = z.infer<typeof authorSchema>;

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from "react";
+import React, { useEffect, useRef, useCallback, type JSX } from "react";
 import ReactCanvasConfetti from "react-canvas-confetti";
 import { TCanvasConfettiInstance } from "react-canvas-confetti/dist/types";
 

@@ -144,7 +144,7 @@ function BigScreenPlaylistArea({ course, lesson }: LessonLayoutProps) {
 	);
 
 	return (
-		<aside className="playlist-scroll sticky top-[61px] w-full overflow-auto border-t border-r-gray-200 rounded-lg xl:rounded-none pb-8 xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4">
+		<aside className="playlist-scroll sticky top-[61px] w-full overflow-auto border-t border-r-c-border rounded-lg xl:rounded-none pb-8 xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4">
 			{content ? (
 				<Playlist
 					content={playlistContent}
@@ -154,7 +154,7 @@ function BigScreenPlaylistArea({ course, lesson }: LessonLayoutProps) {
 				/>
 			) : (
 				<div className="h-full pt-8">
-					<div className="h-full animate-pulse rounded-lg bg-gray-200"></div>
+					<div className="h-full animate-pulse rounded-lg bg-c-surface-3"></div>
 				</div>
 			)}
 		</aside>

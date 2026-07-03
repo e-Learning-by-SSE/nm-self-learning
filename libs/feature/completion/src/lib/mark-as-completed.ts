@@ -42,14 +42,10 @@ export async function markAsCompleted({
 			}
 		}
 	});
-	/*
-<<<<<<< HEAD
+
 	await addEarnedSkillsToUser(lessonId, username);
 
-	await createUserEvent({
-=======
-*/
-	// TODO remove since it is depricated
+	// TODO remove since it is depricated0
 	await createEventLogEntry({
 		username,
 		type: "LESSON_COMPLETE",
@@ -95,13 +91,19 @@ async function updateCourseProgress(courseId: string, content: CourseContent, us
 		});
 	}
 
-	// TODO: Student must be enrolled in course, otherwise this will fail
-	await database.enrollment.updateMany({
+	await database.enrollment.upsert({
 		where: {
-			username,
-			OR: [{ courseId }, { dynCourseId: courseId }]
+			courseId_username: { courseId, username },
+			OR: [{ courseId }, { dynCourseId: courseId }] // TODO SE: Check if this merge was correct
 		},
-		data: {
+		create: {
+			courseId,
+			username,
+			progress,
+			status: "ACTIVE",
+			lastProgressUpdate: new Date()
+		},
+		update: {
 			progress,
 			lastProgressUpdate: new Date()
 		}

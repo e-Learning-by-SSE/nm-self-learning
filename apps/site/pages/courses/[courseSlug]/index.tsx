@@ -14,13 +14,21 @@ import {
 	LessonInfo,
 	ResolvedValue
 } from "@self-learning/types";
-import { AuthorsList, ButtonActions, Dialog, OnDialogCloseFn, showToast, Tooltip } from "@self-learning/ui/common";
+import {
+	AuthorsList,
+	OnlineHelpLink,
+	ButtonActions,
+	Dialog,
+	OnDialogCloseFn,
+	showToast,
+	Tooltip
+} from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection, useAuthentication } from "@self-learning/ui/layouts";
 import { handleEmailTracking } from "@self-learning/ui/notifications";
 import { withAuth } from "@self-learning/util/auth";
 import { authOptions } from "@self-learning/util/auth/server";
-import { formatDateAgo, formatSeconds } from "@self-learning/util/common";
+import { formatDateDistanceToNow, formatSeconds } from "@self-learning/util/common";
 import { getServerSession } from "next-auth";
 import { useSession } from "next-auth/react";
 import { MDXRemote } from "next-mdx-remote";
@@ -28,6 +36,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
+import {
+	useAiTutor,
+	AiTutor,
+	FloatingTutorButton,
+	I18N_NAMESPACE as NS_AI_TUTOR
+} from "@self-learning/ai-tutor";
 
 type Course = ResolvedValue<typeof getCourse>;
 
@@ -63,6 +77,7 @@ function mapToTocContent(
 
 async function mapCourseContent(content: CourseContent, username?: string): Promise<ToC.Content> {
 	const lessonIds = extractLessonIds(content);
+	console.log("LessonIDs", lessonIds);
 
 	const lessons = await database.lesson.findMany({
 		where: { lessonId: { in: lessonIds } },
@@ -82,6 +97,8 @@ async function mapCourseContent(content: CourseContent, username?: string): Prom
 			}
 		}
 	});
+
+	console.log("lessons", lessons);
 
 	const map = new Map<string, LessonInfo>();
 
@@ -132,7 +149,7 @@ type CourseProps = {
 };
 
 export const getServerSideProps = withTranslations(
-	["common"],
+	Array.from(new Set(["common", ...NS_AI_TUTOR])),
 	withAuth(async context => {
 		const { req, res, params } = context;
 		const courseSlug = params?.courseSlug as string | undefined;
@@ -153,7 +170,6 @@ export const getServerSideProps = withTranslations(
 		let isGenerated = false;
 		let needsARefresh = false;
 
-		
 		const session = await getServerSession(req, res, authOptions);
 		const sessionUser = session?.user;
 
@@ -161,7 +177,7 @@ export const getServerSideProps = withTranslations(
 			slug: courseSlug,
 			username: sessionUser?.name,
 			includeContent: true
-		});	
+		});
 
 		let course = courses[0];
 
@@ -205,7 +221,6 @@ export const getServerSideProps = withTranslations(
 			},
 			notFound: !course
 		};
-
 	})
 );
 
@@ -224,7 +239,6 @@ async function getCourse(courseSlug: string) {
 	});
 }
 
-
 export default function Course({
 	needsARefresh,
 	course,
@@ -233,9 +247,10 @@ export default function Course({
 	markdownDescription,
 	isGenerated
 }: CourseProps) {
+	const tutorState = useAiTutor();
 	return (
-		<div className="bg-gray-50 pb-32">
-			<CenteredSection className="bg-gray-50">
+		<div className="pb-32">
+			<CenteredSection>
 				<CourseHeader
 					course={course}
 					content={content}
@@ -253,9 +268,16 @@ export default function Course({
 				</section>
 			)}
 
-			<CenteredSection className="bg-gray-50">
-			<TableOfContents content={content} course={course} isGenerated={isGenerated} />
+			<CenteredSection>
+				<TableOfContents content={content} course={course} isGenerated={isGenerated} />
 			</CenteredSection>
+			<FloatingTutorButton
+				onToggle={tutorState.toggleTutor}
+				disabled={tutorState.isAnimating}
+				hideToggle={tutorState.hideToggle || !tutorState.config}
+			/>
+
+			<AiTutor tutorState={tutorState} />
 		</div>
 	);
 }
@@ -318,7 +340,6 @@ function CourseHeader({
 		(!isGenerated ||
 			(isGenerated && Array.isArray(course.content) && course.content.length !== 0));
 
-
 	const avgScore = useMemo(() => {
 		const scores = content
 			.flatMap(chapter => chapter.content.map(lesson => lesson.performanceScore))
@@ -336,21 +357,27 @@ function CourseHeader({
 			<div className="flex flex-wrap-reverse gap-12 md:flex-nowrap">
 				<div className="flex flex-col justify-between gap-12">
 					<div className="flex min-w-[50%] flex-col-reverse gap-12 md:flex-col">
-						<div>
+						<div className="flex items-center gap-2">
 							<h1 className="mb-12 text-4xl md:text-6xl">{course.title}</h1>
+							<OnlineHelpLink relativePath="course-page.html#course-overview" />
 							{course.subtitle && (
-								<div className="text-lg tracking-tight text-light">
+								<div className="text-lg tracking-tight text-c-text-muted">
 									{course.subtitle}
 								</div>
 							)}
 						</div>
+						{course.subtitle && (
+							<div className="text-lg tracking-tight text-light">
+								{course.subtitle}
+							</div>
+						)}
 					</div>
 
 					<div className="flex flex-col gap-4">
 						<AuthorsList authors={course.authors} />
 						<CreatedUpdatedDates
-							createdAt={formatDateAgo(course.createdAt)}
-							updatedAt={formatDateAgo(course.updatedAt)}
+							createdAt={formatDateDistanceToNow(course.createdAt)}
+							updatedAt={formatDateDistanceToNow(course.updatedAt)}
 						/>
 					</div>
 				</div>
@@ -371,25 +398,25 @@ function CourseHeader({
 						<ul
 							className={`absolute bottom-0 grid w-full ${
 								isParticipant ? "grid-cols-4" : "grid-cols-3"
-							} divide-x divide-secondary rounded-b-lg border border-light-border border-t-transparent bg-white bg-opacity-80 p-2 text-center`}
+							} divide-x divide-c-primary rounded-b-lg border border-c-border border-t-transparent bg-white bg-opacity-80 p-2 text-center`}
 						>
 							<li className="flex flex-col">
-								<span className="font-semibold text-secondary">Lerneinheiten</span>
-								<span className="text-light">{summary.lessons}</span>
+								<span className="font-semibold text-c-primary">Lerneinheiten</span>
+								<span className="text-c-text-muted">{summary.lessons}</span>
 							</li>
 							<li className="flex flex-col">
-								<span className="font-semibold text-secondary">Kapitel</span>
-								<span className="text-light">{summary.chapters}</span>
+								<span className="font-semibold text-c-primary">Kapitel</span>
+								<span className="text-c-text-muted">{summary.chapters}</span>
 							</li>
 							<li className="flex flex-col">
-								<span className="font-semibold text-secondary">Dauer</span>
-								<span className="text-light">
+								<span className="font-semibold text-c-primary">Dauer</span>
+								<span className="text-c-text-muted">
 									{formatSeconds(summary.duration)}
 								</span>
 							</li>
 							{isParticipant && (
 								<li className="flex flex-col items-center">
-									<span className="font-semibold text-secondary">
+									<span className="font-semibold text-c-primary">
 										Mein Score{" "}
 									</span>
 									{avgScore != null ? (
@@ -451,7 +478,6 @@ function CourseHeader({
 	);
 }
 
-
 function TableOfContents({
 	content,
 	course,
@@ -466,11 +492,11 @@ function TableOfContents({
 
 	if (!hasContent) {
 		return (
-			<div className="flex flex-col gap-4 p-8 rounded-lg bg-gray-100">
+			<div className="flex flex-col gap-4 p-8 rounded-lg bg-c-surface-2">
 				<h3 className="heading flex gap-4 text-2xl">
-					<span className="text-secondary">Kein Inhalt verfügbar</span>
+					<span className="text-c-primary">Kein Inhalt verfügbar</span>
 				</h3>
-			<span className="mt-4 text-light">
+				<span className="mt-4 text-c-text-muted">
 					Du hast dir noch keinen Kurspfad generiert. Bitte wähle einen Kurspfad aus.
 				</span>
 			</div>
@@ -483,7 +509,8 @@ function TableOfContents({
 				<span className="text-secondary">Keine Inhalte verfügbar</span>
 				<span className="mt-4 text-light">
 					Du hast entweder alle Skills schon erreicht oder es sind keine Lerninhalte
-					verfügbar.</span>
+					verfügbar.
+				</span>
 			</div>
 		);
 	}
@@ -493,14 +520,16 @@ function TableOfContents({
 			<h2 className="mb-4 text-4xl">Inhalt</h2>
 			<ul className="flex flex-col gap-16">
 				{content.map((chapter, index) => (
-					<li key={index} className="flex flex-col rounded-lg bg-gray-100 p-8">
+					<li key={index} className="flex flex-col rounded-lg bg-c-surface-2 p-8">
 						{content.length > 1 && (
 							<>
 								<h3 className="heading flex gap-4 text-2xl">
 									<span>{index + 1}.</span>
-									<span className="text-secondary">{chapter.title}</span>
+									<span className="text-c-primary">{chapter.title}</span>
 								</h3>
-								<span className="mt-4 text-light">{chapter.description}</span>
+								<span className="mt-4 text-c-text-muted">
+									{chapter.description}
+								</span>
 							</>
 						)}
 
@@ -534,7 +563,7 @@ function Lesson({
 
 	if (!isAuthenticated) {
 		return (
-			<div className="flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm border-gray-300">
+			<div className="flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm border-c-border-strong">
 				<LessonEntry lesson={lesson} />
 			</div>
 		);
@@ -543,7 +572,7 @@ function Lesson({
 		<Link
 			href={href}
 			className={`flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm ${
-				isCompleted ? "border-emerald-500" : "border-gray-300"
+				isCompleted ? "border-c-primary" : "border-c-border-strong"
 			}`}
 		>
 			<LessonEntry lesson={lesson} />
@@ -555,14 +584,14 @@ function LessonEntry({ lesson }: { lesson: ToC.Content[0]["content"][0] }) {
 	return (
 		<span className="flex items-center justify-between w-full">
 			<span className="flex items-center">
-				<span className="w-8 shrink-0 self-center font-medium text-secondary">
+				<span className="w-8 shrink-0 self-center font-medium text-c-primary">
 					{lesson.lessonNr}
 				</span>
 				<span>{lesson.title}</span>
 			</span>
 			{/* Grade badge - klein und konsistent mit GradeDisplay */}
 			{lesson.performanceScore != null && (
-				<Tooltip content="Deine bishere beste Bewertung für dieses Nanomodul.">
+				<Tooltip content="Deine bisherige beste Bewertung für dieses Nanomodul.">
 					<SmallGradeBadge rating={lesson.performanceScore} />
 				</Tooltip>
 			)}
@@ -572,7 +601,7 @@ function LessonEntry({ lesson }: { lesson: ToC.Content[0]["content"][0] }) {
 
 function CreatedUpdatedDates({ createdAt, updatedAt }: { createdAt: string; updatedAt: string }) {
 	return (
-		<div className="flex flex-wrap gap-2 text-xs text-light">
+		<div className="flex flex-wrap gap-2 text-xs text-c-text-muted">
 			<span>
 				Erstellt: <span>{createdAt}</span>
 			</span>

@@ -1,10 +1,11 @@
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
-import { AuthorChip, ImageOrPlaceholder, LoadingBox } from "@self-learning/ui/common";
+import { ImageOrPlaceholder, LoadingBox } from "@self-learning/ui/common";
 import { AdminGuard, CenteredSection } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { withTranslations } from "@self-learning/api";
 import { useTranslation } from "next-i18next";
+import { ResourceGroupChips } from "@self-learning/teaching";
 
 export default function SubjectsPage() {
 	const { data: subjects } = trpc.subject.getAllForAdminPage.useQuery();
@@ -13,7 +14,7 @@ export default function SubjectsPage() {
 
 	return (
 		<AdminGuard>
-			<CenteredSection className="bg-gray-50">
+			<CenteredSection>
 				<div className="mb-16 flex items-center justify-between gap-4">
 					<h1 className="text-5xl">{t_common("Topic_other")}</h1>
 
@@ -30,7 +31,7 @@ export default function SubjectsPage() {
 						{subjects.map(subject => (
 							<li
 								key={subject.subjectId}
-								className="flex rounded-lg border border-light-border bg-white"
+								className="flex rounded-lg border border-c-border bg-white"
 							>
 								<ImageOrPlaceholder
 									src={subject.cardImgUrl ?? undefined}
@@ -40,23 +41,15 @@ export default function SubjectsPage() {
 									<div className="flex flex-col gap-2">
 										<Link
 											href={`/teaching/subjects/${subject.subjectId}`}
-											className="text-lg font-semibold hover:text-secondary"
+											className="text-lg font-semibold hover:text-c-primary"
 										>
 											{subject.title}
 										</Link>
-										<p className="text-sm text-light">{subject.subtitle}</p>
+										<p className="text-sm text-c-text-muted">
+											{subject.subtitle}
+										</p>
+										<ResourceGroupChips permissions={subject.permissions} />
 									</div>
-
-									<ul className="flex flex-wrap gap-4">
-										{subject.subjectAdmin.map(admin => (
-											<AuthorChip
-												key={admin.author.slug}
-												imgUrl={admin.author.imgUrl}
-												displayName={admin.author.displayName}
-												slug={admin.author.slug}
-											/>
-										))}
-									</ul>
 								</div>
 							</li>
 						))}

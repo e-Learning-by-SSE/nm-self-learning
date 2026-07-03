@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 import {
 	createCourse,
 	createLesson,
@@ -20,6 +21,8 @@ import {
 // 	)
 // ];
 
+const courseId = faker.string.alphanumeric(8);
+
 export const chapters = [
 	{
 		title: "Aufmerksamkeit (*attention*)",
@@ -27,6 +30,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Definition von Aufmerksamkeit",
 				subtitle: "Aktivierungsfrage: Wie wird Aufmerksamkeit definiert?",
 				description:
@@ -80,6 +84,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Cocktailparty Phänomen (Cherry, 1953)",
 				subtitle: "Aktivierungsfrage zu Cocktailparty Phänomen (Cherry, 1953)?",
 				description:
@@ -132,6 +137,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Serieller Flaschenhals (*serial bottleneck*) (Chun & Potter, 1995)",
 				subtitle:
 					"Aktivierungsfrage: Welches Phänomen beschreibt der serielle Flaschenhals??",
@@ -192,6 +198,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Selektive Aufmerksamkeit",
 				subtitle: "Aktivierungsfrage zu selektiver Aufmerksamkeit",
 				description:
@@ -243,6 +250,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Klassische Ansätze zur selektiven Aufmerksamkeit",
 				subtitle: "Aktivierungsfrage zu klassischen Ansätzen selektiver Aufmerksamkeit",
 				description:
@@ -294,6 +302,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Selektive visuelle Aufmerksamkeit",
 				subtitle: "Aktivierungsfrage: Was besagt die Spotlight-Metapher?",
 				description:
@@ -346,6 +355,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Visuelle Suche",
 				subtitle: "Aktivierungsfrage zur visuellen Suche",
 				description:
@@ -397,6 +407,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Begrenzungen der selektiven visuellen Aufmerksamkeit",
 				subtitle:
 					"Aktivierungsfrage zu Begrenzungen der selektiven visuellen Aufmerksamkeit",
@@ -449,6 +460,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Neurokognitive Mechanismen der selektiven visuellen Aufmerksamkeit",
 				subtitle:
 					"Aktivierungsfrage zu neurokognitiven Mechanismen der selektiven visuellen Aufmerksamkeit",
@@ -502,6 +514,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Dichotisches Hören und Filtertheorien",
 				subtitle: "Aktivierungsfrage: Was beschreibt das Paradigma zum dichotischen Hören?",
 				description:
@@ -642,6 +655,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Attenuationstheorie (Treisman, 1964)",
 				subtitle:
 					"Aktivierungsfrage: Worin besteht Treismans (1964) Modifikation des Broadbent-Modells?",
@@ -695,6 +709,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Determinanten der Reizauswahl",
 				subtitle: "Aktivierungsfrage zu Determinanten der Reizauswahl?",
 				description:
@@ -746,6 +761,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Temporale Mechanismen der selektiven Aufmerksamkeit",
 				subtitle:
 					"Aktivierungsfrage zu temporale Mechanismen der selektiven Aufmerksamkeit?",
@@ -798,6 +814,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Aufmerksamkeitsausrichtung - top-down versus bottom-up",
 				subtitle:
 					"Aktivierungsfrage zu Aufmerksamkeitsausrichtung - top-down versus bottom-up?",
@@ -851,6 +868,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Selektivität durch Bedürfnisse, Werte und Bewertungen",
 				subtitle:
 					"Aktivierungsfrage zu Selektivität durch Bedürfnisse, Werte und Bewertungen?",
@@ -903,6 +921,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Theorie der visuellen Aufmerksamkeit - Kategorisierung",
 				subtitle:
 					"Aktivierungsfrage zur Theorie der visuellen Aufmerksamkeit - Kategorisierung?",
@@ -956,6 +975,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Physiologische Korrelate der Aufmerksamkeit",
 				subtitle: "Aktivierungsfrage zu physiologischen Korrelaten der Aufmerksamkeit?",
 				description:
@@ -1014,6 +1034,7 @@ export const chapters = [
 			"Überlegen Sie jeweils vorher, was Sie schon zu den Themen wissen, bevor Sie sich die Videos anschauen.",
 		content: [
 			createLesson({
+				courseId,
 				title: "Aufgabenkombinationen und geteilte Aufmerksamkeit",
 				subtitle: "Aktivierungsfrage zu Aufgabenkombinationen und geteilte Aufmerksamkeit?",
 				description:
@@ -1065,6 +1086,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Automatische Verarbeitung",
 				subtitle: "Aktivierungsfrage zur automatischen Verarbeitung?",
 				description:
@@ -1116,6 +1138,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: 'Aufmerksamkeit und "Umschalten zwischen Aufgaben" - der Stroop-Effekt',
 				subtitle:
 					'Aktivierungsfrage zu Aufmerksamkeit und "Umschalten zwischen Aufgaben" - der Stroop-Effekt?',
@@ -1169,6 +1192,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Mustererkennung und Aufmerksamkeit",
 				subtitle: "Aktivierungsfrage zu Mustererkennung und Aufmerksamkeit?",
 				description:
@@ -1220,6 +1244,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Neglect des visuellen Feldes",
 				subtitle: "Aktivierungsfrage zu Neglect des visuellen Feldes?",
 				description:
@@ -1271,6 +1296,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Objektzentrierte Aufmerksamkeit",
 				subtitle: "Aktivierungsfrage zu objektzentrierter Aufmerksamkeit?",
 				description:
@@ -1322,6 +1348,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Aufmerksamkeitsphänomen - *Inhibition of Return*",
 				subtitle: "Aktivierungsfrage zu Aufmerksamkeitsphänomen - *Inhibition of Return*?",
 				description:
@@ -1373,6 +1400,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Aufmerksamkeitsphänomen - *Change Blindness* (Veränderungsblindheit)",
 				subtitle:
 					"Aktivierungsfrage zu Aufmerksamkeitsphänomen - *Change Blindness* (Veränderungsblindheit)?",
@@ -1426,6 +1454,7 @@ export const chapters = [
 				]
 			}),
 			createLesson({
+				courseId,
 				title: "Aufmerksamkeit, Handlungssteuerung und kognitive Kontrolle",
 				subtitle:
 					"Aktivierungsfrage zu Aufmerksamkeit, Handlungssteuerung und kognitive Kontrolle?",
@@ -1483,6 +1512,7 @@ export const chapters = [
 ];
 
 export const course = createCourse({
+	courseId,
 	subjectId: "psychologie",
 	specializationId: "aufmerksamkeit",
 	title: "Aufmerksamkeit",

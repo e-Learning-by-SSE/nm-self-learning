@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 import {
 	createArticle,
 	createAuthor,
@@ -10,6 +11,10 @@ import {
 	seedCaseStudy
 } from "../seed-functions";
 import { seedJavaDemoSkills } from "./seed-java-demo-skills";
+import { GroupRole } from "@prisma/client";
+import { softwareentwicklungDemoGroup } from "../seedSpecializations";
+
+const courseId = faker.string.alphanumeric(8);
 
 const chapters = [
 	{
@@ -31,18 +36,12 @@ const chapters = [
 					createMultipleChoice({
 						question: "Weshalb sollten IT-Studierende programmieren lernen?",
 						answers: [
-							{
-								content: "Zum Erstellen technischer Zeichnungen",
-								isCorrect: false
-							},
+							{ content: "Zum Erstellen technischer Zeichnungen", isCorrect: false },
 							{
 								content: "Es handelt es um eine Grundfertigkeit im IT-Bereich",
 								isCorrect: true
 							},
-							{
-								content: "Zum Erstellen von Programmen",
-								isCorrect: true
-							}
+							{ content: "Zum Erstellen von Programmen", isCorrect: true }
 						]
 					})
 				]
@@ -66,18 +65,9 @@ const chapters = [
 					createMultipleChoice({
 						question: "Auf welchen Seiten wird ein JDK angeboten?",
 						answers: [
-							{
-								content: "adoptopenjdk.net",
-								isCorrect: true
-							},
-							{
-								content: "java.oracle.com",
-								isCorrect: true
-							},
-							{
-								content: "uni-hildesheim.de",
-								isCorrect: false
-							}
+							{ content: "adoptopenjdk.net", isCorrect: true },
+							{ content: "java.oracle.com", isCorrect: true },
+							{ content: "uni-hildesheim.de", isCorrect: false }
 						],
 						hints: [
 							"Die Uni Hi bietet selber kein JDK an.",
@@ -121,10 +111,7 @@ const chapters = [
 					createMultipleChoice({
 						question: "Was ist die Aufgabe des Compilers",
 						answers: [
-							{
-								content: "Ausführen eines Programms",
-								isCorrect: false
-							},
+							{ content: "Ausführen eines Programms", isCorrect: false },
 							{
 								content:
 									"Den Quellcode eines Programms in maschinen lesbaren Code überführen",
@@ -135,10 +122,7 @@ const chapters = [
 					createMultipleChoice({
 						question: "Was ist die Aufgabe des Interpreters",
 						answers: [
-							{
-								content: "Ausführen eines Programms",
-								isCorrect: true
-							},
+							{ content: "Ausführen eines Programms", isCorrect: true },
 							{
 								content:
 									"Den Quellcode eines Programms in maschinen lesbaren Code überführen",
@@ -151,7 +135,7 @@ const chapters = [
 			createLesson({
 				title: "If&Else-Blöcke",
 				subtitle: "Entscheidungsstrukturen in Java",
-				description:"Erlernen der Grundlagen von If-Else-Blöcken in Java",
+				description: "Erlernen der Grundlagen von If-Else-Blöcken in Java",
 				content: [],
 				questions: [
 					createMultipleChoice({
@@ -162,18 +146,20 @@ const chapters = [
 								isCorrect: false
 							},
 							{
-							content: "eine Entscheidung aufgrund einer oder mehrerer Variablen",
-							isCorrect: true
+								content: "eine Entscheidung aufgrund einer oder mehrerer Variablen",
+								isCorrect: true
 							}
 						]
 					})
 				]
 			})
-	]},
+		]
+	}
 ];
 
 const courses = [
 	createCourse({
+		courseId,
 		subjectId: "informatik",
 		specializationId: "softwareentwicklung",
 		title: "Objectorientierte Programmierung mit Java",
@@ -191,12 +177,13 @@ const authors = [
 		name: "J. Gosling",
 		imgUrl: "https://www.pngall.com/wp-content/uploads/7/Ryan-Gosling-PNG-Picture.png",
 		lessons: chapters,
-		courses: courses
+		courses: courses,
+		group: softwareentwicklungDemoGroup.name,
+		role: GroupRole.MEMBER
 	})
 ];
 
 export async function seedJavaDemo(): Promise<void> {
-	await seedCaseStudy("Java", courses, chapters, authors);
+	await seedCaseStudy("Java", courses, chapters, softwareentwicklungDemoGroup, authors);
 	await seedJavaDemoSkills();
-
 }

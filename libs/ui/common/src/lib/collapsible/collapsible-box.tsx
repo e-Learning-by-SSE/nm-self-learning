@@ -29,13 +29,13 @@ export const CollapsibleBox = ({
 	return (
 		<div className="">
 			<button
-				className="mx-auto inline-flex w-full items-center rounded bg-gray-300 py-2 px-4 font-bold text-gray-800 hover:bg-gray-400"
+				className="mx-auto inline-flex w-full items-center rounded bg-gray-300 py-2 px-4 font-bold text-c-text-strong hover:bg-gray-400"
 				onClick={toggleCollapse}
 			>
 				<ArrowSvG isOpen={isOpen} />
 				{title}
 			</button>
-			{isOpen && <div className="bg-gray-100 p-2">{children}</div>}
+			{isOpen && <div className="bg-c-surface-2 p-2">{children}</div>}
 		</div>
 	);
 };

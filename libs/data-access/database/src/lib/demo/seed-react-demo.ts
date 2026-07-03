@@ -1,11 +1,5 @@
-/*
-<<<<<<< HEAD
-import { QuizContent } from "@self-learning/question-types";
-import { getRandomId, slugify } from "@self-learning/util/common";
-=======
->>>>>>> master */
 import { faker } from "@faker-js/faker";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { AccessLevel, GroupRole, Prisma, PrismaClient } from "@prisma/client";
 import { QuizContent } from "@self-learning/question-types";
 import {
 	createCourseContent,
@@ -22,8 +16,11 @@ import {
 	createUsers,
 	getDefaultNotificationData
 } from "../seed-functions";
+import { softwareentwicklungDemoGroup } from "../seedSpecializations";
 
 faker.seed(1);
+
+const courseId = faker.string.alphanumeric(8);
 
 const prisma = new PrismaClient();
 
@@ -40,16 +37,8 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 				content: "Very Good",
 				isCorrect: true
 			},
-			{
-				answerId: "35d310ee-1acf-48e0-8f8c-090acd0e873a",
-				content: "Good",
-				isCorrect: true
-			},
-			{
-				answerId: "cd33a2ef-95e8-4353-ad1d-de778d62ad57",
-				content: "Bad",
-				isCorrect: false
-			},
+			{ answerId: "35d310ee-1acf-48e0-8f8c-090acd0e873a", content: "Good", isCorrect: true },
+			{ answerId: "cd33a2ef-95e8-4353-ad1d-de778d62ad57", content: "Bad", isCorrect: false },
 			{
 				answerId: "211b5171-d7b2-4fc9-98ab-88af35f53df2",
 				content: "Very Bad",
@@ -63,10 +52,7 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 				content:
 					"Lorem ipsum dolor sit amet consectetur adipisicing elit. Libero laudantium sequi illo, veritatis labore culpa, eligendi, quod consequatur autem ad dolorem explicabo quos alias harum fuga sapiente reiciendis. Incidunt, voluptates."
 			},
-			{
-				hintId: "def",
-				content: "# Lorem ipsum dolor \n- Eins\n- Zwei"
-			}
+			{ hintId: "def", content: "# Lorem ipsum dolor \n- Eins\n- Zwei" }
 		],
 		questionStep: 1
 	},
@@ -76,12 +62,7 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 		statement: "# Was ist 1 + 1 ?",
 		withCertainty: true,
 		caseSensitive: true,
-		acceptedAnswers: [
-			{
-				acceptedAnswerId: "724f781e-56b2-4057-831e-b1d6962c48b1",
-				value: "2"
-			}
-		],
+		acceptedAnswers: [{ acceptedAnswerId: "724f781e-56b2-4057-831e-b1d6962c48b1", value: "2" }],
 		hints: []
 	},
 	{
@@ -94,14 +75,8 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 	{
 		type: "programming",
 		hints: [
-			{
-				hintId: "asdrfewq",
-				content: "```java\nSystem.out.println();```"
-			},
-			{
-				content: "# Lorem ipsum dolor \n- Eins\n- Zwei",
-				hintId: getRandomId()
-			}
+			{ hintId: "asdrfewq", content: "```java\nSystem.out.println();```" },
+			{ content: "# Lorem ipsum dolor \n- Eins\n- Zwei", hintId: getRandomId() }
 		],
 		custom: {
 			mode: "standalone",
@@ -123,10 +98,7 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 				content:
 					"```ts\n// Verwende eine for-Schleife, um über alle Zahlen der Liste zu iterieren.\nfor (let i = 0; i < numbers.length; i++) {\n\t// DEINE LÖSUNG HIER\n}\n```"
 			},
-			{
-				content: "# Lorem ipsum dolor \n- Eins\n- Zwei",
-				hintId: getRandomId()
-			}
+			{ content: "# Lorem ipsum dolor \n- Eins\n- Zwei", hintId: getRandomId() }
 		],
 		custom: {
 			mode: "callable",
@@ -144,14 +116,8 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 	{
 		type: "programming",
 		hints: [
-			{
-				content: "```java\nSystem.out.println();```",
-				hintId: getRandomId()
-			},
-			{
-				content: "# Lorem ipsum dolor \n- Eins\n- Zwei",
-				hintId: getRandomId()
-			}
+			{ content: "```java\nSystem.out.println();```", hintId: getRandomId() },
+			{ content: "# Lorem ipsum dolor \n- Eins\n- Zwei", hintId: getRandomId() }
 		],
 		custom: {
 			mode: "standalone",
@@ -166,14 +132,8 @@ Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi molestias dolori
 	{
 		type: "programming",
 		hints: [
-			{
-				content: "```java\nSystem.out.println();```",
-				hintId: getRandomId()
-			},
-			{
-				content: "# Lorem ipsum dolor \n- Eins\n- Zwei",
-				hintId: getRandomId()
-			}
+			{ content: "```java\nSystem.out.println();```", hintId: getRandomId() },
+			{ content: "# Lorem ipsum dolor \n- Eins\n- Zwei", hintId: getRandomId() }
 		],
 		custom: {
 			mode: "callable",
@@ -398,9 +358,11 @@ const reactLessons = [
 	}
 ];
 
+// Here I use single courseId because there is single course.
+// For multiple courses do not forget to create multiple ids!
 export const reactCourses: Prisma.CourseCreateManyInput[] = [
 	{
-		courseId: faker.random.alphaNumeric(8),
+		courseId,
 		title: "The Beginner's Guide to React",
 		slug: "the-beginners-guide-to-react",
 		subtitle: faker.lorem.paragraph(2),
@@ -418,39 +380,36 @@ export const reactCourses: Prisma.CourseCreateManyInput[] = [
 		),
 		meta: {}
 	}
-].map(course => ({
-	...course,
-	meta: createCourseMeta(course)
-}));
+].map(course => ({ ...course, meta: createCourseMeta(course) }));
 
 const reactAuthors: Prisma.UserCreateInput[] = [
 	{
 		name: "kent-c-dodds",
 		displayName: "Kent C. Dodds",
 		accounts: {
-			create: [
-				{
-					provider: "demo",
-					providerAccountId: "kent-c-dodds",
-					type: "demo-account"
-				}
-			]
+			create: [{ provider: "demo", providerAccountId: "kent-c-dodds", type: "demo-account" }]
 		},
-		student: {
-			create: {
-				username: "kent-c-dodds"
-			}
-		},
+		student: { create: { username: "kent-c-dodds" } },
 		author: {
 			create: {
 				displayName: "Kent C Dodds",
 				slug: "kent-c-dodds",
 				imgUrl: "https://raw.githubusercontent.com/kentcdodds/kentcdodds.com/main/public/images/small-circular-kent.png",
-				specializationAdmin: {
-					create: {
-						specializationId: "softwareentwicklung"
+				courses: { connect: { courseId: reactCourses[0].courseId } },
+				lessons: {
+					connect: extractLessonIds(reactLessons).map(lessonId => ({ lessonId }))
+				},
+				specializationAdmin: { create: { specializationId: "softwareentwicklung" } }
+			}
+		},
+		memberships: {
+			create: {
+				group: {
+					connect: {
+						name: softwareentwicklungDemoGroup.name
 					}
-				}
+				},
+				role: GroupRole.MEMBER
 			}
 		}
 	},
@@ -460,29 +419,24 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 		role: "ADMIN",
 		image: "https://i.imgur.com/UWMVO8m.jpeg",
 		accounts: {
-			create: [
-				{
-					provider: "demo",
-					providerAccountId: "dumbledore",
-					type: "demo-account"
-				}
-			]
+			create: [{ provider: "demo", providerAccountId: "dumbledore", type: "demo-account" }]
 		},
-		student: {
-			create: {
-				username: "dumbledore"
-			}
-		},
+		student: { create: { username: "dumbledore" } },
 		author: {
 			create: {
 				displayName: "Albus Dumbledore",
 				slug: "albus-dumbledore",
-				imgUrl: "https://i.imgur.com/UWMVO8m.jpeg",
-				subjectAdmin: {
-					create: {
-						subjectId: "informatik"
+				imgUrl: "https://i.imgur.com/UWMVO8m.jpeg"
+			}
+		},
+		memberships: {
+			create: {
+				group: {
+					connect: {
+						name: softwareentwicklungDemoGroup.name
 					}
-				}
+				},
+				role: GroupRole.ADMIN
 			}
 		},
 		gamificationProfile: {
@@ -513,19 +467,9 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 		image: "https://i.pinimg.com/originals/ac/9f/c3/ac9fc3d306b9eb07b451933cc756f733.jpg",
 		displayName: "Minerva McGonagall",
 		accounts: {
-			create: [
-				{
-					provider: "demo",
-					providerAccountId: "mcgonagall",
-					type: "demo-account"
-				}
-			]
+			create: [{ provider: "demo", providerAccountId: "mcgonagall", type: "demo-account" }]
 		},
-		student: {
-			create: {
-				username: "mcgonagall"
-			}
-		},
+		student: { create: { username: "mcgonagall" } },
 		author: {
 			create: {
 				displayName: "Minerva McGonagall",
@@ -536,6 +480,16 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 		notificationSettings: {
 			createMany: {
 				data: getDefaultNotificationData(false)
+			}
+		},
+		memberships: {
+			create: {
+				group: {
+					connect: {
+						name: softwareentwicklungDemoGroup.name
+					}
+				},
+				role: GroupRole.MEMBER
 			}
 		}
 	}
@@ -579,13 +533,7 @@ const users: Prisma.UserCreateInput[] = reactStudents.map(student => ({
 	image: student.image,
 	displayName: student.displayName,
 	accounts: {
-		create: [
-			{
-				provider: "demo",
-				providerAccountId: student.username,
-				type: "demo-account"
-			}
-		]
+		create: [{ provider: "demo", providerAccountId: student.username, type: "demo-account" }]
 	},
 	student: {
 		create: {
@@ -726,27 +674,11 @@ export async function seedReactDemo() {
 	await seedReactDemoSkills();
 
 	const licenseId = await defaultLicenseId();
-
-	await Promise.all(
-		reactLessons.map(async chapter => {
-			await Promise.all(
-				chapter.content.map(async lesson => {
-					try {
-						await prisma.lesson.create({
-							data: {
-								...lesson,
-								license: {
-									connect: { licenseId }
-								}
-							}
-						});
-					} catch (error) {
-						console.error("Error creating lesson:", error);
-					}
-				})
-			);
-		})
-	);
+	await prisma.lesson.createMany({
+		data: reactLessons.flatMap(chapter =>
+			chapter.content.map(lesson => ({ ...lesson, licenseId }))
+		)
+	});
 
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Lessons");
 
@@ -758,11 +690,30 @@ export async function seedReactDemo() {
 
 	await prisma.specialization.update({
 		where: { specializationId: "softwareentwicklung" },
-		data: {
-			courses: {
-				connect: reactCourses.map(course => ({ courseId: course.courseId }))
-			}
-		}
+		data: { courses: { connect: reactCourses.map(course => ({ courseId: course.courseId })) } }
 	});
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Connect Specialization to Course");
+
+	const lessonsPermissions = reactLessons.flatMap(chapter =>
+		chapter.content.map(lesson => ({
+			accessLevel: AccessLevel.FULL,
+			lessonId: lesson.lessonId
+		}))
+	);
+	const coursesPermissions = reactCourses.map(c => ({
+		accessLevel: AccessLevel.FULL,
+		courseId: c.courseId
+	}));
+	const perms = [...lessonsPermissions, ...coursesPermissions];
+	await prisma.group.upsert({
+		where: { name: softwareentwicklungDemoGroup.name },
+		create: { name: softwareentwicklungDemoGroup.name, permissions: { create: perms } },
+		update: { permissions: { createMany: { data: perms, skipDuplicates: true } } }
+	});
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Create a group with FULL permissions to all resources");
+
+	for (const author of reactAuthors) {
+		await prisma.user.create({ data: author });
+	}
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Authors");
 }

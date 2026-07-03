@@ -31,20 +31,20 @@ export function LicenseChip({
 	const iconBox = imgUrl ? (
 		<ImageOrPlaceholder
 			src={imgUrl ?? defaultLogoUrl}
-			className="h-8 w-8 rounded object-cover"
+			className="h-8 w-32 rounded object-contain"
 		/>
 	) : (
-		<div className="flex h-8 w-8 items-center justify-center rounded bg-gray-100">
-			<ScaleIcon className="h-5 w-5 text-gray-500" aria-hidden="true" />
+		<div className="flex h-8 w-8 items-center justify-center rounded bg-c-surface-2">
+			<ScaleIcon className="h-5 w-5 text-c-text-muted" aria-hidden="true" />
 		</div>
 	);
 
 	return (
-		<div className="inline-flex flex-col items-center gap-1 text-xs text-gray-500">
+		<div className="inline-flex flex-col items-center gap-1 text-xs text-c-text-muted">
 			<Link
 				href={url || "#"}
 				onClick={handleClick}
-				className="flex flex-col items-center hover:text-secondary"
+				className="flex flex-col items-center hover:text-c-primary"
 				style={url ? {} : { cursor: "pointer" }}
 			>
 				{iconBox}

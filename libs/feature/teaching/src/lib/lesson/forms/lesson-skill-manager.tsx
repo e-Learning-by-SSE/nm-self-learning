@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { PlusIcon } from "@heroicons/react/24/solid";
-import { IconButton } from "@self-learning/ui/common";
+import { IconTextButton } from "@self-learning/ui/common";
 import { SelectSkillDialog } from "../../skills/skill-dialog/select-skill-dialog";
 import { SkillManagementComponent } from "../../skills/skill-dialog/select-skill-view";
 
@@ -97,7 +97,7 @@ export function LabeledFieldSelectSkillsView({
 		<LabeledField
 			label={label}
 			button={
-				<IconButton
+				<IconTextButton
 					text="Hinzufügen"
 					icon={<PlusIcon />}
 					onClick={() => setSelectSkillModal(true)}

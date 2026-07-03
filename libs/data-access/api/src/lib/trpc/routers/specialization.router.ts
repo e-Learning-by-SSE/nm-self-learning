@@ -1,9 +1,45 @@
 import { database } from "@self-learning/database";
-import { specializationSchema } from "@self-learning/types";
-import { TRPCError } from "@trpc/server";
+import { resourcePermissionSelect, specializationSchema } from "@self-learning/types";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
+import {
+	canEdit,
+	hasResourceAccess,
+	preparePermissionsForCreate,
+	prepareResourceUpdate
+} from "../../permissions/permission.service";
+import { TRPCError } from "@trpc/server";
+import { AccessLevel } from "@prisma/client";
 import { UserFromSession } from "../context";
+
+const attachmentSchema = z.object({
+	subjectId: z.string(),
+	specializationId: z.string(),
+	courseId: z.string()
+});
+
+type AttachmentType = z.infer<typeof attachmentSchema>;
+
+async function canAttachCourse(user: UserFromSession, input: AttachmentType) {
+	// Is website ADMIN or ( full(course) ^ ( edit(specialization) v edit(subject) ) )
+	if (user.role === "ADMIN") {
+		return true;
+	}
+	const { courseId, specializationId, subjectId } = input;
+	const hasCourseAccess = await hasResourceAccess(user.id, {
+		accessLevel: AccessLevel.FULL,
+		courseId
+	});
+	const hasSpAccess = await hasResourceAccess(user.id, {
+		accessLevel: AccessLevel.EDIT,
+		specializationId
+	});
+	const hasSbAccess = await hasResourceAccess(user.id, {
+		accessLevel: AccessLevel.EDIT,
+		subjectId
+	});
+	return hasCourseAccess && (hasSpAccess || hasSbAccess);
+}
 
 export const specializationRouter = t.router({
 	getById: authProcedure.input(z.object({ specializationId: z.string() })).query(({ input }) => {
@@ -14,13 +50,7 @@ export const specializationRouter = t.router({
 				slug: true,
 				cardImgUrl: true,
 				title: true,
-				subject: {
-					select: {
-						subjectId: true,
-						slug: true,
-						title: true
-					}
-				}
+				subject: { select: { subjectId: true, slug: true, title: true } }
 			}
 		});
 	}),
@@ -36,7 +66,10 @@ export const specializationRouter = t.router({
 					title: true,
 					subtitle: true,
 					cardImgUrl: true,
-					imgUrlBanner: true
+					imgUrlBanner: true,
+					permissions: {
+						select: resourcePermissionSelect
+					}
 				}
 			});
 		}),
@@ -49,21 +82,14 @@ export const specializationRouter = t.router({
 		});
 	}),
 	create: authProcedure
-		.input(
-			z.object({
-				subjectId: z.string(),
-				data: specializationSchema
-			})
-		)
+		.input(z.object({ subjectId: z.string(), data: specializationSchema }))
 		.mutation(async ({ ctx, input }) => {
-			const canCreate = await canCreateSpecializationInSubject(input.subjectId, ctx.user);
-
-			if (!canCreate) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: `Requires ADMIN role or subjectAdmin in ${input.subjectId}.`
-				});
+			// must be able to edit parent subject
+			if (!(await canEdit(ctx.user, { subjectId: input.subjectId }))) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
 			}
+			// prepare permissions for create (can throw)
+			const permissions = await preparePermissionsForCreate(input.data.permissions);
 
 			const specialization = await database.specialization.create({
 				data: {
@@ -73,7 +99,8 @@ export const specializationRouter = t.router({
 					slug: input.data.slug,
 					subtitle: input.data.subtitle,
 					cardImgUrl: input.data.cardImgUrl,
-					imgUrlBanner: input.data.imgUrlBanner
+					imgUrlBanner: input.data.imgUrlBanner,
+					permissions
 				}
 			});
 
@@ -87,25 +114,13 @@ export const specializationRouter = t.router({
 			return specialization;
 		}),
 	update: authProcedure
-		.input(
-			z.object({
-				subjectId: z.string(),
-				data: specializationSchema
-			})
-		)
+		.input(z.object({ subjectId: z.string(), data: specializationSchema }))
 		.mutation(async ({ ctx, input }) => {
-			const canEdit = await canEditSpecializationInSubject(
-				input.subjectId,
-				input.data.specializationId,
-				ctx.user
+			const permissions = await prepareResourceUpdate(
+				ctx.user,
+				{ specializationId: input.data.specializationId },
+				input.data.permissions
 			);
-
-			if (!canEdit) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: `Requires ADMIN role or subjectAdmin in ${input.subjectId} or specializationAdmin in ${input.data.specializationId}.`
-				});
-			}
 
 			const specialization = await database.specialization.update({
 				where: { specializationId: input.data.specializationId },
@@ -114,7 +129,8 @@ export const specializationRouter = t.router({
 					slug: input.data.slug,
 					subtitle: input.data.subtitle,
 					cardImgUrl: input.data.cardImgUrl,
-					imgUrlBanner: input.data.imgUrlBanner
+					imgUrlBanner: input.data.imgUrlBanner,
+					permissions
 				}
 			});
 
@@ -127,59 +143,39 @@ export const specializationRouter = t.router({
 
 			return specialization;
 		}),
-	addCourse: authProcedure
-		.input(
-			z.object({ subjectId: z.string(), specializationId: z.string(), courseId: z.string() })
-		)
-		.mutation(async ({ input: { subjectId, specializationId, courseId }, ctx }) => {
-			if (!canEditSpecializationInSubject(subjectId, specializationId, ctx.user)) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: `Requires ADMIN role or subjectAdmin in ${subjectId} or specializationAdmin in ${specializationId}.`
-				});
-			}
+	addCourse: authProcedure.input(attachmentSchema).mutation(async ({ input, ctx }) => {
+		if (!(await canAttachCourse(ctx.user, input))) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: "Insufficient permissions."
+			});
+		}
 
-			const validCourse = await database.course.findUnique({
+		const { specializationId, courseId } = input;
+
+		const validCourse = await database.course.findUnique({
+			where: { courseId },
+			select: { courseId: true }
+		});
+
+		// TODO SE: Check if there is a better way to distinguish between a normal course and a dynamic course.
+		if (!validCourse) {
+			const validDynCourse = await database.dynCourse.findUnique({
 				where: { courseId },
 				select: { courseId: true }
 			});
 
-			if (!validCourse) {
-				const validDynCourse = await database.dynCourse.findUnique({
-					where: { courseId },
-					select: { courseId: true }
+			if (!validDynCourse) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: `Course with ID ${courseId} not found.`
 				});
-
-				if (!validDynCourse) {
-					throw new TRPCError({
-						code: "NOT_FOUND",
-						message: `Course with ID ${courseId} not found.`
-					});
-				}
-
-				const added = await database.specialization.update({
-					where: { specializationId },
-					data: {
-						dynCourses: {
-							connect: { courseId }
-						}
-					},
-					select: {
-						specializationId: true
-					}
-				});
-				console.log(
-					"[specializationRouter.addCourse]: Dynamic course added to specialization",
-					{ specializationId, courseId }
-				);
-
-				return added;
 			}
 
 			const added = await database.specialization.update({
 				where: { specializationId },
 				data: {
-					courses: {
+					dynCourses: {
 						connect: { courseId }
 					}
 				},
@@ -187,88 +183,47 @@ export const specializationRouter = t.router({
 					specializationId: true
 				}
 			});
-
 			console.log(
-				"[specializationRouter.addCourse]: Course added to specialization by",
-				ctx.user.name,
+				"[specializationRouter.addCourse]: Dynamic course added to specialization",
 				{ specializationId, courseId }
 			);
-			return added;
-		}),
-	removeCourse: authProcedure
-		.input(
-			z.object({ subjectId: z.string(), specializationId: z.string(), courseId: z.string() })
-		)
-		.mutation(async ({ input: { subjectId, specializationId, courseId }, ctx }) => {
-			if (!canEditSpecializationInSubject(subjectId, specializationId, ctx.user)) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: `Requires ADMIN role or subjectAdmin in ${subjectId} or specializationAdmin in ${specializationId}.`
-				});
-			}
 
-			const added = await database.specialization.update({
-				where: { specializationId },
-				data: {
-					courses: {
-						disconnect: { courseId }
-					}
-				},
-				select: {
-					specializationId: true
-				}
+			return added;
+		}
+
+		const added = await database.specialization.update({
+			where: { specializationId },
+			data: { courses: { connect: { courseId } } },
+			select: { specializationId: true }
+		});
+
+		console.log(
+			"[specializationRouter.addCourse]: Course added to specialization by",
+			ctx.user.name,
+			{ specializationId, courseId }
+		);
+		return added;
+	}),
+	removeCourse: authProcedure.input(attachmentSchema).mutation(async ({ input, ctx }) => {
+		if (!(await canAttachCourse(ctx.user, input))) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: "Insufficient permissions."
 			});
+		}
+		const { specializationId, courseId } = input;
 
-			console.log(
-				"[specializationRouter.removeCourse]: Course removed from specialization by",
-				ctx.user.name,
-				{ specializationId, courseId }
-			);
-			return added;
-		})
+		const added = await database.specialization.update({
+			where: { specializationId },
+			data: { courses: { disconnect: { courseId } } },
+			select: { specializationId: true }
+		});
+
+		console.log(
+			"[specializationRouter.removeCourse]: Course removed from specialization by",
+			ctx.user.name,
+			{ specializationId, courseId }
+		);
+		return added;
+	})
 });
-
-async function canCreateSpecializationInSubject(
-	subjectId: string,
-	user: UserFromSession
-): Promise<boolean> {
-	if (user.role === "ADMIN") {
-		return true;
-	}
-
-	const subjectAdmin = await database.subjectAdmin.findUnique({
-		where: {
-			subjectId_username: { subjectId, username: user.name }
-		}
-	});
-
-	if (subjectAdmin) {
-		return true;
-	}
-
-	return false;
-}
-
-async function canEditSpecializationInSubject(
-	subjectId: string,
-	specializationId: string,
-	user: UserFromSession
-): Promise<boolean> {
-	const canCreate = await canCreateSpecializationInSubject(subjectId, user);
-
-	if (canCreate) {
-		return true;
-	}
-
-	const specializationAdmin = await database.specializationAdmin.findUnique({
-		where: {
-			specializationId_username: { specializationId, username: user.name }
-		}
-	});
-
-	if (specializationAdmin) {
-		return true;
-	}
-
-	return false;
-}

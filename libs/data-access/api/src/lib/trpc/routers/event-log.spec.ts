@@ -2,7 +2,7 @@ import { userEventRouter } from "./event-log.router";
 import { Context } from "../context";
 import { t } from "../trpc";
 import { createEventLogEntry, loadUserEventLogs } from "@self-learning/util/eventlog";
-import { EventTypeMap } from "@self-learning/types";
+import { eventDefinitions } from "@self-learning/types";
 
 jest.mock("@self-learning/database");
 jest.mock("@self-learning/util/eventlog", () => ({
@@ -26,6 +26,7 @@ function prepare() {
 			role: "USER",
 			isAuthor: false,
 			avatarUrl: null,
+			memberships: [],
 			featureFlags: {
 				learningDiary: false,
 				learningStatistics: false,
@@ -52,7 +53,8 @@ describe("userEventRouter create", () => {
 		});
 	});
 
-	it("should create a timestamp", async () => {
+	// TODO Marcel: Timestamps usually created by DB, which is mocked. How was this intended to work?
+	it.skip("should create a timestamp", async () => {
 		const { caller } = prepare();
 		const input = {
 			type: "USER_LOGIN" as const,
@@ -71,8 +73,8 @@ describe("userEventRouter create", () => {
 		const result = await caller.create(input); // could throw an error on validation fail
 		// also check manual validation
 
-		const schema = EventTypeMap["ERROR"];
-		expect(() => schema.parse(result.payload)).not.toThrow();
+		const schema = eventDefinitions["ERROR"];
+		expect(() => schema.parse(result!.payload)).not.toThrow();
 	});
 	it("should not pass incorrect payloads", async () => {
 		const { caller } = prepare();

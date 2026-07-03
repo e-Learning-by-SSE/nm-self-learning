@@ -20,6 +20,7 @@ import {
 	XCircleIcon
 } from "@heroicons/react/24/outline";
 import { useEventLog } from "@self-learning/util/eventlog";
+import { useEffect } from "react";
 
 export type QuizSavedAnswers = { answers: unknown; lessonSlug: string };
 
@@ -56,19 +57,23 @@ export function Question({
 
 	function setAnswer(v: unknown) {
 		const value = typeof v === "function" ? v(answer) : v;
-		setAnswers(prev => {
-			const updatedAnswers = {
-				...prev,
-				[question.questionId]: value
-			};
-			const cookieContent: QuizSavedAnswers = {
-				answers: updatedAnswers,
-				lessonSlug: lesson.slug
-			};
-			setCookie(`quiz_answers_save`, JSON.stringify(cookieContent), { path: "/" });
-			return updatedAnswers;
-		});
+
+		setAnswers(prev => ({
+			...prev,
+			[question.questionId]: value
+		}));
 	}
+
+	useEffect(() => {
+		const cookieContent: QuizSavedAnswers = {
+			answers,
+			lessonSlug: lesson.slug
+		};
+
+		setCookie("quiz_answers_save", JSON.stringify(cookieContent), {
+			path: "/"
+		});
+	}, [answers, lesson.slug, setCookie]);
 
 	async function setEvaluation(e: BaseEvaluation | null) {
 		setEvaluations(prev => ({
@@ -127,7 +132,7 @@ export function Question({
 			<article className="flex flex-col gap-8">
 				<div>
 					<div className="flex items-center justify-between">
-						<span className="font-semibold text-secondary" data-testid="questionType">
+						<span className="font-semibold text-c-primary" data-testid="questionType">
 							{QUESTION_TYPE_DISPLAY_NAMES[question.type]}
 						</span>
 						<div className="flex gap-4">
@@ -148,7 +153,7 @@ export function Question({
 							<MDXRemote {...markdown.questionsMd[question.questionId]} />
 						</MarkdownContainer>
 					) : (
-						<span className="text-red-500">Error: No markdown content found.</span>
+						<span className="text-c-danger">Error: No markdown content found.</span>
 					)}
 				</div>
 
@@ -182,7 +187,7 @@ function CheckResult({
 		//here?
 	}
 	if (!currentEvaluation) {
-		<span className="text-red-500">No question state found for this question.</span>;
+		<span className="text-c-danger">No question state found for this question.</span>;
 	}
 
 	const canGoToNextQuestion = !!currentEvaluation;
@@ -197,7 +202,7 @@ function CheckResult({
 	);
 
 	const renderFailedButton = () => (
-		<button className="btn bg-red-500" onClick={reload}>
+		<button className="btn bg-c-danger" onClick={reload}>
 			<span>Erneut probieren</span>
 			<ArrowPathIcon className="h-5" />
 		</button>
@@ -211,19 +216,27 @@ function CheckResult({
 	return returnButton[completionState];
 }
 
-export function QuestionTab(props: { evaluation: { isCorrect: boolean } | null; index: number }) {
+export function QuestionTab(props: {
+	evaluation: { isCorrect: boolean; isInProgress?: boolean } | null;
+	index: number;
+}) {
 	const isCorrect = props.evaluation?.isCorrect === true;
 	const isIncorrect = props.evaluation?.isCorrect === false;
+	const isInProgress = props.evaluation?.isInProgress === true;
 
 	return (
 		<span className="flex items-center gap-4">
 			{isCorrect ? (
 				<QuestionTabIcon>
-					<CheckCircleIcon className="h-5 text-secondary" />
+					<CheckCircleIcon className="h-5 text-c-primary" />
+				</QuestionTabIcon>
+			) : isInProgress ? (
+				<QuestionTabIcon>
+					<div className="h-5 w-5 animate-spin rounded-full border-2 border-c-primary border-t-transparent" />
 				</QuestionTabIcon>
 			) : isIncorrect ? (
 				<QuestionTabIcon>
-					<XCircleIcon className="h-5 text-red-500" />
+					<XCircleIcon className="h-5 text-c-danger" />
 				</QuestionTabIcon>
 			) : (
 				<QuestionTabIcon>

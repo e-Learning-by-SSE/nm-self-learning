@@ -2,11 +2,12 @@ import { withTranslations } from "@self-learning/api";
 import { database } from "@self-learning/database";
 import { Quiz } from "@self-learning/quiz";
 import { LessonEditor, LessonFormModel, onLessonEditorSubmit } from "@self-learning/teaching";
-import { LessonContent } from "@self-learning/types";
+import { LessonContent, resourcePermissionSelect, toResourcePermissionsForm } from "@self-learning/types";
 import { OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";
-import { hasAuthorPermission } from "@self-learning/ui/layouts";
+import { ResourceGuard, testResourceGuard } from "@self-learning/ui/layouts";
+import { AccessLevel } from "@prisma/client";
 import { withAuth } from "@self-learning/util/auth";
 
 type EditLessonProps = {
@@ -14,10 +15,9 @@ type EditLessonProps = {
 };
 
 export const getServerSideProps = withTranslations(
-	["common"],
+	["common", "feature-question-types"],
 	withAuth<EditLessonProps>(async (ctx, user) => {
 		const lessonId = ctx.params?.lessonId;
-		const { locale } = ctx;
 
 		if (typeof lessonId !== "string") {
 			throw new Error("No [lessonId] provided.");
@@ -27,6 +27,7 @@ export const getServerSideProps = withTranslations(
 			where: { lessonId },
 			select: {
 				lessonId: true,
+				// courseId: true,
 				slug: true,
 				title: true,
 				subtitle: true,
@@ -39,15 +40,20 @@ export const getServerSideProps = withTranslations(
 				provides: true,
 				authors: true,
 				lessonType: true,
-				selfRegulatedQuestion: true
+				selfRegulatedQuestion: true,
+				permissions: {
+					select: resourcePermissionSelect
+				},
+				ragEnabled: true
 			}
 		});
 
 		if (!lesson) {
 			return { notFound: true };
 		}
-
-		if (!hasAuthorPermission({ user, permittedAuthors: lesson.authors.map(a => a.username) })) {
+		const permissions = toResourcePermissionsForm(lesson.permissions);
+		const hasAccess = testResourceGuard(user, AccessLevel.EDIT, permissions);
+		if (!hasAccess) {
 			return {
 				redirect: {
 					destination: "/403",
@@ -79,7 +85,9 @@ export const getServerSideProps = withTranslations(
 			content: (lesson.content ?? []) as LessonContent,
 			quiz: lesson.quiz as Quiz,
 			lessonType: lesson.lessonType,
-			selfRegulatedQuestion: lesson.selfRegulatedQuestion
+			selfRegulatedQuestion: lesson.selfRegulatedQuestion,
+			permissions: permissions,
+			ragEnabled: lesson.ragEnabled
 		};
 
 		return {
@@ -103,5 +111,13 @@ export default function EditLessonPage({ lesson }: EditLessonProps) {
 		);
 	};
 
-	return <LessonEditor initialLesson={lesson} onSubmit={handleEditClose} isFullScreen={true} />;
+	return (
+		<ResourceGuard
+			fallback="unauthorized"
+			requiredAccess={AccessLevel.EDIT}
+			permittedGroups={lesson.permissions}
+		>
+			<LessonEditor initialLesson={lesson} onSubmit={handleEditClose} isFullScreen={true} />
+		</ResourceGuard>
+	);
 }

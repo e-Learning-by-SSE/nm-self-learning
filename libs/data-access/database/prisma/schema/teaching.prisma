@@ -67,6 +67,7 @@ model Subject {
     courses         Course[]
     specializations Specialization[]
     subjectAdmin    SubjectAdmin[]
+    permissions     Permission[]
     dynCourse       DynCourse[]
 }
 
@@ -81,6 +82,7 @@ model Specialization {
     subject             Subject               @relation(fields: [subjectId], references: [subjectId], onDelete: Cascade)
     specializationAdmin SpecializationAdmin[]
     courses             Course[]              @relation("CourseToSpecialization")
+    permissions         Permission[]
     dynCourses          DynCourse[]           @relation("DynCourseToSpecialization")
 }
 
@@ -102,6 +104,7 @@ model Course {
     authors              Author[]            @relation("AuthorToCourse")
     specializations      Specialization[]    @relation("CourseToSpecialization")
     learningDiaryEntries LearningDiaryPage[]
+    permissions          Permission[]
     requires             Skill[]             @relation("courseRequiredSkills")
     provides             Skill[]             @relation("courseProvidedSkills")
 }
@@ -152,7 +155,7 @@ model Enrollment {
     courseId           String?
     dynCourseId        String?
     username           String
-    course             Course?           @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
+    course             Course?          @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
     student            Student          @relation(fields: [username], references: [username], onDelete: Cascade)
     dynCourse          DynCourse?       @relation(fields: [dynCourseId], references: [courseId], onDelete: Cascade)
 
@@ -166,8 +169,8 @@ enum LessonType {
 }
 
 model Lesson {
-    lessonId              String            @id
-    slug                  String            @unique
+    lessonId              String                        @id
+    slug                  String                        @unique
     title                 String
     subtitle              String?
     description           String?
@@ -175,19 +178,21 @@ model Lesson {
     content               Json
     quiz                  Json?
     meta                  Json
-    createdAt             DateTime          @default(now())
-    updatedAt             DateTime          @updatedAt
+    createdAt             DateTime                      @default(now())
+    updatedAt             DateTime                      @updatedAt
     completions           CompletedLesson[]
     quizAttempts          QuizAttempt[]
-    authors               Author[]          @relation("AuthorToLesson")
-    license               License?          @relation(fields: [licenseId], references: [licenseId], onDelete: Restrict, onUpdate: Restrict)
+    authors               Author[]                      @relation("AuthorToLesson")
+    license               License?                      @relation(fields: [licenseId], references: [licenseId], onDelete: Restrict, onUpdate: Restrict)
     licenseId             Int?
-    lessonType            LessonType        @default(TRADITIONAL)
+    lessonType            LessonType                    @default(TRADITIONAL)
     selfRegulatedQuestion String?
-    requires              Skill[]           @relation("requiredSkills")
-    provides              Skill[]           @relation("providedSkills")
-
-    lessonStart LearningDiaryLearnedLessons[]
+    requires              Skill[]                       @relation("requiredSkills")
+    provides              Skill[]                       @relation("providedSkills")
+    permissions           Permission[]
+    lessonStart           LearningDiaryLearnedLessons[]
+    ragEnabled            Boolean                       @default(true)
+    ragVersionHash        String?                       @db.VarChar(128)
 }
 
 model CompletedLesson {

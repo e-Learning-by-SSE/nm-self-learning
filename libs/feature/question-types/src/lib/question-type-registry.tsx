@@ -41,9 +41,10 @@ import {
 import { evaluateProgramming } from "./question-types/programming/evaluate";
 import { Programming, programmingQuestionSchema } from "./question-types/programming/schema";
 import { Text, textQuestionSchema } from "./question-types/text/schema";
+import { evaluateTextSync } from "./question-types/text/evaluate";
 import { LessonLayoutProps } from "@self-learning/lesson";
-import { LanguageTree, languageTreeQuestionSchema } from "./question-types/language-tree/schema";
-import { evaluateLanguageTreeAnswer } from "./question-types/language-tree/evaluate";
+import { LanguageTree, languageTreeQuestionSchema } from "./question-types/tree/schema";
+import { evaluateLanguageTreeAnswer } from "./question-types/tree/evaluate";
 
 const ProgrammingAnswer = dynamic(() => import("./question-types/programming/component"), {
 	ssr: false
@@ -69,10 +70,10 @@ const ClozeAnswer = dynamic(() => import("./question-types/cloze/component"), { 
 const ClozeForm = dynamic(() => import("./question-types/cloze/form"), { ssr: false });
 const ArrangeAnswer = dynamic(() => import("./question-types/arrange/component"), { ssr: false });
 const ArrangeForm = dynamic(() => import("./question-types/arrange/form"), { ssr: false });
-const LanguageTextForm = dynamic(() => import("./question-types/language-tree/form"), {
+const LanguageTextForm = dynamic(() => import("./question-types/tree/form"), {
 	ssr: false
 });
-const LanguageTextAnswer = dynamic(() => import("./question-types/language-tree/component"), {
+const LanguageTextAnswer = dynamic(() => import("./question-types/tree/component"), {
 	ssr: false
 });
 
@@ -95,20 +96,18 @@ export const quizContentSchema = z.discriminatedUnion("type", [
 	languageTreeQuestionSchema
 ]);
 
-// export const quizAnswerSchema = z.discriminatedUnion("type", [
-// 	multipleChoiceAnswerSchema,
-// 	exactAnswerSchema,
-// ]);
-
 /**
  * Object that contains the evaluation function of each question type.
+ *
+ * NOTE on "text":
+ * The real AI evaluation is async and is triggered from component.tsx directly.
+ * This entry handles only the LEGACY path (no aiEvaluation config) and serves as
+ * the synchronous placeholder that the quiz engine expects.
+ * See evaluate.ts and component.tsx for the full async AI evaluation flow.
  */
 export const EVALUATION_FUNCTIONS: { [QType in QuestionType["type"]]: EvaluationFn<QType> } = {
 	"multiple-choice": evaluateMultipleChoice,
-	text: (q, _a) => {
-		console.error(`Evaluation function for ${q.type} is not implemented.}`);
-		return { isCorrect: true };
-	},
+	text: (_question, _answer) => evaluateTextSync(_question),
 	exact: evaluateExactAnswer,
 	programming: evaluateProgramming,
 	cloze: evaluateCloze,
@@ -167,6 +166,11 @@ export const INITIAL_ANSWER_VALUE_FUNCTIONS: {
 
 /**
  * Object containing a function returning the initial question configuration of each question type.
+ *
+ * NOTE on "text":
+ * aiEvaluation is intentionally ABSENT here — it's optional in the schema, and
+ * new questions start with no AI evaluation config (toggle is off by default, FR-04).
+ * The teacher must explicitly enable and configure it in the form.
  */
 export const INITIAL_QUESTION_CONFIGURATION_FUNCTIONS: {
 	[QType in QuestionType["type"]]: () => InferQuestionType<QType>["question"];
@@ -215,7 +219,9 @@ export const INITIAL_QUESTION_CONFIGURATION_FUNCTIONS: {
 		type: "language-tree",
 		caseSensitive: false,
 		customTextInputInParentNodes: true,
-		initialTree: "",
+		restrictNodeTypes: false,
+		nodeTypeCategories: [],
+		initialTree: "[Root]",
 		answer: []
 	})
 };
@@ -233,7 +239,7 @@ export const QUESTION_TYPE_DISPLAY_NAMES: {
 	programming: "Programmierung",
 	cloze: "Lückentext",
 	arrange: "Ordnen",
-	"language-tree": "Sprachbaum"
+	"language-tree": "Baumstruktur-Aufgabe"
 };
 
 /**
@@ -275,8 +281,8 @@ export function QuestionAnswerRenderer({
 	}
 
 	return (
-		<span className="text-red-500">
-			Error: No implementation found for "{(question as { type: string }).type}".
+		<span className="text-c-danger">
+			Error: No implementation found for &quot;{(question as { type: string }).type}&quot;.
 		</span>
 	);
 }
@@ -304,7 +310,7 @@ export function QuestionFormRenderer({
 	}
 
 	if (question.type === "text") {
-		return <TextForm question={question} index={index} />;
+		return <TextForm index={index} />;
 	}
 
 	if (question.type === "cloze") {
@@ -320,14 +326,13 @@ export function QuestionFormRenderer({
 	}
 
 	return (
-		<span className="text-red-500">
-			Error: No implementation found for "{(question as { type: string }).type}".
+		<span className="text-c-danger">
+			Error: No implementation found for &quot;{(question as { type: string }).type}&quot;.
 		</span>
 	);
 }
 
 export type QuestionType = z.infer<typeof quizContentSchema>;
-// export type QuizAnswers = z.infer<typeof quizAnswerSchema>;
 export type QuizContent = QuestionType[];
 
 export type EvaluationFn<QType extends QuestionType["type"]> = (
