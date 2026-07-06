@@ -13,6 +13,7 @@ import {
 import { seedJavaDemoSkills } from "./seed-java-demo-skills";
 import { GroupRole } from "@prisma/client";
 import { softwareentwicklungDemoGroup } from "../seedSpecializations";
+import { AuthorUser } from "./seed-admin-user";
 
 const courseId = faker.string.alphanumeric(8);
 
@@ -183,7 +184,7 @@ const authors = [
 	})
 ];
 
-export async function seedJavaDemo(): Promise<void> {
+export async function seedJavaDemo(admin: AuthorUser): Promise<void> {
 	await seedCaseStudy("Java", courses, chapters, softwareentwicklungDemoGroup, authors);
-	await seedJavaDemoSkills();
+	await seedJavaDemoSkills(admin.author.id);
 }

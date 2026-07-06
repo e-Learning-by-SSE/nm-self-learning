@@ -25,8 +25,6 @@ import { defaultLicense } from "./license";
 
 const prisma = new PrismaClient();
 
-const adminName = "dumbledore";
-
 export function createLessonWithRandomContentAndDemoQuestions({
 	title,
 	questions,
@@ -424,25 +422,13 @@ export async function createUsers(users: Prisma.UserCreateInput[]): Promise<void
 	}
 }
 
-export async function getAuthor() {
-	return await prisma.author.findFirst({
-		where: { username: adminName }
-	});
-}
-
-export async function getAdminUser() {
-	return await prisma.user.findFirst({ where: { name: adminName } });
-}
-
 export type Skill = { id: string; name: string; description: string };
 
-export async function createSkills(skills: Skill[]) {
-	const author = await getAuthor();
-
+export async function createSkills(authorId: number, skills: Skill[]) {
 	await Promise.all(
 		skills.map(async skill => {
 			const input: Prisma.SkillUncheckedCreateInput = {
-				authorId: author ? author.id : 0,
+				authorId,
 				...skill
 			};
 
@@ -453,16 +439,15 @@ export async function createSkills(skills: Skill[]) {
 
 export type SkillGroup = { id: string; name: string; description: string; children: string[] };
 
-export async function createSkillGroups(skillGroups: SkillGroup[]) {
+export async function createSkillGroups(authorId: number, skillGroups: SkillGroup[]) {
 	// Need to preserve ordering and wait to be finished before creating the next one!
 	for (const skill of skillGroups) {
-		const author = await getAuthor();
 		const nested = skill.children?.map(i => ({ id: i }));
 
 		await prisma.skill.create({
 			data: {
 				id: skill.id,
-				authorId: author ? author.id : 0,
+				authorId,
 				name: skill.name,
 				description: skill.description,
 				children: { connect: nested }

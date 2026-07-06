@@ -11,6 +11,7 @@ import { seedJavaDemo } from "./seed-java-demo";
 import { seedReactDemo } from "./seed-react-demo";
 import { seedSkillbasedModelling } from "./skill-based-modelling";
 import { seedDummy } from "./seed-dummy";
+import { seedAdminUser } from "./seed-admin-user";
 
 const prisma = new PrismaClient();
 
@@ -26,9 +27,11 @@ export async function seedDemos(): Promise<void> {
 	await prisma.group.create({ data: softwareentwicklungDemoGroup });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Groups");
 
-	await seedReactDemo();
+	const admin = await seedAdminUser();
 
-	await seedJavaDemo();
+	await seedReactDemo(admin);
+
+	await seedJavaDemo(admin);
 
 	await seedEvents();
 

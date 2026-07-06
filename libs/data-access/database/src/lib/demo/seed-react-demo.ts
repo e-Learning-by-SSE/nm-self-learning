@@ -17,6 +17,7 @@ import {
 	getDefaultNotificationData
 } from "../seed-functions";
 import { softwareentwicklungDemoGroup } from "../seedSpecializations";
+import { AuthorUser } from "./seed-admin-user";
 
 faker.seed(1);
 
@@ -414,55 +415,6 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 		}
 	},
 	{
-		name: "dumbledore",
-		displayName: "Albus Dumbledore",
-		role: "ADMIN",
-		image: "https://i.imgur.com/UWMVO8m.jpeg",
-		accounts: {
-			create: [{ provider: "demo", providerAccountId: "dumbledore", type: "demo-account" }]
-		},
-		student: { create: { username: "dumbledore" } },
-		author: {
-			create: {
-				displayName: "Albus Dumbledore",
-				slug: "albus-dumbledore",
-				imgUrl: "https://i.imgur.com/UWMVO8m.jpeg"
-			}
-		},
-		memberships: {
-			create: {
-				group: {
-					connect: {
-						name: softwareentwicklungDemoGroup.name
-					}
-				},
-				role: GroupRole.ADMIN
-			}
-		},
-		gamificationProfile: {
-			create: {
-				username: "dumbledore",
-				lastLogin: new Date(2025, 5, 14),
-				loginStreak: {
-					count: 3,
-					status: "broken"
-				} satisfies LoginStreak,
-				energy: 10
-			}
-		},
-		notificationSettings: {
-			createMany: {
-				data: getDefaultNotificationData(false)
-			}
-		},
-		featureFlags: {
-			create: {
-				username: "dumbledore",
-				learningStatistics: true
-			}
-		}
-	},
-	{
 		name: "mcgonagall",
 		image: "https://i.pinimg.com/originals/ac/9f/c3/ac9fc3d306b9eb07b451933cc756f733.jpg",
 		displayName: "Minerva McGonagall",
@@ -651,35 +603,35 @@ const skillGroups = [
 	}
 ];
 
-async function seedReactDemoSkills() {
-	await createSkills(skills);
+async function seedReactDemoSkills(adminId: number) {
+	await createSkills(adminId, skills);
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Skills");
 
-	await createSkillGroups(skillGroups);
+	await createSkillGroups(adminId, skillGroups);
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Skill Groups");
 }
 
-export async function seedReactDemo() {
+export async function seedReactDemo(admin: AuthorUser) {
 	await createUsers(users);
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Users");
-
-	for (const author of reactAuthors) {
-		await prisma.user.create({ data: author });
-	}
-	console.log(" - %s\x1b[32m ✔\x1b[0m", "Authors");
 
 	await prisma.course.createMany({ data: reactCourses });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Courses");
 
-	await seedReactDemoSkills();
+	await seedReactDemoSkills(admin.author.id);
 
 	const licenseId = await defaultLicenseId();
-	await prisma.lesson.createMany({
-		data: reactLessons.flatMap(chapter =>
-			chapter.content.map(lesson => ({ ...lesson, licenseId }))
-		)
-	});
 
+	// cant attach skills via provide in createMany
+	await prisma.$transaction(
+		reactLessons.flatMap(chapter =>
+			chapter.content.map(lesson =>
+				prisma.lesson.create({
+					data: { ...lesson, license: { connect: { licenseId } } }
+				})
+			)
+		)
+	);
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Lessons");
 
 	await prisma.enrollment.createMany({ data: enrollments });
@@ -712,6 +664,7 @@ export async function seedReactDemo() {
 	});
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Create a group with FULL permissions to all resources");
 
+	// authors depend on lessons and courses
 	for (const author of reactAuthors) {
 		await prisma.user.create({ data: author });
 	}
