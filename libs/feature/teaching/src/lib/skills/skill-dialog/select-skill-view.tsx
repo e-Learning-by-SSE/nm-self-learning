@@ -95,7 +95,7 @@ export function SkillManagementComponent({
 	selectSkillModal
 }: {
 	skills: SkillFormModel[];
-	onDeleteSkill: (skill: SkillFormModel) => void;
+	onDeleteSkill: (skill: SkillFormModel, index: number) => void;
 	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
 	setSelectSkillModal: (value: boolean | ((prevVar: boolean) => boolean)) => void;
 	selectSkillModal: boolean;
@@ -108,9 +108,9 @@ export function SkillManagementComponent({
 			<div className="mt-3 max-h-40 overflow-auto">
 				{skills.map((skill, index) => (
 					<InlineRemoveButton
-						key={index}
+						key={skill.id}
 						label={skill.name}
-						onRemove={() => onDeleteSkill(skill)}
+						onRemove={() => onDeleteSkill(skill, index)}
 						onClick={() => {}} //TODO
 					/>
 				))}

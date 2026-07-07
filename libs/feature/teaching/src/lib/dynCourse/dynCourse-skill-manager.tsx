@@ -1,29 +1,48 @@
 import { SkillFormModel } from "@self-learning/types";
-import { useFormContext } from "react-hook-form";
-import { DynCourseFormModel } from "../dynCourse/dynCourse-form-model";
+import { useFieldArray, useFormContext } from "react-hook-form";
 import { SidebarSectionTitle } from "libs/ui/forms/src/lib/form-container";
 import { LabeledFieldSelectSkillsView } from "../lesson/forms/lesson-skill-manager";
-
-type SkillId = "requirements" | "teachingGoals";
+import { CourseFormModel } from "../course/course-form-model";
 
 export function DynCourseSkillManager() {
-	const { watch, setValue } = useFormContext<DynCourseFormModel>();
-	const watchingSkills = {
-		teachingGoals: watch("teachingGoals"),
-		requirements: watch("requirements")
+	const { control } = useFormContext<CourseFormModel>();
+
+	const {
+		fields: required,
+		append: appendRequired,
+		remove: removeRequired
+	} = useFieldArray({
+		control,
+		name: "requires"
+	});
+
+	const addRequired = (skills: SkillFormModel[] | undefined) => {
+		if (!skills || skills.length === 0) return;
+		const formatted = skills.map(skill => ({
+			...skill,
+			children: [],
+			parents: []
+		}));
+		appendRequired(formatted);
 	};
 
-	const addSkills = (skill: SkillFormModel[] | undefined, id: SkillId) => {
-		if (!skill) return;
-		skill = skill.map(skill => ({ ...skill, children: [], parents: [] }));
-		setValue(id, [...watchingSkills[id], ...skill]);
-	};
+	const {
+		fields: provided,
+		append: appendProvided,
+		remove: removeProvided
+	} = useFieldArray({
+		control,
+		name: "provides"
+	});
 
-	const deleteSkill = (skill: SkillFormModel, id: SkillId) => {
-		setValue(
-			id,
-			watchingSkills[id].filter(s => s.id !== skill.id)
-		);
+	const addProvided = (skills: SkillFormModel[] | undefined) => {
+		if (!skills || skills.length === 0) return;
+		const formatted = skills.map(skill => ({
+			...skill,
+			children: [],
+			parents: []
+		}));
+		appendProvided(formatted);
 	};
 
 	return (
@@ -34,23 +53,15 @@ export function DynCourseSkillManager() {
 			/>
 			<LabeledFieldSelectSkillsView
 				label={"Vermittelte Skills"}
-				skills={watchingSkills["teachingGoals"]}
-				onDeleteSkill={skill => {
-					deleteSkill(skill, "teachingGoals");
-				}}
-				onAddSkill={skill => {
-					addSkills(skill, "teachingGoals");
-				}}
+				skills={provided}
+				onDeleteSkill={(_, id) => removeProvided(id)}
+				onAddSkill={addProvided}
 			/>
 			<LabeledFieldSelectSkillsView
 				label={"Benötigte Skills"}
-				skills={watchingSkills["requirements"]}
-				onDeleteSkill={skill => {
-					deleteSkill(skill, "requirements");
-				}}
-				onAddSkill={skill => {
-					addSkills(skill, "requirements");
-				}}
+				skills={required}
+				onDeleteSkill={(_, id) => removeRequired(id)}
+				onAddSkill={addRequired}
 			/>
 		</section>
 	);

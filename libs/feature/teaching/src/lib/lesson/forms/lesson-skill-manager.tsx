@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-no-useless-fragment */
 import { SkillFormModel } from "@self-learning/types";
 import { Form, LabeledField } from "@self-learning/ui/forms";
 import { useState } from "react";
@@ -87,7 +86,7 @@ export function LabeledFieldSelectSkillsView({
 	label
 }: {
 	skills: SkillFormModel[];
-	onDeleteSkill: (skill: SkillFormModel) => void;
+	onDeleteSkill: (skill: SkillFormModel, index: number) => void;
 	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
 	label: string;
 }) {
