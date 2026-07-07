@@ -1,7 +1,6 @@
-import { AccessLevel, Prisma } from "@prisma/client";
+import { AccessLevel, CourseType, Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import {
-	dynCourseFormSchema,
 	courseFormSchema,
 	getFullCourseExport,
 	mapCourseFormToInsert,
@@ -19,8 +18,7 @@ import {
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { authProcedure, authorProcedure, isCourseAuthorProcedure, t } from "../trpc";
-import { UserFromSession } from "../context";
+import { authProcedure, authorProcedure, t } from "../trpc";
 import { getCourseResource } from "../../permissions/course.utils";
 import {
 	canCreate,
@@ -44,95 +42,6 @@ import {
 import { randomUUID } from "crypto";
 
 export const courseRouter = t.router({
-	listAvailableCourses: authProcedure
-		.meta({
-			openapi: {
-				enabled: true,
-				method: "GET",
-				path: "/courses",
-				tags: ["Courses"],
-				protect: true,
-				summary: "Search available courses"
-			}
-		})
-		.input(
-			paginationSchema.extend({
-				title: z
-					.string()
-					.describe(
-						"Title of the course to search for. Keep empty to list all; includes insensitive search and contains search."
-					)
-					.optional(),
-				specializationId: z
-					.string()
-					.describe("Filter by assigned specializations")
-					.optional(),
-				authorId: z.string().describe("Filter by author username").optional(),
-				pageSize: z.number().describe("Number of results per page").optional()
-			})
-		)
-		.output(
-			z.object({
-				result: z.array(z.object({ title: z.string(), slug: z.string() })),
-				pageSize: z.number(),
-				page: z.number(),
-				totalCount: z.number()
-			})
-		)
-		.query(async ({ input }) => {
-			const pageSize = input.pageSize ?? 20;
-
-			const whereCourse: Prisma.CourseWhereInput = {
-				title:
-					input.title && input.title.length > 0
-						? { contains: input.title, mode: "insensitive" }
-						: undefined,
-				specializations: input.specializationId
-					? { some: { specializationId: input.specializationId } }
-					: undefined,
-				authors: input.authorId ? { some: { username: input.authorId } } : undefined
-			};
-
-			const whereDynCourse: Prisma.DynCourseWhereInput = {
-				title:
-					input.title && input.title.length > 0
-						? { contains: input.title, mode: "insensitive" }
-						: undefined,
-				specializations: input.specializationId
-					? { some: { specializationId: input.specializationId } }
-					: undefined,
-				authors: input.authorId ? { some: { username: input.authorId } } : undefined
-			};
-
-			const course = await database.course.findMany({
-				select: {
-					slug: true,
-					title: true
-				},
-				...paginate(pageSize, input.page),
-				orderBy: { title: "asc" },
-				where: whereCourse
-			});
-
-			const dynCourse = await database.dynCourse.findMany({
-				select: {
-					slug: true,
-					title: true
-				},
-				...paginate(pageSize, input.page),
-				orderBy: { title: "asc" },
-				where: whereDynCourse
-			});
-
-			const result = [...course, ...dynCourse].sort((a, b) => a.title.localeCompare(b.title));
-
-			return {
-				result,
-				pageSize: pageSize,
-				page: input.page,
-				totalCount: result.length
-			} satisfies Paginated<{ title: string; slug: string }>;
-		}),
 	getCourseData: authProcedure
 		.meta({
 			openapi: {
@@ -235,24 +144,25 @@ export const courseRouter = t.router({
 		.input(
 			paginationSchema.extend({
 				title: z.string().optional(),
-				specializationId: z.string().optional()
+				specializationId: z.string().optional(),
+				type: z.enum(CourseType).optional()
 			})
 		)
 		.query(async ({ input }) => {
 			const pageSize = 15;
 
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const where: any = {
+			const where: Prisma.CourseWhereInput = {
 				title:
 					input.title && input.title.length > 0
 						? { contains: input.title, mode: "insensitive" }
 						: undefined,
 				specializations: input.specializationId
 					? { some: { specializationId: input.specializationId } }
-					: undefined
+					: undefined,
+				type: input.type
 			};
 
-			const [resultCourse, countCourse] = await database.$transaction([
+			const [resultCourse, count] = await database.$transaction([
 				database.course.findMany({
 					select: {
 						courseId: true,
@@ -269,37 +179,7 @@ export const courseRouter = t.router({
 				database.course.count({ where })
 			]);
 
-			const [resultDynCourse, countDynCourse] = await database.$transaction([
-				database.dynCourse.findMany({
-					select: {
-						courseId: true,
-						slug: true,
-						imgUrl: true,
-						title: true,
-						authors: {
-							select: {
-								displayName: true
-							}
-						},
-						subject: {
-							select: {
-								subjectId: true,
-								title: true
-							}
-						}
-					},
-					...paginate(pageSize, input.page),
-					orderBy: { title: "asc" },
-					where
-				}),
-				database.course.count({ where })
-			]);
-
-			const result = [...resultCourse, ...resultDynCourse].sort((a, b) =>
-				a.title.localeCompare(b.title)
-			);
-
-			const count = countCourse + countDynCourse;
+			const result = resultCourse.sort((a, b) => a.title.localeCompare(b.title));
 
 			return {
 				result,
@@ -393,6 +273,9 @@ export const courseRouter = t.router({
 					username: a.username
 				})),
 
+				type: course.type,
+				version: course.version,
+
 				provides: course.provides.map(s => ({
 					id: s.id,
 					name: s.name,
@@ -426,11 +309,13 @@ export const courseRouter = t.router({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
-			const course = await database.dynCourse.findUniqueOrThrow({
+			// TODO any permissions? I think VIEW is enough
+			const course = await database.course.findUniqueOrThrow({
 				where: { courseId: input.courseId },
 				select: {
-					courseVersion: true,
-					teachingGoals: {
+					version: true,
+					type: true,
+					provides: {
 						select: {
 							id: true,
 							children: {
@@ -441,6 +326,18 @@ export const courseRouter = t.router({
 					}
 				}
 			});
+			if (!course) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Failed to find requested course"
+				});
+			}
+			if (course.type !== CourseType.DYNAMIC) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Requested course is not dynamic"
+				});
+			}
 
 			const dbSkills = await database.skill.findMany({
 				select: {
@@ -498,7 +395,7 @@ export const courseRouter = t.router({
 
 			const findSkill = (id: string) => libSkills.find(skill => skill.id === id);
 
-			const goalLibSkills: LibSkill[] = (course.teachingGoals ?? []).map((goal: any) => ({
+			const goalLibSkills: LibSkill[] = (course.provides ?? []).map((goal: any) => ({
 				id: goal.id,
 				repositoryId: goal.repositoryId,
 				children: (goal.children ?? []).map((child: any) => child.id)
@@ -565,7 +462,7 @@ export const courseRouter = t.router({
 			const generatedCourse = database.generatedLessonPath.create({
 				data: {
 					content: courseContent,
-					courseVersion: course.courseVersion,
+					courseVersion: course.version,
 					slug: randomUUID(),
 					courseId: input.courseId,
 					meta: createCourseMeta({ content: courseContent }),
@@ -596,146 +493,8 @@ export const courseRouter = t.router({
 
 		return fullExport;
 	}),
-	createDynamic: authorProcedure.input(dynCourseFormSchema).mutation(async ({ input, ctx }) => {
-		if (!canCreate(ctx.user)) {
-			throw new TRPCError({
-				code: "FORBIDDEN",
-				message:
-					"Creating a course requires either: admin role | admin of all related subjects | admin of all related specializations"
-			});
-		} else if (input.authors.length <= 0 && ctx.user.role != "ADMIN") {
-			throw new TRPCError({
-				code: "FORBIDDEN",
-				message:
-					"Deleting the last author as is not allowed, except for Admin Users. Contact the side administrator for more information. "
-			});
-		}
-
-		const created = await database.dynCourse.create({
-			data: {
-				...input,
-				courseId: crypto.randomUUID(),
-				slug: input.slug,
-				courseVersion: Date.now().toString(),
-				subjectId: input.subjectId ?? undefined,
-				meta: {},
-				authors: {
-					connect: input.authors.map(author => ({ username: author.username }))
-				},
-				teachingGoals: {
-					connect: input.teachingGoals.map(goal => ({
-						name: goal.name,
-						description: goal.description,
-						id: goal.id
-					}))
-				},
-				requirements: {
-					connect: input.requirements.map(skill => ({
-						name: skill.name,
-						description: skill.description,
-						id: skill.id
-					}))
-				}
-			},
-			select: {
-				title: true,
-				slug: true,
-				courseId: true
-			}
-		});
-
-		console.log("[courseRouter.createDynamic]: Course created by", ctx.user.name, created);
-		return created;
-	}),
-	editDynamic: isCourseAuthorProcedure
-		.input(
-			z.object({
-				courseId: z.string(),
-				course: dynCourseFormSchema
-			})
-		)
-		.mutation(async ({ input, ctx }) => {
-			const { courseId, ...updateData } = input.course;
-			const updated = await database.dynCourse.update({
-				where: { courseId: courseId ?? "" },
-				data: {
-					...updateData,
-					courseVersion: Date.now().toString(),
-					slug: updateData.slug,
-					meta: {},
-
-					authors: {
-						set: [],
-						connect: updateData.authors.map(author => ({
-							username: author.username
-						}))
-					},
-					teachingGoals: {
-						set: updateData.teachingGoals.map(goal => ({ id: goal.id }))
-					},
-					requirements: { set: updateData.requirements.map(skill => ({ id: skill.id })) }
-				},
-				select: {
-					title: true,
-					slug: true,
-					courseId: true
-				}
-			});
-
-			console.log("[courseRouter.editDynamic]: Course updated by", ctx.user?.name, updated);
-			return updated;
-		}),
-	getDynCourse: authorProcedure
-		.input(z.object({ slug: z.string() }))
-		.output(dynCourseFormSchema)
-		.query(async ({ input }) => {
-			const course = await database.dynCourse.findUniqueOrThrow({
-				where: { slug: input.slug },
-				include: {
-					authors: true,
-					teachingGoals: {
-						include: {
-							children: true,
-							parents: true
-						}
-					},
-					requirements: {
-						include: {
-							children: true,
-							parents: true
-						}
-					},
-					specializations: true
-				}
-			});
-			return {
-				courseId: course.courseId,
-				subjectId: course.subjectId,
-				slug: course.slug,
-				title: course.title,
-				subtitle: course.subtitle,
-				description: course.description,
-				imgUrl: course.imgUrl,
-				authors: course.authors.map(a => ({ username: a.username })),
-				teachingGoals: course.teachingGoals.map(goal => ({
-					id: goal.id,
-					name: goal.name,
-					description: goal.description,
-					authorId: goal.authorId,
-					children: goal.children.map(c => c.id),
-					parents: goal.parents.map(p => p.id)
-				})),
-				requirements: course.requirements.map(req => ({
-					id: req.id,
-					name: req.name,
-					description: req.description,
-					authorId: req.authorId,
-					children: req.children.map(c => c.id),
-					parents: req.parents.map(p => p.id)
-				}))
-			};
-		}),
 	create: authProcedure.input(courseFormSchema).mutation(async ({ input, ctx }) => {
+		// TODO do I need any course type dependent checks here?
 		if (input.authors.length <= 0 && ctx.user.role !== "ADMIN") {
 			throw new TRPCError({
 				code: "FORBIDDEN",
@@ -890,48 +649,6 @@ export const courseRouter = t.router({
 			});
 		})
 });
-
-/**
- * Guard (pre-check) that checks if a user is allowed to export a course based on its role.
- * These are:
- * - ADMIN: always allowed
- * - AUTHOR: allowed if the user is an author of the course
- *
- * Further, users of other roles may also export a course, if all content is public (OER-compatible).
- * However, this is not checked here, as this requires the full course data and, thus, is done during the export.
- * @param user The user which requests the export
- * @param slug The course to export (by slug)
- * @returns true if the user is allowed to export the course, false requires to check all licenses
- */
-async function authorizedUserForExport(
-	user: UserFromSession | undefined,
-	slug: string
-): Promise<boolean> {
-	if (!user) {
-		return false;
-	}
-
-	if (user.role === "ADMIN") {
-		return true;
-	}
-
-	const beforeExport = await database.course.findUniqueOrThrow({
-		where: { slug },
-		select: {
-			authors: {
-				select: {
-					username: true
-				}
-			}
-		}
-	});
-
-	if (beforeExport.authors.some(author => author.username === user.name)) {
-		return true;
-	}
-
-	return false;
-}
 
 function normalizeContent(
 	raw: unknown

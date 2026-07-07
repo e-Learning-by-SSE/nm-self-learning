@@ -299,29 +299,20 @@ export const lessonRouter = t.router({
 			}
 		});
 
+		// bump up dependent courses version
 		const providedSkillIds = input.provides.map(s => s.id);
-
-		const relevantCourses = await database.dynCourse.findMany({
+		await database.course.updateMany({
 			where: {
-				teachingGoals: {
+				provides: {
 					some: {
 						id: { in: providedSkillIds }
 					}
 				}
 			},
-			select: {
-				courseId: true
+			data: {
+				courseVersion: Date.now().toString()
 			}
 		});
-
-		for (const course of relevantCourses) {
-			await database.dynCourse.update({
-				where: { courseId: course.courseId },
-				data: {
-					courseVersion: Date.now().toString()
-				}
-			});
-		}
 
 		console.log("[lessonRouter.create]: Lesson created by", ctx.user.name, createdLesson);
 		await callRagJob(null, {

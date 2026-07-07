@@ -86,7 +86,6 @@ describe("enrollUser", () => {
 
 	it("should throw an ApiError if the course is not found", async () => {
 		(database.course.findUnique as jest.Mock).mockResolvedValue(null);
-		(database.dynCourse.findUnique as jest.Mock).mockResolvedValue(null);
 
 		try {
 			await enrollUser({ courseId, username });

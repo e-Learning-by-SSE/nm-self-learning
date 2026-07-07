@@ -85,8 +85,6 @@ describe("REST API of Course Router", () => {
 				}
 				return courses;
 			});
-
-			(database.dynCourse.findMany as jest.Mock).mockResolvedValue([]);
 		});
 
 		it("should list all courses (paginated) if no filter specified", async () => {

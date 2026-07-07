@@ -40,13 +40,12 @@ export async function getEnrollmentDetails(username: string) {
 
 	const enrollmentCourseMapped = enrollments.map(enrollment => ({
 		...enrollment,
-		course: enrollment.course ??
-			enrollment.dynCourse ?? {
-				title: "Unknown Course",
-				slug: "unknown-course",
-				imgUrl: "",
-				authors: []
-			}
+		course: enrollment.course ?? {
+			title: "Unknown Course",
+			slug: "unknown-course",
+			imgUrl: "",
+			authors: []
+		}
 	}));
 
 	const enrollmentsWithDetails = await Promise.all(
@@ -104,11 +103,10 @@ export async function getEnrollmentsOfUser(username: string): Promise<CourseEnro
 	return enrollments.map(enrollment => ({
 		completedAt: enrollment.completedAt,
 		status: enrollment.status,
-		course: enrollment.course ??
-			enrollment.dynCourse ?? {
-				title: "Unknown Course",
-				slug: "unknown-course"
-			}
+		course: enrollment.course ?? {
+			title: "Unknown Course",
+			slug: "unknown-course"
+		}
 	}));
 }
 
@@ -117,10 +115,7 @@ export async function enrollUser({ courseId, username }: { courseId?: string; us
 		throw new Error("courseId or dynCourseId must be provided.");
 	}
 
-	let course;
-	let data;
-
-	course = await database.course.findUnique({
+	const course = await database.course.findUnique({
 		where: { courseId },
 		select: {
 			courseId: true,
@@ -130,21 +125,7 @@ export async function enrollUser({ courseId, username }: { courseId?: string; us
 			}
 		}
 	});
-	data = { courseId, username, status: EnrollmentStatus.ACTIVE };
-
-	if (!course) {
-		course = await database.dynCourse.findUnique({
-			where: { courseId },
-			select: {
-				courseId: true,
-				enrollments: {
-					select: { createdAt: true },
-					where: { username }
-				}
-			}
-		});
-		data = { dynCourseId: courseId, username, status: EnrollmentStatus.ACTIVE };
-	}
+	const data = { courseId, username, status: EnrollmentStatus.ACTIVE };
 
 	if (!course) {
 		throw NotFound({ courseId });
@@ -155,12 +136,6 @@ export async function enrollUser({ courseId, username }: { courseId?: string; us
 			`${username} is already enrolled in ${courseId} (since: ${course.enrollments[0].createdAt.toLocaleString()}).`
 		);
 	}
-
-	const enrollmentData =
-		"dynCourseId" in data
-			? { ...data, courseId: null }
-			: { ...data, dynCourseId: null };
-
 
 	const enrollment = await database.enrollment.create({
 		select: {
@@ -182,7 +157,7 @@ export async function enrollUser({ courseId, username }: { courseId?: string; us
 			},
 			username: true
 		},
-		data: enrollmentData
+		data
 	});
 
 	await createEventLogEntry({
