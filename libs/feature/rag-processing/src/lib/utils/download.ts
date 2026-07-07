@@ -27,11 +27,22 @@ function validateURL(url: string): void {
 
 export async function downloadWithRetry(
 	url: string,
-	options: { maxRetries?: number; timeoutMs?: number; userAgent?: string } = {}
+	options: {
+		maxRetries?: number;
+		timeoutMs?: number;
+		userAgent?: string;
+		/**
+		 * Content-type substrings that are considered valid for this download.
+		 * Defaults to PDF for backwards compatibility with existing call sites.
+		 * "octet-stream" is always accepted since some servers mislabel binary/static files.
+		 */
+		expectedContentTypes?: string[];
+	} = {}
 ): Promise<Uint8Array> {
 	const maxRetries = options.maxRetries ?? RAG_CONFIG.DOWNLOAD.MAX_RETRIES;
 	const timeoutMs = options.timeoutMs ?? RAG_CONFIG.DOWNLOAD.TIMEOUT_MS;
 	const userAgent = options.userAgent ?? RAG_CONFIG.DOWNLOAD.USER_AGENT;
+	const expectedContentTypes = options.expectedContentTypes ?? ["application/pdf"];
 
 	validateURL(url);
 	let lastError: Error | undefined;
@@ -55,9 +66,12 @@ export async function downloadWithRetry(
 			}
 
 			const contentType = response.headers.get("content-type") ?? "";
-			if (!contentType.includes("application/pdf") && !contentType.includes("octet-stream")) {
+			const isAccepted =
+				expectedContentTypes.some(t => contentType.includes(t)) ||
+				contentType.includes("octet-stream");
+			if (!isAccepted) {
 				throw new DownloadError(
-					`URL did not return a PDF (content-type: "${contentType}"). The file may have moved or requires authentication.`,
+					`URL did not return an expected content type (expected one of [${expectedContentTypes.join(", ")}], got "${contentType}"). The file may have moved or requires authentication.`,
 					url
 				);
 			}
@@ -123,6 +137,39 @@ export async function downloadMultiple(
 		} catch (error) {
 			console.warn(
 				"[DownloadUtil] Skipping PDF due to download error — other content types will still be processed",
+				{
+					...lessonContext,
+					url,
+					error: error instanceof Error ? error.message : String(error)
+				}
+			);
+			return null;
+		}
+	});
+
+	const results = await Promise.all(downloads);
+	return results.filter((r): r is { data: string; url: string } => r !== null);
+}
+
+/**
+ * Downloads uploaded HTML pages (single-file or zip entry-point) for RAG processing.
+ * Mirrors downloadMultiple's fail-soft behavior: a failed download is logged and skipped
+ * so it never aborts processing of the rest of the lesson's content.
+ */
+export async function downloadHtmlMultiple(
+	urls: string[],
+	lessonContext?: { lessonId: string; lessonTitle: string }
+): Promise<Array<{ data: string; url: string }>> {
+	const downloads = urls.map(async url => {
+		try {
+			const buffer = await downloadWithRetry(url, {
+				expectedContentTypes: ["text/html"]
+			});
+			const base64 = Buffer.from(buffer).toString("base64");
+			return { data: base64, url };
+		} catch (error) {
+			console.warn(
+				"[DownloadUtil] Skipping HTML content due to download error — other content types will still be processed",
 				{
 					...lessonContext,
 					url,

@@ -72,6 +72,7 @@
 		"next-mdx-remote": "^5.0.0",
 		"next-plausible": "^3.12.5",
 		"node-cron": "^4.2.1",
+		"node-html-parser": "^9.0.0",
 		"npm-check-updates": "^17.1.18",
 		"pdf-parse": "^2.4.5",
 		"react": "19.2.6",

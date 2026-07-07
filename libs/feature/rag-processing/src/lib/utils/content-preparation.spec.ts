@@ -1,16 +1,20 @@
-// Mock downloadMultiple to avoid real HTTP calls in unit tests.
-// content-preparation.ts imports it from "./download", so we mock that same path.
+// Mock downloadMultiple/downloadHtmlMultiple to avoid real HTTP calls in unit tests.
+// content-preparation.ts imports them from "./download", so we mock that same path.
 jest.mock("./download", () => ({
-	downloadMultiple: jest.fn()
+	downloadMultiple: jest.fn(),
+	downloadHtmlMultiple: jest.fn()
 }));
 
 jest.setTimeout(10000);
 
 import { prepareRagContent } from "./content-preparation";
-import { downloadMultiple } from "./download";
+import { downloadMultiple, downloadHtmlMultiple } from "./download";
 import { LessonContent } from "@self-learning/types";
 
 const mockDownloadMultiple = downloadMultiple as jest.MockedFunction<typeof downloadMultiple>;
+const mockDownloadHtmlMultiple = downloadHtmlMultiple as jest.MockedFunction<
+	typeof downloadHtmlMultiple
+>;
 
 // ---------------------------------------------------------------------------
 // prepareRagContent tests
@@ -19,8 +23,9 @@ const mockDownloadMultiple = downloadMultiple as jest.MockedFunction<typeof down
 describe("prepareRagContent", () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
-		// Default: no PDFs downloaded unless a test overrides this
+		// Default: no PDFs/HTML pages downloaded unless a test overrides this
 		mockDownloadMultiple.mockResolvedValue([]);
+		mockDownloadHtmlMultiple.mockResolvedValue([]);
 	});
 
 	// =========================================================================
@@ -341,7 +346,7 @@ describe("prepareRagContent", () => {
 	describe("mixed content", () => {
 		// =========================================================================
 
-		it("processes all content types together correctly", async () => {
+		it("processes all content types together correctly, ignoring url-sourced iframes", async () => {
 			// Setup
 			const fakePdfBuffer = { data: "pdfdata==", url: "https://example.com/doc.pdf" };
 			mockDownloadMultiple.mockResolvedValue([fakePdfBuffer]);
@@ -380,10 +385,12 @@ describe("prepareRagContent", () => {
 			expect(result.pdfBuffers).toEqual([fakePdfBuffer]);
 			expect(result.transcriptTexts).toHaveLength(1);
 			expect(result.transcriptTexts[0]).toContain("Video transcript text.");
-			// iframe is intentionally ignored by prepareRagContent
+			// iframe with source "url" (external embed) is intentionally ignored
+			expect(result.htmlPages).toEqual([]);
+			expect(mockDownloadHtmlMultiple).not.toHaveBeenCalled();
 		});
 
-		it("returns all empty arrays for a lesson with only iframe content", async () => {
+		it("returns all empty arrays for a lesson with only a url-sourced iframe", async () => {
 			// Setup
 			const content: LessonContent = [
 				{
@@ -400,7 +407,9 @@ describe("prepareRagContent", () => {
 			expect(result.pdfBuffers).toEqual([]);
 			expect(result.articleTexts).toEqual([]);
 			expect(result.transcriptTexts).toEqual([]);
+			expect(result.htmlPages).toEqual([]);
 			expect(mockDownloadMultiple).not.toHaveBeenCalled();
+			expect(mockDownloadHtmlMultiple).not.toHaveBeenCalled();
 		});
 
 		it("returns all empty arrays for empty content", async () => {
@@ -414,7 +423,174 @@ describe("prepareRagContent", () => {
 			expect(result.pdfBuffers).toEqual([]);
 			expect(result.articleTexts).toEqual([]);
 			expect(result.transcriptTexts).toEqual([]);
+			expect(result.htmlPages).toEqual([]);
 			expect(mockDownloadMultiple).not.toHaveBeenCalled();
+			expect(mockDownloadHtmlMultiple).not.toHaveBeenCalled();
+		});
+	});
+
+	// =========================================================================
+	describe("iframe content", () => {
+		// =========================================================================
+
+		it("ignores iframe items with source 'url' or unset", async () => {
+			// Setup
+			const content: LessonContent = [
+				{
+					type: "iframe",
+					meta: { estimatedDuration: 5 },
+					value: { url: "https://example.com/embed-a", source: "url" }
+				},
+				{
+					type: "iframe",
+					meta: { estimatedDuration: 5 },
+					value: { url: "https://example.com/embed-b" } // source unset
+				}
+			];
+
+			// Exercise
+			const result = await prepareRagContent(content);
+
+			// Verify
+			expect(result.htmlPages).toEqual([]);
+			expect(mockDownloadHtmlMultiple).not.toHaveBeenCalled();
+		});
+
+		it("downloads iframe items with source 'html' and returns the pages", async () => {
+			// Setup
+			const fakeHtmlPage = {
+				data: Buffer.from("<html><body>Hi</body></html>").toString("base64"),
+				url: "https://storage.example.com/uploads/abc-nano-demo.html"
+			};
+			mockDownloadHtmlMultiple.mockResolvedValue([fakeHtmlPage]);
+			const content: LessonContent = [
+				{
+					type: "iframe",
+					meta: { estimatedDuration: 5 },
+					value: {
+						url: "https://storage.example.com/uploads/abc-nano-demo.html",
+						source: "html",
+						originalFileName: "nano-demo.html"
+					}
+				}
+			];
+
+			// Exercise
+			const result = await prepareRagContent(content);
+
+			// Verify
+			expect(mockDownloadHtmlMultiple).toHaveBeenCalledWith(
+				["https://storage.example.com/uploads/abc-nano-demo.html"],
+				undefined
+			);
+			expect(result.htmlPages).toEqual([fakeHtmlPage]);
+		});
+
+		it("downloads the entry-point page for iframe items with source 'zip'", async () => {
+			// Setup
+			const fakeHtmlPage = {
+				data: Buffer.from("<html><body>Entry point</body></html>").toString("base64"),
+				url: "https://storage.example.com/content/xyz/index.html"
+			};
+			mockDownloadHtmlMultiple.mockResolvedValue([fakeHtmlPage]);
+			const content: LessonContent = [
+				{
+					type: "iframe",
+					meta: { estimatedDuration: 5 },
+					value: {
+						url: "https://storage.example.com/content/xyz/index.html",
+						source: "zip",
+						entryPoint: "index.html",
+						originalFileName: "nano-demo.zip",
+						folderObjectName: "content/xyz"
+					}
+				}
+			];
+
+			// Exercise
+			const result = await prepareRagContent(content);
+
+			// Verify
+			expect(mockDownloadHtmlMultiple).toHaveBeenCalledWith(
+				["https://storage.example.com/content/xyz/index.html"],
+				undefined
+			);
+			expect(result.htmlPages).toEqual([fakeHtmlPage]);
+		});
+
+		it("does not attempt to process 'h5p' sourced iframes (not yet supported)", async () => {
+			// Setup
+			const content: LessonContent = [
+				{
+					type: "iframe",
+					meta: { estimatedDuration: 5 },
+					value: {
+						url: "https://storage.example.com/content/h5p-folder",
+						source: "h5p",
+						folderObjectName: "content/h5p-folder"
+					}
+				}
+			];
+
+			// Exercise
+			const result = await prepareRagContent(content);
+
+			// Verify
+			expect(result.htmlPages).toEqual([]);
+			expect(mockDownloadHtmlMultiple).not.toHaveBeenCalled();
+		});
+
+		it("collects multiple html/zip iframe URLs into a single downloadHtmlMultiple call", async () => {
+			// Setup
+			mockDownloadHtmlMultiple.mockResolvedValue([
+				{ data: "aGVsbG8=", url: "https://example.com/a.html" },
+				{ data: "d29ybGQ=", url: "https://example.com/b/index.html" }
+			]);
+			const content: LessonContent = [
+				{
+					type: "iframe",
+					meta: { estimatedDuration: 5 },
+					value: { url: "https://example.com/a.html", source: "html" }
+				},
+				{
+					type: "iframe",
+					meta: { estimatedDuration: 5 },
+					value: { url: "https://example.com/b/index.html", source: "zip" }
+				}
+			];
+
+			// Exercise
+			const result = await prepareRagContent(content);
+
+			// Verify
+			expect(mockDownloadHtmlMultiple).toHaveBeenCalledTimes(1);
+			expect(mockDownloadHtmlMultiple).toHaveBeenCalledWith(
+				["https://example.com/a.html", "https://example.com/b/index.html"],
+				undefined
+			);
+			expect(result.htmlPages).toHaveLength(2);
+		});
+
+		it("forwards lessonContext to downloadHtmlMultiple when provided", async () => {
+			// Setup
+			mockDownloadHtmlMultiple.mockResolvedValue([]);
+			const content: LessonContent = [
+				{
+					type: "iframe",
+					meta: { estimatedDuration: 5 },
+					value: { url: "https://example.com/a.html", source: "html" }
+				}
+			];
+			const lessonContext = { lessonId: "lesson-99", lessonTitle: "Interactive Demo" };
+
+			// Exercise
+			await prepareRagContent(content, lessonContext);
+
+			// Verify
+			expect(mockDownloadHtmlMultiple).toHaveBeenCalledWith(
+				["https://example.com/a.html"],
+				lessonContext
+			);
 		});
 	});
 });

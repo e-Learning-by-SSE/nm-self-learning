@@ -1,6 +1,7 @@
-import { PDFChunk, ArticleChunk, VideoChunk, ChunkOptions } from "../types/chunk";
+import { PDFChunk, ArticleChunk, VideoChunk, HTMLChunk, ChunkOptions } from "../types/chunk";
 import { chunkText } from "../utils/chunking";
 import { extractText } from "unpdf";
+import { parse } from "node-html-parser";
 
 // Suppress "Warning: TT: undefined function: 32" warning, which is not controlled by the library, but by lower level api.
 const originalWarn = console.warn;
@@ -18,6 +19,7 @@ console.warn = (...args: unknown[]) => {
  * - PDF text extraction (used during RagEmbedJob only)
  * - Article text chunking
  * - Video transcript chunking
+ * - HTML text extraction and chunking (for uploaded single-file and zip/entry-point iframe content)
  *
  * Note: This service is only used in the worker-service RagEmbedJob pipeline to convert PDF binary data to strings.
  * After extraction, all content types are strings and pass through EmbeddingService → VectorStore.
@@ -173,6 +175,69 @@ export class ContentProcessor {
 			allChunks.push(...chunks);
 		}
 
+		return allChunks;
+	}
+
+	/**
+	 * Extract plain text from an HTML page, dropping script/style content
+	 * and collapsing whitespace left behind by markup.
+	 */
+	private extractTextFromHtml(html: string): string {
+		const root = parse(html);
+		root.querySelectorAll("script, style").forEach(el => el.remove());
+		return root.textContent.replace(/\s+/g, " ").trim();
+	}
+
+	/**
+	 * Process uploaded HTML pages (single-file `html` iframes, or the entry-point
+	 * page of an unpacked `zip` iframe) into chunks.
+	 *
+	 * Note: only the entry-point page is processed for zip archives — linked
+	 * sub-pages within the same archive are not crawled.
+	 */
+	async processHtmlContent(
+		pages: Array<{ data: string; url: string }>,
+		lessonId: string,
+		lessonName: string,
+		options?: Partial<ChunkOptions>
+	): Promise<HTMLChunk[]> {
+		const allChunks: HTMLChunk[] = [];
+		for (let htmlIndex = 0; htmlIndex < pages.length; htmlIndex++) {
+			const page = pages[htmlIndex];
+			let text: string;
+			try {
+				const html = Buffer.from(page.data, "base64").toString("utf-8");
+				text = this.extractTextFromHtml(html);
+			} catch (error) {
+				console.warn(
+					"[ContentProcessor] Skipping invalid HTML page — other content types will still be processed",
+					{
+						url: page.url,
+						lessonId,
+						error: error instanceof Error ? error.message : String(error)
+					}
+				);
+				continue;
+			}
+
+			if (!text) {
+				continue;
+			}
+
+			const textChunks = chunkText(text, options);
+			const chunks: HTMLChunk[] = textChunks.map((chunkedText, chunkIndex) => ({
+				id: `${lessonId}_${lessonName}_html${htmlIndex}_chunk_${chunkIndex}`,
+				text: chunkedText,
+				metadata: {
+					lessonId,
+					lessonName,
+					htmlIndex,
+					chunkIndex,
+					sourceType: "html" as const
+				}
+			}));
+			allChunks.push(...chunks);
+		}
 		return allChunks;
 	}
 }

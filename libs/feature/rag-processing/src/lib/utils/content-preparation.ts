@@ -1,5 +1,5 @@
-import { downloadMultiple } from "./download";
-import { LessonContent, Video } from "@self-learning/types";
+import { downloadMultiple, downloadHtmlMultiple } from "./download";
+import { LessonContent, Video, IFrame } from "@self-learning/types";
 
 /**
  * Strip WebVTT formatting and return plain spoken text.
@@ -31,6 +31,7 @@ export async function prepareRagContent(
 	pdfBuffers: Array<{ data: string; url: string }>;
 	articleTexts: string[];
 	transcriptTexts: string[];
+	htmlPages: Array<{ data: string; url: string }>;
 }> {
 	const pdfUrls = content.filter(item => item.type === "pdf").map(item => item.value.url);
 	const pdfBuffers = pdfUrls.length > 0 ? await downloadMultiple(pdfUrls, lessonContext) : [];
@@ -43,5 +44,19 @@ export async function prepareRagContent(
 		.filter((item): item is Video => item.type === "video" && !!item.value.subtitle?.src)
 		.map(item => extractPlainTextFromVtt(item.value.subtitle?.src ?? ""));
 
-	return { pdfBuffers, articleTexts, transcriptTexts };
+	// Only "html" (single uploaded file) and "zip" (unpacked entry-point page) are
+	// fetchable, self-hosted content. "url" (external embed, or unset) is intentionally
+	// skipped — we have no reliable way to extract meaningful text from an arbitrary
+	// external page, same rationale as an unreachable PDF.
+	const htmlUrls = content
+		.filter(
+			(item): item is IFrame =>
+				item.type === "iframe" &&
+				(item.value.source === "html" || item.value.source === "zip")
+		)
+		.map(item => item.value.url);
+	const htmlPages =
+		htmlUrls.length > 0 ? await downloadHtmlMultiple(htmlUrls, lessonContext) : [];
+
+	return { pdfBuffers, articleTexts, transcriptTexts, htmlPages };
 }

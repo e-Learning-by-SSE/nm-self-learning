@@ -21,7 +21,8 @@ export const ragEmbedJob: JobDefinition<"ragEmbed"> = {
 	schema: ragEmbedPayloadSchema,
 
 	run: async payload => {
-		const { lessonId, lessonTitle, pdfBuffers, articleTexts, transcriptTexts } = payload;
+		const { lessonId, lessonTitle, pdfBuffers, articleTexts, transcriptTexts, htmlPages } =
+			payload;
 
 		console.log("[RagService] Starting RAG embed job", { lessonTitle });
 
@@ -86,8 +87,25 @@ export const ragEmbedJob: JobDefinition<"ragEmbed"> = {
 				}
 			}
 
+			// Step 4.5: Process HTML pages (uploaded single-file/zip iframe content) into chunks
+			let htmlChunks = 0;
+			if (htmlPages.length > 0) {
+				console.log("[RagService] Processing HTML pages", { count: htmlPages.length });
+				const chunks = await contentProcessor.processHtmlContent(
+					htmlPages,
+					lessonId,
+					lessonTitle
+				);
+				htmlChunks = chunks.length;
+
+				// Add to vector store
+				if (chunks.length > 0) {
+					await vectorStore.addDocuments(lessonId, chunks);
+				}
+			}
+
 			// Step 5: Prepare result
-			const totalChunks = pdfChunks + articleChunks + videoChunks;
+			const totalChunks = pdfChunks + articleChunks + videoChunks + htmlChunks;
 
 			if (totalChunks === 0) {
 				throw new Error("No content chunks were created. Please check lesson content.");
@@ -96,7 +114,12 @@ export const ragEmbedJob: JobDefinition<"ragEmbed"> = {
 			const result: {
 				success: boolean;
 				chunksCreated: number;
-				breakdown: { pdfChunks: number; articleChunks: number; videoChunks: number };
+				breakdown: {
+					pdfChunks: number;
+					articleChunks: number;
+					videoChunks: number;
+					htmlChunks: number;
+				};
 				message: string;
 			} = {
 				success: true,
@@ -104,7 +127,8 @@ export const ragEmbedJob: JobDefinition<"ragEmbed"> = {
 				breakdown: {
 					pdfChunks,
 					articleChunks,
-					videoChunks
+					videoChunks,
+					htmlChunks
 				},
 				message: `Successfully ingested lesson with ${totalChunks} chunks`
 			};

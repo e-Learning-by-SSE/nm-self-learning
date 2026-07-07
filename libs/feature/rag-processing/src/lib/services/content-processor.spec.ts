@@ -261,4 +261,120 @@ describe("ContentProcessor", () => {
 			expect(chunks).toHaveLength(0);
 		});
 	});
+
+	// =========================================================================
+	describe("processHtmlContent", () => {
+		// =========================================================================
+
+		it("extracts text and strips script/style tags before chunking", async () => {
+			// Setup
+			const html =
+				"<html><head><style>body{color:red}</style></head>" +
+				"<body><script>alert('x')</script><p>Hello world</p></body></html>";
+			const pages = [{ data: Buffer.from(html).toString("base64"), url: "a.html" }];
+
+			// Exercise
+			const chunks = await contentProcessor.processHtmlContent(
+				pages,
+				"lesson-html",
+				"HtmlLesson"
+			);
+
+			// Verify
+			const joined = chunks.map(c => c.text).join("");
+			expect(joined).toContain("Hello world");
+			expect(joined).not.toContain("alert");
+			expect(joined).not.toContain("color:red");
+			expect(chunks.every(c => c.metadata.sourceType === "html")).toBe(true);
+		});
+
+		it("sets the correct htmlIndex and sequential chunkIndex in metadata", async () => {
+			// Setup
+			const pageA = "<html><body>Page A content</body></html>";
+			const pageB = "<html><body>Page B content</body></html>";
+			const pages = [
+				{ data: Buffer.from(pageA).toString("base64"), url: "a.html" },
+				{ data: Buffer.from(pageB).toString("base64"), url: "b.html" }
+			];
+
+			// Exercise
+			const chunks = await contentProcessor.processHtmlContent(
+				pages,
+				"lesson-hidx",
+				"HIdxLesson"
+			);
+
+			// Verify – chunkText mock produces 2 chunks per page
+			expect(chunks.map(c => c.metadata.htmlIndex)).toEqual([0, 0, 1, 1]);
+			expect(chunks.map(c => c.metadata.chunkIndex)).toEqual([0, 1, 0, 1]);
+			expect(chunks.every(c => c.id.includes("lesson-hidx"))).toBe(true);
+		});
+
+		it("skips pages that produce no text after tag stripping (e.g. script/style-only)", async () => {
+			// Setup
+			const html =
+				"<html><head><style>.a{}</style></head><body><script>1</script></body></html>";
+			const pages = [{ data: Buffer.from(html).toString("base64"), url: "empty.html" }];
+
+			// Exercise
+			const chunks = await contentProcessor.processHtmlContent(
+				pages,
+				"lesson-empty-html",
+				"EmptyHtmlLesson"
+			);
+
+			// Verify
+			expect(chunks).toHaveLength(0);
+		});
+
+		it("skips whitespace-only pages", async () => {
+			// Setup
+			const html = "<html><body>   \n\t  </body></html>";
+			const pages = [{ data: Buffer.from(html).toString("base64"), url: "whitespace.html" }];
+
+			// Exercise
+			const chunks = await contentProcessor.processHtmlContent(
+				pages,
+				"lesson-ws",
+				"WsLesson"
+			);
+
+			// Verify
+			expect(chunks).toHaveLength(0);
+		});
+
+		it("skips an individual malformed page without throwing, and still processes the rest", async () => {
+			// Setup — invalid base64 for the first page, valid HTML for the second
+			const validHtml = "<html><body>Valid content here</body></html>";
+			const pages = [
+				{ data: "not-valid-base64!!!", url: "broken.html" },
+				{ data: Buffer.from(validHtml).toString("base64"), url: "ok.html" }
+			];
+
+			// Exercise
+			const chunks = await contentProcessor.processHtmlContent(
+				pages,
+				"lesson-mixed",
+				"MixedLesson"
+			);
+
+			// Verify — the broken page is skipped, the valid one is still processed
+			expect(chunks.length).toBeGreaterThan(0);
+			expect(chunks.every(c => c.metadata.sourceType === "html")).toBe(true);
+		});
+
+		it("returns an empty array when no pages are provided", async () => {
+			// Setup – empty list
+
+			// Exercise
+			const chunks = await contentProcessor.processHtmlContent(
+				[],
+				"lesson-no-html",
+				"NoHtmlLesson"
+			);
+
+			// Verify
+			expect(chunks).toHaveLength(0);
+		});
+	});
 });
