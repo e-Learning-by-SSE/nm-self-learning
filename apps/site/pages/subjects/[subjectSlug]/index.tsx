@@ -38,8 +38,7 @@ async function getSubject(subjectSlug: string) {
 					cardImgUrl: true,
 					_count: {
 						select: {
-							courses: true,
-							dynCourses: true
+							courses: true
 						}
 					}
 				}
@@ -105,8 +104,8 @@ function SpecializationCard({
 					<span className="flex items-center gap-3 text-sm font-semibold text-c-primary">
 						<Square3Stack3DIcon className="h-5" />
 						<span>
-							{specialization._count.courses + specialization._count.dynCourses}{" "}
-							{specialization._count.courses + specialization._count.dynCourses === 1 ? "Kurs" : "Kurse"}
+							{specialization._count.courses}{" "}
+							{specialization._count.courses === 1 ? "Kurs" : "Kurse"}
 						</span>
 					</span>
 				}

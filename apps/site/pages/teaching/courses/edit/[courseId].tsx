@@ -3,7 +3,12 @@ import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
-import { CourseContent, extractLessonIds, resourcePermissionSelect, toResourcePermissionsForm } from "@self-learning/types";
+import {
+	CourseContent,
+	extractLessonIds,
+	resourcePermissionSelect,
+	toResourcePermissionsForm
+} from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -31,6 +36,7 @@ export const getServerSideProps = withTranslations(
 		const course = await database.course.findUnique({
 			where: { courseId },
 			include: {
+				type: true,
 				authors: {
 					select: {
 						username: true
@@ -39,6 +45,26 @@ export const getServerSideProps = withTranslations(
 				specializations: {
 					select: {
 						specializationId: true
+					}
+				},
+				provides: {
+					select: {
+						id: true,
+						name: true,
+						description: true,
+						children: true,
+						parents: true,
+						authorId: true
+					}
+				},
+				requires: {
+					select: {
+						id: true,
+						name: true,
+						description: true,
+						children: true,
+						parents: true,
+						authorId: true
 					}
 				},
 				subject: {
@@ -55,13 +81,21 @@ export const getServerSideProps = withTranslations(
 
 		if (!course) {
 			return {
-				redirect: {
-					destination: `/teaching/courses/dynamic/edit/${courseId}`,
-					permanent: false
-				},
-				notFound: false
+				notFound: true
 			};
 		}
+
+		const teachingGoals = course.provides.map(goal => ({
+			...goal,
+			children: goal.children.map(child => child.id),
+			parents: goal.parents.map(parent => parent.id)
+		}));
+
+		const requirements = course.requires.map(goal => ({
+			...goal,
+			children: goal.children.map(child => child.id),
+			parents: goal.parents.map(parent => parent.id)
+		}));
 
 		const permissions = toResourcePermissionsForm(course.permissions);
 		const hasAccess = testResourceGuard(user, AccessLevel.EDIT, permissions);
@@ -95,6 +129,8 @@ export const getServerSideProps = withTranslations(
 		}
 
 		const courseFormModel: CourseFormModel = {
+			type: course.type,
+			version: course.version,
 			title: course.title,
 			courseId: course.courseId,
 			description: course.description,
@@ -104,6 +140,8 @@ export const getServerSideProps = withTranslations(
 			subjectId: course.subject?.subjectId ?? null,
 			authors: course.authors.map(author => ({ username: author.username })),
 			content: content,
+			requires: requirements,
+			provides: teachingGoals,
 			permissions
 		};
 
@@ -157,6 +195,7 @@ export default function EditCoursePage({ course, lessons }: EditCourseProps) {
 			requiredAccess={AccessLevel.EDIT}
 			permittedGroups={course.permissions}
 		>
+			{/* TODO dynamic course editor  */}
 			<CourseEditor course={course} onConfirm={onConfirm} />
 		</ResourceGuard>
 	);

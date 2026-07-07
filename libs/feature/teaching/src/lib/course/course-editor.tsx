@@ -1,6 +1,6 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel, CourseType } from "@prisma/client";
 import { DialogActions, SectionHeader } from "@self-learning/ui/common";
 import { Form, MarkdownField, OpenAsJsonButton } from "@self-learning/ui/forms";
 import { SidebarEditorLayout, useResourceGuard } from "@self-learning/ui/layouts";
@@ -12,6 +12,7 @@ import { CourseFormModel, courseFormSchema } from "./course-form-model";
 import { CourseInfoForm } from "./course-info-form";
 import { useRouter } from "next/router";
 import { GroupAccessEditor } from "../group/forms/group-form";
+import { DynCourseContentForm } from "../dynCourse/dynCourse-content-form";
 
 export function CourseEditor({
 	course,
@@ -90,7 +91,9 @@ export function CourseEditor({
 					}
 				>
 					<CourseDescriptionForm />
-					<CourseContentForm />
+					{/* TODO IS THIS NICE? */}
+					{course.type === CourseType.STATIC && <CourseContentForm />}
+					{course.type === CourseType.DYNAMIC && <DynCourseContentForm />}
 				</SidebarEditorLayout>
 				<div className="pointer-events-none fixed bottom-0 flex w-full items-end justify-end pb-[20px]">
 					<div className="z-50 pr-5 pb-5">

@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { CourseType, Prisma } from "@prisma/client";
 import {
 	authorsRelationSchema,
 	courseContentSchema,
@@ -10,6 +10,7 @@ import { stringOrNull } from "@self-learning/util/common";
 import { z } from "zod";
 
 export const courseFormSchema = z.object({
+	type: z.enum(CourseType),
 	courseId: z.string().nullable(),
 	subjectId: z.string().nullable(),
 	slug: z.string().min(3),
@@ -17,6 +18,7 @@ export const courseFormSchema = z.object({
 	subtitle: z.string().min(3),
 	description: z.string().nullable(),
 	imgUrl: z.string().nullable(),
+	version: z.string().nullable(),
 	authors: authorsRelationSchema,
 	content: courseContentSchema,
 	specializationId: z.string().nullable().optional(),
@@ -35,14 +37,17 @@ export function mapCourseFormToInsert(
 	courseId: string,
 	permissions: PermissionsForCreate
 ): Prisma.CourseCreateInput {
-	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors } = course;
+	const { type, title, slug, subtitle, description, imgUrl, content, subjectId, authors } =
+		course;
 
 	const courseForDb: Prisma.CourseCreateInput = {
+		type,
 		courseId,
 		slug,
 		title,
 		subtitle,
 		content: content,
+		version: Date.now().toString(), // always overwrite? TODO
 		imgUrl: stringOrNull(imgUrl),
 		description: stringOrNull(description),
 		meta: createCourseMeta(course),
@@ -61,12 +66,14 @@ export function mapCourseFormToUpdate(
 ): Prisma.CourseUpdateInput {
 	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors } = course;
 
+	// TODO cannot change course type
 	const courseForDb: Prisma.CourseUpdateInput = {
 		courseId,
 		slug,
 		title,
 		subtitle,
 		content,
+		version: Date.now().toString(), // always overwrite? TODO
 		imgUrl: stringOrNull(imgUrl),
 		description: stringOrNull(description),
 		meta: createCourseMeta(course),

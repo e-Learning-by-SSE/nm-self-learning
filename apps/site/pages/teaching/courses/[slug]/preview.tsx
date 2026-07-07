@@ -19,7 +19,6 @@ import {
 } from "@e-learning-by-sse/nm-skill-lib";
 import { withTranslations } from "@self-learning/api";
 import { GetServerSidePropsContext } from "next";
-import { DynCourseDetailedModel } from "@self-learning/teaching";
 import { CourseChapter, Summary } from "@self-learning/types";
 import * as ToC from "@self-learning/ui/course";
 import { createCourseSummary, mapCourseContent } from "@self-learning/course";
@@ -29,12 +28,14 @@ export const getServerSideProps = withTranslations(
 	async (ctx: GetServerSidePropsContext) => {
 		const slug = ctx.params?.slug as string;
 
+		// TODO KEE
+
 		let course = null;
 		let content: ToC.Content = [];
 		let summary = {};
 
 		try {
-			course = await database.dynCourse.findUniqueOrThrow({
+			course = await database.course.findUniqueOrThrow({
 				where: { slug },
 				select: {
 					title: true,
@@ -43,7 +44,7 @@ export const getServerSideProps = withTranslations(
 					slug: true,
 					description: true,
 					imgUrl: true,
-					teachingGoals: {
+					provides: {
 						select: {
 							id: true,
 							name: true,
@@ -87,7 +88,7 @@ export const getServerSideProps = withTranslations(
 			children: s.children?.map(c => c.id) ?? []
 		}));
 
-		const goalLibSkills: Skill[] = (course.teachingGoals ?? []).map(g => ({
+		const goalLibSkills: Skill[] = (course.provides ?? []).map(g => ({
 			id: g.id,
 			children: g.children?.map(c => c.id) ?? []
 		}));

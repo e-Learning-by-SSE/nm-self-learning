@@ -29,7 +29,7 @@ export const getServerSideProps = withTranslations(["common"], async ctx => {
 	}
 
 	if (!username) {
-		throw new Error("username muss be defined");
+		throw new Error("username must be defined");
 	}
 
 	const specialization = await getSpecialization(specializationSlug, username);
@@ -88,7 +88,7 @@ async function getSpecialization(specializationSlug: string, username: string) {
 }
 
 export default function SpecializationPage({ specialization }: SpecializationPageProps) {
-	const { title, subtitle, imgUrlBanner, subject, courses, dynCourses } = specialization;
+	const { title, subtitle, imgUrlBanner, subject, courses } = specialization;
 	return (
 		<div className="pb-32">
 			<TopicHeader
@@ -99,9 +99,9 @@ export default function SpecializationPage({ specialization }: SpecializationPag
 				subtitle={subtitle}
 			/>
 			<div className="mx-auto flex max-w-screen-xl flex-col px-4 pt-8 xl:px-0">
-				{courses.length > 0 || dynCourses.length > 0 ? (
+				{courses.length > 0 ? (
 					<ItemCardGrid>
-						{[...courses, ...dynCourses].map(course => (
+						{[...courses].map(course => (
 							<CourseCard key={course.slug} course={course} />
 						))}
 					</ItemCardGrid>

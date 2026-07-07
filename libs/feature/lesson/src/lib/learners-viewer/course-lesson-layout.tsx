@@ -1,6 +1,6 @@
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion } from "@self-learning/completion";
-import { CourseContent, LessonMeta, ResolvedValue } from "@self-learning/types";
+import { CourseContent, LessonMeta } from "@self-learning/types";
 import {
 	MobilePlayList,
 	Playlist,
@@ -20,34 +20,12 @@ import { database } from "@self-learning/database";
 
 export type LessonLayoutProps = {
 	lesson: LessonData;
-	course: ResolvedValue<typeof getCombinedSmallCourse>;
+	course: {
+		courseId: string;
+		title: string;
+		slug: string;
+	};
 };
-
-
-export async function getCombinedSmallCourse(slug: string) {
-	const course = await database.course.findFirst({
-		where: { slug },
-		select: {
-			courseId: true,
-			title: true,
-			slug: true
-		}
-	});
-
-	const dynCourse = await database.dynCourse.findFirst({
-		where: { slug },
-		select: {
-			courseId: true,
-			title: true,
-			slug: true
-		}
-	});
-	if (!course && !dynCourse) {
-		return null;
-	}
-	const combinedCourse = course ? course : dynCourse;
-	return combinedCourse;
-}
 
 export async function getSSpLessonCourseLayout(
 	params?: ParsedUrlQuery | undefined
@@ -62,7 +40,14 @@ export async function getSSpLessonCourseLayout(
 		throw new Error("No course/lesson slug provided.");
 	}
 
-	const course = await getCombinedSmallCourse(courseSlug);
+	const course = await database.course.findFirst({
+		where: { slug: courseSlug },
+		select: {
+			courseId: true,
+			title: true,
+			slug: true
+		}
+	});
 
 	if (!course) {
 		return { notFound: true };
