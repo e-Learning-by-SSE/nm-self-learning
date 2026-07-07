@@ -47,10 +47,6 @@ model Skill {
     goalsOf        Lesson[] @relation("providedSkills")
     requirementsOf Lesson[] @relation("requiredSkills")
 
-    // Add references to DynCourse
-    goalsOfDynCourse        DynCourse[] @relation("DynCourseTeachingGoals")
-    requirementsOfDynCourse DynCourse[] @relation("DynCourseRequirements")
-
     Student Student[] @relation("StudentToSkill")
 
     //@@unique([repositoryId, name])
