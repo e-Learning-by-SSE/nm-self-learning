@@ -172,6 +172,7 @@ function AuthorDashboardPage({ author }: Props) {
 						</div>
 
 						<ul className="flex flex-col gap-4 py-4">
+							{/* TODO KEE */}
 							{author.author?.dynCourse.length === 0 ? (
 								<div className="mx-auto flex items-center gap-8">
 									<div className="h-32 w-32">
@@ -249,26 +250,6 @@ function AuthorDashboardPage({ author }: Props) {
 							)}
 						</ul>
 					</section>
-
-					<Divider />
-
-					{/* <section>
-						<div className="flex justify-between gap-4">
-							<SectionHeader
-								title="Meine Lerneinheiten"
-								subtitle="Autor der folgenden Lerneinheiten:"
-							/>
-
-							<Link href="/teaching/lessons/create">
-								<IconTextButton
-									text="Lerneinheit erstellen"
-									icon={<PlusIcon className="icon h-5" />}
-								/>
-							</Link>
-						</div>
-
-						{authorName && <Lessons authorName={authorName} />}
-					</section> */}
 
 					<Divider />
 

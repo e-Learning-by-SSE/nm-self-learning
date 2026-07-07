@@ -58,7 +58,6 @@ describe("getServerSideProps", () => {
 			(database.course.findFirst as jest.Mock).mockResolvedValue(courseMock);
 			(database.lesson.findUnique as jest.Mock).mockResolvedValue(lessonMock);
 			(database.completedLesson.findMany as jest.Mock).mockResolvedValue([]);
-			(database.dynCourse.findFirst as jest.Mock).mockResolvedValue(courseMock);
 			(compileMarkdown as jest.Mock).mockResolvedValue("");
 			global.encodeURIComponent = jest.fn().mockReturnValue("loginPage");
 		});

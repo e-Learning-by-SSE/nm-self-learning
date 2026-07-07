@@ -51,6 +51,8 @@ export default function CreateCoursePage() {
 		);
 	}
 
+	// TODO DynCourseEditor
+
 	return (
 		<>
 			{router.isReady && (
