@@ -24,11 +24,17 @@ interface HTMLChunkMetadata extends BaseChunkMetadata {
 	sourceType: "html";
 }
 
+interface H5PChunkMetadata extends BaseChunkMetadata {
+	h5pIndex: number;
+	sourceType: "h5p";
+}
+
 type ChunkMetadata =
 	| PDFChunkMetadata
 	| ArticleChunkMetadata
 	| VideoChunkMetadata
-	| HTMLChunkMetadata;
+	| HTMLChunkMetadata
+	| H5PChunkMetadata;
 
 /**
  * Base structure for document chunks
@@ -46,6 +52,8 @@ export type ArticleChunk = DocumentChunk<ArticleChunkMetadata>;
 export type VideoChunk = DocumentChunk<VideoChunkMetadata>;
 
 export type HTMLChunk = DocumentChunk<HTMLChunkMetadata>;
+
+export type H5PChunk = DocumentChunk<H5PChunkMetadata>;
 
 /**
  * Options for text chunking
@@ -65,7 +73,7 @@ export interface RetrievalResult {
 	metadata: {
 		lessonName?: string;
 		pageNumber?: number;
-		sourceType?: "pdf" | "article" | "video" | "html";
+		sourceType?: "pdf" | "article" | "video" | "html" | "h5p";
 	};
 }
 
@@ -77,7 +85,7 @@ export interface RagRetrievalResult {
 	sources: {
 		lessonName?: string;
 		pageNumber?: number;
-		sourceType?: "pdf" | "article" | "video" | "html";
+		sourceType?: "pdf" | "article" | "video" | "html" | "h5p";
 		score?: number;
 	}[];
 }
@@ -92,5 +100,5 @@ export interface CircuitBreakerState {
 }
 
 /** Valid source types for RAG results */
-export const VALID_SOURCE_TYPES = ["pdf", "article", "video", "html"] as const;
+export const VALID_SOURCE_TYPES = ["pdf", "article", "video", "html", "h5p"] as const;
 export type SourceType = (typeof VALID_SOURCE_TYPES)[number];

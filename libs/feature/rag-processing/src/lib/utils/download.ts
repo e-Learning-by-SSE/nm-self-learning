@@ -7,7 +7,7 @@ export class DownloadError extends Error {
 	constructor(
 		message: string,
 		public url: string,
-		public cause?: Error
+		public sourceError?: Error
 	) {
 		super(message);
 		this.name = "DownloadError";
@@ -152,7 +152,7 @@ export async function downloadMultiple(
 }
 
 /**
- * Downloads uploaded HTML pages (single-file or zip entry-point) for RAG processing.
+ * Downloads uploaded single-file HTML pages for RAG processing.
  * Mirrors downloadMultiple's fail-soft behavior: a failed download is logged and skipped
  * so it never aborts processing of the rest of the lesson's content.
  */
@@ -170,6 +170,38 @@ export async function downloadHtmlMultiple(
 		} catch (error) {
 			console.warn(
 				"[DownloadUtil] Skipping HTML content due to download error — other content types will still be processed",
+				{
+					...lessonContext,
+					url,
+					error: error instanceof Error ? error.message : String(error)
+				}
+			);
+			return null;
+		}
+	});
+
+	const results = await Promise.all(downloads);
+	return results.filter((r): r is { data: string; url: string } => r !== null);
+}
+
+/**
+ * Downloads JSON files (H5P's `h5p.json` and `content/content.json`) for RAG processing.
+ * Mirrors downloadHtmlMultiple's fail-soft behavior.
+ */
+export async function downloadJsonMultiple(
+	urls: string[],
+	lessonContext?: { lessonId: string; lessonTitle: string }
+): Promise<Array<{ data: string; url: string }>> {
+	const downloads = urls.map(async url => {
+		try {
+			const buffer = await downloadWithRetry(url, {
+				expectedContentTypes: ["json"]
+			});
+			const base64 = Buffer.from(buffer).toString("base64");
+			return { data: base64, url };
+		} catch (error) {
+			console.warn(
+				"[DownloadUtil] Skipping JSON file due to download error — other content types will still be processed",
 				{
 					...lessonContext,
 					url,
