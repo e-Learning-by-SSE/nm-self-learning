@@ -9,6 +9,10 @@ import { contentProcessor, vectorStore } from "@self-learning/rag-processing";
  *
  * This job performs CPU-intensive operations:
  * - PDF text extraction and parsing
+ * - Article text processing
+ * - Video transcript processing
+ * - HTML content processing
+ * - H5P content processing
  * - Text chunking
  * - Embedding generation
  * - Vector store operations
@@ -21,8 +25,15 @@ export const ragEmbedJob: JobDefinition<"ragEmbed"> = {
 	schema: ragEmbedPayloadSchema,
 
 	run: async payload => {
-		const { lessonId, lessonTitle, pdfBuffers, articleTexts, transcriptTexts, htmlPages } =
-			payload;
+		const {
+			lessonId,
+			lessonTitle,
+			pdfBuffers,
+			articleTexts,
+			transcriptTexts,
+			htmlPages,
+			h5pSources
+		} = payload;
 
 		console.log("[RagService] Starting RAG embed job", { lessonTitle });
 
@@ -87,7 +98,7 @@ export const ragEmbedJob: JobDefinition<"ragEmbed"> = {
 				}
 			}
 
-			// Step 4.5: Process HTML pages (uploaded single-file/zip iframe content) into chunks
+			// Step 5: Process HTML pages (uploaded single-file iframe content) into chunks
 			let htmlChunks = 0;
 			if (htmlPages.length > 0) {
 				console.log("[RagService] Processing HTML pages", { count: htmlPages.length });
@@ -104,8 +115,25 @@ export const ragEmbedJob: JobDefinition<"ragEmbed"> = {
 				}
 			}
 
-			// Step 5: Prepare result
-			const totalChunks = pdfChunks + articleChunks + videoChunks + htmlChunks;
+			// Step 6: Process H5P sources (h5p.json + content/content.json) into chunks
+			let h5pChunks = 0;
+			if (h5pSources.length > 0) {
+				console.log("[RagService] Processing H5P sources", { count: h5pSources.length });
+				const chunks = await contentProcessor.processH5pContent(
+					h5pSources,
+					lessonId,
+					lessonTitle
+				);
+				h5pChunks = chunks.length;
+
+				// Add to vector store
+				if (chunks.length > 0) {
+					await vectorStore.addDocuments(lessonId, chunks);
+				}
+			}
+
+			// Step 7: Prepare result
+			const totalChunks = pdfChunks + articleChunks + videoChunks + htmlChunks + h5pChunks;
 
 			if (totalChunks === 0) {
 				throw new Error("No content chunks were created. Please check lesson content.");
@@ -119,6 +147,7 @@ export const ragEmbedJob: JobDefinition<"ragEmbed"> = {
 					articleChunks: number;
 					videoChunks: number;
 					htmlChunks: number;
+					h5pChunks: number;
 				};
 				message: string;
 			} = {
@@ -128,7 +157,8 @@ export const ragEmbedJob: JobDefinition<"ragEmbed"> = {
 					pdfChunks,
 					articleChunks,
 					videoChunks,
-					htmlChunks
+					htmlChunks,
+					h5pChunks
 				},
 				message: `Successfully ingested lesson with ${totalChunks} chunks`
 			};

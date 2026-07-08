@@ -74,6 +74,12 @@ export const ragEmbedPayloadSchema = z.object({
 			data: z.string(),
 			url: z.string().url()
 		})
+	),
+	h5pSources: z.array(
+		z.object({
+			h5pJson: z.object({ data: z.string(), url: z.string().url() }).nullable(),
+			contentJson: z.object({ data: z.string(), url: z.string().url() }).nullable()
+		})
 	)
 });
 
@@ -84,7 +90,8 @@ export const ragEmbedResponseSchema = z.object({
 		pdfChunks: z.number(),
 		articleChunks: z.number(),
 		videoChunks: z.number(),
-		htmlChunks: z.number()
+		htmlChunks: z.number(),
+		h5pChunks: z.number()
 	}),
 	message: z.string()
 });

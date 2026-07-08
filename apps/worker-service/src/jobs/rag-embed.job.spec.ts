@@ -1,6 +1,5 @@
 // Unit-test the job's run() logic directly rather than through WorkerHost/threads —
-// contentProcessor/vectorStore talk to real parsers and ChromaDB, which we mock here
-// the same way lesson.router.trpc.spec.ts mocks "@self-learning/rag-processing".
+// contentProcessor/vectorStore talk to real parsers and ChromaDB, which mocked here.
 const mockLessonExists = jest.fn();
 const mockDeleteLesson = jest.fn();
 const mockAddDocuments = jest.fn();
@@ -8,6 +7,7 @@ const mockProcessMultiplePDFs = jest.fn();
 const mockProcessArticles = jest.fn();
 const mockProcessVideoTranscripts = jest.fn();
 const mockProcessHtmlContent = jest.fn();
+const mockProcessH5pContent = jest.fn();
 
 jest.mock("@self-learning/rag-processing", () => ({
 	__esModule: true,
@@ -15,7 +15,8 @@ jest.mock("@self-learning/rag-processing", () => ({
 		processMultiplePDFs: (...args: unknown[]) => mockProcessMultiplePDFs(...args),
 		processArticles: (...args: unknown[]) => mockProcessArticles(...args),
 		processVideoTranscripts: (...args: unknown[]) => mockProcessVideoTranscripts(...args),
-		processHtmlContent: (...args: unknown[]) => mockProcessHtmlContent(...args)
+		processHtmlContent: (...args: unknown[]) => mockProcessHtmlContent(...args),
+		processH5pContent: (...args: unknown[]) => mockProcessH5pContent(...args)
 	},
 	vectorStore: {
 		lessonExists: (...args: unknown[]) => mockLessonExists(...args),
@@ -34,6 +35,11 @@ import type { JobContext } from "../lib/core/job-registry";
 
 const testContext: JobContext = { requestedBy: "rag-embed-job-spec" };
 
+type H5pSource = {
+	h5pJson: { data: string; url: string } | null;
+	contentJson: { data: string; url: string } | null;
+};
+
 type Payload = {
 	lessonId: string;
 	lessonTitle: string;
@@ -41,6 +47,7 @@ type Payload = {
 	articleTexts: string[];
 	transcriptTexts: string[];
 	htmlPages: Array<{ data: string; url: string }>;
+	h5pSources: H5pSource[];
 };
 
 const createPayload = (overrides: Partial<Payload> = {}): Payload => ({
@@ -50,6 +57,7 @@ const createPayload = (overrides: Partial<Payload> = {}): Payload => ({
 	articleTexts: [],
 	transcriptTexts: [],
 	htmlPages: [],
+	h5pSources: [],
 	...overrides
 });
 
@@ -63,12 +71,10 @@ describe("ragEmbedJob", () => {
 		mockProcessArticles.mockResolvedValue([]);
 		mockProcessVideoTranscripts.mockResolvedValue([]);
 		mockProcessHtmlContent.mockResolvedValue([]);
+		mockProcessH5pContent.mockResolvedValue([]);
 	});
 
-	// =========================================================================
 	describe("HTML content processing", () => {
-		// =========================================================================
-
 		it("processes htmlPages and folds htmlChunks into the breakdown and total", async () => {
 			// Setup
 			const htmlPages = [{ data: "aGVsbG8=", url: "https://example.com/demo.html" }];
@@ -135,11 +141,91 @@ describe("ragEmbedJob", () => {
 		});
 	});
 
-	// =========================================================================
-	describe("combined breakdown across content types", () => {
-		// =========================================================================
+	describe("H5P content processing", () => {
+		it("processes h5pSources and folds h5pChunks into the breakdown and total", async () => {
+			// Setup
+			const h5pSources: H5pSource[] = [
+				{
+					h5pJson: {
+						data: "eyJ0aXRsZSI6IlF1aXoifQ==",
+						url: "https://example.com/content/xyz/h5p.json"
+					},
+					contentJson: {
+						data: "eyJ0ZXh0IjoiV2FzIGlzdCBkZXIgYmVzdGUgUGl6emEtQmVsYWc/In0=",
+						url: "https://example.com/content/xyz/content/content.json"
+					}
+				}
+			];
+			const fakeH5pChunks = [
+				{
+					id: "h5p1",
+					text: "Was ist der beste Pizza-Belag?",
+					metadata: { sourceType: "h5p" }
+				}
+			];
+			mockProcessH5pContent.mockResolvedValue(fakeH5pChunks);
+			const payload = createPayload({ h5pSources });
 
-		it("sums pdf, article, video, and html chunk counts into chunksCreated", async () => {
+			// Exercise
+			const result = await ragEmbedJob.run(payload, testContext);
+
+			// Verify
+			expect(mockProcessH5pContent).toHaveBeenCalledWith(
+				h5pSources,
+				"lesson-1",
+				"Interactive Demo"
+			);
+			expect(mockAddDocuments).toHaveBeenCalledWith("lesson-1", fakeH5pChunks);
+			expect(result.breakdown.h5pChunks).toBe(1);
+			expect(result.chunksCreated).toBe(1);
+			expect(result.success).toBe(true);
+		});
+
+		it("does not call processH5pContent or addDocuments when h5pSources is empty", async () => {
+			// Setup — at least one other content type so the job doesn't throw for "no chunks"
+			mockProcessArticles.mockResolvedValue([
+				{ id: "a1", text: "article chunk", metadata: { sourceType: "article" } }
+			]);
+			const payload = createPayload({ articleTexts: ["Some article."] });
+
+			// Exercise
+			await ragEmbedJob.run(payload, testContext);
+
+			// Verify
+			expect(mockProcessH5pContent).not.toHaveBeenCalled();
+		});
+
+		it("does not add documents to the vector store when processH5pContent returns no chunks", async () => {
+			// Setup — e.g. a package whose content.json only had blocked-key values
+			mockProcessH5pContent.mockResolvedValue([]);
+			mockProcessArticles.mockResolvedValue([
+				{ id: "a1", text: "article chunk", metadata: { sourceType: "article" } }
+			]);
+			const payload = createPayload({
+				h5pSources: [
+					{
+						h5pJson: null,
+						contentJson: {
+							data: "e30=",
+							url: "https://example.com/content/xyz/content.json"
+						}
+					}
+				],
+				articleTexts: ["Some article."]
+			});
+
+			// Exercise
+			const result = await ragEmbedJob.run(payload, testContext);
+
+			// Verify
+			expect(result.breakdown.h5pChunks).toBe(0);
+			// addDocuments should only be called once, for the article chunks
+			expect(mockAddDocuments).toHaveBeenCalledTimes(1);
+		});
+	});
+
+	describe("combined breakdown across content types", () => {
+		it("sums pdf, article, video, html, and h5p chunk counts into chunksCreated", async () => {
 			// Setup
 			mockProcessMultiplePDFs.mockResolvedValue([
 				{ id: "p1", text: "pdf chunk", metadata: { sourceType: "pdf" } }
@@ -154,11 +240,23 @@ describe("ragEmbedJob", () => {
 			mockProcessHtmlContent.mockResolvedValue([
 				{ id: "h1", text: "html chunk", metadata: { sourceType: "html" } }
 			]);
+			mockProcessH5pContent.mockResolvedValue([
+				{ id: "h5p1", text: "h5p chunk", metadata: { sourceType: "h5p" } }
+			]);
 			const payload = createPayload({
 				pdfBuffers: [{ data: "cGRm", url: "https://example.com/a.pdf" }],
 				articleTexts: ["Article."],
 				transcriptTexts: ["Transcript."],
-				htmlPages: [{ data: "aHRtbA==", url: "https://example.com/a.html" }]
+				htmlPages: [{ data: "aHRtbA==", url: "https://example.com/a.html" }],
+				h5pSources: [
+					{
+						h5pJson: null,
+						contentJson: {
+							data: "e30=",
+							url: "https://example.com/content/xyz/content.json"
+						}
+					}
+				]
 			});
 
 			// Exercise
@@ -169,12 +267,13 @@ describe("ragEmbedJob", () => {
 				pdfChunks: 1,
 				articleChunks: 1,
 				videoChunks: 2,
-				htmlChunks: 1
+				htmlChunks: 1,
+				h5pChunks: 1
 			});
-			expect(result.chunksCreated).toBe(5);
+			expect(result.chunksCreated).toBe(6);
 		});
 
-		it("throws when no chunks were created across any content type, including html", async () => {
+		it("throws when no chunks were created across any content type, including html and h5p", async () => {
 			// Setup — all processors return empty, payload otherwise valid
 			const payload = createPayload();
 
@@ -185,10 +284,7 @@ describe("ragEmbedJob", () => {
 		});
 	});
 
-	// =========================================================================
 	describe("existing lesson cleanup", () => {
-		// =========================================================================
-
 		it("deletes existing embeddings before re-processing when the lesson already exists", async () => {
 			// Setup
 			mockLessonExists.mockResolvedValue(true);
