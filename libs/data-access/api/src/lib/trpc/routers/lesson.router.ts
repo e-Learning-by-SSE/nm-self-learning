@@ -384,16 +384,19 @@ export const lessonRouter = t.router({
 				SELECT 
 					c.*, 
 					COALESCE(
-						json_agg(
-							json_build_object(
-								'accessLevel', p."accessLevel",
-								'groupId', p."groupId"
-							)
-						) FILTER (WHERE p.id IS NOT NULL),
-						'[]'
+					(
+						SELECT json_agg(
+						json_build_object(
+							'accessLevel', p."accessLevel",
+							'groupId', p."groupId"
+						)
+						)
+						FROM "Permission" p
+						WHERE p."courseId" = c."courseId"
+					),
+					'[]'::json
 					) AS permissions
 				FROM "Course" c
-				LEFT JOIN "Permission" p ON c."courseId" = p."courseId"
 				WHERE EXISTS (
 					SELECT 1
 					FROM jsonb_array_elements(c.content) AS chapter
