@@ -28,4 +28,4 @@ export * from "./lib/group/misc/delete-option";
 export * from "./lib/group/misc/leave-option";
 export * from "./lib/group/misc/group-membership-chip";
 export * from "./lib/resource/resource-delete-dialog";
-export const I18N_NAMESPACE = Array.from(new Set(["common", "feature-teaching", ...NS_AI_TUTOR]));
+export const I18N_NAMESPACE = Array.from(new Set(["common", "feature-teaching", "pages-dashboard", ...NS_AI_TUTOR]));

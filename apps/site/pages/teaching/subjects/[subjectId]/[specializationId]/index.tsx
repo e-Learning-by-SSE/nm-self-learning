@@ -224,15 +224,14 @@ export default function SpecializationManagementPage() {
 									<TableDataColumn>
 										{canEdit && (
 											<div className="flex justify-end">
-												<Link
-													href={`/teaching/courses/edit/${course.courseId}`}
-												>
-													<IconOnlyButton
-														icon={<PencilIcon className="h-5 w-5" />}
-														className="btn-stroked"
-														title={"Kurs bearbeiten"}
-													/>
-												</Link>
+									<IconOnlyButton
+											icon={<PencilIcon className="h-5 w-5" />}
+											className="btn-stroked"
+											title={"Kurs bearbeiten"}
+											onClick={() =>
+												router.push(`/teaching/courses/edit/${course.courseId}`)
+											}
+										/>
 												<IconOnlyButton
 													icon={<LinkSlashIcon className="h-5 w-5" />}
 													title={t("Remove_From_Specialization")}

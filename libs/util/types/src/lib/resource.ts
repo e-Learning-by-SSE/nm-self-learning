@@ -286,5 +286,7 @@ export function toResourceInput(entry: Pick<ResourceSearchEntry, "kind" | "id">)
 			return { specializationId: entry.id };
 		case "subject":
 			return { subjectId: entry.id };
+		default:
+			throw new Error(`Unsupported resource kind: ${entry.kind}`);
 	}
 }
