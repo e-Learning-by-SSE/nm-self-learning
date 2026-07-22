@@ -116,11 +116,7 @@ function useDeletionBlockers(step: DeleteFlowStep) {
 	const isLoading =
 		(resource.kind === "course" && courseQuery.isLoading) ||
 		(resource.kind === "lesson" && lessonQuery.isLoading);
-	const refetch = async () => {
-		if (resource.kind === "course") await courseQuery.refetch();
-		if (resource.kind === "lesson") await lessonQuery.refetch();
-	};
-	return { blockers, isLoading, refetch, isError };
+	return { blockers, isLoading, isError };
 }
 
 /**
@@ -183,14 +179,31 @@ export function ResourceDeleteStackDialog({
 	resource: ResourceDeleteEntry;
 	onExit: () => void;
 }) {
+	const utils = trpc.useUtils();
+
 	// action stack
 	const [steps, setSteps] = useState<DeleteFlowStep[]>([{ action: "delete", resource }]);
 	const step = steps[steps.length - 1];
 	const goBack = () => (steps.length > 1 ? setSteps(s => s.slice(0, -1)) : onExit());
 	const push = (step: DeleteFlowStep) => setSteps(prev => [...prev, step]);
+	const invalidate = async () => {
+		// invalidate previous step to refresh the list of dependencies
+		const previousStep = steps[steps.length - 2];
+		if (!previousStep) return;
+		if (previousStep.resource.kind === "course") {
+			await utils.course.findLinkedEntities.invalidate({
+				courseId: previousStep.resource.id
+			});
+		}
+		if (previousStep.resource.kind === "lesson") {
+			await utils.lesson.findLinkedLessonEntities.invalidate({
+				lessonId: previousStep.resource.id
+			});
+		}
+	};
 
 	const { t } = useTranslation("pages-dashboard");
-	const { blockers, isLoading, isError, refetch } = useDeletionBlockers(step);
+	const { blockers, isLoading, isError } = useDeletionBlockers(step);
 	const { execute, isBusy } = useDeletionActions(step);
 
 	const labels = actionLabels(step);
@@ -198,13 +211,13 @@ export function ResourceDeleteStackDialog({
 	const doAction = async () => {
 		try {
 			await execute();
+			await invalidate();
 			showToast({
 				type: "success",
 				title: t(labels.successKey),
 				subtitle: ""
 			});
 			goBack();
-			await refetch(); // item was removed from dependencies - request update
 		} catch (error) {
 			showToast({
 				type: "error",
@@ -329,8 +342,11 @@ function DeletionBlockersTable({
 		isDeleteAvailable(blocker) &&
 		testResourceGuard(user, AccessLevel.FULL, blocker.permissions);
 
-	// TODO unlink rules are inconsistent!
-	const canUnlink = (blocker: ResourceDeleteEntry) => isUnlinkAvailable(resource, blocker);
+	// TODO unlink rules are inconsistent! (check at least edit access for blocker)
+	const canUnlink = (blocker: ResourceDeleteEntry) =>
+		user &&
+		isUnlinkAvailable(resource, blocker) &&
+		testResourceGuard(user, AccessLevel.EDIT, blocker.permissions);
 
 	return (
 		<Table
