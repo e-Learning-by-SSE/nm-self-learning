@@ -17,7 +17,8 @@ import {
 	showToast,
 	Table,
 	TableDataColumn,
-	TableHeaderColumn
+	TableHeaderColumn,
+	Trans
 } from "@self-learning/ui/common";
 import { useMemo, useState } from "react";
 import { useTranslation } from "next-i18next";
@@ -27,20 +28,26 @@ import { ResourceGuard, testResourceGuard, useRequiredSession } from "@self-lear
 type Permissions = { permissions?: ResourcePermissions };
 export type ResourceDeleteEntry = ResourceSearchEntry & Permissions;
 
+const DEFAULT_DIALOG_STYLE_SIZE = {
+	minWidth: 420,
+	maxHeight: "80vh",
+	maxWidth: "32rem"
+};
+
 /**
  * Defines whether delete is available for a certain resource.
- * If you change it, change also @see useDeletionBlockers
+ * If you change it, change also @see useDeletionBlockers and @see useDeletionActions (and translation keys!)
  * @param resource
  * @returns
  */
 function isDeleteAvailable(
 	resource: ResourceDeleteEntry
-): resource is ResourceDeleteEntry & { kind: "course" | "lesson" } {
+): resource is ResourceDeleteEntry & { kind: "course" | "lesson" | "specialization" } {
 	return resource.kind === "course" || resource.kind === "lesson";
 }
 /**
  * Defines whether delete is available for a pair of resources.
- * If you change it, change also @see useDeletionBlockers
+ * If you change it, change also @see useDeletionBlockers and @see useDeletionActions (and translation keys!)
  * @param resource - what user wants to delete
  * @param blocker - what user wants to unlink from the resource
  * @returns
@@ -48,7 +55,8 @@ function isDeleteAvailable(
 function isUnlinkAvailable(resource: ResourceDeleteEntry, blocker: ResourceDeleteEntry): boolean {
 	return (
 		(resource.kind === "lesson" && blocker.kind === "course") ||
-		(resource.kind === "course" && blocker.kind === "specialization" && !!blocker.parentId)
+		(resource.kind === "course" && blocker.kind === "specialization" && !!blocker.parentId) ||
+		(resource.kind === "course" && blocker.kind === "subject")
 	);
 }
 
@@ -88,6 +96,7 @@ function toSubjectEntry(subject: Subject & Permissions): ResourceDeleteEntry {
 
 function useDeletionBlockers(step: DeleteFlowStep) {
 	const { resource, action } = step;
+	// do not forget to invalidate blockers in @see invalidate()
 	const courseQuery = trpc.course.findLinkedEntities.useQuery(
 		{ courseId: resource.id },
 		{ enabled: resource.kind === "course" && action === "delete" }
@@ -126,36 +135,62 @@ function useDeletionBlockers(step: DeleteFlowStep) {
  * @returns
  */
 function useDeletionActions(step: DeleteFlowStep) {
+	// Add required mutations here
 	const { mutateAsync: deleteCourse, isPending: deletingCourse } =
 		trpc.course.deleteCourse.useMutation();
 	const { mutateAsync: deleteLesson, isPending: deletingLesson } =
 		trpc.lesson.deleteLesson.useMutation();
-	const { mutateAsync: removeLesson, isPending: unlinkingLesson } =
+	const { mutateAsync: unlinkLesson, isPending: unlinkingLesson } =
 		trpc.course.removeLesson.useMutation();
-	const { mutateAsync: removeCourse, isPending: unlinkingCourse } =
+	const { mutateAsync: unlinkSpecializationCourse, isPending: unlinkingSpecializationCourse } =
 		trpc.specialization.removeCourse.useMutation();
+	const { mutateAsync: unlinkSubjectCourse, isPending: unlinkingSubjectCourse } =
+		trpc.subject.removeCourse.useMutation();
+	const { mutateAsync: deleteSpecialization, isPending: deletingSpecialization } =
+		trpc.specialization.deleteSpecialization.useMutation();
+	const { mutateAsync: deleteSubject, isPending: deletingSubject } =
+		trpc.subject.deleteSubject.useMutation();
 	return {
+		// add required pending status here
 		isBusy:
 			step.action === "delete"
-				? deletingCourse || deletingLesson
-				: unlinkingLesson || unlinkingCourse,
+				? deletingCourse || deletingLesson || deletingSpecialization || deletingSubject
+				: unlinkingLesson || unlinkingSpecializationCourse || unlinkingSubjectCourse,
 		execute: async () => {
+			// call mutation here
 			if (step.action === "delete") {
 				const { resource } = step;
-				if (!isDeleteAvailable(resource)) throw new Error("invalid delete");
-				if (resource.kind === "course") await deleteCourse({ slug: resource.slug });
-				else await deleteLesson({ lessonId: resource.id });
+				if (!isDeleteAvailable(resource)) throw new Error(`cannot delete ${resource.kind}`);
+				if (resource.kind === "course") {
+					await deleteCourse({ slug: resource.slug });
+				} else if (resource.kind === "lesson") {
+					await deleteLesson({ lessonId: resource.id });
+				} else if (resource.kind === "specialization") {
+					await deleteSpecialization({ specializationId: resource.id });
+				} else if (resource.kind === "subject") {
+					await deleteSubject({ subjectId: resource.id });
+				} else {
+					throw new Error(`cannot delete ${resource.kind}`);
+				}
 			} else if (step.action === "unlink") {
 				const { resource, blocker } = step;
-				if (!isUnlinkAvailable(resource, blocker)) throw new Error("invalid unlink");
+				if (!isUnlinkAvailable(resource, blocker))
+					throw new Error(`cannot unlink ${resource.kind}`);
 				if (resource.kind === "lesson") {
-					await removeLesson({ courseId: blocker.id, lessonId: resource.id });
-				} else {
-					await removeCourse({
+					await unlinkLesson({ courseId: blocker.id, lessonId: resource.id });
+				} else if (resource.kind === "course" && blocker.kind === "specialization") {
+					await unlinkSpecializationCourse({
 						subjectId: blocker.parentId as string, // guaranteed by canUnlink
 						specializationId: blocker.id,
 						courseId: resource.id
 					});
+				} else if (resource.kind === "course" && blocker.kind === "subject") {
+					await unlinkSubjectCourse({
+						subjectId: blocker.id,
+						courseId: resource.id
+					});
+				} else {
+					throw new Error(`cannot unlink ${resource.kind}`);
 				}
 			}
 		}
@@ -248,7 +283,14 @@ export function ResourceDeleteStackDialog({
 	if (blockers.length > 0) {
 		return (
 			<Dialog title={t("Delete_Not_Possible")} onClose={goBack}>
-				<p className="mb-2">{t(blockedMessageKey(step.resource.kind))}</p>
+				<p className="mb-2">
+					<Trans
+						namespace="pages-dashboard"
+						i18nKey={t(blockedMessageKey(step.resource.kind))}
+						values={{ name: step.resource.title }}
+						components={{ strong: <strong className="font-semibold" /> }}
+					/>
+				</p>
 				<p className="mb-4">{t("Used_In_Resources")}</p>
 				<DeletionBlockersTable
 					blockers={blockers}
@@ -267,8 +309,15 @@ export function ResourceDeleteStackDialog({
 		step.action === "unlink" ? "btn-primary" : "btn-primary hover:bg-c-danger";
 
 	return (
-		<Dialog title={t(labels.titleKey)} onClose={goBack}>
-			<p>{t(labels.messageKey)}</p>
+		<Dialog title={t(labels.titleKey)} onClose={goBack} style={DEFAULT_DIALOG_STYLE_SIZE}>
+			<span>
+				<Trans
+					namespace="pages-dashboard"
+					i18nKey={labels.messageKey}
+					values={labels.trData}
+					components={{ strong: <strong className="font-semibold" /> }}
+				/>
+			</span>
 			<DialogActions onClose={goBack}>
 				<button
 					type="button"
@@ -397,6 +446,10 @@ function blockedMessageKey(kind: ResourceKind): string {
 			return "Course_Cannot_Be_Deleted";
 		case "lesson":
 			return "Lesson_Cannot_Be_Deleted";
+		case "specialization":
+			return "Specialization_Cannot_Be_Deleted";
+		case "subject":
+			return "Subject_Cannot_Be_Deleted";
 		default:
 			return "Course_Cannot_Be_Deleted";
 	}
@@ -407,6 +460,10 @@ function confirmDeleteKey(kind: ResourceKind): string {
 			return "Confirm_Delete_Course";
 		case "lesson":
 			return "Confirm_Delete_Lesson";
+		case "specialization":
+			return "Confirm_Delete_Specialization";
+		case "subject":
+			return "Confirm_Delete_Subject";
 		default:
 			return "Confirm_Delete_Course";
 	}
@@ -423,6 +480,7 @@ function actionLabels(step: DeleteFlowStep) {
 		return {
 			titleKey: "Unlink",
 			messageKey: confirmUnlinkKey(step.resource, step.blocker),
+			trData: { name: step.resource.title, blocker: step.blocker.title },
 			buttonKey: "Unlink",
 			successKey: "Unlink_Success",
 			errorKey: "Unlink_Error"
@@ -431,6 +489,7 @@ function actionLabels(step: DeleteFlowStep) {
 	return {
 		titleKey: "Delete",
 		messageKey: confirmDeleteKey(step.resource.kind),
+		trData: { name: step.resource.title },
 		buttonKey: "Delete",
 		successKey: "Delete_Success",
 		errorKey: "Delete_Error"
