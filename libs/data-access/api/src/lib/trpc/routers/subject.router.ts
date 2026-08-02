@@ -3,9 +3,37 @@ import { resourcePermissionSelect, subjectSchema } from "@self-learning/types";
 import { z } from "zod";
 import { adminProcedure, authProcedure, t } from "../trpc";
 import {
+	canDelete,
+	hasResourceAccess,
 	preparePermissionsForCreate,
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
+import { TRPCError } from "@trpc/server";
+import { UserFromSession } from "../context";
+import { AccessLevel } from "@prisma/client";
+
+const attachmentSchema = z.object({
+	subjectId: z.string(),
+	courseId: z.string()
+});
+type AttachmentType = z.infer<typeof attachmentSchema>;
+
+async function canAttachCourse(user: UserFromSession, input: AttachmentType) {
+	// Is website ADMIN or ( full(course) ^ edit(subject) )
+	if (user.role === "ADMIN") {
+		return true;
+	}
+	const { courseId, subjectId } = input;
+	const hasCourseAccess = await hasResourceAccess(user.id, {
+		accessLevel: AccessLevel.FULL,
+		courseId
+	});
+	const hasSbAccess = await hasResourceAccess(user.id, {
+		accessLevel: AccessLevel.EDIT,
+		subjectId
+	});
+	return hasCourseAccess && hasSbAccess;
+}
 
 export const subjectRouter = t.router({
 	getAllWithSpecializations: t.procedure.query(() => {
@@ -101,5 +129,52 @@ export const subjectRouter = t.router({
 				permissions
 			}
 		});
+	}),
+	deleteSubject: authProcedure
+		.input(z.object({ subjectId: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			const resource = { subjectId: input.subjectId };
+
+			if (!(await canDelete(ctx.user, resource))) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Insufficient permissions."
+				});
+			}
+
+			return database.subject.delete({
+				where: resource,
+				select: {
+					subjectId: true,
+					title: true,
+					slug: true
+				}
+			});
+		}),
+	// TODO should it go into subject router and why?
+	removeCourse: authProcedure.input(attachmentSchema).mutation(async ({ input, ctx }) => {
+		if (!(await canAttachCourse(ctx.user, input))) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: "Insufficient permissions."
+			});
+		}
+
+		const added = database.course.update({
+			where: { courseId: input.courseId },
+			data: { subjectId: null },
+			select: {
+				courseId: true,
+				subjectId: true,
+				title: true,
+				slug: true
+			}
+		});
+
+		console.log("[subjectRouter.removeCourse]: Course removed from subject by", ctx.user.name, {
+			subjectId: input.subjectId,
+			courseId: input.courseId
+		});
+		return added;
 	})
 });
