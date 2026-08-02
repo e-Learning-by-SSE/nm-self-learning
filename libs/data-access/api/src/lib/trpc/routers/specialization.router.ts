@@ -3,6 +3,7 @@ import { resourcePermissionSelect, specializationSchema } from "@self-learning/t
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 import {
+	canDelete,
 	canEdit,
 	hasResourceAccess,
 	preparePermissionsForCreate,
@@ -134,6 +135,27 @@ export const specializationRouter = t.router({
 			});
 
 			return specialization;
+		}),
+	deleteSpecialization: authProcedure
+		.input(z.object({ specializationId: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			const resource = { specializationId: input.specializationId };
+
+			if (!(await canDelete(ctx.user, resource))) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Insufficient permissions."
+				});
+			}
+
+			return database.specialization.delete({
+				where: resource,
+				select: {
+					specializationId: true,
+					title: true,
+					slug: true
+				}
+			});
 		}),
 	addCourse: authProcedure.input(attachmentSchema).mutation(async ({ input, ctx }) => {
 		if (!(await canAttachCourse(ctx.user, input))) {
