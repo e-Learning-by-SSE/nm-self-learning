@@ -157,6 +157,28 @@ export const specializationRouter = t.router({
 				}
 			});
 		}),
+	findLinkedEntities: authProcedure
+		.input(z.object({ specializationId: z.string() }))
+		.query(async ({ input, ctx }) => {
+			if (!(await canEdit(ctx.user, input))) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
+			return await database.specialization.findUnique({
+				where: input,
+				include: {
+					courses: {
+						include: {
+							permissions: {
+								select: {
+									accessLevel: true,
+									groupId: true
+								}
+							}
+						}
+					}
+				}
+			});
+		}),
 	addCourse: authProcedure.input(attachmentSchema).mutation(async ({ input, ctx }) => {
 		if (!(await canAttachCourse(ctx.user, input))) {
 			throw new TRPCError({

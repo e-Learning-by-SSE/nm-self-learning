@@ -42,7 +42,7 @@ const DEFAULT_DIALOG_STYLE_SIZE = {
  */
 function isDeleteAvailable(
 	resource: ResourceDeleteEntry
-): resource is ResourceDeleteEntry & { kind: "course" | "lesson" | "specialization" } {
+): resource is ResourceDeleteEntry & { kind: "course" | "lesson" } {
 	return resource.kind === "course" || resource.kind === "lesson";
 }
 /**
@@ -160,7 +160,7 @@ function useDeletionActions(step: DeleteFlowStep) {
 			// call mutation here
 			if (step.action === "delete") {
 				const { resource } = step;
-				if (!isDeleteAvailable(resource)) throw new Error(`cannot delete ${resource.kind}`);
+				if (!isDeleteAvailable(resource)) throw new Error("cannot delete");
 				if (resource.kind === "course") {
 					await deleteCourse({ slug: resource.slug });
 				} else if (resource.kind === "lesson") {
