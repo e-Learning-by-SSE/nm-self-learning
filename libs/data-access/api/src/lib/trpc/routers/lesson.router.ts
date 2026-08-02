@@ -36,6 +36,42 @@ const saveSubtitleInputSchema = z.object({
 	transcription: subtitleSrcSchema
 });
 
+export function buildLinkedLessonQuery(lessonId: string) {
+	const safeLessonId = lessonId.replace(/'/g, "''");
+
+	return `
+		SELECT
+			c.*, 
+			COALESCE(
+				(
+					SELECT json_agg(
+						json_build_object(
+							'accessLevel', p."accessLevel",
+							'groupId', p."groupId"
+						)
+					)
+					FROM "Permission" p
+					WHERE p."courseId" = c."courseId"
+				),
+				'[]'::json
+			) AS permissions
+		FROM "Course" c
+		WHERE jsonb_typeof(c."content") = 'array'
+		  AND EXISTS (
+			SELECT 1
+			FROM jsonb_array_elements(c."content") AS chapter
+			WHERE jsonb_typeof(chapter) = 'object'
+			  AND jsonb_typeof(chapter->'content') = 'array'
+			  AND EXISTS (
+				SELECT 1
+				FROM jsonb_array_elements(chapter->'content') AS lesson
+				WHERE jsonb_typeof(lesson) = 'object'
+				  AND lesson->>'lessonId' = '${safeLessonId}'
+			  )
+		  );
+	`;
+}
+
 /**
  * RAG Embedding Flow (triggered on lesson create/edit when ragEnabled=true, {by default, RAG is enabled}):
  *
@@ -380,30 +416,7 @@ export const lessonRouter = t.router({
 			if (!(await canEdit(ctx.user, input))) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 			}
-			const courses = await database.$queryRaw`
-				SELECT 
-					c.*, 
-					COALESCE(
-					(
-						SELECT json_agg(
-						json_build_object(
-							'accessLevel', p."accessLevel",
-							'groupId', p."groupId"
-						)
-						)
-						FROM "Permission" p
-						WHERE p."courseId" = c."courseId"
-					),
-					'[]'::json
-					) AS permissions
-				FROM "Course" c
-				WHERE EXISTS (
-					SELECT 1
-					FROM jsonb_array_elements(c.content) AS chapter
-					CROSS JOIN jsonb_array_elements(chapter->'content') AS lesson
-					WHERE lesson->>'lessonId' = ${input.lessonId}
-				);
-			`;
+			const courses = await database.$queryRawUnsafe(buildLinkedLessonQuery(input.lessonId));
 			return courses as (Course & { permissions: ResourcePermissions })[];
 		}),
 	deleteLesson: authProcedure
