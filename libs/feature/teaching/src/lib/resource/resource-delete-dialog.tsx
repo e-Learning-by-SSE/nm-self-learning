@@ -305,8 +305,7 @@ export function ResourceDeleteStackDialog({
 		);
 	}
 
-	const confirmButtonClass =
-		step.action === "unlink" ? "btn-primary" : "btn-primary hover:bg-c-danger";
+	const confirmButtonClass = step.action === "unlink" ? "btn-primary" : "btn-danger";
 
 	return (
 		<Dialog title={t(labels.titleKey)} onClose={goBack} style={DEFAULT_DIALOG_STYLE_SIZE}>
