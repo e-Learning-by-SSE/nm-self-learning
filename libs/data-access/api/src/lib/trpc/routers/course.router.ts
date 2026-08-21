@@ -474,6 +474,54 @@ export const courseRouter = t.router({
 
 			return generatedCourse;
 		}),
+	getSkillContext: authProcedure
+		.input(
+			z.object({
+				courseId: z.string()
+			})
+		)
+		.query(async ({ input }) => {
+			const course = await database.course.findUnique({
+				where: input,
+				select: {
+					courseId: true,
+					content: true,
+					requires: { select: { id: true } },
+					provides: { select: { id: true } }
+				}
+			});
+			if (!course) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: `Course not found for id: ${input.courseId}`
+				});
+			}
+
+			const lessonIds = extractLessonIds(normalizeContent(course.content));
+			const lessons = lessonIds.length
+				? await database.lesson.findMany({
+						where: { lessonId: { in: lessonIds } },
+						select: {
+							lessonId: true,
+							requires: { select: { id: true } },
+							provides: { select: { id: true } }
+						}
+					})
+				: [];
+
+			const flattenSkillId = (skill: { id: string }) => skill.id;
+
+			return {
+				courseId: course.courseId,
+				requires: course.requires.map(flattenSkillId),
+				provides: course.provides.map(flattenSkillId),
+				lessons: lessons.map(lesson => ({
+					lessonId: lesson.lessonId,
+					requires: lesson.requires.map(flattenSkillId),
+					provides: lesson.provides.map(flattenSkillId)
+				}))
+			};
+		}),
 	fullExport: t.procedure.input(z.object({ slug: z.string() })).query(async ({ input, ctx }) => {
 		const fullExport = await getFullCourseExport(input.slug);
 
