@@ -14,6 +14,7 @@ import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "../
 import { isTruthy } from "@self-learning/util/common";
 import { Draggable, DraggableStateSnapshot, DraggableStyle, Droppable } from "@hello-pangea/dnd";
 
+// TODO WTF is this duplicated shit, @see ListSkillEntryWithChildren
 export function ListSkillEntryWithChildren({
 	skillResolver,
 	skillDisplayData,
@@ -102,6 +103,8 @@ export function ListSkillEntryWithChildren({
 	);
 }
 
+// TODO separator must be invalid symbol for ids, otherwise it overlaps
+// TODO this contract must be declared in one place or use separator as constant
 const generateNodeId = (parentsId: string, skillId: string) => {
 	return parentsId.length > 0 ? parentsId + ":::" + skillId : skillId;
 };
@@ -198,10 +201,7 @@ function SkillRow({
 					skill.shortHighlight ? "animate-highlight rounded-md" : ""
 				} text-sm font-medium`}
 			>
-				<Droppable
-					droppableId={nodeId}
-					direction="vertical"
-				>
+				<Droppable droppableId={nodeId} direction="vertical">
 					{provided => (
 						<div ref={provided.innerRef} {...provided.droppableProps}>
 							<Draggable

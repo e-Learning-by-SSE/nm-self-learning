@@ -310,7 +310,7 @@ export const lessonRouter = t.router({
 				}
 			},
 			data: {
-				courseVersion: Date.now().toString()
+				version: Date.now().toString()
 			}
 		});
 

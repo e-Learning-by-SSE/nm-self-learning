@@ -18,6 +18,7 @@ import { Draggable, DraggableStateSnapshot, DraggableStyle, Droppable } from "@h
 import { useSafeModuleViewContext } from "@self-learning/teaching";
 import { useFormContext } from "react-hook-form";
 
+// TODO WTF is this duplicated shit, @see ListSkillEntryWithChildren
 export function ListSkillEntryWithChildren({
 	skillResolver,
 	skillDisplayData,
@@ -106,6 +107,8 @@ export function ListSkillEntryWithChildren({
 	);
 }
 
+// TODO separator must be invalid symbol for ids, otherwise it overlaps
+// TODO this contract must be declared in one place or use separator as constant
 const generateNodeId = (parentsId: string, skillId: string) => {
 	return parentsId.length > 0 ? parentsId + ":::" + skillId : skillId;
 };
@@ -178,6 +181,7 @@ function SkillRow({
 		}[];
 	};
 
+	// basically accumulates requires/provides across all lessons of a course
 	// TODO: make one function out of these
 	const isRequiredSkill = (skillId: string): boolean => {
 		const skill = allSkills.get(skillId);
@@ -354,6 +358,7 @@ function SkillRow({
 									</div>
 								)}
 							</Draggable>
+							{provided.placeholder}
 						</div>
 					)}
 				</Droppable>

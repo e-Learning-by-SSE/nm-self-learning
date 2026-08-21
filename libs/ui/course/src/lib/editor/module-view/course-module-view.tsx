@@ -13,7 +13,7 @@ import { trpc } from "@self-learning/api-client";
 import { DragDropContext } from "@hello-pangea/dnd";
 import { ModuleDependency } from "./module-dependency";
 import { SkillSelectHandler } from "libs/feature/teaching/src/lib/skills/folder-editor/skill-display";
-import { SidebarEditorLayout } from "@self-learning/ui/layouts";
+import { SidebarEditorLayout, useRequiredSession } from "@self-learning/ui/layouts";
 import { ModuleViewProvider } from "@self-learning/teaching";
 
 export function CourseModuleView({
@@ -57,10 +57,22 @@ export function CourseModuleView({
 		allSkills.set(skill.id, skill);
 	});
 
+	const session = useRequiredSession();
+	const memberships = session.data?.user.memberships;
+	const group = memberships[0] ?? 1;
+
 	const form = useForm<LessonFormModel>({
 		context: undefined,
 		defaultValues: initialLesson ?? {
-			...createEmptyLesson()
+			...createEmptyLesson(),
+			permissions: [
+				// TODO test
+				{
+					accessLevel: "FULL",
+					groupId: group,
+					groupName: "Does not matter"
+				}
+			]
 		},
 		resolver: zodResolver(lessonSchema)
 	});
@@ -158,6 +170,8 @@ export function CourseModuleView({
 	const onSubmit = form.handleSubmit(async (lesson: LessonFormModel) => {
 		const isEdit = Boolean(lesson.lessonId);
 
+		console.log("Submitting lesson:", lesson, "isEdit:", isEdit);
+
 		const { lessonId, title } = isEdit
 			? await edit({ lessonId: lesson.lessonId!, lesson })
 			: await create(lesson);
@@ -172,7 +186,7 @@ export function CourseModuleView({
 		setSelectedModuleId(null);
 		setSelectedIndex(0);
 		form.reset(createEmptyLesson());
-	});
+	}, console.error);
 
 	const onRemoveLesson = async (lesson: LessonFormModel) => {
 		const confirmed = window.confirm(
@@ -192,7 +206,8 @@ export function CourseModuleView({
 		if (!result.destination) return;
 		if (["provides", "requires"].includes(result.destination.droppableId)) {
 			//Filter out the skill ID from the draggableId because only the number after the last colon is the skill ID
-			const skillId = result.draggableId.split(":").pop() ?? "";
+			// TODO ::: is used as separator - contract must be declared in one place or use separator as constant
+			const skillId = result.draggableId.split(":::").pop() ?? "";
 			const skill = allSkills.get(skillId);
 			if (
 				form.getValues("provides")?.some(s => s.id === skillId) ||
@@ -261,7 +276,13 @@ export function CourseModuleView({
 								className="flex flex-col h-full justify-between"
 							>
 								<div className="flex justify-end mb-8">
-									<button className="btn btn-primary" type="submit">
+									<button
+										className="btn btn-primary"
+										type="submit"
+										onClick={() => {
+											console.log("test");
+										}}
+									>
 										{selectedModuleId
 											? "Nanomodul aktualisieren"
 											: "Nanomodul speichern"}

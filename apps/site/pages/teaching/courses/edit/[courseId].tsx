@@ -36,7 +36,6 @@ export const getServerSideProps = withTranslations(
 		const course = await database.course.findUnique({
 			where: { courseId },
 			include: {
-				type: true,
 				authors: {
 					select: {
 						username: true

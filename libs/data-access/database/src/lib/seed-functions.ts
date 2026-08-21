@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import {
 	AccessLevel,
+	CourseType,
 	GroupRole,
 	LessonType,
 	NotificationChannel,
@@ -69,7 +70,8 @@ export function createLesson({
 	licenseId,
 	lessonType,
 	selfRegulatedQuestion,
-	provides
+	provides,
+	courseId
 }: {
 	title: string;
 	subtitle: string | null;
@@ -80,6 +82,7 @@ export function createLesson({
 	lessonType?: LessonType;
 	selfRegulatedQuestion?: string;
 	provides?: string[];
+	courseId?: string;
 }) {
 	const lesson: Prisma.LessonCreateInput = {
 		title,
@@ -169,6 +172,8 @@ export function createCourse({
 }): Course {
 	const course = {
 		courseId,
+		type: CourseType.STATIC,
+		version: "1.0.0",
 		title: title,
 		slug: slugify(title, { lower: true, strict: true }),
 		subtitle: subtitle ?? "",

@@ -1,6 +1,6 @@
 "use client";
 import { SidebarEditorLayout, useRequiredSession } from "@self-learning/ui/layouts";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { DialogHandler, LoadingBox } from "@self-learning/ui/common";
 import { SkillFormModel } from "@self-learning/types";
 import { SelectedSkillsInfoForm } from "./skill-edit-form";
@@ -149,10 +149,11 @@ export function useTableSkillDisplay(skills: Map<string, SkillFormModel>) {
 		[skills]
 	);
 
-	useMemo(() => {
+	useEffect(() => {
 		const checkNewItemBuffer = (skillId: string) =>
 			displayBuffer?.filter(s => s.id === skillId)?.[0];
 		const displayData = new Map<string, SkillFolderVisualization>();
+
 		setSkillDisplayData(prev => {
 			skills.forEach(skill => {
 				const existingDisplayData = prev.get(skill.id) ?? checkNewItemBuffer(skill.id);

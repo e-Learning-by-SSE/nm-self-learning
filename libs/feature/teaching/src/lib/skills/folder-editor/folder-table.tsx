@@ -230,6 +230,8 @@ export function SkillFolderTable({
 	);
 }
 
+// TODO separator must be invalid symbol for ids, otherwise it overlaps
+// TODO this contract must be declared in one place or use separator as constant
 function DecodeNodeId(nodeId: string, nodeType: string): string | undefined {
 	const nodeIds: string[] = nodeId.split(":::");
 	if (nodeType === "Node") {

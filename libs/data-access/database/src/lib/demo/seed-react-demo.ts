@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { AccessLevel, GroupRole, Prisma, PrismaClient } from "@prisma/client";
+import { AccessLevel, CourseType, GroupRole, Prisma, PrismaClient } from "@prisma/client";
 import { QuizContent } from "@self-learning/question-types";
 import {
 	createCourseContent,
@@ -366,6 +366,8 @@ export const reactCourses: Prisma.CourseCreateManyInput[] = [
 		courseId,
 		title: "The Beginner's Guide to React",
 		slug: "the-beginners-guide-to-react",
+		type: CourseType.STATIC,
+		version: "1.0.0",
 		subtitle: faker.lorem.paragraph(2),
 		description: faker.lorem.paragraphs(3),
 		imgUrl: "https://images.unsplash.com/photo-1579403124614-197f69d8187b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1064&q=80",
