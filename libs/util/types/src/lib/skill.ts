@@ -16,6 +16,12 @@ export const skillFormSchema = skillCreationFormSchema.extend({
 
 export type SkillFormModel = z.infer<typeof skillFormSchema>;
 
+export const ResourceSkillsFormSchema = z.object({
+	provides: z.array(skillFormSchema),
+	requires: z.array(skillFormSchema)
+});
+export type ResourceSkillsFormType = z.infer<typeof ResourceSkillsFormSchema>;
+
 export const skillRepositoryCreationSchema = z.object({
 	ownerName: z.string(),
 	name: z.string(),

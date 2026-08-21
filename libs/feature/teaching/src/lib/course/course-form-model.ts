@@ -3,29 +3,29 @@ import {
 	authorsRelationSchema,
 	courseContentSchema,
 	createCourseMeta,
-	skillFormSchema,
-	ResourcePermissionsFormSchema
+	ResourcePermissionsFormSchema,
+	ResourceSkillsFormSchema
 } from "@self-learning/types";
 import { stringOrNull } from "@self-learning/util/common";
 import { z } from "zod";
 
-export const courseFormSchema = z.object({
-	type: z.enum(CourseType),
-	courseId: z.string().nullable(),
-	subjectId: z.string().nullable(),
-	slug: z.string().min(3),
-	title: z.string().min(3),
-	subtitle: z.string().min(3),
-	description: z.string().nullable(),
-	imgUrl: z.string().nullable(),
-	version: z.string().nullable(),
-	authors: authorsRelationSchema,
-	content: courseContentSchema,
-	specializationId: z.string().nullable().optional(),
-	provides: z.array(skillFormSchema).nullable().optional(),
-	requires: z.array(skillFormSchema).nullable().optional(),
-	permissions: ResourcePermissionsFormSchema
-});
+export const courseFormSchema = z
+	.object({
+		type: z.enum(CourseType),
+		courseId: z.string().nullable(),
+		subjectId: z.string().nullable(),
+		slug: z.string().min(3),
+		title: z.string().min(3),
+		subtitle: z.string().min(3),
+		description: z.string().nullable(),
+		imgUrl: z.string().nullable(),
+		version: z.string().nullable(),
+		authors: authorsRelationSchema,
+		content: courseContentSchema,
+		specializationId: z.string().nullable().optional(),
+		permissions: ResourcePermissionsFormSchema
+	})
+	.extend(ResourceSkillsFormSchema.shape);
 
 export type CourseFormModel = z.infer<typeof courseFormSchema>;
 
