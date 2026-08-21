@@ -6,6 +6,7 @@ import { Unauthorized, useCanCreate, useRequiredSession } from "@self-learning/u
 import { withAuth } from "@self-learning/util/auth";
 import { useRouter } from "next/router";
 import { withTranslations } from "@self-learning/api";
+import { CourseType } from "@prisma/client";
 
 export default function CreateCoursePage() {
 	const { mutateAsync: createCourse } = trpc.course.create.useMutation();
@@ -68,7 +69,11 @@ export default function CreateCoursePage() {
 						imgUrl: "",
 						subjectId: null,
 						content: [],
-						authors: author ? [{ username: author }] : []
+						authors: author ? [{ username: author }] : [],
+						requires: [],
+						provides: [],
+						type: CourseType.STATIC,
+						version: ""
 					}}
 				/>
 			)}

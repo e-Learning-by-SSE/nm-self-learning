@@ -1,8 +1,4 @@
-import {
-	DynCourseFormModel,
-	dynCourseFormSchema,
-	DynCourseSkillManager
-} from "@self-learning/teaching";
+import { CourseFormModel, courseFormSchema, DynCourseSkillManager } from "@self-learning/teaching";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
 import { useEffect } from "react";
 import {
@@ -18,16 +14,17 @@ import { GreyBoarderButton, ImageOrPlaceholder, showToast } from "@self-learning
 import { trpc } from "@self-learning/api-client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRequiredSession } from "@self-learning/ui/layouts";
+import { CourseType } from "@prisma/client";
 
 type Props = {
 	onCourseCreated: (slug: string) => void;
-	initialCourse?: DynCourseFormModel;
+	initialCourse?: CourseFormModel;
 };
 
 export function CourseBasicInformation({ onCourseCreated, initialCourse }: Props) {
 	const session = useRequiredSession();
-	const form = useForm<DynCourseFormModel>({
-		resolver: zodResolver(dynCourseFormSchema),
+	const form = useForm<CourseFormModel>({
+		resolver: zodResolver(courseFormSchema),
 		defaultValues: {
 			courseId: "",
 			title: "",
@@ -36,8 +33,12 @@ export function CourseBasicInformation({ onCourseCreated, initialCourse }: Props
 			subtitle: "",
 			imgUrl: "",
 			subjectId: null,
-			teachingGoals: [],
-			requirements: []
+			provides: [],
+			requires: [],
+			content: [],
+			permissions: [],
+			type: CourseType.DYNAMIC,
+			version: "test"
 		}
 	});
 
@@ -47,8 +48,8 @@ export function CourseBasicInformation({ onCourseCreated, initialCourse }: Props
 		formState: { errors }
 	} = form;
 
-	const { mutateAsync: create } = trpc.course.createDynamic.useMutation();
-	const { mutateAsync: edit } = trpc.course.editDynamic.useMutation();
+	const { mutateAsync: create } = trpc.course.create.useMutation();
+	const { mutateAsync: edit } = trpc.course.edit.useMutation();
 
 	useEffect(() => {
 		if (session.data?.user?.name) {
@@ -130,7 +131,7 @@ export function CourseBasicInformation({ onCourseCreated, initialCourse }: Props
 }
 
 function BasicInfo() {
-	const form = useFormContext<DynCourseFormModel>();
+	const form = useFormContext<CourseFormModel>();
 
 	const {
 		register,

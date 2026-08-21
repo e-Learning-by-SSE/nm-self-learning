@@ -39,12 +39,12 @@ export function getAuthor(username: string) {
 					slug: true,
 					displayName: true,
 					imgUrl: true,
-					dynCourse: {
+					courses: {
 						orderBy: { title: "asc" },
 						select: {
-							courseId: true,
 							slug: true,
 							title: true,
+							subtitle: true,
 							imgUrl: true,
 							specializations: {
 								select: {
@@ -151,105 +151,6 @@ function AuthorDashboardPage({ author }: Props) {
 						emptyMessage={t("No_Accessible_Subjects")}
 						isAdmin={isAdmin}
 					/>
-
-					<Divider />
-
-					<section>
-						<div className="flex justify-between gap-4">
-							<SectionHeader
-								title={t("My_Skill_Cards")}
-								subtitle={t("Author_Skill_Cards_Subtitle")}
-							/>
-
-							<div className="flex flex-row items-center gap-4">
-								<Link href="/teaching/courses/new">
-									<IconTextButton
-										text="Kurs erstellen"
-										icon={<PlusIcon className="icon h-5" />}
-									/>
-								</Link>
-							</div>
-						</div>
-
-						<ul className="flex flex-col gap-4 py-4">
-							{/* TODO KEE */}
-							{author.author?.dynCourse.length === 0 ? (
-								<div className="mx-auto flex items-center gap-8">
-									<div className="h-32 w-32">
-										<VoidSvg />
-									</div>
-									<p className="text-light">
-										Du hast noch keine dynamischen Kurse erstellt.
-									</p>
-								</div>
-							) : (
-								[
-									...(author.author?.dynCourse ?? []).map(c => ({
-										...c,
-										type: "dynamic"
-									}))
-								].map(course => (
-									<li
-										key={course.courseId}
-										className="flex items-center rounded-lg border border-light-border bg-white"
-									>
-										<ImageOrPlaceholder
-											src={course.imgUrl ?? undefined}
-											className="h-16 w-16 rounded-l-lg object-cover"
-										/>
-										<div className="flex w-full items-center justify-between px-4">
-											<div className="flex flex-col gap-1">
-												<span className="text-xs text-light">
-													{course.specializations
-														.map(s => s.title)
-														.join(" | ")}
-												</span>
-												<Link
-													href={`/courses/${course.slug}`}
-													className="text-sm font-medium hover:text-secondary"
-												>
-													{course.title}
-												</Link>
-											</div>
-
-											<div className="flex flex-wrap justify-end gap-4">
-												<Link
-													href={
-														course.type === "static"
-															? `/teaching/courses/edit/${course.courseId}`
-															: `/teaching/courses/${course.slug}/edit`
-													}
-													className="btn-stroked h-fit w-fit"
-												>
-													<PencilIcon className="icon" />
-													<span>Bearbeiten</span>
-												</Link>
-												<div className="flex space-x-2">
-													<button
-														className="btn-stroked w-full text-right"
-														type="button"
-														onClick={() => setViewExportDialog(true)}
-													>
-														<ArrowDownTrayIcon className="w-5 h-5 icon" />
-														{"Export"}
-													</button>
-												</div>
-												<CourseDeleteOption slug={course.slug} />
-											</div>
-										</div>
-										{viewExportDialog && (
-											<ExportCourseDialog
-												course={course}
-												onClose={() => {
-													setViewExportDialog(false);
-												}}
-											/>
-										)}
-									</li>
-								))
-							)}
-						</ul>
-					</section>
 
 					<Divider />
 

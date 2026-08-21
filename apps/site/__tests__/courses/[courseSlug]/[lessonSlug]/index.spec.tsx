@@ -19,8 +19,7 @@ jest.mock("@self-learning/database", () => ({
 	database: {
 		course: { findUnique: jest.fn(), findFirst: jest.fn() },
 		lesson: { findUnique: jest.fn() },
-		completedLesson: { findMany: jest.fn() },
-		dynCourse: { findFirst: jest.fn() }
+		completedLesson: { findMany: jest.fn() }
 	}
 }));
 
