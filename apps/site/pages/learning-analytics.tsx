@@ -2,9 +2,12 @@
 
 import { withTranslations } from "@self-learning/api";
 import { useSession } from "next-auth/react";
+import { useState } from "react";
 
 import { StudentAnalytics } from "@self-learning/analysis";
 import { CreatorAnalytics } from "@self-learning/analysis";
+import { useEnrollments } from "@self-learning/enrollment";
+import { Tab, Tabs } from "@self-learning/ui/common";
 
 /*
 ----------------------------------------------------------
@@ -29,7 +32,9 @@ export const getServerSideProps = withTranslations(["common", "student-analytics
 */
 export default function LearningAnalyticsPage() {
 	const { data: session } = useSession();
-	const role = session?.user?.role; // "USER" for student, "ADMIN" for creator
+	const enrollments = useEnrollments();
+	const [selectedTab, setSelectedTab] = useState(0);
+	const user = session?.user;
 
 	// --------------------Student Metrics--------------------
 	// Learning Time
@@ -63,14 +68,36 @@ export default function LearningAnalyticsPage() {
 	// Average Completion Rate by Course
 	// const { data: authorMetricAverageLessonCompletionRateByCourseData, isLoading: isLoadingAuthorMetricAverageCompletionRateByCourse } = trpc.metrics.getAuthorMetric_AverageLessonCompletionRateByCourse.useQuery();
 
-	if (!role) {
+	if (!user) {
 		return <p className="p-6">Loading...</p>;
 	}
 
-	// --- Role-based rendering ---
+	const showCreatorAnalytics = user.role === "ADMIN" || user.isAuthor;
+	const showLearnerTab = user.isAuthor && (enrollments?.length ?? 0) > 0;
+
+	if (!showCreatorAnalytics) {
+		return (
+			<div className="bg-gray-50 min-h-screen">
+				<StudentAnalytics />
+			</div>
+		);
+	}
+
+	if (!showLearnerTab) {
+		return (
+			<div className="bg-gray-50 min-h-screen">
+				<CreatorAnalytics />
+			</div>
+		);
+	}
+
 	return (
 		<div className="bg-gray-50 min-h-screen">
-			{role === "ADMIN" ? <CreatorAnalytics /> : <StudentAnalytics />}
+			<Tabs selectedIndex={selectedTab} onChange={setSelectedTab}>
+				<Tab>Creator Analytics</Tab>
+				<Tab>My Learning Analytics</Tab>
+			</Tabs>
+			{selectedTab === 0 ? <CreatorAnalytics /> : <StudentAnalytics />}
 		</div>
 	);
 }

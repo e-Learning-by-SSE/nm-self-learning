@@ -82,16 +82,27 @@ export async function getStudentMetric_HourlyAverageQuizAnswers(userId: string) 
 }
 
 /**
- * Fetch all subjects with their courses.
+ * Fetch subjects with courses in which the student is enrolled.
  */
-export async function getSubjects() {
+export async function getSubjects(username: string) {
 	return database.subject.findMany({
+		where: {
+			courses: {
+				some: { enrollments: { some: { username } } }
+			}
+		},
 		orderBy: { title: "asc" },
 		include: {
 			courses: {
+				where: { enrollments: { some: { username } } },
+				orderBy: { title: "asc" },
 				select: {
 					courseId: true,
-					title: true
+					title: true,
+					enrollments: {
+						where: { username },
+						select: { status: true, progress: true }
+					}
 				}
 			}
 		}

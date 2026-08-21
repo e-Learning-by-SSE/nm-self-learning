@@ -58,7 +58,7 @@ export const MetricsRouter = t.router({
 	getAuthorMetric_AverageLessonCompletionRateByCourse: metricsQuery(
 		getAuthorMetric_AverageLessonCompletionRateByCourse
 	),
-	getSubjects: authProcedure.query(async () => {
-		return getSubjects();
+	getSubjects: authProcedure.query(async ({ ctx }) => {
+		return getSubjects(ctx.user.name);
 	})
 });

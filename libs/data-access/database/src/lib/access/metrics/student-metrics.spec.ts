@@ -8,7 +8,8 @@ import {
 	getStudentMetric_LearningStreak,
 	getStudentMetric_CoursesCompletedBySubject,
 	getStudentMetric_AverageQuizAnswers,
-	getStudentMetric_HourlyAverageQuizAnswers
+	getStudentMetric_HourlyAverageQuizAnswers,
+	getSubjects
 } from "./student-metrics";
 
 jest.mock("../../prisma", () => ({
@@ -21,7 +22,8 @@ jest.mock("../../prisma", () => ({
 		studentMetric_LearningStreak: { findUnique: jest.fn() },
 		studentMetric_CoursesCompletedBySubject: { findMany: jest.fn() },
 		studentMetric_AverageQuizAnswers: { findMany: jest.fn() },
-		studentMetric_HourlyAverageQuizAnswers: { findMany: jest.fn() }
+		studentMetric_HourlyAverageQuizAnswers: { findMany: jest.fn() },
+		subject: { findMany: jest.fn() }
 	}
 }));
 
@@ -145,6 +147,45 @@ describe("Metrics Database Access Functions", () => {
 		const result = await getStudentMetric_HourlyAverageQuizAnswers(userId);
 		expect(database.studentMetric_HourlyAverageQuizAnswers.findMany).toHaveBeenCalledWith({
 			where: { userId: userId }
+		});
+		expect(result).toEqual(mockResult);
+	});
+
+	it("getSubjects returns only subjects and courses in which the student is enrolled", async () => {
+		const username = "student-test";
+		const mockResult = [
+			{
+				subjectId: "mathematics",
+				courses: [
+					{ courseId: "geometry", enrollments: [{ status: "COMPLETED", progress: 100 }] }
+				]
+			}
+		];
+		(database.subject.findMany as jest.Mock).mockResolvedValue(mockResult);
+
+		const result = await getSubjects(username);
+
+		expect(database.subject.findMany).toHaveBeenCalledWith({
+			where: {
+				courses: {
+					some: { enrollments: { some: { username } } }
+				}
+			},
+			orderBy: { title: "asc" },
+			include: {
+				courses: {
+					where: { enrollments: { some: { username } } },
+					orderBy: { title: "asc" },
+					select: {
+						courseId: true,
+						title: true,
+						enrollments: {
+							where: { username },
+							select: { status: true, progress: true }
+						}
+					}
+				}
+			}
 		});
 		expect(result).toEqual(mockResult);
 	});

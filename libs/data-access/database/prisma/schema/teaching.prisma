@@ -194,6 +194,7 @@ model QuizAnswer {
     questionId    String
     answer        Json
     isCorrect     Boolean
+    createdAt     DateTime @default(now())
     quizAttempt   QuizAttempt @relation(fields: [quizAttemptId], references: [attemptId], onDelete: Cascade)
 
     @@index([questionId])
