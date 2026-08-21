@@ -11,6 +11,7 @@ import { LessonFormModel } from "./lesson-form-model";
 import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { useRequiredSession } from "@self-learning/ui/layouts";
 import { useRouter } from "next/router";
+import { SkillsEditor } from "../skills/skills-editor";
 
 export async function onLessonCreatorSubmit(
 	onClose: () => void,
@@ -68,6 +69,7 @@ export async function onLessonEditorSubmit(
 			title: "Fehler",
 			subtitle: "Die Lerneinheit konnte nicht gespeichert werden."
 		});
+		console.log(error);
 	}
 }
 
@@ -144,11 +146,13 @@ function showValidationErrors(errors: FieldErrors) {
 
 export function LessonEditor({
 	onSubmit,
-	initialLesson
+	initialLesson,
+	courseId
 }: {
 	onSubmit: OnDialogCloseFn<LessonFormModel>;
 	initialLesson?: LessonFormModel;
 	isFullScreen: boolean;
+	courseId?: string; // in context of which course lesson is edited
 }) {
 	const isNew = initialLesson === null || initialLesson === undefined;
 	const router = useRouter();
@@ -197,12 +201,19 @@ export function LessonEditor({
 					<div>
 						<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
 							<Tab>Grunddaten</Tab>
+							<Tab>Lesson Skills</Tab>
 							<Tab>Lerninhalt</Tab>
 							<Tab>Lernkontrolle</Tab>
 						</Tabs>
 						{selectedTab === 0 && <LessonInfoEditor isNew={isNew} />}
-						{selectedTab === 1 && <LessonContentEditor />}
-						{selectedTab === 2 && <QuizEditor />}
+						{selectedTab === 1 && (
+							<SkillsEditor
+								courseId={courseId}
+								lessonId={initialLesson?.lessonId ?? undefined}
+							/>
+						)}
+						{selectedTab === 2 && <LessonContentEditor />}
+						{selectedTab === 3 && <QuizEditor />}
 					</div>
 				</div>
 			</form>
