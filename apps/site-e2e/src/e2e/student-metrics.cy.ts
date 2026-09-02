@@ -8,14 +8,12 @@ describe("App", () => {
 	beforeEach(() => {
 		// Some e2e tests open the app for the first time and have to accept the data privacy banner
 		// Click "Speichern" only if that button/dialog is present
-		it("Accepts data privacy banner if present", () => {
-			cy.get("body").then($body => {
-				if ($body.find("button:contains('Speichern')").length > 0) {
-					cy.contains("button", "Speichern").click();
-				} else {
-					cy.log("No privacy banner present — continuing");
-				}
-			});
+		cy.get("body").then($body => {
+			if ($body.find("button:contains('Speichern')").length > 0) {
+				cy.contains("button", "Speichern").click();
+			} else {
+				cy.log("No privacy banner present — continuing");
+			}
 		});
 	});
 

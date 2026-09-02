@@ -41,7 +41,8 @@ export function MyLearningPath() {
 	const subject = subjects[currentIndex];
 	const totalCourses = subject.courses?.length ?? 0;
 	const completedCourses =
-		subject.courses?.filter(course => course.enrollments[0]?.status === "COMPLETED").length ?? 0;
+		subject.courses?.filter(course => course.enrollments[0]?.status === "COMPLETED").length ??
+		0;
 	const coursesInPopover = subject.courses.slice(0, 10);
 	const hiddenCourseCount = Math.max(totalCourses - coursesInPopover.length, 0);
 
@@ -70,8 +71,7 @@ export function MyLearningPath() {
 	const handleContinue = () => {
 		const subjectSlug = subject.slug || subject.subjectId;
 		if (subjectSlug) {
-			// Note: This is hardcoded, consider using environment variables for the base URL
-			window.location.href = `http://localhost:4200/subjects/${subjectSlug}`;
+			window.location.href = `/subjects/${subjectSlug}`;
 		}
 	};
 
@@ -151,7 +151,9 @@ export function MyLearningPath() {
 									: "invisible translate-y-1 opacity-0"
 							}`}
 						>
-							<p className="mb-2 text-xs font-semibold">{t("courseProgressDetails")}</p>
+							<p className="mb-2 text-xs font-semibold">
+								{t("courseProgressDetails")}
+							</p>
 							<div className="space-y-2">
 								{coursesInPopover.map(course => {
 									const enrollment = course.enrollments[0];
@@ -161,11 +163,20 @@ export function MyLearningPath() {
 									return (
 										<div key={course.courseId} className="text-xs">
 											<div className="mb-1 flex items-center justify-between gap-3">
-												<span className="min-w-0 truncate" title={course.title}>
-													{isCompleted && <span className="mr-1 text-emerald-300">✓</span>}
+												<span
+													className="min-w-0 truncate"
+													title={course.title}
+												>
+													{isCompleted && (
+														<span className="mr-1 text-emerald-300">
+															✓
+														</span>
+													)}
 													{course.title}
 												</span>
-												<span className="shrink-0 font-medium">{courseProgress}%</span>
+												<span className="shrink-0 font-medium">
+													{courseProgress}%
+												</span>
 											</div>
 											<div className="h-1 overflow-hidden rounded-full bg-gray-600">
 												<div

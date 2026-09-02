@@ -14,7 +14,6 @@ import { createQuizAttempts } from "./metrics/seed-quiz-attempt";
 import { createQuizAnswers } from "./metrics/seed-quiz-answer";
 import { createEventLog } from "./metrics/seed-event-log";
 import { createAuthorCourseRelation } from "./metrics/seed-author-course-relation";
-import { create } from "domain";
 import { createLessons } from "./metrics/seed-lessons";
 import { createCompletedLessons } from "./metrics/seed-completedLessons";
 import { createStartingLessons } from "./metrics/seed-startingLessons";

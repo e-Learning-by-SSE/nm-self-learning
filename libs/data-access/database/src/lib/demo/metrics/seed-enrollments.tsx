@@ -11,7 +11,7 @@ export async function createEnrollments(
 
 		// Enroll Users in Wizardry Courses
 		for (const courseId of courseIds) {
-			userData.map(async user => {
+			userData.map(user => {
 				// 40 % chance to be COMPLETED, 60 % chance to be ACTIVE
 				const status =
 					Math.random() < 0.4 ? EnrollmentStatus.COMPLETED : EnrollmentStatus.ACTIVE;
@@ -19,7 +19,7 @@ export async function createEnrollments(
 				const progress =
 					status === EnrollmentStatus.COMPLETED ? 100 : Math.floor(Math.random() * 99); // Random progress up to 99% if ACTIVE
 
-				// magical-creatures always 100% to have atleast one COMPLETED enrollment
+				// Create enrollment data for user;course combination
 				enrollmentData.push({
 					courseId,
 					username: user.name,
@@ -57,7 +57,7 @@ export async function createEnrollments(
 		).map(c => c.courseId);
 
 		for (const courseId of nonWizardCourseIds) {
-			await enrollmentData.push({
+			enrollmentData.push({
 				courseId,
 				username: "potter",
 				status: EnrollmentStatus.ACTIVE,
