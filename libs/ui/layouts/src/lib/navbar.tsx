@@ -26,7 +26,6 @@ export function Navbar() {
 	const session = useSession();
 	const { t } = useTranslation("common");
 	const { loginRedirect, logoutRedirect } = useLoginRedirect();
-	const { t } = useTranslation("common");
 
 	const user = session.data?.user;
 
