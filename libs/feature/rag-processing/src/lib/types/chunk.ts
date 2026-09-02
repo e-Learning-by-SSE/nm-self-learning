@@ -19,7 +19,22 @@ interface VideoChunkMetadata extends BaseChunkMetadata {
 	sourceType: "video";
 }
 
-type ChunkMetadata = PDFChunkMetadata | ArticleChunkMetadata | VideoChunkMetadata;
+interface HTMLChunkMetadata extends BaseChunkMetadata {
+	htmlIndex: number;
+	sourceType: "html";
+}
+
+interface H5PChunkMetadata extends BaseChunkMetadata {
+	h5pIndex: number;
+	sourceType: "h5p";
+}
+
+type ChunkMetadata =
+	| PDFChunkMetadata
+	| ArticleChunkMetadata
+	| VideoChunkMetadata
+	| HTMLChunkMetadata
+	| H5PChunkMetadata;
 
 /**
  * Base structure for document chunks
@@ -35,6 +50,10 @@ export type PDFChunk = DocumentChunk<PDFChunkMetadata>;
 export type ArticleChunk = DocumentChunk<ArticleChunkMetadata>;
 
 export type VideoChunk = DocumentChunk<VideoChunkMetadata>;
+
+export type HTMLChunk = DocumentChunk<HTMLChunkMetadata>;
+
+export type H5PChunk = DocumentChunk<H5PChunkMetadata>;
 
 /**
  * Options for text chunking
@@ -54,7 +73,7 @@ export interface RetrievalResult {
 	metadata: {
 		lessonName?: string;
 		pageNumber?: number;
-		sourceType?: "pdf" | "article" | "video";
+		sourceType?: "pdf" | "article" | "video" | "html" | "h5p";
 	};
 }
 
@@ -66,7 +85,7 @@ export interface RagRetrievalResult {
 	sources: {
 		lessonName?: string;
 		pageNumber?: number;
-		sourceType?: "pdf" | "article" | "video";
+		sourceType?: "pdf" | "article" | "video" | "html" | "h5p";
 		score?: number;
 	}[];
 }
@@ -81,5 +100,5 @@ export interface CircuitBreakerState {
 }
 
 /** Valid source types for RAG results */
-export const VALID_SOURCE_TYPES = ["pdf", "article", "video"] as const;
+export const VALID_SOURCE_TYPES = ["pdf", "article", "video", "html", "h5p"] as const;
 export type SourceType = (typeof VALID_SOURCE_TYPES)[number];

@@ -716,7 +716,9 @@ async function enqueueRagEmbedJob(
 				lessonTitle,
 				pdfBuffers: preparedContent.pdfBuffers,
 				articleTexts: preparedContent.articleTexts,
-				transcriptTexts: preparedContent.transcriptTexts
+				transcriptTexts: preparedContent.transcriptTexts,
+				htmlPages: preparedContent.htmlPages,
+				h5pSources: preparedContent.h5pSources
 			}
 		});
 		subscribeToRagJobEvents(jobId, lessonId).catch(err => {
