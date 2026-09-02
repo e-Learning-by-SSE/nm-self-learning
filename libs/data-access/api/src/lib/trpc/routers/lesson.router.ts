@@ -7,7 +7,8 @@ import {
 	lessonSchema,
 	LessonContentType,
 	subtitleSrcSchema,
-	resourcePermissionSelect
+	resourcePermissionSelect,
+	ResourcePermissions
 } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { differenceInHours } from "date-fns";
@@ -17,6 +18,7 @@ import { TRPCError } from "@trpc/server";
 import {
 	canCreate,
 	canDelete,
+	canEdit,
 	preparePermissionsForCreate,
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
@@ -33,6 +35,42 @@ const saveSubtitleInputSchema = z.object({
 	video_url: z.url(),
 	transcription: subtitleSrcSchema
 });
+
+export function buildLinkedLessonQuery(lessonId: string) {
+	const safeLessonId = lessonId.replace(/'/g, "''");
+
+	return `
+		SELECT
+			c.*, 
+			COALESCE(
+				(
+					SELECT json_agg(
+						json_build_object(
+							'accessLevel', p."accessLevel",
+							'groupId', p."groupId"
+						)
+					)
+					FROM "Permission" p
+					WHERE p."courseId" = c."courseId"
+				),
+				'[]'::json
+			) AS permissions
+		FROM "Course" c
+		WHERE jsonb_typeof(c."content") = 'array'
+		  AND EXISTS (
+			SELECT 1
+			FROM jsonb_array_elements(c."content") AS chapter
+			WHERE jsonb_typeof(chapter) = 'object'
+			  AND jsonb_typeof(chapter->'content') = 'array'
+			  AND EXISTS (
+				SELECT 1
+				FROM jsonb_array_elements(chapter->'content') AS lesson
+				WHERE jsonb_typeof(lesson) = 'object'
+				  AND lesson->>'lessonId' = '${safeLessonId}'
+			  )
+		  );
+	`;
+}
 
 /**
  * RAG Embedding Flow (triggered on lesson create/edit when ragEnabled=true, {by default, RAG is enabled}):
@@ -372,18 +410,14 @@ export const lessonRouter = t.router({
 
 			return updatedLesson;
 		}),
-	findLinkedLessonEntities: authorProcedure
+	findLinkedLessonEntities: authProcedure
 		.input(z.object({ lessonId: z.string() }))
-		.query(async ({ input }) => {
-			const courses = await database.$queryRaw`
-				SELECT *
-				FROM "Course"
-				WHERE EXISTS (SELECT 1
-							  FROM jsonb_array_elements("Course".content) AS chapter
-									   CROSS JOIN jsonb_array_elements(chapter->'content') AS lesson
-							  WHERE lesson ->>'lessonId' = ${input.lessonId})
-			`;
-			return courses as Course[];
+		.query(async ({ ctx, input }) => {
+			if (!(await canEdit(ctx.user, input))) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
+			const courses = await database.$queryRawUnsafe(buildLinkedLessonQuery(input.lessonId));
+			return courses as (Course & { permissions: ResourcePermissions })[];
 		}),
 	deleteLesson: authProcedure
 		.input(z.object({ lessonId: z.string() }))

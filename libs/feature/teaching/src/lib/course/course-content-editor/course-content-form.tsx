@@ -16,7 +16,12 @@ import {
 	onLessonCreatorSubmit,
 	onLessonEditorSubmit
 } from "@self-learning/teaching";
-import { CourseChapter, LessonContent, LessonMeta, toResourcePermissionsForm } from "@self-learning/types";
+import {
+	CourseChapter,
+	LessonContent,
+	LessonMeta,
+	toResourcePermissionsForm
+} from "@self-learning/types";
 import { IconOnlyButton, OnDialogCloseFn, SectionHeader } from "@self-learning/ui/common";
 import { useState } from "react";
 import { ChapterDialog } from "./dialogs/chapter-dialog";
