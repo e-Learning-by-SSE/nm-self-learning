@@ -1,77 +1,91 @@
 view StudentMetric_LearningTime {
-  userId                        String  @unique
-  username                      String
-  timeSeconds                   Float
+    userId      String @unique
+    username    String
+    timeSeconds Float
 }
- 
+
 view StudentMetric_DailyLearningTime {
-  userId                        String  @unique
-  username                      String
-  day                           DateTime
-  timeSeconds                   Float
+    userId      String
+    username    String
+    day         DateTime
+    timeSeconds Float
+
+    @@unique([userId, day])
 }
 
 view StudentMetric_HourlyLearningTime {
-  userId                        String  @unique
-  username                      String
-  hour                          DateTime
-  timeSeconds                   Float
+    userId      String
+    username    String
+    hour        DateTime
+    timeSeconds Float
+
+    @@unique([userId, hour])
 }
 
 view StudentMetric_LearningTimeByCourse {
-  userId                        String  @unique
-  username                      String
-  courseId                      String
-  courseTitle                   String
-  timeSeconds                   Float
+    userId      String
+    username    String
+    courseId    String
+    courseTitle String
+    timeSeconds Float
+
+    @@unique([userId, courseId])
 }
 
 view StudentMetric_DailyLearningTimeByCourse {
-  userId                        String  @unique
-  username                      String
-  courseId                      String
-  courseTitle                   String?
-  day                           DateTime
-  timeSeconds                   Float
+    userId      String
+    username    String
+    courseId    String
+    courseTitle String?
+    day         DateTime
+    timeSeconds Float
+
+    @@unique([userId, courseId, day])
 }
 
 view StudentMetric_CoursesCompletedBySubject {
-  userId                      String    @unique
-  username                    String
-  subjectId                   String
-  subjectTitle                String
-  completedCoursesCount       Int
-  completedCourses            String?
+    userId                String
+    username              String
+    subjectId             String
+    subjectTitle          String
+    completedCoursesCount Int
+    completedCourses      String?
+
+    @@unique([userId, subjectId])
 }
 
 view StudentMetric_LearningStreak {
-  userId                      String  @unique
-  username                    String
-  longestStreakDays           Int
-  currentStreakDays           Int
+    userId            String @unique
+    username          String
+    longestStreakDays Int
+    currentStreakDays Int
 }
 
 view StudentMetric_AverageQuizAnswers {
-  userId               String  @unique
-  username             String
-  courseId             String
-  courseTitle          String
-  lessonId             String
-  lessonTitle          String
-  wrongAnswers         Int
-  correctAnswers       Int
-  averageAccuracyRate  Float
+    userId              String
+    username            String
+    courseId            String
+    courseTitle         String
+    lessonId            String
+    lessonTitle         String
+    wrongAnswers        Int
+    correctAnswers      Int
+    averageAccuracyRate Float
+
+    @@unique([userId, courseId, lessonId])
 }
 
 view StudentMetric_HourlyAverageQuizAnswers {
-  userId               String  @unique
-  username             String
-  courseId             String
-  courseTitle          String
-  lessonId             String
-  lessonTitle          String
-  hour                 DateTime
-  wrongAnswers         Int
-  correctAnswers       Int
-  averageAccuracyRate  Float
+    userId              String
+    username            String
+    courseId            String
+    courseTitle         String
+    lessonId            String
+    lessonTitle         String
+    hour                DateTime
+    wrongAnswers        Int
+    correctAnswers      Int
+    averageAccuracyRate Float
+
+    @@unique([userId, courseId, lessonId, hour])
 }
