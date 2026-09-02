@@ -7,16 +7,16 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { withTranslations } from "@self-learning/api";
-import { ResourceAccessFormSchema } from "@self-learning/types";
+import { getResourceAccessFormKey, ResourceAccessFormSchema } from "@self-learning/types";
 import {
-	getPermKey,
 	GroupPermissionRow,
 	GroupPermissionTable,
 	GroupMemberRow,
 	GroupMemberTable,
 	GroupDeleteOption,
 	GroupPermissionRelationsDialog,
-	PermissionFormModel
+	PermissionFormModel,
+	I18N_NAMESPACE as NS_TEACHING
 } from "@self-learning/teaching";
 
 export default function GroupPage() {
@@ -24,7 +24,7 @@ export default function GroupPage() {
 	const { memberName = "" } = router.query;
 
 	const [memberNameFilter, setMemberName] = useState(memberName);
-    const [resourceNameFilter, setResourceNameFilter] = useState("");
+	const [resourceNameFilter, setResourceNameFilter] = useState("");
 
 	const [selectedPermission, setSelectedPermission] = useState<PermissionFormModel | undefined>(
 		undefined
@@ -53,33 +53,28 @@ export default function GroupPage() {
 	if (!group) {
 		return (
 			<Unauthorized>
-				<span>Du muss Mitglieder*in dieser Gruppe sein</span>
+				<span>Du musst ein Mitglied dieser Gruppe sein</span>
 			</Unauthorized>
 		);
 	}
 
-    // Optional filtered list of group members based on memberNameFilter
-    const memberNameFilterString =
-	typeof memberNameFilter === "string" ? memberNameFilter.toLowerCase().trim() : "";
-    const filteredMembers = group.members.filter(member => {
-        const name = member.user.displayName.toLowerCase() ?? "";
-        const email = member.user.email?.toLowerCase() ?? "";
+	// Optional filtered list of group members based on memberNameFilter
+	const memberNameFilterString =
+		typeof memberNameFilter === "string" ? memberNameFilter.toLowerCase().trim() : "";
+	const filteredMembers = group.members.filter(member => {
+		const name = member.user.displayName.toLowerCase() ?? "";
+		const email = member.user.email?.toLowerCase() ?? "";
 
-        return (
-            name.includes(memberNameFilterString) ||
-            email.includes(memberNameFilterString)
-        );
-    });
+		return name.includes(memberNameFilterString) || email.includes(memberNameFilterString);
+	});
 
-    // Optional filtered list of resources based on resourceNameFilter
-    const resourceNameFilterString = resourceNameFilter.toLowerCase().trim();
-    const filteredResources = group.permissions.filter(p => {
-        const permission = ResourceAccessFormSchema.parse(p);
+	// Optional filtered list of resources based on resourceNameFilter
+	const resourceNameFilterString = resourceNameFilter.toLowerCase().trim();
+	const filteredResources = group.permissions.filter(p => {
+		const permission = ResourceAccessFormSchema.parse(p);
 
-        return JSON.stringify(permission)
-            .toLowerCase()
-            .includes(resourceNameFilterString);
-    });
+		return JSON.stringify(permission).toLowerCase().includes(resourceNameFilterString);
+	});
 
 	return (
 		<div className="flex flex-col gap-8 bg-gray-50 pb-32">
@@ -135,7 +130,7 @@ export default function GroupPage() {
 								return (
 									<GroupPermissionRow
 										permission={np}
-										key={getPermKey(np)}
+										key={getResourceAccessFormKey(np)}
 										onRelations={setSelectedPermission}
 									/>
 								);
@@ -156,4 +151,4 @@ export default function GroupPage() {
 	);
 }
 
-export const getServerSideProps = withTranslations(["common"]);
+export const getServerSideProps = withTranslations(Array.from(new Set(["common", ...NS_TEACHING])));

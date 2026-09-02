@@ -1,5 +1,10 @@
-import { AccessLevel, Prisma } from "@prisma/client";
-import { authorsRelationSchema, courseContentSchema, createCourseMeta } from "@self-learning/types";
+import { Prisma } from "@prisma/client";
+import {
+	authorsRelationSchema,
+	courseContentSchema,
+	createCourseMeta,
+	ResourcePermissionsFormSchema
+} from "@self-learning/types";
 import { stringOrNull } from "@self-learning/util/common";
 import { z } from "zod";
 
@@ -13,14 +18,7 @@ export const courseFormSchema = z.object({
 	imgUrl: z.string().nullable(),
 	authors: authorsRelationSchema,
 	content: courseContentSchema,
-	permissions: z
-		.object({
-			accessLevel: z.nativeEnum(AccessLevel),
-			groupId: z.number(),
-			groupName: z.string()
-		})
-		.array()
-		.min(1, "At least one permission is required")
+	permissions: ResourcePermissionsFormSchema
 });
 
 export type CourseFormModel = z.infer<typeof courseFormSchema>;
@@ -46,7 +44,7 @@ export function mapCourseFormToInsert(
 		meta: createCourseMeta(course),
 		authors: { connect: authors.map(author => ({ username: author.username })) },
 		subject: subjectId ? { connect: { subjectId } } : undefined,
-		permissions: permissions
+		permissions
 	};
 
 	return courseForDb;

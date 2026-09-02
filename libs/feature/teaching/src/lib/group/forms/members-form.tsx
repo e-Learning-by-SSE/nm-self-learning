@@ -1,12 +1,18 @@
 import { IconTextButton, SectionHeader } from "@self-learning/ui/common";
-import { Controller, useFieldArray, useFormContext, useFormState } from "react-hook-form";
+import { Controller, useFieldArray, useFormContext, useFormState, useWatch } from "react-hook-form";
 import { GroupFormModel } from "../group-editor";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { GroupRole } from "@prisma/client";
 import { useState } from "react";
-import { GroupMemberRowEditor, GroupMemberTable } from "../editors/group-members";
+import {
+	GroupMemberRow,
+	GroupMemberRowEditor,
+	GroupMemberTable,
+	MemberFormModel
+} from "../editors/group-members";
 import { SearchUserDialog, UserSearchEntry } from "@self-learning/admin";
+import { useArrayDiff } from "../misc/use-array-diff";
 
 /**
  * GroupMembersEditor - Section for managing group members in a form.
@@ -25,7 +31,7 @@ export function GroupMembersEditor() {
 		name: "members",
 		control
 	});
-	const { errors } = useFormState({ control });
+	const { errors, submitCount } = useFormState({ control });
 	const error = errors.members?.message;
 
 	const onSelectUser = (user?: UserSearchEntry) => {
@@ -43,6 +49,20 @@ export function GroupMembersEditor() {
 	};
 
 	const [searchUserActive, setSearchUserActive] = useState(false);
+
+	function isSameMember(left: MemberFormModel, right: MemberFormModel) {
+		return left.role === right.role && Number(left.expiresAt) === Number(right.expiresAt);
+	}
+	function getMemberKey(member: MemberFormModel) {
+		return member.user.id;
+	}
+	const members = useWatch({ control, name: "members" }) ?? [];
+	const diff = useArrayDiff({
+		current: members,
+		diffKey: submitCount,
+		getKey: getMemberKey,
+		isEqual: isSameMember
+	});
 
 	// const [memberEditorActive, setMemberEditorActive] = useState(false);
 
@@ -75,6 +95,7 @@ export function GroupMembersEditor() {
 							<>
 								<GroupMemberRowEditor
 									member={field.value}
+									diffStatus={diff.getStatus(field.value)}
 									onChange={field.onChange}
 									onDelete={() => editor.remove(index)}
 								/>
@@ -90,6 +111,9 @@ export function GroupMembersEditor() {
 							</>
 						)}
 					/>
+				))}
+				{diff.deleted.map(item => (
+					<GroupMemberRow key={item.key} member={item.value} diffStatus="deleted" />
 				))}
 			</GroupMemberTable>
 			{error && <span className="px-4 text-xs text-red-500">{error}</span>}

@@ -13,9 +13,15 @@ import {
 	createResourceAccess,
 	getGroup,
 	getSingleOwnedResources,
-	testGroupCircularParent
+	testGroupCircularParent,
+	getEffectiveResourceAccesses
 } from "../../permissions/permission.service";
-import { greaterAccessLevel, greaterGroupRole } from "../../permissions/permission.utils";
+import { searchAllResources, searchMyResources } from "../../permissions/resource-search.service";
+import {
+	greaterAccessLevel,
+	greaterGroupRole,
+	stripFormResourceAccess
+} from "@self-learning/types";
 
 jest.mock("@self-learning/database", () => ({
 	__esModule: true,
@@ -54,17 +60,23 @@ jest.mock("../../permissions/permission.service", () => ({
 	createResourceAccess: jest.fn(),
 	getGroup: jest.fn(),
 	getSingleOwnedResources: jest.fn(),
-	testGroupCircularParent: jest.fn()
+	testGroupCircularParent: jest.fn(),
+	getEffectiveResourceAccesses: jest.fn()
 }));
 
-jest.mock("../../permissions/permission.utils", () => {
-	const actual = jest.requireActual("../../permissions/permission.utils");
+jest.mock("@self-learning/types", () => {
+	const actual = jest.requireActual("@self-learning/types");
 	return {
 		...actual,
 		greaterAccessLevel: jest.fn(),
 		greaterGroupRole: jest.fn()
 	};
 });
+
+jest.mock("../../permissions/resource-search.service", () => ({
+	searchAllResources: jest.fn(),
+	searchMyResources: jest.fn()
+}));
 
 function prepare(user: Partial<UserFromSession>) {
 	const ctx: Context & { user: UserFromSession } = {
@@ -96,6 +108,74 @@ describe("permissionRouter", () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks();
+	});
+
+	describe("stripFormResourceAccess", () => {
+		it("maps subject form permission to subjectId", () => {
+			expect(
+				stripFormResourceAccess({
+					accessLevel: AccessLevel.FULL,
+					subject: { subjectId: "sb1", slug: "sb1", title: "Subject" }
+				})
+			).toEqual({ accessLevel: AccessLevel.FULL, subjectId: "sb1" });
+		});
+
+		it("maps specialization form permission to specializationId", () => {
+			expect(
+				stripFormResourceAccess({
+					accessLevel: AccessLevel.EDIT,
+					specialization: {
+						specializationId: "sp1",
+						slug: "sp1",
+						title: "Spec"
+					}
+				})
+			).toEqual({ accessLevel: AccessLevel.EDIT, specializationId: "sp1" });
+		});
+	});
+
+	describe("searchResources", () => {
+		it("delegates to searchAllResources", async () => {
+			const { caller, ctx } = prepare({ id: "my-user" });
+			const payload = {
+				result: [
+					{
+						kind: "subject" as const,
+						id: "sb1",
+						key: "subject:sb1",
+						title: "S",
+						slug: "sb1"
+					}
+				],
+				pageSize: 15,
+				page: 1,
+				totalCount: 1
+			};
+			(searchAllResources as jest.Mock).mockResolvedValue(payload);
+
+			const result = await caller.searchResources({ page: 1, kinds: ["subject"] });
+
+			expect(searchAllResources).toHaveBeenCalledWith({ page: 1, kinds: ["subject"] });
+			expect(result).toEqual(payload);
+		});
+	});
+
+	describe("getMyResources", () => {
+		it("delegates to searchMyResources with session user id", async () => {
+			const { caller, ctx } = prepare({ id: "my-user" });
+			const payload = {
+				result: [],
+				pageSize: 15,
+				page: 1,
+				totalCount: 0
+			};
+			(searchMyResources as jest.Mock).mockResolvedValue(payload);
+
+			const result = await caller.getMyResources({ page: 2, title: "math" });
+
+			expect(searchMyResources).toHaveBeenCalledWith("my-user", { page: 2, title: "math" });
+			expect(result).toEqual(payload);
+		});
 	});
 
 	describe("createGroup", () => {
@@ -204,6 +284,42 @@ describe("permissionRouter", () => {
 
 			expect(database.group.create).not.toHaveBeenCalled();
 		});
+
+		it("requires FULL access for subject and specialization resources", async () => {
+			const { caller, ctx } = prepare({});
+
+			(hasGroupRole as jest.Mock).mockResolvedValue(true);
+			(hasResourceAccessBatch as jest.Mock).mockResolvedValue(false);
+
+			const input = {
+				name: "Test Group",
+				slug: "test-group",
+				parent: { name: "Parent Group", id: 1 },
+				permissions: [
+					{
+						subject: { subjectId: "sb1", slug: "sb1", title: "Subject" },
+						accessLevel: AccessLevel.FULL
+					},
+					{
+						specialization: {
+							specializationId: "sp1",
+							slug: "sp1",
+							title: "Spec"
+						},
+						accessLevel: AccessLevel.VIEW
+					}
+				],
+				members: []
+			};
+
+			await expect(caller.createGroup(input)).rejects.toMatchObject({ code: "FORBIDDEN" });
+
+			expect(hasResourceAccessBatch).toHaveBeenCalledWith(ctx.user.id, [
+				{ subjectId: "sb1", accessLevel: AccessLevel.FULL },
+				{ specializationId: "sp1", accessLevel: AccessLevel.FULL }
+			]);
+		});
+
 		it("throws FORBIDDEN if non website admin creates root group", async () => {
 			const { caller } = prepare({ role: "USER" });
 
@@ -279,6 +395,49 @@ describe("permissionRouter", () => {
 			expect(hasResourceAccessBatch).not.toHaveBeenCalled();
 
 			expect(result).toEqual({ id: 1, name: "Test Group" });
+		});
+
+		it("creates group with subject and specialization permissions", async () => {
+			const { caller, ctx } = prepare({ role: "ADMIN" });
+			(database.group.create as jest.Mock).mockResolvedValue({ id: 2, name: "Mixed" });
+
+			await caller.createGroup({
+				name: "Mixed",
+				slug: "mixed",
+				parent: null,
+				permissions: [
+					{
+						subject: { subjectId: "sb1", slug: "sb1", title: "Subject" },
+						accessLevel: AccessLevel.FULL
+					},
+					{
+						specialization: {
+							specializationId: "sp1",
+							slug: "sp1",
+							title: "Spec"
+						},
+						accessLevel: AccessLevel.EDIT
+					}
+				],
+				members: [
+					{
+						user: { ...testUser, id: ctx.user.id },
+						role: GroupRole.ADMIN,
+						expiresAt: null
+					}
+				]
+			});
+
+			expect(database.group.create).toHaveBeenCalledWith({
+				data: expect.objectContaining({
+					permissions: {
+						create: [
+							{ subjectId: "sb1", accessLevel: AccessLevel.FULL },
+							{ specializationId: "sp1", accessLevel: AccessLevel.EDIT }
+						]
+					}
+				})
+			});
 		});
 
 		it("creates group with requested members", async () => {
@@ -617,6 +776,57 @@ describe("permissionRouter", () => {
 			} as Partial<TRPCError>);
 		});
 
+		it("throws FORBIDDEN when subject or specialization permission diffs and user lacks FULL access", async () => {
+			const { caller } = prepare({ role: "USER" });
+			(database.group.findUniqueOrThrow as jest.Mock).mockResolvedValue({
+				name: "Group",
+				parentId: null,
+				slug: "group"
+			});
+			(database.member.findMany as jest.Mock).mockResolvedValue([]);
+			(database.permission.findMany as jest.Mock).mockResolvedValue([
+				{ subjectId: "sb1", accessLevel: AccessLevel.VIEW },
+				{ specializationId: "sp1", accessLevel: AccessLevel.EDIT }
+			]);
+
+			const input = {
+				id: 13,
+				name: "Group",
+				slug: "group",
+				parent: null,
+				permissions: [
+					{
+						subject: { subjectId: "sb1", slug: "sb1", title: "Subject" },
+						accessLevel: AccessLevel.FULL
+					},
+					{
+						specialization: {
+							specializationId: "sp1",
+							slug: "sp1",
+							title: "Spec"
+						},
+						accessLevel: AccessLevel.FULL
+					}
+				],
+				members: [
+					{ user: { ...testUser, id: "a" }, role: GroupRole.ADMIN, expiresAt: null }
+				]
+			};
+
+			(hasResourceAccessBatch as jest.Mock).mockResolvedValue(false);
+			(hasGroupRole as jest.Mock).mockResolvedValue(true);
+
+			await expect(caller.updateGroup(input)).rejects.toMatchObject({
+				code: "FORBIDDEN"
+			} as Partial<TRPCError>);
+
+			expect(hasResourceAccessBatch).toHaveBeenCalledWith("user-id", [
+				{ subjectId: "sb1", accessLevel: AccessLevel.FULL },
+				{ specializationId: "sp1", accessLevel: AccessLevel.FULL }
+			]);
+			expect(database.group.update).not.toHaveBeenCalled();
+		});
+
 		it("updates group when user is admin", async () => {
 			const date = new Date();
 			date.setDate(date.getDate() + 7); // date in future
@@ -666,6 +876,78 @@ describe("permissionRouter", () => {
 			const res = await caller.updateGroup(input);
 			expect(database.group.update).toHaveBeenCalled();
 			expect(res).toEqual({ id: 12, name: "Group" });
+		});
+
+		it("updates group with subject and specialization permission upserts", async () => {
+			const { caller } = prepare({ role: "ADMIN" });
+			(database.group.findUniqueOrThrow as jest.Mock).mockResolvedValue({
+				name: "Group",
+				parentId: null,
+				slug: "group"
+			});
+			(database.member.findMany as jest.Mock).mockResolvedValue([]);
+			(database.permission.findMany as jest.Mock).mockResolvedValue([]);
+			(database.group.update as jest.Mock).mockResolvedValue({ id: 21, name: "Group" });
+
+			const input = {
+				id: 21,
+				name: "Group",
+				slug: "group",
+				parent: null,
+				permissions: [
+					{
+						subject: { subjectId: "sb1", slug: "sb1", title: "Subject" },
+						accessLevel: AccessLevel.FULL
+					},
+					{
+						specialization: {
+							specializationId: "sp1",
+							slug: "sp1",
+							title: "Spec"
+						},
+						accessLevel: AccessLevel.EDIT
+					}
+				],
+				members: [
+					{ user: { ...testUser, id: "a" }, role: GroupRole.ADMIN, expiresAt: null }
+				]
+			};
+
+			await caller.updateGroup(input);
+
+			const updateArg = (database.group.update as jest.Mock).mock.calls[0][0];
+			expect(updateArg.data.permissions.upsert).toEqual(
+				expect.arrayContaining([
+					{
+						where: { groupId_subjectId: { groupId: 21, subjectId: "sb1" } },
+						update: { accessLevel: AccessLevel.FULL },
+						create: { subjectId: "sb1", accessLevel: AccessLevel.FULL }
+					},
+					{
+						where: {
+							groupId_specializationId: { groupId: 21, specializationId: "sp1" }
+						},
+						update: { accessLevel: AccessLevel.EDIT },
+						create: { specializationId: "sp1", accessLevel: AccessLevel.EDIT }
+					}
+				])
+			);
+			expect(updateArg.data.permissions.deleteMany.OR).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						subjectId: { notIn: ["sb1"] },
+						courseId: null,
+						lessonId: null,
+						specializationId: null
+					}),
+					expect.objectContaining({
+						specializationId: { notIn: ["sp1"] },
+						courseId: null,
+						lessonId: null,
+						subjectId: null
+					})
+				])
+			);
 		});
 	});
 
@@ -874,6 +1156,72 @@ describe("permissionRouter", () => {
 				.map((c: { id: number }) => c.id)
 				.sort();
 			expect(childrenIds).toEqual([4, 5].sort());
+		});
+
+		it("merges subject and specialization permissions into new group", async () => {
+			const { caller } = prepare({ role: "ADMIN" });
+
+			const groupWithSubjectSpec = {
+				id: 30,
+				name: "G30",
+				parentId: null,
+				members: [
+					{
+						userId: "u1",
+						role: GroupRole.ADMIN,
+						expiresAt: null,
+						createdAt: new Date("2024-01-01")
+					}
+				],
+				permissions: [
+					{
+						id: "ps1",
+						subjectId: "sb1",
+						courseId: null,
+						lessonId: null,
+						specializationId: null,
+						accessLevel: AccessLevel.VIEW,
+						isPublic: false
+					},
+					{
+						id: "psp1",
+						subjectId: null,
+						courseId: null,
+						lessonId: null,
+						specializationId: "sp1",
+						accessLevel: AccessLevel.FULL,
+						isPublic: false
+					}
+				],
+				children: []
+			};
+
+			(database.group.findUnique as jest.Mock).mockResolvedValue(groupWithSubjectSpec);
+			(database.group.create as jest.Mock).mockResolvedValue({ id: 99, name: "Merged" });
+			(greaterAccessLevel as jest.Mock).mockReturnValue(true);
+
+			await caller.mergeGroups({
+				name: "Merged",
+				slug: "merged-subject-spec",
+				groupIds: [30],
+				strategy: "first"
+			});
+
+			const createArg = (database.group.create as jest.Mock).mock.calls[0][0];
+			expect(createArg.data.permissions.create).toEqual(
+				expect.arrayContaining([
+					{
+						accessLevel: AccessLevel.VIEW,
+						isPublic: false,
+						subject: { connect: { subjectId: "sb1" } }
+					},
+					{
+						accessLevel: AccessLevel.FULL,
+						isPublic: false,
+						specialization: { connect: { specializationId: "sp1" } }
+					}
+				])
+			);
 		});
 
 		it("chooses highest member role when strategy is 'highest'", async () => {
@@ -1270,12 +1618,34 @@ describe("permissionRouter", () => {
 
 			const res = await caller.getResourceAccess({ courseId: "c1" });
 
-			expect(getResourceAccess).toHaveBeenCalledWith({
-				userId: "user-id",
-				courseId: "c1",
-				lessonId: undefined
-			});
+			expect(getResourceAccess).toHaveBeenCalledWith("user-id", { courseId: "c1" });
 			expect(res).toEqual([{ courseId: "c1", accessLevel: AccessLevel.VIEW }]);
+		});
+
+		it("returns resource access for subjectId", async () => {
+			const { caller } = prepare({ role: "USER" });
+			(getResourceAccess as jest.Mock).mockResolvedValue({
+				accessLevel: AccessLevel.FULL,
+				groupId: 1
+			});
+
+			const res = await caller.getResourceAccess({ subjectId: "sb1" });
+
+			expect(getResourceAccess).toHaveBeenCalledWith("user-id", { subjectId: "sb1" });
+			expect(res).toEqual({ accessLevel: AccessLevel.FULL, groupId: 1 });
+		});
+
+		it("returns resource access for specializationId", async () => {
+			const { caller } = prepare({ role: "USER" });
+			(getResourceAccess as jest.Mock).mockResolvedValue({
+				accessLevel: AccessLevel.EDIT,
+				groupId: 2
+			});
+
+			const res = await caller.getResourceAccess({ specializationId: "sp1" });
+
+			expect(getResourceAccess).toHaveBeenCalledWith("user-id", { specializationId: "sp1" });
+			expect(res).toEqual({ accessLevel: AccessLevel.EDIT, groupId: 2 });
 		});
 	});
 
@@ -1288,10 +1658,8 @@ describe("permissionRouter", () => {
 				courseId: "c2",
 				accessLevel: AccessLevel.EDIT
 			});
-			expect(hasResourceAccess).toHaveBeenCalledWith({
+			expect(hasResourceAccess).toHaveBeenCalledWith("user-id", {
 				courseId: "c2",
-				lessonId: undefined,
-				userId: "user-id",
 				accessLevel: AccessLevel.EDIT
 			});
 			expect(res).toEqual(true);
@@ -1305,6 +1673,38 @@ describe("permissionRouter", () => {
 			});
 			expect(hasResourceAccess).not.toHaveBeenCalled();
 			expect(res).toEqual(true);
+		});
+
+		it("checks access for subjectId", async () => {
+			const { caller } = prepare({ role: "USER" });
+			(hasResourceAccess as jest.Mock).mockResolvedValue(true);
+
+			const res = await caller.hasResourceAccess({
+				subjectId: "sb1",
+				accessLevel: AccessLevel.EDIT
+			});
+
+			expect(hasResourceAccess).toHaveBeenCalledWith("user-id", {
+				subjectId: "sb1",
+				accessLevel: AccessLevel.EDIT
+			});
+			expect(res).toBe(true);
+		});
+
+		it("checks access for specializationId", async () => {
+			const { caller } = prepare({ role: "USER" });
+			(hasResourceAccess as jest.Mock).mockResolvedValue(false);
+
+			const res = await caller.hasResourceAccess({
+				specializationId: "sp1",
+				accessLevel: AccessLevel.FULL
+			});
+
+			expect(hasResourceAccess).toHaveBeenCalledWith("user-id", {
+				specializationId: "sp1",
+				accessLevel: AccessLevel.FULL
+			});
+			expect(res).toBe(false);
 		});
 	});
 
@@ -1503,8 +1903,7 @@ describe("permissionRouter", () => {
 				groupId: 3,
 				permission: { courseId: "c3", accessLevel: AccessLevel.FULL }
 			});
-			expect(hasResourceAccess).toHaveBeenCalledWith({
-				userId: ctx.user.id,
+			expect(hasResourceAccess).toHaveBeenCalledWith(ctx.user.id, {
 				courseId: "c3",
 				accessLevel: AccessLevel.FULL
 			});
@@ -1514,6 +1913,43 @@ describe("permissionRouter", () => {
 				accessLevel: AccessLevel.FULL
 			});
 			expect(res).toEqual({ id: "p2" });
+		});
+
+		it("creates subject permission when caller is admin", async () => {
+			const { caller } = prepare({ role: "ADMIN" });
+			(createResourceAccess as jest.Mock).mockResolvedValue({ id: "ps" });
+
+			await caller.grantGroupPermission({
+				groupId: 2,
+				permission: { subjectId: "sb1", accessLevel: AccessLevel.FULL }
+			});
+
+			expect(createResourceAccess).toHaveBeenCalledWith({
+				groupId: 2,
+				subjectId: "sb1",
+				accessLevel: AccessLevel.FULL
+			});
+		});
+
+		it("creates specialization permission when caller has FULL access", async () => {
+			const { caller, ctx } = prepare({ role: "USER" });
+			(hasResourceAccess as jest.Mock).mockResolvedValue(true);
+			(createResourceAccess as jest.Mock).mockResolvedValue({ id: "psp" });
+
+			await caller.grantGroupPermission({
+				groupId: 3,
+				permission: { specializationId: "sp1", accessLevel: AccessLevel.FULL }
+			});
+
+			expect(hasResourceAccess).toHaveBeenCalledWith(ctx.user.id, {
+				specializationId: "sp1",
+				accessLevel: AccessLevel.FULL
+			});
+			expect(createResourceAccess).toHaveBeenCalledWith({
+				groupId: 3,
+				specializationId: "sp1",
+				accessLevel: AccessLevel.FULL
+			});
 		});
 	});
 
@@ -1580,6 +2016,43 @@ describe("permissionRouter", () => {
 			expect(res).toEqual({ id: "p3" });
 		});
 
+		it("deletes subject permission when caller has FULL access on subject", async () => {
+			const { caller, ctx } = prepare({ role: "USER" });
+			(database.permission.findUnique as jest.Mock).mockResolvedValue({
+				id: "ps",
+				groupId: 5,
+				subjectId: "sb1",
+				accessLevel: AccessLevel.VIEW
+			});
+			(hasGroupRole as jest.Mock).mockResolvedValue(false);
+			(hasResourceAccess as jest.Mock).mockResolvedValue(true);
+			(database.permission.delete as jest.Mock).mockResolvedValue({ id: "ps" });
+
+			await caller.revokeGroupPermission({ permissionId: "ps" });
+
+			expect(hasResourceAccess).toHaveBeenCalledWith(ctx.user.id, {
+				subjectId: "sb1",
+				accessLevel: AccessLevel.FULL
+			});
+		});
+
+		it("deletes specialization permission when caller is group admin", async () => {
+			const { caller, ctx } = prepare({ role: "USER" });
+			(database.permission.findUnique as jest.Mock).mockResolvedValue({
+				id: "psp",
+				groupId: 6,
+				specializationId: "sp1",
+				accessLevel: AccessLevel.EDIT
+			});
+			(hasGroupRole as jest.Mock).mockResolvedValue(true);
+			(database.permission.delete as jest.Mock).mockResolvedValue({ id: "psp" });
+
+			await caller.revokeGroupPermission({ permissionId: "psp" });
+
+			expect(hasGroupRole).toHaveBeenCalledWith(6, ctx.user.id, GroupRole.ADMIN);
+			expect(hasResourceAccess).not.toHaveBeenCalled();
+		});
+
 		it("throws FORBIDDEN when caller lacks rights", async () => {
 			const { caller } = prepare({ role: "USER" });
 			(database.permission.findUnique as jest.Mock).mockResolvedValue({
@@ -1617,7 +2090,6 @@ describe("permissionRouter", () => {
 			expect(database.permission.count).toHaveBeenCalledWith({
 				where: {
 					accessLevel: AccessLevel.FULL,
-					lessonId: undefined,
 					courseId: "c1"
 				}
 			});
@@ -1875,82 +2347,81 @@ describe("permissionRouter", () => {
 				message: "Insufficient permissions"
 			} as Partial<TRPCError>);
 
-			expect(hasResourceAccess).toHaveBeenCalledWith({
-				userId: "user-id",
+			expect(hasResourceAccess).toHaveBeenCalledWith("user-id", {
 				courseId: "c1",
 				accessLevel: AccessLevel.FULL
 			});
-			expect(database.permission.findMany).not.toHaveBeenCalled();
+			expect(getEffectiveResourceAccesses).not.toHaveBeenCalled();
 		});
 
 		it("proceeds when user is ADMIN", async () => {
 			const { caller } = prepare({ role: "ADMIN" });
-			(database.permission.findMany as jest.Mock).mockResolvedValue([]);
+			(getEffectiveResourceAccesses as jest.Mock).mockResolvedValue([]);
 
 			const result = await caller.getEffectiveResourceAccesses({ courseId: "c1" });
 
 			expect(hasResourceAccess).not.toHaveBeenCalled();
-			expect(database.permission.findMany).toHaveBeenCalledWith({
-				where: { courseId: "c1" },
-				select: expect.any(Object)
-			});
+			expect(getEffectiveResourceAccesses).toHaveBeenCalledWith({ courseId: "c1" });
 			expect(result).toEqual([]);
 		});
 
 		it("proceeds when user has FULL access", async () => {
 			const { caller } = prepare({ role: "USER" });
 			(hasResourceAccess as jest.Mock).mockResolvedValue(true);
-			(database.permission.findMany as jest.Mock).mockResolvedValue([]);
+			(getEffectiveResourceAccesses as jest.Mock).mockResolvedValue([]);
 
 			const result = await caller.getEffectiveResourceAccesses({ lessonId: "l1" });
 
-			expect(hasResourceAccess).toHaveBeenCalledWith({
-				userId: "user-id",
+			expect(hasResourceAccess).toHaveBeenCalledWith("user-id", {
 				lessonId: "l1",
 				accessLevel: AccessLevel.FULL
 			});
-			expect(database.permission.findMany).toHaveBeenCalledWith({
-				where: { lessonId: "l1" },
-				select: expect.any(Object)
-			});
+			expect(getEffectiveResourceAccesses).toHaveBeenCalledWith({ lessonId: "l1" });
 			expect(result).toEqual([]);
+		});
+
+		it("proceeds for subjectId resource", async () => {
+			const { caller } = prepare({ role: "USER" });
+			(hasResourceAccess as jest.Mock).mockResolvedValue(true);
+			(getEffectiveResourceAccesses as jest.Mock).mockResolvedValue([]);
+
+			await caller.getEffectiveResourceAccesses({ subjectId: "sb1" });
+
+			expect(hasResourceAccess).toHaveBeenCalledWith("user-id", {
+				subjectId: "sb1",
+				accessLevel: AccessLevel.FULL
+			});
+			expect(getEffectiveResourceAccesses).toHaveBeenCalledWith({ subjectId: "sb1" });
+		});
+
+		it("proceeds for specializationId resource", async () => {
+			const { caller } = prepare({ role: "USER" });
+			(hasResourceAccess as jest.Mock).mockResolvedValue(true);
+			(getEffectiveResourceAccesses as jest.Mock).mockResolvedValue([]);
+
+			await caller.getEffectiveResourceAccesses({ specializationId: "sp1" });
+
+			expect(hasResourceAccess).toHaveBeenCalledWith("user-id", {
+				specializationId: "sp1",
+				accessLevel: AccessLevel.FULL
+			});
+			expect(getEffectiveResourceAccesses).toHaveBeenCalledWith({
+				specializationId: "sp1"
+			});
 		});
 
 		it("returns empty array when no permissions", async () => {
 			const { caller } = prepare({ role: "ADMIN" });
-			(database.permission.findMany as jest.Mock).mockResolvedValue([]);
+			(getEffectiveResourceAccesses as jest.Mock).mockResolvedValue([]);
 
 			const result = await caller.getEffectiveResourceAccesses({ courseId: "c1" });
 
 			expect(result).toEqual([]);
 		});
 
-		it("aggregates single permission", async () => {
+		it("returns aggregated accesses from service", async () => {
 			const { caller } = prepare({ role: "ADMIN" });
-			const mockPerm = {
-				accessLevel: AccessLevel.EDIT,
-				id: "p1",
-				group: {
-					name: "Group1",
-					slug: "group1",
-					id: 1,
-					members: [
-						{
-							user: {
-								displayName: "User1",
-								image: null,
-								name: "user1",
-								id: "u1"
-							}
-						}
-					]
-				}
-			};
-			(database.permission.findMany as jest.Mock).mockResolvedValue([mockPerm]);
-
-			const result = await caller.getEffectiveResourceAccesses({ courseId: "c1" });
-
-			expect(result).toEqual([
+			const aggregated = [
 				{
 					accessLevel: AccessLevel.EDIT,
 					id: "p1",
@@ -1974,113 +2445,51 @@ describe("permissionRouter", () => {
 						]
 					}
 				}
-			]);
-		});
-
-		it("aggregates multiple permissions for same user, takes best access", async () => {
-			const { caller } = prepare({ role: "ADMIN" });
-			const mockPerms = [
-				{
-					accessLevel: AccessLevel.VIEW,
-					id: "p1",
-					group: {
-						name: "Group1",
-						slug: "group1",
-						id: 1,
-						members: [
-							{
-								user: {
-									displayName: "User1",
-									image: null,
-									name: "user1",
-									id: "u1"
-								}
-							}
-						]
-					}
-				},
-				{
-					accessLevel: AccessLevel.EDIT,
-					id: "p2",
-					group: {
-						name: "Group2",
-						slug: "group2",
-						id: 2,
-						members: [
-							{
-								user: {
-									displayName: "User1",
-									image: null,
-									name: "user1",
-									id: "u1"
-								}
-							}
-						]
-					}
-				}
 			];
-			(database.permission.findMany as jest.Mock).mockResolvedValue(mockPerms);
-			(greaterAccessLevel as jest.Mock).mockReturnValue(true); // EDIT > VIEW
+			(getEffectiveResourceAccesses as jest.Mock).mockResolvedValue(aggregated);
 
 			const result = await caller.getEffectiveResourceAccesses({ courseId: "c1" });
 
-			expect(greaterAccessLevel).toHaveBeenCalledWith(AccessLevel.VIEW, AccessLevel.EDIT);
-			expect(result).toHaveLength(1);
-			expect(result[0].accessLevel).toBe(AccessLevel.EDIT);
-			expect(result[0].id).toBe("p1"); // first one
+			expect(result).toEqual(aggregated);
 		});
 
-		it("aggregates for multiple users", async () => {
+		it("returns best aggregated access for one user from service", async () => {
 			const { caller } = prepare({ role: "ADMIN" });
-			const mockPerms = [
+			(getEffectiveResourceAccesses as jest.Mock).mockResolvedValue([
+				{
+					accessLevel: AccessLevel.EDIT,
+					id: "p2",
+					user: { displayName: "User1", image: null, name: "user1", id: "u1" },
+					group: { id: 2, name: "Group2", slug: "group2", members: [] }
+				}
+			]);
+
+			const result = await caller.getEffectiveResourceAccesses({ courseId: "c1" });
+
+			expect(result).toHaveLength(1);
+			expect(result[0].accessLevel).toBe(AccessLevel.EDIT);
+		});
+
+		it("returns multiple users from service", async () => {
+			const { caller } = prepare({ role: "ADMIN" });
+			(getEffectiveResourceAccesses as jest.Mock).mockResolvedValue([
 				{
 					accessLevel: AccessLevel.VIEW,
 					id: "p1",
-					group: {
-						name: "Group1",
-						slug: "group1",
-						id: 1,
-						members: [
-							{
-								user: {
-									displayName: "User1",
-									image: null,
-									name: "user1",
-									id: "u1"
-								}
-							}
-						]
-					}
+					user: { displayName: "User1", image: null, name: "user1", id: "u1" },
+					group: { id: 1, name: "Group1", slug: "group1", members: [] }
 				},
 				{
 					accessLevel: AccessLevel.EDIT,
 					id: "p2",
-					group: {
-						name: "Group2",
-						slug: "group2",
-						id: 2,
-						members: [
-							{
-								user: {
-									displayName: "User2",
-									image: null,
-									name: "user2",
-									id: "u2"
-								}
-							}
-						]
-					}
+					user: { displayName: "User2", image: null, name: "user2", id: "u2" },
+					group: { id: 2, name: "Group2", slug: "group2", members: [] }
 				}
-			];
-			(database.permission.findMany as jest.Mock).mockResolvedValue(mockPerms);
+			]);
 
 			const result = await caller.getEffectiveResourceAccesses({ courseId: "c1" });
 
 			expect(result).toHaveLength(2);
-			const user1 = result.find(r => r.user.id === "u1");
-			const user2 = result.find(r => r.user.id === "u2");
-			expect(user1?.accessLevel).toBe(AccessLevel.VIEW);
-			expect(user2?.accessLevel).toBe(AccessLevel.EDIT);
 		});
 	});
 });

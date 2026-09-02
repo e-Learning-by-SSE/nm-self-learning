@@ -36,6 +36,7 @@ export function useCourseContentForm() {
 			setContent(prev => {
 				const newContent = [...prev];
 				const chapter = newContent[chapterIndex];
+				if (chapter.content.some(x => x.lessonId === lesson.lessonId)) return prev;
 				chapter.content = [...chapter.content, { lessonId: lesson.lessonId }];
 				return newContent;
 			});

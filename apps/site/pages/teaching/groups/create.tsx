@@ -1,13 +1,20 @@
-import { Unauthorized, useRequiredSession } from "@self-learning/ui/layouts";
-import { GroupEditor, GroupFormModel, onGroupCreatorSubmit } from "@self-learning/teaching";
-import { useRouter } from "next/router";
+import { canCreate } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
-import { withTranslations } from "@self-learning/api";
+import {
+	GroupEditor,
+	GroupFormModel,
+	onGroupCreatorSubmit,
+	I18N_NAMESPACE as NS_TEACHING
+} from "@self-learning/teaching";
 import { LoadingBox } from "@self-learning/ui/common";
+import { Unauthorized, useCanCreate, useRequiredSession } from "@self-learning/ui/layouts";
+import { withAuth } from "@self-learning/util/auth";
+import { useRouter } from "next/router";
+import { withTranslations } from "@self-learning/api";
 
 export default function CreateGroupPage() {
 	const session = useRequiredSession();
-	const authorUsername = session.data?.user.name;
+	const canCreateResource = useCanCreate();
 	const router = useRouter();
 	const { mutateAsync: createGroupAsync } = trpc.permission.createGroup.useMutation();
 
@@ -15,12 +22,14 @@ export default function CreateGroupPage() {
 		return <LoadingBox />;
 	}
 
-	if (!authorUsername) {
-		return <Unauthorized>Um eine Gruppe zu erstellen, musst du ein Autor sein.</Unauthorized>;
+	if (!canCreateResource) {
+		return (
+			<Unauthorized>
+				Um eine Gruppe zu erstellen, musst du Mitglied einer Gruppe sein.
+			</Unauthorized>
+		);
 	}
 
-	// This function is triggered when the Editor is closed.
-	// It sets the TRPC mutation and the url where the user is directed after submission
 	async function handleCreateClose(group?: GroupFormModel) {
 		await onGroupCreatorSubmit(
 			() => {
@@ -34,4 +43,12 @@ export default function CreateGroupPage() {
 	return <GroupEditor onSubmit={handleCreateClose} />;
 }
 
-export const getServerSideProps = withTranslations(["common"]);
+export const getServerSideProps = withTranslations(
+	Array.from(new Set(["common", ...NS_TEACHING])),
+	withAuth(async (_ctx, user) => {
+		if (!(await canCreate(user))) {
+			return { redirect: { destination: "/403", permanent: false } };
+		}
+		return { props: {} };
+	})
+);

@@ -64,6 +64,7 @@ model Subject {
     courses         Course[]
     specializations Specialization[]
     subjectAdmin    SubjectAdmin[]
+    permissions     Permission[]
 }
 
 model Specialization {
@@ -77,6 +78,7 @@ model Specialization {
     subject             Subject               @relation(fields: [subjectId], references: [subjectId], onDelete: Cascade)
     specializationAdmin SpecializationAdmin[]
     courses             Course[]              @relation("CourseToSpecialization")
+    permissions         Permission[]
 }
 
 model Course {

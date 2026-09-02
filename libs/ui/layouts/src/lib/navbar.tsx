@@ -26,6 +26,7 @@ export function Navbar() {
 	const session = useSession();
 	const { t } = useTranslation("common");
 	const { loginRedirect, logoutRedirect } = useLoginRedirect();
+	const { t } = useTranslation("common");
 
 	const user = session.data?.user;
 
@@ -41,7 +42,7 @@ export function Navbar() {
 							<div className="absolute inset-y-0 left-0 flex items-center lg:hidden">
 								{/* Mobile dropdown-menu button*/}
 								<DisclosureButton className="inline-flex items-center justify-center rounded-md p-2 py-2 text-c-text-muted hover:bg-c-neutral hover:text-c-text focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
-									<span className="sr-only">Menü Öffnen</span>
+									<span className="sr-only">{t("Open_Menu")}</span>
 									{open ? (
 										<XMarkIcon className="block h-6 w-6" aria-hidden="true" />
 									) : (
@@ -57,10 +58,10 @@ export function Navbar() {
 										</div>
 										<div className="hidden w-0 flex-col lg:flex lg:w-fit">
 											<span className="whitespace-nowrap text-sm text-c-text-muted">
-												Universität Hildesheim
+												{t("Operator_Name")}
 											</span>
 											<span className="whitespace-nowrap font-bold text-c-primary">
-												SELF-le@rning
+												{t("Platform_Name")}
 											</span>
 										</div>
 									</Link>
@@ -77,12 +78,12 @@ export function Navbar() {
 										className="text-w rounded-lg bg-c-primary px-8 py-2 font-semibold text-white"
 										onClick={() => loginRedirect()}
 									>
-										Login
+										{t("Login")}
 									</button>
 								) : (
 									<div className="flex items-center gap-1 xl:gap-4">
 										{user.role === "ADMIN" && (
-											<span title="Admin">
+											<span title={t("Admin")}>
 												<StarIcon className="h-5 text-c-primary" />
 											</span>
 										)}
@@ -108,10 +109,10 @@ export function Navbar() {
 						<div className="space-y-1 px-2 pb-3 pt-2">
 							<DisclosureButton
 								as="a"
-								href="subjects"
+								href="/subjects"
 								className="block rounded-md px-3 py-2 text-base font-medium hover:text-c-text-muted"
 							>
-								{t("subjects")}
+								{t("Topic_other")}
 							</DisclosureButton>
 						</div>
 					</DisclosurePanel>
@@ -123,13 +124,13 @@ export function Navbar() {
 
 function NavbarNavigationLink() {
 	const { t } = useTranslation("common");
-	const [navigation, setNavigation] = useState([{ name: t("subjects"), href: "/subjects" }]);
+	const [navigation, setNavigation] = useState([{ name: t("Topic_other"), href: "/subjects" }]);
 	const router = useRouter();
 
 	const setNavigationLink = useCallback(
 		(query: ParsedUrlQuery) => {
 			let newNavigation: { name: string; href: string }[] = [];
-			newNavigation.push({ name: t("subjects"), href: "/subjects" });
+			newNavigation.push({ name: t("Topic_other"), href: "/subjects" });
 
 			if (query.subjectSlug) {
 				newNavigation.push({
@@ -146,7 +147,7 @@ function NavbarNavigationLink() {
 			} else if (query.courseSlug) {
 				newNavigation = JSON.parse(localStorage.getItem("navigation") ?? "[]");
 				if (newNavigation.length < 1) {
-					newNavigation.push({ name: "Fachgebiete", href: "/subjects" });
+					newNavigation.push({ name: t("Topic_other"), href: "/subjects" });
 					return;
 				}
 				newNavigation.push({
@@ -156,7 +157,7 @@ function NavbarNavigationLink() {
 			}
 			setNavigation(newNavigation);
 		},
-		[setNavigation]
+		[setNavigation, t]
 	);
 
 	useEffect(() => {

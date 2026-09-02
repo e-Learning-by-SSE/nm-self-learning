@@ -25,6 +25,7 @@ export const baseAnswerSchema = z.object({
 /** Every evaluation function should return an object that satisfies this type. */
 export type BaseEvaluation = {
 	isCorrect: boolean;
+	isInProgress?: boolean;
 };
 
 /**

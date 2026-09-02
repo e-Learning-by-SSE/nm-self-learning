@@ -1,4 +1,4 @@
-import { PlusIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import {
 	I18N_NAMESPACE as NS_UI_COMMON,
@@ -6,7 +6,8 @@ import {
 	Paginator,
 	Table,
 	TableDataColumn,
-	TableHeaderColumn
+	TableHeaderColumn,
+	IconOnlyButton
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { AdminGuard, CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
@@ -14,7 +15,7 @@ import { formatDateDistanceToNow } from "@self-learning/util/common";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { withTranslations } from "@self-learning/api";
-import { LessonDeleteOption } from "@self-learning/ui/lesson";
+import { LessonDeleteOption } from "@self-learning/teaching";
 import { keepPreviousData } from "@tanstack/react-query";
 
 export default function LessonManagementPage() {
@@ -76,6 +77,7 @@ export default function LessonManagementPage() {
 						<TableHeaderColumn>Titel</TableHeaderColumn>
 						<TableHeaderColumn>Von</TableHeaderColumn>
 						<TableHeaderColumn>Letzte Änderung</TableHeaderColumn>
+						<TableHeaderColumn></TableHeaderColumn>
 					</>
 				}
 			>
@@ -84,7 +86,7 @@ export default function LessonManagementPage() {
 						<TableDataColumn>
 							<Link
 								className="text-sm font-medium hover:text-c-primary"
-								href={`/teaching/lessons/edit/${lesson.lessonId}`}
+								href={`/lessons/${lesson.slug}`}
 							>
 								{lesson.title}
 							</Link>
@@ -97,15 +99,21 @@ export default function LessonManagementPage() {
 						</TableDataColumn>
 
 						<TableDataColumn>
-							<div className="flex items-right gap-4">
-								<span
-									className="text-c-text-muted"
-									title={new Date(lesson.updatedAt).toLocaleString()}
-								>
-									{formatDateDistanceToNow(lesson.updatedAt)}
-								</span>
-								<LessonDeleteOption lessonId={lesson.lessonId} />
-							</div>
+							{formatDateDistanceToNow(lesson.updatedAt)}
+						</TableDataColumn>
+						<TableDataColumn>
+							<Link href={`/teaching/lessons/edit/${lesson.lessonId}`}>
+								<IconOnlyButton
+									icon={<PencilIcon className="h-5 w-5" />}
+									className="btn-stroked"
+									title={"Lerninhalt bearbeiten"}
+								/>
+							</Link>
+							<LessonDeleteOption
+								id={lesson.lessonId}
+								slug={lesson.slug}
+								title={lesson.title}
+							/>
 						</TableDataColumn>
 					</tr>
 				))}
@@ -116,4 +124,6 @@ export default function LessonManagementPage() {
 	);
 }
 
-export const getServerSideProps = withTranslations(Array.from(new Set(["common", ...NS_UI_COMMON])));
+export const getServerSideProps = withTranslations(
+	Array.from(new Set(["common", "pages-dashboard", ...NS_UI_COMMON]))
+);

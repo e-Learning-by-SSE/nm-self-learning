@@ -105,6 +105,7 @@
 		"ts-node": "^10.9.2",
 		"tslib": "^2.8.1",
 		"unpdf": "^1.6.2",
+		"unzipper": "^0.12.3",
 		"web-encoding": "^1.1.5",
 		"ws": "^8.21.0",
 		"zod": "4.4.3"
@@ -145,6 +146,7 @@
 		"@types/react-instantsearch-dom": "^6.12.9",
 		"@types/refractor": "^3.4.1",
 		"@types/swagger-ui-react": "^4.19.0",
+		"@types/unzipper": "^0.10.11",
 		"@types/ws": "^8.18.1",
 		"@typescript-eslint/eslint-plugin": "^8.60.0",
 		"@typescript-eslint/parser": "^8.60.0",

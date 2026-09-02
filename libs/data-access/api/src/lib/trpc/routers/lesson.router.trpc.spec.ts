@@ -3,15 +3,13 @@ import { Context, UserFromSession } from "../context";
 import { t } from "../trpc";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { TRPCError } from "@trpc/server";
-import { lessonRouter } from "./lesson.router";
-
 import {
 	canCreate,
 	canDelete,
 	preparePermissionsForCreate,
-	preparePermissionsForUpdate,
-	hasEffectiveAccess
+	prepareResourceUpdate
 } from "../../permissions/permission.service";
+import { lessonRouter } from "./lesson.router";
 import { AccessLevel, LessonType } from "@prisma/client";
 
 jest.mock("@self-learning/database", () => ({
@@ -36,8 +34,14 @@ jest.mock("../../permissions/permission.service", () => ({
 	canDelete: jest.fn(),
 	canCreate: jest.fn(),
 	preparePermissionsForCreate: jest.fn(),
-	preparePermissionsForUpdate: jest.fn(),
-	hasEffectiveAccess: jest.fn()
+	prepareResourceUpdate: jest.fn()
+}));
+
+jest.mock("@self-learning/worker-api", () => ({
+	workerServiceClient: {
+		submitJob: { mutate: jest.fn().mockResolvedValue(undefined) },
+		jobQueue: { subscribe: jest.fn() }
+	}
 }));
 
 jest.mock("@self-learning/rag-processing", () => ({
@@ -165,8 +169,7 @@ describe("tRPC API of Lesson Router", () => {
 					]
 				})
 			).rejects.toMatchObject({
-				code: "BAD_REQUEST",
-				message: "requires at least one FULL permission."
+				code: "BAD_REQUEST"
 			} as Partial<TRPCError>);
 			expect(database.lesson.create).not.toHaveBeenCalled();
 		});
@@ -191,65 +194,12 @@ describe("tRPC API of Lesson Router", () => {
 			});
 		});
 
-		it("should throw FORBIDDEN if user has no access", async () => {
+		it("throws FORBIDDEN when prepareResourceUpdate rejects", async () => {
 			const { caller } = prepare({});
 
-			(preparePermissionsForUpdate as jest.Mock).mockResolvedValue(undefined);
-			(hasEffectiveAccess as jest.Mock).mockResolvedValue(false);
-
-			await expect(caller.edit(defaultLesson)).rejects.toMatchObject({
-				code: "FORBIDDEN"
-			} as Partial<TRPCError>);
-			expect(database.lesson.update).not.toHaveBeenCalled();
-		});
-
-		it("should throw FORBIDDEN if user has insufficient access", async () => {
-			const { caller } = prepare({});
-
-			(preparePermissionsForUpdate as jest.Mock).mockResolvedValue(undefined);
-			(hasEffectiveAccess as jest.Mock).mockResolvedValue(false);
-
-			await expect(caller.edit(defaultLesson)).rejects.toMatchObject({
-				code: "FORBIDDEN"
-			} as Partial<TRPCError>);
-			expect(database.lesson.update).not.toHaveBeenCalled();
-		});
-
-		it("should throw BAD_REQUEST if lesson has not FULL permission assigned to it", async () => {
-			const { caller } = prepare({});
-
-			(preparePermissionsForUpdate as jest.Mock).mockRejectedValue(
-				new TRPCError({
-					code: "BAD_REQUEST",
-					message: "requires at least one FULL permission."
-				})
+			(prepareResourceUpdate as jest.Mock).mockRejectedValue(
+				new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" })
 			);
-
-			await expect(
-				caller.edit({
-					...defaultLesson,
-					lesson: {
-						...defaultLesson.lesson,
-						permissions: [
-							{ accessLevel: AccessLevel.EDIT, groupId: 1, groupName: "Group 1" }
-						]
-					}
-				})
-			).rejects.toMatchObject({
-				code: "BAD_REQUEST",
-				message: "requires at least one FULL permission."
-			} as Partial<TRPCError>);
-			expect(database.lesson.update).not.toHaveBeenCalled();
-		});
-
-		it("should throw FORBIDDEN if permissions were modified and user has not FULL access", async () => {
-			const { caller } = prepare({});
-
-			(preparePermissionsForUpdate as jest.Mock).mockResolvedValue({
-				deleteMany: { groupId: { notIn: [1] } },
-				upsert: []
-			});
-			(hasEffectiveAccess as jest.Mock).mockResolvedValue(false);
 
 			await expect(caller.edit(defaultLesson)).rejects.toMatchObject({
 				code: "FORBIDDEN",
@@ -258,11 +208,26 @@ describe("tRPC API of Lesson Router", () => {
 			expect(database.lesson.update).not.toHaveBeenCalled();
 		});
 
-		it("should update lesson if user has EDIT access and permissions are unchanged", async () => {
+		it("throws BAD_REQUEST when prepareResourceUpdate rejects", async () => {
+			const { caller } = prepare({});
+
+			(prepareResourceUpdate as jest.Mock).mockRejectedValue(
+				new TRPCError({
+					code: "BAD_REQUEST",
+					message: "requires at least one FULL permission."
+				})
+			);
+
+			await expect(caller.edit(defaultLesson)).rejects.toMatchObject({
+				code: "BAD_REQUEST"
+			} as Partial<TRPCError>);
+			expect(database.lesson.update).not.toHaveBeenCalled();
+		});
+
+		it("updates lesson when prepareResourceUpdate succeeds", async () => {
 			const { caller } = prepare({ memberships: [1] });
 
-			(preparePermissionsForUpdate as jest.Mock).mockResolvedValue(undefined);
-			(hasEffectiveAccess as jest.Mock).mockResolvedValue(true);
+			(prepareResourceUpdate as jest.Mock).mockResolvedValue(undefined);
 			(database.lesson.findUnique as jest.Mock).mockResolvedValue({
 				ragVersionHash: "old-hash",
 				ragEnabled: false
@@ -282,14 +247,13 @@ describe("tRPC API of Lesson Router", () => {
 			expect(database.lesson.update).toHaveBeenCalledTimes(1);
 		});
 
-		it("should update lesson if user has FULL access and permissions were modified", async () => {
+		it("updates lesson when prepareResourceUpdate returns permission upsert payload", async () => {
 			const { caller } = prepare({});
 
-			(preparePermissionsForUpdate as jest.Mock).mockResolvedValue({
+			(prepareResourceUpdate as jest.Mock).mockResolvedValue({
 				deleteMany: { groupId: { notIn: [1] } },
 				upsert: []
 			});
-			(hasEffectiveAccess as jest.Mock).mockResolvedValue(true);
 			(database.lesson.findUnique as jest.Mock).mockResolvedValue({
 				ragVersionHash: "old-hash",
 				ragEnabled: false

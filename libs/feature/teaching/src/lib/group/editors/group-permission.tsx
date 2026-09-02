@@ -1,20 +1,20 @@
-import { ArrowsUpDownIcon, TrashIcon, UsersIcon } from "@heroicons/react/24/solid";
+import { TrashIcon, UsersIcon } from "@heroicons/react/24/solid";
 import { AccessLevel } from "@prisma/client";
-import { CourseSearchEntry, SearchCourseDialog } from "@self-learning/admin";
-import { ResourceAccessFormSchema, ResourceAccessFormType } from "@self-learning/types";
+import { CourseSearchEntry } from "@self-learning/admin";
 import {
-	Chip,
-	DialogActions,
-	IconTextButton,
+	normalizeFormResourceAccess,
+	ResourceAccessFormSchema,
+	ResourceAccessFormType
+} from "@self-learning/types";
+import {
 	IconOnlyButton,
 	OnDialogCloseFn,
 	Table,
 	TableDataColumn,
 	TableHeaderColumn
 } from "@self-learning/ui/common";
-import { LabeledField } from "@self-learning/ui/forms";
-import { useState } from "react";
 import { GenericCombobox } from "./group-members";
+import { ArrayDiffStatus, TableDiffColumn } from "../misc/use-array-diff";
 
 export type PermissionFormModel = ResourceAccessFormType;
 
@@ -23,28 +23,6 @@ const accessLevelOptions = [
 	{ label: "Edit", value: AccessLevel.EDIT },
 	{ label: "View", value: AccessLevel.VIEW }
 ];
-
-function normalizePermission(perm: ResourceAccessFormType) {
-	return perm.course
-		? {
-				type: "Kurs",
-				title: perm.course.title,
-				id: "c:" + perm.course.courseId,
-				slug: perm.course.slug,
-				accessLevel: perm.accessLevel
-			}
-		: {
-				type: "Lerninhalt",
-				title: perm.lesson.title,
-				id: "l:" + perm.lesson.lessonId,
-				slug: perm.lesson.slug,
-				accessLevel: perm.accessLevel
-			};
-}
-
-export function getPermKey(perm: ResourceAccessFormType) {
-	return perm.course ? "c:" + perm.course.courseId : "l:" + perm.lesson.lessonId;
-}
 
 /**
  * usePermissionEditor - Hook providing state and handlers for permission form field changes.
@@ -81,101 +59,6 @@ export function usePermissionEditor(
 }
 
 /**
- * GroupPermissionEditor - Dialog or form section for editing a single group permission (course or lesson access).
- *
- * Usage: Renders editable fields for permission: resource (course/lesson) selector, access level dropdown.
- * Optionally allows choosing a resource (SearchCourseDialog) or displays read-only resource info. Calls onChange
- * on any change. Optional onSubmit adds action buttons.
- *
- * UI: Either resource selector button (if canEditResource) or read-only resource display, access level
- * combobox (FULL/EDIT/VIEW), optional submit/cancel buttons. Opens SearchCourseDialog internally.
- * Related: usePermissionEditor, SearchCourseDialog, GenericCombobox
- *
- * @param permission - Current permission form data
- * @param onChange - Callback when any field changes
- * @param onSubmit - Optional callback for submit button; if provided, adds dialog action buttons
- * @param canEditResource - If true, shows resource selector; if false, resource is read-only
- */
-export function GroupPermissionEditor({
-	permission,
-	onChange,
-	onSubmit,
-	canEditResource
-}: {
-	permission?: PermissionFormModel;
-	onChange: OnDialogCloseFn<PermissionFormModel>;
-	onSubmit?: OnDialogCloseFn<PermissionFormModel>;
-	canEditResource?: boolean;
-}) {
-	const [searchCourseActive, setSearchCourseActive] = useState(false);
-
-	const { setLevel, setCourse } = usePermissionEditor(onChange, permission);
-
-	const onCancel = () => {
-		onSubmit && onSubmit(undefined);
-	};
-
-	const onSelectCourse = (course?: CourseSearchEntry) => {
-		setSearchCourseActive(false);
-		if (course) {
-			setCourse(course);
-		}
-	};
-
-	return (
-		<div className="flex flex-col gap-2">
-			{canEditResource && (
-				<div className="mb-16 flex items-center justify-between gap-4">
-					<h1 className="text-5xl">{permission?.course ? "Kurs" : "Lerneinheit"}</h1>
-					<IconTextButton
-						text="Kurs auswählen"
-						icon={<ArrowsUpDownIcon className="icon h-5" />}
-						onClick={() => setSearchCourseActive(true)}
-					/>
-					{searchCourseActive && (
-						<SearchCourseDialog open={searchCourseActive} onClose={onSelectCourse} />
-					)}
-				</div>
-			)}
-			{!canEditResource && permission?.course && (
-				<h1 className="text-xl">Kurs {permission?.course?.title}</h1>
-			)}
-			{!canEditResource && permission?.lesson && (
-				<h1 className="text-xl">Lerneinheit {permission?.lesson?.title}</h1>
-			)}
-			{permission?.course && (
-				<Chip displayImage={false}>
-					<span>{permission?.course?.title ?? "N/A"}</span>
-					<span className="text-sm text-light">{permission?.course?.slug}</span>
-				</Chip>
-			)}
-			{permission?.lesson && (
-				<Chip displayImage={false}>
-					<span>{permission?.lesson?.title ?? "N/A"}</span>
-					<span className="text-sm text-light">{permission?.lesson?.slug}</span>
-				</Chip>
-			)}
-			<LabeledField label="Zugriffsebene auswählen">
-				<GenericCombobox
-					value={permission?.accessLevel ?? null}
-					onChange={setLevel}
-					options={accessLevelOptions}
-					label={"Auswählen"}
-				/>
-			</LabeledField>
-
-			{onSubmit && (
-				<DialogActions onClose={onCancel}>
-					<button className="btn-primary" type="submit">
-						Speichern
-					</button>
-				</DialogActions>
-			)}
-		</div>
-	);
-}
-
-/**
  * GroupPermissionRowEditor - Editable table row displaying a permission with inline access level control.
  *
  * Usage: Renders a single permission as an editable table row within GroupPermissionTable. Displays
@@ -191,21 +74,23 @@ export function GroupPermissionEditor({
  */
 export function GroupPermissionRowEditor({
 	permission,
+	diffStatus,
 	onChange,
 	onDelete
 }: {
 	permission: PermissionFormModel;
+	diffStatus?: ArrayDiffStatus;
 	onChange: OnDialogCloseFn<PermissionFormModel>;
 	onDelete?: OnDialogCloseFn<PermissionFormModel>;
 }) {
 	const { setLevel } = usePermissionEditor(onChange, permission);
-	const p = normalizePermission(permission);
+	const p = normalizeFormResourceAccess(permission);
 
 	return (
 		<tr>
-			<TableDataColumn>
+			<TableDiffColumn status={diffStatus}>
 				<span className="text-light">{p.type}</span>
-			</TableDataColumn>
+			</TableDiffColumn>
 
 			<TableDataColumn>
 				<span className="text-light">{p.title}</span>
@@ -280,22 +165,24 @@ export function GroupPermissionTable({ children }: { children: React.ReactNode[]
  */
 export function GroupPermissionRow({
 	permission,
+	diffStatus,
 	onEdit,
 	onDelete,
 	onRelations
 }: {
 	permission: PermissionFormModel;
+	diffStatus?: ArrayDiffStatus;
 	onEdit?: OnDialogCloseFn<PermissionFormModel>;
 	onDelete?: OnDialogCloseFn<PermissionFormModel>;
 	onRelations?: OnDialogCloseFn<PermissionFormModel>;
 }) {
-	const p = normalizePermission(ResourceAccessFormSchema.parse(permission));
+	const p = normalizeFormResourceAccess(ResourceAccessFormSchema.parse(permission));
 
 	return (
 		<tr>
-			<TableDataColumn>
+			<TableDiffColumn status={diffStatus}>
 				<span className="text-light">{p.type}</span>
-			</TableDataColumn>
+			</TableDiffColumn>
 
 			<TableDataColumn>
 				<span className="text-light">{p.title}</span>

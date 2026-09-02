@@ -2,8 +2,9 @@ import { z } from "zod";
 import { authorsRelationSchema } from "./author";
 import { lessonContentSchema } from "./lesson-content";
 import { LessonMeta } from "./lesson-meta";
-import { AccessLevel, LessonType } from "@prisma/client";
+import { LessonType } from "@prisma/client";
 import { skillFormSchema } from "./skill";
+import { ResourcePermissionsFormSchema } from "./resource";
 
 export type LessonInfo = {
 	lessonId: string;
@@ -15,14 +16,7 @@ export type LessonInfo = {
 };
 
 export const lessonSchema = z.object({
-	permissions: z
-		.object({
-			accessLevel: z.nativeEnum(AccessLevel),
-			groupId: z.number(),
-			groupName: z.string()
-		})
-		.array()
-		.min(1, "At least one permission is required"),
+	permissions: ResourcePermissionsFormSchema,
 	lessonId: z.string().nullable(),
 	slug: z.string().min(3),
 	title: z.string().min(3),
@@ -34,13 +28,13 @@ export const lessonSchema = z.object({
 	licenseId: z.number().nullable(),
 	requires: z.array(skillFormSchema),
 	provides: z.array(skillFormSchema),
-	lessonType: z.nativeEnum(LessonType),
+	lessonType: z.enum(LessonType),
 	selfRegulatedQuestion: z.string().nullable(),
 	quiz: z
 		.object({
 			questions: z.array(z.any()),
 			questionOrder: z.array(z.string()),
-			config: z.any().nullable()
+			config: z.any().nullable().optional()
 		})
 		.nullable(),
 	ragEnabled: z.boolean(),

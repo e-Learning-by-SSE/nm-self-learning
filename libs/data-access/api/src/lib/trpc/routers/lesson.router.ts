@@ -3,22 +3,24 @@ import { database, save_subtitle_for_lesson, logJobProgress } from "@self-learni
 import {
 	createLessonMeta,
 	EventTypeMap,
+	greaterAccessLevel,
 	lessonSchema,
 	LessonContentType,
-	subtitleSrcSchema
+	subtitleSrcSchema,
+	resourcePermissionSelect,
+	ResourcePermissions
 } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { differenceInHours } from "date-fns";
 import { z } from "zod";
 import { authorProcedure, authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
-import { greaterAccessLevel } from "../../permissions/permission.utils";
 import {
 	canCreate,
 	canDelete,
-	hasEffectiveAccess,
+	canEdit,
 	preparePermissionsForCreate,
-	preparePermissionsForUpdate
+	prepareResourceUpdate
 } from "../../permissions/permission.service";
 import {
 	getRagVersionHash,
@@ -33,6 +35,42 @@ const saveSubtitleInputSchema = z.object({
 	video_url: z.url(),
 	transcription: subtitleSrcSchema
 });
+
+export function buildLinkedLessonQuery(lessonId: string) {
+	const safeLessonId = lessonId.replace(/'/g, "''");
+
+	return `
+		SELECT
+			c.*, 
+			COALESCE(
+				(
+					SELECT json_agg(
+						json_build_object(
+							'accessLevel', p."accessLevel",
+							'groupId', p."groupId"
+						)
+					)
+					FROM "Permission" p
+					WHERE p."courseId" = c."courseId"
+				),
+				'[]'::json
+			) AS permissions
+		FROM "Course" c
+		WHERE jsonb_typeof(c."content") = 'array'
+		  AND EXISTS (
+			SELECT 1
+			FROM jsonb_array_elements(c."content") AS chapter
+			WHERE jsonb_typeof(chapter) = 'object'
+			  AND jsonb_typeof(chapter->'content') = 'array'
+			  AND EXISTS (
+				SELECT 1
+				FROM jsonb_array_elements(chapter->'content') AS lesson
+				WHERE jsonb_typeof(lesson) = 'object'
+				  AND lesson->>'lessonId' = '${safeLessonId}'
+			  )
+		  );
+	`;
+}
 
 /**
  * RAG Embedding Flow (triggered on lesson create/edit when ragEnabled=true, {by default, RAG is enabled}):
@@ -63,6 +101,9 @@ export const lessonRouter = t.router({
 			where: { lessonId: input.lessonId },
 			include: {
 				authors: { select: { username: true } },
+				permissions: {
+					select: resourcePermissionSelect
+				},
 				requires: {
 					select: {
 						id: true,
@@ -306,12 +347,11 @@ export const lessonRouter = t.router({
 	edit: authProcedure
 		.input(z.object({ lessonId: z.string(), lesson: lessonSchema }))
 		.mutation(async ({ input, ctx }) => {
-			// For edit EDIT access required. But if permissions were updated - FULL access is required
-			const permissions = await preparePermissionsForUpdate(input, input.lesson.permissions);
-			const requiredAccess = permissions ? AccessLevel.FULL : AccessLevel.EDIT;
-			if (!(await hasEffectiveAccess(ctx.user, input, requiredAccess))) {
-				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
-			}
+			const permissions = await prepareResourceUpdate(
+				ctx.user,
+				input,
+				input.lesson.permissions
+			);
 			//
 			const ragCheck = input.lesson.ragEnabled ?? true;
 			const hash =
@@ -370,18 +410,14 @@ export const lessonRouter = t.router({
 
 			return updatedLesson;
 		}),
-	findLinkedLessonEntities: authorProcedure
+	findLinkedLessonEntities: authProcedure
 		.input(z.object({ lessonId: z.string() }))
-		.query(async ({ input }) => {
-			const courses = await database.$queryRaw`
-				SELECT *
-				FROM "Course"
-				WHERE EXISTS (SELECT 1
-							  FROM jsonb_array_elements("Course".content) AS chapter
-									   CROSS JOIN jsonb_array_elements(chapter->'content') AS lesson
-							  WHERE lesson ->>'lessonId' = ${input.lessonId})
-			`;
-			return courses as Course[];
+		.query(async ({ ctx, input }) => {
+			if (!(await canEdit(ctx.user, input))) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
+			const courses = await database.$queryRawUnsafe(buildLinkedLessonQuery(input.lessonId));
+			return courses as (Course & { permissions: ResourcePermissions })[];
 		}),
 	deleteLesson: authProcedure
 		.input(z.object({ lessonId: z.string() }))

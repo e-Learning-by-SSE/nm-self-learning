@@ -1,8 +1,6 @@
-import { GroupRole } from "@prisma/client";
 import { z } from "zod";
 import { GroupEntrySchema } from "./group";
-
-export const GroupRoleEnum = z.enum(GroupRole);
+import { GroupRoleEnum } from "./permissions";
 
 export const membershipSchema = z.object({
 	group: GroupEntrySchema,

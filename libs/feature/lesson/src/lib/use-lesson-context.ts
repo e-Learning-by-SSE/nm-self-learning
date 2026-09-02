@@ -3,7 +3,12 @@ import { extractLessonIds } from "@self-learning/types";
 import { useMemo } from "react";
 
 export function useLessonContext(lessonId: string, courseSlug: string) {
-	const { data: content } = trpc.course.getContent.useQuery({ slug: courseSlug });
+	const { data: content } = trpc.course.getContent.useQuery(
+		{ slug: courseSlug ?? "" },
+		{
+			enabled: !!courseSlug
+		}
+	);
 
 	const chapterName = useMemo(() => {
 		if (!content) return "";

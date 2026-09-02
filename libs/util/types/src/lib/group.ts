@@ -1,6 +1,20 @@
-import { AccessLevel, GroupRole } from "@prisma/client";
+import { GroupRole } from "@prisma/client";
 import { z } from "zod";
 import { add } from "date-fns";
+import { ResourceAccessFormSchema } from "./resource";
+import { GroupRoleEnum } from "./permissions";
+
+// === backend
+
+export const MembershipInputSchema = z.object({
+	groupId: z.number(),
+	expiresAt: z.date().nullable(),
+	userId: z.string(),
+	role: GroupRoleEnum
+});
+export type MembershipInput = z.infer<typeof MembershipInputSchema>;
+
+// === merging
 
 export enum MergeStrategy {
 	First = "first",
@@ -23,20 +37,6 @@ export const MergeGroupsSchema = z.object({
 
 export type MergeGroupsType = z.infer<typeof MergeGroupsSchema>;
 
-// TODO copied from permission.router.ts
-export const AccessLevelEnum = z.enum(AccessLevel);
-export const ResourceAccessFormSchema = z.union([
-	z.object({
-		accessLevel: AccessLevelEnum,
-		course: z.object({ courseId: z.string(), slug: z.string(), title: z.string() }),
-		lesson: z.null().optional()
-	}),
-	z.object({
-		accessLevel: AccessLevelEnum,
-		lesson: z.object({ lessonId: z.string(), slug: z.string(), title: z.string() }),
-		course: z.null().optional()
-	})
-]);
 export const MemberFormSchema = z.object({
 	role: z.enum(GroupRole),
 	expiresAt: z.coerce
@@ -47,18 +47,20 @@ export const MemberFormSchema = z.object({
 		}) as z.ZodNullable<z.ZodDate>,
 	user: z.object({
 		id: z.string(),
-		displayName: z.string().nullable(),
+		displayName: z.string(),
 		email: z.email().nullable(),
 		author: z.object({ id: z.number() }).nullable()
 	})
 });
 
-export type ResourceAccessFormType = z.infer<typeof ResourceAccessFormSchema>;
+// ===
 
 export function computeExpiresAt(durationMinutes: number): Date {
 	const now = new Date();
 	return add(now, { minutes: durationMinutes });
 }
+
+// === group ui
 
 export const GroupFormSchema = z.object({
 	id: z.number().nullable(),
@@ -89,12 +91,6 @@ export function createEmptyGroup(): Group {
 	};
 }
 
-// Group Access
-export type GroupAccess = {
-	groupId: number;
-	accessLevel: AccessLevel;
-};
-
 // Display Group Entry
 export const GroupEntrySchema = z.object({
 	id: z.number(),
@@ -102,13 +98,3 @@ export const GroupEntrySchema = z.object({
 	slug: z.string().nullable()
 });
 export type GroupEntry = z.infer<typeof GroupEntrySchema>;
-
-//
-const accessLevelHierarchy: Record<AccessLevel, number> = { VIEW: 1, EDIT: 2, FULL: 3 };
-
-export function greaterAccessLevel(a: AccessLevel, b: AccessLevel): boolean {
-	return accessLevelHierarchy[a] > accessLevelHierarchy[b];
-}
-export function greaterOrEqAccessLevel(a: AccessLevel, b: AccessLevel): boolean {
-	return accessLevelHierarchy[a] >= accessLevelHierarchy[b];
-}

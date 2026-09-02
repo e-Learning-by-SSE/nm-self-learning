@@ -1,0 +1,10 @@
+{
+	"Courses_Section_Subtitle": "Courses assigned to this $t(common:Focus).",
+	"Link_Course": "Link course",
+	"Course_Added_Toast_Title": "Course added",
+	"Course_Added_Toast_Subtitle": "Course \"{{title}}\" was added successfully.",
+	"Remove_Course_Confirm": "Really remove course \"{{title}}\" from this $t(common:Focus)?",
+	"Course_Removed_Toast_Title": "Course removed",
+	"Course_Removed_Toast_Subtitle": "Course \"{{title}}\" was removed.",
+	"Remove_From_Specialization": "Remove from $t(common:Focus)"
+}

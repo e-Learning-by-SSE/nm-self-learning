@@ -87,11 +87,18 @@ async function updateCourseProgress(courseId: string, content: CourseContent, us
 		});
 	}
 
-	// TODO: Student must be enrolled in course, otherwise this will fail
-	await database.enrollment.update({
-		where: { courseId_username: { courseId, username } },
-		select: null,
-		data: {
+	await database.enrollment.upsert({
+		where: {
+			courseId_username: { courseId, username }
+		},
+		create: {
+			courseId,
+			username,
+			progress,
+			status: "ACTIVE",
+			lastProgressUpdate: new Date()
+		},
+		update: {
 			progress,
 			lastProgressUpdate: new Date(),
 			...(completedAt && {

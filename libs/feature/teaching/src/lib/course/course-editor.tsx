@@ -1,8 +1,9 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AccessLevel } from "@prisma/client";
 import { DialogActions, SectionHeader } from "@self-learning/ui/common";
 import { Form, MarkdownField, OpenAsJsonButton } from "@self-learning/ui/forms";
-import { SidebarEditorLayout } from "@self-learning/ui/layouts";
+import { SidebarEditorLayout, useResourceGuard } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { Controller, FormProvider, useForm, useFormContext } from "react-hook-form";
 import { AuthorsForm } from "../author/authors-form";
@@ -33,6 +34,9 @@ export function CourseEditor({
 			router.back();
 		}
 	}
+
+	const hasFull = useResourceGuard(AccessLevel.FULL, course.permissions);
+	const showGroupAccessEditor = isNew || hasFull;
 
 	return (
 		<FormProvider {...form}>
@@ -72,10 +76,12 @@ export function CourseEditor({
 
 							<OpenAsJsonButton form={form} validationSchema={courseFormSchema} />
 							<CourseInfoForm />
-							<GroupAccessEditor
-								subtitle="Gruppen, die auf diesen Kurs zugreifen können"
-								doUseDefaultGroup={isNew}
-							/>
+							{showGroupAccessEditor && (
+								<GroupAccessEditor
+									subtitle="Gruppen, die auf diesen Kurs zugreifen können"
+									doUseDefaultGroup={isNew}
+								/>
+							)}
 							<AuthorsForm
 								subtitle="Die Autoren dieses Kurses."
 								emptyString="Für diesen Kurs sind noch keine Autoren hinterlegt."
