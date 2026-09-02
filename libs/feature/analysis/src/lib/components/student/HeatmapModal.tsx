@@ -6,7 +6,7 @@ import { ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from "@heroicons/react/2
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import StudyTimeHeatmap from "../study-time-heatmap";
-import { useTranslation } from "next-i18next";
+import { Trans, useTranslation } from "next-i18next";
 
 /** ---------- Helpers ---------- */
 function getWeekRange(date: Date, locale: string) {
@@ -94,43 +94,46 @@ export function HeatmapModal({ onClose }: { onClose: () => void }) {
 
 					{/* Info Text */}
 					<div className="text-gray-700 text-sm mb-6">
-						<p
-							dangerouslySetInnerHTML={{
-								__html: t("heatmapModal.intro.hey", { name })
-							}}
-						/>
-
-						<p
-							className="mt-2"
-							dangerouslySetInnerHTML={{
-								__html: t("heatmapModal.intro.description")
-							}}
-						/>
-
-						<p className="mt-2">
-							<span
-								dangerouslySetInnerHTML={{
-									__html: t("heatmapModal.intro.metricTime")
-								}}
-							/>
-							<br />
-							<span
-								dangerouslySetInnerHTML={{
-									__html: t("heatmapModal.intro.metricCompleted")
-								}}
-							/>
-							<br />
-							<span
-								dangerouslySetInnerHTML={{
-									__html: t("heatmapModal.intro.metricCorrect")
-								}}
+						<p>
+							<Trans
+								i18nKey="heatmapModal.intro.hey"
+								values={{ name }}
+								components={{ strong: <strong /> }}
 							/>
 						</p>
 
-						<p
-							className="mt-2 mb-4"
-							dangerouslySetInnerHTML={{ __html: t("heatmapModal.intro.proTip") }}
-						/>
+						<p className="mt-2">
+							<Trans
+								i18nKey="heatmapModal.intro.description"
+								components={{ strong: <strong /> }}
+							/>
+						</p>
+
+						<p className="mt-2">
+							<Trans
+								i18nKey="heatmapModal.intro.metricTime"
+								components={{ strong: <strong /> }}
+							/>
+							<br />
+
+							<Trans
+								i18nKey="heatmapModal.intro.metricCompleted"
+								components={{ strong: <strong /> }}
+							/>
+							<br />
+
+							<Trans
+								i18nKey="heatmapModal.intro.metricCorrect"
+								components={{ strong: <strong /> }}
+							/>
+						</p>
+
+						<p className="mt-2 mb-4">
+							<Trans
+								i18nKey="heatmapModal.intro.proTip"
+								components={{ strong: <strong /> }}
+							/>
+						</p>
 
 						{/* ---------- Color legend  ---------- */}
 						<div className="flex flex-wrap gap-2 items-center mt-4">
