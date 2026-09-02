@@ -22,9 +22,8 @@ import {
  * Helper to create Metrics query endpoints that accept an optional userId
  */
 function metricsQuery<T>(handler: (userId: string) => Promise<T>) {
-	return authProcedure.input(z.string().optional()).query(async ({ ctx, input }) => {
-		const userId = input ?? ctx.user.id;
-		return handler(userId);
+	return authProcedure.query(async ({ ctx }) => {
+		return handler(ctx.user.id);
 	});
 }
 
