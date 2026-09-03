@@ -5,26 +5,12 @@ import { trpc } from "@self-learning/api-client";
 import { memo, useEffect, useState } from "react";
 import { SearchField } from "@self-learning/ui/forms";
 
-export function SelectSkillDialog({
-	onClose,
-	repositoryId
-}: {
-	onClose: OnDialogCloseFn<SkillFormModel[]>;
-	repositoryId: string;
-}) {
-	return <SkillModal onClose={onClose} repositoryId={repositoryId} />;
+export function SelectSkillDialog({ onClose }: { onClose: OnDialogCloseFn<SkillFormModel[]> }) {
+	return <SkillModal onClose={onClose} />;
 }
 
-function SkillModal({
-	onClose,
-	repositoryId
-}: {
-	onClose: OnDialogCloseFn<SkillFormModel[]>;
-	repositoryId: string;
-}) {
-	const { data: skills, isLoading } = trpc.skill.getUnresolvedSkillsFromRepo.useQuery({
-		repoId: repositoryId
-	});
+function SkillModal({ onClose }: { onClose: OnDialogCloseFn<SkillFormModel[]> }) {
+	const { data: skills, isLoading } = trpc.skill.getSkills.useQuery();
 
 	return (
 		<Dialog onClose={() => onClose(undefined)} title={"Füge die Skills hinzu"}>
@@ -88,19 +74,16 @@ function SelectSkillForm({
 								{filteredSkills
 									.sort((a, b) => a.name.localeCompare(b.name))
 									.map((skill, index) => (
-										<>
-											<span
-												key={"span: " + skill.id + index}
-												className="flex items-center gap-2"
-											>
-												<SkillElementMemorized
-													key={skill.id + index}
-													skill={skill}
-													value={checkBoxMap.get(skill) ?? false}
-													setSkill={setSkill}
-												/>
-											</span>
-										</>
+										<span
+											key={skill.id + index}
+											className="flex items-center gap-2"
+										>
+											<SkillElementMemorized
+												skill={skill}
+												value={checkBoxMap.get(skill) ?? false}
+												setSkill={setSkill}
+											/>
+										</span>
 									))}
 							</>
 						)}

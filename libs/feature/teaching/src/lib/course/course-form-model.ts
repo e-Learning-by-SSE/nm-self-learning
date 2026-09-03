@@ -3,6 +3,7 @@ import {
 	authorsRelationSchema,
 	courseContentSchema,
 	createCourseMeta,
+	skillFormSchema,
 	ResourcePermissionsFormSchema
 } from "@self-learning/types";
 import { stringOrNull } from "@self-learning/util/common";
@@ -18,6 +19,9 @@ export const courseFormSchema = z.object({
 	imgUrl: z.string().nullable(),
 	authors: authorsRelationSchema,
 	content: courseContentSchema,
+	specializationId: z.string().nullable().optional(),
+	provides: z.array(skillFormSchema).nullable().optional(),
+	requires: z.array(skillFormSchema).nullable().optional(),
 	permissions: ResourcePermissionsFormSchema
 });
 

@@ -10,17 +10,44 @@ import {
 } from "@self-learning/ui/lesson";
 import { NextComponentType, NextPageContext } from "next";
 import type { ParsedUrlQuery } from "querystring";
-import { getCourse, LessonData } from "../lesson-data-access";
+import { LessonData } from "../lesson-data-access";
 import { BaseLessonLayout } from "./base-layout";
 import { getSspStandaloneLessonLayout } from "./standalone-lesson-layout";
 import { useMemo } from "react";
 import { MobileSidebarNavigation } from "@self-learning/ui/layouts";
 import Head from "next/head";
+import { database } from "@self-learning/database";
 
 export type LessonLayoutProps = {
 	lesson: LessonData;
-	course: ResolvedValue<typeof getCourse>;
+	course: ResolvedValue<typeof getCombinedSmallCourse>;
 };
+
+
+export async function getCombinedSmallCourse(slug: string) {
+	const course = await database.course.findFirst({
+		where: { slug },
+		select: {
+			courseId: true,
+			title: true,
+			slug: true
+		}
+	});
+
+	const dynCourse = await database.dynCourse.findFirst({
+		where: { slug },
+		select: {
+			courseId: true,
+			title: true,
+			slug: true
+		}
+	});
+	if (!course && !dynCourse) {
+		return null;
+	}
+	const combinedCourse = course ? course : dynCourse;
+	return combinedCourse;
+}
 
 export async function getSSpLessonCourseLayout(
 	params?: ParsedUrlQuery | undefined
@@ -35,7 +62,8 @@ export async function getSSpLessonCourseLayout(
 		throw new Error("No course/lesson slug provided.");
 	}
 
-	const course = await getCourse(courseSlug);
+	const course = await getCombinedSmallCourse(courseSlug);
+
 	if (!course) {
 		return { notFound: true };
 	}

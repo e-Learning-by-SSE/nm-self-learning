@@ -5,7 +5,11 @@ import { ApiError } from "@self-learning/util/http";
 jest.mock("@self-learning/database", () => ({
 	database: {
 		course: {
-			findUniqueOrThrow: jest.fn()
+			findUniqueOrThrow: jest.fn(),
+			findUnique: jest.fn()
+		},
+		dynCourse: {
+			findUnique: jest.fn()
 		},
 		enrollment: {
 			create: jest.fn()
@@ -33,7 +37,7 @@ describe("enrollUser", () => {
 	});
 
 	it("should enroll a user and create a user event", async () => {
-		(database.course.findUniqueOrThrow as jest.Mock).mockResolvedValue({
+		(database.course.findUnique as jest.Mock).mockResolvedValue({
 			courseId,
 			enrollments: []
 		});
@@ -65,20 +69,31 @@ describe("enrollUser", () => {
 
 	it("should throw an error if the user is already enrolled", async () => {
 		const createdAt = new Date();
-		(database.course.findUniqueOrThrow as jest.Mock).mockResolvedValue({
+		(database.course.findUnique as jest.Mock).mockResolvedValue({
 			courseId,
 			enrollments: [{ createdAt }]
 		});
 
 		try {
 			await enrollUser({ courseId, username });
-			fail(`No Exception thrown`);
-		} catch (e) {
-			if (!(e instanceof ApiError)) {
-				fail(`Wrong exception thrown: ${e}`);
-			}
+			fail("Expected function to throw an error");
+		} catch (error) {
+			expect(error).toBeInstanceOf(ApiError);
 		}
-		// await expect(enrollUser({ courseId, username })).rejects.toBeInstanceOf(ApiError); // TODO this does not work in testing
+
+		expect(createUserEvent).not.toHaveBeenCalled();
+	});
+
+	it("should throw an ApiError if the course is not found", async () => {
+		(database.course.findUnique as jest.Mock).mockResolvedValue(null);
+		(database.dynCourse.findUnique as jest.Mock).mockResolvedValue(null);
+
+		try {
+			await enrollUser({ courseId, username });
+			fail("Expected function to throw an error");
+		} catch (error) {
+			expect(error).toBeInstanceOf(ApiError);
+		}
 
 		expect(eventLogMock).not.toHaveBeenCalled();
 	});

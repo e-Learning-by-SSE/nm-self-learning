@@ -74,6 +74,14 @@ export const specializationRouter = t.router({
 				}
 			});
 		}),
+	getAll: authProcedure.query(() => {
+		return database.specialization.findMany({
+			select: {
+				specializationId: true,
+				title: true
+			}
+		});
+	}),
 	create: authProcedure
 		.input(z.object({ subjectId: z.string(), data: specializationSchema }))
 		.mutation(async ({ ctx, input }) => {
@@ -188,6 +196,44 @@ export const specializationRouter = t.router({
 		}
 
 		const { specializationId, courseId } = input;
+
+		const validCourse = await database.course.findUnique({
+			where: { courseId },
+			select: { courseId: true }
+		});
+
+		// TODO SE: Check if there is a better way to distinguish between a normal course and a dynamic course.
+		if (!validCourse) {
+			const validDynCourse = await database.dynCourse.findUnique({
+				where: { courseId },
+				select: { courseId: true }
+			});
+
+			if (!validDynCourse) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: `Course with ID ${courseId} not found.`
+				});
+			}
+
+			const added = await database.specialization.update({
+				where: { specializationId },
+				data: {
+					dynCourses: {
+						connect: { courseId }
+					}
+				},
+				select: {
+					specializationId: true
+				}
+			});
+			console.log(
+				"[specializationRouter.addCourse]: Dynamic course added to specialization",
+				{ specializationId, courseId }
+			);
+
+			return added;
+		}
 
 		const added = await database.specialization.update({
 			where: { specializationId },

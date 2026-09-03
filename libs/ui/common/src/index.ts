@@ -14,6 +14,7 @@ export * from "./lib/card/card";
 export * from "./lib/divider/divider";
 export * from "./lib/dialog/dialog";
 export * from "./lib/dialog/simple-dialog";
+export * from "./lib/dialog/copy-move-dialog";
 export * from "./lib/dialog/dialog-handler";
 export * from "./lib/table/table";
 export * from "./lib/image/image-placeholder";

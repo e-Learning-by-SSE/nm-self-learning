@@ -22,7 +22,8 @@ import { useTranslation } from "next-i18next";
  * )
  */
 export function CourseInfoForm() {
-	const form = useFormContext<CourseFormModel & { content: unknown[] }>(); // widen content type to prevent circular path error
+	const form = useFormContext<CourseFormModel & { content: unknown[] }>();
+	// widen content type to prevent circular path error
 	const {
 		register,
 		control,

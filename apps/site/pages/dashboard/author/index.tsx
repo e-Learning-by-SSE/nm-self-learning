@@ -1,4 +1,4 @@
-import { PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { ArrowDownTrayIcon, PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { TeacherView } from "@self-learning/analysis";
 import { withTranslations } from "@self-learning/api";
 import { database } from "@self-learning/database";
@@ -7,13 +7,16 @@ import {
 	GroupDeleteOption,
 	GroupLeaveOption,
 	I18N_NAMESPACE as NS_FEATURE_TEACHING,
-	SkillRepositoryOverview
+	ParentSkillOverview,
+	ExportCourseDialog,
+	CourseDeleteOption
 } from "@self-learning/teaching";
 import {
 	Divider,
 	I18N_NAMESPACE as NS_UI_COMMON,
 	IconTextButton,
-	SectionHeader
+	SectionHeader,
+	ImageOrPlaceholder
 } from "@self-learning/ui/common";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
@@ -21,6 +24,7 @@ import { withAuth } from "@self-learning/util/auth";
 import Link from "next/link";
 import { GroupRole } from "@prisma/client";
 import { useTranslation } from "next-i18next";
+import { useState } from "react";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
 
@@ -34,7 +38,21 @@ export function getAuthor(username: string) {
 				select: {
 					slug: true,
 					displayName: true,
-					imgUrl: true
+					imgUrl: true,
+					dynCourse: {
+						orderBy: { title: "asc" },
+						select: {
+							courseId: true,
+							slug: true,
+							title: true,
+							imgUrl: true,
+							specializations: {
+								select: {
+									title: true
+								}
+							}
+						}
+					}
 				}
 			},
 			memberships: {
@@ -60,9 +78,7 @@ export function getAuthor(username: string) {
 }
 
 export const getServerSideProps = withTranslations(
-	Array.from(
-		new Set(["common", "pages-dashboard", ...NS_UI_COMMON, ...NS_FEATURE_TEACHING])
-	),
+	Array.from(new Set(["common", "pages-dashboard", ...NS_UI_COMMON, ...NS_FEATURE_TEACHING])),
 	withAuth<Props>(async (context, user) => {
 		if (user.isAuthor) {
 			return { props: { author: await getAuthor(user.name) } };
@@ -82,6 +98,9 @@ function AuthorDashboardPage({ author }: Props) {
 	const isAdmin = session.data?.user.role === "ADMIN";
 	const userId = session.data?.user.id;
 	const canCreate = isAdmin || author.memberships.length > 0;
+
+	// TODO SE: Required by KEE branch, check if this is still needed
+	const [viewExportDialog, setViewExportDialog] = useState(false);
 
 	return (
 		<CenteredSection className="bg-gray-50">
@@ -141,15 +160,132 @@ function AuthorDashboardPage({ author }: Props) {
 								title={t("My_Skill_Cards")}
 								subtitle={t("Author_Skill_Cards_Subtitle")}
 							/>
-							<Link href="/skills/repository/create" className="mt-4">
+
+							<div className="flex flex-row items-center gap-4">
+								<Link href="/teaching/courses/new">
+									<IconTextButton
+										text="Kurs erstellen"
+										icon={<PlusIcon className="icon h-5" />}
+									/>
+								</Link>
+							</div>
+						</div>
+
+						<ul className="flex flex-col gap-4 py-4">
+							{author.author?.dynCourse.length === 0 ? (
+								<div className="mx-auto flex items-center gap-8">
+									<div className="h-32 w-32">
+										<VoidSvg />
+									</div>
+									<p className="text-light">
+										Du hast noch keine dynamischen Kurse erstellt.
+									</p>
+								</div>
+							) : (
+								[
+									...(author.author?.dynCourse ?? []).map(c => ({
+										...c,
+										type: "dynamic"
+									}))
+								].map(course => (
+									<li
+										key={course.courseId}
+										className="flex items-center rounded-lg border border-light-border bg-white"
+									>
+										<ImageOrPlaceholder
+											src={course.imgUrl ?? undefined}
+											className="h-16 w-16 rounded-l-lg object-cover"
+										/>
+										<div className="flex w-full items-center justify-between px-4">
+											<div className="flex flex-col gap-1">
+												<span className="text-xs text-light">
+													{course.specializations
+														.map(s => s.title)
+														.join(" | ")}
+												</span>
+												<Link
+													href={`/courses/${course.slug}`}
+													className="text-sm font-medium hover:text-secondary"
+												>
+													{course.title}
+												</Link>
+											</div>
+
+											<div className="flex flex-wrap justify-end gap-4">
+												<Link
+													href={
+														course.type === "static"
+															? `/teaching/courses/edit/${course.courseId}`
+															: `/teaching/courses/${course.slug}/edit`
+													}
+													className="btn-stroked h-fit w-fit"
+												>
+													<PencilIcon className="icon" />
+													<span>Bearbeiten</span>
+												</Link>
+												<div className="flex space-x-2">
+													<button
+														className="btn-stroked w-full text-right"
+														type="button"
+														onClick={() => setViewExportDialog(true)}
+													>
+														<ArrowDownTrayIcon className="w-5 h-5 icon" />
+														{"Export"}
+													</button>
+												</div>
+												<CourseDeleteOption slug={course.slug} />
+											</div>
+										</div>
+										{viewExportDialog && (
+											<ExportCourseDialog
+												course={course}
+												onClose={() => {
+													setViewExportDialog(false);
+												}}
+											/>
+										)}
+									</li>
+								))
+							)}
+						</ul>
+					</section>
+
+					<Divider />
+
+					{/* <section>
+						<div className="flex justify-between gap-4">
+							<SectionHeader
+								title="Meine Lerneinheiten"
+								subtitle="Autor der folgenden Lerneinheiten:"
+							/>
+
+							<Link href="/teaching/lessons/create">
 								<IconTextButton
+									text="Lerneinheit erstellen"
 									icon={<PlusIcon className="icon h-5" />}
-									className="btn-secondary"
-									text={t("Create_Skill_Card")}
 								/>
 							</Link>
 						</div>
-						<SkillRepositoryOverview />
+
+						{authorName && <Lessons authorName={authorName} />}
+					</section> */}
+
+					<Divider />
+
+					<section>
+						<div className="flex justify-between gap-4">
+							<SectionHeader
+								title="Skillkarten"
+								subtitle="Besitzer der folgenden Skillkarten"
+							/>
+							<Link href="/skills">
+								<button type="button" className="btn-stroked w-fit self-end">
+									<PencilIcon className="icon" />
+									<span>Skills bearbeiten</span>
+								</button>
+							</Link>
+						</div>
+						<ParentSkillOverview />
 					</section>
 
 					<Divider />

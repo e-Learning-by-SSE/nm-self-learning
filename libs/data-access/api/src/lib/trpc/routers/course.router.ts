@@ -1,14 +1,17 @@
 import { AccessLevel, Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import {
+	dynCourseFormSchema,
 	courseFormSchema,
 	getFullCourseExport,
 	mapCourseFormToInsert,
 	mapCourseFormToUpdate
 } from "@self-learning/teaching";
 import {
+	CourseChapter,
 	CourseContent,
 	CourseMeta,
+	createCourseMeta,
 	extractLessonIds,
 	greaterAccessLevel,
 	LessonMeta
@@ -16,7 +19,8 @@ import {
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { authProcedure, t } from "../trpc";
+import { authProcedure, authorProcedure, isCourseAuthorProcedure, t } from "../trpc";
+import { UserFromSession } from "../context";
 import { getCourseResource } from "../../permissions/course.utils";
 import {
 	canCreate,
@@ -25,6 +29,19 @@ import {
 	preparePermissionsForCreate,
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
+import {
+	And,
+	CompositeUnit,
+	DefaultCostParameter,
+	Empty,
+	getPath,
+	isCompositeGuard,
+	LearningUnit as LibLearningUnit,
+	Unit,
+	Variable,
+	Skill as LibSkill
+} from "@e-learning-by-sse/nm-skill-lib";
+import { randomUUID } from "crypto";
 
 export const courseRouter = t.router({
 	listAvailableCourses: authProcedure
@@ -65,7 +82,7 @@ export const courseRouter = t.router({
 		.query(async ({ input }) => {
 			const pageSize = input.pageSize ?? 20;
 
-			const where: Prisma.CourseWhereInput = {
+			const whereCourse: Prisma.CourseWhereInput = {
 				title:
 					input.title && input.title.length > 0
 						? { contains: input.title, mode: "insensitive" }
@@ -76,12 +93,38 @@ export const courseRouter = t.router({
 				authors: input.authorId ? { some: { username: input.authorId } } : undefined
 			};
 
-			const result = await database.course.findMany({
-				select: { slug: true, title: true },
+			const whereDynCourse: Prisma.DynCourseWhereInput = {
+				title:
+					input.title && input.title.length > 0
+						? { contains: input.title, mode: "insensitive" }
+						: undefined,
+				specializations: input.specializationId
+					? { some: { specializationId: input.specializationId } }
+					: undefined,
+				authors: input.authorId ? { some: { username: input.authorId } } : undefined
+			};
+
+			const course = await database.course.findMany({
+				select: {
+					slug: true,
+					title: true
+				},
 				...paginate(pageSize, input.page),
 				orderBy: { title: "asc" },
-				where
+				where: whereCourse
 			});
+
+			const dynCourse = await database.dynCourse.findMany({
+				select: {
+					slug: true,
+					title: true
+				},
+				...paginate(pageSize, input.page),
+				orderBy: { title: "asc" },
+				where: whereDynCourse
+			});
+
+			const result = [...course, ...dynCourse].sort((a, b) => a.title.localeCompare(b.title));
 
 			return {
 				result,
@@ -198,7 +241,8 @@ export const courseRouter = t.router({
 		.query(async ({ input }) => {
 			const pageSize = 15;
 
-			const where: Prisma.CourseWhereInput = {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const where: any = {
 				title:
 					input.title && input.title.length > 0
 						? { contains: input.title, mode: "insensitive" }
@@ -208,7 +252,7 @@ export const courseRouter = t.router({
 					: undefined
 			};
 
-			const [result, count] = await database.$transaction([
+			const [resultCourse, countCourse] = await database.$transaction([
 				database.course.findMany({
 					select: {
 						courseId: true,
@@ -225,6 +269,38 @@ export const courseRouter = t.router({
 				database.course.count({ where })
 			]);
 
+			const [resultDynCourse, countDynCourse] = await database.$transaction([
+				database.dynCourse.findMany({
+					select: {
+						courseId: true,
+						slug: true,
+						imgUrl: true,
+						title: true,
+						authors: {
+							select: {
+								displayName: true
+							}
+						},
+						subject: {
+							select: {
+								subjectId: true,
+								title: true
+							}
+						}
+					},
+					...paginate(pageSize, input.page),
+					orderBy: { title: "asc" },
+					where
+				}),
+				database.course.count({ where })
+			]);
+
+			const result = [...resultCourse, ...resultDynCourse].sort((a, b) =>
+				a.title.localeCompare(b.title)
+			);
+
+			const count = countCourse + countDynCourse;
+
 			return {
 				result,
 				pageSize: pageSize,
@@ -235,19 +311,32 @@ export const courseRouter = t.router({
 	getContent: t.procedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
 		const course = await database.course.findUniqueOrThrow({
 			where: { slug: input.slug },
-			select: { content: true }
+			select: {
+				content: true
+			}
 		});
 
 		const content = (course.content ?? []) as CourseContent;
+
 		const lessonIds = extractLessonIds(content);
 
 		const lessons = await database.lesson.findMany({
 			where: { lessonId: { in: lessonIds } },
-			select: { lessonId: true, slug: true, title: true, meta: true }
+			select: {
+				lessonId: true,
+				slug: true,
+				title: true,
+				meta: true
+			}
 		});
 
 		const lessonMap: {
-			[lessonId: string]: { title: string; lessonId: string; slug: string; meta: LessonMeta };
+			[lessonId: string]: {
+				title: string;
+				lessonId: string;
+				slug: string;
+				meta: LessonMeta;
+			};
 		} = {};
 
 		for (const lesson of lessons) {
@@ -256,6 +345,238 @@ export const courseRouter = t.router({
 
 		return { content, lessonMap };
 	}),
+	getCourse: authorProcedure
+		.input(z.object({ slug: z.string() }))
+		.output(courseFormSchema)
+		.query(async ({ input }) => {
+			const course = await database.course.findUniqueOrThrow({
+				where: { slug: input.slug },
+				include: {
+					authors: true,
+					provides: {
+						include: {
+							children: true,
+							parents: true
+						}
+					},
+					requires: {
+						include: {
+							children: true,
+							parents: true
+						}
+					},
+					specializations: true,
+					permissions: {
+						select: {
+							groupId: true,
+							group: true,
+							accessLevel: true
+						}
+					}
+				}
+			});
+
+			return {
+				courseId: course.courseId,
+				subjectId: course.subjectId ?? null,
+				slug: course.slug,
+				title: course.title,
+				subtitle: course.subtitle ?? "",
+				description: course.description ?? null,
+				imgUrl: course.imgUrl ?? null,
+
+				content: normalizeContent(course.content),
+
+				specializations: course.specializations ?? [],
+
+				authors: course.authors.map(a => ({
+					username: a.username
+				})),
+
+				provides: course.provides.map(s => ({
+					id: s.id,
+					name: s.name,
+					description: s.description ?? null,
+					authorId: s.authorId,
+					children: s.children.map(child => child.id),
+					parents: s.parents.map(parent => parent.id)
+				})),
+
+				requires: course.requires.map(s => ({
+					id: s.id,
+					name: s.name,
+					description: s.description ?? null,
+					authorId: s.authorId,
+					children: s.children.map(child => child.id),
+					parents: s.parents.map(parent => parent.id)
+				})),
+
+				permissions: course.permissions.map(p => ({
+					groupId: p.groupId,
+					groupName: p.group.name,
+					accessLevel: p.accessLevel
+				}))
+			};
+		}),
+	generateLessonPath: authProcedure
+		.input(
+			z.object({
+				courseId: z.string(),
+				knowledge: z.array(z.string())
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const course = await database.dynCourse.findUniqueOrThrow({
+				where: { courseId: input.courseId },
+				select: {
+					courseVersion: true,
+					teachingGoals: {
+						select: {
+							id: true,
+							children: {
+								// Needed for nestedSkills
+								select: { id: true }
+							}
+						}
+					}
+				}
+			});
+
+			const dbSkills = await database.skill.findMany({
+				select: {
+					id: true,
+					children: {
+						select: { id: true }
+					}
+				}
+			});
+
+			const userGlobalKnowledge = await database.student.findUnique({
+				where: { username: ctx.user.name },
+				select: {
+					received: {
+						select: {
+							id: true
+						}
+					}
+				}
+			});
+
+			const lessons = (
+				await database.lesson.findMany({
+					select: {
+						lessonId: true,
+						requires: {
+							select: {
+								id: true
+							}
+						},
+						provides: {
+							select: {
+								id: true
+							}
+						}
+					}
+				})
+			).map(lesson => ({
+				...lesson,
+				requires: lesson.requires ?? [],
+				provides: lesson.provides ?? []
+			}));
+
+			const userGlobalKnowledgeIds = (userGlobalKnowledge?.received ?? []).map(
+				(skill: any) => skill.id
+			);
+
+			const userKnowledge = [...(input.knowledge ?? []), ...userGlobalKnowledgeIds];
+
+			const libSkills: LibSkill[] = (dbSkills ?? []).map((skill: any) => ({
+				id: skill.id,
+				repositoryId: skill.repositoryId,
+				children: (skill.children ?? []).map((child: any) => child.id)
+			}));
+
+			const findSkill = (id: string) => libSkills.find(skill => skill.id === id);
+
+			const goalLibSkills: LibSkill[] = (course.teachingGoals ?? []).map((goal: any) => ({
+				id: goal.id,
+				repositoryId: goal.repositoryId,
+				children: (goal.children ?? []).map((child: any) => child.id)
+			}));
+
+			const knowledgeLibSkills: LibSkill[] = userKnowledge
+				.map(skillId => findSkill(skillId))
+				.filter((skill): skill is LibSkill => !!skill);
+
+			const convertToExpression = (skillIds?: string[]): And | Empty => {
+				if (!skillIds || skillIds.length === 0) {
+					return new Empty();
+				}
+				const skills = skillIds
+					.map(id => findSkill(id))
+					.filter((s): s is LibSkill => s !== undefined);
+
+				if (skills.length === 0) {
+					return new Empty();
+				}
+				const variables = skills.map(skill => new Variable(skill));
+				return new And(variables);
+			};
+
+			const learningUnits: LibLearningUnit[] = (lessons ?? []).map((lesson: any) => ({
+				id: lesson.lessonId,
+				requires: convertToExpression((lesson.requires ?? []).map((req: any) => req.id)),
+				provides: (lesson.provides ?? [])
+					.map((tg: any) => findSkill(tg.id))
+					.filter((s: LibSkill | undefined): s is LibSkill => s !== undefined),
+				suggestedSkills: []
+			}));
+
+			const fnCost = () => 1;
+
+			const guard: isCompositeGuard<LibLearningUnit> = (
+				element: Unit<LibLearningUnit>
+			): element is CompositeUnit<LibLearningUnit> => {
+				return false;
+			};
+
+			const path = getPath({
+				skills: libSkills,
+				learningUnits: learningUnits,
+				goal: goalLibSkills,
+				knowledge: knowledgeLibSkills,
+				fnCost: fnCost,
+				isComposite: guard,
+				costOptions: DefaultCostParameter
+			});
+
+			const courseChapter = [
+				{
+					title: "",
+					description: "",
+					content: path?.path.map(unit => ({
+						lessonId: unit.origin?.id ?? ""
+					}))
+				} as CourseChapter
+			];
+
+			const courseContent: CourseContent = courseChapter;
+
+			const generatedCourse = database.generatedLessonPath.create({
+				data: {
+					content: courseContent,
+					courseVersion: course.courseVersion,
+					slug: randomUUID(),
+					courseId: input.courseId,
+					meta: createCourseMeta({ content: courseContent }),
+					username: ctx.user.name,
+					createdAt: new Date(),
+					updatedAt: new Date()
+				}
+			});
+
+			return generatedCourse;
+		}),
 	fullExport: t.procedure.input(z.object({ slug: z.string() })).query(async ({ input, ctx }) => {
 		const fullExport = await getFullCourseExport(input.slug);
 
@@ -275,6 +596,145 @@ export const courseRouter = t.router({
 
 		return fullExport;
 	}),
+	createDynamic: authorProcedure.input(dynCourseFormSchema).mutation(async ({ input, ctx }) => {
+		if (!canCreate(ctx.user)) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message:
+					"Creating a course requires either: admin role | admin of all related subjects | admin of all related specializations"
+			});
+		} else if (input.authors.length <= 0 && ctx.user.role != "ADMIN") {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message:
+					"Deleting the last author as is not allowed, except for Admin Users. Contact the side administrator for more information. "
+			});
+		}
+
+		const created = await database.dynCourse.create({
+			data: {
+				...input,
+				courseId: crypto.randomUUID(),
+				slug: input.slug,
+				courseVersion: Date.now().toString(),
+				subjectId: input.subjectId ?? undefined,
+				meta: {},
+				authors: {
+					connect: input.authors.map(author => ({ username: author.username }))
+				},
+				teachingGoals: {
+					connect: input.teachingGoals.map(goal => ({
+						name: goal.name,
+						description: goal.description,
+						id: goal.id
+					}))
+				},
+				requirements: {
+					connect: input.requirements.map(skill => ({
+						name: skill.name,
+						description: skill.description,
+						id: skill.id
+					}))
+				}
+			},
+			select: {
+				title: true,
+				slug: true,
+				courseId: true
+			}
+		});
+
+		console.log("[courseRouter.createDynamic]: Course created by", ctx.user.name, created);
+		return created;
+	}),
+	editDynamic: isCourseAuthorProcedure
+		.input(
+			z.object({
+				courseId: z.string(),
+				course: dynCourseFormSchema
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			const { courseId, ...updateData } = input.course;
+			const updated = await database.dynCourse.update({
+				where: { courseId: courseId ?? "" },
+				data: {
+					...updateData,
+					courseVersion: Date.now().toString(),
+					slug: updateData.slug,
+					meta: {},
+
+					authors: {
+						set: [],
+						connect: updateData.authors.map(author => ({
+							username: author.username
+						}))
+					},
+					teachingGoals: {
+						set: updateData.teachingGoals.map(goal => ({ id: goal.id }))
+					},
+					requirements: { set: updateData.requirements.map(skill => ({ id: skill.id })) }
+				},
+				select: {
+					title: true,
+					slug: true,
+					courseId: true
+				}
+			});
+
+			console.log("[courseRouter.editDynamic]: Course updated by", ctx.user?.name, updated);
+			return updated;
+		}),
+	getDynCourse: authorProcedure
+		.input(z.object({ slug: z.string() }))
+		.output(dynCourseFormSchema)
+		.query(async ({ input }) => {
+			const course = await database.dynCourse.findUniqueOrThrow({
+				where: { slug: input.slug },
+				include: {
+					authors: true,
+					teachingGoals: {
+						include: {
+							children: true,
+							parents: true
+						}
+					},
+					requirements: {
+						include: {
+							children: true,
+							parents: true
+						}
+					},
+					specializations: true
+				}
+			});
+			return {
+				courseId: course.courseId,
+				subjectId: course.subjectId,
+				slug: course.slug,
+				title: course.title,
+				subtitle: course.subtitle,
+				description: course.description,
+				imgUrl: course.imgUrl,
+				authors: course.authors.map(a => ({ username: a.username })),
+				teachingGoals: course.teachingGoals.map(goal => ({
+					id: goal.id,
+					name: goal.name,
+					description: goal.description,
+					authorId: goal.authorId,
+					children: goal.children.map(c => c.id),
+					parents: goal.parents.map(p => p.id)
+				})),
+				requirements: course.requirements.map(req => ({
+					id: req.id,
+					name: req.name,
+					description: req.description,
+					authorId: req.authorId,
+					children: req.children.map(c => c.id),
+					parents: req.parents.map(p => p.id)
+				}))
+			};
+		}),
 	create: authProcedure.input(courseFormSchema).mutation(async ({ input, ctx }) => {
 		if (input.authors.length <= 0 && ctx.user.role !== "ADMIN") {
 			throw new TRPCError({
@@ -473,3 +933,61 @@ export const courseRouter = t.router({
 			});
 		})
 });
+
+/**
+ * Guard (pre-check) that checks if a user is allowed to export a course based on its role.
+ * These are:
+ * - ADMIN: always allowed
+ * - AUTHOR: allowed if the user is an author of the course
+ *
+ * Further, users of other roles may also export a course, if all content is public (OER-compatible).
+ * However, this is not checked here, as this requires the full course data and, thus, is done during the export.
+ * @param user The user which requests the export
+ * @param slug The course to export (by slug)
+ * @returns true if the user is allowed to export the course, false requires to check all licenses
+ */
+async function authorizedUserForExport(
+	user: UserFromSession | undefined,
+	slug: string
+): Promise<boolean> {
+	if (!user) {
+		return false;
+	}
+
+	if (user.role === "ADMIN") {
+		return true;
+	}
+
+	const beforeExport = await database.course.findUniqueOrThrow({
+		where: { slug },
+		select: {
+			authors: {
+				select: {
+					username: true
+				}
+			}
+		}
+	});
+
+	if (beforeExport.authors.some(author => author.username === user.name)) {
+		return true;
+	}
+
+	return false;
+}
+
+function normalizeContent(
+	raw: unknown
+): { title: string; content: { lessonId: string }[]; description?: string | null }[] {
+	if (!Array.isArray(raw)) return [];
+
+	return raw
+		.filter((item): item is any => item && typeof item === "object") // Remove null and non-objects
+		.map((item: any) => ({
+			title: typeof item.title === "string" ? item.title : "Untitled",
+			content: Array.isArray(item.content)
+				? item.content.filter((c: any) => typeof c.lessonId === "string")
+				: [],
+			description: "description" in item ? item.description : undefined
+		}));
+}

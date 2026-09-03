@@ -16,6 +16,7 @@ import {
 	createLessonMeta,
 	LessonContent
 } from "@self-learning/types";
+import { database } from "@self-learning/database";
 
 export function createExampleCourse(
 	courseId: string,
@@ -103,10 +104,10 @@ export function createLessonMock({
 		permissions: (Partial<Permission> & { group: Partial<Group> })[];
 	} {
 	const defaultSkill: Skill = {
+		authorId: 1,
 		id: "skill:1",
 		name: "Skill1",
-		description: "Skill1 description",
-		repositoryId: "repo:1"
+		description: "Skill1 description"
 	};
 
 	return {

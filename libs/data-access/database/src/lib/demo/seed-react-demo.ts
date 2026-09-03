@@ -10,12 +10,14 @@ import {
 import { getRandomId } from "@self-learning/util/common";
 import { subHours } from "date-fns";
 import { defaultLicenseId } from "../license";
+import { createSkillGroups, createSkills } from "../seed-functions";
 import {
 	createLessonWithRandomContentAndDemoQuestions,
 	createUsers,
 	getDefaultNotificationData
 } from "../seed-functions";
 import { softwareentwicklungDemoGroup } from "../seedSpecializations";
+import { AuthorUser } from "./seed-admin-user";
 
 faker.seed(1);
 
@@ -155,24 +157,24 @@ const reactLessons = [
 		description: faker.lorem.paragraphs(3),
 		content: [
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Start a New React Project",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["101"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Add React to a Website",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["101"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Editor Setup",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["101"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "React Developer Tools",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["101"]
 			})
 		]
 	},
@@ -181,44 +183,44 @@ const reactLessons = [
 		description: faker.lorem.paragraphs(3),
 		content: [
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Your First Component",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["103"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Importing and Exporting Components",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["211"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Writing Markup with JSX",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["101"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "JavaScript in JSX with Curly Braces",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["102"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Passing Props to a Component",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["104"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Conditional Rendering",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["107"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Rendering Lists",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["108"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Keeping Components Pure",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["103"]
 			})
 		]
 	},
@@ -227,39 +229,39 @@ const reactLessons = [
 		description: faker.lorem.paragraphs(3),
 		content: [
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Responding to Events",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["106"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "State: A Component's Memory",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["105"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Render and Commit",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["210"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "State as a Snapshot",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["105"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Queueing a Series of State Updates",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["105"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Updating Objects in State",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["105"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Updating Arrays in State",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["105"]
 			})
 		]
 	},
@@ -268,39 +270,39 @@ const reactLessons = [
 		description: faker.lorem.paragraphs(3),
 		content: [
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Reacting to Input with State",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["105"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Choosing the State Structure",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["105"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Sharing State Between Components",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["211"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Preserving and Resetting State",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["105"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Extracting State Logic into a Reducer",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["213"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Passing Data Deeply with Context",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["214"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Scaling Up with Reducer and Context",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["214"]
 			})
 		]
 	},
@@ -309,49 +311,49 @@ const reactLessons = [
 		description: faker.lorem.paragraphs(3),
 		content: [
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Escape Hatches",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["213"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Referencing Values with Refs",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["213"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Manipulating the DOM with Refs",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["213"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Synchronizing with Effects",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["109"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "You Might Not Need an Effect",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["109"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Lifecycle of Reactive Effects",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["210"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Separating Events from Effects",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["109"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Removing Effect Dependencies",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["109"]
 			}),
 			createLessonWithRandomContentAndDemoQuestions({
-				courseId,
 				title: "Reusing Logic with Custom Hooks",
-				questions: reactDemoQuestions
+				questions: reactDemoQuestions,
+				provides: ["213"]
 			})
 		]
 	}
@@ -409,55 +411,6 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 					}
 				},
 				role: GroupRole.MEMBER
-			}
-		}
-	},
-	{
-		name: "dumbledore",
-		displayName: "Albus Dumbledore",
-		role: "ADMIN",
-		image: "https://i.imgur.com/UWMVO8m.jpeg",
-		accounts: {
-			create: [{ provider: "demo", providerAccountId: "dumbledore", type: "demo-account" }]
-		},
-		student: { create: { username: "dumbledore" } },
-		author: {
-			create: {
-				displayName: "Albus Dumbledore",
-				slug: "albus-dumbledore",
-				imgUrl: "https://i.imgur.com/UWMVO8m.jpeg"
-			}
-		},
-		memberships: {
-			create: {
-				group: {
-					connect: {
-						name: softwareentwicklungDemoGroup.name
-					}
-				},
-				role: GroupRole.ADMIN
-			}
-		},
-		gamificationProfile: {
-			create: {
-				username: "dumbledore",
-				lastLogin: new Date(2025, 5, 14),
-				loginStreak: {
-					count: 3,
-					status: "broken"
-				} satisfies LoginStreak,
-				energy: 10
-			}
-		},
-		notificationSettings: {
-			createMany: {
-				data: getDefaultNotificationData(false)
-			}
-		},
-		featureFlags: {
-			create: {
-				username: "dumbledore",
-				learningStatistics: true
 			}
 		}
 	},
@@ -563,22 +516,123 @@ const users: Prisma.UserCreateInput[] = reactStudents.map(student => ({
 	}
 }));
 
-export async function seedReactDemo() {
+const skills = [
+	{ id: "101", name: "JSX Basics", description: "HTML-ähnliche Syntax in JavaScript" },
+	{
+		id: "102",
+		name: "JSX Expressions",
+		description: "Einbettung von JavaScript-Ausdrücken in JSX"
+	},
+	{ id: "103", name: "Component Basics", description: "Funktionale Komponenten schreiben" },
+	{
+		id: "104",
+		name: "Component Props",
+		description: "Props zum Parametrisieren von Komponenten verwenden"
+	},
+	{ id: "105", name: "Component State", description: "Lokalen Zustand mit useState verwalten" },
+	{ id: "106", name: "Event Handling", description: "Events in React Komponenten behandeln" },
+	{ id: "107", name: "Conditional Rendering", description: "Rendern basierend auf Bedingungen" },
+	{ id: "108", name: "Lists & Keys", description: "Listen dynamisch rendern mit .map()" },
+	{ id: "109", name: "useEffect Basics", description: "Side Effects mit useEffect" },
+	{
+		id: "210",
+		name: "Component Lifecycle",
+		description: "Den Lifecycle von Komponenten verstehen"
+	},
+	{
+		id: "211",
+		name: "Component Composition",
+		description: "Komponenten kombinieren und verschachteln"
+	},
+	{ id: "212", name: "Forms", description: "Formularhandling in React" },
+	{ id: "213", name: "Custom Hooks", description: "Eigene Hooks erstellen und verwenden" },
+	{ id: "214", name: "Context API", description: "Globale Daten mit Context bereitstellen" },
+	{ id: "215", name: "Routing Basics", description: "Navigation mit react-router" },
+	{ id: "216", name: "Dynamic Routing", description: "Dynamische Routen & URL-Parameter" },
+	{ id: "217", name: "Error Boundaries", description: "Fehlerbehandlung in React-Komponenten" },
+	{ id: "218", name: "Code Splitting", description: "Lazy Loading von Komponenten" },
+	{
+		id: "219",
+		name: "Styling Approaches",
+		description: "CSS, CSS Modules, Styled Components, Tailwind"
+	}
+];
+
+const skillGroups = [
+	{
+		id: "2001",
+		name: "JSX & Rendering",
+		description: "Basiswissen zum Schreiben von React Code mit JSX",
+		children: ["101", "102", "107", "108"]
+	},
+	{
+		id: "2002",
+		name: "Component Fundamentals",
+		description: "Alles rund um Komponenten",
+		children: ["103", "104", "105", "106", "211"]
+	},
+	{
+		id: "2003",
+		name: "Hooks Basics",
+		description: "Grundlagen zu React Hooks",
+		children: ["105", "109", "210", "213"]
+	},
+	{
+		id: "2004",
+		name: "Advanced React Patterns",
+		description: "Fortgeschrittene Techniken",
+		children: ["212", "213", "214", "217"]
+	},
+	{
+		id: "2005",
+		name: "Routing & Navigation",
+		description: "Navigationskonzepte in React",
+		children: ["215", "216"]
+	},
+	{
+		id: "2006",
+		name: "Performance & UX",
+		description: "Optimierung und Benutzererlebnis",
+		children: ["218", "219"]
+	},
+	{
+		id: "2007",
+		name: "React Core Concepts",
+		description: "Zusammenführung aller Kernkonzepte",
+		children: ["2001", "2002", "2003", "2004", "2005", "2006"]
+	}
+];
+
+async function seedReactDemoSkills(adminId: number) {
+	await createSkills(adminId, skills);
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Skills");
+
+	await createSkillGroups(adminId, skillGroups);
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Skill Groups");
+}
+
+export async function seedReactDemo(admin: AuthorUser) {
+	await createUsers(users);
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Users");
+
 	await prisma.course.createMany({ data: reactCourses });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Courses");
 
-	const licenceId = await defaultLicenseId();
+	await seedReactDemoSkills(admin.author.id);
 
-	await prisma.lesson.createMany({
-		data: reactLessons.flatMap(chapter =>
-			chapter.content.map(lesson => ({ ...lesson, licenseId: licenceId }))
+	const licenseId = await defaultLicenseId();
+
+	// cant attach skills via provide in createMany
+	await prisma.$transaction(
+		reactLessons.flatMap(chapter =>
+			chapter.content.map(lesson =>
+				prisma.lesson.create({
+					data: { ...lesson, license: { connect: { licenseId } } }
+				})
+			)
 		)
-	});
-
+	);
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Lessons");
-
-	await createUsers(users);
-	console.log(" - %s\x1b[32m ✔\x1b[0m", "Users");
 
 	await prisma.enrollment.createMany({ data: enrollments });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Enrollments");
@@ -610,6 +664,7 @@ export async function seedReactDemo() {
 	});
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Create a group with FULL permissions to all resources");
 
+	// authors depend on lessons and courses
 	for (const author of reactAuthors) {
 		await prisma.user.create({ data: author });
 	}

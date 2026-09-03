@@ -25,16 +25,14 @@ import { defaultLicense } from "./license";
 
 const prisma = new PrismaClient();
 
-const adminName = "dumbledore";
-
 export function createLessonWithRandomContentAndDemoQuestions({
 	title,
 	questions,
-	courseId
+	provides
 }: {
 	title: string;
 	questions: QuizContent;
-	courseId?: string;
+	provides?: string[];
 }) {
 	const content = [
 		{
@@ -52,13 +50,13 @@ export function createLessonWithRandomContentAndDemoQuestions({
 	] as LessonContent;
 
 	return createLesson({
-		courseId,
 		title,
 		subtitle: faker.lorem.paragraph(1),
 		description: faker.lorem.paragraphs(3),
 		content,
 		questions,
-		licenseId: defaultLicense.licenseId
+		licenseId: defaultLicense.licenseId,
+		provides
 	});
 }
 
@@ -71,7 +69,7 @@ export function createLesson({
 	licenseId,
 	lessonType,
 	selfRegulatedQuestion,
-	courseId
+	provides
 }: {
 	title: string;
 	subtitle: string | null;
@@ -81,9 +79,9 @@ export function createLesson({
 	licenseId?: number | null;
 	lessonType?: LessonType;
 	selfRegulatedQuestion?: string;
-	courseId?: string;
+	provides?: string[];
 }) {
-	const lesson: Prisma.LessonCreateManyInput = {
+	const lesson: Prisma.LessonCreateInput = {
 		title,
 		lessonId: faker.string.uuid(),
 		slug: slugify(faker.string.alphanumeric(8) + title, { lower: true, strict: true }),
@@ -94,7 +92,8 @@ export function createLesson({
 		selfRegulatedQuestion: selfRegulatedQuestion,
 		quiz: { questions, config: null },
 		meta: {},
-		licenseId: licenseId ?? 0
+		license: licenseId ? { connect: { licenseId: licenseId } } : undefined,
+		provides: provides ? { connect: provides.map(goalId => ({ id: goalId })) } : undefined
 	};
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -190,12 +189,10 @@ export function createCourse({
 	// TODO Can be removed
 	course.meta = createCourseMeta(course);
 
-	const result = {
+	return {
 		data: course as Prisma.CourseCreateManyInput,
 		specializationId: specializationId
 	};
-
-	return result;
 }
 
 export function createMultipleChoice({
@@ -425,17 +422,13 @@ export async function createUsers(users: Prisma.UserCreateInput[]): Promise<void
 	}
 }
 
-export async function getAdminUser() {
-	return await prisma.user.findFirst({ where: { name: adminName } });
-}
-
 export type Skill = { id: string; name: string; description: string };
 
-export async function createSkills(skills: Skill[], repositoryId: string) {
+export async function createSkills(authorId: number, skills: Skill[]) {
 	await Promise.all(
 		skills.map(async skill => {
 			const input: Prisma.SkillUncheckedCreateInput = {
-				repositoryId: repositoryId,
+				authorId,
 				...skill
 			};
 
@@ -446,7 +439,7 @@ export async function createSkills(skills: Skill[], repositoryId: string) {
 
 export type SkillGroup = { id: string; name: string; description: string; children: string[] };
 
-export async function createSkillGroups(skillGroups: SkillGroup[], repository: Repository) {
+export async function createSkillGroups(authorId: number, skillGroups: SkillGroup[]) {
 	// Need to preserve ordering and wait to be finished before creating the next one!
 	for (const skill of skillGroups) {
 		const nested = skill.children?.map(i => ({ id: i }));
@@ -454,7 +447,7 @@ export async function createSkillGroups(skillGroups: SkillGroup[], repository: R
 		await prisma.skill.create({
 			data: {
 				id: skill.id,
-				repositoryId: repository.id,
+				authorId,
 				name: skill.name,
 				description: skill.description,
 				children: { connect: nested }
@@ -462,22 +455,6 @@ export async function createSkillGroups(skillGroups: SkillGroup[], repository: R
 		});
 	}
 }
-
-export type Repository = { id: string; name: string; description: string };
-
-export async function createRepositories(repository: Repository) {
-	const admin = await getAdminUser();
-	await prisma.skillRepository.create({
-		data: {
-			id: repository.id,
-			ownerName: admin?.name ?? "unknown",
-			name: repository.name,
-			description: repository.description
-		}
-	});
-}
-
-// Function to generate a random date between 50 days and 6 hours ago
 
 export function getRandomCreatedAt(): Date {
 	const from = subDays(new Date(), 50);

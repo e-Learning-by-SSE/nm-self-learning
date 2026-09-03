@@ -13,6 +13,7 @@ import {
 import { seedJavaDemoSkills } from "./seed-java-demo-skills";
 import { GroupRole } from "@prisma/client";
 import { softwareentwicklungDemoGroup } from "../seedSpecializations";
+import { AuthorUser } from "./seed-admin-user";
 
 const courseId = faker.string.alphanumeric(8);
 
@@ -23,7 +24,6 @@ const chapters = [
 			"Einführung und Motivation für den Einsatz von Java. Einrichtung einer Arbeitsumgebung zur Entwicklung von Java-Anwendungen.",
 		content: [
 			createLesson({
-				courseId,
 				title: "Einleitung & Motivation",
 				subtitle: "Einstieg in die Welt von Java",
 				description: "Download und Installation des JDKs",
@@ -48,7 +48,6 @@ const chapters = [
 				]
 			}),
 			createLesson({
-				courseId,
 				title: "Installation des JDKs",
 				subtitle: null,
 				description: "Download und Installation des JDKs",
@@ -79,7 +78,6 @@ const chapters = [
 				]
 			}),
 			createLesson({
-				courseId,
 				title: "Hello World",
 				subtitle: "Das erste Programm",
 				description: read("demo/java-hello-world-description.mdx"),
@@ -100,7 +98,6 @@ const chapters = [
 				]
 			}),
 			createLesson({
-				courseId,
 				title: "Compiler & Intepreter",
 				subtitle: "Vom Quellcode zur Ausführung eines Programms",
 				description:
@@ -131,6 +128,27 @@ const chapters = [
 								content:
 									"Den Quellcode eines Programms in maschinen lesbaren Code überführen",
 								isCorrect: false
+							}
+						]
+					})
+				]
+			}),
+			createLesson({
+				title: "If&Else-Blöcke",
+				subtitle: "Entscheidungsstrukturen in Java",
+				description: "Erlernen der Grundlagen von If-Else-Blöcken in Java",
+				content: [],
+				questions: [
+					createMultipleChoice({
+						question: "Was ist ein If-Else-Block?",
+						answers: [
+							{
+								content: "Eine Art von Schleife",
+								isCorrect: false
+							},
+							{
+								content: "eine Entscheidung aufgrund einer oder mehrerer Variablen",
+								isCorrect: true
 							}
 						]
 					})
@@ -166,7 +184,7 @@ const authors = [
 	})
 ];
 
-export async function seedJavaDemo(): Promise<void> {
-	await seedJavaDemoSkills();
+export async function seedJavaDemo(admin: AuthorUser): Promise<void> {
 	await seedCaseStudy("Java", courses, chapters, softwareentwicklungDemoGroup, authors);
+	await seedJavaDemoSkills(admin.author.id);
 }
