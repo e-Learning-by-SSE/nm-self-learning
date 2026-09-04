@@ -11,7 +11,9 @@ import { useMemo } from "react";
 import { SkillResourceProvider } from "./skill-tree/skill-resource-context";
 
 /**
- * If you edit course or standalone lesson - provide nothing
+ * If you edit a course or standalone lesson - provide nothing
+ * If you edit a dynamic course - provide:
+ * - courseId if already exists
  * If you edit a nanomodule (lesson of a course) - provide:
  * - courseId
  * - lessonId if already exists
@@ -27,8 +29,14 @@ export function SkillsEditor({
 	lessonId?: string;
 }) {
 	const { control, getValues } = useFormContext<ResourceSkillsFormType>();
-	const { append: appendProvides } = useFieldArray({ control, name: "provides" });
-	const { append: appendRequires } = useFieldArray({ control, name: "requires" });
+	const { append: appendProvides, update: updateProvides } = useFieldArray({
+		control,
+		name: "provides"
+	});
+	const { append: appendRequires, update: updateRequires } = useFieldArray({
+		control,
+		name: "requires"
+	});
 
 	const requires = useWatch({ control, name: "requires" });
 	const provides = useWatch({ control, name: "provides" });
@@ -40,14 +48,6 @@ export function SkillsEditor({
 
 	const requiresSet = useMemo(() => new Set(requires.map(skill => skill.id)), [requires]);
 	const providesSet = useMemo(() => new Set(provides.map(skill => skill.id)), [provides]);
-
-	// TODO allow to add new skills
-	// const session = useRequiredSession();
-	// const username = session.data?.user?.name;
-	// const { data: author, isLoading } = trpc.author.getByUsername.useQuery(
-	// 	{ username: username as string },
-	// 	{ enabled: !!username }
-	// );
 
 	// TODO could be nice also to display course skill goals! - now only display siblings & self
 	// TODO who is the author of new skills
@@ -100,37 +100,45 @@ export function SkillsEditor({
 	}, [skills]);
 	const { skillDisplayData, updateSkillDisplay } = useTableSkillDisplay(allSkills);
 
-	const onDragEnd = (result: DropResult) => {
-		const destination = result.destination?.droppableId;
-		if (destination !== "provides" && destination !== "requires") {
-			return;
+	function addSkills(skillsToAdd: SkillFormModel[], field: "provides" | "requires") {
+		const attached = new Set([
+			...(getValues("provides") ?? []).map(item => item.id),
+			...(getValues("requires") ?? []).map(item => item.id)
+		]);
+		const append = field === "provides" ? appendProvides : appendRequires;
+		for (const skill of skillsToAdd) {
+			if (attached.has(skill.id)) {
+				showToast({
+					type: "error",
+					title: "Skill bereits vorhanden",
+					subtitle: `Der Skill ${skill.name} ist bereits in der ausgewählten Liste enthalten.`
+				});
+				continue;
+			}
+			append(skill);
+			attached.add(skill.id);
 		}
+	}
+
+	function onDragEnd(result: DropResult) {
+		const destination = result.destination?.droppableId;
+		if (destination !== "provides" && destination !== "requires") return;
 		//Filter out the skill ID from the draggableId because only the number after the last colon is the skill ID
 		// TODO ::: is used as separator - contract must be declared in one place or use separator as constant
 		const skillId = result.draggableId.split(":::").pop() ?? "";
 		const skill = allSkills.get(skillId);
-		if (!skill) return;
+		if (skill) addSkills([skill], destination);
+	}
 
-		console.log("draggableId", result.draggableId);
-		console.log(`skill with id ${skillId} is `, skill);
-
-		const { provides, requires } = getValues();
-		const alreadyAttached =
-			provides?.some(s => s.id === skillId) || requires?.some(s => s.id === skillId);
-		if (alreadyAttached) {
-			showToast({
-				type: "error",
-				title: "Skill bereits vorhanden",
-				subtitle: `Der Skill ${skill?.name} ist bereits in der ausgewählten Liste enthalten.`
-			});
-			return;
-		}
-		if (destination === "provides") {
-			appendProvides(skill);
-		} else {
-			appendRequires(skill);
-		}
-	};
+	function onSkillUpdated(skillId: string, name: string, description: string) {
+		const { provides: provided, requires: required } = getValues();
+		provided.forEach((item, index) => {
+			if (item.id === skillId) updateProvides(index, { ...item, name, description });
+		});
+		required.forEach((item, index) => {
+			if (item.id === skillId) updateRequires(index, { ...item, name, description });
+		});
+	}
 
 	return (
 		<div>
@@ -147,13 +155,14 @@ export function SkillsEditor({
 								skillDisplayData={skillDisplayData}
 								updateSkillDisplay={updateSkillDisplay}
 								onSkillSelect={id => {
-									console.log("selected skill id", id);
+									console.log("edit skill", id);
 								}}
+								onSkillCreate={name => console.log("add skill", name)}
 							/>
 						</SkillResourceProvider>
 					}
 				>
-					<LessonSkillManagerDragDrop />
+					<LessonSkillManagerDragDrop addSkills={addSkills} />
 				</SidebarEditorLayout>
 			</DragDropContext>
 		</div>

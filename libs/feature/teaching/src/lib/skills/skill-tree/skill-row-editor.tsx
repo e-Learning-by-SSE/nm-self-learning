@@ -1,4 +1,4 @@
-import { TableDataColumn } from "@self-learning/ui/common";
+import { IconOnlyButton, TableDataColumn } from "@self-learning/ui/common";
 import {
 	ChevronDownIcon,
 	FolderIcon,
@@ -6,7 +6,8 @@ import {
 	ShieldExclamationIcon,
 	ChevronRightIcon,
 	StarIcon as StarIconSolid,
-	PuzzlePieceIcon as PuzzlePieceIconSolid
+	PuzzlePieceIcon as PuzzlePieceIconSolid,
+	PlusIcon
 } from "@heroicons/react/24/solid";
 import {
 	LockClosedIcon,
@@ -17,6 +18,7 @@ import styles from "../folder-editor/folder-table.module.css";
 import { isTruthy } from "@self-learning/util/common";
 import { Draggable, DraggableStateSnapshot, DraggableStyle, Droppable } from "@hello-pangea/dnd";
 import {
+	SkillCreateHandler,
 	SkillFolderVisualization,
 	SkillSelectHandler,
 	UpdateVisuals
@@ -34,6 +36,7 @@ export function ListSkillEntryWithChildren({
 	skillDisplayData,
 	depth = 0,
 	handleSelection,
+	handleCreation,
 	updateSkillDisplay,
 	renderedIds = new Set(),
 	parentNodeId,
@@ -46,6 +49,7 @@ export function ListSkillEntryWithChildren({
 	skillDisplayData: SkillFolderVisualization;
 	depth?: number;
 	handleSelection: SkillSelectHandler;
+	handleCreation: SkillCreateHandler;
 	updateSkillDisplay: UpdateVisuals;
 	// skill graph can cycle; skip ids already on this path
 	renderedIds?: Set<string>;
@@ -71,6 +75,7 @@ export function ListSkillEntryWithChildren({
 				skill={skillDisplayData}
 				depth={depth}
 				handleSelection={handleSelection}
+				handleCreation={handleCreation}
 				updateSkillDisplay={updateSkillDisplay}
 				nodeId={nodeId}
 				textClassName={textClassName}
@@ -105,6 +110,7 @@ export function ListSkillEntryWithChildren({
 								updateSkillDisplay={updateSkillDisplay}
 								skillResolver={skillResolver}
 								handleSelection={handleSelection}
+								handleCreation={handleCreation}
 								depth={depth + 1}
 								renderedIds={newSet}
 								parentNodeId={nodeId}
@@ -136,6 +142,7 @@ function SkillRow({
 	skill,
 	depth,
 	handleSelection,
+	handleCreation,
 	updateSkillDisplay,
 	nodeId,
 	textClassName
@@ -143,6 +150,7 @@ function SkillRow({
 	skill: SkillFolderVisualization;
 	depth: number;
 	handleSelection: SkillSelectHandler;
+	handleCreation: SkillCreateHandler;
 	updateSkillDisplay: UpdateVisuals;
 	nodeId: string;
 	textClassName?: string;
@@ -278,6 +286,16 @@ function SkillRow({
 												)}
 											</span>
 										</div>
+										<IconOnlyButton
+											icon={<PlusIcon className="h-4 w-4" />}
+											className="invisible group-hover:visible ml-auto !p-1"
+											title={"Neu Skill hinzufügen"}
+											onClick={event => {
+												event.preventDefault();
+												event.stopPropagation();
+												handleCreation({ parentId: skill.id });
+											}}
+										/>
 									</div>
 								)}
 							</Draggable>

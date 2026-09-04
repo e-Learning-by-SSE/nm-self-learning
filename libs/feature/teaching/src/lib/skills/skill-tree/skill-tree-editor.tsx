@@ -1,22 +1,26 @@
-import { DialogHandler, Table, TableHeaderColumn } from "@self-learning/ui/common";
+import { DialogHandler, IconTextButton, Table, TableHeaderColumn } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import React, { useMemo, useState } from "react";
 import {
+	SkillCreateHandler,
 	SkillFolderVisualization,
 	SkillSelectHandler,
 	UpdateVisuals
 } from "../folder-editor/skill-display";
 import { ListSkillEntryWithChildren } from "./skill-row-editor";
+import { PlusIcon } from "@heroicons/react/24/solid";
 
 export function SkillTreeEditor({
 	skillDisplayData,
 	updateSkillDisplay,
-	onSkillSelect
+	onSkillSelect,
+	onSkillCreate
 }: {
 	skillDisplayData: Map<string, SkillFolderVisualization>;
 	updateSkillDisplay: UpdateVisuals;
 	onSkillSelect: SkillSelectHandler;
+	onSkillCreate: SkillCreateHandler;
 }) {
 	const [searchTerm, setSearchTerm] = useState("");
 	const normalized = searchTerm.toLowerCase().trim();
@@ -71,6 +75,14 @@ export function SkillTreeEditor({
 						setSearchTerm(e.target.value);
 					}}
 				/>
+				{onSkillCreate && (
+					<IconTextButton
+						text={"Neu Skill Hinzufügen"}
+						className="btn-secondary"
+						onClick={() => onSkillCreate({ name: searchTerm })}
+						icon={<PlusIcon className="icon h-5" />}
+					/>
+				)}
 				<DialogHandler id={"alert"} />
 				<div className="pt-4" />
 				<Table head={<TableHeaderColumn>Skills</TableHeaderColumn>}>
@@ -84,6 +96,7 @@ export function SkillTreeEditor({
 							matchingSkillIds={matchingSkillIds}
 							autoExpandIds={skillIdsToAutoExpand}
 							handleSelection={onSkillSelect}
+							handleCreation={onSkillCreate}
 							textClassName="hover:text-emerald-500"
 						/>
 					))}

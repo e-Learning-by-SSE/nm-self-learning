@@ -3,6 +3,7 @@ import { SkillFormModel } from "@self-learning/types";
 import { OnDialogCloseFn } from "@self-learning/ui/common";
 
 export type SkillSelectHandler = OnDialogCloseFn<string>;
+export type SkillCreateHandler = OnDialogCloseFn<{ name?: string; parentId?: string }>;
 
 export type OptionalVisualizationWithRequiredId = Pick<SkillFolderVisualization, "id"> &
 	Partial<Omit<SkillFolderVisualization, "id">>;
@@ -118,9 +119,7 @@ export function getCycleDisplayInformation(skills: Map<string, SkillFormModel>) 
 
 	if (!libSkills) return [];
 
-	const cycleParents = findParentsOfCycledSkills(
-		libSkills.map(skills => ({ ...skills}))
-	);
+	const cycleParents = findParentsOfCycledSkills(libSkills.map(skills => ({ ...skills })));
 
 	if (!cycleParents) return [];
 
