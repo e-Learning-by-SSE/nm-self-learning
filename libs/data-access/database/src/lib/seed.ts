@@ -33,6 +33,8 @@ async function seed(): Promise<void> {
 	await prisma.learningStrategy.deleteMany();
 	await prisma.learningLocation.deleteMany();
 	await prisma.learningDiaryPage.deleteMany();
+	await prisma.quizAttempt.deleteMany();
+	await prisma.quizAnswer.deleteMany();
 	console.log("😅 Seeding...");
 
 	await seedStrategiesAndTechniques();
