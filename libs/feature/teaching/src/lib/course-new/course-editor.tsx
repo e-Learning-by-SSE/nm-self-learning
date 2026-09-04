@@ -47,6 +47,14 @@ export function CourseEditor1({
 		router.back();
 	}
 
+	async function onTabChange(index: number) {
+		// autosave on tab change
+		if (isPersisted && isDirty) {
+			await form.handleSubmit(handleSave, showCourseValidationErrors)();
+		}
+		setTab(index);
+	}
+
 	return (
 		<FormProvider {...form}>
 			<form
@@ -76,7 +84,7 @@ export function CourseEditor1({
 							</DialogActions>
 						</div>
 					</div>
-					<Tabs selectedIndex={tab} onChange={setTab}>
+					<Tabs selectedIndex={tab} onChange={onTabChange}>
 						<Tab>Grunddaten</Tab>
 						<Tab disabled={!isPersisted}>Skills</Tab>
 						<Tab disabled={!isPersisted}>Inhalt</Tab>
