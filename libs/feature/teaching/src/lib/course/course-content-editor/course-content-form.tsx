@@ -6,8 +6,8 @@ import {
 	LinkIcon,
 	PencilIcon,
 	PlusIcon,
-	XMarkIcon,
-	TrashIcon
+	TrashIcon,
+	LinkSlashIcon
 } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { Quiz } from "@self-learning/quiz";
@@ -16,7 +16,12 @@ import {
 	onLessonCreatorSubmit,
 	onLessonEditorSubmit
 } from "@self-learning/teaching";
-import { CourseChapter, LessonContent, LessonMeta, toResourcePermissionsForm } from "@self-learning/types";
+import {
+	CourseChapter,
+	LessonContent,
+	LessonMeta,
+	toResourcePermissionsForm
+} from "@self-learning/types";
 import { IconOnlyButton, OnDialogCloseFn, SectionHeader } from "@self-learning/ui/common";
 import { useState } from "react";
 import { ChapterDialog } from "./dialogs/chapter-dialog";
@@ -93,7 +98,7 @@ export function CourseContentForm() {
 			<ul className="flex flex-col gap-12">
 				{content.map((chapter, index) => (
 					<ChapterNode
-						key={chapter.title}
+						key={index}
 						chapter={chapter}
 						index={index}
 						onChapterUpdated={updateChapter}
@@ -119,12 +124,15 @@ export function CourseContentForm() {
 	);
 }
 
-function LessonNode({
+// TODO move out
+export function LessonNode({
 	lesson,
+	courseId,
 	moveLesson,
 	onRemove
 }: {
 	lesson: { lessonId: string };
+	courseId?: string;
 	moveLesson: UseCourseContentForm["moveLesson"];
 	onRemove: () => void;
 }) {
@@ -164,6 +172,7 @@ function LessonNode({
 						<EditExistingLessonDialog
 							setLessonEditorDialogOpen={setLessonEditorDialogOpen}
 							lessonId={lesson.lessonId}
+							courseId={courseId}
 						/>
 					)}
 				</button>
@@ -177,7 +186,7 @@ function LessonNode({
 				)}
 				<IconOnlyButton
 					onClick={onRemove}
-					icon={<XMarkIcon className="h-5 w-5" />}
+					icon={<LinkSlashIcon className="h-5 w-5" />}
 					className="btn-x-mark"
 					title="Entfernen"
 				/>
@@ -343,9 +352,11 @@ function ChapterNode({
 
 function EditExistingLessonDialog({
 	lessonId,
+	courseId,
 	setLessonEditorDialogOpen
 }: {
 	lessonId: string;
+	courseId?: string;
 	setLessonEditorDialogOpen: (value: boolean) => void;
 }) {
 	const { data } = trpc.lesson.findOneAllProps.useQuery({ lessonId });
@@ -364,6 +375,7 @@ function EditExistingLessonDialog({
 	return data ? (
 		<LessonEditorDialogWithGuard
 			onClose={handleEditDialogClose}
+			courseId={courseId}
 			initialLesson={{
 				...data,
 				requires: data.requires.map(req => ({
