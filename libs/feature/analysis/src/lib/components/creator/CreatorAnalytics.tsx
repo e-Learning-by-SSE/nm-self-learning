@@ -188,7 +188,7 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 
 	return (
 		<div className="max-w-7xl mx-auto p-6 md:p-8">
-			<h1 className="text-3xl font-bold mb-6">
+			<h1 id="author-analytics-title" className="text-3xl font-bold mb-6">
 				{t("welcomeBackTitle", { name: data?.teacherName ?? "—" })}
 			</h1>
 
@@ -214,7 +214,10 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 			</section>
 
 			<section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-				<div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5">
+				<div
+					id="AnalysisCard"
+					className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5"
+				>
 					<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center gap-2">
 						<h3 className="text-lg font-semibold">{t("analysisTitle")}</h3>
 					</div>
@@ -240,7 +243,10 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 					</div>
 				</div>
 
-				<div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5">
+				<div
+					id="OverviewCard"
+					className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5"
+				>
 					<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center gap-2">
 						<h3 className="text-lg font-semibold">{t("overviewTitle")}</h3>
 					</div>
