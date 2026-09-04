@@ -96,6 +96,7 @@ export function HeatmapModal({ onClose }: { onClose: () => void }) {
 					<div className="text-gray-700 text-sm mb-6">
 						<p>
 							<Trans
+								t={t}
 								i18nKey="heatmapModal.intro.hey"
 								values={{ name }}
 								components={{ strong: <strong /> }}
@@ -104,6 +105,7 @@ export function HeatmapModal({ onClose }: { onClose: () => void }) {
 
 						<p className="mt-2">
 							<Trans
+								t={t}
 								i18nKey="heatmapModal.intro.description"
 								components={{ strong: <strong /> }}
 							/>
@@ -111,18 +113,21 @@ export function HeatmapModal({ onClose }: { onClose: () => void }) {
 
 						<p className="mt-2">
 							<Trans
+								t={t}
 								i18nKey="heatmapModal.intro.metricTime"
 								components={{ strong: <strong /> }}
 							/>
 							<br />
 
 							<Trans
+								t={t}
 								i18nKey="heatmapModal.intro.metricCompleted"
 								components={{ strong: <strong /> }}
 							/>
 							<br />
 
 							<Trans
+								t={t}
 								i18nKey="heatmapModal.intro.metricCorrect"
 								components={{ strong: <strong /> }}
 							/>
@@ -130,6 +135,7 @@ export function HeatmapModal({ onClose }: { onClose: () => void }) {
 
 						<p className="mt-2 mb-4">
 							<Trans
+								t={t}
 								i18nKey="heatmapModal.intro.proTip"
 								components={{ strong: <strong /> }}
 							/>
