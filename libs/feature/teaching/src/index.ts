@@ -6,7 +6,7 @@ export * from "./lib/course/course-editor";
 export * from "./lib/lesson/lesson-editor";
 export * from "./lib/lesson/lesson-form-model";
 export * from "./lib/course/course-form-model";
-export * from "./lib/dynCourse/dynCourse-content-form";
+export * from "./lib/course-new/course-editor";
 export * from "./lib/dynCourse/dynCourse-skill-manager";
 export * from "./lib/subject/subject-editor";
 export * from "./lib/lesson/forms/license-form";
