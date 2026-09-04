@@ -39,7 +39,16 @@ export function SkillsEditor({
 	const requiresSet = useMemo(() => new Set(requires.map(skill => skill.id)), [requires]);
 	const providesSet = useMemo(() => new Set(provides.map(skill => skill.id)), [provides]);
 
-	// TODO could be nice also to display course skill goals! - now only display siblings
+	// TODO allow to add new skills
+	// const session = useRequiredSession();
+	// const username = session.data?.user?.name;
+	// const { data: author, isLoading } = trpc.author.getByUsername.useQuery(
+	// 	{ username: username as string },
+	// 	{ enabled: !!username }
+	// );
+
+	// TODO could be nice also to display course skill goals! - now only display siblings & self
+	// TODO who is the author of new skills
 
 	const requiredIds = useMemo(() => {
 		const ids = new Set(requiresSet);
@@ -58,7 +67,7 @@ export function SkillsEditor({
 		// append skills from siblings
 		for (const lesson of ctx.lessons) {
 			if (lesson.lessonId === lessonId) continue; // exclude from the current edited lesson
-			for (const id of lesson.requires) ids.add(id);
+			for (const id of lesson.provides) ids.add(id);
 		}
 		return ids;
 	}, [providesSet, ctx, lessonId]);
