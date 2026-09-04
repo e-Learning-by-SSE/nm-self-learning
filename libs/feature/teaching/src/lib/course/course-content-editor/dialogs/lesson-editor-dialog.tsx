@@ -6,10 +6,12 @@ import Link from "next/link";
 
 export function LessonEditorDialogWithGuard({
 	onClose,
-	initialLesson
+	initialLesson,
+	courseId
 }: {
 	onClose: OnDialogCloseFn<LessonFormModel>;
 	initialLesson?: LessonFormModel;
+	courseId?: string;
 }) {
 	return (
 		<ResourceGuard
@@ -17,18 +19,25 @@ export function LessonEditorDialogWithGuard({
 			requiredAccess={AccessLevel.EDIT}
 			permittedGroups={initialLesson?.permissions}
 		>
-			<LessonEditorDialog initialLesson={initialLesson} onClose={onClose} />
+			<LessonEditorDialog
+				courseId={courseId}
+				initialLesson={initialLesson}
+				onClose={onClose}
+			/>
 		</ResourceGuard>
 	);
 }
 
 function LessonEditorDialog({
 	onClose,
-	initialLesson
+	initialLesson,
+	courseId
 }: {
 	onClose: OnDialogCloseFn<LessonFormModel>;
 	initialLesson?: LessonFormModel;
+	courseId?: string;
 }) {
+	const courseParam = courseId ? `?courseId=${courseId}` : "";
 	return (
 		<Dialog
 			title={!initialLesson ? "Lerneinheit erstellen" : "Lerneinheit bearbeiten"}
@@ -42,8 +51,8 @@ function LessonEditorDialog({
 					rel="noreferrer"
 					href={
 						initialLesson
-							? `/teaching/lessons/edit/${initialLesson?.lessonId}`
-							: `/teaching/lessons/create`
+							? `/teaching/lessons/edit/${initialLesson?.lessonId}${courseParam}`
+							: `/teaching/lessons/create${courseParam}`
 					}
 					title="Formular in einem neuen Tab öffnen. Änderungen werden nicht übernommen."
 				>
@@ -54,6 +63,7 @@ function LessonEditorDialog({
 				<LessonEditor
 					onSubmit={onClose}
 					initialLesson={initialLesson}
+					courseId={courseId}
 					isFullScreen={false}
 				/>
 			</div>

@@ -11,6 +11,8 @@ export default function CreateLessonPage() {
 	const session = useRequiredSession();
 	const canCreateResource = useCanCreate();
 	const router = useRouter();
+	const { courseId: rawCourseId } = router.query;
+	const courseId = typeof rawCourseId === "string" ? rawCourseId : undefined;
 	const { mutateAsync: createLessonAsync } = trpc.lesson.create.useMutation();
 
 	if (session.status === "loading") {
@@ -35,7 +37,7 @@ export default function CreateLessonPage() {
 		);
 	}
 
-	return <LessonEditor onSubmit={handleCreateClose} isFullScreen={true} />;
+	return <LessonEditor courseId={courseId} onSubmit={handleCreateClose} isFullScreen={true} />;
 }
 
 export const getServerSideProps = withTranslations(
