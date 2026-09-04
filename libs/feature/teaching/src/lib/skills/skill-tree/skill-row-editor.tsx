@@ -4,11 +4,13 @@ import {
 	FolderIcon,
 	ArrowPathRoundedSquareIcon,
 	ShieldExclamationIcon,
-	ChevronRightIcon
+	ChevronRightIcon,
+	StarIcon as StarIconSolid,
+	PuzzlePieceIcon as PuzzlePieceIconSolid
 } from "@heroicons/react/24/solid";
-import { PuzzlePieceIcon as PuzzlePieceIconSolid } from "@heroicons/react/24/solid";
 import {
 	LockClosedIcon,
+	StarIcon as StarIconOutline,
 	PuzzlePieceIcon as PuzzlePieceIconOutline
 } from "@heroicons/react/24/outline";
 import styles from "../folder-editor/folder-table.module.css";
@@ -19,6 +21,8 @@ import {
 	SkillSelectHandler,
 	UpdateVisuals
 } from "../folder-editor/skill-display";
+import { useContext } from "react";
+import { SkillResourceContext } from "./skill-resource-context";
 
 /**
  * Recursive folder row for the lesson/course skill tree.
@@ -35,10 +39,7 @@ export function ListSkillEntryWithChildren({
 	parentNodeId,
 	matchingSkillIds,
 	autoExpandIds,
-	textClassName,
-	requiredIds,
-	providedIds,
-	currentIds
+	textClassName
 }: {
 	// children[] is ids only — look up siblings in the catalog map
 	skillResolver: (skillId: string) => SkillFolderVisualization | undefined;
@@ -54,10 +55,6 @@ export function ListSkillEntryWithChildren({
 	matchingSkillIds?: Set<string>;
 	autoExpandIds?: Set<string>;
 	textClassName?: string;
-	// usage overlay from parent (form / getSkillContext)
-	requiredIds: Set<string>;
-	providedIds: Set<string>;
-	currentIds: Set<string>;
 }) {
 	const wasNotRendered = (skill: SkillFolderVisualization) => !renderedIds.has(skill.id);
 	const showChildren = skillDisplayData.isExpanded ?? false;
@@ -77,9 +74,6 @@ export function ListSkillEntryWithChildren({
 				updateSkillDisplay={updateSkillDisplay}
 				nodeId={nodeId}
 				textClassName={textClassName}
-				requiredIds={requiredIds}
-				providedIds={providedIds}
-				currentIds={currentIds}
 			/>
 			{showChildren &&
 				skillDisplayData.children
@@ -117,9 +111,6 @@ export function ListSkillEntryWithChildren({
 								matchingSkillIds={matchingSkillIds}
 								autoExpandIds={autoExpandIds}
 								textClassName={textClassName}
-								requiredIds={requiredIds}
-								providedIds={providedIds}
-								currentIds={currentIds}
 							/>
 						);
 					})}
@@ -147,10 +138,7 @@ function SkillRow({
 	handleSelection,
 	updateSkillDisplay,
 	nodeId,
-	textClassName,
-	requiredIds,
-	providedIds,
-	currentIds
+	textClassName
 }: {
 	skill: SkillFolderVisualization;
 	depth: number;
@@ -158,13 +146,14 @@ function SkillRow({
 	updateSkillDisplay: UpdateVisuals;
 	nodeId: string;
 	textClassName?: string;
-	requiredIds: Set<string>;
-	providedIds: Set<string>;
-	currentIds: Set<string>;
 }) {
-	const isRequired = requiredIds.has(skill.id);
-	const isProvided = providedIds.has(skill.id);
-	const isUsedInCurrent = currentIds.has(skill.id);
+	const ctx = useContext(SkillResourceContext);
+	if (!ctx) console.warn("skill row is used without context");
+	// if ctx is empty - its just skill view
+	const isRequired = !!ctx?.requiredIds.has(skill.id);
+	const isProvided = !!ctx?.providedIds.has(skill.id);
+	const isUsedInCurrent = !!ctx?.currentIds.has(skill.id);
+	const isTopLevel = !!ctx?.topIds.has(skill.id);
 
 	const depthCssStyle = { "--depth": depth } as React.CSSProperties;
 
@@ -201,7 +190,7 @@ function SkillRow({
 	}
 
 	function checkDraggableSetting(row: SkillFolderVisualization): boolean {
-		if (currentIds.has(row.id)) return true;
+		if (ctx?.currentIds.has(row.id)) return true;
 		// root folder is a grouping node, not an assignable skill
 		if (row.skill.children.length > 0 && row.skill.parents.length === 0) return true;
 		return false;
@@ -266,15 +255,11 @@ function SkillRow({
 													</>
 												) : (
 													<div className="ml-6">
-														{isProvided && isRequired ? (
-															<PuzzlePieceIconSolid className="icon h-5 text-emerald-500" />
-														) : isProvided ? (
-															<PuzzlePieceIconOutline className="icon h-5 text-emerald-500" />
-														) : isRequired ? (
-															<PuzzlePieceIconOutline className="icon h-5 text-red-500" />
-														) : (
-															<PuzzlePieceIconOutline className="icon h-5" />
-														)}
+														<StatusIcon
+															isTop={isTopLevel}
+															isProvided={isProvided}
+															isRequired={isRequired}
+														/>
 													</div>
 												)}
 											</div>
@@ -303,4 +288,27 @@ function SkillRow({
 			</TableDataColumn>
 		</tr>
 	);
+}
+
+function StatusIcon({
+	isTop,
+	isProvided,
+	isRequired
+}: {
+	isTop: boolean;
+	isProvided: boolean;
+	isRequired: boolean;
+}) {
+	// 1. Pick Solid vs Outline
+	const isSolid = isProvided && isRequired;
+	const Puzzle = isSolid ? PuzzlePieceIconSolid : PuzzlePieceIconOutline;
+	const Star = isSolid ? StarIconSolid : StarIconOutline;
+	const Icon = isTop ? Star : Puzzle;
+
+	// 2. Pick Color
+	const puzzleColor = isProvided ? "text-emerald-500" : isRequired ? "text-red-500" : "";
+	const starColor = isRequired ? "text-red-500" : isProvided ? "text-emerald-500" : "";
+	const color = isTop ? starColor : puzzleColor;
+
+	return <Icon className={`icon h-5 ${color}`.trim()} />;
 }

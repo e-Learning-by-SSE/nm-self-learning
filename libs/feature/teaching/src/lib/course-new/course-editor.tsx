@@ -94,7 +94,9 @@ export function CourseEditor1({
 					{isPersisted && (
 						<>
 							{/* TODO do I need courseId here? */}
-							{tab === 1 && <SkillsEditor />}
+							{tab === 1 && (
+								<SkillsEditor target="course" courseId={courseId as string} />
+							)}
 							{tab === 2 &&
 								(isStatic ? <CourseContentForm /> : <DynCourseContentForm />)}
 							{tab === 3 && !isStatic && <CoursePreview />}

@@ -221,6 +221,7 @@ export function LessonEditor({
 					{selectedTab === 0 && <LessonInfoEditor isNew={isNew} />}
 					{selectedTab === 1 && (
 						<SkillsEditor
+							target="lesson"
 							courseId={courseId}
 							lessonId={initialLesson?.lessonId ?? undefined}
 						/>

@@ -12,17 +12,11 @@ import { ListSkillEntryWithChildren } from "./skill-row-editor";
 export function SkillTreeEditor({
 	skillDisplayData,
 	updateSkillDisplay,
-	onSkillSelect,
-	requiredIds = new Set<string>(),
-	providedIds = new Set<string>(),
-	currentIds = new Set<string>()
+	onSkillSelect
 }: {
 	skillDisplayData: Map<string, SkillFolderVisualization>;
 	updateSkillDisplay: UpdateVisuals;
 	onSkillSelect: SkillSelectHandler;
-	requiredIds?: Set<string>;
-	providedIds?: Set<string>;
-	currentIds?: Set<string>;
 }) {
 	const [searchTerm, setSearchTerm] = useState("");
 	const normalized = searchTerm.toLowerCase().trim();
@@ -91,9 +85,6 @@ export function SkillTreeEditor({
 							autoExpandIds={skillIdsToAutoExpand}
 							handleSelection={onSkillSelect}
 							textClassName="hover:text-emerald-500"
-							requiredIds={requiredIds}
-							providedIds={providedIds}
-							currentIds={currentIds}
 						/>
 					))}
 				</Table>

@@ -8,6 +8,7 @@ import { useTableSkillDisplay } from "./folder-editor";
 import { showToast } from "@self-learning/ui/common";
 import { SkillTreeEditor } from "./skill-tree/skill-tree-editor";
 import { useMemo } from "react";
+import { SkillResourceProvider } from "./skill-tree/skill-resource-context";
 
 /**
  * If you edit course or standalone lesson - provide nothing
@@ -17,10 +18,11 @@ import { useMemo } from "react";
  * @returns
  */
 export function SkillsEditor({
+	target,
 	courseId,
 	lessonId
 }: {
-	//
+	target: "lesson" | "course";
 	courseId?: string;
 	lessonId?: string;
 }) {
@@ -53,29 +55,42 @@ export function SkillsEditor({
 	const requiredIds = useMemo(() => {
 		const ids = new Set(requiresSet);
 		if (!ctx) return ids;
+		// append skills from course
+		if (target === "lesson") {
+			for (const id of ctx.requires) ids.add(id);
+		}
 		// append skills from siblings
 		for (const lesson of ctx.lessons) {
 			if (lesson.lessonId === lessonId) continue; // exclude from the current edited lesson
 			for (const id of lesson.requires) ids.add(id);
 		}
 		return ids;
-	}, [requiresSet, ctx, lessonId]);
+	}, [requiresSet, ctx, lessonId, target]);
 
 	const providedIds = useMemo(() => {
 		const ids = new Set(providesSet);
 		if (!ctx) return ids;
+		// append skills from course
+		if (target === "lesson") {
+			for (const id of ctx.provides) ids.add(id);
+		}
 		// append skills from siblings
 		for (const lesson of ctx.lessons) {
 			if (lesson.lessonId === lessonId) continue; // exclude from the current edited lesson
 			for (const id of lesson.provides) ids.add(id);
 		}
 		return ids;
-	}, [providesSet, ctx, lessonId]);
-
+	}, [providesSet, ctx, lessonId, target]);
+	// locked skills - of currently edited resource
 	const currentIds = useMemo(
 		() => new Set([...requiresSet, ...providesSet]),
 		[requiresSet, providesSet]
 	);
+	// top level ids = course ids
+	const topIds =
+		target === "lesson"
+			? new Set([...(ctx?.requires ?? []), ...(ctx?.provides ?? [])])
+			: currentIds;
 
 	const { data: skills } = trpc.skill.getSkills.useQuery();
 	const allSkills = useMemo(() => {
@@ -122,16 +137,20 @@ export function SkillsEditor({
 			<DragDropContext onDragEnd={onDragEnd}>
 				<SidebarEditorLayout
 					sidebar={
-						<SkillTreeEditor
-							skillDisplayData={skillDisplayData}
-							updateSkillDisplay={updateSkillDisplay}
-							onSkillSelect={id => {
-								console.log("selected skill id", id);
-							}}
+						<SkillResourceProvider
 							requiredIds={requiredIds}
 							providedIds={providedIds}
 							currentIds={currentIds}
-						/>
+							topIds={topIds}
+						>
+							<SkillTreeEditor
+								skillDisplayData={skillDisplayData}
+								updateSkillDisplay={updateSkillDisplay}
+								onSkillSelect={id => {
+									console.log("selected skill id", id);
+								}}
+							/>
+						</SkillResourceProvider>
 					}
 				>
 					<LessonSkillManagerDragDrop />
