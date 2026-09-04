@@ -27,19 +27,9 @@ import {
 	preparePermissionsForCreate,
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
-import {
-	And,
-	CompositeUnit,
-	DefaultCostParameter,
-	Empty,
-	getPath,
-	isCompositeGuard,
-	LearningUnit as LibLearningUnit,
-	Unit,
-	Variable,
-	Skill as LibSkill
-} from "@e-learning-by-sse/nm-skill-lib";
 import { randomUUID } from "crypto";
+import { resolveLessonPath } from "../../lesson-path/lesson-path.service";
+import { createCourseSummary, mapCourseContent } from "@self-learning/course";
 
 export const courseRouter = t.router({
 	getCourseData: authProcedure
@@ -301,6 +291,78 @@ export const courseRouter = t.router({
 				}))
 			};
 		}),
+	getCoursePreview: authProcedure
+		.input(
+			z.object({
+				courseId: z.string(),
+				knowledge: z.array(z.string())
+			})
+		)
+		.query(async ({ input }) => {
+			// TODO any permissions? I think VIEW is enough
+			const course = await database.course.findUnique({
+				where: { courseId: input.courseId },
+				select: {
+					title: true,
+					type: true,
+					authors: true,
+					subtitle: true,
+					slug: true,
+					description: true,
+					imgUrl: true,
+					provides: {
+						select: {
+							id: true,
+							name: true,
+							description: true,
+							authorId: true,
+							children: { select: { id: true } }
+						}
+					}
+				}
+			});
+			if (!course) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Failed to find requested course"
+				});
+			}
+			if (course.type !== CourseType.DYNAMIC) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Requested course is not dynamic"
+				});
+			}
+
+			const path = await resolveLessonPath({
+				courseProvides: course.provides,
+				userKnowledgeIds: input.knowledge
+			});
+			if (!path) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message:
+						"Unable to generate a valid lesson path with current prerequisites and knowledge."
+				});
+			}
+
+			const courseContent = [
+				{
+					title: "generatedLessonPathTitle",
+					description: "generatedLessonPathDescription",
+					content: path
+				} as CourseChapter
+			];
+
+			const content = await mapCourseContent(courseContent);
+			const summary = createCourseSummary(content);
+
+			return {
+				course: course,
+				content: content,
+				summary: summary
+			};
+		}),
 	generateLessonPath: authProcedure
 		.input(
 			z.object({
@@ -310,7 +372,7 @@ export const courseRouter = t.router({
 		)
 		.mutation(async ({ input, ctx }) => {
 			// TODO any permissions? I think VIEW is enough
-			const course = await database.course.findUniqueOrThrow({
+			const course = await database.course.findUnique({
 				where: { courseId: input.courseId },
 				select: {
 					version: true,
@@ -339,125 +401,32 @@ export const courseRouter = t.router({
 				});
 			}
 
-			const dbSkills = await database.skill.findMany({
-				select: {
-					id: true,
-					children: {
-						select: { id: true }
-					}
-				}
-			});
-
 			const userGlobalKnowledge = await database.student.findUnique({
 				where: { username: ctx.user.name },
-				select: {
-					received: {
-						select: {
-							id: true
-						}
-					}
-				}
+				select: { received: { select: { id: true } } }
 			});
 
-			const lessons = (
-				await database.lesson.findMany({
-					select: {
-						lessonId: true,
-						requires: {
-							select: {
-								id: true
-							}
-						},
-						provides: {
-							select: {
-								id: true
-							}
-						}
-					}
-				})
-			).map(lesson => ({
-				...lesson,
-				requires: lesson.requires ?? [],
-				provides: lesson.provides ?? []
-			}));
-
-			const userGlobalKnowledgeIds = (userGlobalKnowledge?.received ?? []).map(
-				(skill: any) => skill.id
-			);
-
+			const userGlobalKnowledgeIds = (userGlobalKnowledge?.received ?? []).map(s => s.id);
 			const userKnowledge = [...(input.knowledge ?? []), ...userGlobalKnowledgeIds];
 
-			const libSkills: LibSkill[] = (dbSkills ?? []).map((skill: any) => ({
-				id: skill.id,
-				repositoryId: skill.repositoryId,
-				children: (skill.children ?? []).map((child: any) => child.id)
-			}));
-
-			const findSkill = (id: string) => libSkills.find(skill => skill.id === id);
-
-			const goalLibSkills: LibSkill[] = (course.provides ?? []).map((goal: any) => ({
-				id: goal.id,
-				repositoryId: goal.repositoryId,
-				children: (goal.children ?? []).map((child: any) => child.id)
-			}));
-
-			const knowledgeLibSkills: LibSkill[] = userKnowledge
-				.map(skillId => findSkill(skillId))
-				.filter((skill): skill is LibSkill => !!skill);
-
-			const convertToExpression = (skillIds?: string[]): And | Empty => {
-				if (!skillIds || skillIds.length === 0) {
-					return new Empty();
-				}
-				const skills = skillIds
-					.map(id => findSkill(id))
-					.filter((s): s is LibSkill => s !== undefined);
-
-				if (skills.length === 0) {
-					return new Empty();
-				}
-				const variables = skills.map(skill => new Variable(skill));
-				return new And(variables);
-			};
-
-			const learningUnits: LibLearningUnit[] = (lessons ?? []).map((lesson: any) => ({
-				id: lesson.lessonId,
-				requires: convertToExpression((lesson.requires ?? []).map((req: any) => req.id)),
-				provides: (lesson.provides ?? [])
-					.map((tg: any) => findSkill(tg.id))
-					.filter((s: LibSkill | undefined): s is LibSkill => s !== undefined),
-				suggestedSkills: []
-			}));
-
-			const fnCost = () => 1;
-
-			const guard: isCompositeGuard<LibLearningUnit> = (
-				element: Unit<LibLearningUnit>
-			): element is CompositeUnit<LibLearningUnit> => {
-				return false;
-			};
-
-			const path = getPath({
-				skills: libSkills,
-				learningUnits: learningUnits,
-				goal: goalLibSkills,
-				knowledge: knowledgeLibSkills,
-				fnCost: fnCost,
-				isComposite: guard,
-				costOptions: DefaultCostParameter
+			const content = await resolveLessonPath({
+				courseProvides: course.provides,
+				userKnowledgeIds: userKnowledge
 			});
 
-			const courseChapter = [
-				{
-					title: "",
-					description: "",
-					content: path?.path.map(unit => ({
-						lessonId: unit.origin?.id ?? ""
-					}))
-				} as CourseChapter
-			];
-
-			const courseContent: CourseContent = courseChapter;
+			if (!content) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message:
+						"Unable to generate a valid lesson path with current prerequisites and knowledge."
+				});
+			}
+			const courseChapter: CourseChapter = {
+				title: "",
+				description: "",
+				content: content
+			};
+			const courseContent: CourseContent = [courseChapter];
 
 			const generatedCourse = database.generatedLessonPath.create({
 				data: {
