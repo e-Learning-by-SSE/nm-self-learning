@@ -79,6 +79,8 @@ export function mapCourseFormToUpdate(
 		meta: createCourseMeta(course),
 		authors: { set: authors.map(author => ({ username: author.username })) },
 		subject: subjectId ? { connect: { subjectId } } : undefined,
+		requires: { set: course.requires.map(r => ({ id: r.id })) }, // overwrite
+		provides: { set: course.provides.map(r => ({ id: r.id })) }, // overwrite
 		permissions
 	};
 
