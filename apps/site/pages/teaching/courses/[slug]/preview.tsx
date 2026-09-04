@@ -22,6 +22,7 @@ import { GetServerSidePropsContext } from "next";
 import { CourseChapter, Summary } from "@self-learning/types";
 import * as ToC from "@self-learning/ui/course";
 import { createCourseSummary, mapCourseContent } from "@self-learning/course";
+import { CourseFormModel } from "@self-learning/teaching";
 
 export const getServerSideProps = withTranslations(
 	["common", "kee"],
@@ -152,7 +153,7 @@ export default function CoursePreviewPage({
 	content,
 	summary
 }: {
-	course: DynCourseDetailedModel;
+	course: CourseFormModel;
 	content: ToC.Content;
 	summary: Summary;
 }) {

@@ -1,25 +1,53 @@
-import { AuthorsList, AuthorProps } from "@self-learning/ui/common";
-import * as ToC from "@self-learning/ui/course";
+import { useFormContext, useWatch } from "react-hook-form";
+import { CourseFormModel } from "../course/course-form-model";
+import { trpc } from "@self-learning/api-client";
+import { Alert, AuthorProps, AuthorsList, LoadingBox } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import { formatSeconds } from "@self-learning/util/common";
-import Image from "next/image";
-import Link from "next/link";
-import { CourseFormModel } from "@self-learning/teaching";
 import { Summary } from "@self-learning/types";
-import { useTranslation } from "next-i18next";
+import * as ToC from "@self-learning/ui/course";
+import { inferProcedureOutput } from "@trpc/server";
+import { AppRouter } from "@self-learning/api";
+import { useTranslation } from "react-i18next";
+import Image from "next/image";
+import { formatSeconds } from "@self-learning/util/common";
+import Link from "next/link";
 
-export function CoursePreview({
-	course,
-	content,
-	summary
-}: {
-	course: CourseFormModel;
-	content: ToC.Content;
-	summary: Summary;
-}) {
+type CoursePreviewModel = inferProcedureOutput<AppRouter["course"]["getCoursePreview"]>["course"];
+
+export function CoursePreview() {
+	const form = useFormContext<CourseFormModel>();
+	const courseId = useWatch({ control: form.control, name: "courseId" });
+	const {
+		data: preview,
+		isLoading,
+		error
+	} = trpc.course.getCoursePreview.useQuery(
+		{
+			courseId: form.getValues("courseId") as string,
+			knowledge: [] // default path, no knowledge
+		},
+		{
+			enabled: !!courseId
+		}
+	);
+
+	if (!courseId) {
+		console.error("CoursePreview used for course without valid courseId");
+		return <Alert type={{ severity: "ERROR", message: "This course could not be found." }} />;
+	}
+
+	if (isLoading) {
+		return <LoadingBox />;
+	}
+
+	if (!preview) {
+		console.error(error?.message);
+		return <Alert type={{ severity: "ERROR", message: "Preview could not be created." }} />;
+	}
+
 	return (
 		<CenteredSection className="bg-gray-50">
-			<Course course={course} content={content} summary={summary} />
+			<Course course={preview.course} content={preview.content} summary={preview.summary} />
 		</CenteredSection>
 	);
 }
@@ -29,7 +57,7 @@ function Course({
 	summary,
 	content
 }: {
-	course: CourseFormModel;
+	course: CoursePreviewModel;
 	summary: Summary;
 	content: ToC.Content;
 }) {
@@ -122,7 +150,7 @@ function Warning({ title, description }: { title: string; description: string })
 	);
 }
 
-function LessonPath({ content, course }: { content: ToC.Content; course: CourseFormModel }) {
+function LessonPath({ content, course }: { content: ToC.Content; course: CoursePreviewModel }) {
 	const { t } = useTranslation("kee");
 	const hasContent = content.length > 0;
 
