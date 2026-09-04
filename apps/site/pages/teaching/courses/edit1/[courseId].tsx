@@ -1,0 +1,197 @@
+import { AccessLevel, Prisma } from "@prisma/client";
+import { withTranslations } from "@self-learning/api";
+import { trpc } from "@self-learning/api-client";
+import { database } from "@self-learning/database";
+import { CourseEditor1, CourseFormModel } from "@self-learning/teaching";
+import {
+	CourseContent,
+	extractLessonIds,
+	resourcePermissionSelect,
+	toResourcePermissionsForm
+} from "@self-learning/types";
+import { showToast } from "@self-learning/ui/common";
+import { useEffect } from "react";
+import { ResourceGuard, testResourceGuard } from "@self-learning/ui/layouts";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { withAuth } from "@self-learning/util/auth";
+import { CourseSaveResult } from "../create1";
+
+type EditCourseProps = {
+	course: CourseFormModel;
+	lessons: { title: string; lessonId: string; slug: string; meta: Prisma.JsonValue }[];
+};
+
+export const getServerSideProps = withTranslations(
+	["pages-course-info", "common", "feature-question-types", "kee"],
+	withAuth<EditCourseProps>(async (ctx, user) => {
+		const courseId = ctx.params?.courseId as string;
+		const { locale } = ctx;
+
+		if (!courseId) {
+			return {
+				notFound: true
+			};
+		}
+
+		const course = await database.course.findUnique({
+			where: { courseId },
+			include: {
+				authors: {
+					select: {
+						username: true
+					}
+				},
+				specializations: {
+					select: {
+						specializationId: true
+					}
+				},
+				provides: {
+					select: {
+						id: true,
+						name: true,
+						description: true,
+						children: true,
+						parents: true,
+						authorId: true
+					}
+				},
+				requires: {
+					select: {
+						id: true,
+						name: true,
+						description: true,
+						children: true,
+						parents: true,
+						authorId: true
+					}
+				},
+				subject: {
+					select: {
+						subjectId: true,
+						title: true
+					}
+				},
+				permissions: {
+					select: resourcePermissionSelect
+				}
+			}
+		});
+
+		if (!course) {
+			return {
+				notFound: true
+			};
+		}
+
+		const teachingGoals = course.provides.map(goal => ({
+			...goal,
+			children: goal.children.map(child => child.id),
+			parents: goal.parents.map(parent => parent.id)
+		}));
+
+		const requirements = course.requires.map(goal => ({
+			...goal,
+			children: goal.children.map(child => child.id),
+			parents: goal.parents.map(parent => parent.id)
+		}));
+
+		const permissions = toResourcePermissionsForm(course.permissions);
+		const hasAccess = testResourceGuard(user, AccessLevel.EDIT, permissions);
+		if (!hasAccess) {
+			return {
+				redirect: {
+					destination: "/403",
+					permanent: false
+				}
+			};
+		}
+
+		const content = course.content as CourseContent;
+
+		const lessonIds = extractLessonIds(content);
+
+		const lessons = await database.lesson.findMany({
+			where: { lessonId: { in: lessonIds } },
+			select: {
+				title: true,
+				slug: true,
+				lessonId: true,
+				meta: true
+			}
+		});
+
+		const lessonsById = new Map<string, (typeof lessons)[0]>();
+
+		for (const lesson of lessons) {
+			lessonsById.set(lesson.lessonId, lesson);
+		}
+
+		const courseFormModel: CourseFormModel = {
+			type: course.type,
+			version: course.version,
+			title: course.title,
+			courseId: course.courseId,
+			description: course.description,
+			subtitle: course.subtitle,
+			imgUrl: course.imgUrl,
+			slug: course.slug,
+			subjectId: course.subject?.subjectId ?? null,
+			authors: course.authors.map(author => ({ username: author.username })),
+			content: content,
+			requires: requirements,
+			provides: teachingGoals,
+			permissions
+		};
+
+		return {
+			notFound: !course,
+			props: {
+				course: courseFormModel,
+				lessons,
+				...(await serverSideTranslations(locale ?? "en", ["common"]))
+			}
+		};
+	})
+);
+
+export default function EditCoursePage1({ course, lessons }: EditCourseProps) {
+	const { mutateAsync: updateCourse } = trpc.course.edit.useMutation();
+	const trpcContext = trpc.useUtils();
+
+	// do it once
+	useEffect(() => {
+		// Populate query cache with existing lessons
+		for (const lesson of lessons) {
+			trpcContext.lesson.findOne.setData({ lessonId: lesson.lessonId }, lesson);
+		}
+	}, [lessons, trpcContext]);
+
+	async function onSubmit(updatedCourse: CourseFormModel): Promise<CourseSaveResult> {
+		try {
+			const saved = await updateCourse({
+				courseId: course.courseId as string,
+				course: updatedCourse
+			});
+			showToast({ type: "success", title: "Änderung gespeichert!", subtitle: saved.title });
+			return saved;
+		} catch (error) {
+			showToast({
+				type: "error",
+				title: "Fehler",
+				subtitle: JSON.stringify(error, null, 2)
+			});
+			throw error;
+		}
+	}
+
+	return (
+		<ResourceGuard
+			fallback="unauthorized"
+			requiredAccess={AccessLevel.EDIT}
+			permittedGroups={course.permissions}
+		>
+			<CourseEditor1 course={course} onSubmit={onSubmit} />
+		</ResourceGuard>
+	);
+}
