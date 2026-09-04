@@ -21,15 +21,21 @@ export function Tabs({
 	);
 }
 
-export function Tab({ children }: { children: ReactNode }) {
+export function Tab({ children, disabled = false }: { children: ReactNode; disabled?: boolean }) {
 	return (
-		<HeadlessTab as={Fragment}>
+		<HeadlessTab as={Fragment} disabled={disabled}>
 			{({ selected }) => (
-				<li className="focus-visible: flex min-w-[128px] cursor-pointer flex-col gap-1 focus:ring-0 focus-visible:outline-none">
+				<li
+					className={`focus-visible: flex min-w-[128px] flex-col gap-1 focus:ring-0 focus-visible:outline-none ${
+						disabled ? "cursor-not-allowed opacity-40" : "cursor-pointer"
+					}`}
+				>
 					<span
 						className={`mx-auto px-2 py-2 font-semibold ${
 							selected ? "text-c-primary" : "text-c-text-muted"
-						}`}
+						}
+						${disabled ? "opacity-30" : ""}
+						`}
 					>
 						{children}
 					</span>
