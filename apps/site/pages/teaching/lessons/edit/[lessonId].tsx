@@ -127,6 +127,7 @@ export default function EditLessonPage({ lesson }: EditLessonProps) {
 				courseId={courseId}
 				initialLesson={lesson}
 				onSubmit={handleEditClose}
+				onClose={() => router.back()}
 				isFullScreen={true}
 			/>
 		</ResourceGuard>

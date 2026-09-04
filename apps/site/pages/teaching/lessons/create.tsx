@@ -37,7 +37,14 @@ export default function CreateLessonPage() {
 		);
 	}
 
-	return <LessonEditor courseId={courseId} onSubmit={handleCreateClose} isFullScreen={true} />;
+	return (
+		<LessonEditor
+			courseId={courseId}
+			onSubmit={handleCreateClose}
+			onClose={() => router.back()}
+			isFullScreen={true}
+		/>
+	);
 }
 
 export const getServerSideProps = withTranslations(

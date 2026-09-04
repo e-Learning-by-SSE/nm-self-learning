@@ -1,17 +1,25 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createEmptyLesson, lessonSchema } from "@self-learning/types";
-import { DialogActions, OnDialogCloseFn, showToast, Tab, Tabs } from "@self-learning/ui/common";
+import {
+	Dialog,
+	DialogActions,
+	IconOnlyButton,
+	OnDialogCloseFn,
+	showToast,
+	Tab,
+	Tabs
+} from "@self-learning/ui/common";
 import { useState } from "react";
-import { FormProvider, useForm, FieldErrors } from "react-hook-form";
+import { FormProvider, useForm, FieldErrors, useFormState, useWatch } from "react-hook-form";
 import { LessonContentEditor } from "./forms/lesson-content";
 import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
 import { LessonFormModel } from "./lesson-form-model";
 import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { useRequiredSession } from "@self-learning/ui/layouts";
-import { useRouter } from "next/router";
 import { SkillsEditor } from "../skills/skills-editor";
+import { ArrowsPointingInIcon, ArrowsPointingOutIcon } from "@heroicons/react/24/solid";
 
 export async function onLessonCreatorSubmit(
 	onClose: () => void,
@@ -146,18 +154,21 @@ function showValidationErrors(errors: FieldErrors) {
 
 export function LessonEditor({
 	onSubmit,
+	onClose,
 	initialLesson,
-	courseId
+	courseId,
+	isFullScreen = true
 }: {
 	onSubmit: OnDialogCloseFn<LessonFormModel>;
+	onClose: () => void;
 	initialLesson?: LessonFormModel;
-	isFullScreen: boolean;
 	courseId?: string; // in context of which course lesson is edited
+	isFullScreen?: boolean;
 }) {
 	const isNew = initialLesson === null || initialLesson === undefined;
-	const router = useRouter();
 	const session = useRequiredSession();
 	const [selectedTab, setSelectedTab] = useState(0);
+	const [expanded, setExpanded] = useState(false);
 	const form = useForm<LessonFormModel>({
 		context: undefined,
 		defaultValues: initialLesson ?? {
@@ -167,56 +178,96 @@ export function LessonEditor({
 		},
 		resolver: zodResolver(lessonSchema)
 	});
+	const { isDirty } = useFormState({ control: form.control });
+	const title = useWatch({ control: form.control, name: "title" });
 
-	function onCancel() {
-		if (window.confirm("Änderungen verwerfen?")) {
-			router.back();
+	function handleClose() {
+		if (isDirty && !window.confirm("Ungespeicherte Änderungen verwerfen?")) {
+			return;
 		}
+		onClose();
 	}
 
-	return (
-		<FormProvider {...form}>
-			<form
-				id="lessonform"
-				onSubmit={form.handleSubmit(onSubmit, showValidationErrors)}
-				className="w-full"
-			>
-				<div className="flex flex-col px-4 max-w-screen-xl mx-auto">
-					<div className="flex justify-between mb-8">
-						<div className="flex flex-col gap-2">
-							<span className="font-semibold text-2xl text-c-primary">
-								{initialLesson ? "Lerneinheit bearbeiten" : "Lerneinheit erstellen"}
-							</span>
-							<h1 className="text-4xl">{initialLesson?.title}</h1>
-						</div>
-						<div className="pointer-events-auto">
-							<DialogActions onClose={onCancel}>
-								<OpenAsJsonButton form={form} validationSchema={lessonSchema} />
-								<button type="submit" className="btn-primary pointer-events-auto">
-									{isNew ? "Erstellen" : "Speichern"}
-								</button>
-							</DialogActions>
-						</div>
+	const body = (
+		<form
+			id="lessonform"
+			onSubmit={form.handleSubmit(onSubmit, showValidationErrors)}
+			className="w-full"
+		>
+			<div className="flex flex-col px-4 max-w-screen-xl mx-auto">
+				<div className="flex justify-between mb-8">
+					<div className="flex flex-col gap-2">
+						<span className="font-semibold text-2xl text-c-primary">
+							{initialLesson ? "Lerneinheit bearbeiten" : "Lerneinheit erstellen"}
+						</span>
+						<h1 className="text-4xl">{title}</h1>
 					</div>
-					<div>
-						<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
-							<Tab>Grunddaten</Tab>
-							<Tab>Lesson Skills</Tab>
-							<Tab>Lerninhalt</Tab>
-							<Tab>Lernkontrolle</Tab>
-						</Tabs>
-						{selectedTab === 0 && <LessonInfoEditor isNew={isNew} />}
-						{selectedTab === 1 && (
-							<SkillsEditor
-								courseId={courseId}
-								lessonId={initialLesson?.lessonId ?? undefined}
-							/>
-						)}
-						{selectedTab === 2 && <LessonContentEditor />}
-						{selectedTab === 3 && <QuizEditor />}
+					<div className="pointer-events-auto">
+						<DialogActions onClose={handleClose}>
+							<OpenAsJsonButton form={form} validationSchema={lessonSchema} />
+							<button type="submit" className="btn-primary pointer-events-auto">
+								{isNew ? "Erstellen" : "Speichern"}
+							</button>
+						</DialogActions>
 					</div>
 				</div>
-			</form>
+				<div>
+					<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
+						<Tab>Grunddaten</Tab>
+						<Tab>Lesson Skills</Tab>
+						<Tab>Lerninhalt</Tab>
+						<Tab>Lernkontrolle</Tab>
+					</Tabs>
+					{selectedTab === 0 && <LessonInfoEditor isNew={isNew} />}
+					{selectedTab === 1 && (
+						<SkillsEditor
+							courseId={courseId}
+							lessonId={initialLesson?.lessonId ?? undefined}
+						/>
+					)}
+					{selectedTab === 2 && <LessonContentEditor />}
+					{selectedTab === 3 && <QuizEditor />}
+				</div>
+			</div>
+		</form>
+	);
+	// TODO maybe factor out this expandable dialog view
+	return (
+		<FormProvider {...form}>
+			{isFullScreen ? (
+				body
+			) : (
+				<Dialog
+					onClose={handleClose}
+					className={expanded ? "!rounded-none !p-4" : undefined}
+					style={
+						expanded
+							? {
+									height: "100vh",
+									width: "100vw",
+									maxWidth: "none",
+									maxHeight: "none"
+								}
+							: { height: "80vh", width: "80vw" }
+					}
+				>
+					<div className="absolute right-8 top-4 flex gap-4">
+						<IconOnlyButton
+							type="button"
+							title={expanded ? "Verkleinern" : "Vollbild"}
+							icon={
+								expanded ? (
+									<ArrowsPointingInIcon className="h-5 w-5" />
+								) : (
+									<ArrowsPointingOutIcon className="h-5 w-5" />
+								)
+							}
+							onClick={() => setExpanded(v => !v)}
+						/>
+					</div>
+					<div className="overflow-y-auto mt-8">{body}</div>
+				</Dialog>
+			)}
 		</FormProvider>
 	);
 }
