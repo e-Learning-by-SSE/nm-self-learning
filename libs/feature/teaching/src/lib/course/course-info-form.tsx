@@ -11,7 +11,7 @@ import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { CourseFormModel } from "./course-form-model";
 import { useTranslation } from "next-i18next";
 import { useResourceGuard } from "@self-learning/ui/layouts";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel, CourseType } from "@prisma/client";
 import { GroupAccessEditor } from "../group/forms/group-form";
 import { AuthorsForm } from "../author/authors-form";
 
@@ -86,6 +86,29 @@ export function CourseInfoForm({ isNew }: { isNew: boolean }) {
 						/>
 					</LabeledField>
 
+					<LabeledField label="Kurstyp" error={errors.type?.message}>
+						<div className="flex gap-4">
+							<label className="flex items-center gap-2">
+								<input
+									type="radio"
+									value={CourseType.STATIC}
+									disabled={!isNew}
+									{...register("type")}
+								/>
+								Statisch
+							</label>
+							<label className="flex items-center gap-2">
+								<input
+									type="radio"
+									value={CourseType.DYNAMIC}
+									disabled={!isNew}
+									{...register("type")}
+								/>
+								Dynamisch
+							</label>
+						</div>
+					</LabeledField>
+
 					<LabeledField label="Untertitel" error={errors.subtitle?.message}>
 						<textarea
 							{...register("subtitle")}
@@ -124,7 +147,7 @@ export function CourseInfoForm({ isNew }: { isNew: boolean }) {
 									preview={
 										<ImageOrPlaceholder
 											src={field.value ?? undefined}
-											className="aspect-video w-full rounded-lg object-cover"
+											className="aspect-video w-full rounded-lg object-cover max-w-64"
 										/>
 									}
 								/>
