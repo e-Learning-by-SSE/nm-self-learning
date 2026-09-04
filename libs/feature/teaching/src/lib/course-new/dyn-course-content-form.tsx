@@ -1,5 +1,5 @@
 import { CourseChapter } from "@self-learning/types";
-import { SectionHeader } from "@self-learning/ui/common";
+import { Alert, SectionHeader } from "@self-learning/ui/common";
 import { useCourseContentForm } from "../course/course-content-editor/use-content-form";
 import { useState } from "react";
 import { onLessonCreatorSubmit } from "../lesson/lesson-editor";
@@ -19,10 +19,7 @@ type UseCourseContentForm = ReturnType<typeof useCourseContentForm>;
 
 export function DynCourseContentForm() {
 	const { content, moveLesson, addLesson, removeLesson } = useCourseContentForm([
-		{
-			title: "",
-			content: []
-		}
+		{ title: "", content: [] }
 	]);
 	const form = useFormContext<CourseFormModel>();
 	const courseId = useWatch({ control: form.control, name: "courseId" });
@@ -42,7 +39,7 @@ export function DynCourseContentForm() {
 
 	if (!courseId) {
 		console.error("CoursePreview used for course without valid courseId");
-		return <div>Error: course was never created</div>;
+		return <Alert type={{ severity: "ERROR", message: "This course could not be found." }} />;
 	}
 
 	return (

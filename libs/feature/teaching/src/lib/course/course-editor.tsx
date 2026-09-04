@@ -10,7 +10,7 @@ import { CourseContentForm } from "./course-content-editor/course-content-form";
 import { CourseFormModel, courseFormSchema } from "./course-form-model";
 import { CourseInfoForm } from "./course-info-form";
 import { useRouter } from "next/router";
-import { DynCourseContentForm } from "../dynCourse/dynCourse-content-form";
+import { DynCourseContentForm } from "../course-new/dyn-course-content-form";
 
 export function CourseEditor({
 	course,
@@ -75,7 +75,6 @@ export function CourseEditor({
 						</>
 					}
 				>
-					{/* TODO IS THIS NICE? */}
 					{course.type === CourseType.STATIC && <CourseContentForm />}
 					{course.type === CourseType.DYNAMIC && <DynCourseContentForm />}
 				</SidebarEditorLayout>
