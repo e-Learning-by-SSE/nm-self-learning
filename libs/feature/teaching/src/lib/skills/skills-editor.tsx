@@ -7,8 +7,9 @@ import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import { useTableSkillDisplay } from "./folder-editor";
 import { showToast } from "@self-learning/ui/common";
 import { SkillTreeEditor } from "./skill-tree/skill-tree-editor";
-import { useMemo } from "react";
+import { useMemo, useRef, useState } from "react";
 import { SkillResourceProvider } from "./skill-tree/skill-resource-context";
+import { SkillCatalogDialog, SkillCatalogDialogState } from "./skill-dialog/skill-catalog-dialog";
 
 /**
  * If you edit a course or standalone lesson - provide nothing
@@ -52,13 +53,9 @@ export function SkillsEditor({
 	// TODO could be nice also to display course skill goals! - now only display siblings & self
 	// TODO who is the author of new skills
 
-	const requiredIds = useMemo(() => {
-		const ids = new Set(requiresSet);
+	const lessonRequired = useMemo(() => {
+		const ids = new Set(target === "lesson" ? requiresSet : []);
 		if (!ctx) return ids;
-		// append skills from course
-		if (target === "lesson") {
-			for (const id of ctx.requires) ids.add(id);
-		}
 		// append skills from siblings
 		for (const lesson of ctx.lessons) {
 			if (lesson.lessonId === lessonId) continue; // exclude from the current edited lesson
@@ -67,13 +64,9 @@ export function SkillsEditor({
 		return ids;
 	}, [requiresSet, ctx, lessonId, target]);
 
-	const providedIds = useMemo(() => {
-		const ids = new Set(providesSet);
+	const lessonProvided = useMemo(() => {
+		const ids = new Set(target === "lesson" ? providesSet : []);
 		if (!ctx) return ids;
-		// append skills from course
-		if (target === "lesson") {
-			for (const id of ctx.provides) ids.add(id);
-		}
 		// append skills from siblings
 		for (const lesson of ctx.lessons) {
 			if (lesson.lessonId === lessonId) continue; // exclude from the current edited lesson
@@ -86,11 +79,11 @@ export function SkillsEditor({
 		() => new Set([...requiresSet, ...providesSet]),
 		[requiresSet, providesSet]
 	);
-	// top level ids = course ids
-	const topIds =
-		target === "lesson"
-			? new Set([...(ctx?.requires ?? []), ...(ctx?.provides ?? [])])
-			: currentIds;
+	// provided by course OR standalone lesson editor
+	const courseRequired =
+		target === "course" || courseId === undefined ? requiresSet : new Set(ctx?.requires ?? []);
+	const courseProvided =
+		target === "course" || courseId === undefined ? providesSet : new Set(ctx?.provides ?? []);
 
 	const { data: skills } = trpc.skill.getSkills.useQuery();
 	const allSkills = useMemo(() => {
@@ -99,6 +92,11 @@ export function SkillsEditor({
 		return skillMap;
 	}, [skills]);
 	const { skillDisplayData, updateSkillDisplay } = useTableSkillDisplay(allSkills);
+	const catalog = useMemo(() => Array.from(allSkills.values()), [allSkills]);
+
+	const [dialog, setDialog] = useState<SkillCatalogDialogState>({ kind: "closed" });
+	// avoid rerendering the whole tree when dragging a skill
+	const treeRef = useRef<HTMLDivElement>(null);
 
 	function addSkills(skillsToAdd: SkillFormModel[], field: "provides" | "requires") {
 		const attached = new Set([
@@ -141,30 +139,54 @@ export function SkillsEditor({
 	}
 
 	return (
-		<div>
-			<DragDropContext onDragEnd={onDragEnd}>
-				<SidebarEditorLayout
-					sidebar={
-						<SkillResourceProvider
-							requiredIds={requiredIds}
-							providedIds={providedIds}
-							currentIds={currentIds}
-							topIds={topIds}
-						>
+		<SkillResourceProvider
+			lessonRequired={lessonRequired}
+			lessonProvided={lessonProvided}
+			courseRequired={courseRequired}
+			courseProvided={courseProvided}
+			current={currentIds}
+		>
+			{/* SkillResourceProvider wraps lists + dialogs too so SelectSkillDialog can show puzzle/star/folder overlay */}
+			<DragDropContext
+				onDragStart={() => treeRef.current?.classList.add("is-dragging")}
+				onDragEnd={result => {
+					treeRef.current?.classList.remove("is-dragging");
+					onDragEnd(result);
+				}}
+			>
+				<div ref={treeRef}>
+					<SidebarEditorLayout
+						sidebar={
 							<SkillTreeEditor
 								skillDisplayData={skillDisplayData}
 								updateSkillDisplay={updateSkillDisplay}
 								onSkillSelect={id => {
-									console.log("edit skill", id);
+									if (id) setDialog({ kind: "edit", skillId: id });
 								}}
-								onSkillCreate={name => console.log("add skill", name)}
+								onSkillCreate={opts =>
+									setDialog({
+										kind: "create",
+										defaultName: opts?.name ?? "",
+										parentId: opts?.parentId
+									})
+								}
 							/>
-						</SkillResourceProvider>
-					}
-				>
-					<LessonSkillManagerDragDrop addSkills={addSkills} />
-				</SidebarEditorLayout>
+						}
+					>
+						<LessonSkillManagerDragDrop
+							addSkills={addSkills}
+							excludeIds={currentIds}
+							catalog={catalog}
+						/>
+					</SidebarEditorLayout>
+				</div>
 			</DragDropContext>
-		</div>
+			<SkillCatalogDialog
+				dialog={dialog}
+				skills={allSkills}
+				onClose={() => setDialog({ kind: "closed" })}
+				onUpdated={onSkillUpdated}
+			/>
+		</SkillResourceProvider>
 	);
 }

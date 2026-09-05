@@ -68,21 +68,19 @@ export function SkillTreeEditor({
 
 	return (
 		<div>
-			<CenteredSection>
+			<CenteredSection className="!py-0">
 				<SearchField
 					placeholder="Suche nach Skill"
 					onChange={e => {
 						setSearchTerm(e.target.value);
 					}}
 				/>
-				{onSkillCreate && (
-					<IconTextButton
-						text={"Neu Skill Hinzufügen"}
-						className="btn-secondary"
-						onClick={() => onSkillCreate({ name: searchTerm })}
-						icon={<PlusIcon className="icon h-5" />}
-					/>
-				)}
+				<IconTextButton
+					text={"Neu Skill Hinzufügen"}
+					className="btn-secondary"
+					onClick={() => onSkillCreate({ name: searchTerm })}
+					icon={<PlusIcon className="icon h-5" />}
+				/>
 				<DialogHandler id={"alert"} />
 				<div className="pt-4" />
 				<Table head={<TableHeaderColumn>Skills</TableHeaderColumn>}>

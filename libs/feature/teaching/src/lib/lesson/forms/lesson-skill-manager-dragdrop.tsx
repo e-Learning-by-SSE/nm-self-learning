@@ -1,7 +1,5 @@
 import { SkillFormModel } from "@self-learning/types";
 import { Form } from "@self-learning/ui/forms";
-import { useState } from "react";
-import { SelectSkillDialog } from "../../skills/skill-dialog/select-skill-dialog";
 import { useFormContext } from "react-hook-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { LabeledFieldSelectSkillsViewDragDrop } from "../../skills/skill-dialog/select-skill-view";
@@ -12,9 +10,13 @@ type SkillModalIdentifier = "provides" | "requires";
  * Area to add and remove skills to a lesson
  */
 export function LessonSkillManagerDragDrop({
-	addSkills = () => {}
+	addSkills = () => {},
+	excludeIds,
+	catalog
 }: {
 	addSkills?: (skillsToAdd: SkillFormModel[], field: "provides" | "requires") => void;
+	excludeIds?: ReadonlySet<string>;
+	catalog?: SkillFormModel[];
 }) {
 	const { setValue, watch } = useFormContext<LessonFormModel>();
 
@@ -22,10 +24,6 @@ export function LessonSkillManagerDragDrop({
 		requires: watch("requires"),
 		provides: watch("provides")
 	};
-
-	const [selectSkillModal, setSelectSkillModal] = useState<{
-		id: SkillModalIdentifier;
-	} | null>(null);
 
 	const deleteSkill = (skill: SkillFormModel, id: SkillModalIdentifier) => {
 		setValue(
@@ -52,6 +50,8 @@ export function LessonSkillManagerDragDrop({
 						if (skill) addSkills(skill, "provides");
 					}}
 					droppableId="provides"
+					excludeIds={excludeIds}
+					catalog={catalog}
 				/>
 
 				<LabeledFieldSelectSkillsViewDragDrop
@@ -64,15 +64,9 @@ export function LessonSkillManagerDragDrop({
 						if (skill) addSkills(skill, "requires");
 					}}
 					droppableId="requires"
+					excludeIds={excludeIds}
+					catalog={catalog}
 				/>
-				{selectSkillModal && (
-					<SelectSkillDialog
-						onClose={skill => {
-							setSelectSkillModal(null);
-							if (skill) addSkills(skill, selectSkillModal.id);
-						}}
-					/>
-				)}
 			</>
 		</Form.SidebarSection>
 	);

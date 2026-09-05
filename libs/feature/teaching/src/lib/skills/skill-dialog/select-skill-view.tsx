@@ -13,13 +13,17 @@ export function LabeledFieldSelectSkillsViewDragDrop({
 	onDeleteSkill,
 	onAddSkill,
 	label,
-	droppableId
+	droppableId,
+	excludeIds,
+	catalog
 }: {
 	skills: SkillFormModel[];
 	onDeleteSkill: (skill: SkillFormModel) => void;
 	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
 	label: string;
 	droppableId?: string;
+	excludeIds?: ReadonlySet<string>;
+	catalog?: SkillFormModel[];
 }) {
 	const [selectSkillModal, setSelectSkillModal] = useState<boolean>(false);
 
@@ -42,6 +46,8 @@ export function LabeledFieldSelectSkillsViewDragDrop({
 							onAddSkill={onAddSkill}
 							selectSkillModal={selectSkillModal}
 							onDeleteSkill={onDeleteSkill}
+							excludeIds={excludeIds}
+							catalog={catalog}
 						/>
 					</LabeledField>
 					{provided.placeholder}
@@ -56,12 +62,16 @@ export function SelectSkillsView({
 	skills,
 	onDeleteSkill,
 	onAddSkill,
-	disabled = false
+	disabled = false,
+	excludeIds,
+	catalog
 }: {
 	skills: SkillFormModel[];
 	onDeleteSkill: (skill: SkillFormModel) => void;
 	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
 	disabled?: boolean;
+	excludeIds?: ReadonlySet<string>;
+	catalog?: SkillFormModel[];
 }) {
 	const [selectSkillModal, setSelectSkillModal] = useState(false);
 
@@ -82,6 +92,8 @@ export function SelectSkillsView({
 				onAddSkill={onAddSkill}
 				selectSkillModal={selectSkillModal}
 				onDeleteSkill={onDeleteSkill}
+				excludeIds={excludeIds}
+				catalog={catalog}
 			/>
 		</>
 	);
@@ -92,13 +104,17 @@ export function SkillManagementComponent({
 	onDeleteSkill,
 	onAddSkill,
 	setSelectSkillModal,
-	selectSkillModal
+	selectSkillModal,
+	excludeIds,
+	catalog
 }: {
 	skills: SkillFormModel[];
 	onDeleteSkill: (skill: SkillFormModel, index: number) => void;
 	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
 	setSelectSkillModal: (value: boolean | ((prevVar: boolean) => boolean)) => void;
 	selectSkillModal: boolean;
+	excludeIds?: ReadonlySet<string>;
+	catalog?: SkillFormModel[];
 }) {
 	return (
 		<div className="flex flex-col">
@@ -117,6 +133,8 @@ export function SkillManagementComponent({
 			</div>
 			{selectSkillModal && (
 				<SelectSkillDialog
+					skills={catalog}
+					excludeIds={excludeIds}
 					onClose={skill => {
 						setSelectSkillModal(false);
 						onAddSkill(skill);

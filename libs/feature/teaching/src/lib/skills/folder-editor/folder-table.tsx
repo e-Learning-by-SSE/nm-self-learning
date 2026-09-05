@@ -14,7 +14,7 @@ import { ListSkillEntryWithChildren } from "./skilltree/skill-row-entry";
 import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "./skill-display";
 import { Skill } from "@prisma/client";
 import { PlusIcon } from "@heroicons/react/24/solid";
-import { AddSkillDialog } from "../skill-dialog/add-skill-dialog";
+import { AddSkillDialog, SkillDialogResult } from "../skill-dialog/add-skill-dialog";
 import { trpc } from "@self-learning/api-client";
 import { DragDropContext, OnDragEndResponder } from "@hello-pangea/dnd";
 import { isHotkeyPressed } from "react-hotkeys-hook";
@@ -48,42 +48,32 @@ export function SkillFolderTable({
 	}, [skillDisplayData, searchTerm]);
 	const [openNewSkillDialog, setOpenNewSkillDialog] = useState(false);
 	const { mutateAsync: createNewSkill } = trpc.skill.createSkill.useMutation();
-	const { mutateAsync: addSkillOnParent } = trpc.skill.createSkillWithParents.useMutation();
 	const { mutateAsync: updateSkillParent } = trpc.skill.updateSkill.useMutation();
 
-	function handleAddSkillDialogClose(result?: {
-		name: string;
-		description: string | null;
-		parent?: string;
-	}) {
+	async function handleAddSkillDialogClose(result?: SkillDialogResult) {
 		if (result) {
-			let addSkill;
-			if (result.parent) {
-				const newSkill = {
-					parentSkillId: result.parent,
-					authorId: authorId,
-					skill: { ...result, children: [] }
-				};
-				addSkill = async () => await addSkillOnParent(newSkill);
-			} else {
-				const newSkill = {
-					authorId: authorId,
-					skill: { ...result, children: [] }
-				};
-				addSkill = async () => {
-					await createNewSkill(newSkill);
-				};
-			}
-
-			addSkill();
-			if (result.parent) {
-				updateSkillDisplay([
-					{
-						id: result.parent,
+			const created = await createNewSkill({
+				authorId: authorId,
+				skill: { name: result.name, description: result.description, children: [] }
+			});
+			if (result.parents.length) {
+				await updateSkillParent({
+					skill: {
+						id: created.id,
+						name: created.name,
+						description: created.description,
+						authorId: created.authorId,
+						children: created.children.map(child => child.id),
+						parents: result.parents
+					}
+				});
+				updateSkillDisplay(
+					result.parents.map(id => ({
+						id,
 						shortHighlight: true,
 						isExpanded: true
-					}
-				]);
+					}))
+				);
 			}
 		}
 		setOpenNewSkillDialog(false);

@@ -1,45 +1,71 @@
-import { Dialog, DialogActions } from "@self-learning/ui/common";
+import { Dialog, DialogActions, OnDialogCloseFn } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
-import { Skill } from "@prisma/client";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SkillFormModel } from "@self-learning/types";
+import { SelectSkillsView } from "./select-skill-view";
 
 const skillSchema = z.object({
 	name: z.string().min(1, "Name is required"),
-	description: z.string(),
-	parent: z.string().optional()
+	description: z.string()
 });
 
-type SkillFormData = z.infer<typeof skillSchema>;
+export type SkillDialogResult = z.infer<typeof skillSchema> & { parents: string[] };
 
 export function AddSkillDialog({
 	onClose,
 	selectedSkill,
+	skill,
+	defaultName,
 	skills
 }: {
-	selectedSkill?: Skill;
+	selectedSkill?: { id: string };
+	skill?: SkillFormModel;
+	defaultName?: string;
 	skills: SkillFormModel[];
-	onClose: (result?: SkillFormData) => void;
+	onClose: OnDialogCloseFn<SkillDialogResult>;
 }) {
+	const isEdit = Boolean(skill);
 	const {
 		register,
 		handleSubmit,
 		formState: { errors, isValid }
-	} = useForm<SkillFormData>({
+	} = useForm<z.infer<typeof skillSchema>>({
 		resolver: zodResolver(skillSchema),
-		mode: "onChange" // Enable live validation
+		mode: "onChange", // Enable live validation
+		defaultValues: {
+			name: skill?.name ?? defaultName ?? "",
+			description: skill?.description ?? ""
+		}
 	});
 
-	const onSubmit = (data: SkillFormData) => {
-		console.log("onSubmit, data", data);
-		onClose(data);
+	// parents are a set — picked via SelectSkillDialog, not a dropdown
+	const [parentSkills, setParentSkills] = useState<SkillFormModel[]>(() => {
+		if (skill) return skills.filter(item => skill.parents.includes(item.id));
+		const selected = selectedSkill && skills.find(item => item.id === selectedSkill.id);
+		return selected ? [selected] : [];
+	});
+
+	const excludeIds = new Set<string>([
+		...(skill ? [skill.id, ...skill.children] : []),
+		...parentSkills.map(item => item.id)
+	]);
+
+	const onSubmit = (data: z.infer<typeof skillSchema>) => {
+		onClose({ ...data, parents: parentSkills.map(item => item.id) });
 	};
 
 	return (
-		<Dialog title="Skill hinzufügen" onClose={onClose}>
-			<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+		<Dialog title={isEdit ? "Skill bearbeiten" : "Skill hinzufügen"} onClose={onClose}>
+			<form
+				onSubmit={e => {
+					e.stopPropagation();
+					handleSubmit(onSubmit)(e);
+				}}
+				className="flex flex-col gap-4"
+			>
 				<LabeledField label="Name">
 					<input
 						type="text"
@@ -53,19 +79,22 @@ export function AddSkillDialog({
 					<input type="text" className="textfield" {...register("description")} />
 				</LabeledField>
 
-				<LabeledField label="Parent">
-					<select
-						defaultValue={selectedSkill?.id ?? ""}
-						className="textfield"
-						{...register("parent")}
-					>
-						<option value="">None</option>
-						{skills.map(skill => (
-							<option key={skill.id} value={skill.id}>
-								{skill.name}
-							</option>
-						))}
-					</select>
+				<LabeledField label="Eltern">
+					<SelectSkillsView
+						skills={parentSkills}
+						catalog={skills}
+						excludeIds={excludeIds}
+						onDeleteSkill={removed =>
+							setParentSkills(prev => prev.filter(item => item.id !== removed.id))
+						}
+						onAddSkill={added => {
+							if (!added) return;
+							setParentSkills(prev => {
+								const ids = new Set(prev.map(item => item.id));
+								return [...prev, ...added.filter(item => !ids.has(item.id))];
+							});
+						}}
+					/>
 				</LabeledField>
 
 				<DialogActions onClose={onClose}>

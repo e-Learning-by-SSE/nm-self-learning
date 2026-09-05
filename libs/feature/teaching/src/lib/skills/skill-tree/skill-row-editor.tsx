@@ -1,19 +1,14 @@
-import { IconOnlyButton, TableDataColumn } from "@self-learning/ui/common";
+import { IconOnlyButton, TableDataColumn, Tooltip } from "@self-learning/ui/common";
 import {
 	ChevronDownIcon,
 	FolderIcon,
 	ArrowPathRoundedSquareIcon,
 	ShieldExclamationIcon,
 	ChevronRightIcon,
-	StarIcon as StarIconSolid,
-	PuzzlePieceIcon as PuzzlePieceIconSolid,
-	PlusIcon
+	ArrowRightStartOnRectangleIcon,
+	ArrowRightEndOnRectangleIcon
 } from "@heroicons/react/24/solid";
-import {
-	LockClosedIcon,
-	StarIcon as StarIconOutline,
-	PuzzlePieceIcon as PuzzlePieceIconOutline
-} from "@heroicons/react/24/outline";
+import { LockClosedIcon, ArrowLongRightIcon, FolderPlusIcon } from "@heroicons/react/24/outline";
 import styles from "../folder-editor/folder-table.module.css";
 import { isTruthy } from "@self-learning/util/common";
 import { Draggable, DraggableStateSnapshot, DraggableStyle, Droppable } from "@hello-pangea/dnd";
@@ -25,6 +20,7 @@ import {
 } from "../folder-editor/skill-display";
 import { useContext } from "react";
 import { SkillResourceContext } from "./skill-resource-context";
+import { clsx } from "clsx";
 
 /**
  * Recursive folder row for the lesson/course skill tree.
@@ -158,10 +154,11 @@ function SkillRow({
 	const ctx = useContext(SkillResourceContext);
 	if (!ctx) console.warn("skill row is used without context");
 	// if ctx is empty - its just skill view
-	const isRequired = !!ctx?.requiredIds.has(skill.id);
-	const isProvided = !!ctx?.providedIds.has(skill.id);
-	const isUsedInCurrent = !!ctx?.currentIds.has(skill.id);
-	const isTopLevel = !!ctx?.topIds.has(skill.id);
+	const isRequired = !!ctx?.lessonRequired.has(skill.id);
+	const isProvided = !!ctx?.lessonProvided.has(skill.id);
+	const isUsedInCurrent = !!ctx?.current.has(skill.id);
+	const isCourseRequired = !!ctx?.courseRequired.has(skill.id);
+	const isCourseProvided = !!ctx?.courseProvided.has(skill.id);
 
 	const depthCssStyle = { "--depth": depth } as React.CSSProperties;
 
@@ -197,11 +194,14 @@ function SkillRow({
 		return { ...style, transitionDuration: `0.001s` };
 	}
 
+	function isRootItem(row: SkillFolderVisualization): boolean {
+		return row.skill.children.length > 0 && row.skill.parents.length === 0;
+	}
+
 	function checkDraggableSetting(row: SkillFolderVisualization): boolean {
-		if (ctx?.currentIds.has(row.id)) return true;
+		if (ctx?.current.has(row.id)) return true;
 		// root folder is a grouping node, not an assignable skill
-		if (row.skill.children.length > 0 && row.skill.parents.length === 0) return true;
-		return false;
+		return isRootItem(row);
 	}
 
 	return (
@@ -238,11 +238,11 @@ function SkillRow({
 										style={getStyle(provided.draggableProps.style, snapshot)}
 									>
 										<div
-											className={`flex ${skill.isFolder && "hover:text-secondary"}`}
+											className={`flex`}
 											onClick={() => handleSelection(skill.id)}
 										>
 											<div className="flex items-center px-2 gap-1 min-w-[2rem]">
-												{skill.isFolder ? (
+												{skill.isFolder && (
 													<>
 														<div className="mr-1">
 															{skill.isExpanded ? (
@@ -257,18 +257,12 @@ function SkillRow({
 																/>
 															)}
 														</div>
-														<FolderIcon
-															className={`icon h-5 text-lg ${isProvided ? "text-emerald-500" : ""}`}
-														/>
+														{isRootItem(skill) && (
+															<FolderIcon
+																className={`icon h-5 text-lg ${isProvided ? "text-emerald-500" : ""}`}
+															/>
+														)}
 													</>
-												) : (
-													<div className="ml-6">
-														<StatusIcon
-															isTop={isTopLevel}
-															isProvided={isProvided}
-															isRequired={isRequired}
-														/>
-													</div>
 												)}
 											</div>
 											{cycleError && (
@@ -277,19 +271,28 @@ function SkillRow({
 											{cycleWarning && (
 												<ShieldExclamationIcon className="icon h-5 text-lg text-yellow-500" />
 											)}
+
 											<span
 												className={`flex items-center gap-1 text-sm font-medium text-gray-800 ${textClassName}`}
 											>
-												{skill.displayName ?? skill.skill.name}
+												<ConnectedSkill
+													name={skill.displayName ?? skill.skill.name}
+													enabled={!!ctx && !isRootItem(skill)}
+													isLessonProvided={isProvided}
+													isLessonRequired={isRequired}
+													isCourseProvided={isCourseProvided}
+													isCourseRequired={isCourseRequired}
+												/>
+
 												{isUsedInCurrent && (
 													<LockClosedIcon className="text-gray-400 h-4 w-4 flex-shrink-0" />
 												)}
 											</span>
 										</div>
 										<IconOnlyButton
-											icon={<PlusIcon className="h-4 w-4" />}
-											className="invisible group-hover:visible ml-auto !p-1"
-											title={"Neu Skill hinzufügen"}
+											icon={<FolderPlusIcon className="h-4 w-4" />}
+											className={`${styles["skill-row-add"]} invisible group-hover:visible ml-auto !p-1`}
+											title={"Neuen Skill in dieser Skillgruppe erstellen"}
 											onClick={event => {
 												event.preventDefault();
 												event.stopPropagation();
@@ -308,25 +311,91 @@ function SkillRow({
 	);
 }
 
-function StatusIcon({
-	isTop,
-	isProvided,
-	isRequired
+export function ConnectedSkill({
+	name,
+	enabled,
+	isLessonProvided,
+	isLessonRequired,
+	isCourseRequired,
+	isCourseProvided
 }: {
-	isTop: boolean;
-	isProvided: boolean;
-	isRequired: boolean;
+	name: string;
+	enabled: boolean;
+	isLessonProvided: boolean;
+	isLessonRequired: boolean;
+	isCourseRequired: boolean;
+	isCourseProvided: boolean;
 }) {
-	// 1. Pick Solid vs Outline
-	const isSolid = isProvided && isRequired;
-	const Puzzle = isSolid ? PuzzlePieceIconSolid : PuzzlePieceIconOutline;
-	const Star = isSolid ? StarIconSolid : StarIconOutline;
-	const Icon = isTop ? Star : Puzzle;
+	const requiresFlagRed = isCourseRequired && isLessonProvided;
+	const requiresFlagGreen = isCourseRequired && isLessonRequired;
+	const RequiresFlagIcon = ArrowRightStartOnRectangleIcon;
 
-	// 2. Pick Color
-	const puzzleColor = isProvided ? "text-emerald-500" : isRequired ? "text-red-500" : "";
-	const starColor = isRequired ? "text-red-500" : isProvided ? "text-emerald-500" : "";
-	const color = isTop ? starColor : puzzleColor;
+	const providesFlagRed = isCourseProvided && isLessonRequired;
+	const providesFlagGreen = isCourseProvided && isLessonProvided;
+	const ProvidesFlagIcon = ArrowRightEndOnRectangleIcon;
 
-	return <Icon className={`icon h-5 ${color}`.trim()} />;
+	const baseText = isCourseRequired
+		? "required by course"
+		: isCourseProvided
+			? "provided by course"
+			: "";
+	const starText = requiresFlagRed
+		? "course provides what requires"
+		: providesFlagRed
+			? "course requires what provides"
+			: requiresFlagGreen || providesFlagGreen
+				? `${baseText} and by lesson(s)`
+				: baseText;
+
+	const error = requiresFlagRed || providesFlagRed;
+	const isParticipating =
+		isLessonProvided || isLessonRequired || isCourseRequired || isCourseProvided;
+
+	const LeftIcon = isCourseRequired ? RequiresFlagIcon : ArrowLongRightIcon;
+	const rightIconStyle = error
+		? "text-red-500"
+		: isCourseProvided || isLessonRequired || providesFlagGreen
+			? "text-emerald-500"
+			: isParticipating
+				? "text-red-500"
+				: "invisible";
+
+	const RightIcon = isCourseProvided ? ProvidesFlagIcon : ArrowLongRightIcon;
+	const leftIconStyle = error
+		? "text-red-500"
+		: isCourseRequired || isLessonProvided || requiresFlagGreen
+			? "text-emerald-500"
+			: isParticipating
+				? "text-red-500"
+				: "invisible";
+
+	// highlight if any
+	const middleStyle = error ? "text-red-500" : isParticipating ? "text-emerald-500" : "";
+	const pointText =
+		isLessonRequired && isLessonProvided
+			? "required and provided by lessons"
+			: isLessonRequired
+				? "required by lesson(s)"
+				: isLessonProvided
+					? "provided by lesson(s)"
+					: "not allocated";
+	const text = isCourseRequired || isCourseProvided ? starText : pointText;
+
+	if (!enabled) {
+		return (
+			<span className="flex">
+				<span className={middleStyle}>{name}</span>
+			</span>
+		);
+	}
+
+	return (
+		<Tooltip content={text} className="inline-flex">
+			<span className="flex">
+				<LeftIcon className={clsx(`h-5 text-lg`, leftIconStyle)} />
+				<span className={middleStyle}>{name}</span>
+				<RightIcon className={clsx(`h-5 text-lg`, rightIconStyle)} />
+			</span>
+		</Tooltip>
+	);
 }
