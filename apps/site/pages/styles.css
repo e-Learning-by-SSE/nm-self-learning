@@ -30,12 +30,6 @@
 	--c-neutral-800: theme("colors.gray.800");
 	--c-neutral-900: theme("colors.gray.900");
 
-	/* Background / surface */
-	--c-surface-0: var(--c-neutral-0);
-	--c-surface-1: var(--c-neutral-50);
-	--c-surface-2: var(--c-neutral-100);
-	--c-surface-3: var(--c-neutral-200);
-
 	/* Text */
 	--c-text: var(--c-neutral-700);
 	--c-text-strong: var(--c-neutral-800);
@@ -46,12 +40,6 @@
 	--c-border: var(--c-neutral-200);
 	--c-border-strong: var(--c-neutral-300);
 	--c-border-muted: var(--c-neutral-100);
-
-	/* Primary */
-	--c-primary: theme("colors.emerald.500");
-	--c-primary-strong: theme("colors.emerald.600");
-	--c-primary-muted: theme("colors.emerald.400");
-	--c-primary-subtle: theme("colors.emerald.50");
 
 	/* Accent */
 	--c-accent: theme("colors.purple.500");
