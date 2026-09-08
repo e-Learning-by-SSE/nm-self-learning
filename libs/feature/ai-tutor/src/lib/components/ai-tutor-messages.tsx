@@ -72,7 +72,7 @@ export function AiTutorMessages({
 			{isLoading && (
 				<div className="flex justify-start">
 					<div className="flex items-start gap-3 max-w-xs">
-						<div className="w-8 h-8 rounded-xl flex items-center justify-center bg-emerald-600">
+						<div className="w-8 h-8 rounded-xl flex items-center justify-center bg-c-primary-strong">
 							<img
 								className="rounded-xl object-cover object-top w-10 h-9"
 								alt="AI Tutor"

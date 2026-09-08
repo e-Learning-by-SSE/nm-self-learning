@@ -13,7 +13,6 @@
 }
 
 :root {
-	--color-secondary: theme("colors.emerald.500"); /* DEPRECATED */
 	--color-light: theme("colors.slate.500"); /* DEPRECATED */
 	--color-light-border: theme("colors.slate.200"); /* DEPRECATED */
 	--gradient: linear-gradient(62deg, #c2dbf3, #d7b6f5);
