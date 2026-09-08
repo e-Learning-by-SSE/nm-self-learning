@@ -19,6 +19,9 @@ async function getSubjects() {
 					specializations: true
 				}
 			}
+		},
+		orderBy: {
+			title: "asc"
 		}
 	});
 }
