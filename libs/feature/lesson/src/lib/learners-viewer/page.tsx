@@ -183,7 +183,12 @@ function ContentDisplayItem({
 				</div>
 			);
 		default:
-			return <ContentInfo error text={`unsupported content type: ${(c as LessonContentType)?.type}`} />;
+			return (
+				<ContentInfo
+					error
+					text={`unsupported content type: ${(c as LessonContentType)?.type}`}
+				/>
+			);
 	}
 }
 
@@ -429,30 +434,81 @@ function LessonNavigation({
 		return <span></span>;
 	}
 
+	const lessonIndex = content.findIndex(l => l.lessonId === lesson.lessonId);
+	console.log({
+		lessonId: lesson.lessonId,
+		lessonIndex,
+		content,
+		previous: lessonIndex > 0 ? content[lessonIndex - 1] : null
+	});
+	console.log({ previous, next });
+
+	// return (
+	// 	<div className="grid w-full grid-cols-3 items-center gap-2 mt-auto pt-4">
+	// 		<div className="flex justify-start">
+	// 			{previous != null && (
+	// 				<button
+	// 					onClick={() => previous && navigateToLesson(previous)}
+	// 					className="rounded-lg bg-white flex items-center gap-4 border border-c-border px-4 py-2 disabled:text-gray-300 whitespace-nowrap"
+	// 					title="Vorherige Lerneinheit"
+	// 					data-testid="previousLessonButton"
+	// 				>
+	// 					<ChevronDoubleLeftIcon className="h-5" />
+	// 					Vorherige Lerneinheit
+	// 				</button>
+	// 			)}
+	// 		</div>
+	// 		<div className="flex justify-center">
+	// 			{hasQuiz && urlToQuiz && <LinkToQuiz url={urlToQuiz} />}
+	// 		</div>
+	// 		<div className="flex justify-end">
+	// 			<button
+	// 				onClick={() => next && navigateToLesson(next)}
+	// 				disabled={!next}
+	// 				className="rounded-lg bg-white hidden lg:flex items-center gap-4 border border-c-border px-4 py-2 disabled:text-gray-300"
+	// 				title="Nächste Lerneinheit"
+	// 				data-testid="nextLessonButton"
+	// 			>
+	// 				Nächste Lerneinheit
+	// 				<ChevronDoubleRightIcon className="h-5" />
+	// 			</button>
+	// 		</div>
+	// 	</div>
+	// );
+
 	return (
-		<span className="flex gap-2 justify-between mt-auto pt-4">
-			<button
-				onClick={() => previous && navigateToLesson(previous)}
-				disabled={!previous}
-				className="rounded-lg bg-white items-center  gap-4 border border-c-border px-4 py-2 disabled:text-gray-300 hidden"
-				title="Vorherige Lerneinheit"
-				data-testid="previousLessonButton"
-			>
-				<ChevronDoubleLeftIcon className="h-5" />
-				Vorherige Lerneinheit
-			</button>
-			{hasQuiz && urlToQuiz && <LinkToQuiz url={urlToQuiz} />}
-			<button
-				onClick={() => next && navigateToLesson(next)}
-				disabled={!next}
-				className="rounded-lg bg-white hidden lg:flex items-center gap-4 border border-c-border px-4 py-2 disabled:text-gray-300"
-				title="Nächste Lerneinheit"
-				data-testid="nextLessonButton"
-			>
-				Nächste Lerneinheit
-				<ChevronDoubleRightIcon className="h-5" />
-			</button>
-		</span>
+		<div className="grid w-full grid-cols-2 items-center gap-4 mt-auto pt-4">
+			{/* Links: Previous + Next */}
+			<div className="flex items-center gap-2 justify-start">
+				{previous != null && (
+					<button
+						onClick={() => navigateToLesson(previous)}
+						className="rounded-lg bg-white flex items-center gap-4 border border-c-border px-4 py-2 whitespace-nowrap"
+						title="Vorherige Lerneinheit"
+						data-testid="previousLessonButton"
+					>
+						<ChevronDoubleLeftIcon className="h-5" />
+						Vorherige Lerneinheit
+					</button>
+				)}
+
+				<button
+					onClick={() => next && navigateToLesson(next)}
+					disabled={!next}
+					className="rounded-lg bg-white hidden lg:flex items-center gap-4 border border-c-border px-4 py-2 disabled:text-gray-300 whitespace-nowrap"
+					title="Nächste Lerneinheit"
+					data-testid="nextLessonButton"
+				>
+					Nächste Lerneinheit
+					<ChevronDoubleRightIcon className="h-5" />
+				</button>
+			</div>
+
+			{/* Rechts: Lernkontrolle */}
+			<div className="flex justify-end">
+				{hasQuiz && urlToQuiz && <LinkToQuiz url={urlToQuiz} />}
+			</div>
+		</div>
 	);
 }
 
