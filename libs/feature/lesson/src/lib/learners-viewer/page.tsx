@@ -47,6 +47,7 @@ import { useAttemptSubmission } from "libs/feature/quiz/src/lib/quiz-submit-atte
 import { Session } from "next-auth";
 import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
+import { useTranslation } from "next-i18next";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -125,8 +126,10 @@ function ContentDisplayItem({
 	course: LessonLearnersViewProps["course"];
 	addMediaDisplay: (idx: number) => void;
 }) {
+	const { t } = useTranslation("feature-lesson");
+
 	if (!c || index === undefined) {
-		return <ContentInfo text="Diese Lerneinheit hat keinen Inhalt." />;
+		return <ContentInfo text={t("no_content")} />;
 	}
 	switch (c.type) {
 		case "article":
@@ -138,7 +141,7 @@ function ContentDisplayItem({
 				</div>
 			);
 		case "video":
-			if (!c.value.url) return <ContentInfo error text="Fehlende Video-URL." />;
+			if (!c.value.url) return <ContentInfo error text={t("missing_video_url")} />;
 			return (
 				<div className="flex flex-col gap-4 aspect-video w-full xl:max-h-[75vh]">
 					<VideoPlayer
@@ -153,17 +156,17 @@ function ContentDisplayItem({
 				</div>
 			);
 		case "pdf":
-			if (!c.value.url) return <ContentInfo error text="missing PDF URL" />;
+			if (!c.value.url) return <ContentInfo error text={t("missing_pdf_url")} />;
 			return (
 				<div className="flex items-center">
 					<Button onClick={() => addMediaDisplay(index)} className="btn-secondary">
 						<DocumentIcon className="h-6 w-6 text-primary" />
-						PDF öffnen
+						{t("open_pdf")}
 					</Button>
 				</div>
 			);
 		case "iframe":
-			if (!c.value.url) return <ContentInfo error text="Fehlende URL." />;
+			if (!c.value.url) return <ContentInfo error text={t("missing_url")} />;
 			if (c.value.source === "h5p") {
 				return (
 					<div className="flex flex-col w-full">
@@ -186,23 +189,32 @@ function ContentDisplayItem({
 			return (
 				<ContentInfo
 					error
-					text={`unsupported content type: ${(c as LessonContentType)?.type}`}
+					text={t("unsupported_content_type", {
+						type: (c as LessonContentType)?.type
+					})}
 				/>
 			);
 	}
 }
 
 function MediaDisplayHelper({ currentMedia }: { currentMedia: OpenedMediaInfo }) {
+	const { t } = useTranslation("feature-lesson");
+
 	switch (currentMedia?.type) {
 		case "pdf":
-			if (!currentMedia.value.url) return <ContentInfo error text="missing PDF URL" />;
+			if (!currentMedia.value.url) return <ContentInfo error text={t("missing_pdf_url")} />;
 			return (
 				<div className="h-[90vh] xl:h-[80vh]">
 					<PdfViewer url={currentMedia.value.url} />
 				</div>
 			);
 		default:
-			return <ContentInfo error text={`unsupported content type: ${currentMedia?.type}`} />;
+			return (
+				<ContentInfo
+					error
+					text={t("unsupported_content_type", { type: currentMedia?.type })}
+				/>
+			);
 	}
 }
 
@@ -371,6 +383,7 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonLearnersV
 }
 
 function LessonArticle({ article }: { article: Article }) {
+	const { t } = useTranslation("feature-lesson");
 	const [markdown, setMarkdown] = useState<CompiledMarkdown | null>(null);
 	useEffect(() => {
 		if (article.type === "article" && article.value) {
@@ -378,7 +391,7 @@ function LessonArticle({ article }: { article: Article }) {
 		}
 	}, [article]);
 
-	if (!article.value) return <ContentInfo error text="missing article text" />;
+	if (!article.value) return <ContentInfo error text={t("missing_article_text")} />;
 	if (!markdown) return <ContentLoader />;
 
 	return (
@@ -389,17 +402,21 @@ function LessonArticle({ article }: { article: Article }) {
 }
 
 function ContentInfo({ text, error }: { text: string; error?: boolean }) {
+	const { t } = useTranslation("common");
+
 	return (
 		<SectionCard>
 			<span className={`text-c-text-muted text-center ${error && "text-c-danger"}`}>
-				{error && "Error: "}
+				{error && `${t("Error")}: `}
 				{text}
 			</span>
 		</SectionCard>
 	);
 }
 function ContentLoader() {
-	return <div className="py-16 text-center">Loading...</div>;
+	const { t } = useTranslation("feature-lesson");
+
+	return <div className="py-16 text-center">{t("loading")}</div>;
 }
 
 function LessonNavigation({
@@ -411,6 +428,7 @@ function LessonNavigation({
 	lesson: LessonLearnersViewProps["lesson"];
 	course: LessonLearnersViewProps["course"];
 }) {
+	const { t } = useTranslation("feature-lesson");
 	const hasQuiz = (lesson.meta as LessonMeta).hasQuiz;
 	const urlToQuiz = course && lesson ? "courses/" + course.slug + "/" + lesson.slug : "";
 
@@ -434,79 +452,35 @@ function LessonNavigation({
 		return <span></span>;
 	}
 
-	const lessonIndex = content.findIndex(l => l.lessonId === lesson.lessonId);
-	console.log({
-		lessonId: lesson.lessonId,
-		lessonIndex,
-		content,
-		previous: lessonIndex > 0 ? content[lessonIndex - 1] : null
-	});
-	console.log({ previous, next });
-
-	// return (
-	// 	<div className="grid w-full grid-cols-3 items-center gap-2 mt-auto pt-4">
-	// 		<div className="flex justify-start">
-	// 			{previous != null && (
-	// 				<button
-	// 					onClick={() => previous && navigateToLesson(previous)}
-	// 					className="rounded-lg bg-white flex items-center gap-4 border border-c-border px-4 py-2 disabled:text-gray-300 whitespace-nowrap"
-	// 					title="Vorherige Lerneinheit"
-	// 					data-testid="previousLessonButton"
-	// 				>
-	// 					<ChevronDoubleLeftIcon className="h-5" />
-	// 					Vorherige Lerneinheit
-	// 				</button>
-	// 			)}
-	// 		</div>
-	// 		<div className="flex justify-center">
-	// 			{hasQuiz && urlToQuiz && <LinkToQuiz url={urlToQuiz} />}
-	// 		</div>
-	// 		<div className="flex justify-end">
-	// 			<button
-	// 				onClick={() => next && navigateToLesson(next)}
-	// 				disabled={!next}
-	// 				className="rounded-lg bg-white hidden lg:flex items-center gap-4 border border-c-border px-4 py-2 disabled:text-gray-300"
-	// 				title="Nächste Lerneinheit"
-	// 				data-testid="nextLessonButton"
-	// 			>
-	// 				Nächste Lerneinheit
-	// 				<ChevronDoubleRightIcon className="h-5" />
-	// 			</button>
-	// 		</div>
-	// 	</div>
-	// );
-
 	return (
-		<div className="grid w-full grid-cols-2 items-center gap-4 mt-auto pt-4">
-			{/* Links: Previous + Next */}
-			<div className="flex items-center gap-2 justify-start">
+		<div className="grid w-full grid-cols-3 items-center gap-2 mt-auto pt-4">
+			<div className="flex justify-start">
 				{previous != null && (
 					<button
-						onClick={() => navigateToLesson(previous)}
-						className="rounded-lg bg-white flex items-center gap-4 border border-c-border px-4 py-2 whitespace-nowrap"
-						title="Vorherige Lerneinheit"
+						onClick={() => previous && navigateToLesson(previous)}
+						className="rounded-lg bg-white flex items-center gap-4 border border-c-border px-4 py-2 disabled:text-gray-300 whitespace-nowrap"
+						title={t("previous_lesson")}
 						data-testid="previousLessonButton"
 					>
 						<ChevronDoubleLeftIcon className="h-5" />
-						Vorherige Lerneinheit
+						{t("previous_lesson")}
 					</button>
 				)}
-
+			</div>
+			<div className="flex justify-center">
+				{hasQuiz && urlToQuiz && <LinkToQuiz url={urlToQuiz} />}
+			</div>
+			<div className="flex justify-end">
 				<button
 					onClick={() => next && navigateToLesson(next)}
 					disabled={!next}
-					className="rounded-lg bg-white hidden lg:flex items-center gap-4 border border-c-border px-4 py-2 disabled:text-gray-300 whitespace-nowrap"
-					title="Nächste Lerneinheit"
+					className="rounded-lg bg-white hidden lg:flex items-center gap-4 border border-c-border px-4 py-2 disabled:text-gray-300"
+					title={t("next_lesson")}
 					data-testid="nextLessonButton"
 				>
-					Nächste Lerneinheit
+					{t("next_lesson")}
 					<ChevronDoubleRightIcon className="h-5" />
 				</button>
-			</div>
-
-			{/* Rechts: Lernkontrolle */}
-			<div className="flex justify-end">
-				{hasQuiz && urlToQuiz && <LinkToQuiz url={urlToQuiz} />}
 			</div>
 		</div>
 	);
@@ -523,6 +497,7 @@ function LessonHeader({
 	mdDescription?: CompiledMarkdown | null;
 	mdSubtitle?: CompiledMarkdown | null;
 }) {
+	const { t } = useTranslation("feature-lesson");
 	const isStandalone = !course;
 
 	const session = useRequiredSession();
@@ -572,7 +547,7 @@ function LessonHeader({
 						{isExperimentParticipant && (
 							<div className="flex flex-col items-center">
 								<span className="mb-1 text-xs text-c-text-muted text-center font-semibold">
-									Bisherige Bewertung
+									{t("previous_rating")}
 								</span>
 								{lesson.performanceScore ? (
 									<SmallGradeBadge
@@ -580,7 +555,7 @@ function LessonHeader({
 										sizeClassName="px-4 py-2"
 									/>
 								) : (
-									<span className="text-c-text-muted text-sm">Keine</span>
+									<span className="text-c-text-muted text-sm">{t("none")}</span>
 								)}
 							</div>
 						)}
@@ -621,6 +596,7 @@ function LessonControls({
 	course: Exclude<LessonLearnersViewProps["course"], null | undefined>;
 	lesson: LessonLearnersViewProps["lesson"];
 }) {
+	const { t } = useTranslation("feature-lesson");
 	const { lessonId } = lesson;
 	const { courseId } = course;
 	const markAsCompleted = useMarkAsCompleted();
@@ -685,7 +661,7 @@ function LessonControls({
 					className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
 					onClick={handleMarkCompleted}
 				>
-					<span>Als abgeschlossen markieren</span>
+					<span>{t("mark_as_completed")}</span>
 					<CheckCircleIcon className="h-6 shrink-0" />
 				</button>
 			)}
@@ -705,6 +681,8 @@ function StandaloneLessonControls({ lesson }: { lesson: LessonLearnersViewProps[
 }
 
 function LinkToQuiz({ url }: { url: string }) {
+	const { t } = useTranslation("feature-lesson");
+
 	return (
 		<div className="flex flex-wrap gap-2 xl:flex-row">
 			<Link
@@ -712,7 +690,7 @@ function LinkToQuiz({ url }: { url: string }) {
 				className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
 				data-testid="quizLink"
 			>
-				<span>Lernkontrolle</span>
+				<span>{t("quiz_link")}</span>
 				<QuestionMarkCircleIcon className="h-6 shrink-0" />
 			</Link>
 		</div>
@@ -720,14 +698,14 @@ function LinkToQuiz({ url }: { url: string }) {
 }
 
 function DefaultLicenseLabel() {
+	const { t } = useTranslation("feature-lesson");
 	const { data, isLoading } = trpc.licenseRouter.getDefault.useQuery();
 	const fallbackLicense = {
-		name: "Keine Lizenz verfügbar",
+		name: t("no_license_available"),
 		url: "",
 		oerCompatible: false,
 		logoUrl: null,
-		licenseText:
-			"*Für diese Lektion ist keine Lizenz verfügbar. Bei Nachfragen, wenden Sie sich an den Autor*"
+		licenseText: t("no_license_explanation")
 	};
 	if (!isLoading && !data) {
 		console.log("No default license found");
@@ -764,6 +742,8 @@ function MediaSelector({
 	setSelectedIndex: (idx?: number) => void;
 	openedMedia: OpenedMediaInfo[];
 }) {
+	const { t } = useTranslation("feature-lesson");
+
 	// index transform to allow first item to be default
 	const index = selectedIndex !== undefined ? selectedIndex + 1 : 0;
 	// TODO can be replaced with NavigableContentSelector, make Inhalt default and immutable
@@ -776,7 +756,7 @@ function MediaSelector({
 			}}
 		>
 			<Tab key={0}>
-				<span data-testid="mediaTypeTab-Base">Inhalt</span>
+				<span data-testid="mediaTypeTab-Base">{t("content")}</span>
 			</Tab>
 			{openedMedia &&
 				openedMedia.map((content, idx) => (
@@ -797,14 +777,14 @@ function SelfRegulatedPreQuestion({
 	question: CompiledMarkdown;
 	onClose: () => void;
 }) {
+	const { t } = useTranslation("feature-lesson");
 	const [userAnswer, setUserAnswer] = useState("");
 
 	const handleSubmit = () => {
 		onClose();
 		showToast({
-			title: "Super!",
-			subtitle:
-				"Vorhandenes Wissen im Vorfeld noch einmal zu aktivieren, fördert den Lernerfolg!",
+			title: t("great"),
+			subtitle: t("activation_subtitle"),
 			type: "info"
 		});
 	};
@@ -812,30 +792,30 @@ function SelfRegulatedPreQuestion({
 	const handleSkipQuestion = () => {
 		onClose();
 		showToast({
-			title: "Schritt übersprungen",
-			subtitle: ".",
+			title: t("step_skipped_title"),
+			subtitle: t("step_skipped_subtitle"),
 			type: "info"
 		});
 	};
 
 	return (
 		<div>
-			<h1>Aktivierungsfrage</h1>
+			<h1>{t("activation_question")}</h1>
 			<MarkdownContainer className="w-full py-4">
 				<MDXRemote {...question} />
 			</MarkdownContainer>
 			<div className="mt-8">
-				<h2>Deine Antwort:</h2>
+				<h2>{t("your_answer")}</h2>
 				<textarea
 					className="w-full"
-					placeholder="..."
+					placeholder={t("your_answer_placeholder")}
 					onChange={e => setUserAnswer(e.target.value)}
 				/>
 			</div>
 			<div className="mt-2 flex justify-end gap-2">
 				{userAnswer.length === 0 ? (
 					<button type="button" className="btn-secondary" onClick={handleSkipQuestion}>
-						Schritt Überspringen
+						{t("skip_step")}
 					</button>
 				) : (
 					<button
@@ -844,7 +824,7 @@ function SelfRegulatedPreQuestion({
 						onClick={handleSubmit}
 						disabled={userAnswer.length === 0}
 					>
-						Zur Lerneinheit
+						{t("return_to_lesson")}
 					</button>
 				)}
 			</div>
