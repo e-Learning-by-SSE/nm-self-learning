@@ -1,9 +1,18 @@
+import { getFiles } from "@self-learning/api/server";
+
 // Mock downloadMultiple/downloadHtmlMultiple/downloadJsonMultiple to avoid real HTTP calls in unit tests.
 // content-preparation.ts imports them from "./download", so we mock that same path.
 jest.mock("./download", () => ({
 	downloadMultiple: jest.fn(),
 	downloadHtmlMultiple: jest.fn(),
 	downloadJsonMultiple: jest.fn()
+}));
+
+jest.mock("@self-learning/api/server", () => ({
+	getFiles: jest.fn(),
+	minioConfig: {
+		bucketName: "test-bucket"
+	}
 }));
 
 jest.setTimeout(10000);
@@ -461,28 +470,54 @@ describe("prepareRagContent", () => {
 			expect(mockDownloadHtmlMultiple).not.toHaveBeenCalled();
 		});
 
-		it("ignores iframe items with source 'zip' (dropped — relies on undocumented archive conventions)", async () => {
+		it("processes all html files at the specified sub folder)", async () => {
 			// Setup
-			const content: LessonContent = [
+			process.env["NEXT_PUBLIC_MINIO_PUBLIC_URL"] = "https://minio.example.com";
+
+			jest.mocked(getFiles).mockResolvedValue([
+				"uploads/example/index.html",
+				"uploads/example/pages/page1.html",
+				"uploads/example/pages/sub/page2.html"
+			]);
+
+			jest.mocked(downloadHtmlMultiple).mockImplementation(async urls =>
+				urls.map(url => ({
+					url,
+					data: url.split("/").pop() ?? ""
+				}))
+			);
+
+			const content = [
 				{
 					type: "iframe",
-					meta: { estimatedDuration: 5 },
 					value: {
-						url: "https://storage.example.com/content/xyz/index.html",
 						source: "zip",
-						entryPoint: "index.html",
-						originalFileName: "nano-demo.zip",
-						folderObjectName: "content/xyz"
+						url: "https://example.com",
+						folderObjectName: "uploads/example"
 					}
 				}
-			];
+			] as LessonContent;
 
 			// Exercise
 			const result = await prepareRagContent(content);
 
 			// Verify
-			expect(result.htmlPages).toEqual([]);
-			expect(mockDownloadHtmlMultiple).not.toHaveBeenCalled();
+			expect(getFiles).toHaveBeenCalledWith("uploads/example");
+			expect(downloadHtmlMultiple).toHaveBeenCalledWith(
+				[
+					"https://minio.example.com/test-bucket/uploads/example/index.html",
+					"https://minio.example.com/test-bucket/uploads/example/pages/page1.html",
+					"https://minio.example.com/test-bucket/uploads/example/pages/sub/page2.html"
+				],
+				undefined
+			);
+			expect(result.htmlPages).toHaveLength(3);
+			// Mock simulates that each HTML page is returned with its file name as data, verify content extraction
+			expect(result.htmlPages.map(page => page.data)).toEqual([
+				"index.html",
+				"page1.html",
+				"page2.html"
+			]);
 		});
 
 		it("downloads iframe items with source 'html' and returns the pages", async () => {
