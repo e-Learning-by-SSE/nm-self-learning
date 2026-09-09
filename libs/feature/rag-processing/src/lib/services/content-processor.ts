@@ -26,8 +26,8 @@ console.warn = (...args: unknown[]) => {
  * - PDF text extraction (used during RagEmbedJob only)
  * - Article text chunking
  * - Video transcript chunking
- * - HTML text extraction and chunking (for uploaded single-file and zip/entry-point iframe content)
- *
+ * - HTML text extraction and chunking (uploaded single-file iframe content)
+ * - H5P content extraction and chunking
  * Note: This service is only used in the worker-service RagEmbedJob pipeline to convert PDF binary data to strings.
  * After extraction, all content types are strings and pass through EmbeddingService → VectorStore.
  */
