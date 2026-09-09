@@ -1,5 +1,6 @@
 import { downloadMultiple, downloadHtmlMultiple, downloadJsonMultiple } from "./download";
 import { LessonContent, Video, IFrame } from "@self-learning/types";
+import { getHtmlFiles, minioClient, minioConfig } from "@self-learning/api/server";
 
 /**
  * Strip WebVTT formatting and return plain spoken text.
@@ -19,6 +20,11 @@ function extractPlainTextFromVtt(vtt: string): string {
 		})
 		.join(" ")
 		.trim();
+}
+
+function isHtmlUrl(url: string): boolean {
+	console.log("Checking if URL is HTML:", url, url.endsWith("html") || url.endsWith("htm"));
+	return url.endsWith("html") || url.endsWith("htm");
 }
 
 /**
@@ -56,11 +62,34 @@ export async function prepareRagContent(
 	 * produced the archive isn't something we want to depend on (not standardized, and in
 	 * practice often not even open — see the ActivePresenter case).
 	 */
-	const htmlUrls = content
-		.filter((item): item is IFrame => item.type === "iframe" && item.value.source === "html")
-		.map(item => item.value.url);
+	console.log("Content:", JSON.stringify(content));
+	const htmlUrls = (
+		await Promise.all(
+			content
+				.filter(
+					(item): item is IFrame =>
+						item.type === "iframe" &&
+						(item.value.source === "html" || item.value.source === "zip")
+				)
+				.map(async item => {
+					if (item.value.source === "zip") {
+						if (item.value.folderObjectName) {
+							const htmlFiles = await getHtmlFiles(item.value.folderObjectName);
+
+							return htmlFiles.map(
+								objectName =>
+									`${process.env.NEXT_PUBLIC_MINIO_PUBLIC_URL}/${minioConfig.bucketName}/${objectName}`
+							);
+						}
+					}
+
+					return [item.value.url];
+				})
+		)
+	).flat();
 	const htmlPages =
 		htmlUrls.length > 0 ? await downloadHtmlMultiple(htmlUrls, lessonContext) : [];
+	console.log("HTML URLs to be downloaded:", htmlUrls);
 
 	/**
 	 * H5P packages are unpacked to plain-file storage at upload time (see storage_router's
