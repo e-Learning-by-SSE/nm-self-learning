@@ -45,8 +45,5 @@
 		".next": true,
 		"*.log": true,
 		"*.lock": true,
-    },
-    "chat.tools.terminal.autoApprove": {
-        "npx nx": true
     }
 }

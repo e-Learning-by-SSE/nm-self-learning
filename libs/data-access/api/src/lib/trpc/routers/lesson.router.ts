@@ -708,19 +708,7 @@ async function enqueueRagEmbedJob(
 			lessonTitle
 		});
 		const jobId = crypto.randomUUID();
-		console.log("[LessonRouter] Enqueuing RAG job", {
-			jobId,
-			lessonId,
-			payload: {
-				lessonId,
-				lessonTitle,
-				pdfBuffers: preparedContent.pdfBuffers,
-				articleTexts: preparedContent.articleTexts,
-				transcriptTexts: preparedContent.transcriptTexts,
-				htmlPages: preparedContent.htmlPages,
-				h5pSources: preparedContent.h5pSources
-			}
-		});
+
 		await workerServiceClient.submitJob.mutate({
 			jobId,
 			jobType: "ragEmbed",

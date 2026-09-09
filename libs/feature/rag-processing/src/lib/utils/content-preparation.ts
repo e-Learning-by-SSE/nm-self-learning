@@ -53,6 +53,7 @@ export async function prepareRagContent(
 	 * Only "html" is fetchable, self-hosted content we process.
 	 * "url" (external embed, or unset) is intentionally skipped: "url" because
 	 * we have no reliable way to extract meaningful text from an arbitrary external page.
+	 * "zip" is used for already unpacked folders containing HTML files, which are supported.
 	 */
 	const htmlUrls = (
 		await Promise.all(

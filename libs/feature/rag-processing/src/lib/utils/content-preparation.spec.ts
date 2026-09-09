@@ -1,5 +1,3 @@
-import { getFiles } from "@self-learning/api/server";
-
 // Mock downloadMultiple/downloadHtmlMultiple/downloadJsonMultiple to avoid real HTTP calls in unit tests.
 // content-preparation.ts imports them from "./download", so we mock that same path.
 jest.mock("./download", () => ({
@@ -20,6 +18,7 @@ jest.setTimeout(10000);
 import { prepareRagContent } from "./content-preparation";
 import { downloadMultiple, downloadHtmlMultiple, downloadJsonMultiple } from "./download";
 import { LessonContent } from "@self-learning/types";
+import { getFiles } from "@self-learning/api/server";
 
 const mockDownloadMultiple = downloadMultiple as jest.MockedFunction<typeof downloadMultiple>;
 const mockDownloadHtmlMultiple = downloadHtmlMultiple as jest.MockedFunction<
