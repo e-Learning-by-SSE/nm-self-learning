@@ -79,7 +79,9 @@ export const storageRouter = t.router({
 				// TODO: Requires public download option -> Implement download via presignedUrl
 				const downloadUrl = presignedUrl.slice(0, presignedUrl.indexOf("?"));
 
-				return { presignedUrl, downloadUrl };
+				// Return the actual generated object name so callers can register
+				// the correct MinIO key (avoids mismatch with client-generated UUIDs)
+				return { presignedUrl, downloadUrl, objectName: randomizedFilename };
 			} catch (error) {
 				const errMsg: string =
 					error instanceof Error
@@ -229,7 +231,6 @@ export const storageRouter = t.router({
 									})
 								);
 							}
-
 
 							// Detect the entry point
 							const fileName = entryPath.split("/").pop()?.toLowerCase() ?? "";
@@ -396,8 +397,32 @@ async function removeFile(objectName: string) {
 	});
 }
 
-/** Uses the `minio` SDK to remove a file. */
 function _removeFileFromStorageServer(filename: string): Promise<void> {
+	// Unpacked zip/h5p content is stored as multiple objects under a
+	// `content/<id>/...` prefix. The UploadedAssets record stores the
+	// folder prefix itself (e.g. `content/abc123`) as objectName, so we
+	// need to remove all objects under that prefix, not just one key.
+	if (filename.startsWith("content/")) {
+		return new Promise<void>((resolve, reject) => {
+			const objectsToDelete: string[] = [];
+			const stream = minioClient.listObjectsV2(minioConfig.bucketName, `${filename}/`, true);
+
+			stream.on("data", obj => {
+				if (obj.name) objectsToDelete.push(obj.name);
+			});
+			stream.on("error", reject);
+			stream.on("end", () => {
+				if (objectsToDelete.length === 0) {
+					return resolve();
+				}
+				minioClient
+					.removeObjects(minioConfig.bucketName, objectsToDelete)
+					.then(() => resolve())
+					.catch(reject);
+			});
+		});
+	}
+
 	return minioClient.removeObject(minioConfig.bucketName, filename);
 }
 

@@ -11,7 +11,6 @@ import {
 	SectionHeader
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
-import { LessonDeleteOption } from "@self-learning/ui/lesson";
 import { VoidSvg } from "@self-learning/ui/static";
 import { keepPreviousData } from "@tanstack/react-query";
 import Link from "next/link";
@@ -19,6 +18,7 @@ import { useState } from "react";
 import { useTranslation } from "next-i18next";
 import { CourseExportType, ExportCourseDialog } from "../course/course-export/course-export-dialog";
 import { CourseDeleteOption } from "./course-delete-option";
+import { LessonDeleteOption } from "./lesson-delete-option";
 
 type AuthorResourceLinks = {
 	viewHref: string;
@@ -211,11 +211,19 @@ function AuthorResourceRow({
 								title={t("Export_Course")}
 								onClick={onExport}
 							/>
-							<CourseDeleteOption slug={resource.slug} />
+							<CourseDeleteOption
+								id={resource.id}
+								slug={resource.slug}
+								title={resource.title}
+							/>
 						</>
 					)}
 					{canManage && resource.kind === "lesson" && (
-						<LessonDeleteOption lessonId={resource.id} />
+						<LessonDeleteOption
+							id={resource.id}
+							slug={resource.slug}
+							title={resource.title}
+						/>
 					)}
 				</div>
 			</div>

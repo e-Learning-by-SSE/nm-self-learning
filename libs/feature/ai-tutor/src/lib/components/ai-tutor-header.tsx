@@ -38,12 +38,12 @@ export function AiTutorHeader({
 						icon={<TrashIcon className="h-5 text-gray-700 hover:text-white" />}
 						onClick={onClear}
 						title={t("Clear Chat")}
-						className="hover:bg-red-500/90 rounded-xl"
+						className="hover:bg-c-danger-strong rounded-xl"
 					/>
 					<IconOnlyButton
 						icon={<XMarkIcon className="h-5 text-gray-700 hover:text-white" />}
 						onClick={onClose}
-						className="p-2 hover:bg-green-500/90 rounded-xl"
+						className="p-2 hover:bg-c-primary-strong rounded-xl"
 						title={t("Close Tutor")}
 					/>
 				</div>

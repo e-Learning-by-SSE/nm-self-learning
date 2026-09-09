@@ -32,6 +32,7 @@ export function StandaloneLessonLayout(
 
 	return (
 		<BaseLessonLayout
+			key={pageProps.lesson.lessonId}
 			title={pageProps.lesson.title}
 			playlistArea={playlistArea}
 			lesson={pageProps.lesson}

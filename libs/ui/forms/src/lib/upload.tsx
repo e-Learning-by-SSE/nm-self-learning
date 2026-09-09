@@ -96,26 +96,27 @@ export function Upload({
 
 		console.log(file);
 
-		const objectName = window.crypto.randomUUID();
 		const fileName = file.name;
 		setFileName(fileName);
 		const fileType = tryGetMediaType(file) ?? "unknown";
-
 		const meta = {
 			duration: 0
 		};
 		if (mediaType === "video") {
 			const vid = document.createElement("video");
 			vid.src = URL.createObjectURL(file);
-
 			vid.onloadedmetadata = () => {
 				meta.duration = Math.floor(vid.duration);
 			};
 		}
-
 		try {
-			const { presignedUrl, downloadUrl } = await getPresignedUrl({ filename: objectName });
-
+			// Use the original filename as a hint; the server generates the
+			// actual unique object key and returns it so we can register the
+			// correct MinIO key (avoids mismatch between client-generated UUIDs
+			// and the server's randomized filename).
+			const { presignedUrl, downloadUrl, objectName } = await getPresignedUrl({
+				filename: fileName
+			});
 			const onFinish = (xhr: XMLHttpRequest) => {
 				const success = xhr.status >= 200 && xhr.status < 300;
 				console.log(
@@ -136,7 +137,6 @@ export function Upload({
 				setProgress,
 				onFinish
 			);
-
 			try {
 				// TODO: Requires public download option -> Implement download via presignedUrl
 				await registerAsset({ objectName, publicUrl: downloadUrl, fileType, fileName });

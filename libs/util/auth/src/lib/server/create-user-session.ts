@@ -59,19 +59,19 @@ export async function createToken(name: string, incomingRole: UserRole): Promise
 		});
 	};
 
-	// Remote permissions wins over local permissions
-	if (userFromDb.role === "ADMIN" && incomingRole !== "ADMIN") {
-		// Local Admin, remote not -> Demote to User
-		await updateUser(incomingRole);
-	} else if (userFromDb.role !== "ADMIN" && incomingRole === "ADMIN") {
+	// Allow promotion to user via IdP (e.g., Keycloak)
+	if (userFromDb.role !== "ADMIN" && incomingRole === "ADMIN") {
 		// Local User, remote Admin -> Promote to Admin
 		await updateUser("ADMIN");
 	}
+	// Do not demote normal remote users that where promoted locally to admin to allow local admins.
+	// Use local admin role if set otherwise remote role
+	const userRole = userFromDb.role === "ADMIN" ? userFromDb.role : incomingRole;
 
 	return {
 		id: userFromDb.id,
 		name: name,
-		role: incomingRole,
+		role: userRole,
 		isAuthor: !!userFromDb.author,
 		avatarUrl: userFromDb.image,
 		featureFlags: userFromDb.featureFlags ?? {
