@@ -286,6 +286,9 @@ export class ContentProcessor {
 			const page = pages[htmlIndex];
 			let text: string;
 			try {
+				if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(page.data)) {
+					throw new Error("Invalid base64");
+				}
 				const html = Buffer.from(page.data, "base64").toString("utf-8");
 				text = this.extractH5PIntegrationText(html) || this.extractTextFromHtml(html);
 			} catch (error) {
