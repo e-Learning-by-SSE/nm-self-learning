@@ -28,7 +28,7 @@ def buildSphinxDocs(Map cfg = [:]) {
         }
     
     // Build and publish Docker image
-    docker.withRegistry('https://ghcr.io', 'github-ssejenkins') {
+    docker.withRegistry('https://ghcr.io', 'ssejenkins-by-elscha') {
         sh """
             docker build \
                 -t ghcr.io/e-learning-by-sse/nm-self-learn-docs:${version} \

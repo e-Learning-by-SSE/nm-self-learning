@@ -1,8 +1,10 @@
 import { Dialog, showToast } from "@self-learning/ui/common";
+import { useTranslation } from "next-i18next";
 import { useMemo, useState } from "react";
 import { webvttToText } from "./webvtt_helper";
 
 export function ShowTranskript({ webvttTranscript }: { webvttTranscript: string }) {
+	const { t } = useTranslation("feature-lesson");
 	const [showTranscript, setShowTranscript] = useState(false);
 
 	return (
@@ -12,7 +14,7 @@ export function ShowTranskript({ webvttTranscript }: { webvttTranscript: string 
 				className="text-lg text-center text-gray-500 hover:text-secondary"
 				onClick={() => setShowTranscript(true)}
 			>
-				Video Transkript anzeigen
+				{t("show_transcript")}
 			</button>
 			{showTranscript && (
 				<TranscriptDialog
@@ -31,6 +33,7 @@ export function TranscriptDialog({
 	onClose: () => void;
 	webvttTranscript: string;
 }) {
+	const { t } = useTranslation("feature-lesson");
 	const transcript = useMemo(() => {
 		return webvttToText(webvttTranscript);
 	}, [webvttTranscript]);
@@ -41,28 +44,32 @@ export function TranscriptDialog({
 			.then(() => {
 				showToast({
 					type: "success",
-					title: "Transkript kopiert",
-					subtitle: "Das Transkript wurde in die Zwischenablage kopiert."
+					title: t("transcript_copied_title"),
+					subtitle: t("transcript_copied_subtitle")
 				});
 			})
 			.catch(() => {
 				showToast({
 					type: "error",
-					title: "Fehler beim Kopieren",
-					subtitle: "Das Transkript konnte nicht in die Zwischenablage kopiert werden."
+					title: t("transcript_copy_error_title"),
+					subtitle: t("transcript_copy_error_subtitle")
 				});
 			});
 	};
 
 	return (
-		<Dialog onClose={onClose} title="Transcript" style={{ width: "60vw", maxHeight: "80vh" }}>
+		<Dialog
+			onClose={onClose}
+			title={t("transcript_dialog_title")}
+			style={{ width: "60vw", maxHeight: "80vh" }}
+		>
 			<Transcript transcript={transcript} />
 			<div className="mt-4 flex place-content-between">
 				<button onClick={handleCopy} className="btn btn-primary">
-					Kopieren
+					{t("copy")}
 				</button>
 				<button onClick={onClose} className="btn bg-red-500 hover:bg-red-600 text-white">
-					Schließen
+					{t("close")}
 				</button>
 			</div>
 		</Dialog>

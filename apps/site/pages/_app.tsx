@@ -93,6 +93,9 @@ function CustomApp({ Component, pageProps }: AppProps) {
 						/>
 						{/* Only required for /pages, /app will handle this automatically */}
 						<link rel="manifest" href={basePath + "/api/manifest"} />
+
+						{/* Customizable Theme CSS */}
+						<link rel="stylesheet" href={`${basePath}/theme.css`} />
 					</Head>
 					<GlobalFeatures />
 					<RootLayout>
