@@ -38,28 +38,32 @@ export const publicMinioConfig = (() => {
 export const publicMinioClient = new Client(publicMinioConfig);
 
 /**
- * Returns the URLs of all HTML files within the specified folder in the MinIO bucket.
- * @param folderObjectName A subfolder within the MinIO bucket to search for HTML files.
- * @returns An array of URLs pointing to the HTML files found within the specified folder.
+ * Returns the object names of all files within the specified folder in the MinIO bucket
+ * that match the provided regular expression.
+ *
+ * @param folderObjectName A subfolder within the MinIO bucket to search.
+ * @param regex Regular expression used to filter object names. Lists by default all HTML files.
+ * @returns An array containing the object names of all matching files.
  */
-export async function getHtmlFiles(folderObjectName: string): Promise<string[]> {
+export async function getFiles(
+	folderObjectName: string,
+	regex: RegExp = /\.html?$/i
+): Promise<string[]> {
+	const files: string[] = [];
 	const prefix = folderObjectName.endsWith("/") ? folderObjectName : `${folderObjectName}/`;
-
-	const htmlFiles: string[] = [];
-
 	const stream = minioClient.listObjectsV2(minioConfig.bucketName, prefix, true);
 
 	return new Promise((resolve, reject) => {
 		stream.on("data", object => {
-			if (object.name && /\.html?$/i.test(object.name)) {
-				htmlFiles.push(object.name);
+			if (object.name && regex.test(object.name)) {
+				files.push(object.name);
 			}
 		});
 
 		stream.on("error", reject);
 
 		stream.on("end", () => {
-			resolve(htmlFiles);
+			resolve(files);
 		});
 	});
 }

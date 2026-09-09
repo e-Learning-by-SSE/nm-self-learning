@@ -1,6 +1,6 @@
 import { downloadMultiple, downloadHtmlMultiple, downloadJsonMultiple } from "./download";
 import { LessonContent, Video, IFrame } from "@self-learning/types";
-import { getHtmlFiles, minioConfig } from "@self-learning/api/server";
+import { getFiles, minioConfig } from "@self-learning/api/server";
 
 /**
  * Strip WebVTT formatting and return plain spoken text.
@@ -65,7 +65,7 @@ export async function prepareRagContent(
 				.map(async item => {
 					if (item.value.source === "zip") {
 						if (item.value.folderObjectName) {
-							const htmlFiles = await getHtmlFiles(item.value.folderObjectName);
+							const htmlFiles = await getFiles(item.value.folderObjectName);
 
 							return htmlFiles.map(
 								objectName =>
