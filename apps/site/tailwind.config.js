@@ -104,7 +104,7 @@ module.exports = {
 				sans: ["Inter", ...defaultTheme.fontFamily.sans]
 			},
 			colors: {
-				secondary: "rgb(var(--c-primary) / <alpha-value>)",
+				secondary: "rgb(var(--color-secondary) / <alpha-value>)",
 				light: "var(--color-light)",
 				"light-border": "var(--color-light-border)",
 
