@@ -1,6 +1,6 @@
 import { downloadMultiple, downloadHtmlMultiple, downloadJsonMultiple } from "./download";
 import { LessonContent, Video, IFrame } from "@self-learning/types";
-import { getHtmlFiles, minioClient, minioConfig } from "@self-learning/api/server";
+import { getHtmlFiles, minioConfig } from "@self-learning/api/server";
 
 /**
  * Strip WebVTT formatting and return plain spoken text.
@@ -20,11 +20,6 @@ function extractPlainTextFromVtt(vtt: string): string {
 		})
 		.join(" ")
 		.trim();
-}
-
-function isHtmlUrl(url: string): boolean {
-	console.log("Checking if URL is HTML:", url, url.endsWith("html") || url.endsWith("htm"));
-	return url.endsWith("html") || url.endsWith("htm");
 }
 
 /**
@@ -55,14 +50,10 @@ export async function prepareRagContent(
 		.map(item => extractPlainTextFromVtt(item.value.subtitle?.src ?? ""));
 
 	/**
-	 * Only "html" (single uploaded file) is fetchable, self-hosted content we process.
-	 * "url" (external embed, or unset) and "zip" are intentionally skipped: "url" because
-	 * we have no reliable way to extract meaningful text from an arbitrary external page,
-	 * and "zip" because relying on filename/format conventions of whatever authoring tool
-	 * produced the archive isn't something we want to depend on (not standardized, and in
-	 * practice often not even open — see the ActivePresenter case).
+	 * Only "html" is fetchable, self-hosted content we process.
+	 * "url" (external embed, or unset) is intentionally skipped: "url" because
+	 * we have no reliable way to extract meaningful text from an arbitrary external page.
 	 */
-	console.log("Content:", JSON.stringify(content));
 	const htmlUrls = (
 		await Promise.all(
 			content
@@ -89,7 +80,6 @@ export async function prepareRagContent(
 	).flat();
 	const htmlPages =
 		htmlUrls.length > 0 ? await downloadHtmlMultiple(htmlUrls, lessonContext) : [];
-	console.log("HTML URLs to be downloaded:", htmlUrls);
 
 	/**
 	 * H5P packages are unpacked to plain-file storage at upload time (see storage_router's
