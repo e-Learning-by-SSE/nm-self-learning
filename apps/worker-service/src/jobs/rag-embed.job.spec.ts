@@ -9,21 +9,143 @@ const mockProcessVideoTranscripts = jest.fn();
 const mockProcessHtmlContent = jest.fn();
 const mockProcessH5pContent = jest.fn();
 
-jest.mock("@self-learning/rag-processing", () => ({
-	__esModule: true,
-	contentProcessor: {
+jest.mock("@self-learning/rag-processing", () => {
+	const contentProcessor = {
 		processMultiplePDFs: (...args: unknown[]) => mockProcessMultiplePDFs(...args),
 		processArticles: (...args: unknown[]) => mockProcessArticles(...args),
 		processVideoTranscripts: (...args: unknown[]) => mockProcessVideoTranscripts(...args),
 		processHtmlContent: (...args: unknown[]) => mockProcessHtmlContent(...args),
 		processH5pContent: (...args: unknown[]) => mockProcessH5pContent(...args)
-	},
-	vectorStore: {
+	};
+
+	const vectorStore = {
 		lessonExists: (...args: unknown[]) => mockLessonExists(...args),
 		deleteLesson: (...args: unknown[]) => mockDeleteLesson(...args),
 		addDocuments: (...args: unknown[]) => mockAddDocuments(...args)
-	}
-}));
+	};
+
+	return {
+		__esModule: true,
+		contentProcessor,
+		vectorStore,
+		processRagEmbedLesson: async (
+			payload: {
+				lessonId: string;
+				lessonTitle: string;
+				pdfBuffers: Array<{ data: string; url: string }>;
+				articleTexts: string[];
+				transcriptTexts: string[];
+				htmlPages: Array<{ data: string; url: string }>;
+				h5pSources: Array<{
+					h5pJson: { data: string; url: string } | null;
+					contentJson: { data: string; url: string } | null;
+				}>;
+			},
+			deps: {
+				contentProcessor: typeof contentProcessor;
+				vectorStore: typeof vectorStore;
+			} = { contentProcessor, vectorStore }
+		) => {
+			const {
+				lessonId,
+				lessonTitle,
+				pdfBuffers,
+				articleTexts,
+				transcriptTexts,
+				htmlPages,
+				h5pSources
+			} = payload;
+
+			const exists = await deps.vectorStore.lessonExists(lessonId);
+			if (exists) {
+				await deps.vectorStore.deleteLesson(lessonId);
+			}
+
+			let pdfChunks = 0;
+			if (pdfBuffers.length > 0) {
+				const chunks = await deps.contentProcessor.processMultiplePDFs(
+					pdfBuffers,
+					lessonId,
+					lessonTitle
+				);
+				pdfChunks = chunks.length;
+				if (chunks.length > 0) {
+					await deps.vectorStore.addDocuments(lessonId, chunks);
+				}
+			}
+
+			let articleChunks = 0;
+			if (articleTexts.length > 0) {
+				const chunks = await deps.contentProcessor.processArticles(
+					articleTexts,
+					lessonId,
+					lessonTitle
+				);
+				articleChunks = chunks.length;
+				if (chunks.length > 0) {
+					await deps.vectorStore.addDocuments(lessonId, chunks);
+				}
+			}
+
+			let videoChunks = 0;
+			if (transcriptTexts.length > 0) {
+				const chunks = await deps.contentProcessor.processVideoTranscripts(
+					transcriptTexts,
+					lessonId,
+					lessonTitle
+				);
+				videoChunks = chunks.length;
+				if (chunks.length > 0) {
+					await deps.vectorStore.addDocuments(lessonId, chunks);
+				}
+			}
+
+			let htmlChunks = 0;
+			if (htmlPages.length > 0) {
+				const chunks = await deps.contentProcessor.processHtmlContent(
+					htmlPages,
+					lessonId,
+					lessonTitle
+				);
+				htmlChunks = chunks.length;
+				if (chunks.length > 0) {
+					await deps.vectorStore.addDocuments(lessonId, chunks);
+				}
+			}
+
+			let h5pChunks = 0;
+			if (h5pSources.length > 0) {
+				const chunks = await deps.contentProcessor.processH5pContent(
+					h5pSources,
+					lessonId,
+					lessonTitle
+				);
+				h5pChunks = chunks.length;
+				if (chunks.length > 0) {
+					await deps.vectorStore.addDocuments(lessonId, chunks);
+				}
+			}
+
+			const totalChunks = pdfChunks + articleChunks + videoChunks + htmlChunks + h5pChunks;
+			if (totalChunks === 0) {
+				throw new Error("No content chunks were created. Please check lesson content.");
+			}
+
+			return {
+				success: true,
+				chunksCreated: totalChunks,
+				breakdown: {
+					pdfChunks,
+					articleChunks,
+					videoChunks,
+					htmlChunks,
+					h5pChunks
+				},
+				message: `Successfully ingested lesson with ${totalChunks} chunks`
+			};
+		}
+	};
+});
 
 jest.mock("@self-learning/worker-api", () => ({
 	__esModule: true,
