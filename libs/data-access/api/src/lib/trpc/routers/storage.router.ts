@@ -22,7 +22,7 @@ const MAX_ENTRIES = 1500;
 
 function sanitizeObjectName(filename: string): string {
 	return filename
-		.normalize("NFKD")
+		.normalize("NFKD") // Normalizes unicode to NFKD (Normalization Form Compatibility Decomposition) form
 		.replace(/[\u0300-\u036f]/g, "") // Remove umlauts
 		.replace(/[^a-zA-Z0-9._-]/g, "_") // Replace non-alphanumeric characters with underscores
 		.replace(/_+/g, "_"); // Merge multiple consecutive underscores into one
