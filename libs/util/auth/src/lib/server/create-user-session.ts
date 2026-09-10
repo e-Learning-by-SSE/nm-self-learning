@@ -11,7 +11,8 @@ export function getIdpSelflearnAdminRole(access_token: string | undefined): User
 		const roles = claims.realm_access?.roles;
 		if (!Array.isArray(roles)) return;
 
-		return incomingToLocalRole(roles);
+		// Avoid demoting admins to user if they promoted in the platform, but not in the IdP
+		return incomingToLocalRole(roles) === UserRole.ADMIN ? UserRole.ADMIN : undefined;
 	} catch {
 		// Access tokens are allowed to be opaque in OIDC. If the token cannot be
 		// decoded, authentication continues without automatic admin promotion.

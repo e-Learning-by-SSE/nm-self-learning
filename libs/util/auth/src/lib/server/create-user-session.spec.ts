@@ -29,7 +29,7 @@ describe("getIdpSelflearnAdminRole", () => {
 	it("keeps a user role when realm_access does not contain selflearn_admin", () => {
 		const token = tokenWithClaims({ realm_access: { roles: ["student"] } });
 
-		expect(getIdpSelflearnAdminRole(token)).toBe(UserRole.USER);
+		expect(getIdpSelflearnAdminRole(token)).toBeUndefined();
 	});
 
 	it("ignores opaque or malformed access tokens", () => {
