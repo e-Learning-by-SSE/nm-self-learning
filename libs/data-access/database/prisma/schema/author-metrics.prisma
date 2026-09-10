@@ -1,7 +1,7 @@
 view AuthorMetric_AverageCompletionRate {
-    authorId              String @unique
+    authorId              String  @unique
     authorUsername        String
-    averageCompletionRate Float
+    averageCompletionRate Decimal
 }
 
 view AuthorMetric_AverageSubjectCompletionRate {
@@ -9,9 +9,9 @@ view AuthorMetric_AverageSubjectCompletionRate {
     authorUsername        String
     subjectId             String
     subjectTitle          String
-    totalEnrollments      Int?
-    completedEnrollments  Int?
-    averageCompletionRate Float?
+    totalEnrollments      BigInt?
+    completedEnrollments  BigInt?
+    averageCompletionRate Decimal?
 
     @@unique([authorId, subjectId])
 }
@@ -21,9 +21,9 @@ view AuthorMetric_AverageCourseCompletionRate {
     authorUsername        String
     courseId              String
     courseTitle           String
-    totalEnrollments      Int
-    completedEnrollments  Int
-    averageCompletionRate Float
+    totalEnrollments      BigInt
+    completedEnrollments  BigInt
+    averageCompletionRate Decimal
 
     @@unique([authorId, courseId])
 }
@@ -35,9 +35,9 @@ view AuthorMetric_AverageLessonCompletionRate {
     courseTitle           String
     lessonId              String
     lessonTitle           String
-    usersStarted          Int
-    usersFinished         Int
-    averageCompletionRate Float
+    usersStarted          BigInt
+    usersFinished         BigInt
+    averageCompletionRate Decimal
 
     @@unique([authorId, courseId, lessonId])
 }
@@ -47,10 +47,10 @@ view AuthorMetric_AverageLessonCompletionRateByCourse {
     authorUsername              String
     courseId                    String
     courseTitle                 String
-    numLessons                  Int
-    totalLessonsStarted         Int
-    totalLessonsFinished        Int
-    averageCourseCompletionRate Float
+    numLessons                  BigInt
+    totalLessonsStarted         BigInt
+    totalLessonsFinished        BigInt
+    averageCourseCompletionRate Decimal
 
     @@unique([authorId, courseId])
 }

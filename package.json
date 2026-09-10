@@ -10,7 +10,7 @@
 		"prod:cron": "DOTENV_CONFIG_PATH=.env node -r dotenv/config dist/apps/cron-service/main.js",
 		"prod:worker": "DOTENV_CONFIG_PATH=.env node -r dotenv/config dist/apps/worker-service/main.js",
 		"start:standalone": "concurrently \"npm run prod:site\" \"npm run prod:cron\" \"npm run prod:worker\"",
-		"start:prod": "npm run migrate && npm run start:standalone",
+		"start:prod": "npm run migrate && npm run prisma:views && npm run start:standalone",
 		"start:demo": "npm run seed && npm run start:standalone",
 		"reset:cromadb": "npx tsx --tsconfig tsconfig.base.json scripts/reset-chroma.ts",
 		"cypress": "cypress open --project=apps/site-e2e",
@@ -23,11 +23,12 @@
 		"test:pr": "nx affected --base origin/master -t lint build test",
 		"test:ci": "env TZ='Europe/Berlin' nx run-many --target=test --all --parallel --maxParallel=4 --skip-nx-cache --runInBand",
 		"posttest:pr": "echo 'If this fails, run the failed task to see errors.",
-		"test:migrate": "prisma db execute --file=scripts/reset.sql --schema libs/data-access/database/prisma/schema && npm run migrate",
+		"test:migrate": "prisma db execute --file=scripts/reset.sql --schema libs/data-access/database/prisma/schema && npm run migrate && npm run prisma:views",
 		"prisma": "prisma",
-		"seed": "prisma generate && prisma db push --accept-data-loss && prisma db seed",
+		"seed": "prisma generate && prisma db push --accept-data-loss && npm run prisma:views &&  prisma db seed",
 		"migrate": "tsx libs/data-access/database/prisma/deploy-migrations.ts",
-		"seed:analytics-test": "tsx --tsconfig tsconfig.base.json scripts/seed-analytics-test-users.ts"
+		"seed:analytics-test": "tsx --tsconfig tsconfig.base.json scripts/seed-analytics-test-users.ts",
+        "prisma:views": "for file in libs/data-access/database/prisma/views/*.sql; do npx prisma db execute --file \"$file\" --schema libs/data-access/database/prisma/schema || exit 1; done"
 	},
 	"private": true,
 	"dependencies": {

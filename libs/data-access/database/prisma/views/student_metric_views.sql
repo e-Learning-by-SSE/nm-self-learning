@@ -136,7 +136,7 @@ HAVING SUM(EXTRACT(EPOCH FROM overlap)) > 0
 ORDER BY u.id, "hour";
 
 --- Student Learning Time by Course
-CREATE VIEW "StudentMetric_LearningTimeByCourse" AS
+CREATE OR REPLACE VIEW "StudentMetric_LearningTimeByCourse" AS
 WITH sessionized AS (
     SELECT
         id,
