@@ -265,9 +265,9 @@ function AnalyticsDashboard({ data }: { data?: DashboardData }) {
 export function CreatorAnalytics() {
 	const { t } = useTranslation("student-analytics");
 	const { data: session, status } = useSession();
-	const { data: avgCourse } =
+	const { data: avgCourse, isLoading: isLoadingAvgCourse } =
 		trpc.metrics.getAuthorMetric_AverageCourseCompletionRate.useQuery(undefined);
-	const { data: avgLessonRows } =
+	const { data: avgLessonRows, isLoading: isLoadingAvgLessonRows } =
 		trpc.metrics.getAuthorMetric_AverageLessonCompletionRate.useQuery(undefined);
 
 	const [isClient, setIsClient] = useState(false);
@@ -279,20 +279,19 @@ export function CreatorAnalytics() {
 		return <div className="p-10 text-neutral-600">{t("loadingDashboard")}</div>;
 	}
 
-	if (status === "loading") {
+	if (status === "loading" || isLoadingAvgCourse || isLoadingAvgLessonRows) {
 		return <div className="p-10 text-neutral-600">{t("loadingSession")}</div>;
 	}
 
-	const coursesRaw: any[] = Array.isArray(avgCourse) ? avgCourse : [];
-
-	const courses: CourseItem[] = coursesRaw.map(row => ({
-		courseId: row.courseId ?? row.coursed ?? row.courseID ?? "—",
-		label: row.courseTitle ?? row.courseName ?? "—",
-		rate: toPctNumber(row.averageCompletionRate),
-		enrollments: Number(row.totalEnrollments ?? 0)
-	}));
-
-	const lessonsRaw: any[] = Array.isArray(avgLessonRows) ? avgLessonRows : [];
+	let courses: CourseItem[] = [];
+	if (avgCourse) {
+		courses = avgCourse.map(row => ({
+			courseId: row.courseId,
+			label: row.courseTitle,
+			rate: row.averageCompletionRate,
+			enrollments: row.totalEnrollments
+		}));
+	}
 
 	const lessonsByCourse: Record<string, LessonItem[]> = {};
 	const perCourseHiLo: Record<string, { max?: LessonItem; min?: LessonItem }> = {};
@@ -301,32 +300,32 @@ export function CreatorAnalytics() {
 		{ sum: number; count: number; students?: number; avgCourseCompletionFromRow?: number }
 	> = {};
 
-	for (const row of lessonsRaw) {
-		const cId: string = (row.courseId ?? row.coursed ?? "—").toString().trim();
-		const lessonName: string = row.lessonTitle ?? row.lessonId ?? "Lektion";
-		const lessonRate: number = toPctNumber(row.averageCompletionRate);
+	if (avgLessonRows) {
+		for (const row of avgLessonRows) {
+			const cId = row.courseId;
+			const lessonName = row.lessonTitle;
+			const lessonRate = row.averageCompletionRate;
 
-		(lessonsByCourse[cId] ??= []).push({
-			label: lessonName,
-			rate: lessonRate
-		});
+			(lessonsByCourse[cId] ??= []).push({
+				label: lessonName,
+				rate: lessonRate
+			});
 
-		const current = perCourseHiLo[cId] ?? {};
-		if (!current.max || lessonRate > current.max.rate) {
-			current.max = { label: lessonName, rate: lessonRate };
-		}
-		if (!current.min || lessonRate < current.min.rate) {
-			current.min = { label: lessonName, rate: lessonRate };
-		}
-		perCourseHiLo[cId] = current;
+			const current = perCourseHiLo[cId] ?? {};
+			if (!current.max || lessonRate > current.max.rate) {
+				current.max = { label: lessonName, rate: lessonRate };
+			}
+			if (!current.min || lessonRate < current.min.rate) {
+				current.min = { label: lessonName, rate: lessonRate };
+			}
+			perCourseHiLo[cId] = current;
 
-		const agg = perCourseAgg[cId] ?? { sum: 0, count: 0 };
-		agg.sum += lessonRate;
-		agg.count += 1;
-		if (row.usersStarted !== undefined) {
-			agg.students = Number(row.usersStarted);
+			const agg = perCourseAgg[cId] ?? { sum: 0, count: 0 };
+			agg.sum += lessonRate;
+			agg.count += 1;
+			agg.students = row.usersStarted;
+			perCourseAgg[cId] = agg;
 		}
-		perCourseAgg[cId] = agg;
 	}
 
 	const perCourseStats: Record<string, PerCourseStats> = {};
@@ -364,11 +363,7 @@ export function CreatorAnalytics() {
 		}
 	}
 
-	const teacherNameGuess =
-		((session?.user as any)?.name as string) ||
-		((session?.user as any)?.username as string) ||
-		((session?.user as any)?.email as string) ||
-		t("defaultName");
+	const teacherNameGuess = session?.user.name ?? t("defaultName");
 
 	const dashboardData: DashboardData | undefined = courses.length
 		? {
