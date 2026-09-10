@@ -62,13 +62,25 @@ export const ragEmbedPayloadSchema = z.object({
 	lessonId: z.string(),
 	lessonTitle: z.string(),
 	pdfBuffers: z.array(
-		z.object({ 
+		z.object({
 			data: z.string(),
 			url: z.string().url()
 		})
 	),
 	articleTexts: z.array(z.string()),
-	transcriptTexts: z.array(z.string())
+	transcriptTexts: z.array(z.string()),
+	htmlPages: z.array(
+		z.object({
+			data: z.string(),
+			url: z.string().url()
+		})
+	),
+	h5pSources: z.array(
+		z.object({
+			h5pJson: z.object({ data: z.string(), url: z.string().url() }).nullable(),
+			contentJson: z.object({ data: z.string(), url: z.string().url() }).nullable()
+		})
+	)
 });
 
 export const ragEmbedResponseSchema = z.object({
@@ -77,7 +89,9 @@ export const ragEmbedResponseSchema = z.object({
 	breakdown: z.object({
 		pdfChunks: z.number(),
 		articleChunks: z.number(),
-		videoChunks: z.number()
+		videoChunks: z.number(),
+		htmlChunks: z.number(),
+		h5pChunks: z.number()
 	}),
 	message: z.string()
 });
@@ -114,7 +128,8 @@ export const SubmitJobInput = z.discriminatedUnion("jobType", [
 		payload: pathGenerationPayloadSchema
 	}),
 	BaseJobSchema.extend({
-		jobType: z.literal("ragEmbed"), payload: ragEmbedPayloadSchema
+		jobType: z.literal("ragEmbed"),
+		payload: ragEmbedPayloadSchema
 	}),
 	BaseJobSchema.extend({
 		jobType: z.literal("ragRetrieve"),

@@ -114,9 +114,6 @@ function CustomApp({ Component, pageProps }: AppProps) {
 function RootLayout({ children }: PropsWithChildren<unknown>) {
 	return (
 		<>
-			<Head>
-				<title>Self-Learning</title>
-			</Head>
 			<Navbar />
 			<div className="flex-1">{children}</div>
 			<Footer />

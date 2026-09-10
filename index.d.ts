@@ -22,6 +22,7 @@ declare global {
 			MINIO_ACCESS_KEY: string;
 			MINIO_SECRET_KEY: string;
 			MINIO_BUCKET_NAME: string;
+			NEXT_PUBLIC_MINIO_PUBLIC_URL: string;
 			PISTON_URL: string;
 			KEYCLOAK_ISSUER_URL: string;
 			KEYCLOAK_CLIENT_ID: string;

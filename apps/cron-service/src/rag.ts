@@ -2,8 +2,7 @@ import { Prisma } from "@prisma/client";
 import {
 	prepareRagContent,
 	getRagVersionHash,
-	contentProcessor,
-	vectorStore
+	processRagEmbedLesson
 } from "@self-learning/rag-processing";
 import { database } from "@self-learning/database";
 import { LessonContent } from "@self-learning/types";
@@ -20,46 +19,31 @@ export async function embedLesson(lessonId: string) {
 
 	try {
 		// Step 1: Prepare content (download PDFs, extract article text)
-		const { pdfBuffers, articleTexts, transcriptTexts } = await prepareRagContent(
-			lesson.content as LessonContent
-		);
-		// Step 2: Clean up any stale vector data for this lesson
-		const exists = await vectorStore.lessonExists(lesson.lessonId);
-		if (exists) {
-			await vectorStore.deleteLesson(lesson.lessonId);
-		}
-		// Step 3: Process and embed — mirrors ragEmbedJob.run() exactly
-		if (pdfBuffers.length > 0) {
-			const chunks = await contentProcessor.processMultiplePDFs(
-				pdfBuffers,
-				lesson.lessonId,
-				lesson.title
+		const { pdfBuffers, articleTexts, transcriptTexts, htmlPages, h5pSources } =
+			await prepareRagContent(lesson.content as LessonContent);
+
+		// Step 2: Process and embed via shared RAG pipeline
+		const embedResult = await processRagEmbedLesson({
+			lessonId: lesson.lessonId,
+			lessonTitle: lesson.title,
+			pdfBuffers,
+			articleTexts,
+			transcriptTexts,
+			htmlPages,
+			h5pSources
+		}).catch(error => {
+			console.error(
+				`[TranscriptionEmbedding] ✗ Embedding failed (non-fatal): ${lesson.title} (${lesson.lessonId})`,
+				error
 			);
-			if (chunks.length > 0) {
-				await vectorStore.addDocuments(lesson.lessonId, chunks);
-			}
+			return null;
+		});
+
+		if (!embedResult) {
+			return;
 		}
-		if (articleTexts.length > 0) {
-			const chunks = await contentProcessor.processArticles(
-				articleTexts,
-				lesson.lessonId,
-				lesson.title
-			);
-			if (chunks.length > 0) {
-				await vectorStore.addDocuments(lesson.lessonId, chunks);
-			}
-		}
-		if (transcriptTexts.length > 0) {
-			const chunks = await contentProcessor.processVideoTranscripts(
-				transcriptTexts,
-				lesson.lessonId,
-				lesson.title
-			);
-			if (chunks.length > 0) {
-				await vectorStore.addDocuments(lesson.lessonId, chunks);
-			}
-		}
-		// Step 4: Mark as embedded so this lesson is skipped on re-runs
+
+		// Step 3: Mark as embedded so this lesson is skipped on re-runs
 		await database.lesson.update({
 			where: { lessonId: lesson.lessonId },
 			data: {

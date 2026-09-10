@@ -43,7 +43,7 @@ export function AiTutor({ tutorState }: { tutorState: UseAiTutorReturn }) {
 			aria-hidden={!isTutorOpen}
 		>
 			<div className="h-full bg-white/20 backdrop-blur-xl border-l border-white/30 shadow-2xl">
-				<div className="absolute inset-0 bg-gradient-to-br from-green-500/10 via-emerald-500/10 to-blue-500/10" />
+				<div className="absolute inset-0 bg-gradient-to-br from-c-primary-strong/10 via-c-primary/10 to-c-primary-muted/10" />
 
 				<div className="relative h-full flex flex-col">
 					<AiTutorHeader
