@@ -44,9 +44,8 @@ async function generateSubtitlesForExistingVideos() {
 		const jobs = allLessons
 			.map(lesson => ({
 				...lesson,
-				content: lesson.content as LessonContent
+				content: Array.isArray(lesson.content) ? (lesson.content as LessonContent) : []
 			}))
-			.filter(lesson => lesson.content != null)
 			.flatMap(lesson =>
 				lesson.content
 					.filter(isVideoContent)
