@@ -4,6 +4,7 @@ import { database } from "@self-learning/database";
 import { createInitialNotificationSettings } from "@self-learning/ui/notifications";
 import { randomBytes } from "crypto";
 import { addDays } from "date-fns";
+import { jwtDecode } from "jwt-decode";
 import { NextAuthOptions } from "next-auth";
 import { Adapter, AdapterAccount } from "next-auth/adapters";
 import { Provider } from "next-auth/providers";
@@ -63,7 +64,12 @@ export function createOidcProvider({
 		idToken: true,
 		userinfo: {
 			async request({ client, tokens }) {
-				const idTokenClaims = tokens.claims() as OidcProfile;
+				const idToken = tokens.id_token;
+				if (typeof idToken !== "string") {
+					throw new Error("OIDC provider did not return an ID token");
+				}
+
+				const idTokenClaims = jwtDecode<OidcProfile>(idToken);
 				if (!tokens.access_token || !client.issuer.metadata.userinfo_endpoint) {
 					return idTokenClaims;
 				}
