@@ -9,12 +9,6 @@ import { useTranslation } from "next-i18next";
 const pct = (n?: number) =>
 	n === undefined || n === null || !Number.isFinite(n) ? "—" : `${Number(n).toFixed(1)}%`;
 
-const toPctNumber = (v: unknown) => {
-	const n = Number(v ?? 0);
-	if (!Number.isFinite(n)) return 0;
-	return Number(n);
-};
-
 const colorGreen = "#7fb89b";
 const colorYellow = "#eae282";
 const colorRed = "#e57368";
