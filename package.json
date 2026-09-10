@@ -1,6 +1,6 @@
 {
 	"name": "self-learning",
-	"version": "unstable",
+	"version": "0.11.0",
 	"license": "MIT",
 	"scripts": {
 		"postinstall": "prisma generate --no-hints",
@@ -28,7 +28,7 @@
 		"seed": "prisma generate && prisma db push --accept-data-loss && npm run prisma:views &&  prisma db seed",
 		"migrate": "tsx libs/data-access/database/prisma/deploy-migrations.ts",
 		"seed:analytics-test": "tsx --tsconfig tsconfig.base.json scripts/seed-analytics-test-users.ts",
-        "prisma:views": "for file in libs/data-access/database/prisma/views/*.sql; do npx prisma db execute --file \"$file\" --schema libs/data-access/database/prisma/schema || exit 1; done"
+		"prisma:views": "for file in libs/data-access/database/prisma/views/*.sql; do npx prisma db execute --file \"$file\" --schema libs/data-access/database/prisma/schema || exit 1; done"
 	},
 	"private": true,
 	"dependencies": {
