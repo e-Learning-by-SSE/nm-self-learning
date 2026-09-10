@@ -29,7 +29,7 @@ export default function LearningAnalyticsPage() {
 	}
 
 	const isCreator = user.isAuthor;
-	const isOnlyCreator = user.isAuthor && (enrollments?.length ?? 0) > 0;
+	const isOnlyCreator = user.isAuthor && (enrollments?.length ?? 0) == 0;
 
 	// Show only student analytics if the user is not a creator
 	if (!isCreator && (enrollments?.length ?? 0) > 0) {
@@ -70,6 +70,7 @@ export default function LearningAnalyticsPage() {
 		<div className="bg-gray-50 min-h-screen">
 			<h1
 				id="student-analytics-title"
+				data-testid="student-analytics-startup-title"
 				className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 text-center sm:text-left mt-6 mb-8 leading-snug"
 			>
 				{t("pageTitle_not_started", { name: user?.name || "" })}
