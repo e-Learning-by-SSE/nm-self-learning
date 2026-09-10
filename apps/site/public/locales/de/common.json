@@ -65,6 +65,7 @@
 	"Open User Menu": "$t(common:User Menu) Öffnen",
 	"Profile": "Profil",
 	"Settings": "Einstellungen",
+	"LearningAnalytics": "Lernanalyse",
 	"Permissions": "Berechtigungen",
 	"Groups": "Gruppen",
 	"Author Dashboard": "$t(common:Author_other)bereich",
@@ -84,6 +85,7 @@
     "Name": "Name",
     "Information Updated": "Informationen aktualisiert",
     "Settings Could not be Saved!": "Einstellungen konnten nicht gespeichert werden!",
+	"subjects": "Fachgebiete",
     "Close": "Schließen",
     "Help": "Hilfe",
     "Open_Menu": "Menü öffnen"
