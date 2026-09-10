@@ -90,6 +90,8 @@ describe("markAsCompleted", () => {
 				where: { courseId_username: { courseId, username } }
 			});
 			expect(enrollment?.progress).toEqual(25);
+			expect(enrollment?.status).toEqual("ACTIVE");
+			expect(enrollment?.completedAt).toBeNull();
 		});
 
 		it("Lesson marked as completed -> Event log entry for lesson completion", async () => {
@@ -149,6 +151,15 @@ describe("markAsCompleted", () => {
 				payload: null,
 				courseId,
 				createdAt: expect.any(Date)
+			});
+
+			const enrollment = await database.enrollment.findUnique({
+				where: { courseId_username: { courseId, username } }
+			});
+			expect(enrollment).toMatchObject({
+				progress: 100,
+				status: "COMPLETED",
+				completedAt: expect.any(Date)
 			});
 		});
 	});

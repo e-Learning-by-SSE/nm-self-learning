@@ -4,3 +4,6 @@ export * from "./lib/learning-heatmap";
 export * from "./lib/teacher-view";
 export * from "./lib/server-side-metrics";
 export * from "./lib/metrics/learning-duration";
+export * from "./lib/components/student/StudentAnalytics";
+export * from "./lib/components/creator/CreatorAnalytics";
+export const I18N_NAMESPACE = ["student-analytics"];

@@ -24,8 +24,8 @@ import { useTranslation } from "next-i18next";
 
 export function Navbar() {
 	const session = useSession();
-	const { loginRedirect, logoutRedirect } = useLoginRedirect();
 	const { t } = useTranslation("common");
+	const { loginRedirect, logoutRedirect } = useLoginRedirect();
 
 	const user = session.data?.user;
 
@@ -246,6 +246,14 @@ export function NavbarDropdownMenu({
 					<span>{t("Groups")}</span>
 				</Link>
 			)}
+
+			<Link
+				href="/learning-analytics"
+				className={`flex w-full items-center gap-2 rounded-md px-3 py-3`}
+			>
+				<AcademicCapIcon className="h-5" />
+				<span>{t("LearningAnalytics")}</span>
+			</Link>
 
 			{isAuthor && (
 				<Link

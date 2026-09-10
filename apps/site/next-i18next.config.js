@@ -4,9 +4,10 @@ module.exports = {
 	debug: false,
 	i18n: {
 		defaultLocale: "de" + "",
-		locales: ["en", "de"],
-		showSupportNotice: false
+		locales: ["en", "de"]
 	},
+
+	showSupportNotice: false,
 
 	/** To avoid issues when deploying to some paas (vercel...) */
 	localePath:
