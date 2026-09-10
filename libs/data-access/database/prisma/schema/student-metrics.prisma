@@ -1,14 +1,14 @@
 view StudentMetric_LearningTime {
-    userId      String  @unique
+    userId      String @unique
     username    String
-    timeSeconds Decimal
+    timeSeconds Float
 }
 
 view StudentMetric_DailyLearningTime {
     userId      String
     username    String
     day         DateTime
-    timeSeconds Decimal
+    timeSeconds Float
 
     @@unique([userId, day])
 }
@@ -17,7 +17,7 @@ view StudentMetric_HourlyLearningTime {
     userId      String
     username    String
     hour        DateTime
-    timeSeconds Decimal
+    timeSeconds Float
 
     @@unique([userId, hour])
 }
@@ -27,7 +27,7 @@ view StudentMetric_LearningTimeByCourse {
     username    String
     courseId    String
     courseTitle String
-    timeSeconds Decimal
+    timeSeconds Float
 
     @@unique([userId, courseId])
 }
@@ -36,9 +36,9 @@ view StudentMetric_DailyLearningTimeByCourse {
     userId      String
     username    String
     courseId    String
-    courseTitle String
+    courseTitle String?
     day         DateTime
-    timeSeconds Decimal
+    timeSeconds Float
 
     @@unique([userId, courseId, day])
 }
@@ -48,7 +48,7 @@ view StudentMetric_CoursesCompletedBySubject {
     username              String
     subjectId             String
     subjectTitle          String
-    completedCoursesCount BigInt
+    completedCoursesCount Int
     completedCourses      String?
 
     @@unique([userId, subjectId])
@@ -57,8 +57,8 @@ view StudentMetric_CoursesCompletedBySubject {
 view StudentMetric_LearningStreak {
     userId            String @unique
     username          String
-    longestStreakDays BigInt
-    currentStreakDays BigInt
+    longestStreakDays Int
+    currentStreakDays Int
 }
 
 view StudentMetric_AverageQuizAnswers {
@@ -68,9 +68,9 @@ view StudentMetric_AverageQuizAnswers {
     courseTitle         String
     lessonId            String
     lessonTitle         String
-    wrongAnswers        BigInt
-    correctAnswers      BigInt
-    averageAccuracyRate Decimal
+    wrongAnswers        Int
+    correctAnswers      Int
+    averageAccuracyRate Float
 
     @@unique([userId, courseId, lessonId])
 }
@@ -83,9 +83,9 @@ view StudentMetric_HourlyAverageQuizAnswers {
     lessonId            String
     lessonTitle         String
     hour                DateTime
-    wrongAnswers        BigInt
-    correctAnswers      BigInt
-    averageAccuracyRate Decimal
+    wrongAnswers        Int
+    correctAnswers      Int
+    averageAccuracyRate Float
 
     @@unique([userId, courseId, lessonId, hour])
 }
