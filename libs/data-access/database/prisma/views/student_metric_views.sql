@@ -347,7 +347,7 @@ JOIN "Student" s ON s."userId" = u.id
 JOIN "QuizAttempt" qa ON qa.username = s.username
 JOIN "QuizAnswer" qans ON qans."quizAttemptId" = qa."attemptId"
 JOIN "Lesson" l ON l."lessonId" = qa."lessonId"
-JOIN "StartedLesson" sl ON sl."lessonId" = l."lessonId" AND sl.username = s.username
+JOIN (SELECT DISTINCT ON (username, "lessonId") username, "lessonId", "courseId" FROM "StartedLesson" WHERE "courseId" IS NOT NULL ORDER BY username, "lessonId", "createdAt" DESC) sl ON sl."lessonId" = l."lessonId" AND sl.username = s.username
 JOIN "Course" c ON c."courseId" = sl."courseId"
 GROUP BY
     u.id,
