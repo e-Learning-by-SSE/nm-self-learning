@@ -93,9 +93,6 @@ function CustomApp({ Component, pageProps }: AppProps) {
 						/>
 						{/* Only required for /pages, /app will handle this automatically */}
 						<link rel="manifest" href={basePath + "/api/manifest"} />
-
-						{/* Customizable Theme CSS */}
-						<link rel="stylesheet" href={`${basePath}/theme.css`} />
 					</Head>
 					<GlobalFeatures />
 					<RootLayout>
@@ -117,9 +114,6 @@ function CustomApp({ Component, pageProps }: AppProps) {
 function RootLayout({ children }: PropsWithChildren<unknown>) {
 	return (
 		<>
-			<Head>
-				<title>Self-Learning</title>
-			</Head>
 			<Navbar />
 			<div className="flex-1">{children}</div>
 			<Footer />
