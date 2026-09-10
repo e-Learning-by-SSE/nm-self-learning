@@ -255,7 +255,7 @@ function getProviders(): Provider[] {
 					await onCreateUser({ name: username, id: user.id });
 					return user;
 				}
-			}) as any
+			})
 		);
 	}
 	return providers;
