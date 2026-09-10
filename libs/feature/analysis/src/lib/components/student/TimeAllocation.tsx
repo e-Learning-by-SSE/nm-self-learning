@@ -5,6 +5,7 @@ import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, ChartOptions } from "chart.js";
 import { useMemo } from "react";
 import { useTranslation } from "next-i18next";
+import { intervalToDuration } from "date-fns";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -17,8 +18,12 @@ export function TimeAllocation() {
 	);
 
 	const totalSeconds = courses.reduce((acc, c) => acc + (c.timeSeconds ?? 0), 0);
-	const totalHours = Math.floor(totalSeconds / 3600);
-	const totalMinutes = Math.round((totalSeconds % 3600) / 60);
+	const duration = intervalToDuration({
+		start: 0,
+		end: totalSeconds * 1000
+	});
+	const totalHours = (duration.days ?? 0) * 24 + (duration.hours ?? 0);
+	const totalMinutes = duration.minutes ?? 0;
 
 	// Muted palette
 	const generateSoftPalette = (count: number): string[] => {
