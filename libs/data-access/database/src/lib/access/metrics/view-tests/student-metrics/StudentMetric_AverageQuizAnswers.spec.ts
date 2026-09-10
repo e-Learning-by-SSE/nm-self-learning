@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 import {
 	Course,
 	EnrollmentStatus,
@@ -21,8 +24,7 @@ import {
 	createStartedLesson,
 	deleteStartedLesson,
 	createCompletedLesson,
-	deleteCompletedLesson,
-	getDemoDatabaseAvailability
+	deleteCompletedLesson
 } from "../helper";
 
 let users: User[];
@@ -31,100 +33,79 @@ let course: Course;
 let lessons: Lesson[];
 let quizAttempt: QuizAttempt;
 
-// TEST SHOULD ONLY RUN IF DATABASE IS AVAILABLE
-const isDatabaseAvailable = getDemoDatabaseAvailability();
+describe("Average Quiz Answers for Student", () => {
+	beforeAll(async () => {
+		users = await createUsers(["student_avg_quiz_answers"]);
 
-beforeAll(async () => {
-	if (!isDatabaseAvailable) {
-		console.warn(
-			"Skipping database tests: DATABASE_URL or demo instance flag not set correctly."
-		);
-		return;
-	}
+		students = await createStudents([users[0]]);
 
-	users = await createUsers(["student_avg_quiz_answers"]);
+		course = await prisma.course.create({
+			data: {
+				courseId: "average-quiz-answers-test-course",
+				title: "Average Quiz Answers Test Course",
+				slug: "average-quiz-answers-test-course",
+				subtitle: "A course to test average quiz answers metric",
+				content: {},
+				meta: {}
+			}
+		});
 
-	students = await createStudents([users[0]]);
+		await createEnrollments([
+			{
+				courseId: course.courseId,
+				// name of the student needed and not the user name
+				username: students[0].username,
+				status: EnrollmentStatus.COMPLETED
+			}
+		]);
 
-	course = await prisma.course.create({
-		data: {
-			courseId: "average-quiz-answers-test-course",
-			title: "Average Quiz Answers Test Course",
-			slug: "average-quiz-answers-test-course",
-			subtitle: "A course to test average quiz answers metric",
-			content: {},
-			meta: {}
-		}
+		lessons = await createLessons(course.courseId, ["Lesson 1"]);
+
+		await createStartedLesson(lessons[0], course.courseId, students);
+
+		await createCompletedLesson(lessons[0], course.courseId, students);
+
+		quizAttempt = await prisma.quizAttempt.create({
+			data: {
+				state: "COMPLETED",
+				username: students[0].username,
+				lessonId: lessons[0].lessonId
+			}
+		});
+
+		await prisma.quizAnswer.create({
+			data: {
+				quizAttemptId: quizAttempt.attemptId,
+				questionId: "question-1",
+				answer: {},
+				isCorrect: true
+			}
+		});
 	});
 
-	await createEnrollments([
-		{
-			courseId: course.courseId,
-			// name of the student needed and not the user name
-			username: students[0].username,
-			status: EnrollmentStatus.COMPLETED
-		}
-	]);
+	afterAll(async () => {
+		// Clean up created data in reverse order
+		await prisma.quizAnswer.deleteMany({
+			where: { quizAttemptId: quizAttempt.attemptId }
+		});
+		await prisma.quizAttempt.deleteMany({
+			where: { attemptId: quizAttempt.attemptId }
+		});
+		await deleteCompletedLesson(lessons[0]);
+		await deleteStartedLesson(lessons[0]);
+		await deleteLessons([lessons[0]]);
+		await deleteEnrollments([course]);
+		await prisma.course.deleteMany({
+			where: { courseId: course.courseId }
+		});
+		await deleteStudents(students);
+		await deleteUsers(users);
 
-	lessons = await createLessons(course.courseId, ["Lesson 1"]);
-
-	await createStartedLesson(lessons[0], course.courseId, students);
-
-	await createCompletedLesson(lessons[0], course.courseId, students);
-
-	quizAttempt = await prisma.quizAttempt.create({
-		data: {
-			state: "COMPLETED",
-			username: students[0].username,
-			lessonId: lessons[0].lessonId
-		}
+		await prisma.$disconnect();
 	});
 
-	await prisma.quizAnswer.create({
-		data: {
-			quizAttemptId: quizAttempt.attemptId,
-			questionId: "question-1",
-			answer: {},
-			isCorrect: true
-		}
-	});
-});
-
-afterAll(async () => {
-	if (!isDatabaseAvailable) return;
-
-	// Clean up created data in reverse order
-	await prisma.quizAnswer.deleteMany({
-		where: { quizAttemptId: quizAttempt.attemptId }
-	});
-
-	await prisma.quizAttempt.deleteMany({
-		where: { attemptId: quizAttempt.attemptId }
-	});
-
-	await deleteCompletedLesson(lessons[0]);
-
-	await deleteStartedLesson(lessons[0]);
-
-	await deleteLessons([lessons[0]]);
-
-	await deleteEnrollments([course]);
-
-	await prisma.course.deleteMany({
-		where: { courseId: course.courseId }
-	});
-
-	await deleteStudents(students);
-
-	await deleteUsers(users);
-
-	await prisma.$disconnect();
-});
-
-(isDatabaseAvailable ? test : test.skip)(
-	"should calculate 100% average quiz answers for student",
-	async () => {
-		const result = await prisma.studentMetric_AverageQuizAnswers.findUnique({
+	it("should calculate 100% average quiz answers for student", async () => {
+		const result = await prisma.studentMetric_AverageQuizAnswers.findFirst({
 			where: { userId: users[0].id }
 		});
 
@@ -140,5 +121,5 @@ afterAll(async () => {
 		expect(result?.wrongAnswers).toBe(0);
 		expect(result?.correctAnswers).toBe(1);
 		expect(result?.averageAccuracyRate).toBe(100);
-	}
-);
+	});
+});

@@ -1,64 +1,55 @@
+/**
+ * @jest-environment node
+ */
 import { PrismaClient, User } from "@prisma/client";
+import { createUsers, deleteUsers } from "../helper";
 const prisma = new PrismaClient();
-
-import { createUsers, deleteUsers, getDemoDatabaseAvailability } from "../helper";
 
 let users: User[];
 
-// TEST SHOULD ONLY RUN IF DATABASE IS AVAILABLE
-const isDatabaseAvailable = getDemoDatabaseAvailability();
+describe("Learning Streak for Student", () => {
+	beforeAll(async () => {
+		users = await createUsers(["user_learning_streak"]);
 
-beforeAll(async () => {
-	if (!isDatabaseAvailable) {
-		console.warn(
-			"Skipping database tests: DATABASE_URL or demo instance flag not set correctly."
-		);
-		return;
-	}
+		await prisma.eventLog.createMany({
+			data: [
+				{
+					username: users[0].name,
+					createdAt: new Date("2024-01-01T10:00:00Z"),
+					type: "login"
+				},
+				{
+					username: users[0].name,
+					createdAt: new Date("2024-01-01T10:30:00Z"),
+					type: "logout"
+				}
+			]
+		});
+	});
 
-	users = await createUsers(["user_learning_streak"]);
-
-	await prisma.eventLog.createMany({
-		data: [
-			{
-				username: users[0].name,
-				createdAt: new Date("2024-01-01T10:00:00Z"),
-				type: "login"
-			},
-			{
-				username: users[0].name,
-				createdAt: new Date("2024-01-01T10:30:00Z"),
-				type: "logout"
+	afterAll(async () => {
+		// Clean up created data in reverse order
+		await prisma.eventLog.deleteMany({
+			where: {
+				username: users[0].name
 			}
-		]
-	});
-});
+		});
+		await deleteUsers(users);
 
-afterAll(async () => {
-	if (!isDatabaseAvailable) return;
-
-	// Clean up created data in reverse order
-	await prisma.eventLog.deleteMany({
-		where: {
-			username: users[0].name
-		}
+		await prisma.$disconnect();
 	});
 
-	await deleteUsers(users);
+	it("should return learning streak for student", async () => {
+		const result = await prisma.studentMetric_LearningStreak.findUnique({
+			where: { userId: users[0].id }
+		});
 
-	await prisma.$disconnect();
-});
+		console.log("Learning Streak Result:", result);
 
-(isDatabaseAvailable ? test : test.skip)("should return learning streak for student", async () => {
-	const result = await prisma.studentMetric_LearningStreak.findUnique({
-		where: { userId: users[0].id }
+		expect(result).not.toBeNull();
+		expect(result?.userId).toBe(users[0].id);
+		expect(result?.username).toBe(users[0].name);
+		expect(result?.currentStreakDays).toBe(1); // Assuming 1 day streak based on the test data
+		expect(result?.longestStreakDays).toBe(1); // Assuming 1 day longest streak based on the test data
 	});
-
-	console.log("Learning Streak Result:", result);
-
-	expect(result).not.toBeNull();
-	expect(result?.userId).toBe(users[0].id);
-	expect(result?.username).toBe(users[0].name);
-	expect(result?.currentStreakDays).toBe(1); // Assuming 1 day streak based on the test data
-	expect(result?.longestStreakDays).toBe(1); // Assuming 1 day longest streak based on the test data
 });

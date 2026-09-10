@@ -1,64 +1,57 @@
+/**
+ * @jest-environment node
+ */
 import { PrismaClient, User } from "@prisma/client";
 const prisma = new PrismaClient();
 
-import { createUsers, deleteUsers, getDemoDatabaseAvailability } from "../helper";
+import { createUsers, deleteUsers } from "../helper";
 
 let users: User[];
 
-// TEST SHOULD ONLY RUN IF DATABASE IS AVAILABLE
-const isDatabaseAvailable = getDemoDatabaseAvailability();
+describe("Hourly Learning Time for Student", () => {
+	beforeAll(async () => {
+		users = await createUsers(["user_hourly_learning_time"]);
 
-beforeAll(async () => {
-	if (!isDatabaseAvailable) {
-		console.warn(
-			"Skipping database tests: DATABASE_URL or demo instance flag not set correctly."
-		);
-		return;
-	}
+		await prisma.eventLog.createMany({
+			data: [
+				{
+					username: users[0].name,
+					createdAt: new Date("2024-01-01T10:00:00Z"),
+					type: "login"
+				},
+				{
+					username: users[0].name,
+					createdAt: new Date("2024-01-01T10:30:00Z"),
+					type: "logout"
+				}
+			]
+		});
+	});
 
-	users = await createUsers(["user_hourly_learning_time"]);
-
-	await prisma.eventLog.createMany({
-		data: [
-			{
-				username: users[0].name,
-				createdAt: new Date("2024-01-01T10:00:00Z"),
-				type: "login"
-			},
-			{
-				username: users[0].name,
-				createdAt: new Date("2024-01-01T10:30:00Z"),
-				type: "logout"
+	afterAll(async () => {
+		// Clean up created data in reverse order
+		await prisma.eventLog.deleteMany({
+			where: {
+				username: users[0].name
 			}
-		]
-	});
-});
+		});
 
-afterAll(async () => {
-	if (!isDatabaseAvailable) return;
+		await deleteUsers(users);
 
-	// Clean up created data in reverse order
-	await prisma.eventLog.deleteMany({
-		where: {
-			username: users[0].name
-		}
+		await prisma.$disconnect();
 	});
 
-	await deleteUsers(users);
+	it("should return learning time for student", async () => {
+		const result = await prisma.studentMetric_HourlyLearningTime.findFirst({
+			where: { userId: users[0].id }
+		});
 
-	await prisma.$disconnect();
-});
+		console.log("Learning Time Result:", result);
 
-(isDatabaseAvailable ? test : test.skip)("should return learning time for student", async () => {
-	const result = await prisma.studentMetric_HourlyLearningTime.findUnique({
-		where: { userId: users[0].id }
+		expect(result).not.toBeNull();
+		expect(result?.userId).toBe(users[0].id);
+		expect(result?.username).toBe(users[0].name);
+		expect(result?.hour).toEqual(new Date("2024-01-01T10:00:00Z"));
+		expect(result?.timeSeconds).toBe(1800); // 30 minutes in seconds
 	});
-
-	console.log("Learning Time Result:", result);
-
-	expect(result).not.toBeNull();
-	expect(result?.userId).toBe(users[0].id);
-	expect(result?.username).toBe(users[0].name);
-	expect(result?.hour).toEqual(new Date("2024-01-01T10:00:00Z"));
-	expect(result?.timeSeconds).toBe(1800); // 30 minutes in seconds
 });
