@@ -24,9 +24,15 @@ declare global {
 			MINIO_BUCKET_NAME: string;
 			NEXT_PUBLIC_MINIO_PUBLIC_URL: string;
 			PISTON_URL: string;
-			KEYCLOAK_ISSUER_URL: string;
-			KEYCLOAK_CLIENT_ID: string;
-			KEYCLOAK_CLIENT_SECRET: string;
+			OIDC_ISSUER_URL: string | undefined;
+			OIDC_CLIENT_ID: string | undefined;
+			OIDC_CLIENT_SECRET: string | undefined;
+			OIDC_PROVIDER_NAME: string | undefined;
+			OIDC_SCOPES: string | undefined;
+			// Legacy Keycloak variable names are supported for existing deployments.
+			KEYCLOAK_ISSUER_URL: string | undefined;
+			KEYCLOAK_CLIENT_ID: string | undefined;
+			KEYCLOAK_CLIENT_SECRET: string | undefined;
 			KEYCLOAK_PROVIDER_NAME: string | undefined;
 			NEXTAUTH_URL?: string;
 			NEXTAUTH_SECRET?: string;

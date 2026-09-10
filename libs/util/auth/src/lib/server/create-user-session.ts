@@ -4,16 +4,20 @@ import { jwtDecode } from "jwt-decode";
 import { CallbacksOptions, Session } from "next-auth";
 
 export function getIdpSelflearnAdminRole(access_token: string | undefined): UserRole | undefined {
-	// realm_access.roles is optional claim -> Check if claim exists
 	if (!access_token) return;
 
-	const claims = jwtDecode(access_token) satisfies KeyCloakClaims;
-	const access_roles = claims["realm_access"];
-	if (!access_roles) return;
+	try {
+		const claims = jwtDecode<OidcClaims>(access_token);
+		const roles = claims.realm_access?.roles;
+		if (!Array.isArray(roles)) return;
 
-	// Admin role of Self-Learning is defined as selflearn_admin in KeyCloak
-	const roles = access_roles["roles"] as string[];
-	return incomingToLocalRole(roles ?? []);
+		// Avoid demoting admins to user if they promoted in the platform, but not in the IdP
+		return incomingToLocalRole(roles) === UserRole.ADMIN ? UserRole.ADMIN : undefined;
+	} catch {
+		// Access tokens are allowed to be opaque in OIDC. If the token cannot be
+		// decoded, authentication continues without automatic admin promotion.
+		return;
+	}
 }
 
 export function incomingToLocalRole(tokenRoles: string[]): UserRole {
@@ -24,7 +28,7 @@ export function incomingToLocalRole(tokenRoles: string[]): UserRole {
 	}
 }
 
-type KeyCloakClaims = {
+type OidcClaims = {
 	realm_access?: {
 		roles?: string[];
 	};
@@ -59,7 +63,7 @@ export async function createToken(name: string, incomingRole: UserRole): Promise
 		});
 	};
 
-	// Allow promotion to user via IdP (e.g., Keycloak)
+	// Allow promotion to administrator via the optional IdP role claim.
 	if (userFromDb.role !== "ADMIN" && incomingRole === "ADMIN") {
 		// Local User, remote Admin -> Promote to Admin
 		await updateUser("ADMIN");
