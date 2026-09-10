@@ -181,11 +181,11 @@ export function HeatmapModal({ onClose }: { onClose: () => void }) {
 								</div>
 							}
 						>
-							{metricOptions.map((option, i) => (
-								<span
-									id="HeatmapTypeOption"
-									key={option}
-									onClick={() => setSelectedMetric(option)}
+						{metricOptions.map((option, i) => (
+							<span
+								id={`HeatmapTypeOption-${option}`}
+								key={option}
+								onClick={() => setSelectedMetric(option)}
 									className={`cursor-pointer block px-4 py-2 w-44 text-left transition-colors ${
 										selectedMetric === option
 											? "bg-emerald-500 text-white"
