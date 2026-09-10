@@ -201,7 +201,7 @@ export function MyLearningPath() {
 				</div>
 
 				<p className="text-xs text-gray-500 mt-2 text-center sm:text-left">
-					{completedCourses} {t("of")} {totalCourses} {t("coursesCompleted")}
+					{t("coursesCompleted", { completed: completedCourses, count: totalCourses })}
 				</p>
 			</div>
 
