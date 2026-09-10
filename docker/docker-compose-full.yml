@@ -69,6 +69,13 @@ services:
             - NEXTAUTH_URL=${NEXTAUTH_REDIRECT_URL}
             - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
             - PISTON_URL=http://piston:2000
+            - OIDC_ISSUER_URL=${OIDC_ISSUER_URL}
+            - OIDC_CLIENT_ID=${OIDC_CLIENT_ID}
+            - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET}
+            - OIDC_PROVIDER_NAME=${OIDC_PROVIDER_NAME}
+            - OIDC_PROVIDER_ID=${OIDC_PROVIDER_ID}
+            - OIDC_SCOPES=${OIDC_SCOPES}
+            # Legacy Keycloak variables remain supported for existing deployments.
             - KEYCLOAK_ISSUER_URL=${KEYCLOAK_ISSUER_URL}
             - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
             - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}

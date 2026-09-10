@@ -12,6 +12,15 @@ services:
             - dev_db_data:/var/lib/postgresql/data
     dev-auth:
         image: ghcr.io/e-learning-by-sse/infrastructure-fake-oidc
+        command:
+            - --spring.profiles.active=default
+            - --oidc.users.student.password=test
+            - --oidc.users.student.sub=oidc-test-student
+            - --oidc.users.student.given_name=OIDC
+            - --oidc.users.student.family_name=Student
+            - --oidc.users.student.email=oidc-student@uni-hildesheim.de
+            - --oidc.clients.default.id=dev-client
+            - --oidc.clients.default.secret=dev-secret
         ports:
             - 8090:8090
 

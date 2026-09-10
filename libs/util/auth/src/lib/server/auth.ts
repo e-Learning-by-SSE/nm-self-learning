@@ -8,12 +8,30 @@ import { NextAuthOptions } from "next-auth";
 import { Adapter, AdapterAccount } from "next-auth/adapters";
 import { Provider } from "next-auth/providers";
 import CredentialsProvider from "next-auth/providers/credentials";
-import KeycloakProvider from "next-auth/providers/keycloak";
+import { OAuthConfig } from "next-auth/providers/oauth";
 import { loginCallbacks } from "./auth-callbacks-server";
 import { authCallbacks, getIdpSelflearnAdminRole } from "./create-user-session";
 
 export const MAIL_DOMAIN = "@uni-hildesheim.de";
-export const OIDC_SCOPES = "openid profile email roles profile_studium";
+export const OIDC_SCOPES = "openid profile email";
+export const DEFAULT_OIDC_PROVIDER_ID = "oidc";
+
+type OidcProfile = {
+	sub: string;
+	preferred_username?: string;
+	email?: string;
+	picture?: string;
+	name?: string;
+};
+
+type OidcProviderConfig = {
+	id: string;
+	name: string;
+	issuer: string;
+	clientId: string;
+	clientSecret: string;
+	scope?: string;
+};
 
 function mailToUsername(mail: string): string {
 	if (mail.toLowerCase().includes(MAIL_DOMAIN)) {
@@ -22,6 +40,53 @@ function mailToUsername(mail: string): string {
 	return mail;
 }
 export const testingExportMailToUsername = mailToUsername;
+
+export function createOidcProvider({
+	id,
+	name,
+	issuer,
+	clientId,
+	clientSecret,
+	scope = OIDC_SCOPES
+}: OidcProviderConfig): OAuthConfig<OidcProfile> {
+	const normalizedIssuer = issuer.replace(/\/+$/, "");
+
+	return {
+		id,
+		name,
+		type: "oauth",
+		wellKnown: `${normalizedIssuer}/.well-known/openid-configuration`,
+		clientId,
+		clientSecret,
+		authorization: { params: { scope } },
+		checks: ["pkce", "state"],
+		idToken: true,
+		userinfo: {
+			async request({ client, tokens }) {
+				const idTokenClaims = tokens.claims() as OidcProfile;
+				if (!tokens.access_token || !client.issuer.metadata.userinfo_endpoint) {
+					return idTokenClaims;
+				}
+
+				const userinfo = (await client.userinfo(tokens.access_token)) as OidcProfile;
+				return { ...idTokenClaims, ...userinfo };
+			}
+		},
+		profile(profile) {
+			const username =
+				profile.preferred_username ??
+				(profile.email ? mailToUsername(profile.email) : profile.sub);
+
+			return {
+				id: profile.sub,
+				name: username,
+				email: profile.email,
+				image: profile.picture,
+				displayName: profile.name ?? username
+			};
+		}
+	};
+}
 
 const customPrismaAdapter: Adapter = {
 	...PrismaAdapter(database),
@@ -42,8 +107,9 @@ const customPrismaAdapter: Adapter = {
 		await database.user.update({
 			where: { id: user.id },
 			data: {
-				// Promote User to admin if specified by KeyCloak
-				role: getIdpSelflearnAdminRole(account.access_token) ?? "USER",
+				// Use IdP roles when supplied. Generic OIDC providers may omit
+				// realm_access, in which case the existing local role is preserved.
+				role: getIdpSelflearnAdminRole(account.access_token) ?? user.role,
 				emailVerified: new Date() // OIDC always has verified emails
 			}
 		});
@@ -76,24 +142,47 @@ const customPrismaAdapter: Adapter = {
 };
 
 function getProviders(): Provider[] {
-	const providers = [
-		KeycloakProvider({
-			name: process.env.KEYCLOAK_PROVIDER_NAME ?? "Keycloak",
-			issuer: process.env.KEYCLOAK_ISSUER_URL,
-			clientId: process.env.KEYCLOAK_CLIENT_ID,
-			clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
-			authorization: { params: { scope: OIDC_SCOPES } },
-			profile(profile) {
-				return {
-					id: profile.sub,
-					name: profile.preferred_username ?? mailToUsername(profile.email),
-					email: profile.email,
-					image: profile.picture,
-					displayName: profile.name
-				};
-			}
-		})
+	const genericOidcValues = [
+		process.env.OIDC_ISSUER_URL,
+		process.env.OIDC_CLIENT_ID,
+		process.env.OIDC_CLIENT_SECRET
 	];
+	const useGenericOidcConfig = genericOidcValues.some(Boolean);
+	const issuer = useGenericOidcConfig
+		? process.env.OIDC_ISSUER_URL
+		: process.env.KEYCLOAK_ISSUER_URL;
+	const clientId = useGenericOidcConfig
+		? process.env.OIDC_CLIENT_ID
+		: process.env.KEYCLOAK_CLIENT_ID;
+	const clientSecret = useGenericOidcConfig
+		? process.env.OIDC_CLIENT_SECRET
+		: process.env.KEYCLOAK_CLIENT_SECRET;
+	const oidcValues = [issuer, clientId, clientSecret];
+
+	if (oidcValues.some(Boolean) && !oidcValues.every(Boolean)) {
+		throw new Error(
+			`Incomplete ${
+				useGenericOidcConfig ? "OIDC" : "legacy Keycloak"
+			} configuration: issuer, client ID and client secret are all required`
+		);
+	}
+
+	const providers: Provider[] = [];
+	if (issuer && clientId && clientSecret) {
+		providers.push(
+			createOidcProvider({
+				id: process.env.OIDC_PROVIDER_ID || DEFAULT_OIDC_PROVIDER_ID,
+				name:
+					process.env.OIDC_PROVIDER_NAME ||
+					process.env.KEYCLOAK_PROVIDER_NAME ||
+					"OpenID Connect",
+				issuer,
+				clientId,
+				clientSecret,
+				scope: process.env.OIDC_SCOPES || OIDC_SCOPES
+			})
+		);
+	}
 
 	// Allow login with pre-configured demo accounts in demo mode (see seed.ts)
 	if (process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE === "true") {
