@@ -177,7 +177,7 @@ function getProviders(): Provider[] {
 	if (issuer && clientId && clientSecret) {
 		providers.push(
 			createOidcProvider({
-				id: process.env.OIDC_PROVIDER_ID || DEFAULT_OIDC_PROVIDER_ID,
+				id: DEFAULT_OIDC_PROVIDER_ID,
 				name:
 					process.env.OIDC_PROVIDER_NAME ||
 					process.env.KEYCLOAK_PROVIDER_NAME ||

@@ -28,7 +28,6 @@ declare global {
 			OIDC_CLIENT_ID: string | undefined;
 			OIDC_CLIENT_SECRET: string | undefined;
 			OIDC_PROVIDER_NAME: string | undefined;
-			OIDC_PROVIDER_ID: string | undefined;
 			OIDC_SCOPES: string | undefined;
 			// Legacy Keycloak variable names are supported for existing deployments.
 			KEYCLOAK_ISSUER_URL: string | undefined;
