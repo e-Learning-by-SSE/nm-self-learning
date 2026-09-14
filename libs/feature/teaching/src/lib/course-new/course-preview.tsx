@@ -28,8 +28,7 @@ export function CoursePreview() {
 			knowledge: [] // default path, no knowledge
 		},
 		{
-			enabled: !!courseId,
-			refetchOnMount: "always"
+			enabled: !!courseId
 		}
 	);
 

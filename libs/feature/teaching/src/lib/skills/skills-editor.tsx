@@ -52,7 +52,7 @@ export function SkillsEditor(
 
 	const { data: ctx } = trpc.course.getSkillContext.useQuery(
 		{ courseId: courseId as string },
-		{ enabled: !!courseId, refetchOnMount: "always" } // because siblings might have changed
+		{ enabled: !!courseId }
 	);
 
 	const requiresSet = useMemo(() => new Set(requires.map(skill => skill.id)), [requires]);
