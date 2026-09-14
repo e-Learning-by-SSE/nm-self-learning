@@ -9,6 +9,7 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { withTranslations } from "@self-learning/api";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@self-learning/util/auth/server";
+import { CourseType } from "@prisma/client";
 
 type SpecializationPageProps = {
 	specialization: ResolvedValue<typeof getSpecialization>;
@@ -22,14 +23,10 @@ export const getServerSideProps = withTranslations(["common"], async ctx => {
 	const username = session?.user?.name ?? null;
 	console.log("\n# user in session", JSON.stringify(session?.user));
 
-	const specializationSlug = params!.specializationSlug;
+	const specializationSlug = params?.specializationSlug;
 
 	if (typeof specializationSlug !== "string") {
 		throw new Error("[specializationSlug] must be a string.");
-	}
-
-	if (!username) {
-		throw new Error("username must be defined");
 	}
 
 	const specialization = await getSpecialization(specializationSlug, username);
@@ -43,7 +40,7 @@ export const getServerSideProps = withTranslations(["common"], async ctx => {
 	};
 });
 
-async function getSpecialization(specializationSlug: string, username: string) {
+async function getSpecialization(specializationSlug: string, username: string | null) {
 	return await database.specialization.findUnique({
 		where: { slug: specializationSlug },
 		select: {
@@ -54,22 +51,15 @@ async function getSpecialization(specializationSlug: string, username: string) {
 			courses: {
 				orderBy: { title: "asc" },
 				select: {
-					slug: true,
-					imgUrl: true,
-					title: true,
-					subtitle: true,
-					meta: true
-				}
-			},
-			dynCourses: {
-				orderBy: { title: "asc" },
-				select: {
-					courseVersion: true,
-					generatedLessonPaths: {
-						where: {
-							username: username
-						}
-					},
+					version: true,
+					type: true,
+					generatedLessonPaths: username
+						? {
+								where: {
+									username
+								}
+							}
+						: undefined,
 					slug: true,
 					imgUrl: true,
 					title: true,
@@ -126,6 +116,7 @@ function CourseCard({
 	course: SpecializationPageProps["specialization"]["courses"][0];
 }) {
 	const meta = course.meta as CourseMeta;
+	const type = course.type === CourseType.STATIC ? "Lernkurs" : "Dynamischer Kurs";
 
 	return (
 		<Link href={`/courses/${course.slug}`} className="flex">
@@ -134,7 +125,7 @@ function CourseCard({
 				imgUrl={course.imgUrl}
 				title={course.title}
 				subtitle={course.subtitle}
-				badge={<ImageCardBadge text="Lernkurs" className="bg-c-primary" />}
+				badge={<ImageCardBadge text={type} className="bg-c-primary" />}
 				footer={
 					<span className="flex items-center gap-3 text-sm font-semibold text-c-primary">
 						<PuzzlePieceIcon className="h-5" />
