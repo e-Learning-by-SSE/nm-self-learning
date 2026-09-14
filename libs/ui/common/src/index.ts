@@ -41,6 +41,8 @@ export * from "./lib/effects/confetii-firework-onClick";
 export * from "./lib/effects/ConfettiRain";
 export * from "./lib/effects/bolt";
 
+export * from "./lib/badge/badge";
+
 export * from "./lib/screensize-hook/use-screensize";
 export * from "./lib/combobox/searchable-combobox";
 export * from "./lib/combobox/searchable-combobox-with-add";
