@@ -20,14 +20,16 @@ export function CoursePreview() {
 	const {
 		data: preview,
 		isLoading,
+		isError,
 		error
 	} = trpc.course.getCoursePreview.useQuery(
 		{
-			courseId: form.getValues("courseId") as string,
+			courseId: courseId as string,
 			knowledge: [] // default path, no knowledge
 		},
 		{
-			enabled: !!courseId
+			enabled: !!courseId,
+			refetchOnMount: "always"
 		}
 	);
 
@@ -40,9 +42,13 @@ export function CoursePreview() {
 		return <LoadingBox />;
 	}
 
-	if (!preview) {
+	if (isError || !preview) {
 		console.error(error?.message);
-		return <Alert type={{ severity: "ERROR", message: "Preview could not be created." }} />;
+		return (
+			<section className="mt-4">
+				<Alert type={{ severity: "ERROR", message: "Preview could not be created." }} />
+			</section>
+		);
 	}
 
 	return (
@@ -178,6 +184,7 @@ function LessonPath({ content, course }: { content: ToC.Content; course: CourseP
 						<ul className="mt-8 flex flex-col gap-1">
 							{chapter.content.map(lesson => (
 								<Link
+									key={lesson.lessonId}
 									href={`/courses/${course.slug}/${lesson.slug}`}
 									className={`flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm "border-gray-300"`}
 								>
