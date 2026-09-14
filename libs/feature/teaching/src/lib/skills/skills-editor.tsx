@@ -25,7 +25,7 @@ export function SkillsEditor({
 	courseId,
 	lessonId
 }: {
-	target: "lesson" | "course";
+	target: "lesson" | "staticCourse" | "dynamicCourse";
 	courseId?: string;
 	lessonId?: string;
 }) {
@@ -81,9 +81,9 @@ export function SkillsEditor({
 	);
 	// provided by course OR standalone lesson editor
 	const courseRequired =
-		target === "course" || courseId === undefined ? requiresSet : new Set(ctx?.requires ?? []);
+		target !== "lesson" || courseId === undefined ? requiresSet : new Set(ctx?.requires ?? []);
 	const courseProvided =
-		target === "course" || courseId === undefined ? providesSet : new Set(ctx?.provides ?? []);
+		target !== "lesson" || courseId === undefined ? providesSet : new Set(ctx?.provides ?? []);
 
 	const { data: skills } = trpc.skill.getSkills.useQuery();
 	const allSkills = useMemo(() => {
@@ -177,6 +177,7 @@ export function SkillsEditor({
 							addSkills={addSkills}
 							excludeIds={currentIds}
 							catalog={catalog}
+							target={target}
 						/>
 					</SidebarEditorLayout>
 				</div>

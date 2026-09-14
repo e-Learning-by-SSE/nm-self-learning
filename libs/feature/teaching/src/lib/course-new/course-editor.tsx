@@ -95,7 +95,10 @@ export function CourseEditor1({
 						<>
 							{/* TODO do I need courseId here? */}
 							{tab === 1 && (
-								<SkillsEditor target="course" courseId={courseId as string} />
+								<SkillsEditor
+									target={isStatic ? "staticCourse" : "dynamicCourse"}
+									courseId={courseId as string}
+								/>
 							)}
 							{tab === 2 &&
 								(isStatic ? <CourseContentForm /> : <DynCourseContentForm />)}

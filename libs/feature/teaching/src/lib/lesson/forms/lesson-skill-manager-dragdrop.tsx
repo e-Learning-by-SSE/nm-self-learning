@@ -3,22 +3,27 @@ import { Form } from "@self-learning/ui/forms";
 import { useFormContext } from "react-hook-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { LabeledFieldSelectSkillsViewDragDrop } from "../../skills/skill-dialog/select-skill-view";
+import { useTranslation } from "react-i18next";
 
 type SkillModalIdentifier = "provides" | "requires";
 
 /**
- * Area to add and remove skills to a lesson
+ * Drag and Drop area to add and remove skills to a lesson
  */
 export function LessonSkillManagerDragDrop({
 	addSkills = () => {},
 	excludeIds,
-	catalog
+	catalog,
+	target
 }: {
 	addSkills?: (skillsToAdd: SkillFormModel[], field: "provides" | "requires") => void;
 	excludeIds?: ReadonlySet<string>;
 	catalog?: SkillFormModel[];
+	target?: "lesson" | "staticCourse" | "dynamicCourse";
 }) {
 	const { setValue, watch } = useFormContext<LessonFormModel>();
+
+	const { t } = useTranslation("feature-teaching");
 
 	const watchingSkills = {
 		requires: watch("requires"),
@@ -32,16 +37,20 @@ export function LessonSkillManagerDragDrop({
 		);
 	};
 
+	const subtitle =
+		target === "dynamicCourse"
+			? t("Skills_Subtitle_Dynamic_Course")
+			: target === "staticCourse"
+				? t("Skills_Subtitle_Static_Course")
+				: t("Skills_Subtitle_Lesson");
+
 	return (
 		<Form.SidebarSection>
-			<Form.SidebarSectionTitle
-				title="Skills"
-				subtitle="Vermittelte und Benötigte Skills dieser Lerneinheit"
-			/>
+			<Form.SidebarSectionTitle title={t("Skills_Title")} subtitle={subtitle} />
 
 			<>
 				<LabeledFieldSelectSkillsViewDragDrop
-					label={"Vermittelte Skills"}
+					label={t("Skills_Provides")}
 					skills={watchingSkills["provides"]}
 					onDeleteSkill={skill => {
 						deleteSkill(skill, "provides");
@@ -55,7 +64,7 @@ export function LessonSkillManagerDragDrop({
 				/>
 
 				<LabeledFieldSelectSkillsViewDragDrop
-					label={"Benötigte Skills"}
+					label={t("Skills_Requires")}
 					skills={watchingSkills["requires"]}
 					onDeleteSkill={skill => {
 						deleteSkill(skill, "requires");
