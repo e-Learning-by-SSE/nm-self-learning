@@ -459,7 +459,7 @@ function TableOfContents({
 	const completion = useCourseCompletion(course.slug);
 	const hasContent = content.some(chapter => chapter.content.length > 0);
 
-	if (!isGenerated && !hasContent) {
+	if (course.type === CourseType.DYNAMIC && !isGenerated && !hasContent) {
 		return (
 			<div className="flex flex-col gap-4 p-8 rounded-lg bg-c-surface-2">
 				<h3 className="heading flex gap-4 text-2xl">
