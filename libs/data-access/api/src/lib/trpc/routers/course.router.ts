@@ -428,7 +428,7 @@ export const courseRouter = t.router({
 			};
 			const courseContent: CourseContent = [courseChapter];
 
-			const generatedCourse = database.generatedLessonPath.create({
+			const generatedCourse = await database.generatedLessonPath.create({
 				data: {
 					content: courseContent,
 					courseVersion: course.version,
