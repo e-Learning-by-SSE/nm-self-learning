@@ -1,3 +1,5 @@
+import { CourseType } from "@prisma/client";
+import { getCourseData } from "@self-learning/course";
 import { database } from "@self-learning/database";
 import { CourseContent, extractLessonIds } from "@self-learning/types";
 import { createEventLogEntry } from "@self-learning/util/eventlog";
@@ -13,15 +15,13 @@ export async function markAsCompleted({
 	username: string;
 	performanceScore: number;
 }) {
-	const course = courseSlug
-		? await database.course.findUniqueOrThrow({
-				where: { slug: courseSlug },
-				select: {
-					courseId: true,
-					content: true
-				}
-			})
-		: null;
+	const course = courseSlug ? await getCourseData(courseSlug, username) : null;
+	// TODO duplicated at all getCourseData call sites
+	const rawContent =
+		course?.type === CourseType.DYNAMIC
+			? course?.generatedLessonPaths?.at(0)?.content
+			: course?.content;
+	const content = (rawContent ?? []) as CourseContent;
 
 	const result = await database.completedLesson.create({
 		data: {
@@ -58,7 +58,7 @@ export async function markAsCompleted({
 	});
 
 	if (course) {
-		await updateCourseProgress(course.courseId, course.content as CourseContent, username);
+		await updateCourseProgress(course.courseId, content, username);
 	}
 
 	return result;
