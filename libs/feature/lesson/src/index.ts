@@ -2,7 +2,6 @@ export * from "./lib/lesson-outline-context";
 export * from "./lib/use-lesson-context";
 // export type { LessonCourseData, LessonData } from "./lib/lesson-data-access";
 // change to more restrictive export as soon as getLesson is not used anymore outside of the library
-export * from "./lib/lesson-data-access";
 export * from "./lib/subtitles/transcript-dialog";
 export * from "./lib/chapter-name";
 

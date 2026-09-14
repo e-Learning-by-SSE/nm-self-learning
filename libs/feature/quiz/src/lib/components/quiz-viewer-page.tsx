@@ -6,13 +6,12 @@ import {
 } from "@self-learning/completion";
 import {
 	ChapterName,
-	LessonCourseData,
-	LessonData,
 	LessonLayoutProps,
 	StandaloneLessonLayoutProps,
 	useLessonContext,
 	useLessonSession
 } from "@self-learning/lesson";
+import { LessonCourseData, LessonData } from "@self-learning/lesson/server";
 import { MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuizContent } from "@self-learning/question-types";
 import {

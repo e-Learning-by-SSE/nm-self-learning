@@ -10,7 +10,7 @@ import {
 	MediaFileReplacement
 } from "./liascript-api-utils";
 import type { FullCourseExport as CourseWithLessons } from "@self-learning/teaching/server";
-import { LessonData as LessonExport } from "@self-learning/lesson";
+import type { LessonData as LessonExport } from "@self-learning/lesson/server";
 import { Quiz } from "@self-learning/quiz";
 
 import {

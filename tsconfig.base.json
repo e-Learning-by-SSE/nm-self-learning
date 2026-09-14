@@ -32,6 +32,7 @@
 			"@self-learning/diary": ["libs/feature/diary/src/index.ts"],
 			"@self-learning/diary/server": ["libs/feature/diary/src/server.ts"],
 			"@self-learning/enrollment": ["libs/feature/enrollment/src/index.ts"],
+			"@self-learning/enrollment/server": ["libs/feature/enrollment/src/server.ts"],
 			"@self-learning/lesson": ["libs/feature/lesson/src/index.ts"],
 			"@self-learning/lesson/server": ["libs/feature/lesson/src/server.ts"],
 			"@self-learning/lia-exporter": ["libs/util/lia-exporter/src/index.ts"],

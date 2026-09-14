@@ -1,5 +1,5 @@
 import { withTranslations } from "@self-learning/api";
-import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
+import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment/server";
 import {
 	ProgressBar,
 	SortIndicator,

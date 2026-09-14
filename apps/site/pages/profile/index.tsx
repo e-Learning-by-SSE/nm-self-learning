@@ -5,7 +5,7 @@ import { withTranslations } from "@self-learning/api";
 import { SmallGradeBadge } from "@self-learning/completion";
 import { database } from "@self-learning/database/server";
 import { LearningDiaryEntryStatusBadge, StatusBadgeInfo } from "@self-learning/diary";
-import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
+import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment/server";
 import {
 	CourseEnrollmentOverview,
 	PlatformStats,
