@@ -14,7 +14,7 @@ import { collectErrorMessages } from "../lesson/lesson-editor";
 import { DynCourseContentForm } from "./dyn-course-content-form";
 import { CoursePreview } from "./course-preview";
 
-export function CourseEditor1({
+export function CourseEditor({
 	course,
 	onSubmit
 }: {
