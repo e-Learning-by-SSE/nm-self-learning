@@ -1,5 +1,5 @@
 "use client";
-import { FieldErrors, FormProvider, useForm, useFormState, useWatch } from "react-hook-form";
+import { FieldErrors, FormProvider, useForm, useWatch } from "react-hook-form";
 import { CourseFormModel, courseFormSchema } from "../course/course-form-model";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
@@ -96,7 +96,6 @@ export function CourseEditor1({
 					{tab === 0 && <CourseInfoForm isNew={!isPersisted} />}
 					{isPersisted && (
 						<>
-							{/* TODO do I need courseId here? */}
 							{tab === 1 && (
 								<SkillsEditor
 									target={isStatic ? "staticCourse" : "dynamicCourse"}

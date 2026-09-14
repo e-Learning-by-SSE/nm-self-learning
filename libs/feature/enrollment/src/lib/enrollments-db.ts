@@ -1,7 +1,6 @@
 import { EnrollmentStatus } from "@prisma/client";
 import { getCourseCompletionOfStudent } from "@self-learning/completion";
-import { getCombinedCourses } from "@self-learning/course";
-import { CourseCompletion, CourseEnrollment, ResolvedValue } from "@self-learning/types";
+import { CourseEnrollment, ResolvedValue } from "@self-learning/types";
 import { AlreadyExists, NotFound } from "@self-learning/util/http";
 import { database } from "@self-learning/database";
 import { createEventLogEntry } from "@self-learning/util/eventlog";
@@ -22,52 +21,20 @@ export async function getEnrollmentDetails(username: string) {
 						}
 					}
 				}
-			},
-			dynCourse: {
-				select: {
-					title: true,
-					slug: true,
-					imgUrl: true,
-					authors: {
-						select: {
-							displayName: true
-						}
-					}
-				}
 			}
 		}
 	});
 
-	const enrollmentCourseMapped = enrollments.map(enrollment => ({
-		...enrollment,
-		course: enrollment.course ?? {
-			title: "Unknown Course",
-			slug: "unknown-course",
-			imgUrl: "",
-			authors: []
-		}
-	}));
-
 	const enrollmentsWithDetails = await Promise.all(
-		enrollmentCourseMapped.map(async enrollment => {
-			const courseObj = enrollment.course;
-			const courseSlug = courseObj?.slug;
-			const completions: CourseCompletion = courseSlug
-				? await getCourseCompletionOfStudent(courseSlug, username)
-				: {
-						courseCompletion: {
-							lessonCount: 0,
-							completedLessonCount: 0,
-							completionPercentage: 0
-						},
-						chapterCompletion: [],
-						completedLessons: {}
-					};
+		enrollments.map(async enrollment => {
+			const completions = await getCourseCompletionOfStudent(
+				enrollment.course.slug,
+				username
+			);
 
 			return {
 				...enrollment,
 				lastProgressUpdate: enrollment.lastProgressUpdate.toISOString(),
-				course: courseObj,
 				completions
 			};
 		})
@@ -79,8 +46,9 @@ export async function getEnrollmentDetails(username: string) {
 type ArrayElement<A> = A extends readonly (infer T)[] ? T : never;
 
 export type EnrollmentDetails = ArrayElement<ResolvedValue<typeof getEnrollmentDetails>>;
+
 export async function getEnrollmentsOfUser(username: string): Promise<CourseEnrollment[]> {
-	const enrollments = await database.enrollment.findMany({
+	return await database.enrollment.findMany({
 		where: { username },
 		select: {
 			completedAt: true,
@@ -90,31 +58,12 @@ export async function getEnrollmentsOfUser(username: string): Promise<CourseEnro
 					title: true,
 					slug: true
 				}
-			},
-			dynCourse: {
-				select: {
-					title: true,
-					slug: true
-				}
 			}
 		}
 	});
-
-	return enrollments.map(enrollment => ({
-		completedAt: enrollment.completedAt,
-		status: enrollment.status,
-		course: enrollment.course ?? {
-			title: "Unknown Course",
-			slug: "unknown-course"
-		}
-	}));
 }
 
-export async function enrollUser({ courseId, username }: { courseId?: string; username: string }) {
-	if (!courseId) {
-		throw new Error("courseId or dynCourseId must be provided.");
-	}
-
+export async function enrollUser({ courseId, username }: { courseId: string; username: string }) {
 	const course = await database.course.findUnique({
 		where: { courseId },
 		select: {
@@ -125,7 +74,6 @@ export async function enrollUser({ courseId, username }: { courseId?: string; us
 			}
 		}
 	});
-	const data = { courseId, username, status: EnrollmentStatus.ACTIVE };
 
 	if (!course) {
 		throw NotFound({ courseId });
@@ -148,16 +96,9 @@ export async function enrollUser({ courseId, username }: { courseId?: string; us
 					courseId: true
 				}
 			},
-			dynCourse: {
-				select: {
-					title: true,
-					slug: true,
-					courseId: true
-				}
-			},
 			username: true
 		},
-		data
+		data: { courseId, username, status: EnrollmentStatus.ACTIVE }
 	});
 
 	await createEventLogEntry({
@@ -174,29 +115,9 @@ export async function disenrollUser({
 	courseId,
 	username
 }: {
-	courseId?: string;
+	courseId: string;
 	username: string;
 }) {
-	if (!courseId) {
-		throw new Error("courseId must be provided.");
-	}
-
-	const course = await getCombinedCourses({
-		courseId
-	});
-
-	if (!course || !course.length) {
-		throw new Error(`Course with ID ${courseId} not found.`);
-	}
-
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	let where: any;
-	if (course[0].courseType === "STANDARD") {
-		where = { courseId_username: { courseId, username } };
-	} else {
-		where = { dynCourseId_username: { dynCourseId: courseId, username } };
-	}
-
 	return database.enrollment.delete({
 		select: {
 			createdAt: true,
@@ -209,15 +130,13 @@ export async function disenrollUser({
 					slug: true,
 					courseId: true
 				}
-			},
-			dynCourse: {
-				select: {
-					title: true,
-					slug: true,
-					courseId: true
-				}
 			}
 		},
-		where
+		where: {
+			courseId_username: {
+				courseId,
+				username
+			}
+		}
 	});
 }

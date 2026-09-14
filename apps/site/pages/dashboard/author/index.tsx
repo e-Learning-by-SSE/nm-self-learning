@@ -1,4 +1,4 @@
-import { ArrowDownTrayIcon, PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { TeacherView } from "@self-learning/analysis";
 import { withTranslations } from "@self-learning/api";
 import { database } from "@self-learning/database";
@@ -7,16 +7,13 @@ import {
 	GroupDeleteOption,
 	GroupLeaveOption,
 	I18N_NAMESPACE as NS_FEATURE_TEACHING,
-	ParentSkillOverview,
-	ExportCourseDialog,
-	CourseDeleteOption
+	ParentSkillOverview
 } from "@self-learning/teaching";
 import {
 	Divider,
 	I18N_NAMESPACE as NS_UI_COMMON,
 	IconTextButton,
-	SectionHeader,
-	ImageOrPlaceholder
+	SectionHeader
 } from "@self-learning/ui/common";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";

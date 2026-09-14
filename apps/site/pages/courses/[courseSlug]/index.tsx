@@ -1,19 +1,12 @@
 import { PlayIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
-import { LessonType } from "@prisma/client";
+import { CourseType, LessonType } from "@prisma/client";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { SmallGradeBadge, useCourseCompletion } from "@self-learning/completion";
-import { CombinedCourseResult, getCombinedCourses } from "@self-learning/course";
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
-import {
-	CourseContent,
-	Defined,
-	extractLessonIds,
-	LessonInfo,
-	ResolvedValue
-} from "@self-learning/types";
+import { CourseContent, extractLessonIds, LessonInfo } from "@self-learning/types";
 import {
 	AuthorsList,
 	OnlineHelpLink,
@@ -42,8 +35,7 @@ import {
 	FloatingTutorButton,
 	I18N_NAMESPACE as NS_AI_TUTOR
 } from "@self-learning/ai-tutor";
-
-type Course = ResolvedValue<typeof getCourse>;
+import { CourseData, getCourseData } from "@self-learning/course";
 
 function mapToTocContent(
 	content: CourseContent,
@@ -140,9 +132,9 @@ function createCourseSummary(content: ToC.Content): Summary {
 }
 
 type CourseProps = {
-	needsARefresh: boolean;
+	isStale: boolean;
 	isGenerated: boolean;
-	course: CombinedCourseResult;
+	course: CourseData;
 	summary: Summary;
 	content: ToC.Content;
 	markdownDescription: CompiledMarkdown | null;
@@ -167,40 +159,27 @@ export const getServerSideProps = withTranslations(
 			};
 		}
 
+		// TODO move out in a common function
 		let isGenerated = false;
-		let needsARefresh = false;
+		let isStale = false;
 
 		const session = await getServerSession(req, res, authOptions);
 		const sessionUser = session?.user;
 
-		const courses = await getCombinedCourses({
-			slug: courseSlug,
-			username: sessionUser?.name,
-			includeContent: true
-		});
-
-		let course = courses[0];
-
+		const course = await getCourseData(courseSlug, sessionUser?.name);
 		if (!course) {
 			return { notFound: true };
 		}
 
-		if (
-			course.courseType === "DYNAMIC" &&
-			course.localCourseVersion !== undefined &&
-			course.globalCourseVersion !== undefined
-		) {
-			isGenerated = true;
-			needsARefresh = course?.localCourseVersion < course?.globalCourseVersion;
-			if (course.content === undefined) {
-				course = {
-					...course,
-					content: []
-				};
-			}
+		let rawContent = course.content;
+		if (course.type === CourseType.DYNAMIC) {
+			const path = course.generatedLessonPaths?.at(0);
+			isGenerated = !!path;
+			isStale = path?.courseVersion !== course.version;
+			rawContent = path?.content ?? [];
 		}
 
-		const content = await mapCourseContent(course.content as CourseContent);
+		const content = await mapCourseContent((rawContent ?? []) as CourseContent);
 		let markdownDescription = null;
 
 		if (course.description && course.description.length > 0) {
@@ -212,9 +191,9 @@ export const getServerSideProps = withTranslations(
 
 		return {
 			props: {
-				needsARefresh,
+				isStale,
 				isGenerated,
-				course: JSON.parse(JSON.stringify(course)) as Defined<typeof course>,
+				course,
 				summary,
 				content,
 				markdownDescription
@@ -224,23 +203,8 @@ export const getServerSideProps = withTranslations(
 	})
 );
 
-async function getCourse(courseSlug: string) {
-	return database.course.findUnique({
-		where: { slug: courseSlug },
-		include: {
-			authors: {
-				select: {
-					slug: true,
-					displayName: true,
-					imgUrl: true
-				}
-			}
-		}
-	});
-}
-
 export default function Course({
-	needsARefresh,
+	isStale,
 	course,
 	summary,
 	content,
@@ -255,7 +219,7 @@ export default function Course({
 					course={course}
 					content={content}
 					summary={summary}
-					needsARefresh={needsARefresh}
+					isStale={isStale}
 					isGenerated={isGenerated}
 				/>
 			</CenteredSection>
@@ -284,18 +248,20 @@ export default function Course({
 
 function CourseHeader({
 	isGenerated,
-	needsARefresh,
+	isStale,
 	course,
 	summary,
 	content
 }: {
 	isGenerated: boolean;
-	needsARefresh: boolean;
+	isStale: boolean;
 	course: CourseProps["course"];
 	summary: CourseProps["summary"];
 	content: CourseProps["content"];
 }) {
 	const { withAuth, isAuthenticated } = useAuthentication();
+
+	const isDynamic = course.type === CourseType.DYNAMIC;
 
 	const enrollments = useEnrollments();
 	const { enroll } = useEnrollmentMutations();
@@ -335,10 +301,7 @@ function CourseHeader({
 	const firstLessonFromChapter = content[0]?.content[0] ?? null;
 	const lessonCompletionCount = completion?.courseCompletion.completedLessonCount ?? 0;
 
-	const shouldShowStartButton =
-		isEnrolled &&
-		(!isGenerated ||
-			(isGenerated && Array.isArray(course.content) && course.content.length !== 0));
+	const shouldShowStartButton = isEnrolled && !!firstLessonFromChapter;
 
 	const avgScore = useMemo(() => {
 		const scores = content
@@ -471,7 +434,13 @@ function CourseHeader({
 							{!isAuthenticated && <span>Lernplan nach Login verfügbar</span>}
 						</button>
 					)}
-					{isGenerated && <CoursePath course={course} needsARefresh={needsARefresh} />}
+					{isDynamic && (
+						<CoursePath
+							course={course}
+							hasGeneratedPath={isGenerated}
+							isStale={isStale}
+						/>
+					)}
 				</div>
 			</div>
 		</section>
@@ -484,13 +453,13 @@ function TableOfContents({
 	isGenerated
 }: {
 	content: ToC.Content;
-	course: CombinedCourseResult;
+	course: CourseData;
 	isGenerated: boolean;
 }) {
 	const completion = useCourseCompletion(course.slug);
-	const hasContent = content.length > 0;
+	const hasContent = content.some(chapter => chapter.content.length > 0);
 
-	if (!hasContent) {
+	if (!isGenerated && !hasContent) {
 		return (
 			<div className="flex flex-col gap-4 p-8 rounded-lg bg-c-surface-2">
 				<h3 className="heading flex gap-4 text-2xl">
@@ -643,10 +612,12 @@ function RefreshGeneratedCourse({ onClick }: { onClick: () => void }) {
 
 function CoursePath({
 	course,
-	needsARefresh
+	hasGeneratedPath,
+	isStale
 }: {
-	course: CombinedCourseResult;
-	needsARefresh: boolean;
+	course: CourseData;
+	hasGeneratedPath: boolean;
+	isStale: boolean;
 }) {
 	const { mutateAsync } = trpc.course.generateLessonPath.useMutation();
 	const router = useRouter();
@@ -674,11 +645,10 @@ function CoursePath({
 		}
 	};
 
-	if (Array.isArray(course.content) && course.content.length !== 0 && needsARefresh) {
+	if (hasGeneratedPath && isStale) {
 		return <RefreshGeneratedCourse onClick={generateDynamicCourse} />;
 	}
-
-	if (Array.isArray(course.content) && course.content.length !== 0) {
+	if (hasGeneratedPath) {
 		return null;
 	}
 

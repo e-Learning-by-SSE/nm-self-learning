@@ -1,4 +1,3 @@
-import { getCombinedCourses } from "@self-learning/course";
 import { database } from "@self-learning/database";
 import { CourseContent, extractLessonIds } from "@self-learning/types";
 import { createEventLogEntry } from "@self-learning/util/eventlog";
@@ -14,13 +13,15 @@ export async function markAsCompleted({
 	username: string;
 	performanceScore: number;
 }) {
-	let course = null;
-	if (courseSlug) {
-		const result = await getCombinedCourses({
-			slug: courseSlug
-		});
-		course = result[0] ?? null;
-	}
+	const course = courseSlug
+		? await database.course.findUniqueOrThrow({
+				where: { slug: courseSlug },
+				select: {
+					courseId: true,
+					content: true
+				}
+			})
+		: null;
 
 	const result = await database.completedLesson.create({
 		data: {
@@ -45,7 +46,7 @@ export async function markAsCompleted({
 
 	await addEarnedSkillsToUser(lessonId, username);
 
-	// TODO remove since it is depricated0
+	// TODO remove since it is deprecated
 	await createEventLogEntry({
 		username,
 		type: "LESSON_COMPLETE",
@@ -65,14 +66,8 @@ export async function markAsCompleted({
 
 async function updateCourseProgress(courseId: string, content: CourseContent, username: string) {
 	const completedLessons = await database.completedLesson.findMany({
-		where: {
-			AND: [
-				{ username },
-				{
-					OR: [{ courseId }, { dynCourseId: courseId }]
-				}
-			]
-		}
+		where: { AND: { username, courseId } },
+		select: { lessonId: true }
 	});
 
 	// Remove duplicates to support re-visiting a lesson
@@ -81,6 +76,7 @@ async function updateCourseProgress(courseId: string, content: CourseContent, us
 
 	const progress = Math.floor((completedIds.size / lessons.size) * 100);
 
+	let completedAt = null;
 	if (progress === 100) {
 		await createEventLogEntry({
 			username,
@@ -89,12 +85,14 @@ async function updateCourseProgress(courseId: string, content: CourseContent, us
 			courseId,
 			payload: undefined
 		});
+		// CompletedLesson is the source of truth for individual lessons. Persist the
+		// derived course completion on Enrollment, which is what analytics queries.
+		completedAt = progress === 100 ? new Date() : null;
 	}
 
 	await database.enrollment.upsert({
 		where: {
-			courseId_username: { courseId, username },
-			OR: [{ courseId }, { dynCourseId: courseId }] // TODO SE: Check if this merge was correct
+			courseId_username: { courseId, username }
 		},
 		create: {
 			courseId,
@@ -105,7 +103,11 @@ async function updateCourseProgress(courseId: string, content: CourseContent, us
 		},
 		update: {
 			progress,
-			lastProgressUpdate: new Date()
+			lastProgressUpdate: new Date(),
+			...(completedAt && {
+				status: "COMPLETED" as const,
+				completedAt
+			})
 		}
 	});
 }

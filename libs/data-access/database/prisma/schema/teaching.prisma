@@ -139,9 +139,9 @@ model Enrollment {
     createdAt          DateTime         @default(now())
     lastProgressUpdate DateTime         @default(now())
     completedAt        DateTime?
-    courseId           String?
+    courseId           String
     username           String
-    course             Course?          @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
+    course             Course           @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
     student            Student          @relation(fields: [username], references: [username], onDelete: Cascade)
 
     @@unique([courseId, username])
