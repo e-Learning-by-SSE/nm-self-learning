@@ -4,6 +4,7 @@ import { AccessLevel } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { greaterOrEqAccessLevel, ResourceKind, ResourceSearchEntry } from "@self-learning/types";
 import {
+	Badge,
 	IconTextButton,
 	ImageOrPlaceholder,
 	LoadingBox,
@@ -191,7 +192,22 @@ function AuthorResourceRow({
 					{resource.title}
 				</Link>
 				<div className="flex flex-wrap justify-end gap-4">
-					<i className="flex items-center">{accessLevel}</i>
+					<span className="flex flex-row flex-wrap gap-1">
+						{resource.kind === "course" && (
+							<Badge
+								text={
+									resource.courseType === "DYNAMIC"
+										? t("Course_Type_Dynamic")
+										: t("Course_Type_Static")
+								}
+								className="bg-green-100 text-green-700 border-green-300"
+							/>
+						)}
+						<Badge
+							text={accessLevel}
+							className="bg-green-100 text-green-700 border-green-300"
+						/>
+					</span>
 					{canEdit && links.editHref && (
 						<Link href={links.editHref}>
 							<IconTextButton
