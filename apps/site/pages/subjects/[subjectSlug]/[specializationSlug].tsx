@@ -1,10 +1,13 @@
-import { PuzzlePieceIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, PuzzlePieceIcon } from "@heroicons/react/24/solid";
+import { AccessLevel } from "@prisma/client";
 import { database } from "@self-learning/database";
 import { CourseMeta, Defined, ResolvedValue } from "@self-learning/types";
 import { ImageCard, ImageCardBadge } from "@self-learning/ui/common";
-import { ItemCardGrid, TopicHeader } from "@self-learning/ui/layouts";
+import { ItemCardGrid, testResourceGuard, TopicHeader } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { withTranslations } from "@self-learning/api";
 
@@ -34,6 +37,9 @@ async function getSpecialization(specializationSlug: string) {
 	return await database.specialization.findUnique({
 		where: { slug: specializationSlug },
 		select: {
+			specializationId: true,
+			subjectId: true,
+			permissions: { select: { groupId: true, accessLevel: true } },
 			imgUrlBanner: true,
 			slug: true,
 			title: true,
@@ -60,6 +66,11 @@ async function getSpecialization(specializationSlug: string) {
 
 export default function SpecializationPage({ specialization }: SpecializationPageProps) {
 	const { title, subtitle, imgUrlBanner, subject, courses } = specialization;
+	const { t } = useTranslation("common");
+	const { data: session } = useSession();
+	const canEdit =
+		!!session?.user &&
+		testResourceGuard(session.user, AccessLevel.EDIT, specialization.permissions);
 
 	return (
 		<div className="pb-32">
@@ -69,7 +80,17 @@ export default function SpecializationPage({ specialization }: SpecializationPag
 				parentTitle={subject.title}
 				title={title}
 				subtitle={subtitle}
-			/>
+			>
+				{canEdit && (
+					<Link
+						href={`/teaching/subjects/${specialization.subjectId}/${specialization.specializationId}/edit`}
+						className="btn-primary absolute top-8 w-fit self-end"
+					>
+						<PencilIcon className="icon h-5" />
+						<span>{t("edit")}</span>
+					</Link>
+				)}
+			</TopicHeader>
 			<div className="mx-auto flex max-w-screen-xl flex-col px-4 pt-8 xl:px-0">
 				{courses.length > 0 ? (
 					<ItemCardGrid>
