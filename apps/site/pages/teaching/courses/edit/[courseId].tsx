@@ -10,11 +10,11 @@ import {
 	toResourcePermissionsForm
 } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
-import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { ResourceGuard, testResourceGuard } from "@self-learning/ui/layouts";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { withAuth } from "@self-learning/util/auth";
+import { CourseSaveResult } from "../create";
 
 type EditCourseProps = {
 	course: CourseFormModel;
@@ -22,7 +22,7 @@ type EditCourseProps = {
 };
 
 export const getServerSideProps = withTranslations(
-	["pages-course-info", "common", "feature-question-types"],
+	["pages-course-info", "common", "feature-question-types", "kee"],
 	withAuth<EditCourseProps>(async (ctx, user) => {
 		const courseId = ctx.params?.courseId as string;
 		const { locale } = ctx;
@@ -155,10 +155,10 @@ export const getServerSideProps = withTranslations(
 	})
 );
 
-export default function EditCoursePage({ course, lessons }: EditCourseProps) {
+export default function EditCoursePage1({ course, lessons }: EditCourseProps) {
 	const { mutateAsync: updateCourse } = trpc.course.edit.useMutation();
-	const router = useRouter();
 	const trpcContext = trpc.useUtils();
+
 	// do it once
 	useEffect(() => {
 		// Populate query cache with existing lessons
@@ -167,25 +167,22 @@ export default function EditCoursePage({ course, lessons }: EditCourseProps) {
 		}
 	}, [lessons, trpcContext]);
 
-	function onConfirm(updatedCourse: CourseFormModel) {
-		async function update() {
-			try {
-				const { title } = await updateCourse({
-					courseId: course.courseId as string,
-					course: updatedCourse
-				});
-				showToast({ type: "success", title: "Änderung gespeichert!", subtitle: title });
-				router.replace(router.asPath, undefined, { scroll: false });
-			} catch (error) {
-				showToast({
-					type: "error",
-					title: "Fehler",
-					subtitle: JSON.stringify(error, null, 2)
-				});
-			}
+	async function onSubmit(updatedCourse: CourseFormModel): Promise<CourseSaveResult> {
+		try {
+			const saved = await updateCourse({
+				courseId: course.courseId as string,
+				course: updatedCourse
+			});
+			showToast({ type: "success", title: "Änderung gespeichert!", subtitle: saved.title });
+			return saved;
+		} catch (error) {
+			showToast({
+				type: "error",
+				title: "Fehler",
+				subtitle: JSON.stringify(error, null, 2)
+			});
+			throw error;
 		}
-
-		update();
 	}
 
 	return (
@@ -194,8 +191,7 @@ export default function EditCoursePage({ course, lessons }: EditCourseProps) {
 			requiredAccess={AccessLevel.EDIT}
 			permittedGroups={course.permissions}
 		>
-			{/* TODO dynamic course editor  */}
-			<CourseEditor course={course} onConfirm={onConfirm} />
+			<CourseEditor course={course} onSubmit={onSubmit} />
 		</ResourceGuard>
 	);
 }

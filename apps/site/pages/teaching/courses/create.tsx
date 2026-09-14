@@ -8,6 +8,12 @@ import { useRouter } from "next/router";
 import { withTranslations } from "@self-learning/api";
 import { CourseType } from "@prisma/client";
 
+export type CourseSaveResult = {
+	courseId: string;
+	slug: string;
+	title: string;
+};
+
 export default function CreateCoursePage() {
 	const { mutateAsync: createCourse } = trpc.course.create.useMutation();
 	const { mutateAsync: addCourse } = trpc.specialization.addCourse.useMutation();
@@ -17,19 +23,19 @@ export default function CreateCoursePage() {
 	const canCreateResource = useCanCreate();
 	const author = session.data?.user.name;
 
-	async function onConfirm(course: CourseFormModel) {
+	async function onSubmit(course: CourseFormModel): Promise<CourseSaveResult> {
 		try {
-			const { title, slug, courseId } = await createCourse(course);
-
+			const created = await createCourse(course);
 			if (subjectId && specializationId) {
 				await addCourse({
 					subjectId: subjectId as string,
 					specializationId: specializationId as string,
-					courseId: courseId
+					courseId: created.courseId
 				});
 			}
-			showToast({ type: "success", title: "Kurs erstellt!", subtitle: title });
-			router.push(`/courses/${slug}`);
+			showToast({ type: "success", title: "Kurs erstellt!", subtitle: created.title });
+			await router.replace(`/teaching/courses/edit/${created.courseId}`);
+			return created;
 		} catch (error) {
 			console.error(error);
 			showToast({
@@ -37,6 +43,7 @@ export default function CreateCoursePage() {
 				title: "Fehler",
 				subtitle: JSON.stringify(error, null, 2)
 			});
+			throw error;
 		}
 	}
 
@@ -52,13 +59,11 @@ export default function CreateCoursePage() {
 		);
 	}
 
-	// TODO DynCourseEditor
-
 	return (
 		<>
 			{router.isReady && (
 				<CourseEditor
-					onConfirm={onConfirm}
+					onSubmit={onSubmit}
 					course={{
 						permissions: [],
 						courseId: "",
@@ -82,7 +87,7 @@ export default function CreateCoursePage() {
 }
 
 export const getServerSideProps = withTranslations(
-	["pages-course-info", "common", "feature-question-types"],
+	["pages-course-info", "common", "feature-question-types", "kee"],
 	withAuth(async (_ctx, user) => {
 		if (!(await canCreate(user))) {
 			return { redirect: { destination: "/403", permanent: false } };
