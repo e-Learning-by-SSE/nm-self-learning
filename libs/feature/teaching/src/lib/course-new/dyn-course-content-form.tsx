@@ -78,6 +78,7 @@ function SingleChapterNode({
 	const [lessonSelectorOpen, setLessonSelectorOpen] = useState(false);
 	const [createLessonDialogOpen, setCreateLessonDialogOpen] = useState(false);
 
+	// guaranteed to be in a form context because this component is only used inside CourseContentForm
 	const { control } = useFormContext<CourseFormModel>();
 	const coursePermissions = useWatch({ control, name: "permissions" }) ?? [];
 

@@ -24,6 +24,8 @@ import {
 } from "@self-learning/types";
 import { IconOnlyButton, OnDialogCloseFn, SectionHeader } from "@self-learning/ui/common";
 import { useState } from "react";
+import { useFormContext, useWatch } from "react-hook-form";
+import { CourseFormModel } from "../course-form-model";
 import { ChapterDialog } from "./dialogs/chapter-dialog";
 import { LessonEditorDialogWithGuard } from "./dialogs/lesson-editor-dialog";
 import { LessonSelector, LessonSummary } from "./dialogs/lesson-selector";
@@ -48,6 +50,8 @@ type UseCourseContentForm = ReturnType<typeof useCourseContentForm>;
  * )
  */
 export function CourseContentForm() {
+	const { control } = useFormContext<CourseFormModel>();
+	const courseId = useWatch({ control, name: "courseId" }) ?? undefined;
 	const {
 		content,
 		updateChapter,
@@ -101,6 +105,7 @@ export function CourseContentForm() {
 						key={index}
 						chapter={chapter}
 						index={index}
+						courseId={courseId}
 						onChapterUpdated={updateChapter}
 						onLessonAdded={addLesson}
 						moveChapter={moveChapter}
@@ -198,6 +203,7 @@ export function LessonNode({
 function ChapterNode({
 	chapter,
 	index,
+	courseId,
 	onLessonAdded,
 	moveChapter,
 	moveLesson,
@@ -207,6 +213,7 @@ function ChapterNode({
 }: {
 	chapter: CourseChapter;
 	index: number;
+	courseId?: string;
 	onLessonAdded: UseCourseContentForm["addLesson"];
 	moveChapter: UseCourseContentForm["moveChapter"];
 	moveLesson: UseCourseContentForm["moveLesson"];
@@ -219,6 +226,10 @@ function ChapterNode({
 	const [createLessonDialogOpen, setCreateLessonDialogOpen] = useState(false);
 	const [editChapterDialogOpen, setEditChapterDialogOpen] = useState(false);
 	const [expanded, setExpanded] = useState(true);
+
+	// guaranteed to be in a form context because this component is only used inside CourseContentForm
+	const { control } = useFormContext<CourseFormModel>();
+	const coursePermissions = useWatch({ control, name: "permissions" }) ?? [];
 
 	function onCloseLessonSelector(lesson?: LessonSummary) {
 		setLessonSelectorOpen(false);
@@ -310,6 +321,7 @@ function ChapterNode({
 							<LessonNode
 								key={lesson.lessonId}
 								lesson={lesson}
+								courseId={courseId}
 								moveLesson={moveLesson}
 								onRemove={() => removeLesson(index, lesson.lessonId)}
 							/>
@@ -341,7 +353,11 @@ function ChapterNode({
 				<LessonSelector open={lessonSelectorOpen} onClose={onCloseLessonSelector} />
 			)}
 			{createLessonDialogOpen && (
-				<LessonEditorDialogWithGuard onClose={handleCreateDialogClose} />
+				<LessonEditorDialogWithGuard
+					courseId={courseId}
+					onClose={handleCreateDialogClose}
+					inheritedPermissions={coursePermissions}
+				/>
 			)}
 			{editChapterDialogOpen && (
 				<ChapterDialog chapter={chapter} onClose={handleEditChapterDialogClosed} />
@@ -370,6 +386,8 @@ function EditExistingLessonDialog({
 			editLessonAsync,
 			updatedLesson
 		);
+		if (!updatedLesson || !courseId) return;
+		// TODO postupdate
 	};
 
 	return data ? (
