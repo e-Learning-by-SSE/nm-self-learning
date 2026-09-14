@@ -44,7 +44,11 @@ export async function getCourseData(slug: string, forUsername?: string) {
 								content: true,
 								meta: true,
 								courseVersion: true
-							}
+							},
+							orderBy: {
+								createdAt: "desc"
+							},
+							take: 1
 						}
 					}
 				: {})
