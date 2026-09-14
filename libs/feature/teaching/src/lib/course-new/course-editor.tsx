@@ -30,7 +30,6 @@ export function CourseEditor1({
 	const courseId = useWatch({ control: form.control, name: "courseId" });
 	const type = useWatch({ control: form.control, name: "type" });
 	const title = useWatch({ control: form.control, name: "title" });
-	const { isDirty } = useFormState({ control: form.control });
 	const [tab, setTab] = useState(0);
 	const isPersisted = Boolean(courseId);
 	const isStatic = type === CourseType.STATIC;
@@ -41,18 +40,22 @@ export function CourseEditor1({
 	}
 
 	function onClose() {
-		if (isDirty && !window.confirm("Ungespeicherte Änderungen verwerfen?")) {
+		if (form.formState.isDirty && !window.confirm("Ungespeicherte Änderungen verwerfen?")) {
 			return;
 		}
 		router.back();
 	}
 
 	async function onTabChange(index: number) {
-		// autosave on tab change
-		if (isPersisted && isDirty) {
-			await form.handleSubmit(handleSave, showCourseValidationErrors)();
+		// prevent switching if dirty OR new course not saved yet
+		if (!isPersisted || !form.formState.isDirty) {
+			setTab(index);
+			return;
 		}
-		setTab(index);
+		await form.handleSubmit(async data => {
+			await handleSave(data);
+			setTab(index);
+		}, showCourseValidationErrors)();
 	}
 
 	return (
