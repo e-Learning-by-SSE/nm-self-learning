@@ -351,26 +351,29 @@ export function ConnectedSkill({
 	const isParticipating =
 		isLessonProvided || isLessonRequired || isCourseRequired || isCourseProvided;
 
+	const CONNECTED_COLOR = "text-green-500";
+	const DISCONNECTED_COLOR = "text-red-500";
+
 	const LeftIcon = isCourseRequired ? RequiresFlagIcon : ArrowLongRightIcon;
 	const rightIconStyle = error
-		? "text-red-500"
+		? DISCONNECTED_COLOR
 		: isCourseProvided || isLessonRequired || providesFlagGreen
-			? "text-emerald-500"
+			? CONNECTED_COLOR
 			: isParticipating
-				? "text-red-500"
+				? DISCONNECTED_COLOR
 				: "invisible";
 
 	const RightIcon = isCourseProvided ? ProvidesFlagIcon : ArrowLongRightIcon;
 	const leftIconStyle = error
-		? "text-red-500"
+		? DISCONNECTED_COLOR
 		: isCourseRequired || isLessonProvided || requiresFlagGreen
-			? "text-emerald-500"
+			? CONNECTED_COLOR
 			: isParticipating
-				? "text-red-500"
+				? DISCONNECTED_COLOR
 				: "invisible";
 
 	// highlight if any
-	const middleStyle = error ? "text-red-500" : isParticipating ? "text-emerald-500" : "";
+	const middleStyle = error ? DISCONNECTED_COLOR : isParticipating ? CONNECTED_COLOR : "";
 	const pointText =
 		isLessonRequired && isLessonProvided
 			? "required and provided by lessons"
