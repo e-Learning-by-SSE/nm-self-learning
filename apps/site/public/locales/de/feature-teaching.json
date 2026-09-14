@@ -38,5 +38,13 @@
     "Confirm_Delete_Course": "Möchten Sie diesen $t(common:Course) wirklich löschen?",
     "Search_Group_Placeholder": "Suche nach $t(common:Groups)",
     "Add_Member_To_Search": "Mitglied zur Suche hinzufügen",
-    "Show_Only_My_Groups": "Nur meine $t(common:Groups) anzeigen"
+    "Show_Only_My_Groups": "Nur meine $t(common:Groups) anzeigen",
+    "Course_Type_Static": "Statisch",
+    "Course_Type_Dynamic": "Dynamisch",
+    "Skills_Title": "Skills",
+    "Skills_Provides": "Vermittelte Skills",
+    "Skills_Requires": "Benötigte Skills",
+    "Skills_Subtitle_Lesson": "Vermittelte Skills und benötigte Vorkenntnisse.",
+    "Skills_Subtitle_Dynamic_Course": "Lernziele und Voraussetzungen zur Erstellung des Lernpfads.",
+    "Skills_Subtitle_Static_Course": "Lernziele und Voraussetzungen (ohne Einfluss auf den Lernpfad)."
 }
