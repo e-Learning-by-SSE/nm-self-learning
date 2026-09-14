@@ -170,7 +170,7 @@ export const getServerSideProps = withTranslations(
 		if (!course) {
 			return { notFound: true };
 		}
-
+		// TODO duplicated at all getCourseData call sites
 		let rawContent = course.content;
 		if (course.type === CourseType.DYNAMIC) {
 			const path = course.generatedLessonPaths?.at(0);

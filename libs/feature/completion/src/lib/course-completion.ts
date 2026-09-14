@@ -15,7 +15,7 @@ export async function getCourseCompletionOfStudent(
 ): Promise<CourseCompletion> {
 	const course = await getCourseData(courseSlug, username);
 
-	// dynamic - get first dynamic path
+	// TODO duplicated at all getCourseData call sites
 	const rawContent =
 		course?.type === CourseType.DYNAMIC
 			? course?.generatedLessonPaths?.at(0)?.content

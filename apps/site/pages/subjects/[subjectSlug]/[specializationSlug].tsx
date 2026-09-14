@@ -53,13 +53,14 @@ async function getSpecialization(specializationSlug: string, username: string | 
 				select: {
 					version: true,
 					type: true,
-					generatedLessonPaths: username
-						? {
-								where: {
-									username
-								}
-							}
-						: undefined,
+					// TODO unused
+					// generatedLessonPaths: username
+					// 	? {
+					// 			where: {
+					// 				username
+					// 			}
+					// 		}
+					// 	: undefined,
 					slug: true,
 					imgUrl: true,
 					title: true,
