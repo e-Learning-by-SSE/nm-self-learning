@@ -1,4 +1,4 @@
-import { ImageOrPlaceholder } from "@self-learning/ui/common";
+import { Badge, ImageOrPlaceholder } from "@self-learning/ui/common";
 import {
 	Form,
 	InputWithButton,
@@ -42,6 +42,7 @@ export function CourseInfoForm({ isNew }: { isNew: boolean }) {
 	} = form;
 	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
 	const { t } = useTranslation("pages-course-info");
+	const courseType = useWatch({ control, name: "type" });
 	const permissions = useWatch({ control: form.control, name: "permissions" }) ?? [];
 	const hasFull = useResourceGuard(AccessLevel.FULL, permissions);
 	const showGroupAccessEditor = isNew || hasFull;
@@ -86,27 +87,40 @@ export function CourseInfoForm({ isNew }: { isNew: boolean }) {
 						/>
 					</LabeledField>
 
-					<LabeledField label="Kurstyp" error={errors.type?.message}>
-						<div className="flex gap-4">
-							<label className="flex items-center gap-2">
-								<input
-									type="radio"
-									value={CourseType.STATIC}
-									disabled={!isNew}
-									{...register("type")}
+					<LabeledField label={t("Course_Type")} error={errors.type?.message}>
+						{isNew ? (
+							<div className="flex gap-4">
+								<label className="flex items-center gap-2">
+									<input
+										type="radio"
+										value={CourseType.STATIC}
+										disabled={!isNew}
+										{...register("type")}
+									/>
+									t("Course_Type_Static")
+								</label>
+								<label className="flex items-center gap-2">
+									<input
+										type="radio"
+										value={CourseType.DYNAMIC}
+										disabled={!isNew}
+										{...register("type")}
+									/>
+									t("Course_Type_Dynamic")
+								</label>
+							</div>
+						) : (
+							<span>
+								<Badge
+									text={
+										courseType === CourseType.DYNAMIC
+											? t("Course_Type_Dynamic")
+											: t("Course_Type_Static")
+									}
+									className="bg-green-100 text-green-700 border-green-300"
 								/>
-								Statisch
-							</label>
-							<label className="flex items-center gap-2">
-								<input
-									type="radio"
-									value={CourseType.DYNAMIC}
-									disabled={!isNew}
-									{...register("type")}
-								/>
-								Dynamisch
-							</label>
-						</div>
+							</span>
+						)}
 					</LabeledField>
 
 					<LabeledField label="Untertitel" error={errors.subtitle?.message}>
