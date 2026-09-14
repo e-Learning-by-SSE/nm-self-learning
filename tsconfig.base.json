@@ -20,6 +20,7 @@
 			"@self-learning/admin": ["libs/feature/admin/src/index.ts"],
 			"@self-learning/admin/server": ["libs/feature/admin/src/server.ts"],
 			"@self-learning/ai-tutor": ["libs/feature/ai-tutor/src/index.ts"],
+			"@self-learning/ai-tutor/server": ["libs/feature/ai-tutor/src/server.ts"],
 			"@self-learning/analysis": ["libs/feature/analysis/src/index.ts"],
 			"@self-learning/api": ["libs/data-access/api/src/index.ts"],
 			"@self-learning/api/server": ["libs/data-access/api/src/server.ts"],
