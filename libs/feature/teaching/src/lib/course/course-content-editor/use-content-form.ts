@@ -1,6 +1,7 @@
 import { CourseContent, CourseLesson } from "@self-learning/types";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { CourseFormModel } from "../course-form-model";
+import { showToast } from "libs/ui/common/src/lib/toast/toast";
 
 /**
  * content lives only in react-hook-form. No local useState, no syncing useEffect.
@@ -24,6 +25,20 @@ export function useCourseContentForm(defaultContent?: CourseContent) {
 		if (!(getValues("content") ?? []).length && defaultContent?.length) {
 			setValue("content", defaultContent, { shouldDirty: false });
 		}
+		// check if lesson already exists in chapter
+		const chapters = getValues("content") ?? [];
+		const exists = chapters.some(chapter =>
+			chapter.content.some(item => item.lessonId === lesson.lessonId)
+		);
+		if (exists) {
+			showToast({
+				subtitle: "Diese Lektion ist bereits in diesem Kurs enthalten.",
+				title: "Duplikat Fehler",
+				type: "error"
+			});
+			return;
+		}
+
 		const lessons = getValues(`content.${chapterIndex}.content`) ?? [];
 		setValue(`content.${chapterIndex}.content`, [...lessons, { lessonId: lesson.lessonId }], {
 			shouldDirty: true
