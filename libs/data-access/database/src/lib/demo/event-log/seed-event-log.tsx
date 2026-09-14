@@ -1,7 +1,6 @@
-import { PrismaClient } from "@prisma/client";
-import { database } from "@self-learning/database";
+import { PrismaClient, InputJsonValue } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { getRandomItemsFromArray } from "../../seed-functions";
-import { InputJsonValue } from "@prisma/client/runtime/library";
 import { faker } from "@faker-js/faker";
 
 const prisma = new PrismaClient();

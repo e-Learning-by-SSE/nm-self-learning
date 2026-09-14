@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@self-learning/database";
 import {
 	getRandomCreatedAt,
 	getRandomElementFromArray,

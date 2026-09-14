@@ -1,5 +1,5 @@
-import { database } from "@self-learning/database";
-import { AccessLevel, GroupRole } from "@prisma/client";
+import { database } from "@self-learning/database/server";
+import { AccessLevel, GroupRole } from "@self-learning/database";
 import { UserFromSession } from "../trpc/context";
 import type { ResourceInput, ResourcePermission } from "@self-learning/types";
 

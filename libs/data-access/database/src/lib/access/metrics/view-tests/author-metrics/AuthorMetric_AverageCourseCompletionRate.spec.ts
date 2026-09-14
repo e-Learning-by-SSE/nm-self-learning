@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { Author, Course, EnrollmentStatus, PrismaClient, Student, User } from "@prisma/client";
+import { Author, Course, EnrollmentStatus, PrismaClient, Student, User } from "@self-learning/database";
 const prisma = new PrismaClient();
 
 import {

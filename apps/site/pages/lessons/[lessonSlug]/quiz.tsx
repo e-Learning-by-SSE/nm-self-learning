@@ -1,5 +1,6 @@
 import { withTranslations } from "@self-learning/api";
-import { getSspStandaloneLessonLayout, StandaloneLessonLayout } from "@self-learning/lesson";
+import { getSspStandaloneLessonLayout } from "@self-learning/lesson/server";
+import { StandaloneLessonLayout } from "@self-learning/lesson";
 import { getSspQuizLearnersView, QuestionProps, Quiz, QuizLearnersView } from "@self-learning/quiz";
 import { withAuth } from "@self-learning/util/auth";
 

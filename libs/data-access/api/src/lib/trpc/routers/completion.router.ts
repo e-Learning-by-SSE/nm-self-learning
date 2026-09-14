@@ -1,4 +1,5 @@
-import { getCourseCompletionOfStudent, markAsCompleted } from "@self-learning/completion";
+import { markAsCompleted } from "@self-learning/completion/server";
+import { getCourseCompletionOfStudent } from "@self-learning/completion/server";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 

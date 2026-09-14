@@ -11,7 +11,7 @@ import {
 	seedCaseStudy
 } from "../seed-functions";
 import { seedJavaDemoSkills } from "./seed-java-demo-skills";
-import { GroupRole } from "@prisma/client";
+import { GroupRole } from "@self-learning/database";
 import { softwareentwicklungDemoGroup } from "../seedSpecializations";
 
 const courseId = faker.string.alphanumeric(8);

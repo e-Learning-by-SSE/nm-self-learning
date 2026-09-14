@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@self-learning/database/server";
 import { slugify } from "@self-learning/util/common";
 
 type Lesson = Pick<

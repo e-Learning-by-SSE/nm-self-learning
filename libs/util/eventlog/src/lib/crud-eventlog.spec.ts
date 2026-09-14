@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { createHash } from "crypto";
 import { createEventLogEntry } from "./crud-eventlog";
 import { EventTypeKeys } from "@self-learning/types";

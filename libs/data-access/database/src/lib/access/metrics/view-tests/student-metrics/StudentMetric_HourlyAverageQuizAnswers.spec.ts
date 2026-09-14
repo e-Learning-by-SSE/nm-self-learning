@@ -9,7 +9,7 @@ import {
 	User,
 	Lesson,
 	QuizAttempt
-} from "@prisma/client";
+} from "@self-learning/database";
 const prisma = new PrismaClient();
 
 import {

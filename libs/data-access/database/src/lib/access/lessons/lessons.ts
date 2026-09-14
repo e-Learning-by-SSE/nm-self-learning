@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database } from "../../prisma";
 import { SubtitleSrc, LessonContent } from "@self-learning/types";
 import { ConvertTranscriptionToSubtitle } from "@self-learning/util/common";
 

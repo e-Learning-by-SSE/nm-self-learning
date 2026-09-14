@@ -9,7 +9,7 @@ import {
 	parseIndent,
 	MediaFileReplacement
 } from "./liascript-api-utils";
-import { FullCourseExport as CourseWithLessons } from "@self-learning/teaching";
+import type { FullCourseExport as CourseWithLessons } from "@self-learning/teaching/server";
 import { LessonData as LessonExport } from "@self-learning/lesson";
 import { Quiz } from "@self-learning/quiz";
 

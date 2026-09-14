@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { enrollUser } from "./enrollments-db";
 import { ApiError } from "@self-learning/util/http";
 

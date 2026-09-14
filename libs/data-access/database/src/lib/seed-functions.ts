@@ -7,7 +7,7 @@ import {
 	NotificationType,
 	Prisma,
 	PrismaClient
-} from "@prisma/client";
+} from "@self-learning/database";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
 import {
 	createCourseContent,

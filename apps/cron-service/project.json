@@ -12,7 +12,7 @@
 			"options": {
 				"platform": "node",
 				"outputPath": "dist/apps/cron-service",
-				"format": ["cjs"],
+				"format": ["esm"],
 				"bundle": false,
 				"main": "apps/cron-service/src/main.ts",
 				"tsConfig": "apps/cron-service/tsconfig.app.json",

@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@self-learning/database";
 import { runCommand } from "../support/util";
 
 describe("/teaching/lessons/edit - Lesson Editor", () => {

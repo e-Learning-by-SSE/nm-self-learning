@@ -1,8 +1,8 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { getCourseResource } from "./course.utils";
 import { TRPCError } from "@trpc/server";
 
-jest.mock("@self-learning/database", () => ({
+jest.mock("@self-learning/database/server", () => ({
 	__esModule: true,
 	database: {
 		course: {

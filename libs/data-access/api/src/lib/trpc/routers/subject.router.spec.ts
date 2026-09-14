@@ -1,5 +1,5 @@
-import { database } from "@self-learning/database";
-import { AccessLevel } from "@prisma/client";
+import { database } from "@self-learning/database/server";
+import { AccessLevel } from "@self-learning/database";
 import { TRPCError } from "@trpc/server";
 import { Context, UserFromSession } from "../context";
 import { subjectRouter } from "./subject.router";

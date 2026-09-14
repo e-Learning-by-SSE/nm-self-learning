@@ -1,4 +1,4 @@
-import { EnrollmentStatus, PrismaClient, UserRole } from "@prisma/client";
+import { EnrollmentStatus, PrismaClient, UserRole } from "@self-learning/database";
 import { CourseContent, extractLessonIds } from "@self-learning/types";
 
 const prisma = new PrismaClient();

@@ -1,5 +1,5 @@
-import { getCourseCompletionOfStudent } from "@self-learning/completion";
-import { database } from "@self-learning/database";
+import { getCourseCompletionOfStudent } from "@self-learning/completion/server";
+import { database } from "@self-learning/database/server";
 import { CourseEnrollment, ResolvedValue } from "@self-learning/types";
 import { createEventLogEntry } from "@self-learning/util/eventlog";
 import { AlreadyExists } from "@self-learning/util/http";

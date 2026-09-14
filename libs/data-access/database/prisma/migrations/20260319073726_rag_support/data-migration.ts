@@ -6,7 +6,7 @@
 
 // use this command to run: npx tsx --tsconfig tsconfig.base.json libs/data-access/database/prisma/migrations/20260319073726_rag_support/data-migration.ts
 
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PrismaClient, Prisma } from "@self-learning/database";
 import {
 	prepareRagContent,
 	getRagVersionHash,

@@ -1,28 +1,10 @@
 import { NextComponentType, NextPageContext } from "next";
-import type { ParsedUrlQuery } from "querystring";
-import { LessonData, getLesson } from "../lesson-data-access";
 import { BaseLessonLayout } from "./base-layout";
+import { LessonData } from "../lesson-data-access";
 
 export type StandaloneLessonLayoutProps = {
 	lesson: LessonData;
 };
-
-export async function getSspStandaloneLessonLayout(
-	params?: ParsedUrlQuery | undefined
-): Promise<StandaloneLessonLayoutProps | { notFound: true }> {
-	const lessonSlug = params?.["lessonSlug"] as string;
-	if (!lessonSlug) {
-		throw new Error("No lesson slug provided.");
-	}
-
-	const lesson = await getLesson(lessonSlug);
-
-	if (!lesson) {
-		return { notFound: true };
-	}
-
-	return { lesson };
-}
 
 export function StandaloneLessonLayout(
 	Component: NextComponentType<NextPageContext, unknown, StandaloneLessonLayoutProps>,

@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { AccessLevel, GroupRole, Prisma, PrismaClient } from "@prisma/client";
+import { AccessLevel, GroupRole, Prisma, PrismaClient } from "@self-learning/database";
 import { QuizContent } from "@self-learning/question-types";
 import {
 	createCourseContent,

@@ -3,7 +3,7 @@ import { BookOpenIcon, ChartBarIcon, LinkIcon } from "@heroicons/react/24/outlin
 import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
 import { withTranslations } from "@self-learning/api";
 import { SmallGradeBadge } from "@self-learning/completion";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { LearningDiaryEntryStatusBadge, StatusBadgeInfo } from "@self-learning/diary";
 import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
 import {

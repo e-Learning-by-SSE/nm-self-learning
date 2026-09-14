@@ -1,7 +1,7 @@
-import { database } from "@self-learning/database";
+import { database, Prisma } from "@self-learning/database/server";
 import { authProcedure, t } from "../trpc";
 import { z } from "zod";
-import { AudienceType, Prisma } from "@prisma/client";
+import { AudienceType } from "@self-learning/database";
 import { userNotificationSettingSchema } from "@self-learning/types";
 
 async function getNotifications(userId: string, tx?: Prisma.TransactionClient) {

@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import "@testing-library/jest-dom";
 import { subDays } from "date-fns";
 import { SchedulerResult } from "../email-scheduler";

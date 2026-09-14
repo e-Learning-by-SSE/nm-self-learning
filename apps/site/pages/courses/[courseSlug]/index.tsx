@@ -1,9 +1,9 @@
 import { PlayIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
-import { LessonType } from "@prisma/client";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { SmallGradeBadge, useCourseCompletion } from "@self-learning/completion";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
+import { LessonType } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {

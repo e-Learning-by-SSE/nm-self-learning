@@ -1,5 +1,5 @@
-import { database } from "@self-learning/database";
-import { AccessLevel } from "@prisma/client";
+import { database } from "@self-learning/database/server";
+import { AccessLevel } from "@self-learning/database";
 import { searchAllResources, searchMyResources } from "./resource-search.service";
 
 jest.mock("@self-learning/database", () => ({

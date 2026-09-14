@@ -1,4 +1,4 @@
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 import { testResourceGuard } from "./guards";
 import type { UserFromSession } from "@self-learning/api";
 

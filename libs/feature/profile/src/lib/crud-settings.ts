@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 export async function getUserWithSettings(username: string) {
 	const data = await database.user.findUniqueOrThrow({
 		where: {

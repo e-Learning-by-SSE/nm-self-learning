@@ -1,7 +1,7 @@
 "use client";
 import { TrashIcon } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { User, UserRole } from "@prisma/client";
+import { UserModel, UserRole } from "@self-learning/database";
 import { trpc } from "@self-learning/api-client";
 import { userSchema } from "@self-learning/types";
 import {
@@ -22,7 +22,7 @@ export function EditUserDialog({
 	onClose
 }: {
 	username: string;
-	onClose: OnDialogCloseFn<User>;
+	onClose: OnDialogCloseFn<UserModel>;
 }) {
 	const { data: user, isLoading } = trpc.admin.getUser.useQuery(username);
 
@@ -53,9 +53,9 @@ function UserForm({
 	username,
 	onClose
 }: {
-	initialUser: User;
+	initialUser: UserModel;
 	username: string;
-	onClose: OnDialogCloseFn<User>;
+	onClose: OnDialogCloseFn<UserModel>;
 }) {
 	const { mutateAsync: updateUser } = trpc.admin.updateUser.useMutation();
 	type FormData = z.infer<typeof userSchema>;
@@ -125,7 +125,7 @@ function UserForm({
 }
 
 function UserData() {
-	const { register, control, setValue, formState, watch } = useFormContext<User>();
+	const { register, control, setValue, formState, watch } = useFormContext<UserModel>();
 	const imgUrl = useWatch({ control, name: "image" });
 	const errors = formState.errors;
 	const height = window.innerHeight * 0.6;

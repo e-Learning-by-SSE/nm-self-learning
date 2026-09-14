@@ -1,5 +1,4 @@
-import { Prisma } from "@prisma/client";
-import { database } from "@self-learning/database";
+import { Prisma, database } from "@self-learning/database/server";
 import { uploadedAssetSchema } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";

@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { LoginStreak } from "@self-learning/types";
 import { endOfDay, startOfDay } from "date-fns";
 import { SchedulerResult } from "../email-scheduler";

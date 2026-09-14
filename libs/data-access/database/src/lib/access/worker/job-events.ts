@@ -1,5 +1,5 @@
-import { database } from "@self-learning/database";
-import { JobStatus } from "@prisma/client";
+import { database } from "../../prisma";
+import { JobStatus } from "../../../generated/prisma/enums";
 import { JobEvent } from "@self-learning/worker-api";
 
 // Mapping of JobEvent types to Prisma JobEvent types

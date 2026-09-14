@@ -1,4 +1,4 @@
-import { AccessLevel, GroupRole } from "@prisma/client";
+import { AccessLevel, GroupRole } from "@self-learning/database";
 import Link from "next/link";
 import { ReactNode } from "react";
 

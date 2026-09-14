@@ -15,7 +15,7 @@ import {
 	getAuthorMetric_AverageLessonCompletionRate,
 	getAuthorMetric_AverageLessonCompletionRateByCourse,
 	getSubjects
-} from "@self-learning/database";
+} from "@self-learning/database/server";
 
 /**
  * Helper to create Metrics query endpoints that accept an optional userId

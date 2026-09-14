@@ -1,6 +1,6 @@
 import { ChevronDoubleDownIcon } from "@heroicons/react/24/outline";
 import { withTranslations } from "@self-learning/api";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { ResolvedValue } from "@self-learning/types";
 import {
 	SortIndicator,
@@ -15,7 +15,7 @@ import { formatTimeIntervalToString } from "@self-learning/util/common";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
-export async function findMandyLtb({ username }: { username: string }) {
+async function findMandyLtb({ username }: { username: string }) {
 	const entries = await database.learningDiaryPage.findMany({
 		where: { studentName: username },
 		select: {

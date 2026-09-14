@@ -2,7 +2,7 @@ import { z } from "zod";
 import { authorsRelationSchema } from "./author";
 import { lessonContentSchema } from "./lesson-content";
 import { LessonMeta } from "./lesson-meta";
-import { LessonType } from "@prisma/client";
+import { LessonType } from "@self-learning/database";
 import { skillFormSchema } from "./skill";
 import { ResourcePermissionsFormSchema } from "./resource";
 

@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@self-learning/database";
 import { AchievementFormInput } from "@self-learning/types";
 
 export async function seedAchievements(prisma: PrismaClient): Promise<void> {

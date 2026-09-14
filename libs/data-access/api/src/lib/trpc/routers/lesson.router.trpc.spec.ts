@@ -1,7 +1,6 @@
-import { database } from "@self-learning/database";
+import { database, PrismaClientKnownRequestError } from "@self-learning/database/server";
 import { Context, UserFromSession } from "../context";
 import { t } from "../trpc";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { TRPCError } from "@trpc/server";
 import {
 	canCreate,
@@ -10,7 +9,7 @@ import {
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
 import { lessonRouter } from "./lesson.router";
-import { AccessLevel, LessonType } from "@prisma/client";
+import { AccessLevel, LessonType } from "@self-learning/database";
 
 jest.mock("@self-learning/database", () => ({
 	__esModule: true,

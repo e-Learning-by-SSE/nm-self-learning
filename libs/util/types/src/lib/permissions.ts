@@ -1,4 +1,5 @@
-import { AccessLevel, GroupRole, Prisma } from "@prisma/client";
+import { Prisma } from "@self-learning/database/server";
+import { AccessLevel, GroupRole } from "@self-learning/database";
 import z from "zod";
 import type { ResourceInput } from "./resource";
 

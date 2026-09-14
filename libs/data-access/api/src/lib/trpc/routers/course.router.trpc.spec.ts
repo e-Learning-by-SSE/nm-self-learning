@@ -1,11 +1,11 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { Context, UserFromSession } from "../context";
 import { courseRouter } from "./course.router";
 import { t } from "../trpc";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { TRPCError } from "@trpc/server";
 import { getCourseResource } from "../../permissions/course.utils";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
+import { PrismaClientKnownRequestError } from "@self-learning/database/server";
 import {
 	canCreate,
 	canDelete,

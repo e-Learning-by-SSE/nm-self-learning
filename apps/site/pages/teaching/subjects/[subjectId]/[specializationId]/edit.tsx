@@ -4,10 +4,14 @@ import { ResourceGuard, testResourceGuard } from "@self-learning/ui/layouts";
 import { TRPCClientError } from "@trpc/client";
 import { SpecializationEditor } from "../create";
 import { withTranslations } from "@self-learning/api";
-import { resourcePermissionSelect, Specialization, toResourcePermissionsForm } from "@self-learning/types";
-import { database } from "@self-learning/database";
+import {
+	resourcePermissionSelect,
+	Specialization,
+	toResourcePermissionsForm
+} from "@self-learning/types";
+import { database } from "@self-learning/database/server";
 import { withAuth } from "@self-learning/util/auth";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 import { useRouter } from "next/router";
 
 type EditSpecializationProps = {

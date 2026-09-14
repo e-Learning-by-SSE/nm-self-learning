@@ -1,4 +1,4 @@
-import { GroupRole } from "@prisma/client";
+import { GroupRole } from "@self-learning/database";
 import { z } from "zod";
 import { add } from "date-fns";
 import { ResourceAccessFormSchema } from "./resource";

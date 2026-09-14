@@ -2,11 +2,10 @@ import { DialogHandler, Table, TableHeaderColumn } from "@self-learning/ui/commo
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import React, { useMemo, useState } from "react";
-import { SkillRepository } from "@prisma/client";
+import { SkillRepositoryModel, SkillModel } from "@self-learning/database";
 import { ListSkillEntryWithChildren } from "./skill-row-entry";
 import { NewSkillButton } from "./skill-taskbar";
 import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "./skill-display";
-import { Skill } from "@prisma/client";
 
 export function SkillFolderTable({
 	repository,
@@ -14,7 +13,7 @@ export function SkillFolderTable({
 	onSkillSelect: handleSelection,
 	updateSkillDisplay
 }: {
-	repository: SkillRepository;
+	repository: SkillRepositoryModel;
 	skillDisplayData: Map<string, SkillFolderVisualization>;
 	onSkillSelect: SkillSelectHandler;
 	updateSkillDisplay: UpdateVisuals;
@@ -33,7 +32,7 @@ export function SkillFolderTable({
 		);
 	}, [skillDisplayData, searchTerm]);
 
-	const setShortHighlight = (skill: Skill) =>
+	const setShortHighlight = (skill: SkillModel) =>
 		updateSkillDisplay([{ id: skill.id, shortHighlight: true }]);
 
 	return (
@@ -102,7 +101,7 @@ const isTopLevelSkill = (skill: SkillFolderVisualization) => {
 	return skill.skill.parents.length === 0 || (skill.isCycleMember && skill.hasNestedCycleMembers);
 };
 
-function RepositoryInfo({ repository }: { repository: SkillRepository }) {
+function RepositoryInfo({ repository }: { repository: SkillRepositoryModel }) {
 	const [showFullDescription, setShowFullDescription] = useState(false);
 
 	const descLength = repository.description?.length ?? 0;

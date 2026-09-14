@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { getRandomId } from "@self-learning/util/common";
 import { createEventLogEntry } from "@self-learning/util/eventlog";
 import { GetServerSidePropsContext } from "next";

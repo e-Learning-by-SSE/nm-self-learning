@@ -8,7 +8,7 @@ import { slugify } from "@self-learning/util/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { useForm } from "react-hook-form";
 
-import { GroupRole } from "@prisma/client";
+import { GroupRole } from "@self-learning/database";
 import { SearchUserDialog, UserSearchEntry } from "@self-learning/admin";
 import {
 	Dialog,

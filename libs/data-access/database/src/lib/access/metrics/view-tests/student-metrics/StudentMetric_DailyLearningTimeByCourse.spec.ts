@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { Course, PrismaClient, User } from "@prisma/client";
+import { Course, PrismaClient, User } from "@self-learning/database";
 const prisma = new PrismaClient();
 
 import { createUsers, deleteUsers } from "../helper";

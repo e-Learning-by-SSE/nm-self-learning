@@ -11,7 +11,6 @@ export * from "./lib/subject/subject-editor";
 export * from "./lib/lesson/forms/license-form";
 export * from "./lib/skills/repository/repository-overview";
 export * from "./lib/skills/folder-editor";
-export * from "./lib/course/full-course-export";
 export * from "./lib/course/course-export/course-export-dialog";
 export * from "./lib/group/group-editor";
 export * from "./lib/group/forms/members-form";
@@ -28,4 +27,6 @@ export * from "./lib/group/misc/delete-option";
 export * from "./lib/group/misc/leave-option";
 export * from "./lib/group/misc/group-membership-chip";
 export * from "./lib/resource/resource-delete-dialog";
-export const I18N_NAMESPACE = Array.from(new Set(["common", "feature-teaching", "pages-dashboard", ...NS_AI_TUTOR]));
+export const I18N_NAMESPACE = Array.from(
+	new Set(["common", "feature-teaching", "pages-dashboard", ...NS_AI_TUTOR])
+);

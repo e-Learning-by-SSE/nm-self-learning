@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient, SkillRepository } from "@prisma/client";
+import { Prisma, PrismaClient, SkillRepository } from "@self-learning/database";
 import { slugify } from "@self-learning/util/common";
 
 const prisma = new PrismaClient();

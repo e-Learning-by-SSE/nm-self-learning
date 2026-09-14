@@ -6,7 +6,7 @@ import {
 	NotificationType,
 	Prisma,
 	PrismaClient
-} from "@prisma/client";
+} from "@self-learning/database";
 
 const prisma = new PrismaClient();
 

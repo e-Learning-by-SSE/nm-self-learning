@@ -1,7 +1,8 @@
 import { PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { TeacherView } from "@self-learning/analysis";
 import { withTranslations } from "@self-learning/api";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
+import { GroupRole } from "@self-learning/database";
 import {
 	AuthorResourceSection,
 	GroupDeleteOption,
@@ -19,14 +20,13 @@ import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
 import { withAuth } from "@self-learning/util/auth";
 import Link from "next/link";
-import { GroupRole } from "@prisma/client";
 import { useTranslation } from "next-i18next";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
 
 type Props = { author: Author };
 
-export function getAuthor(username: string) {
+function getAuthor(username: string) {
 	return database.user.findUniqueOrThrow({
 		where: { name: username },
 		select: {
@@ -60,9 +60,7 @@ export function getAuthor(username: string) {
 }
 
 export const getServerSideProps = withTranslations(
-	Array.from(
-		new Set(["common", "pages-dashboard", ...NS_UI_COMMON, ...NS_FEATURE_TEACHING])
-	),
+	Array.from(new Set(["common", "pages-dashboard", ...NS_UI_COMMON, ...NS_FEATURE_TEACHING])),
 	withAuth<Props>(async (context, user) => {
 		if (user.isAuthor) {
 			return { props: { author: await getAuthor(user.name) } };

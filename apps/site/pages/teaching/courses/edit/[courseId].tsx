@@ -1,9 +1,14 @@
-import { AccessLevel, Prisma } from "@prisma/client";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
-import { database } from "@self-learning/database";
+import { database, Prisma } from "@self-learning/database/server";
+import { AccessLevel } from "@self-learning/database";
 import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
-import { CourseContent, extractLessonIds, resourcePermissionSelect, toResourcePermissionsForm } from "@self-learning/types";
+import {
+	CourseContent,
+	extractLessonIds,
+	resourcePermissionSelect,
+	toResourcePermissionsForm
+} from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { useEffect } from "react";

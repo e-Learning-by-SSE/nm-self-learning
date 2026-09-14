@@ -1,13 +1,12 @@
 import {
 	AccessLevel,
-	Author,
-	Course,
-	Group,
-	Lesson,
-	Permission,
-	Prisma,
-	Skill
-} from "@prisma/client";
+	AuthorModel,
+	CourseModel,
+	GroupModel,
+	LessonModel,
+	PermissionModel
+} from "@self-learning/database";
+import { Prisma, Skill } from "@self-learning/database/server";
 import { Quiz } from "@self-learning/quiz";
 import {
 	CourseContent,
@@ -61,8 +60,10 @@ export function createCourseMock({
 	subtitle?: string;
 	description?: string;
 	meta?: CourseMeta;
-}): Partial<Course> & { authors: Pick<Author, "username">[] } & { content: CourseContent } & {
-	permissions: (Partial<Permission> & { group: Partial<Group> })[];
+}): Partial<CourseModel> & { authors: Pick<AuthorModel, "username">[] } & {
+	content: CourseContent;
+} & {
+	permissions: (Partial<PermissionModel> & { group: Partial<GroupModel> })[];
 } {
 	return {
 		courseId,
@@ -96,11 +97,11 @@ export function createLessonMock({
 	title?: string;
 	requires?: Skill[];
 	provides?: Skill[];
-}): Partial<Lesson> &
-	Pick<Lesson, "lessonId"> & { authors: Pick<Author, "username">[] } & {
+}): Partial<LessonModel> &
+	Pick<LessonModel, "lessonId"> & { authors: Pick<AuthorModel, "username">[] } & {
 		requires: Skill[];
 	} & { provides: Skill[] } & {
-		permissions: (Partial<Permission> & { group: Partial<Group> })[];
+		permissions: (Partial<PermissionModel> & { group: Partial<GroupModel> })[];
 	} {
 	const defaultSkill: Skill = {
 		id: "skill:1",
@@ -142,7 +143,7 @@ export function createExampleLessonsFromContent(
 
 export function createExampleLesson(
 	lessonId: string,
-	overwrites?: Partial<Lesson>
+	overwrites?: Partial<LessonModel>
 ): Prisma.LessonCreateManyInput {
 	const lesson: Prisma.LessonCreateManyInput = {
 		lessonId: overwrites?.lessonId ?? lessonId,

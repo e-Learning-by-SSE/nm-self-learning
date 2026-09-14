@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@self-learning/database";
 import { mathExample } from "./math/math-example";
 import { psychologyExample } from "./psychology/psychology-example";
 import { seedDemos } from "./demo/demo";

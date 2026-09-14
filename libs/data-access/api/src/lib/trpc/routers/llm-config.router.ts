@@ -1,5 +1,5 @@
 import { adminProcedure, authProcedure, t } from "../trpc";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { TRPCError } from "@trpc/server";
 import { secondsToMilliseconds } from "date-fns";
 import { llmConfigSchema, llmConfigSchemaForFetching, openAiModelList } from "@self-learning/types";

@@ -1,5 +1,5 @@
 import { getServerSideProps } from "../../../../pages/courses/[courseSlug]/[lessonSlug]";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { getServerSession } from "next-auth";
 import { createMockContext } from "../../../context-utils";
 

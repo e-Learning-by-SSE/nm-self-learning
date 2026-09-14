@@ -1,5 +1,5 @@
 import { Author } from "@self-learning/types";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 
 export async function updateAuthorAsAdmin({
 	author,

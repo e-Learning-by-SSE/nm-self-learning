@@ -1,11 +1,11 @@
-import { AccessLevel, Prisma } from "@prisma/client";
-import { database } from "@self-learning/database";
+import { AccessLevel } from "@self-learning/database";
+import { database, Prisma } from "@self-learning/database/server";
 import {
 	courseFormSchema,
-	getFullCourseExport,
 	mapCourseFormToInsert,
 	mapCourseFormToUpdate
 } from "@self-learning/teaching";
+import { getFullCourseExport } from "@self-learning/teaching/server";
 import {
 	CourseContent,
 	CourseMeta,

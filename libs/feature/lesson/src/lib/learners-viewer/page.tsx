@@ -8,14 +8,13 @@ import {
 	PencilIcon,
 	QuestionMarkCircleIcon
 } from "@heroicons/react/24/solid";
-import { AccessLevel, LessonType } from "@prisma/client";
+import { AccessLevel, LessonType } from "@self-learning/database";
 import { trpc } from "@self-learning/api-client";
 import {
 	SmallGradeBadge,
 	useCourseCompletion,
 	useMarkAsCompleted
 } from "@self-learning/completion";
-import { database } from "@self-learning/database";
 import { ShowTranskript } from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
@@ -44,7 +43,6 @@ import {
 import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
 import { useEventLog } from "@self-learning/util/eventlog";
 import { useAttemptSubmission } from "libs/feature/quiz/src/lib/quiz-submit-attempt";
-import { Session } from "next-auth";
 import { MDXRemote } from "next-mdx-remote";
 import Link from "next/link";
 import { useTranslation } from "next-i18next";
@@ -56,9 +54,6 @@ import { loadLessonSessionSafe } from "../learning-time/time-tracker";
 import { useLessonSession } from "../learning-time/use-lesson-time-tracking";
 import { LessonCourseData, LessonData } from "../lesson-data-access";
 import { useLessonOutlineContext } from "../lesson-outline-context";
-import { LessonLayoutProps } from "./course-lesson-layout";
-import { createLessonPropsFrom } from "./create-lesson-props";
-import { StandaloneLessonLayoutProps } from "./standalone-lesson-layout";
 
 export type LessonLearnersViewProps = {
 	lesson: LessonData & { performanceScore?: number | null };
@@ -70,42 +65,6 @@ export type LessonLearnersViewProps = {
 		subtitle: CompiledMarkdown | null;
 	};
 };
-
-export async function getSspLearnersView(
-	parentProps: LessonLayoutProps | StandaloneLessonLayoutProps,
-	user: Session["user"]
-) {
-	const { lesson } = parentProps;
-	lesson.quiz = null;
-	const lessonProps = await createLessonPropsFrom(lesson);
-
-	const data = await database.completedLesson.findMany({
-		where: {
-			lessonId: lesson.lessonId,
-			user: {
-				username: user.name
-			}
-		},
-		select: {
-			performanceScore: true
-		},
-		orderBy: { performanceScore: "desc" },
-		take: 1 // Nur den höchsten Score nehmen
-	});
-
-	const lessonWithScore = { ...lesson, performanceScore: data[0]?.performanceScore ?? null };
-
-	return {
-		props: {
-			...parentProps,
-			lesson: lessonWithScore,
-			// course: parentProps.course ?? undefined,
-			markdown: {
-				...lessonProps
-			}
-		}
-	};
-}
 
 // id is required by Navigable. Content id is required to map this to lesson.content pos
 type OpenedMediaInfo = LessonContentType & { id: number; content_id: number };

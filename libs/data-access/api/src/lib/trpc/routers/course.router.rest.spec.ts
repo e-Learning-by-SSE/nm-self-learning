@@ -1,5 +1,5 @@
 import { createCourseMock, callOpenApi } from "@self-learning/util/testing";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { UserFromSession } from "../context";
 import { getCourseResource } from "../../permissions/course.utils";
 import { canEdit } from "../../permissions/permission.service";

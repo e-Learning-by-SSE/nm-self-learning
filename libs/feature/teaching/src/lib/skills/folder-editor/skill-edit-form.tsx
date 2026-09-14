@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { SkillFormModel, skillFormSchema } from "@self-learning/types";
 import { trpc } from "@self-learning/api-client";
-import { SkillResolved } from "@self-learning/database";
+import { SkillResolved } from "@self-learning/database/server";
 import { SkillDeleteOption } from "./skill-taskbar";
 import { IconOnlyButton, showToast } from "@self-learning/ui/common";
 import { SelectSkillsView } from "../skill-dialog/select-skill-view";

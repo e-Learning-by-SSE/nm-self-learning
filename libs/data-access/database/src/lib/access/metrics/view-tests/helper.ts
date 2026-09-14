@@ -1,6 +1,6 @@
 // Helper function to create students
-import { Author, PrismaClient, Student, User, Course, Lesson } from "@prisma/client";
-import { EnrollmentStatus } from "@prisma/client";
+import { Author, PrismaClient, Student, User, Course, Lesson } from "@self-learning/database";
+import { EnrollmentStatus } from "@self-learning/database";
 
 const prisma = new PrismaClient();
 

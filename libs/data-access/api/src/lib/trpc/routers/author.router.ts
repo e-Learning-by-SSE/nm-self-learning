@@ -1,11 +1,10 @@
-import { database, getAdministratedCourses } from "@self-learning/database";
 import { authorSchema } from "@self-learning/types";
 import { z } from "zod";
 import { adminProcedure, authorProcedure, authProcedure, t } from "../trpc";
-import { updateAuthorAsAdmin } from "@self-learning/admin";
+import { updateAuthorAsAdmin } from "@self-learning/admin/server";
 import { editAuthorSchema } from "@self-learning/teaching";
 import { paginate, Paginated, paginationSchema } from "@self-learning/util/common";
-import { Prisma } from "@prisma/client";
+import { Prisma, database, getAdministratedCourses } from "@self-learning/database/server";
 import { courseParticipation } from "@self-learning/analysis";
 
 const participantsInputSchema = z.object({
@@ -34,7 +33,13 @@ export const authorRouter = t.router({
 				name: true,
 				role: true,
 				author: { select: { slug: true, displayName: true, imgUrl: true } },
-				memberships: { select: { role: true, expiresAt: true, group: { select: { id: true, name: true } } } },
+				memberships: {
+					select: {
+						role: true,
+						expiresAt: true,
+						group: { select: { id: true, name: true } }
+					}
+				},
 				defaultGroupId: true
 			}
 		});

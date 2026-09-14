@@ -1,5 +1,5 @@
-import { database } from "@self-learning/database";
-import { AccessLevel } from "@prisma/client";
+import { database } from "@self-learning/database/server";
+import { AccessLevel } from "@self-learning/database";
 import { TRPCError } from "@trpc/server";
 import { Context, UserFromSession } from "../context";
 import { specializationRouter } from "./specialization.router";
@@ -134,9 +134,9 @@ describe("specializationRouter", () => {
 			(prepareResourceUpdate as jest.Mock).mockResolvedValue(undefined);
 			(database.specialization.update as jest.Mock).mockResolvedValue(defaultSpec);
 
-			await expect(
-				caller.update({ subjectId: "math", data: defaultSpec })
-			).resolves.toEqual(defaultSpec);
+			await expect(caller.update({ subjectId: "math", data: defaultSpec })).resolves.toEqual(
+				defaultSpec
+			);
 		});
 
 		it("throws FORBIDDEN when prepareResourceUpdate rejects", async () => {
@@ -196,7 +196,9 @@ describe("specializationRouter", () => {
 			const { caller } = prepare({ role: "USER", memberships: [1] });
 			(hasResourceAccess as jest.Mock).mockResolvedValue(false);
 
-			await expect(caller.addCourse(attachInput)).rejects.toMatchObject({ code: "FORBIDDEN" });
+			await expect(caller.addCourse(attachInput)).rejects.toMatchObject({
+				code: "FORBIDDEN"
+			});
 			expect(database.specialization.update).not.toHaveBeenCalled();
 		});
 
@@ -207,14 +209,18 @@ describe("specializationRouter", () => {
 				.mockResolvedValueOnce(false)
 				.mockResolvedValueOnce(false);
 
-			await expect(caller.addCourse(attachInput)).rejects.toMatchObject({ code: "FORBIDDEN" });
+			await expect(caller.addCourse(attachInput)).rejects.toMatchObject({
+				code: "FORBIDDEN"
+			});
 		});
 
 		it("removeCourse uses the same attach permission check", async () => {
 			const { caller } = prepare({ role: "USER", memberships: [1] });
 			(hasResourceAccess as jest.Mock).mockResolvedValue(false);
 
-			await expect(caller.removeCourse(attachInput)).rejects.toMatchObject({ code: "FORBIDDEN" });
+			await expect(caller.removeCourse(attachInput)).rejects.toMatchObject({
+				code: "FORBIDDEN"
+			});
 		});
 
 		it("removeCourse disconnects when attach is allowed", async () => {

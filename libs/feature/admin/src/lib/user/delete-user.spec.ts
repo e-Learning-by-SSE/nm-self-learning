@@ -1,5 +1,5 @@
 import { deleteUserAndDependentData } from "./delete-user";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { createTestUser } from "@self-learning/util/testing";
 
 describe("deleteUserAndDependentData Integration Test", () => {
@@ -8,66 +8,66 @@ describe("deleteUserAndDependentData Integration Test", () => {
 	beforeAll(async () => {
 		const user = await createTestUser(testUsername);
 		await database.student.upsert({
-            where: { userId: user.id },
-            update: {},
-            create: {
-                userId: user.id,
-                username: user.name
-            }
-        });
+			where: { userId: user.id },
+			update: {},
+			create: {
+				userId: user.id,
+				username: user.name
+			}
+		});
 
-        const author = await database.author.upsert({
-            where: { username: user.name },
-            update: {},
-            create: {
-                username: user.name,
-                displayName: "Test Author",
-                slug: "test-author"
-            }
-        });
+		const author = await database.author.upsert({
+			where: { username: user.name },
+			update: {},
+			create: {
+				username: user.name,
+				displayName: "Test Author",
+				slug: "test-author"
+			}
+		});
 
-        await database.course.upsert({
-            where: { courseId: "testCourse" },
-            update: {},
-            create: {
-                courseId: "testCourse",
-                slug: "test-course",
-                title: "Test Course",
-                content: "This is a test course",
-                meta: {},
-                subtitle: "A test course",
-                authors: {
-                    connect: { username: author.username }
-                }
-            }
-        });
+		await database.course.upsert({
+			where: { courseId: "testCourse" },
+			update: {},
+			create: {
+				courseId: "testCourse",
+				slug: "test-course",
+				title: "Test Course",
+				content: "This is a test course",
+				meta: {},
+				subtitle: "A test course",
+				authors: {
+					connect: { username: author.username }
+				}
+			}
+		});
 
-        await database.lesson.upsert({
-            where: { lessonId: "testLesson" },
-            update: {},
-            create: {
-                lessonId: "testLesson",
-                slug: "test-lesson",
-                title: "Test Lesson",
-                content: "This is a test lesson",
-                meta: {},
-                authors: {
-                    connect: { username: author.username }
-                }
-            }
-        });
+		await database.lesson.upsert({
+			where: { lessonId: "testLesson" },
+			update: {},
+			create: {
+				lessonId: "testLesson",
+				slug: "test-lesson",
+				title: "Test Lesson",
+				content: "This is a test lesson",
+				meta: {},
+				authors: {
+					connect: { username: author.username }
+				}
+			}
+		});
 
-        await database.uploadedAssets.upsert({
-            where: { objectName: "testObject" },
-            update: {},
-            create: {
-                objectName: "testObject",
-                fileName: "testFile.jpg",
-                fileType: "image/jpeg",
-                publicUrl: "http://example.com/testFile.jpg",
-                username: user.name
-            }
-        });
+		await database.uploadedAssets.upsert({
+			where: { objectName: "testObject" },
+			update: {},
+			create: {
+				objectName: "testObject",
+				fileName: "testFile.jpg",
+				fileType: "image/jpeg",
+				publicUrl: "http://example.com/testFile.jpg",
+				username: user.name
+			}
+		});
 	});
 
 	it("should delete the user and all dependent data", async () => {

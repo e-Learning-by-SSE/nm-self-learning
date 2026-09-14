@@ -1,5 +1,5 @@
-import { GroupRole, Prisma } from "@prisma/client";
-import { database } from "@self-learning/database";
+import { GroupRole } from "@self-learning/database";
+import { database, Prisma } from "@self-learning/database/server";
 import { paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";

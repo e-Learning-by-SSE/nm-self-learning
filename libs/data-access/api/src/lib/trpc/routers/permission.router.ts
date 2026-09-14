@@ -1,8 +1,14 @@
-import { database } from "@self-learning/database";
+import { database, Prisma } from "@self-learning/database/server";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
-import { AccessLevel, Group, GroupRole, Member, Permission, Prisma } from "@prisma/client";
+import {
+	AccessLevel,
+	GroupModel,
+	GroupRole,
+	MemberModel,
+	PermissionModel
+} from "@self-learning/database";
 import { paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import {
 	GroupFormSchema,
@@ -370,10 +376,10 @@ export const permissionRouter = t.router({
 				});
 			}
 
-			let base: Group | null = null;
+			let base: GroupModel | null = null;
 			const childrenSet = new Set<number>();
-			const memberSet = new Map<string, Member>();
-			const permissionSet = new Map<string, Permission>();
+			const memberSet = new Map<string, MemberModel>();
+			const permissionSet = new Map<string, PermissionModel>();
 
 			// Merge members and permissions
 			const groups = await Promise.all(

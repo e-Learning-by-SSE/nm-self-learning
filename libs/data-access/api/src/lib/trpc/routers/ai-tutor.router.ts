@@ -1,6 +1,5 @@
 import { TRPCError } from "@trpc/server";
 import { authProcedure, t } from "../trpc";
-import { database, logJobProgress } from "@self-learning/database";
 import {
 	extractUserQuestion,
 	fetchContextPayload,
@@ -9,6 +8,7 @@ import {
 	aiTutorRequestSchema,
 	Message
 } from "@self-learning/ai-tutor";
+import { database, logJobProgress } from "@self-learning/database/server";
 import { RagRetrievalResult } from "@self-learning/rag-processing";
 import { workerServiceClient } from "@self-learning/worker-api";
 import crypto from "crypto";

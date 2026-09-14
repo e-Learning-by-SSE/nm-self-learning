@@ -11,7 +11,7 @@ import {
 	greaterOrEqAccessLevel,
 	ResourcePermission
 } from "@self-learning/types";
-import { AccessLevel, GroupRole } from "@prisma/client";
+import { AccessLevel, GroupRole } from "@self-learning/database";
 import { useRouter } from "next/router";
 import { UserFromSession } from "@self-learning/api";
 

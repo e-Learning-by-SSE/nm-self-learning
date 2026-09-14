@@ -1,7 +1,7 @@
 import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import {
 	EnableLearningDiaryDialog,
 	LearningDiaryEntryStatusBadge,

@@ -1,6 +1,6 @@
-import { PrismaClient } from "@prisma/client";
-import { checkAndAwardAchievements, convertAchievement } from "@self-learning/achievements";
-import { database } from "@self-learning/database";
+import { PrismaClient, database } from "@self-learning/database/server";
+import { checkAndAwardAchievements } from "@self-learning/achievements/server";
+import { convertAchievement } from "@self-learning/achievements";
 import {
 	AchievementWithProgress,
 	GamificationProfile,

@@ -1,5 +1,5 @@
-import { AchievementTrigger } from "@prisma/client";
-import { database } from "@self-learning/database";
+import { AchievementTrigger } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import {
 	AchievementDb,
 	achievementFullSchema,

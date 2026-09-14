@@ -12,7 +12,7 @@ import { NextComponentType, NextPageContext } from "next";
 import type { ParsedUrlQuery } from "querystring";
 import { getCourse, LessonData } from "../lesson-data-access";
 import { BaseLessonLayout } from "./base-layout";
-import { getSspStandaloneLessonLayout } from "./standalone-lesson-layout";
+import { getSspStandaloneLessonLayout } from "./server";
 import { useMemo } from "react";
 import { MobileSidebarNavigation } from "@self-learning/ui/layouts";
 import Head from "next/head";
@@ -53,7 +53,12 @@ export function LessonLayout(
 
 	const playlistArea = pageProps.course ? <PlaylistArea {...pageProps} /> : null;
 	return (
-		<BaseLessonLayout key={pageProps.lesson.lessonId} title={pageProps.lesson.title} playlistArea={playlistArea} {...pageProps}>
+		<BaseLessonLayout
+			key={pageProps.lesson.lessonId}
+			title={pageProps.lesson.title}
+			playlistArea={playlistArea}
+			{...pageProps}
+		>
 			<Component {...pageProps} />
 		</BaseLessonLayout>
 	);

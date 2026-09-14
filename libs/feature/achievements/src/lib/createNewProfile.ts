@@ -1,5 +1,4 @@
-import { Prisma, PrismaClient } from "@prisma/client";
-import { database } from "@self-learning/database";
+import { Prisma, PrismaClient, database } from "@self-learning/database/server";
 import { GamificationProfile, LoginStreak } from "@self-learning/types";
 
 export async function createNewProfile(
@@ -17,7 +16,7 @@ export async function createNewProfile(
 			user: { connect: { name: username } },
 			username,
 			lastLogin: new Date(),
-			// energy: 2, // default handles by prisma 
+			// energy: 2, // default handles by prisma
 			loginStreak: newStreak
 		}
 	});

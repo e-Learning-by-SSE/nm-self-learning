@@ -1,4 +1,4 @@
-import { NotificationChannel, NotificationType, Prisma, PrismaClient } from "@prisma/client";
+import { NotificationChannel, NotificationType, Prisma, PrismaClient } from "@self-learning/database";
 
 const prisma = new PrismaClient();
 

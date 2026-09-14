@@ -1,5 +1,4 @@
-import { Prisma } from "@prisma/client";
-import { database } from "@self-learning/database";
+import { database, Prisma } from "@self-learning/database/server";
 import { createTestUser, createLicense } from "@self-learning/util/testing";
 import { checkLessonCompletion, getCompletedLessonsThisWeek } from "./lesson-completion";
 

@@ -1,5 +1,5 @@
 import { callOpenApi, createLessonMock } from "@self-learning/util/testing";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { UserFromSession } from "../context";
 
 // Mock the database

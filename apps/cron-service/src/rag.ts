@@ -1,10 +1,10 @@
-import { Prisma } from "@prisma/client";
 import {
 	prepareRagContent,
 	getRagVersionHash,
 	processRagEmbedLesson
 } from "@self-learning/rag-processing";
-import { database } from "@self-learning/database";
+import { database, Prisma } from "@self-learning/database/server";
+
 import { LessonContent } from "@self-learning/types";
 
 export async function embedLesson(lessonId: string) {

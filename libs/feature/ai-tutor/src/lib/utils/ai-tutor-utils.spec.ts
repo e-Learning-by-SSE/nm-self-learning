@@ -16,7 +16,7 @@ jest.mock("@trpc/server", () => ({
 	}
 }));
 
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { TRPCError } from "@trpc/server";
 import {
 	fetchContextPayload,
