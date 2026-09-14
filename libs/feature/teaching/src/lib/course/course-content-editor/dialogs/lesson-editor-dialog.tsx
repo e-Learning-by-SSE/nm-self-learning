@@ -6,11 +6,13 @@ import { ResourceGuard } from "@self-learning/ui/layouts";
 export function LessonEditorDialogWithGuard({
 	onClose,
 	initialLesson,
-	courseId
+	courseId,
+	inheritedPermissions
 }: {
 	onClose: OnDialogCloseFn<LessonFormModel>;
 	initialLesson?: LessonFormModel;
 	courseId?: string;
+	inheritedPermissions?: LessonFormModel["permissions"];
 }) {
 	return (
 		<ResourceGuard
@@ -24,6 +26,7 @@ export function LessonEditorDialogWithGuard({
 				onClose={() => onClose(undefined)}
 				onSubmit={onClose}
 				isFullScreen={false}
+				inheritedPermissions={inheritedPermissions}
 			/>
 		</ResourceGuard>
 	);

@@ -156,12 +156,14 @@ export function LessonEditor({
 	onSubmit,
 	onClose,
 	initialLesson,
+	inheritedPermissions,
 	courseId,
 	isFullScreen = true
 }: {
 	onSubmit: OnDialogCloseFn<LessonFormModel>;
 	onClose: () => void;
 	initialLesson?: LessonFormModel;
+	inheritedPermissions?: LessonFormModel["permissions"];
 	courseId?: string; // in context of which course lesson is edited
 	isFullScreen?: boolean;
 }) {
@@ -173,6 +175,7 @@ export function LessonEditor({
 		context: undefined,
 		defaultValues: initialLesson ?? {
 			...createEmptyLesson(),
+			permissions: (inheritedPermissions ?? []).map(p => ({ ...p })),
 			// Add current user as author
 			authors: session.data?.user.isAuthor ? [{ username: session.data.user.name }] : []
 		},

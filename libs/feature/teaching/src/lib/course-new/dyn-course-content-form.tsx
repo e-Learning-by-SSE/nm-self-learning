@@ -78,6 +78,9 @@ function SingleChapterNode({
 	const [lessonSelectorOpen, setLessonSelectorOpen] = useState(false);
 	const [createLessonDialogOpen, setCreateLessonDialogOpen] = useState(false);
 
+	const { control } = useFormContext<CourseFormModel>();
+	const coursePermissions = useWatch({ control, name: "permissions" }) ?? [];
+
 	function onCloseLessonSelector(lesson?: LessonSummary) {
 		setLessonSelectorOpen(false);
 
@@ -144,6 +147,7 @@ function SingleChapterNode({
 				<LessonEditorDialogWithGuard
 					courseId={courseId}
 					onClose={handleCreateDialogClose}
+					inheritedPermissions={coursePermissions}
 				/>
 			)}
 		</li>
