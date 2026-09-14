@@ -20,21 +20,29 @@ import { SkillCatalogDialog, SkillCatalogDialogState } from "./skill-dialog/skil
  * - lessonId if already exists
  * @returns
  */
-export function SkillsEditor({
-	target,
-	courseId,
-	lessonId
-}: {
-	target: "lesson" | "staticCourse" | "dynamicCourse";
-	courseId?: string;
-	lessonId?: string;
-}) {
+export function SkillsEditor(
+	props:
+		| { target: "lesson"; courseId?: string; lessonId?: string }
+		| { target: "staticCourse" | "dynamicCourse"; courseId: string }
+) {
+	const { target, courseId } = props;
+	const lessonId = props.target === "lesson" ? props.lessonId : undefined;
+	const isLesson = target === "lesson";
+
 	const { control, getValues } = useFormContext<ResourceSkillsFormType>();
-	const { append: appendProvides, update: updateProvides } = useFieldArray({
+	const {
+		append: appendProvides,
+		update: updateProvides,
+		remove: removeProvides
+	} = useFieldArray({
 		control,
 		name: "provides"
 	});
-	const { append: appendRequires, update: updateRequires } = useFieldArray({
+	const {
+		append: appendRequires,
+		update: updateRequires,
+		remove: removeRequires
+	} = useFieldArray({
 		control,
 		name: "requires"
 	});
@@ -44,7 +52,7 @@ export function SkillsEditor({
 
 	const { data: ctx } = trpc.course.getSkillContext.useQuery(
 		{ courseId: courseId as string },
-		{ enabled: !!courseId }
+		{ enabled: !!courseId, refetchOnMount: "always" } // because siblings might have changed
 	);
 
 	const requiresSet = useMemo(() => new Set(requires.map(skill => skill.id)), [requires]);
@@ -54,7 +62,7 @@ export function SkillsEditor({
 	// TODO who is the author of new skills
 
 	const lessonRequired = useMemo(() => {
-		const ids = new Set(target === "lesson" ? requiresSet : []);
+		const ids = new Set(isLesson ? requiresSet : []);
 		if (!ctx) return ids;
 		// append skills from siblings
 		for (const lesson of ctx.lessons) {
@@ -62,10 +70,10 @@ export function SkillsEditor({
 			for (const id of lesson.requires) ids.add(id);
 		}
 		return ids;
-	}, [requiresSet, ctx, lessonId, target]);
+	}, [requiresSet, ctx, lessonId, isLesson]);
 
 	const lessonProvided = useMemo(() => {
-		const ids = new Set(target === "lesson" ? providesSet : []);
+		const ids = new Set(isLesson ? providesSet : []);
 		if (!ctx) return ids;
 		// append skills from siblings
 		for (const lesson of ctx.lessons) {
@@ -73,7 +81,7 @@ export function SkillsEditor({
 			for (const id of lesson.provides) ids.add(id);
 		}
 		return ids;
-	}, [providesSet, ctx, lessonId, target]);
+	}, [providesSet, ctx, lessonId, isLesson]);
 	// locked skills - of currently edited resource
 	const currentIds = useMemo(
 		() => new Set([...requiresSet, ...providesSet]),
@@ -81,9 +89,9 @@ export function SkillsEditor({
 	);
 	// provided by course OR standalone lesson editor
 	const courseRequired =
-		target !== "lesson" || courseId === undefined ? requiresSet : new Set(ctx?.requires ?? []);
+		!isLesson || courseId === undefined ? requiresSet : new Set(ctx?.requires ?? []);
 	const courseProvided =
-		target !== "lesson" || courseId === undefined ? providesSet : new Set(ctx?.provides ?? []);
+		!isLesson || courseId === undefined ? providesSet : new Set(ctx?.provides ?? []);
 
 	const { data: skills } = trpc.skill.getSkills.useQuery();
 	const allSkills = useMemo(() => {
@@ -116,6 +124,12 @@ export function SkillsEditor({
 			append(skill);
 			attached.add(skill.id);
 		}
+	}
+	function removeSkill(skill: SkillFormModel, field: "provides" | "requires") {
+		const list = getValues(field) ?? [];
+		const index = list.findIndex(item => item.id === skill.id);
+		if (index < 0) return;
+		(field === "provides" ? removeProvides : removeRequires)(index);
 	}
 
 	function onDragEnd(result: DropResult) {
@@ -175,6 +189,7 @@ export function SkillsEditor({
 					>
 						<LessonSkillManagerDragDrop
 							addSkills={addSkills}
+							removeSkill={removeSkill}
 							excludeIds={currentIds}
 							catalog={catalog}
 							target={target}

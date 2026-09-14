@@ -5,36 +5,29 @@ import { LessonFormModel } from "../lesson-form-model";
 import { LabeledFieldSelectSkillsViewDragDrop } from "../../skills/skill-dialog/select-skill-view";
 import { useTranslation } from "react-i18next";
 
-type SkillModalIdentifier = "provides" | "requires";
-
 /**
  * Drag and Drop area to add and remove skills to a lesson
  */
 export function LessonSkillManagerDragDrop({
 	addSkills = () => {},
+	removeSkill = () => {},
 	excludeIds,
 	catalog,
 	target
 }: {
 	addSkills?: (skillsToAdd: SkillFormModel[], field: "provides" | "requires") => void;
+	removeSkill?: (skill: SkillFormModel, field: "provides" | "requires") => void;
 	excludeIds?: ReadonlySet<string>;
 	catalog?: SkillFormModel[];
 	target?: "lesson" | "staticCourse" | "dynamicCourse";
 }) {
-	const { setValue, watch } = useFormContext<LessonFormModel>();
+	const { watch } = useFormContext<LessonFormModel>();
 
 	const { t } = useTranslation("feature-teaching");
 
 	const watchingSkills = {
 		requires: watch("requires"),
 		provides: watch("provides")
-	};
-
-	const deleteSkill = (skill: SkillFormModel, id: SkillModalIdentifier) => {
-		setValue(
-			id,
-			watchingSkills[id].filter(s => s.id !== skill.id)
-		);
 	};
 
 	const subtitle =
@@ -53,7 +46,7 @@ export function LessonSkillManagerDragDrop({
 					label={t("Skills_Provides")}
 					skills={watchingSkills["provides"]}
 					onDeleteSkill={skill => {
-						deleteSkill(skill, "provides");
+						removeSkill(skill, "provides");
 					}}
 					onAddSkill={skill => {
 						if (skill) addSkills(skill, "provides");
@@ -67,7 +60,7 @@ export function LessonSkillManagerDragDrop({
 					label={t("Skills_Requires")}
 					skills={watchingSkills["requires"]}
 					onDeleteSkill={skill => {
-						deleteSkill(skill, "requires");
+						removeSkill(skill, "requires");
 					}}
 					onAddSkill={skill => {
 						if (skill) addSkills(skill, "requires");
