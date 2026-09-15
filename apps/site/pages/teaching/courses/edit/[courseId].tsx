@@ -14,7 +14,7 @@ import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { ResourceGuard, testResourceGuard } from "@self-learning/ui/layouts";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 
 type EditCourseProps = {
 	course: CourseFormModel;

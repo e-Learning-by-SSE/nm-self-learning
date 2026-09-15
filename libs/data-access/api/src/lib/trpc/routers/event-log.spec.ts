@@ -1,11 +1,11 @@
 import { userEventRouter } from "./event-log.router";
 import { Context } from "../context";
 import { t } from "../trpc";
-import { createEventLogEntry, loadUserEventLogs } from "@self-learning/util/eventlog";
+import { createEventLogEntry, loadUserEventLogs } from "@self-learning/util/eventlog/server";
 import { eventDefinitions } from "@self-learning/types";
 
 jest.mock("@self-learning/database");
-jest.mock("@self-learning/util/eventlog", () => ({
+jest.mock("@self-learning/util/eventlog/server", () => ({
 	createEventLogEntry: jest.fn(),
 	loadUserEventLogs: jest.fn()
 }));

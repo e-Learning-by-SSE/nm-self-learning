@@ -10,7 +10,7 @@ import {
 	Tabs
 } from "@self-learning/ui/common";
 import { DashboardSidebarLayout, UniversalSearchBar } from "@self-learning/ui/layouts";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 import { formatDateDistanceToNow } from "@self-learning/util/common";
 import { NextComponentType, NextPageContext } from "next";
 import Image from "next/image";

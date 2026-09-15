@@ -12,7 +12,7 @@ import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";
 import { ResourceGuard, testResourceGuard } from "@self-learning/ui/layouts";
 import { AccessLevel } from "@self-learning/database";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 
 type EditLessonProps = {
 	lesson: LessonFormModel;

@@ -8,7 +8,7 @@ import {
 } from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { withTranslations } from "@self-learning/api";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 import { database } from "@self-learning/database/server";
 import { ResourceGuard, testResourceGuard } from "@self-learning/ui/layouts";
 import { AccessLevel } from "@self-learning/database";

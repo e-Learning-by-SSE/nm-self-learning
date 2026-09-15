@@ -23,8 +23,8 @@ import {
 	Tooltip
 } from "@self-learning/ui/common";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
-import { handleEmailTracking } from "@self-learning/ui/notifications";
-import { withAuth } from "@self-learning/util/auth";
+import { handleEmailTracking } from "@self-learning/ui/notifications/server";
+import { withAuth } from "@self-learning/util/auth/server";
 import {
 	formatDateDistanceToNow,
 	formatDateStringShort,

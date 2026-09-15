@@ -15,7 +15,7 @@ import { UniversalSearchBar } from "@self-learning/ui/layouts";
 import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment/server";
 import { formatDateDistanceToNow } from "@self-learning/util/common";
 import { withTranslations } from "@self-learning/api";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 import { useTranslation } from "next-i18next";
 
 interface CourseOverviewProps {

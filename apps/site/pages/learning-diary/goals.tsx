@@ -2,7 +2,7 @@ import { withTranslations } from "@self-learning/api";
 import { LearningGoals, useLearningGoals } from "@self-learning/diary";
 import { LoadingBox } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 
 export const getServerSideProps = withAuth(withTranslations(["common"]));
 

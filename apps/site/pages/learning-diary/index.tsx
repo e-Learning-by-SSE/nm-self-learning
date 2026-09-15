@@ -10,7 +10,7 @@ import {
 	SectionHeader
 } from "@self-learning/ui/common";
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 import { formatTimeIntervalToString } from "@self-learning/util/common";
 import { useRouter } from "next/router";
 import { useState } from "react";

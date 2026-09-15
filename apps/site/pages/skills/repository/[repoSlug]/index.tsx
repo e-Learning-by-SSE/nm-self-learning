@@ -5,7 +5,7 @@ import { getSkills } from "libs/data-access/api/src/lib/trpc/routers/skill.route
 import { LoadingBox } from "@self-learning/ui/common";
 import { SkillFormModel } from "@self-learning/types";
 import { SkillFolderEditor } from "@self-learning/teaching";
-import { getAuthenticatedUser } from "@self-learning/util/auth";
+import { getAuthenticatedUser } from "@self-learning/util/auth/server";
 
 interface CreateAndViewRepositoryProps {
 	repository: SkillRepository;

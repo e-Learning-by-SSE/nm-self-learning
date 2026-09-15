@@ -1,7 +1,8 @@
 import { withTranslations } from "@self-learning/api";
-import { getSSpLessonCourseLayout, LessonLayout } from "@self-learning/lesson";
+import { LessonLayout } from "@self-learning/lesson";
+import { getSSpLessonCourseLayout } from "@self-learning/lesson/server";
 import { getSspQuizLearnersView, QuestionProps, Quiz, QuizLearnersView } from "@self-learning/quiz";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 
 export const getServerSideProps = withTranslations(
 	["common", "feature-question-types"],

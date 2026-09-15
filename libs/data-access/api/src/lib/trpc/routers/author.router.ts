@@ -5,7 +5,7 @@ import { updateAuthorAsAdmin } from "@self-learning/admin/server";
 import { editAuthorSchema } from "@self-learning/teaching";
 import { paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { Prisma, database, getAdministratedCourses } from "@self-learning/database/server";
-import { courseParticipation } from "@self-learning/analysis";
+import { courseParticipation } from "@self-learning/analysis/server";
 
 const participantsInputSchema = z.object({
 	courseId: z.array(z.string()),

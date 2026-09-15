@@ -11,8 +11,8 @@ import { TRPCError } from "@trpc/server";
 import { addHours, addMinutes } from "date-fns";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
-import { createNotification } from "@self-learning/ui/notifications";
-import { createEventLogEntry } from "@self-learning/util/eventlog";
+import { createNotification } from "@self-learning/ui/notifications/server";
+import { createEventLogEntry } from "@self-learning/util/eventlog/server";
 
 export async function getProfile(username: string, tx?: PrismaClient) {
 	const client = tx || database;

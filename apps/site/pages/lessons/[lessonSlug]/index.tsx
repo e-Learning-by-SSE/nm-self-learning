@@ -6,7 +6,7 @@ import {
 	StandaloneLessonLayout
 } from "@self-learning/lesson";
 import { getSspLearnersView, getSspStandaloneLessonLayout } from "@self-learning/lesson/server";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 
 export const getServerSideProps = withTranslations(["common", ...NS_LESSON], async context => {
 	return withAuth(async (_context, user) => {

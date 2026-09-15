@@ -1,7 +1,7 @@
 import { getCourseCompletionOfStudent } from "@self-learning/completion/server";
 import { database } from "@self-learning/database/server";
 import { CourseEnrollment, ResolvedValue } from "@self-learning/types";
-import { createEventLogEntry } from "@self-learning/util/eventlog";
+import { createEventLogEntry } from "@self-learning/util/eventlog/server";
 import { AlreadyExists } from "@self-learning/util/http";
 
 export async function getEnrollmentDetails(username: string) {

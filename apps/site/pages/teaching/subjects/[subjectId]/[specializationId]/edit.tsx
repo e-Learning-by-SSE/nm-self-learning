@@ -10,7 +10,7 @@ import {
 	toResourcePermissionsForm
 } from "@self-learning/types";
 import { database } from "@self-learning/database/server";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 import { AccessLevel } from "@self-learning/database";
 import { useRouter } from "next/router";
 

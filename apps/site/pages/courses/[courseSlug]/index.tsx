@@ -16,8 +16,8 @@ import {
 import { AuthorsList, OnlineHelpLink, Tooltip } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection, useAuthentication } from "@self-learning/ui/layouts";
-import { handleEmailTracking } from "@self-learning/ui/notifications";
-import { withAuth } from "@self-learning/util/auth";
+import { handleEmailTracking } from "@self-learning/ui/notifications/server";
+import { withAuth } from "@self-learning/util/auth/server";
 import { authOptions } from "@self-learning/util/auth/server";
 import { formatDateDistanceToNow, formatSeconds } from "@self-learning/util/common";
 import { getServerSession } from "next-auth";

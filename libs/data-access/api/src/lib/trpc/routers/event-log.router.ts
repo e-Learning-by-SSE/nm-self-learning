@@ -1,6 +1,6 @@
 import { eventWhereSchema, eventLogSchema } from "@self-learning/types";
 import { authProcedure, t } from "../trpc";
-import { createEventLogEntry, loadUserEventLogs } from "@self-learning/util/eventlog";
+import { createEventLogEntry, loadUserEventLogs } from "@self-learning/util/eventlog/server";
 
 export const userEventRouter = t.router({
 	// !!!! Do not use this router directly in the client code, use the useEventLog hook instead. !!!!

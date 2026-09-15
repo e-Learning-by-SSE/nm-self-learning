@@ -1,6 +1,6 @@
 import { database } from "@self-learning/database/server";
 import { getRandomId } from "@self-learning/util/common";
-import { createEventLogEntry } from "@self-learning/util/eventlog";
+import { createEventLogEntry } from "@self-learning/util/eventlog/server";
 import { GetServerSidePropsContext } from "next";
 
 export interface EmailTrackingResult {

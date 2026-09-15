@@ -18,7 +18,7 @@ import {
 } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { MarketingSvg, OverviewSvg, TargetSvg } from "@self-learning/ui/static";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 import {
 	formatDateDistanceToNow,
 	formatDateStringShort,

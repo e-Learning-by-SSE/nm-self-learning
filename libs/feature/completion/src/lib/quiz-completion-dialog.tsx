@@ -1,5 +1,5 @@
 import { ArrowPathIcon, PlayIcon } from "@heroicons/react/24/solid";
-import { LessonLayoutProps } from "@self-learning/lesson";
+import type { LessonLayoutProps } from "@self-learning/lesson/server";
 import { Dialog, DialogActions, OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRequiredSession } from "@self-learning/ui/layouts";
 import Link from "next/link";

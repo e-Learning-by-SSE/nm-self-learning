@@ -2,7 +2,7 @@ import { withTranslations } from "@self-learning/api";
 import { allPages, getAllStrategies, PagesMeta, Strategy } from "@self-learning/diary/server";
 import { DiaryContentForm, DiaryLayout, PageChanger } from "@self-learning/diary";
 import { Divider } from "@self-learning/ui/common";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 import { subMilliseconds } from "date-fns";
 
 export const getServerSideProps = withTranslations(
