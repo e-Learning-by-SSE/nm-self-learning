@@ -2,7 +2,7 @@ import { database } from "@self-learning/database/server";
 import { enrollUser } from "./enrollments-db";
 import { ApiError } from "@self-learning/util/http";
 
-jest.mock("@self-learning/database", () => ({
+jest.mock("@self-learning/database/server", () => ({
 	database: {
 		course: {
 			findUniqueOrThrow: jest.fn()

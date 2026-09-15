@@ -4,7 +4,7 @@ import { createEventLogEntry } from "./crud-eventlog";
 import { EventTypeKeys } from "@self-learning/types";
 import { ALWAYS_SAVE_EVENT_TYPES } from "./privacy-exceptions.conf";
 
-jest.mock("@self-learning/database", () => ({
+jest.mock("@self-learning/database/server", () => ({
 	database: {
 		features: {
 			findUnique: jest.fn()

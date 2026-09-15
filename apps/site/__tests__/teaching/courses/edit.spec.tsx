@@ -14,7 +14,7 @@ jest.mock("next-auth", () => ({
 }));
 
 // Mock the database
-jest.mock("@self-learning/database", () => ({
+jest.mock("@self-learning/database/server", () => ({
 	database: {
 		course: { findUnique: jest.fn() },
 		lesson: { findMany: jest.fn() }

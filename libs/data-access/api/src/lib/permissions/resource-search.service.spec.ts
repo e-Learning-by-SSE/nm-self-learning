@@ -2,7 +2,7 @@ import { database } from "@self-learning/database/server";
 import { AccessLevel } from "@self-learning/database";
 import { searchAllResources, searchMyResources } from "./resource-search.service";
 
-jest.mock("@self-learning/database", () => ({
+jest.mock("@self-learning/database/server", () => ({
 	__esModule: true,
 	database: {
 		course: { findMany: jest.fn() },

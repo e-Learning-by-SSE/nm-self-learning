@@ -1,4 +1,4 @@
-import { Prisma } from "@self-learning/database";
+import { Prisma } from "@self-learning/database/server";
 import { testApiHandler } from "next-test-api-route-handler";
 import { z } from "zod";
 import { apiHandler } from "./api-handler";

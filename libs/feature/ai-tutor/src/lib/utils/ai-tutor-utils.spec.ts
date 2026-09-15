@@ -1,4 +1,19 @@
-jest.mock("@self-learning/database", () => ({
+import { database } from "@self-learning/database/server";
+import { TRPCError } from "@trpc/server";
+import {
+	fetchContextPayload,
+	extractUserQuestion,
+	buildSystemPrompt,
+	cleanResponse
+} from "./ai-tutor-utils";
+import type {
+	PageContext,
+	Message,
+	ContextPayload,
+	LessonWithoutCourseContextPayload
+} from "./types";
+
+jest.mock("@self-learning/database/server", () => ({
 	database: {
 		lesson: { findUnique: jest.fn() },
 		course: { findUnique: jest.fn() }
@@ -15,21 +30,6 @@ jest.mock("@trpc/server", () => ({
 		}
 	}
 }));
-
-import { database } from "@self-learning/database/server";
-import { TRPCError } from "@trpc/server";
-import {
-	fetchContextPayload,
-	extractUserQuestion,
-	buildSystemPrompt,
-	cleanResponse
-} from "./ai-tutor-utils";
-import type {
-	PageContext,
-	Message,
-	ContextPayload,
-	LessonWithoutCourseContextPayload
-} from "./types";
 
 // ---------------------------------------------------------------------------
 // Type helpers – avoid "any"

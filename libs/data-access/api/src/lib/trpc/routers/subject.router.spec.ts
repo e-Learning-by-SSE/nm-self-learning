@@ -9,7 +9,7 @@ import {
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
 
-jest.mock("@self-learning/database", () => ({
+jest.mock("@self-learning/database/server", () => ({
 	__esModule: true,
 	database: {
 		subject: {

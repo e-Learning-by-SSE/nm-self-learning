@@ -3,7 +3,7 @@ import { AccessLevel, GroupRole } from "@self-learning/database";
 import { UserFromSession } from "../trpc/context";
 import type { ResourceInput, ResourcePermission } from "@self-learning/types";
 
-jest.mock("@self-learning/database", () => ({
+jest.mock("@self-learning/database/server", () => ({
 	__esModule: true,
 	database: {
 		permission: {

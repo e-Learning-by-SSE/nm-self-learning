@@ -12,7 +12,7 @@ jest.mock("../../permissions/course.utils", () => ({
 jest.mock("../../permissions/permission.service", () => ({
 	canEdit: jest.fn()
 }));
-jest.mock("@self-learning/database", () => ({
+jest.mock("@self-learning/database/server", () => ({
 	__esModule: true,
 	database: {
 		course: {

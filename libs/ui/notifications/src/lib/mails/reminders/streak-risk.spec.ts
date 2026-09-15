@@ -5,7 +5,7 @@ import { SchedulerResult } from "../email-scheduler";
 import { sendTemplatedEmail } from "../email-service";
 import { checkStreakRisks, getUsersWithStreakRisks } from "./streak-risk";
 
-jest.mock("@self-learning/database", () => ({
+jest.mock("@self-learning/database/server", () => ({
 	database: {
 		user: {
 			findMany: jest.fn()

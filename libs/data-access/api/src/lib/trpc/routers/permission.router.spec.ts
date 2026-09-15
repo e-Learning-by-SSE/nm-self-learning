@@ -23,7 +23,7 @@ import {
 	stripFormResourceAccess
 } from "@self-learning/types";
 
-jest.mock("@self-learning/database", () => ({
+jest.mock("@self-learning/database/server", () => ({
 	__esModule: true,
 	database: {
 		$transaction: jest.fn(),
