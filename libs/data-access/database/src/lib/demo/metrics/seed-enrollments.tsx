@@ -1,6 +1,5 @@
-import { EnrollmentStatus, PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { EnrollmentStatus } from "@self-learning/database";
+import { database as prisma } from "@self-learning/database/server";
 
 export async function createEnrollments(
 	courseIds: string[],

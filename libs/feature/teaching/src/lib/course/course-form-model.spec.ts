@@ -1,6 +1,6 @@
 import { ZodError } from "zod";
 import { CourseFormModel, courseFormSchema } from "./course-form-model";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 
 function getErrors(value: unknown) {
 	try {

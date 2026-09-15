@@ -1,5 +1,5 @@
 import { TrashIcon, UsersIcon } from "@heroicons/react/24/solid";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 import { CourseSearchEntry } from "@self-learning/admin";
 import {
 	normalizeFormResourceAccess,

@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@self-learning/database";
 
 const prisma = new PrismaClient();
 

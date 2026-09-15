@@ -1,5 +1,5 @@
 import { createCourseMock, callOpenApi } from "@self-learning/util/testing";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { UserFromSession } from "../context";
 import { getCourseResource } from "../../permissions/course.utils";
 import { canEdit } from "../../permissions/permission.service";
@@ -12,7 +12,7 @@ jest.mock("../../permissions/course.utils", () => ({
 jest.mock("../../permissions/permission.service", () => ({
 	canEdit: jest.fn()
 }));
-jest.mock("@self-learning/database", () => ({
+jest.mock("@self-learning/database/server", () => ({
 	__esModule: true,
 	database: {
 		course: {

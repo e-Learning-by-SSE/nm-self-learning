@@ -1,7 +1,7 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { createNewProfile } from "@self-learning/achievements";
-import { database } from "@self-learning/database";
-import { createInitialNotificationSettings } from "@self-learning/ui/notifications";
+import { createNewProfile } from "@self-learning/achievements/server";
+import { database } from "@self-learning/database/server";
+import { createInitialNotificationSettings } from "@self-learning/ui/notifications/server";
 import { randomBytes } from "crypto";
 import { addDays } from "date-fns";
 import { jwtDecode } from "jwt-decode";

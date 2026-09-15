@@ -1,11 +1,5 @@
-import {
-	Notification,
-	NotificationChannel,
-	NotificationType,
-	Prisma,
-	PrismaClient
-} from "@prisma/client";
-import { database } from "@self-learning/database";
+import { NotificationModel, NotificationChannel, NotificationType } from "@self-learning/database";
+import { database, Prisma, PrismaClient } from "@self-learning/database/server";
 import { addBusinessDays } from "date-fns";
 import {
 	NotificationEntry,
@@ -14,7 +8,7 @@ import {
 } from "./notification-types";
 
 type DbInputNotification = Partial<
-	Omit<Notification, "id" | "createdAt" | "updatedAt" | "component" | "props">
+	Omit<NotificationModel, "id" | "createdAt" | "updatedAt" | "component" | "props">
 >;
 
 export async function createNotification<K extends keyof NotificationPropsMap>(

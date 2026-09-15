@@ -1,4 +1,4 @@
-import { disenrollUser, enrollUser, getEnrollmentsOfUser } from "@self-learning/enrollment";
+import { disenrollUser, enrollUser, getEnrollmentsOfUser } from "@self-learning/enrollment/server";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 

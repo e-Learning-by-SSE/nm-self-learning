@@ -1,8 +1,14 @@
 /**
  * @jest-environment node
  */
-import { Course, EnrollmentStatus, PrismaClient, Student, Subject, User } from "@prisma/client";
-const prisma = new PrismaClient();
+import {
+	CourseModel,
+	EnrollmentStatus,
+	StudentModel,
+	SubjectModel,
+	UserModel
+} from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 
 import {
 	createStudents,
@@ -13,10 +19,10 @@ import {
 	deleteUsers
 } from "../helper";
 
-let users: User[];
-let students: Student[];
-let course: Course;
-let subject: Subject;
+let users: UserModel[];
+let students: StudentModel[];
+let course: CourseModel;
+let subject: SubjectModel;
 
 describe("Courses Completed by Subject for Student", () => {
 	beforeAll(async () => {
@@ -24,7 +30,7 @@ describe("Courses Completed by Subject for Student", () => {
 
 		students = await createStudents([users[0]]);
 
-		course = await prisma.course.create({
+		course = await database.course.create({
 			data: {
 				courseId: "average-lesson-completion-rate-by-course-test-course",
 				title: "Average Lesson Completion Rate by Course Test Course",
@@ -35,7 +41,7 @@ describe("Courses Completed by Subject for Student", () => {
 			}
 		});
 
-		subject = await prisma.subject.create({
+		subject = await database.subject.create({
 			data: {
 				subjectId: "average-lesson-completion-rate-by-course-test-subject",
 				title: "Average Lesson Completion Rate by Course Test Subject",
@@ -60,20 +66,20 @@ describe("Courses Completed by Subject for Student", () => {
 	afterAll(async () => {
 		// Clean up created data in reverse order
 		await deleteEnrollments([course]);
-		await prisma.subject.deleteMany({
+		await database.subject.deleteMany({
 			where: { subjectId: subject.subjectId }
 		});
-		await prisma.course.deleteMany({
+		await database.course.deleteMany({
 			where: { courseId: course.courseId }
 		});
 		await deleteStudents(students);
 		await deleteUsers(users);
 
-		await prisma.$disconnect();
+		await database.$disconnect();
 	});
 
 	it("should calculate 100% average courses completed by subject for student", async () => {
-		const result = await prisma.studentMetric_CoursesCompletedBySubject.findFirst({
+		const result = await database.studentMetric_CoursesCompletedBySubject.findFirst({
 			where: { userId: users[0].id }
 		});
 

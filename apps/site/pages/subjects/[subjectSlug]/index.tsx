@@ -1,5 +1,5 @@
 import { Square3Stack3DIcon } from "@heroicons/react/24/solid";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { ResolvedValue } from "@self-learning/types";
 import { ImageCard, ImageCardBadge } from "@self-learning/ui/common";
 import { ItemCardGrid, TopicHeader } from "@self-learning/ui/layouts";

@@ -1,5 +1,10 @@
-import { AccessLevel, Course, Prisma } from "@prisma/client";
-import { database, save_subtitle_for_lesson, logJobProgress } from "@self-learning/database";
+import { AccessLevel, CourseModel } from "@self-learning/database";
+import {
+	database,
+	save_subtitle_for_lesson,
+	logJobProgress,
+	Prisma
+} from "@self-learning/database/server";
 import {
 	createLessonMeta,
 	EventTypeMap,
@@ -417,7 +422,7 @@ export const lessonRouter = t.router({
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 			}
 			const courses = await database.$queryRawUnsafe(buildLinkedLessonQuery(input.lessonId));
-			return courses as (Course & { permissions: ResourcePermissions })[];
+			return courses as (CourseModel & { permissions: ResourcePermissions })[];
 		}),
 	deleteLesson: authProcedure
 		.input(z.object({ lessonId: z.string() }))

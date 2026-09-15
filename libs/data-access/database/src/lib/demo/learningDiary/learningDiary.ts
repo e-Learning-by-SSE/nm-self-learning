@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { PrismaClient } from "@prisma/client";
+import { database as prisma } from "@self-learning/database/server";
 import {
 	getRandomCreatedAt,
 	getRandomElementFromArray,
 	getRandomTimeIntervalInMs
 } from "../../seed-functions";
 
-const prisma = new PrismaClient();
 const DEFAULT_SLUG = "the-beginners-guide-to-react";
 
 // Reuse this function for generating random numbers within a range

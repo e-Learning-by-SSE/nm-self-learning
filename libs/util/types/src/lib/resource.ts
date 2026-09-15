@@ -1,4 +1,4 @@
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 import { z } from "zod";
 import { AccessLevelEnum, PrismaResourcePermission } from "./permissions";
 

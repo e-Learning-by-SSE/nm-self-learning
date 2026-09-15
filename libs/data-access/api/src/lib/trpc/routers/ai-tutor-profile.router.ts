@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { adminProcedure, t } from "../trpc";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { aiTutorProfileSchema, deleteProfileSchema } from "@self-learning/types";
 import { fetchAvailableModels, fetchLlmConfig } from "./llm-config.router";
 

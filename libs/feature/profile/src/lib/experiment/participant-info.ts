@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 
 export async function getExperimentStatus(username: string) {
 	const userData = await database.user.findUniqueOrThrow({

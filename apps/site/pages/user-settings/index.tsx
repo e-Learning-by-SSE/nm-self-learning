@@ -4,18 +4,18 @@ import {
 	DeleteMeForm,
 	ExperimentShortInfo,
 	FeatureSettingsForm,
-	getExperimentStatus,
-	getUserWithSettings,
-	isExperimentActive,
 	NotificationSettingsForm,
 	PersonalSettingsForm,
+	isExperimentActive,
 	I18N_NAMESPACE as NS_SETTINGS,
 	PermissionsSettingsForm
 } from "@self-learning/profile";
+import { getExperimentStatus, getUserWithSettings } from "@self-learning/profile/server";
 import { ResolvedValue } from "@self-learning/types";
 import { showToast, Toggle } from "@self-learning/ui/common";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
-import { useLoginRedirect, withAuth } from "@self-learning/util/auth";
+import { useLoginRedirect } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 import { isTruthy } from "@self-learning/util/common";
 import { TRPCClientError } from "@trpc/client";
 import { useTranslation } from "next-i18next";

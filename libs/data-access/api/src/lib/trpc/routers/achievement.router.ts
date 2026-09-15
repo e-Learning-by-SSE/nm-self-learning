@@ -1,6 +1,6 @@
-import { PrismaClient } from "@prisma/client";
-import { checkAndAwardAchievements, convertAchievement } from "@self-learning/achievements";
-import { database } from "@self-learning/database";
+import { PrismaClient, database } from "@self-learning/database/server";
+import { checkAndAwardAchievements } from "@self-learning/achievements/server";
+import { convertAchievement } from "@self-learning/achievements";
 import {
 	AchievementWithProgress,
 	GamificationProfile,
@@ -11,8 +11,8 @@ import { TRPCError } from "@trpc/server";
 import { addHours, addMinutes } from "date-fns";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
-import { createNotification } from "@self-learning/ui/notifications";
-import { createEventLogEntry } from "@self-learning/util/eventlog";
+import { createNotification } from "@self-learning/ui/notifications/server";
+import { createEventLogEntry } from "@self-learning/util/eventlog/server";
 
 export async function getProfile(username: string, tx?: PrismaClient) {
 	const client = tx || database;

@@ -1,5 +1,4 @@
-import { Prisma, PrismaClient } from "@prisma/client";
-import { database } from "@self-learning/database";
+import { database, Prisma, PrismaClient } from "@self-learning/database/server";
 import { EventLog, EventLogQueryInput, EventTypeKeys } from "@self-learning/types";
 import { createHash } from "crypto";
 import { EventType } from "next-auth";

@@ -1,12 +1,11 @@
-import { database } from "@self-learning/database";
+import { database, SkillRepository } from "@self-learning/database/server";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { getSkills } from "libs/data-access/api/src/lib/trpc/routers/skill.router"; // TODO change
 import { LoadingBox } from "@self-learning/ui/common";
 import { SkillFormModel } from "@self-learning/types";
-import { SkillRepository } from "@prisma/client";
 import { SkillFolderEditor } from "@self-learning/teaching";
-import { getAuthenticatedUser } from "@self-learning/util/auth";
+import { getAuthenticatedUser } from "@self-learning/util/auth/server";
 
 interface CreateAndViewRepositoryProps {
 	repository: SkillRepository;

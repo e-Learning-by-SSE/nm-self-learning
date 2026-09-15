@@ -1,5 +1,5 @@
 import z from "zod";
-import { SkillResolved } from "@self-learning/database";
+import { SkillResolved } from "@self-learning/database/server";
 
 //zod scheme
 export const skillCreationFormSchema = z.object({

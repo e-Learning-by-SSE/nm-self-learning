@@ -16,14 +16,14 @@ import {
 	changeDisplay,
 	getCycleDisplayInformation
 } from "./skill-display";
-import { SkillRepository } from "@prisma/client";
+import { SkillRepositoryModel } from "@self-learning/database";
 import { SkillFolderTable } from "./folder-table";
 
 export function SkillFolderEditor({
 	repository,
 	skills
 }: {
-	repository: SkillRepository;
+	repository: SkillRepositoryModel;
 	skills: Map<string, SkillFormModel>;
 }) {
 	const { skillDisplayData, updateSkillDisplay } = useTableSkillDisplay(skills);
@@ -133,7 +133,7 @@ function SidebarContentEditor({
 }: {
 	skill?: SkillFormModel;
 	changeEditTarget: SkillSelectHandler;
-	repository: SkillRepository;
+	repository: SkillRepositoryModel;
 }) {
 	return (
 		<>

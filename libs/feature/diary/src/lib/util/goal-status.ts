@@ -1,4 +1,4 @@
-import { LearningGoalStatus } from "@prisma/client";
+import { LearningGoalStatus } from "@self-learning/database";
 import { GoalFormModel } from "./types";
 import { inferProcedureInput } from "@trpc/server";
 import { AppRouter } from "@self-learning/api";

@@ -1,4 +1,4 @@
-import { checkAndSendScheduledEmails } from "@self-learning/ui/notifications";
+import { checkAndSendScheduledEmails } from "@self-learning/ui/notifications/server";
 import { NextApiRequest, NextApiResponse } from "next";
 
 const API_SECRET = process.env.SCHEDULER_SECRET;

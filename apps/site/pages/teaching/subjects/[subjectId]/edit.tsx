@@ -1,12 +1,17 @@
 import { trpc } from "@self-learning/api-client";
 import { SubjectEditor } from "@self-learning/teaching";
-import { resourcePermissionSelect, Subject, subjectSchema, toResourcePermissionsForm } from "@self-learning/types";
+import {
+	resourcePermissionSelect,
+	Subject,
+	subjectSchema,
+	toResourcePermissionsForm
+} from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
 import { withTranslations } from "@self-learning/api";
-import { withAuth } from "@self-learning/util/auth";
-import { database } from "@self-learning/database";
+import { withAuth } from "@self-learning/util/auth/server";
+import { database } from "@self-learning/database/server";
 import { ResourceGuard, testResourceGuard } from "@self-learning/ui/layouts";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 
 type EditSubjectProps = {
 	subject: Subject;

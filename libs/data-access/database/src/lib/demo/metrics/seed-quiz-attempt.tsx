@@ -1,7 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import { database as prisma } from "@self-learning/database/server";
 import lessonsRaw from "./data/lesson.json";
-
-const prisma = new PrismaClient();
 
 export async function createQuizAttempts() {
 	try {

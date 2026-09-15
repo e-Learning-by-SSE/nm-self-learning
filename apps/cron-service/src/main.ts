@@ -1,6 +1,7 @@
 import "dotenv/config";
 import cron from "node-cron";
-import { database, generateTokenForUser, save_subtitle_for_lesson } from "@self-learning/database";
+import { generateTokenForUser, save_subtitle_for_lesson } from "@self-learning/database/server";
+import { database } from "@self-learning/database/server";
 import { LessonContent, LessonContentType, subtitleSrcSchema, Video } from "@self-learning/types";
 import io from "socket.io-client";
 import { embedLesson } from "./rag";

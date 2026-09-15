@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { database as prisma } from "@self-learning/database/server";
 import {
 	softwareentwicklungDemoGroup,
 	softwareentwicklungDemoSpecialization
@@ -23,8 +23,6 @@ import { createEnrollments } from "./metrics/seed-enrollments";
 import { createCourses } from "./metrics/seed-courses";
 import { createSubjects } from "./metrics/seed-subject";
 import { seedDummy } from "./seed-dummy";
-
-const prisma = new PrismaClient();
 
 export async function seedDemos(): Promise<void> {
 	console.log("\x1b[94m%s\x1b[0m", "Seeding Demo Data:");

@@ -1,9 +1,9 @@
 import { PlayIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
-import { LessonType } from "@prisma/client";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { SmallGradeBadge, useCourseCompletion } from "@self-learning/completion";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
+import { LessonType } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
@@ -16,8 +16,8 @@ import {
 import { AuthorsList, OnlineHelpLink, Tooltip } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection, useAuthentication } from "@self-learning/ui/layouts";
-import { handleEmailTracking } from "@self-learning/ui/notifications";
-import { withAuth } from "@self-learning/util/auth";
+import { handleEmailTracking } from "@self-learning/ui/notifications/server";
+import { withAuth } from "@self-learning/util/auth/server";
 import { authOptions } from "@self-learning/util/auth/server";
 import { formatDateDistanceToNow, formatSeconds } from "@self-learning/util/common";
 import { getServerSession } from "next-auth";

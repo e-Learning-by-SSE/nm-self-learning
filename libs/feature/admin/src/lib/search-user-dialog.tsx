@@ -1,6 +1,6 @@
 "use client";
 import { Combobox, ComboboxOption } from "@headlessui/react";
-import { UserRole } from "@prisma/client";
+import { UserRole } from "@self-learning/database";
 import { trpc } from "@self-learning/api-client";
 import {
 	DropdownDialog,

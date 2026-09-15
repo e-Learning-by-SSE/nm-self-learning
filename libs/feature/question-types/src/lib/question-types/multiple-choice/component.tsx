@@ -4,8 +4,8 @@ import { MDXRemote } from "next-mdx-remote";
 import { PropsWithChildren } from "react";
 import { Feedback } from "../../feedback";
 import { useQuestion } from "../../use-question-hook";
-import { LessonLayoutProps } from "@self-learning/lesson";
-import { LessonType } from "@prisma/client";
+import type { LessonLayoutProps } from "@self-learning/lesson/server";
+import { LessonType } from "@self-learning/database";
 
 export default function MultipleChoiceAnswer({ lesson }: { lesson: LessonLayoutProps["lesson"] }) {
 	const { question, setAnswer, answer, markdown, evaluation } = useQuestion("multiple-choice");

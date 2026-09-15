@@ -1,5 +1,4 @@
-import { Prisma, PrismaClient } from "@prisma/client";
-import { DefaultArgs } from "@prisma/client/runtime/library";
+import { Prisma, PrismaClient, DefaultArgs } from "@self-learning/database";
 import { z } from "zod";
 
 const prisma = new PrismaClient();

@@ -9,7 +9,7 @@ import {
 	useSlugify
 } from "@self-learning/ui/forms";
 import { useResourceGuard } from "@self-learning/ui/layouts";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";

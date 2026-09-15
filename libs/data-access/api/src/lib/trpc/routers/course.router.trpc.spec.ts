@@ -1,11 +1,10 @@
-import { database } from "@self-learning/database";
+import { database, Prisma } from "@self-learning/database/server";
 import { Context, UserFromSession } from "../context";
 import { courseRouter } from "./course.router";
 import { t } from "../trpc";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { TRPCError } from "@trpc/server";
 import { getCourseResource } from "../../permissions/course.utils";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 import {
 	canCreate,
 	canDelete,
@@ -13,7 +12,7 @@ import {
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
 
-jest.mock("@self-learning/database", () => ({
+jest.mock("@self-learning/database/server", () => ({
 	__esModule: true,
 	database: {
 		course: {
@@ -161,7 +160,7 @@ describe("tRPC API of Course Router", () => {
 						authors: [{ username: "author1" }]
 					});
 				} else {
-					throw new PrismaClientKnownRequestError(
+					throw new Prisma.PrismaClientKnownRequestError(
 						"No Course found for specified where condition",
 						{ code: "P2025", clientVersion: "4.0.0" } // Mocked error code & version
 					);
@@ -247,7 +246,7 @@ describe("tRPC API of Course Router", () => {
 						authors: [{ username: "author1" }]
 					});
 				} else {
-					throw new PrismaClientKnownRequestError(
+					throw new Prisma.PrismaClientKnownRequestError(
 						"No Course found for specified where condition",
 						{ code: "P2025", clientVersion: "4.0.0" } // Mocked error code & version
 					);

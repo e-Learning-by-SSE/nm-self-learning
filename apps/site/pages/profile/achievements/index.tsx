@@ -2,7 +2,7 @@ import { withTranslations } from "@self-learning/api";
 import { AchievementOverview } from "@self-learning/achievements";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { NextComponentType, NextPageContext } from "next";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 
 function AchievementLayout(
 	Component: NextComponentType<NextPageContext, unknown, Record<string, never>>,

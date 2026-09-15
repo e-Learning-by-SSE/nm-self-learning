@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
-import { database } from "@self-learning/database";
-import { Prisma } from "@prisma/client";
+import { database } from "../../prisma";
+import { Prisma } from "../../../generated/prisma/client";
 import { Session } from "next-auth";
 
 export async function generateTokenForUser(where: Prisma.UserWhereUniqueInput) {

@@ -3,7 +3,7 @@ import { Controller, useFieldArray, useFormContext, useFormState, useWatch } fro
 import { GroupFormModel } from "../group-editor";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { PlusIcon } from "@heroicons/react/24/solid";
-import { GroupRole } from "@prisma/client";
+import { GroupRole } from "@self-learning/database";
 import { useState } from "react";
 import {
 	GroupMemberRow,

@@ -1,5 +1,5 @@
 import { PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 import { trpc } from "@self-learning/api-client";
 import { ResourceGroupChips } from "@self-learning/teaching";
 import { ImageOrPlaceholder, LoadingBox, SectionHeader } from "@self-learning/ui/common";

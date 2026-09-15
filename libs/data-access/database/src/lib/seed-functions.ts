@@ -4,10 +4,9 @@ import {
 	GroupRole,
 	LessonType,
 	NotificationChannel,
-	NotificationType,
-	Prisma,
-	PrismaClient
-} from "@prisma/client";
+	NotificationType
+} from "@self-learning/database";
+import { Prisma, database as prisma } from "@self-learning/database/server";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
 import {
 	createCourseContent,
@@ -22,8 +21,6 @@ import { subDays, subHours } from "date-fns";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { defaultLicense } from "./license";
-
-const prisma = new PrismaClient();
 
 const adminName = "dumbledore";
 
@@ -511,7 +508,7 @@ export async function createStrategiesAndTechniques(input: LearningStrategyCateg
 					name: technique.name,
 					description: technique.description,
 					defaultTechnique: true,
-					strategy: { connect: { id: strategy.id } }
+					learningStrategieId: strategy.id
 				}
 			});
 		}

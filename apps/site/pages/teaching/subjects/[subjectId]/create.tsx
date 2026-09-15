@@ -26,9 +26,9 @@ import { useRouter } from "next/router";
 import { FormProvider, useForm } from "react-hook-form";
 import { withTranslations } from "@self-learning/api";
 import { GroupAccessEditor } from "@self-learning/teaching";
-import { withAuth } from "@self-learning/util/auth";
-import { database } from "@self-learning/database";
-import { AccessLevel } from "@prisma/client";
+import { withAuth } from "@self-learning/util/auth/server";
+import { database } from "@self-learning/database/server";
+import { AccessLevel } from "@self-learning/database";
 import { useWatch } from "react-hook-form";
 
 type CreateSpecializationProps = {

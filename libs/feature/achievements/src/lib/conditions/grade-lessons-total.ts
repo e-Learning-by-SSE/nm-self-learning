@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { ConditionChecker } from "../achievement-registry";
 import { GRADE_THRESHOLD } from "@self-learning/completion";
 

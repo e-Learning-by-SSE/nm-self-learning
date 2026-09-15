@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database } from "../../prisma";
 import { ResolvedValue } from "@self-learning/types";
 
 // TODO move to database access layer

@@ -13,7 +13,7 @@ import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { MDXRemote } from "next-mdx-remote";
 import { Hints } from "./hints";
 import { useQuiz } from "./quiz-context";
-import { LessonLayoutProps } from "@self-learning/lesson";
+import type { LessonLayoutProps } from "@self-learning/lesson/server";
 import { useCookies } from "react-cookie";
 import {
 	CheckCircleIcon as CheckCircleIconOutline,

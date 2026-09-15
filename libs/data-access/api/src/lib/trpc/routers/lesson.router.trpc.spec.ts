@@ -1,7 +1,6 @@
-import { database } from "@self-learning/database";
+import { database, Prisma } from "@self-learning/database/server";
 import { Context, UserFromSession } from "../context";
 import { t } from "../trpc";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { TRPCError } from "@trpc/server";
 import {
 	canCreate,
@@ -10,23 +9,27 @@ import {
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
 import { lessonRouter } from "./lesson.router";
-import { AccessLevel, LessonType } from "@prisma/client";
+import { AccessLevel, LessonType } from "@self-learning/database";
 
-jest.mock("@self-learning/database", () => ({
-	__esModule: true,
-	database: {
-		$transaction: jest.fn(),
-		lesson: {
-			delete: jest.fn(),
-			update: jest.fn(),
-			create: jest.fn(),
-			findUnique: jest.fn()
-		},
-		permission: {
-			findMany: jest.fn()
+jest.mock("@self-learning/database/server", () => {
+	const actual = jest.requireActual("@self-learning/database/server");
+
+	return {
+		...actual,
+		database: {
+			$transaction: jest.fn(),
+			lesson: {
+				delete: jest.fn(),
+				update: jest.fn(),
+				create: jest.fn(),
+				findUnique: jest.fn()
+			},
+			permission: {
+				findMany: jest.fn()
+			}
 		}
-	}
-}));
+	};
+});
 
 jest.mock("../../permissions/permission.service", () => ({
 	getEffectiveAccess: jest.fn(),
@@ -186,7 +189,7 @@ describe("tRPC API of Lesson Router", () => {
 						authors: [{ username: "author1" }]
 					});
 				} else {
-					throw new PrismaClientKnownRequestError(
+					throw new Prisma.PrismaClientKnownRequestError(
 						"No Lesson found for specified where condition",
 						{ code: "P2025", clientVersion: "4.0.0" } // Mocked error code & version
 					);
@@ -299,7 +302,7 @@ describe("tRPC API of Lesson Router", () => {
 						authors: [{ username: "author1" }]
 					});
 				} else {
-					throw new PrismaClientKnownRequestError(
+					throw new Prisma.PrismaClientKnownRequestError(
 						"No Lesson found for specified where condition",
 						{ code: "P2025", clientVersion: "4.0.0" } // Mocked error code & version
 					);

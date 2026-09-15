@@ -22,7 +22,12 @@ import {
 } from "@self-learning/ui/common";
 import { useMemo, useState } from "react";
 import { useTranslation } from "next-i18next";
-import { AccessLevel, Course, Specialization, Subject } from "@prisma/client";
+import {
+	AccessLevel,
+	CourseModel,
+	SpecializationModel,
+	SubjectModel
+} from "@self-learning/database";
 import { ResourceGuard, testResourceGuard, useRequiredSession } from "@self-learning/ui/layouts";
 
 type Permissions = { permissions?: ResourcePermissions };
@@ -60,7 +65,7 @@ function isUnlinkAvailable(resource: ResourceDeleteEntry, blocker: ResourceDelet
 	);
 }
 
-function toCourseEntry(course: Course & Permissions): ResourceDeleteEntry {
+function toCourseEntry(course: CourseModel & Permissions): ResourceDeleteEntry {
 	return {
 		kind: "course",
 		id: course.courseId,
@@ -71,7 +76,7 @@ function toCourseEntry(course: Course & Permissions): ResourceDeleteEntry {
 	};
 }
 function toSpecializationEntry(
-	spec: Specialization & Permissions & { subject: Subject }
+	spec: SpecializationModel & Permissions & { subject: SubjectModel }
 ): ResourceDeleteEntry {
 	return {
 		kind: "specialization",
@@ -83,7 +88,7 @@ function toSpecializationEntry(
 		permissions: spec.permissions
 	};
 }
-function toSubjectEntry(subject: Subject & Permissions): ResourceDeleteEntry {
+function toSubjectEntry(subject: SubjectModel & Permissions): ResourceDeleteEntry {
 	return {
 		kind: "subject",
 		id: subject.subjectId,

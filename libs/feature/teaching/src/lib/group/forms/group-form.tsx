@@ -9,7 +9,7 @@ import {
 	SearchGroupDialog,
 	useDefaultGroup
 } from "../dialogs/search-group-dialog";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 import { GenericCombobox } from "../editors/group-members";
 import { useRequiredSession } from "@self-learning/ui/layouts";
 import { ResourcePermissionsFormType } from "@self-learning/types";

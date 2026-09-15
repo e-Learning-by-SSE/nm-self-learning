@@ -1,10 +1,12 @@
 import { CheckIcon } from "@heroicons/react/24/solid";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
-import { EXPERIMENT_END_DATE, getExperimentStatus } from "@self-learning/profile";
+import { EXPERIMENT_END_DATE } from "@self-learning/profile";
+import { getExperimentStatus } from "@self-learning/profile/server";
 import { showToast } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import { useLoginRedirect, withAuth } from "@self-learning/util/auth";
+import { useLoginRedirect } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 import { formatDateStringFull } from "@self-learning/util/common";
 import Link from "next/link";
 import { useState } from "react";

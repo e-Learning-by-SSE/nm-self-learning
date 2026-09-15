@@ -1,6 +1,6 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 import { DialogActions, SectionHeader } from "@self-learning/ui/common";
 import { Form, MarkdownField, OpenAsJsonButton } from "@self-learning/ui/forms";
 import { SidebarEditorLayout, useResourceGuard } from "@self-learning/ui/layouts";

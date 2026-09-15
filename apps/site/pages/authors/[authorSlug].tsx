@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { CompiledMarkdown } from "@self-learning/markdown";
 import { ResolvedValue } from "@self-learning/types";
 import { ImageCard } from "@self-learning/ui/common";

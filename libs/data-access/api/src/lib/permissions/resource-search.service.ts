@@ -1,5 +1,5 @@
-import { AccessLevel, Prisma } from "@prisma/client";
-import { database } from "@self-learning/database";
+import { AccessLevel } from "@self-learning/database";
+import { database, Prisma } from "@self-learning/database/server";
 import {
 	allResourceKinds,
 	getResourceSearchEntryKey,

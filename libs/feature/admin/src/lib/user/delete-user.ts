@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@self-learning/database/server";
 
 export async function deleteUserAndDependentData(username: string, database: PrismaClient) {
 	return await database.$transaction(async transaction => {

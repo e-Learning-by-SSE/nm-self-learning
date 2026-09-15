@@ -15,7 +15,7 @@ import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { FormProvider, useForm } from "react-hook-form";
 import { Trans, useTranslation } from "next-i18next";
 import { GroupAccessEditor } from "../group/forms/group-form";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 
 export function SubjectEditor({
 	initialSubject,

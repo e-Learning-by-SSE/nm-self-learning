@@ -1,5 +1,5 @@
 import { ResolvedValue } from "@self-learning/types";
-import { loadUserEventLogs } from "@self-learning/util/eventlog";
+import { loadUserEventLogs } from "@self-learning/util/eventlog/server";
 
 export type MetricResult = { createdAt: Date; values: Record<string, number> };
 

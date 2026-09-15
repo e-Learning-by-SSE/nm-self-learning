@@ -1,16 +1,8 @@
 /**
  * @jest-environment node
  */
-import {
-	Course,
-	EnrollmentStatus,
-	PrismaClient,
-	Student,
-	User,
-	Lesson,
-	QuizAttempt
-} from "@prisma/client";
-const prisma = new PrismaClient();
+import { CourseModel, EnrollmentStatus, StudentModel, UserModel } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 
 import {
 	createStudents,
@@ -27,11 +19,11 @@ import {
 	deleteCompletedLesson
 } from "../helper";
 
-let users: User[];
-let students: Student[];
-let course: Course;
-let lessons: Lesson[];
-let quizAttempt: QuizAttempt;
+let users: UserModel[];
+let students: StudentModel[];
+let course: CourseModel;
+let lessons: LessonModel[];
+let quizAttempt: QuizAttemptModel;
 
 describe("Average Quiz Answers for Student", () => {
 	beforeAll(async () => {
@@ -39,7 +31,7 @@ describe("Average Quiz Answers for Student", () => {
 
 		students = await createStudents([users[0]]);
 
-		course = await prisma.course.create({
+		course = await database.course.create({
 			data: {
 				courseId: "average-quiz-answers-test-course",
 				title: "Average Quiz Answers Test Course",
@@ -65,7 +57,7 @@ describe("Average Quiz Answers for Student", () => {
 
 		await createCompletedLesson(lessons[0], course.courseId, students);
 
-		quizAttempt = await prisma.quizAttempt.create({
+		quizAttempt = await database.quizAttempt.create({
 			data: {
 				state: "COMPLETED",
 				username: students[0].username,
@@ -73,7 +65,7 @@ describe("Average Quiz Answers for Student", () => {
 			}
 		});
 
-		await prisma.quizAnswer.create({
+		await database.quizAnswer.create({
 			data: {
 				quizAttemptId: quizAttempt.attemptId,
 				questionId: "question-1",
@@ -85,27 +77,27 @@ describe("Average Quiz Answers for Student", () => {
 
 	afterAll(async () => {
 		// Clean up created data in reverse order
-		await prisma.quizAnswer.deleteMany({
+		await database.quizAnswer.deleteMany({
 			where: { quizAttemptId: quizAttempt.attemptId }
 		});
-		await prisma.quizAttempt.deleteMany({
+		await database.quizAttempt.deleteMany({
 			where: { attemptId: quizAttempt.attemptId }
 		});
 		await deleteCompletedLesson(lessons[0]);
 		await deleteStartedLesson(lessons[0]);
 		await deleteLessons([lessons[0]]);
 		await deleteEnrollments([course]);
-		await prisma.course.deleteMany({
+		await database.course.deleteMany({
 			where: { courseId: course.courseId }
 		});
 		await deleteStudents(students);
 		await deleteUsers(users);
 
-		await prisma.$disconnect();
+		await database.$disconnect();
 	});
 
 	it("should calculate 100% average quiz answers for student", async () => {
-		const result = await prisma.studentMetric_AverageQuizAnswers.findFirst({
+		const result = await database.studentMetric_AverageQuizAnswers.findFirst({
 			where: { userId: users[0].id }
 		});
 

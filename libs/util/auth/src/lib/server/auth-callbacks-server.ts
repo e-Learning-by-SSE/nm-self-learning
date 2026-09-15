@@ -1,9 +1,11 @@
-import { database } from "@self-learning/database";
-import { getExperimentStatus, isExperimentActive } from "@self-learning/profile";
+import { database } from "@self-learning/database/server";
+import { isExperimentActive } from "@self-learning/profile";
+import { getExperimentStatus } from "@self-learning/profile/server";
 import { GamificationProfile } from "@self-learning/types";
-import { createNotification, NotificationPropsMap } from "@self-learning/ui/notifications";
+import { createNotification } from "@self-learning/ui/notifications/server";
+import { NotificationPropsMap } from "@self-learning/ui/notifications";
 import { getDifferenceInGermanDays } from "@self-learning/util/common";
-import { createEventLogEntry } from "@self-learning/util/eventlog";
+import { createEventLogEntry } from "@self-learning/util/eventlog/server";
 import { EventCallbacks } from "next-auth";
 
 type SigninCallback = EventCallbacks["signIn"];

@@ -7,7 +7,7 @@ import * as PerceptionOfSmelling from "./PerceptionOfSmelling";
 import * as PerceptionOfTasting from "./PerceptionOfTasting";
 import * as FundamentalsOfAttention from "./FundamentalsOfAttention";
 import * as FundamentalsOfConsciousness from "./FundamentalsOfConsciousness";
-import { GroupRole } from "@prisma/client";
+import { GroupRole } from "@self-learning/database";
 
 const chapters = [
 	FundamentalsOfPerception.chapters,

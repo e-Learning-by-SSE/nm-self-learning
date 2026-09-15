@@ -1,6 +1,6 @@
 import { authorProcedure, t } from "../trpc";
 import * as z from "zod";
-import { database, getSkillById } from "@self-learning/database";
+import { database, getSkillById } from "@self-learning/database/server";
 import {
 	createSkillFormModelFromSkillResolved,
 	skillCreationFormSchema,

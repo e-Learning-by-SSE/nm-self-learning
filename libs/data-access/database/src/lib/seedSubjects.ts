@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@self-learning/database/server";
 
 export const subjects: Prisma.SubjectCreateManyInput[] = [
 	{

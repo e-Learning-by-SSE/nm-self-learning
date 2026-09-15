@@ -1,9 +1,15 @@
-import { database, generateTokenForUser } from "@self-learning/database";
+import { GroupRole } from "@self-learning/database";
+import {
+	Prisma,
+	PrismaClient,
+	database,
+	generateTokenForUser
+} from "@self-learning/database/server";
 import {
 	createUserParticipation,
 	getExperimentStatus,
 	updateExperimentParticipation
-} from "@self-learning/profile";
+} from "@self-learning/profile/server";
 import {
 	EditFeatureSettings,
 	editFeatureSettingsSchema,
@@ -14,7 +20,6 @@ import { randomUUID } from "crypto";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 import { Session } from "next-auth";
-import { GroupRole, Prisma, PrismaClient } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { hasEffectiveGroupRole } from "../../permissions/permission.service";
 

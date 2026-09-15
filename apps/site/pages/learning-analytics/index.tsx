@@ -5,8 +5,7 @@ import { useTranslation } from "next-i18next";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 
-import { StudentAnalytics } from "@self-learning/analysis";
-import { CreatorAnalytics } from "@self-learning/analysis";
+import { StudentAnalytics, CreatorAnalytics } from "@self-learning/analysis";
 import { LoadingBox, Tab, Tabs } from "@self-learning/ui/common";
 import { useEnrollments } from "@self-learning/enrollment";
 

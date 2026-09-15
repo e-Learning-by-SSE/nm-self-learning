@@ -1,7 +1,6 @@
-import { Prisma, PrismaClient, SkillRepository } from "@prisma/client";
+import { SkillRepositoryModel } from "@self-learning/database";
+import { Prisma, database as prisma } from "@self-learning/database/server";
 import { slugify } from "@self-learning/util/common";
-
-const prisma = new PrismaClient();
 
 type SkillOfRepository = {
 	id: string;
@@ -34,7 +33,7 @@ const authors: Prisma.UserCreateInput[] = [
 	}
 ];
 
-const repositories: SkillRepository[] = [
+const repositories: SkillRepositoryModel[] = [
 	{
 		id: "SK-Repository::SRL::1-A",
 		name: "Self-Regulated Learning (Example 1, Version A)",

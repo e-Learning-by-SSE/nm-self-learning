@@ -11,7 +11,7 @@ import { TrashIcon } from "@heroicons/react/24/solid";
 import { FolderPlusIcon } from "@heroicons/react/24/outline";
 import { SkillSelectHandler, UpdateVisuals } from "./skill-display";
 import { trpc } from "@self-learning/api-client";
-import { Skill } from "@prisma/client";
+import { SkillModel } from "@self-learning/database";
 
 const withErrorHandling = async (fn: () => Promise<void>) => {
 	try {
@@ -42,7 +42,7 @@ export function AddChildButton({
 	parentSkill: SkillFormModel;
 	updateSkillDisplay: UpdateVisuals;
 	handleSelection: SkillSelectHandler;
-	skillDefaults?: Partial<Skill>;
+	skillDefaults?: Partial<SkillModel>;
 }) {
 	const { mutateAsync: addSkillOnParent } = trpc.skill.createSkillWithParents.useMutation();
 	const newSkill = {
@@ -140,8 +140,8 @@ export function NewSkillButton({
 	skillDefaults
 }: {
 	repoId: string;
-	onSuccess?: (skill: Skill) => void | Promise<void>;
-	skillDefaults?: Partial<Skill>;
+	onSuccess?: (skill: SkillModel) => void | Promise<void>;
+	skillDefaults?: Partial<SkillModel>;
 }) {
 	const { mutateAsync: createNewSkill } = trpc.skill.createSkill.useMutation();
 

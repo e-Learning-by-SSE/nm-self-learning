@@ -22,7 +22,7 @@ import {
 	useCanCreate,
 	useResourceGuard
 } from "@self-learning/ui/layouts";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 import { TRPCClientError } from "@trpc/client";
 import Link from "next/link";
 import { useRouter } from "next/router";

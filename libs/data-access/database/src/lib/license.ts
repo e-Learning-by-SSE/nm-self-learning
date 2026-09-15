@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma } from "@prisma/client";
+import { database as prisma, Prisma } from "@self-learning/database/server";
 
 export const license: Prisma.LicenseCreateManyInput[] = [
 	{
@@ -35,8 +35,6 @@ export const license: Prisma.LicenseCreateManyInput[] = [
 export const defaultLicense = license[0];
 
 export async function defaultLicenseId(): Promise<number> {
-	const prisma = new PrismaClient();
-
 	try {
 		const license = await prisma.license.findFirst({
 			where: { name: defaultLicense.name }

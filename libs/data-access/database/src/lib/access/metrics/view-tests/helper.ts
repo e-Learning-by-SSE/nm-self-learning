@@ -1,11 +1,17 @@
 // Helper function to create students
-import { Author, PrismaClient, Student, User, Course, Lesson } from "@prisma/client";
-import { EnrollmentStatus } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import {
+	AuthorModel,
+	CourseModel,
+	EnrollmentStatus,
+	StudentModel,
+	LessonModel,
+	UserModel
+} from "@self-learning/database";
+import { database } from "@self-learning/database/server";
+const prisma = database;
 
 export async function createUsers(usernames: string[]) {
-	const users: User[] = [];
+	const users: UserModel[] = [];
 
 	for (const username of usernames) {
 		users.push(
@@ -20,16 +26,18 @@ export async function createUsers(usernames: string[]) {
 	return users;
 }
 
-export async function deleteUsers(users: User[]) {
-	for (const user of users) {
-		await prisma.user.deleteMany({
-			where: { id: user.id }
-		});
-	}
+export async function deleteUsers(users: UserModel[]) {
+	try {
+		for (const user of users) {
+			await prisma.user.deleteMany({
+				where: { id: user.id }
+			});
+		}
+	} catch (_error) {}
 }
 
-export async function createStudents(users: User[]) {
-	const students: Student[] = [];
+export async function createStudents(users: UserModel[]) {
+	const students: StudentModel[] = [];
 
 	for (const user of users) {
 		students.push(
@@ -44,7 +52,7 @@ export async function createStudents(users: User[]) {
 	return students;
 }
 
-export async function deleteStudents(students: Student[]) {
+export async function deleteStudents(students: StudentModel[]) {
 	for (const student of students) {
 		await prisma.student.deleteMany({
 			where: { userId: student.userId }
@@ -52,8 +60,8 @@ export async function deleteStudents(students: Student[]) {
 	}
 }
 
-export async function createAuthors(users: User[]) {
-	const authors: Author[] = [];
+export async function createAuthors(users: UserModel[]) {
+	const authors: AuthorModel[] = [];
 
 	for (const user of users) {
 		authors.push(
@@ -69,7 +77,7 @@ export async function createAuthors(users: User[]) {
 	return authors;
 }
 
-export async function deleteAuthors(authors: Author[]) {
+export async function deleteAuthors(authors: AuthorModel[]) {
 	for (const author of authors) {
 		await prisma.author.deleteMany({
 			where: { id: author.id }
@@ -91,7 +99,7 @@ export async function createEnrollments(
 	}
 }
 
-export async function deleteEnrollments(courses: Course[]) {
+export async function deleteEnrollments(courses: CourseModel[]) {
 	for (const course of courses) {
 		await prisma.enrollment.deleteMany({
 			where: { courseId: course.courseId }
@@ -116,7 +124,7 @@ export async function createLessons(courseId: string, lessonTitles: string[]) {
 	return lessons;
 }
 
-export async function deleteLessons(lessons: Lesson[]) {
+export async function deleteLessons(lessons: LessonModel[]) {
 	for (const lesson of lessons) {
 		await prisma.lesson.deleteMany({
 			where: { lessonId: lesson.lessonId }
@@ -124,7 +132,11 @@ export async function deleteLessons(lessons: Lesson[]) {
 	}
 }
 
-export async function createStartedLesson(lesson: Lesson, courseId: string, students: Student[]) {
+export async function createStartedLesson(
+	lesson: LessonModel,
+	courseId: string,
+	students: StudentModel[]
+) {
 	for (const student of students) {
 		await prisma.startedLesson.create({
 			data: {
@@ -136,13 +148,17 @@ export async function createStartedLesson(lesson: Lesson, courseId: string, stud
 	}
 }
 
-export async function deleteStartedLesson(lesson: Lesson) {
+export async function deleteStartedLesson(lesson: LessonModel) {
 	await prisma.startedLesson.deleteMany({
 		where: { lessonId: lesson.lessonId }
 	});
 }
 
-export async function createCompletedLesson(lesson: Lesson, courseId: string, students: Student[]) {
+export async function createCompletedLesson(
+	lesson: LessonModel,
+	courseId: string,
+	students: StudentModel[]
+) {
 	for (const student of students) {
 		await prisma.completedLesson.create({
 			data: {
@@ -154,7 +170,7 @@ export async function createCompletedLesson(lesson: Lesson, courseId: string, st
 	}
 }
 
-export async function deleteCompletedLesson(lesson: Lesson) {
+export async function deleteCompletedLesson(lesson: LessonModel) {
 	await prisma.completedLesson.deleteMany({
 		where: { lessonId: lesson.lessonId }
 	});

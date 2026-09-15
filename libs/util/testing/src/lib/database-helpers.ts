@@ -1,5 +1,4 @@
-import { Prisma } from "@prisma/client";
-import { database } from "@self-learning/database";
+import { database, Prisma } from "@self-learning/database/server";
 
 export async function createTestUser(username: string) {
 	const user: Prisma.UserCreateInput = {
