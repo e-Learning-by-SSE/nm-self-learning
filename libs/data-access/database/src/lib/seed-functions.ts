@@ -4,10 +4,9 @@ import {
 	GroupRole,
 	LessonType,
 	NotificationChannel,
-	NotificationType,
-	Prisma,
-	PrismaClient
+	NotificationType
 } from "@self-learning/database";
+import { Prisma, database as prisma } from "@self-learning/database/server";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
 import {
 	createCourseContent,
@@ -22,8 +21,6 @@ import { subDays, subHours } from "date-fns";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { defaultLicense } from "./license";
-
-const prisma = new PrismaClient();
 
 const adminName = "dumbledore";
 

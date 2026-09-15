@@ -1,4 +1,4 @@
-import { Prisma } from "@self-learning/database";
+import { Prisma } from "@self-learning/database/server";
 
 export const license: Prisma.LicenseCreateManyInput[] = [
 	{

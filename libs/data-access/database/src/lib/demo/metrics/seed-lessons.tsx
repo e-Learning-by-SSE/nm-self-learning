@@ -1,7 +1,6 @@
-import { LessonType, PrismaClient } from "@self-learning/database";
+import { LessonType } from "@self-learning/database";
+import { database as prisma } from "@self-learning/database/server";
 import lessonsRaw from "./data/lesson.json";
-
-const prisma = new PrismaClient();
 
 export async function createLessons() {
 	try {

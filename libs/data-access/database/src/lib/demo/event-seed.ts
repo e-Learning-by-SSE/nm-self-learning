@@ -1,7 +1,5 @@
-import { PrismaClient } from "@self-learning/database";
+import { database as prisma } from "@self-learning/database/server";
 import { EventLog, EventTypeKeys } from "@self-learning/types";
-
-const prisma = new PrismaClient();
 
 type TmPEventLogType = Omit<EventLog<EventTypeKeys>, "createdAt" | "id" | "username"> & {
 	createdAt: string;

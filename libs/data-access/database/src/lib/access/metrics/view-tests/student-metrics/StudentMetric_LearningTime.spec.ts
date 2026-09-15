@@ -1,17 +1,17 @@
 /**
  * @jest-environment node
  */
-import { PrismaClient, User } from "@self-learning/database";
+import { UserModel } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { createUsers, deleteUsers } from "../helper";
-const prisma = new PrismaClient();
 
-let users: User[];
+let users: UserModel[];
 
 describe("Learning Time for Student", () => {
 	beforeAll(async () => {
 		users = await createUsers(["user_learning_time"]);
 
-		await prisma.eventLog.createMany({
+		await database.eventLog.createMany({
 			data: [
 				{
 					username: users[0].name,
@@ -29,22 +29,20 @@ describe("Learning Time for Student", () => {
 
 	afterAll(async () => {
 		// Clean up created data in reverse order
-		await prisma.eventLog.deleteMany({
+		await database.eventLog.deleteMany({
 			where: {
 				username: users[0].name
 			}
 		});
 		await deleteUsers(users);
 
-		await prisma.$disconnect();
+		await database.$disconnect();
 	});
 
 	it("should return learning time for student", async () => {
-		const result = await prisma.studentMetric_LearningTime.findUnique({
+		const result = await database.studentMetric_LearningTime.findUnique({
 			where: { userId: users[0].id }
 		});
-
-		console.log("Learning Time Result:", result);
 
 		expect(result).not.toBeNull();
 		expect(result?.userId).toBe(users[0].id);

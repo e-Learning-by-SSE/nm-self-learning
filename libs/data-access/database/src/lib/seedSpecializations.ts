@@ -1,4 +1,4 @@
-import { Prisma } from "@self-learning/database";
+import { Prisma } from "@self-learning/database/server";
 import { createSpecialization } from "./seed-functions";
 import { faker } from "@faker-js/faker";
 

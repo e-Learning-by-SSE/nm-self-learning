@@ -1,9 +1,7 @@
-import { PrismaClient, InputJsonValue } from "@self-learning/database";
+import { Prisma, database as prisma } from "@self-learning/database/server";
 import { database } from "@self-learning/database/server";
 import { getRandomItemsFromArray } from "../../seed-functions";
 import { faker } from "@faker-js/faker";
-
-const prisma = new PrismaClient();
 
 interface LessonId {
 	lessonId: string;
@@ -257,7 +255,7 @@ async function seedQuizEvents({
 				type: quiz.type,
 				hintsUsed: getRandomItemsFromArray(
 					quiz.hints?.map((hint: { hintId: string }) => hint.hintId)
-				) as InputJsonValue,
+				) as Prisma.InputJsonValue,
 				attempts: faker.number.int({ min: 1, max: 3 }),
 				solved: true
 			}

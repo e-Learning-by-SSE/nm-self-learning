@@ -2,15 +2,13 @@
  * @jest-environment node
  */
 import {
-	Author,
-	Course,
+	AuthorModel,
+	CourseModel,
 	EnrollmentStatus,
-	PrismaClient,
-	Student,
-	User,
-	Lesson
+	StudentModel,
+	UserModel
 } from "@self-learning/database";
-const prisma = new PrismaClient();
+import { database } from "@self-learning/database/server";
 
 import {
 	createStudents,
@@ -29,11 +27,11 @@ import {
 	deleteCompletedLesson
 } from "../helper";
 
-let users: User[];
-let authors: Author[];
-let students: Student[];
-let course: Course;
-let lessons: Lesson[];
+let users: UserModel[];
+let authors: AuthorModel[];
+let students: StudentModel[];
+let course: CourseModel[];
+let lessons: LessonModel[];
 
 describe("Average Lesson Completion Rate", () => {
 	beforeAll(async () => {
@@ -62,7 +60,7 @@ describe("Average Lesson Completion Rate", () => {
 			users[8]
 		]);
 
-		course = await prisma.course.create({
+		course = await database.course.create({
 			data: {
 				courseId: "average-lesson-completion-rate-test-course",
 				title: "Average Lesson Completion Rate Test Course",
@@ -138,7 +136,7 @@ describe("Average Lesson Completion Rate", () => {
 
 		await deleteEnrollments([course]);
 
-		await prisma.course.deleteMany({
+		await database.course.deleteMany({
 			where: { courseId: course.courseId }
 		});
 
@@ -148,10 +146,10 @@ describe("Average Lesson Completion Rate", () => {
 
 		await deleteUsers(users);
 
-		await prisma.$disconnect();
+		await database.$disconnect();
 	});
 	it("should calculate 100% average lesson completion rate for author", async () => {
-		const result = await prisma.authorMetric_AverageLessonCompletionRate.findFirst({
+		const result = await database.authorMetric_AverageLessonCompletionRate.findFirst({
 			where: { authorId: users[0].id }
 		});
 

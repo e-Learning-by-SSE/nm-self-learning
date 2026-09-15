@@ -2,15 +2,13 @@
  * @jest-environment node
  */
 import {
-	Author,
-	Course,
+	AuthorModel,
+	CourseModel,
 	EnrollmentStatus,
-	PrismaClient,
-	Student,
-	Subject,
-	User
+	StudentModel,
+	UserModel
 } from "@self-learning/database";
-const prisma = new PrismaClient();
+import { database } from "@self-learning/database/server";
 
 import {
 	createStudents,
@@ -23,11 +21,11 @@ import {
 	deleteUsers
 } from "../helper";
 
-let users: User[];
-let authors: Author[];
-let students: Student[];
-let course: Course;
-let subject: Subject;
+let users: UserModel[];
+let authors: AuthorModel[];
+let students: StudentModel[];
+let course: CourseModel;
+let subject: SubjectModel;
 
 describe("Average Subject Completion Rate for Author", () => {
 	beforeAll(async () => {
@@ -40,7 +38,7 @@ describe("Average Subject Completion Rate for Author", () => {
 
 		students = await createStudents([users[1]]);
 
-		course = await prisma.course.create({
+		course = await database.course.create({
 			data: {
 				courseId: "average-lesson-completion-rate-by-course-test-course",
 				title: "Average Lesson Completion Rate by Course Test Course",
@@ -55,7 +53,7 @@ describe("Average Subject Completion Rate for Author", () => {
 			}
 		});
 
-		subject = await prisma.subject.create({
+		subject = await database.subject.create({
 			data: {
 				subjectId: "average-lesson-completion-rate-by-course-test-subject",
 				title: "Average Lesson Completion Rate by Course Test Subject",
@@ -80,21 +78,21 @@ describe("Average Subject Completion Rate for Author", () => {
 	afterAll(async () => {
 		// Clean up created data in reverse order
 		await deleteEnrollments([course]);
-		await prisma.subject.deleteMany({
+		await database.subject.deleteMany({
 			where: { subjectId: subject.subjectId }
 		});
-		await prisma.course.deleteMany({
+		await database.course.deleteMany({
 			where: { courseId: course.courseId }
 		});
 		await deleteAuthors(authors);
 		await deleteStudents(students);
 		await deleteUsers(users);
 
-		await prisma.$disconnect();
+		await database.$disconnect();
 	});
 
 	it("should calculate 100% average subject completion rate for author", async () => {
-		const result = await prisma.authorMetric_AverageSubjectCompletionRate.findFirst({
+		const result = await database.authorMetric_AverageSubjectCompletionRate.findFirst({
 			where: { authorId: users[0].id }
 		});
 

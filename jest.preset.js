@@ -1,6 +1,7 @@
 const nxPreset = require("@nx/jest/preset").default;
 
 const path = require("path");
+const dotenv = require("dotenv");
 
 const projectRoot = path.resolve(__dirname, "./");
 process.env.TZ = "Europe/Berlin";
@@ -8,9 +9,12 @@ process.env.TZ = "Europe/Berlin";
 const project = process.env.NX_TASK_TARGET_PROJECT || "unknown";
 const taskHash = process.env.NX_TASK_HASH || process.pid;
 
+dotenv.config({
+	path: path.join(projectRoot, ".env")
+});
+
 module.exports = {
 	...nxPreset,
-	setupFiles: ["dotenv/config"],
 	globals: {},
 	moduleNameMapper: {
 		// for Jest (transform imports)
@@ -54,12 +58,33 @@ module.exports = {
 			"@swc/jest",
 			{
 				jsc: {
-					parser: { syntax: "typescript", tsx: true },
-					transform: { react: { runtime: "automatic" } }
+					parser: {
+						syntax: "typescript",
+						tsx: true
+					},
+					transform: {
+						react: {
+							runtime: "automatic"
+						}
+					}
 				}
 			}
 		],
-		// "^.+\\.[tj]sx?$": ["ts-jest", { tsconfig: "<rootDir>/tsconfig.spec.json" }],
+
+		"^.+\\.mjs$": [
+			"@swc/jest",
+			{
+				jsc: {
+					parser: {
+						syntax: "ecmascript"
+					}
+				},
+				module: {
+					type: "commonjs"
+				}
+			}
+		],
+
 		"^.+\\.svg$": path.join(projectRoot, "jest.svgTransform.js")
 	},
 	transformIgnorePatterns: [],
