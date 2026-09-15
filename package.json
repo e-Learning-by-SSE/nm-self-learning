@@ -25,7 +25,7 @@
 		"posttest:pr": "echo 'If this fails, run the failed task to see errors.",
 		"test:migrate": "prisma db execute --file=scripts/reset.sql && npm run migrate && npm run prisma:views",
 		"prisma": "prisma",
-		"seed": "prisma generate && prisma db push --accept-data-loss && npm run prisma:views &&  prisma db seed",
+		"seed": "prisma generate && prisma db push --force-reset --accept-data-loss && npm run prisma:views && prisma db seed",
 		"migrate": "tsx libs/data-access/database/prisma/deploy-migrations.ts",
 		"seed:analytics-test": "tsx --tsconfig tsconfig.base.json scripts/seed-analytics-test-users.ts",
 		"prisma:views": "for file in libs/data-access/database/prisma/views/*.sql; do npx prisma db execute --file \"$file\" || exit 1; done"

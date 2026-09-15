@@ -508,7 +508,7 @@ export async function createStrategiesAndTechniques(input: LearningStrategyCateg
 					name: technique.name,
 					description: technique.description,
 					defaultTechnique: true,
-					strategy: { connect: { id: strategy.id } }
+					learningStrategieId: strategy.id
 				}
 			});
 		}
