@@ -1,11 +1,8 @@
 /* eslint-disable */
-const { join } = require("path");
 
 module.exports = {
 	displayName: "feature-ai-tutor",
 	preset: "../../../jest.preset.js",
-
-	setupFiles: [join(__dirname, "jest.setup.js")],
-
+	setupFiles: ["<rootDir>jest.setup.ts"],
 	coverageDirectory: "../../../coverage/libs/feature/ai-tutor"
 };

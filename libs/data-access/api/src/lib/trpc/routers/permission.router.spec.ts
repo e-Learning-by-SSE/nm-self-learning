@@ -1,7 +1,7 @@
 import { database, Prisma } from "@self-learning/database/server";
 import { permissionRouter } from "./permission.router";
 import { TRPCError } from "@trpc/server";
-import { AccessLevel, GroupRole } from "@self-learning";
+import { AccessLevel, GroupRole } from "@self-learning/database";
 import { t } from "../trpc";
 import { Context, UserFromSession } from "../context";
 import {
@@ -23,33 +23,37 @@ import {
 	stripFormResourceAccess
 } from "@self-learning/types";
 
-jest.mock("@self-learning/database/server", () => ({
-	__esModule: true,
-	database: {
-		$transaction: jest.fn(),
-		group: {
-			create: jest.fn(),
-			update: jest.fn(),
-			delete: jest.fn(),
-			findUnique: jest.fn(),
-			findUniqueOrThrow: jest.fn(),
-			findMany: jest.fn(),
-			count: jest.fn()
-		},
-		member: {
-			findMany: jest.fn(),
-			findUnique: jest.fn(),
-			delete: jest.fn(),
-			count: jest.fn()
-		},
-		permission: {
-			findMany: jest.fn(),
-			findUnique: jest.fn(),
-			delete: jest.fn(),
-			count: jest.fn()
+jest.mock("@self-learning/database/server", () => {
+	const actual = jest.requireActual("@self-learning/database/server");
+
+	return {
+		...actual,
+		database: {
+			$transaction: jest.fn(),
+			group: {
+				create: jest.fn(),
+				update: jest.fn(),
+				delete: jest.fn(),
+				findUnique: jest.fn(),
+				findUniqueOrThrow: jest.fn(),
+				findMany: jest.fn(),
+				count: jest.fn()
+			},
+			member: {
+				findMany: jest.fn(),
+				findUnique: jest.fn(),
+				delete: jest.fn(),
+				count: jest.fn()
+			},
+			permission: {
+				findMany: jest.fn(),
+				findUnique: jest.fn(),
+				delete: jest.fn(),
+				count: jest.fn()
+			}
 		}
-	}
-}));
+	};
+});
 
 jest.mock("../../permissions/permission.service", () => ({
 	hasGroupRole: jest.fn(),

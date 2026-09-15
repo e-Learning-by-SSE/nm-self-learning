@@ -5,7 +5,7 @@ import { createEventLogEntry, loadUserEventLogs } from "@self-learning/util/even
 import { eventDefinitions } from "@self-learning/types";
 
 jest.mock("@self-learning/database/server");
-jest.mock("@self-learning/util/eventlog", () => ({
+jest.mock("@self-learning/util/eventlog/server", () => ({
 	createEventLogEntry: jest.fn(),
 	loadUserEventLogs: jest.fn()
 }));

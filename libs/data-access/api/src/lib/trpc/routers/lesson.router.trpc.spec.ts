@@ -11,21 +11,25 @@ import {
 import { lessonRouter } from "./lesson.router";
 import { AccessLevel, LessonType } from "@self-learning/database";
 
-jest.mock("@self-learning/database/server", () => ({
-	__esModule: true,
-	database: {
-		$transaction: jest.fn(),
-		lesson: {
-			delete: jest.fn(),
-			update: jest.fn(),
-			create: jest.fn(),
-			findUnique: jest.fn()
-		},
-		permission: {
-			findMany: jest.fn()
+jest.mock("@self-learning/database/server", () => {
+	const actual = jest.requireActual("@self-learning/database/server");
+
+	return {
+		...actual,
+		database: {
+			$transaction: jest.fn(),
+			lesson: {
+				delete: jest.fn(),
+				update: jest.fn(),
+				create: jest.fn(),
+				findUnique: jest.fn()
+			},
+			permission: {
+				findMany: jest.fn()
+			}
 		}
-	}
-}));
+	};
+});
 
 jest.mock("../../permissions/permission.service", () => ({
 	getEffectiveAccess: jest.fn(),
