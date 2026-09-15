@@ -70,32 +70,11 @@ export function createOidcProvider({
 				}
 
 				const idTokenClaims = jwtDecode<OidcProfile>(idToken);
-
-				console.log("[OIDC] ID token claims:", {
-					sub: idTokenClaims.sub,
-					preferred_username: idTokenClaims.preferred_username,
-					email: idTokenClaims.email,
-					name: idTokenClaims.name
-				});
-
 				if (!tokens.access_token || !client.issuer.metadata.userinfo_endpoint) {
 					return idTokenClaims;
 				}
 
 				const userinfo = (await client.userinfo(tokens.access_token)) as OidcProfile;
-
-				console.log("[OIDC] UserInfo:", {
-					sub: userinfo.sub,
-					preferred_username: userinfo.preferred_username,
-					email: userinfo.email,
-					name: userinfo.name
-				});
-
-				console.log("[OIDC] Subject comparison:", {
-					idTokenSub: idTokenClaims.sub,
-					userinfoSub: userinfo.sub,
-					match: idTokenClaims.sub === userinfo.sub
-				});
 				return { ...idTokenClaims, ...userinfo };
 			}
 		},
