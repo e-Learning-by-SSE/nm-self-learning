@@ -46,5 +46,7 @@
     "Skills_Requires": "Benötigte Skills",
     "Skills_Subtitle_Lesson": "Vermittelte Skills und benötigte Vorkenntnisse.",
     "Skills_Subtitle_Dynamic_Course": "Lernziele und Voraussetzungen zur Erstellung des Lernpfads.",
-    "Skills_Subtitle_Static_Course": "Lernziele und Voraussetzungen (ohne Einfluss auf den Lernpfad)."
+    "Skills_Subtitle_Static_Course": "Lernziele und Voraussetzungen (ohne Einfluss auf den Lernpfad).",
+    "The new course": "der neue Kurs",
+    "the-new-course": "der-neue-kurs"
 }

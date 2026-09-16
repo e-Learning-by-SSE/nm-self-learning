@@ -22,7 +22,7 @@ type EditCourseProps = {
 };
 
 export const getServerSideProps = withTranslations(
-	["pages-course-info", "common", "feature-question-types", "kee"],
+	["feature-teaching", "common", "feature-question-types", "kee"],
 	withAuth<EditCourseProps>(async (ctx, user) => {
 		const courseId = ctx.params?.courseId as string;
 		const { locale } = ctx;

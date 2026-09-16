@@ -41,7 +41,7 @@ export function CourseInfoForm({ isNew }: { isNew: boolean }) {
 		formState: { errors }
 	} = form;
 	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
-	const { t } = useTranslation("pages-course-info");
+	const { t } = useTranslation("feature-teaching");
 	const courseType = useWatch({ control, name: "type" });
 	const permissions = useWatch({ control: form.control, name: "permissions" }) ?? [];
 	const hasFull = useResourceGuard(AccessLevel.FULL, permissions);
@@ -97,7 +97,7 @@ export function CourseInfoForm({ isNew }: { isNew: boolean }) {
 										disabled={!isNew}
 										{...register("type")}
 									/>
-									t("Course_Type_Static")
+									{t("Course_Type_Static")}
 								</label>
 								<label className="flex items-center gap-2">
 									<input
@@ -106,7 +106,7 @@ export function CourseInfoForm({ isNew }: { isNew: boolean }) {
 										disabled={!isNew}
 										{...register("type")}
 									/>
-									t("Course_Type_Dynamic")
+									{t("Course_Type_Dynamic")}
 								</label>
 							</div>
 						) : (
