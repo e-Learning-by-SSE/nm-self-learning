@@ -493,7 +493,12 @@ function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 										)}
 									</span>
 
-									<span className="hidden text-xs text-c-text-muted md:block">
+									{/* Suppress hydration warning because of rendered time which is allowed to be suppressed:
+                                    https://react.dev/reference/react-dom/components/common#common-props*/}
+									<span
+										suppressHydrationWarning
+										className="hidden text-xs text-c-text-muted md:block"
+									>
 										{formatDateDistanceToNow(lesson.touchedAt)}
 									</span>
 								</div>

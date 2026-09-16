@@ -3,6 +3,7 @@ export * from "./lib/utils/hash";
 export * from "./lib/types/chunk";
 export * from "./lib/services/vector-store";
 export * from "./lib/services/content-processor";
+export * from "./lib/services/rag-embed";
 export * from "./lib/utils/download";
 export * from "./lib/utils/content-preparation";
 export * from "./lib/utils/delete-embed";

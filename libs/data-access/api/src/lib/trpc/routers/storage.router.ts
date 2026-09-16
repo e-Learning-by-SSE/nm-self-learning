@@ -3,11 +3,11 @@ import { database } from "@self-learning/database";
 import { uploadedAssetSchema } from "@self-learning/types";
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
-import { Client, ClientOptions } from "minio";
 import * as unzipper from "unzipper";
 import { z } from "zod";
 import { adminProcedure, authProcedure, t } from "../trpc";
 import { hoursToSeconds } from "date-fns";
+import { minioClient, minioConfig, publicMinioClient } from "../../minio/minio";
 
 /**
  * Time in seconds after which the presigned URL expires.
@@ -20,41 +20,13 @@ const MAX_UNCOMPRESSED_BYTES = 200 * 1024 * 1024;
 /** Max allowed number of entries in an archive */
 const MAX_ENTRIES = 1500;
 
-export const minioConfig: ClientOptions & { bucketName: string; publicUrl?: string } = z
-	.object({
-		endPoint: z.string(),
-		port: z.number(),
-		useSSL: z.boolean().optional(),
-		accessKey: z.string(),
-		secretKey: z.string(),
-		bucketName: z.string()
-	})
-	.parse({
-		endPoint: process.env.MINIO_ENDPOINT,
-		port: parseInt(process.env.MINIO_PORT as string),
-		useSSL: process.env.MINIO_USE_SSL === "true",
-		accessKey: process.env.MINIO_ACCESS_KEY,
-		secretKey: process.env.MINIO_SECRET_KEY,
-		bucketName: process.env.MINIO_BUCKET_NAME
-	});
-
-export const minioClient = new Client(minioConfig);
-
-// Separate client for generating presigned URLs using the public hostname.
-// The browser uses this URL directly, so it must use the publicly reachable host.
-const publicMinioConfig = (() => {
-	const publicUrl = process.env.NEXT_PUBLIC_MINIO_PUBLIC_URL;
-	if (!publicUrl) return minioConfig;
-	const parsed = new URL(publicUrl);
-	return {
-		...minioConfig,
-		endPoint: parsed.hostname,
-		port: parseInt(parsed.port) || (parsed.protocol === "https:" ? 443 : 80),
-		useSSL: parsed.protocol === "https:"
-	};
-})();
-
-const publicMinioClient = new Client(publicMinioConfig);
+function sanitizeObjectName(filename: string): string {
+	return filename
+		.normalize("NFKD") // Normalizes unicode to NFKD (Normalization Form Compatibility Decomposition) form
+		.replace(/[\u0300-\u036f]/g, "") // Remove umlauts
+		.replace(/[^a-zA-Z0-9._-]/g, "_") // Replace non-alphanumeric characters with underscores
+		.replace(/_+/g, "_"); // Merge multiple consecutive underscores into one
+}
 
 export const storageRouter = t.router({
 	getPresignedUrl: authProcedure
@@ -68,7 +40,7 @@ export const storageRouter = t.router({
 		 * @throws {TRPCError} if an error occurs while generating the presigned URL.
 		 */
 		.mutation(async ({ input }) => {
-			const randomizedFilename = `${getRandomId()}-${input.filename}`;
+			const randomizedFilename = `${getRandomId()}-${sanitizeObjectName(input.filename)}`;
 			try {
 				const presignedUrl = await getPresignedUrl(randomizedFilename);
 
@@ -79,7 +51,9 @@ export const storageRouter = t.router({
 				// TODO: Requires public download option -> Implement download via presignedUrl
 				const downloadUrl = presignedUrl.slice(0, presignedUrl.indexOf("?"));
 
-				return { presignedUrl, downloadUrl };
+				// Return the actual generated object name so callers can register
+				// the correct MinIO key (avoids mismatch with client-generated UUIDs)
+				return { presignedUrl, downloadUrl, objectName: randomizedFilename };
 			} catch (error) {
 				const errMsg: string =
 					error instanceof Error
@@ -229,7 +203,6 @@ export const storageRouter = t.router({
 									})
 								);
 							}
-
 
 							// Detect the entry point
 							const fileName = entryPath.split("/").pop()?.toLowerCase() ?? "";
@@ -396,8 +369,32 @@ async function removeFile(objectName: string) {
 	});
 }
 
-/** Uses the `minio` SDK to remove a file. */
 function _removeFileFromStorageServer(filename: string): Promise<void> {
+	// Unpacked zip/h5p content is stored as multiple objects under a
+	// `content/<id>/...` prefix. The UploadedAssets record stores the
+	// folder prefix itself (e.g. `content/abc123`) as objectName, so we
+	// need to remove all objects under that prefix, not just one key.
+	if (filename.startsWith("content/")) {
+		return new Promise<void>((resolve, reject) => {
+			const objectsToDelete: string[] = [];
+			const stream = minioClient.listObjectsV2(minioConfig.bucketName, `${filename}/`, true);
+
+			stream.on("data", obj => {
+				if (obj.name) objectsToDelete.push(obj.name);
+			});
+			stream.on("error", reject);
+			stream.on("end", () => {
+				if (objectsToDelete.length === 0) {
+					return resolve();
+				}
+				minioClient
+					.removeObjects(minioConfig.bucketName, objectsToDelete)
+					.then(() => resolve())
+					.catch(reject);
+			});
+		});
+	}
+
 	return minioClient.removeObject(minioConfig.bucketName, filename);
 }
 

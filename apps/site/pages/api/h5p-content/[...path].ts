@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { minioClient, minioConfig } from "../../../../../libs/data-access/api/src/lib/trpc/routers/storage.router";
+import { minioClient, minioConfig } from "@self-learning/api/server";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 	const pathSegments = Array.isArray(req.query.path) ? (req.query.path as string[]) : [];

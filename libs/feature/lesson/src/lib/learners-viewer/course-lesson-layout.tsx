@@ -66,7 +66,7 @@ export function LessonLayout(
 
 	const playlistArea = pageProps.course ? <PlaylistArea {...pageProps} /> : null;
 	return (
-		<BaseLessonLayout title={pageProps.lesson.title} playlistArea={playlistArea} {...pageProps}>
+		<BaseLessonLayout key={pageProps.lesson.lessonId} title={pageProps.lesson.title} playlistArea={playlistArea} {...pageProps}>
 			<Component {...pageProps} />
 		</BaseLessonLayout>
 	);

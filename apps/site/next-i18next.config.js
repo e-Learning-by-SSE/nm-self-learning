@@ -7,6 +7,8 @@ module.exports = {
 		locales: ["en", "de"]
 	},
 
+	showSupportNotice: false,
+
 	/** To avoid issues when deploying to some paas (vercel...) */
 	localePath:
 		typeof window === "undefined"

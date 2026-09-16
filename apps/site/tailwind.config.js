@@ -104,7 +104,7 @@ module.exports = {
 				sans: ["Inter", ...defaultTheme.fontFamily.sans]
 			},
 			colors: {
-				secondary: "var(--color-secondary)",
+				secondary: "rgb(var(--color-secondary) / <alpha-value>)",
 				light: "var(--color-light)",
 				"light-border": "var(--color-light-border)",
 
@@ -139,10 +139,10 @@ module.exports = {
 				"c-border-muted": "var(--c-border-muted)",
 
 				/* Primary */
-				"c-primary": "var(--c-primary)",
-				"c-primary-strong": "var(--c-primary-strong)",
-				"c-primary-muted": "var(--c-primary-muted)",
-				"c-primary-subtle": "var(--c-primary-subtle)",
+				"c-primary": "rgb(var(--c-primary) / <alpha-value>)",
+				"c-primary-strong": "rgb(var(--c-primary-strong) / <alpha-value>)",
+				"c-primary-muted": "rgb(var(--c-primary-muted) / <alpha-value>)",
+				"c-primary-subtle": "rgb(var(--c-primary-subtle) / <alpha-value>)",
 
 				/* Accent */
 				"c-accent": "var(--c-accent)",

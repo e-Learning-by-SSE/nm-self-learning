@@ -1,6 +1,7 @@
 model Student {
     userId                     String                @unique
     username                   String                @id
+    startedLessons             StartedLesson[]
     completedLessons           CompletedLesson[]
     enrollments                Enrollment[]
     customLearningLocations    LearningLocation[]
@@ -104,6 +105,7 @@ model Course {
     createdAt            DateTime              @default(now())
     updatedAt            DateTime              @updatedAt
     subjectId            String?
+    starts               StartedLesson[]
     completions          CompletedLesson[]
     subject              Subject?              @relation(fields: [subjectId], references: [subjectId])
     enrollments          Enrollment[]
@@ -164,6 +166,7 @@ model Lesson {
     meta                  Json
     createdAt             DateTime                      @default(now())
     updatedAt             DateTime                      @updatedAt
+    starts                StartedLesson[]
     completions           CompletedLesson[]
     quizAttempts          QuizAttempt[]
     authors               Author[]                      @relation("AuthorToLesson")
@@ -177,6 +180,19 @@ model Lesson {
     lessonStart           LearningDiaryLearnedLessons[]
     ragEnabled            Boolean                       @default(true)
     ragVersionHash        String?                       @db.VarChar(128)
+}
+
+model StartedLesson {
+    startedLessonId Int      @id @default(autoincrement())
+    courseId        String?
+    lessonId        String
+    username        String
+    createdAt       DateTime @default(now())
+    course          Course?  @relation(fields: [courseId], references: [courseId])
+    lesson          Lesson   @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
+    user            Student  @relation(fields: [username], references: [username], onDelete: Cascade)
+
+    @@index([username, lessonId])
 }
 
 model CompletedLesson {
@@ -212,6 +228,7 @@ model QuizAnswer {
     questionId    String
     answer        Json
     isCorrect     Boolean
+    createdAt     DateTime    @default(now())
     quizAttempt   QuizAttempt @relation(fields: [quizAttemptId], references: [attemptId], onDelete: Cascade)
 
     @@index([questionId])

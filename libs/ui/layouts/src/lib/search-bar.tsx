@@ -157,14 +157,7 @@ export function SearchBar() {
 
 	const { t } = useTranslation("common");
 
-	const handleSelect = (
-		item: {
-			baseLink: string;
-			title: string;
-			slug: string;
-			type: string;
-		} | null
-	) => {
+	const handleSelect = (item: ResultItem | null) => {
 		if (!item) {
 			return;
 		}

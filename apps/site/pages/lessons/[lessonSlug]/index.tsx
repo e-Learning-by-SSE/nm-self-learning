@@ -1,5 +1,6 @@
 import { withTranslations } from "@self-learning/api";
 import {
+	I18N_NAMESPACE as NS_LESSON,
 	getSspLearnersView,
 	getSspStandaloneLessonLayout,
 	LessonLearnersView,
@@ -8,7 +9,7 @@ import {
 } from "@self-learning/lesson";
 import { withAuth } from "@self-learning/util/auth";
 
-export const getServerSideProps = withTranslations(["common"], async context => {
+export const getServerSideProps = withTranslations(["common", ...NS_LESSON], async context => {
 	return withAuth(async (_context, user) => {
 		const props = await getSspStandaloneLessonLayout(context.params);
 

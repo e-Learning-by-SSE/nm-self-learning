@@ -41,6 +41,9 @@ async function getSubject(subjectSlug: string) {
 							courses: true
 						}
 					}
+				},
+				orderBy: {
+					title: "asc"
 				}
 			}
 		}

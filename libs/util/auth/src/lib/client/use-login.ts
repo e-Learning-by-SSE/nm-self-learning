@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { signIn, signOut } from "next-auth/react";
+import { getProviders, signIn, signOut } from "next-auth/react";
 import { useCallback } from "react";
 
 export function useLoginRedirect() {
@@ -7,13 +7,21 @@ export function useLoginRedirect() {
 	const basePath = router.basePath || process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 	const loginRedirect = useCallback(
-		(callback = "/profile") => {
+		async (callback = "/profile") => {
 			const callbackUrl = `${basePath}${callback ?? router.asPath}`;
-			const provider =
-				process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE === "true" ? undefined : "keycloak";
-			return signIn(provider, { callbackUrl });
+
+			if (process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE === "true") {
+				return signIn(undefined, { callbackUrl });
+			}
+
+			const providers = await getProviders();
+			const oidcProvider = Object.values(providers ?? {}).find(
+				provider => provider.type === "oauth"
+			);
+
+			return signIn(oidcProvider?.id, { callbackUrl });
 		},
-		[router.asPath, router.query]
+		[basePath, router.asPath]
 	);
 
 	const logoutRedirect = useCallback((callback = "/") => {

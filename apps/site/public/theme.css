@@ -1,0 +1,16 @@
+:root {
+	/* Background / Surface */
+	--c-surface-0: #ffffff; /* white */
+	--c-surface-1: #f9fafb; /* gray-50 */
+	--c-surface-2: #f3f4f6; /* gray-100 */
+	--c-surface-3: #e5e7eb; /* gray-200 */
+
+	/* Primary (Alpha) */
+	--c-primary: 16 185 129; /* emerald-500 */
+	--c-primary-strong: 5 150 105; /* emerald-600 */
+	--c-primary-muted: 52 211 153; /* emerald-400 */
+	--c-primary-subtle: 236 253 245; /* emerald-50 */
+
+	/* Secondary (Alpha) */
+	--color-secondary: 16 185 129; /* emerald-500 */
+}
