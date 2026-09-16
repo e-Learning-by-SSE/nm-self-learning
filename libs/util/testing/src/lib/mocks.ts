@@ -2,6 +2,7 @@ import {
 	AccessLevel,
 	Author,
 	Course,
+	CourseType,
 	Group,
 	Lesson,
 	Permission,
@@ -16,7 +17,6 @@ import {
 	createLessonMeta,
 	LessonContent
 } from "@self-learning/types";
-import { database } from "@self-learning/database";
 
 export function createExampleCourse(
 	courseId: string,
@@ -30,6 +30,9 @@ export function createExampleCourse(
 		description: `This is a description for ${courseId}.`,
 		imgUrl: null,
 		content,
+		version: "1.0",
+		type: CourseType.STATIC,
+		createdAt: new Date(),
 		meta: {}
 	};
 
