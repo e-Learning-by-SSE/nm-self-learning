@@ -21,7 +21,6 @@ export const getServerSideProps = withTranslations(["common"], async ctx => {
 	const session = await getServerSession(req, res, authOptions);
 
 	const username = session?.user?.name ?? null;
-	console.log("\n# user in session", JSON.stringify(session?.user));
 
 	const specializationSlug = params?.specializationSlug;
 
