@@ -38,7 +38,9 @@ export function GroupAccessEditor({
 	doUseDefaultGroup: boolean;
 }) {
 	const [isGroupDialogOpen, setGroupDialogOpen] = useState(false);
-	const { control } = useFormContext<{ permissions: ResourcePermissionsFormType }>();
+	const { control, reset, getValues } = useFormContext<{
+		permissions: ResourcePermissionsFormType;
+	}>();
 
 	// Admin can assign any group as main
 	const session = useRequiredSession();
@@ -117,10 +119,22 @@ export function GroupAccessEditor({
 	useEffect(() => {
 		if (hasSetSingleGroup.current) return;
 		if (!defaultGroup) return;
-		handleAddGroup(defaultGroup);
-
 		hasSetSingleGroup.current = true;
-	}, [defaultGroup, handleAddGroup]);
+		// as this is automated add, maintain form state clean
+		reset(
+			{
+				...getValues(),
+				permissions: [
+					{
+						groupId: defaultGroup.groupId,
+						accessLevel: AccessLevel.FULL,
+						groupName: defaultGroup.name
+					}
+				]
+			},
+			{ keepDirtyValues: true } // if user already did type smth, do not mark it as clean
+		);
+	}, [defaultGroup, reset, getValues]);
 
 	return (
 		<Form.SidebarSection>

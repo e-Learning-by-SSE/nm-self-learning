@@ -1,5 +1,5 @@
-import { AccessLevel, Prisma } from "@prisma/client";
-import { database } from "@self-learning/database";
+import { AccessLevel, CourseType, Prisma } from "@prisma/client";
+import { database, logJobProgress } from "@self-learning/database";
 import {
 	courseFormSchema,
 	getFullCourseExport,
@@ -7,8 +7,10 @@ import {
 	mapCourseFormToUpdate
 } from "@self-learning/teaching";
 import {
+	CourseChapter,
 	CourseContent,
 	CourseMeta,
+	createCourseMeta,
 	extractLessonIds,
 	greaterAccessLevel,
 	LessonMeta
@@ -16,7 +18,7 @@ import {
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { authProcedure, t } from "../trpc";
+import { authProcedure, authorProcedure, t } from "../trpc";
 import { getCourseResource } from "../../permissions/course.utils";
 import {
 	canCreate,
@@ -25,71 +27,13 @@ import {
 	preparePermissionsForCreate,
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
+import { randomUUID } from "crypto";
+import { resolveLessonPath } from "../../lesson-path/lesson-path.service";
+import { createCourseSummary, mapCourseContent } from "@self-learning/course";
+import { And, Empty, LearningUnit, Variable } from "@e-learning-by-sse/nm-skill-lib";
+import { workerServiceClient } from "@self-learning/worker-api";
 
 export const courseRouter = t.router({
-	listAvailableCourses: authProcedure
-		.meta({
-			openapi: {
-				enabled: true,
-				method: "GET",
-				path: "/courses",
-				tags: ["Courses"],
-				protect: true,
-				summary: "Search available courses"
-			}
-		})
-		.input(
-			paginationSchema.extend({
-				title: z
-					.string()
-					.describe(
-						"Title of the course to search for. Keep empty to list all; includes insensitive search and contains search."
-					)
-					.optional(),
-				specializationId: z
-					.string()
-					.describe("Filter by assigned specializations")
-					.optional(),
-				authorId: z.string().describe("Filter by author username").optional(),
-				pageSize: z.number().describe("Number of results per page").optional()
-			})
-		)
-		.output(
-			z.object({
-				result: z.array(z.object({ title: z.string(), slug: z.string() })),
-				pageSize: z.number(),
-				page: z.number(),
-				totalCount: z.number()
-			})
-		)
-		.query(async ({ input }) => {
-			const pageSize = input.pageSize ?? 20;
-
-			const where: Prisma.CourseWhereInput = {
-				title:
-					input.title && input.title.length > 0
-						? { contains: input.title, mode: "insensitive" }
-						: undefined,
-				specializations: input.specializationId
-					? { some: { specializationId: input.specializationId } }
-					: undefined,
-				authors: input.authorId ? { some: { username: input.authorId } } : undefined
-			};
-
-			const result = await database.course.findMany({
-				select: { slug: true, title: true },
-				...paginate(pageSize, input.page),
-				orderBy: { title: "asc" },
-				where
-			});
-
-			return {
-				result,
-				pageSize: pageSize,
-				page: input.page,
-				totalCount: result.length
-			} satisfies Paginated<{ title: string; slug: string }>;
-		}),
 	getCourseData: authProcedure
 		.meta({
 			openapi: {
@@ -192,7 +136,8 @@ export const courseRouter = t.router({
 		.input(
 			paginationSchema.extend({
 				title: z.string().optional(),
-				specializationId: z.string().optional()
+				specializationId: z.string().optional(),
+				type: z.enum(CourseType).optional()
 			})
 		)
 		.query(async ({ input }) => {
@@ -205,10 +150,11 @@ export const courseRouter = t.router({
 						: undefined,
 				specializations: input.specializationId
 					? { some: { specializationId: input.specializationId } }
-					: undefined
+					: undefined,
+				type: input.type
 			};
 
-			const [result, count] = await database.$transaction([
+			const [resultCourse, count] = await database.$transaction([
 				database.course.findMany({
 					select: {
 						courseId: true,
@@ -225,6 +171,8 @@ export const courseRouter = t.router({
 				database.course.count({ where })
 			]);
 
+			const result = resultCourse.sort((a, b) => a.title.localeCompare(b.title));
+
 			return {
 				result,
 				pageSize: pageSize,
@@ -235,19 +183,32 @@ export const courseRouter = t.router({
 	getContent: t.procedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
 		const course = await database.course.findUniqueOrThrow({
 			where: { slug: input.slug },
-			select: { content: true }
+			select: {
+				content: true
+			}
 		});
 
 		const content = (course.content ?? []) as CourseContent;
+
 		const lessonIds = extractLessonIds(content);
 
 		const lessons = await database.lesson.findMany({
 			where: { lessonId: { in: lessonIds } },
-			select: { lessonId: true, slug: true, title: true, meta: true }
+			select: {
+				lessonId: true,
+				slug: true,
+				title: true,
+				meta: true
+			}
 		});
 
 		const lessonMap: {
-			[lessonId: string]: { title: string; lessonId: string; slug: string; meta: LessonMeta };
+			[lessonId: string]: {
+				title: string;
+				lessonId: string;
+				slug: string;
+				meta: LessonMeta;
+			};
 		} = {};
 
 		for (const lesson of lessons) {
@@ -256,6 +217,295 @@ export const courseRouter = t.router({
 
 		return { content, lessonMap };
 	}),
+	getCourse: authorProcedure
+		.input(z.object({ slug: z.string() }))
+		.output(courseFormSchema)
+		.query(async ({ input }) => {
+			const course = await database.course.findUniqueOrThrow({
+				where: { slug: input.slug },
+				include: {
+					authors: true,
+					provides: {
+						include: {
+							children: true,
+							parents: true
+						}
+					},
+					requires: {
+						include: {
+							children: true,
+							parents: true
+						}
+					},
+					specializations: true,
+					permissions: {
+						select: {
+							groupId: true,
+							group: true,
+							accessLevel: true
+						}
+					}
+				}
+			});
+
+			return {
+				courseId: course.courseId,
+				subjectId: course.subjectId ?? null,
+				slug: course.slug,
+				title: course.title,
+				subtitle: course.subtitle ?? "",
+				description: course.description ?? null,
+				imgUrl: course.imgUrl ?? null,
+
+				content: normalizeContent(course.content),
+
+				specializations: course.specializations ?? [],
+
+				authors: course.authors.map(a => ({
+					username: a.username
+				})),
+
+				type: course.type,
+				version: course.version,
+
+				provides: course.provides.map(s => ({
+					id: s.id,
+					name: s.name,
+					description: s.description ?? null,
+					authorId: s.authorId,
+					children: s.children.map(child => child.id),
+					parents: s.parents.map(parent => parent.id)
+				})),
+
+				requires: course.requires.map(s => ({
+					id: s.id,
+					name: s.name,
+					description: s.description ?? null,
+					authorId: s.authorId,
+					children: s.children.map(child => child.id),
+					parents: s.parents.map(parent => parent.id)
+				})),
+
+				permissions: course.permissions.map(p => ({
+					groupId: p.groupId,
+					groupName: p.group.name,
+					accessLevel: p.accessLevel
+				}))
+			};
+		}),
+	getCoursePreview: authProcedure
+		.input(
+			z.object({
+				courseId: z.string(),
+				knowledge: z.array(z.string())
+			})
+		)
+		.query(async ({ input }) => {
+			// TODO any permissions? I think VIEW is enough
+			const course = await database.course.findUnique({
+				where: { courseId: input.courseId },
+				select: {
+					title: true,
+					type: true,
+					authors: true,
+					subtitle: true,
+					slug: true,
+					description: true,
+					imgUrl: true,
+					provides: {
+						select: {
+							id: true,
+							name: true,
+							description: true,
+							authorId: true,
+							children: { select: { id: true } }
+						}
+					}
+				}
+			});
+			if (!course) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Failed to find requested course"
+				});
+			}
+			if (course.type !== CourseType.DYNAMIC) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Requested course is not dynamic"
+				});
+			}
+
+			const path = await resolveLessonPath({
+				courseProvides: course.provides,
+				userKnowledgeIds: input.knowledge
+			});
+			if (!path) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message:
+						"Unable to generate a valid lesson path with current prerequisites and knowledge."
+				});
+			}
+
+			const courseContent = [
+				{
+					title: "generatedLessonPathTitle",
+					description: "generatedLessonPathDescription",
+					content: path
+				} as CourseChapter
+			];
+
+			const content = await mapCourseContent(courseContent);
+			const summary = createCourseSummary(content);
+
+			return {
+				course: course,
+				content: content,
+				summary: summary
+			};
+		}),
+	getCourseGraph: authProcedure
+		.input(
+			z.object({
+				courseId: z.string(),
+				knowledge: z.array(z.string())
+			})
+		)
+		.query(async ({ input }) => {
+			const jobId = enqueueCourseGraphJob(input.courseId);
+
+			// TODO @ Artsiom: jobId May be used at site to pull for new results
+			return jobId;
+		}),
+	generateLessonPath: authProcedure
+		.input(
+			z.object({
+				courseId: z.string(),
+				knowledge: z.array(z.string())
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			// TODO any permissions? I think VIEW is enough
+			const course = await database.course.findUnique({
+				where: { courseId: input.courseId },
+				select: {
+					version: true,
+					type: true,
+					provides: {
+						select: {
+							id: true,
+							children: {
+								// Needed for nestedSkills
+								select: { id: true }
+							}
+						}
+					}
+				}
+			});
+			if (!course) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Failed to find requested course"
+				});
+			}
+			if (course.type !== CourseType.DYNAMIC) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Requested course is not dynamic"
+				});
+			}
+
+			const userGlobalKnowledge = await database.student.findUnique({
+				where: { username: ctx.user.name },
+				select: { received: { select: { id: true } } }
+			});
+
+			const userGlobalKnowledgeIds = (userGlobalKnowledge?.received ?? []).map(s => s.id);
+			const userKnowledge = [...(input.knowledge ?? []), ...userGlobalKnowledgeIds];
+
+			const content = await resolveLessonPath({
+				courseProvides: course.provides,
+				userKnowledgeIds: userKnowledge
+			});
+
+			if (!content) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message:
+						"Unable to generate a valid lesson path with current prerequisites and knowledge."
+				});
+			}
+			const courseChapter: CourseChapter = {
+				title: "",
+				description: "",
+				content: content
+			};
+			const courseContent: CourseContent = [courseChapter];
+
+			const generatedCourse = await database.generatedLessonPath.create({
+				data: {
+					content: courseContent,
+					courseVersion: course.version,
+					slug: randomUUID(),
+					courseId: input.courseId,
+					meta: createCourseMeta({ content: courseContent }),
+					username: ctx.user.name,
+					createdAt: new Date(),
+					updatedAt: new Date()
+				}
+			});
+
+			return generatedCourse;
+		}),
+	getSkillContext: authProcedure
+		.input(
+			z.object({
+				courseId: z.string()
+			})
+		)
+		.query(async ({ input }) => {
+			const course = await database.course.findUnique({
+				where: input,
+				select: {
+					courseId: true,
+					content: true,
+					requires: { select: { id: true } },
+					provides: { select: { id: true } }
+				}
+			});
+			if (!course) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: `Course not found for id: ${input.courseId}`
+				});
+			}
+
+			const lessonIds = extractLessonIds(normalizeContent(course.content));
+			const lessons = lessonIds.length
+				? await database.lesson.findMany({
+						where: { lessonId: { in: lessonIds } },
+						select: {
+							lessonId: true,
+							requires: { select: { id: true } },
+							provides: { select: { id: true } }
+						}
+					})
+				: [];
+
+			const flattenSkillId = (skill: { id: string }) => skill.id;
+
+			return {
+				courseId: course.courseId,
+				requires: course.requires.map(flattenSkillId),
+				provides: course.provides.map(flattenSkillId),
+				lessons: lessons.map(lesson => ({
+					lessonId: lesson.lessonId,
+					requires: lesson.requires.map(flattenSkillId),
+					provides: lesson.provides.map(flattenSkillId)
+				}))
+			};
+		}),
 	fullExport: t.procedure.input(z.object({ slug: z.string() })).query(async ({ input, ctx }) => {
 		const fullExport = await getFullCourseExport(input.slug);
 
@@ -276,6 +526,7 @@ export const courseRouter = t.router({
 		return fullExport;
 	}),
 	create: authProcedure.input(courseFormSchema).mutation(async ({ input, ctx }) => {
+		// TODO do I need any course type dependent checks here?
 		if (input.authors.length <= 0 && ctx.user.role !== "ADMIN") {
 			throw new TRPCError({
 				code: "FORBIDDEN",
@@ -473,3 +724,146 @@ export const courseRouter = t.router({
 			});
 		})
 });
+
+function normalizeContent(
+	raw: unknown
+): { title: string; content: { lessonId: string }[]; description?: string | null }[] {
+	if (!Array.isArray(raw)) return [];
+
+	return raw
+		.filter((item): item is any => item && typeof item === "object") // Remove null and non-objects
+		.map((item: any) => ({
+			title: typeof item.title === "string" ? item.title : "Untitled",
+			content: Array.isArray(item.content)
+				? item.content.filter((c: any) => typeof c.lessonId === "string")
+				: [],
+			description: "description" in item ? item.description : undefined
+		}));
+}
+
+async function enqueueCourseGraphJob(courseId: string): Promise<string> {
+	// TODO any permissions? I think VIEW is enough
+	const course = await database.course.findUnique({
+		where: { courseId },
+		select: {
+			title: true,
+			type: true,
+			authors: true,
+			subtitle: true,
+			slug: true,
+			description: true,
+			imgUrl: true,
+			provides: {
+				select: {
+					id: true,
+					name: true,
+					description: true,
+					authorId: true,
+					children: { select: { id: true } }
+				}
+			}
+		}
+	});
+	if (!course) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Failed to find requested course"
+		});
+	}
+	if (course.type !== CourseType.DYNAMIC) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Requested course is not dynamic"
+		});
+	}
+
+	const [dbSkills, lessons] = await Promise.all([
+		database.skill.findMany({
+			select: {
+				id: true,
+				children: { select: { id: true } }
+			}
+		}),
+		database.lesson.findMany({
+			select: {
+				lessonId: true,
+				requires: { select: { id: true } },
+				provides: { select: { id: true } }
+			}
+		})
+	]);
+
+	const libSkills = dbSkills.map(s => ({
+		id: s.id,
+		children: s.children?.map(c => c.id) ?? []
+	}));
+
+	const findSkill = (id: string) => libSkills.find(s => s.id === id);
+
+	// Goals of the course
+	const goals = course.provides;
+	// All relevant skills:
+	// TODO @ Artsiom please check if you get this context data out of your course object
+	const relevantSkills = goals.map(s => ({
+		id: s.id,
+		repositoryId: "",
+		children: s.children?.map(c => ({ id: c.id })) ?? []
+	})); // + relevant Skills
+	// Relevant learning units
+	// TODO @ Artsiom Filter learning Units for relevant learning units of course context
+	const relevantLearningUnits = lessons.map(l => ({
+		lessonId: l.lessonId,
+		requires: (l.requires ?? [])
+			.map(p => findSkill(p.id))
+			.filter((s): s is (typeof libSkills)[number] => !!s),
+		provides: (l.provides ?? [])
+			.map(p => findSkill(p.id))
+			.filter((s): s is (typeof libSkills)[number] => !!s)
+	}));
+
+	const jobId = randomUUID();
+	subscribeCourseGraphAnalysis(jobId, courseId).catch(err => {
+		console.error(
+			"[CourseRouter] Subscription error",
+			{
+				courseId,
+				error: err instanceof Error ? err.message : String(err)
+			},
+			{ jobId }
+		);
+	});
+
+	await workerServiceClient.submitJob.mutate({
+		jobId: jobId,
+		jobType: "courseGraphAnalysis",
+		payload: {
+			dbSkills: relevantSkills,
+			lessons: relevantLearningUnits
+		}
+	});
+
+	return jobId;
+}
+
+async function subscribeCourseGraphAnalysis(jobId: string, courseId: string): Promise<void> {
+	try {
+		workerServiceClient.jobQueue.subscribe(
+			{ jobId },
+			{
+				onData: async event => {
+					await logJobProgress(jobId, event);
+					if (event.status === "finished") {
+						// TODO @ Artsiom: Display to the user when finished (e.g., via storing result in table and constantly pulling in page)
+					} else if (event.status === "aborted") {
+						// TODO @ Artsiom: Abort constantly pulling
+					}
+				},
+				onError: error => {
+					// TODO @ Artsiom: Abort constantly pulling
+				}
+			}
+		);
+	} catch (error) {
+		// TODO @ Artsiom: Abort constantly pulling
+	}
+}

@@ -191,7 +191,7 @@ export default function GroupsPage() {
 
 			<MemberFilter value={allGroupMemberFilter} onChange={setAllGroupMemberFilter} />
 
-			{!myGroups ? (
+			{!allGroups ? (
 				<LoadingBox />
 			) : (
 				<GroupsPaginatedView data={allGroups} setPage={setAllGroupsPage} />

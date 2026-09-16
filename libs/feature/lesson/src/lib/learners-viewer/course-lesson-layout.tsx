@@ -1,6 +1,6 @@
 import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion } from "@self-learning/completion";
-import { CourseContent, LessonMeta, ResolvedValue } from "@self-learning/types";
+import { CourseContent, LessonMeta } from "@self-learning/types";
 import {
 	MobilePlayList,
 	Playlist,
@@ -10,16 +10,21 @@ import {
 } from "@self-learning/ui/lesson";
 import { NextComponentType, NextPageContext } from "next";
 import type { ParsedUrlQuery } from "querystring";
-import { getCourse, LessonData } from "../lesson-data-access";
+import { LessonData } from "../lesson-data-access";
 import { BaseLessonLayout } from "./base-layout";
 import { getSspStandaloneLessonLayout } from "./standalone-lesson-layout";
 import { useMemo } from "react";
 import { MobileSidebarNavigation } from "@self-learning/ui/layouts";
 import Head from "next/head";
+import { database } from "@self-learning/database";
 
 export type LessonLayoutProps = {
 	lesson: LessonData;
-	course: ResolvedValue<typeof getCourse>;
+	course: {
+		courseId: string;
+		title: string;
+		slug: string;
+	};
 };
 
 export async function getSSpLessonCourseLayout(
@@ -35,7 +40,15 @@ export async function getSSpLessonCourseLayout(
 		throw new Error("No course/lesson slug provided.");
 	}
 
-	const course = await getCourse(courseSlug);
+	const course = await database.course.findFirst({
+		where: { slug: courseSlug },
+		select: {
+			courseId: true,
+			title: true,
+			slug: true
+		}
+	});
+
 	if (!course) {
 		return { notFound: true };
 	}

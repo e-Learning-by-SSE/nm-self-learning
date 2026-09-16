@@ -2,6 +2,7 @@ import {
 	AccessLevel,
 	Author,
 	Course,
+	CourseType,
 	Group,
 	Lesson,
 	Permission,
@@ -29,6 +30,9 @@ export function createExampleCourse(
 		description: `This is a description for ${courseId}.`,
 		imgUrl: null,
 		content,
+		version: "1.0",
+		type: CourseType.STATIC,
+		createdAt: new Date(),
 		meta: {}
 	};
 
@@ -103,10 +107,10 @@ export function createLessonMock({
 		permissions: (Partial<Permission> & { group: Partial<Group> })[];
 	} {
 	const defaultSkill: Skill = {
+		authorId: 1,
 		id: "skill:1",
 		name: "Skill1",
-		description: "Skill1 description",
-		repositoryId: "repo:1"
+		description: "Skill1 description"
 	};
 
 	return {

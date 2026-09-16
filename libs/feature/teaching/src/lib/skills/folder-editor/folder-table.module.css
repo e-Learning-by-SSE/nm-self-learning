@@ -12,3 +12,7 @@
 	background-repeat: no-repeat;
 	background-position: 1rem 0;
 }
+/* Hide the add button when dragging a skill */
+:global(.is-dragging) .skill-row-add {
+	visibility: hidden !important;
+}

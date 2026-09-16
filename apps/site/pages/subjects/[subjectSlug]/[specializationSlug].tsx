@@ -1,36 +1,45 @@
 import { PuzzlePieceIcon } from "@heroicons/react/24/solid";
 import { database } from "@self-learning/database";
-import { CourseMeta, Defined, ResolvedValue } from "@self-learning/types";
+import { CourseMeta, ResolvedValue } from "@self-learning/types";
 import { ImageCard, ImageCardBadge } from "@self-learning/ui/common";
 import { ItemCardGrid, TopicHeader } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
 import Link from "next/link";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { withTranslations } from "@self-learning/api";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@self-learning/util/auth/server";
+import { CourseType } from "@prisma/client";
 
 type SpecializationPageProps = {
 	specialization: ResolvedValue<typeof getSpecialization>;
 };
 
-export const getServerSideProps = withTranslations(["common"], async ({ params, locale }) => {
+export const getServerSideProps = withTranslations(["common"], async ctx => {
+	const { req, res, params, locale } = ctx;
+
+	const session = await getServerSession(req, res, authOptions);
+
+	const username = session?.user?.name ?? null;
+
 	const specializationSlug = params?.specializationSlug;
 
 	if (typeof specializationSlug !== "string") {
 		throw new Error("[specializationSlug] must be a string.");
 	}
 
-	const specialization = await getSpecialization(specializationSlug);
+	const specialization = await getSpecialization(specializationSlug, username);
 
 	return {
 		props: {
 			...(await serverSideTranslations(locale ?? "en", ["common"])),
-			specialization: specialization as Defined<typeof specialization>
+			specialization
 		},
 		notFound: !specialization
 	};
 });
 
-async function getSpecialization(specializationSlug: string) {
+async function getSpecialization(specializationSlug: string, username: string | null) {
 	return await database.specialization.findUnique({
 		where: { slug: specializationSlug },
 		select: {
@@ -41,6 +50,16 @@ async function getSpecialization(specializationSlug: string) {
 			courses: {
 				orderBy: { title: "asc" },
 				select: {
+					version: true,
+					type: true,
+					// TODO unused
+					// generatedLessonPaths: username
+					// 	? {
+					// 			where: {
+					// 				username
+					// 			}
+					// 		}
+					// 	: undefined,
 					slug: true,
 					imgUrl: true,
 					title: true,
@@ -60,7 +79,6 @@ async function getSpecialization(specializationSlug: string) {
 
 export default function SpecializationPage({ specialization }: SpecializationPageProps) {
 	const { title, subtitle, imgUrlBanner, subject, courses } = specialization;
-
 	return (
 		<div className="pb-32">
 			<TopicHeader
@@ -73,7 +91,7 @@ export default function SpecializationPage({ specialization }: SpecializationPag
 			<div className="mx-auto flex max-w-screen-xl flex-col px-4 pt-8 xl:px-0">
 				{courses.length > 0 ? (
 					<ItemCardGrid>
-						{courses.map(course => (
+						{[...courses].map(course => (
 							<CourseCard key={course.slug} course={course} />
 						))}
 					</ItemCardGrid>
@@ -98,6 +116,7 @@ function CourseCard({
 	course: SpecializationPageProps["specialization"]["courses"][0];
 }) {
 	const meta = course.meta as CourseMeta;
+	const type = course.type === CourseType.STATIC ? "Lernkurs" : "Dynamischer Kurs";
 
 	return (
 		<Link href={`/courses/${course.slug}`} className="flex">
@@ -106,7 +125,7 @@ function CourseCard({
 				imgUrl={course.imgUrl}
 				title={course.title}
 				subtitle={course.subtitle}
-				badge={<ImageCardBadge text="Lernkurs" className="bg-c-primary" />}
+				badge={<ImageCardBadge text={type} className="bg-c-primary" />}
 				footer={
 					<span className="flex items-center gap-3 text-sm font-semibold text-c-primary">
 						<PuzzlePieceIcon className="h-5" />

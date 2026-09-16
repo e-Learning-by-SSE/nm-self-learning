@@ -9,7 +9,7 @@ import {
 	preparePermissionsForCreate,
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
-import { lessonRouter } from "./lesson.router";
+import { buildLinkedLessonQuery, lessonRouter } from "./lesson.router";
 import { AccessLevel, LessonType } from "@prisma/client";
 
 jest.mock("@self-learning/database", () => ({
@@ -273,6 +273,17 @@ describe("tRPC API of Lesson Router", () => {
 
 			await expect(caller.edit(defaultLesson)).resolves.toBeDefined();
 			expect(database.lesson.update).toHaveBeenCalledTimes(1);
+		});
+	});
+
+	describe("findLinkedLessonEntities", () => {
+		it("guards nested JSON content extraction against scalar values", () => {
+			const sql = buildLinkedLessonQuery("lesson-123");
+
+			expect(sql).toContain("jsonb_typeof(c.\"content\") = 'array'");
+			expect(sql).toContain("jsonb_typeof(chapter) = 'object'");
+			expect(sql).toContain("jsonb_typeof(chapter->'content') = 'array'");
+			expect(sql).toContain("lesson->>'lessonId' =");
 		});
 	});
 

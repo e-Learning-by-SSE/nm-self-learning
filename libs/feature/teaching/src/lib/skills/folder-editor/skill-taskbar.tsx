@@ -35,28 +35,33 @@ const withErrorHandling = async (fn: () => Promise<void>) => {
 
 export function AddChildButton({
 	parentSkill,
+	childrenNumber,
 	updateSkillDisplay,
 	handleSelection,
-	skillDefaults
+	skillDefaults,
+	authorId
 }: {
 	parentSkill: SkillFormModel;
+	childrenNumber: number;
 	updateSkillDisplay: UpdateVisuals;
 	handleSelection: SkillSelectHandler;
 	skillDefaults?: Partial<Skill>;
+	authorId: number;
 }) {
 	const { mutateAsync: addSkillOnParent } = trpc.skill.createSkillWithParents.useMutation();
+
 	const newSkill = {
-		name: `${parentSkill.children.length + 1}. Kind - ${parentSkill.name}`,
+		name: `${childrenNumber + 1}. Kind - ${parentSkill.name}`,
 		description: "Add here",
 		children: [],
 		parents: [parentSkill.id],
-		repositoryId: parentSkill.repositoryId,
 		...skillDefaults
 	};
+
 	const handleAddSkill = async () =>
 		await withErrorHandling(async () => {
 			const result = await addSkillOnParent({
-				repoId: parentSkill.repositoryId,
+				authorId: authorId,
 				parentSkillId: parentSkill.id,
 				skill: newSkill
 			});
@@ -87,11 +92,11 @@ export function AddChildButton({
 }
 
 export function SkillDeleteOption({
-	skillIds,
+	skill,
 	inline = false,
 	onDeleteSuccess
 }: {
-	skillIds: SkillFormModel["id"][];
+	skill: SkillFormModel;
 	inline?: boolean;
 	onDeleteSuccess?: () => void | PromiseLike<void>;
 }) {
@@ -99,7 +104,7 @@ export function SkillDeleteOption({
 
 	const onClose = async () => {
 		await withErrorHandling(async () => {
-			await deleteSkills({ ids: skillIds });
+			await deleteSkills({ ids: [skill.id] });
 			await onDeleteSuccess?.();
 		});
 	};
@@ -117,29 +122,41 @@ export function SkillDeleteOption({
 					freeDialog("simpleDialog");
 				}}
 			>
-				{skillIds.length > 1 ? "Sollen die Skills " : "Soll der Skill"} wirklich gelöscht
-				werden?
+				Soll der Skill wirklich gelöscht werden?
+				{skill.parents.length > 1 && (
+					<div className="text-sm mt-2 text-red-600">
+						Hinweis: {skill.name} ist noch mindestens einem weiteren Eltern-Skill
+						zugeordnet. Wenn Sie {skill.name} löschen, wird er automatisch aus allen
+						zugehörigen Eltern-Skills entfernt.
+					</div>
+				)}
 			</SimpleDialog>,
 			"simpleDialog"
 		);
 	};
 
-	return (
-		<IconOnlyButton
-			icon={<TrashIcon className={`h-5 w-5 ${inline ? "text-lg" : ""}`} />}
-			className={inline ? "hover:text-c-danger !px-2 !py-0" : "btn-danger"}
-			title="Skill löschen"
-			onClick={handleDelete}
-		/>
-	);
+	if (!inline) {
+		return (
+			<IconOnlyButton
+				icon={<TrashIcon className="h-5 w-5 btn-danger" />}
+				onClick={handleDelete}
+			/>
+		);
+	} else {
+		return (
+			<button type="button" className={"px-2 hover:text-secondary"} onClick={handleDelete}>
+				<TrashIcon className="h-5 " style={{ cursor: "pointer" }} />
+			</button>
+		);
+	}
 }
 
 export function NewSkillButton({
-	repoId,
+	authorId,
 	onSuccess,
 	skillDefaults
 }: {
-	repoId: string;
+	authorId: number;
 	onSuccess?: (skill: Skill) => void | Promise<void>;
 	skillDefaults?: Partial<Skill>;
 }) {
@@ -156,8 +173,8 @@ export function NewSkillButton({
 	};
 	const onCreateSkill = async () => {
 		const createdSkill = await createNewSkill({
-			repoId: repoId,
-			skill: newSkill
+			skill: newSkill,
+			authorId: authorId
 		});
 		await onSuccess?.(createdSkill ?? null);
 	};

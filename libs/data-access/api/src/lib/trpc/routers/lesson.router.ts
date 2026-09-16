@@ -110,7 +110,7 @@ export const lessonRouter = t.router({
 						name: true,
 						description: true,
 						children: true,
-						repositoryId: true,
+						authorId: true,
 						parents: true
 					}
 				},
@@ -120,7 +120,7 @@ export const lessonRouter = t.router({
 						name: true,
 						description: true,
 						children: true,
-						repositoryId: true,
+						authorId: true,
 						parents: true
 					}
 				}
@@ -337,6 +337,22 @@ export const lessonRouter = t.router({
 			}
 		});
 
+		// bump up dependent courses version
+		const providedSkillIds = input.provides.map(s => s.id);
+		await database.course.updateMany({
+			where: {
+				provides: {
+					some: {
+						id: { in: providedSkillIds }
+					}
+				}
+			},
+			data: {
+				version: Date.now().toString()
+			}
+		});
+
+		console.log("[lessonRouter.create]: Lesson created by", ctx.user.name, createdLesson);
 		await callRagJob(null, {
 			...createdLesson,
 			content: input.content as LessonContentType[]

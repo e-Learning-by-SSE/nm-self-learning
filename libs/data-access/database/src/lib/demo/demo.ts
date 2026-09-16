@@ -23,6 +23,7 @@ import { createEnrollments } from "./metrics/seed-enrollments";
 import { createCourses } from "./metrics/seed-courses";
 import { createSubjects } from "./metrics/seed-subject";
 import { seedDummy } from "./seed-dummy";
+import { seedAdminUser } from "./seed-admin-user";
 
 const prisma = new PrismaClient();
 
@@ -38,9 +39,11 @@ export async function seedDemos(): Promise<void> {
 	await prisma.group.create({ data: softwareentwicklungDemoGroup });
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Groups");
 
-	await seedReactDemo();
+	const admin = await seedAdminUser();
 
-	await seedJavaDemo();
+	await seedReactDemo(admin);
+
+	await seedJavaDemo(admin);
 
 	await seedEvents();
 
