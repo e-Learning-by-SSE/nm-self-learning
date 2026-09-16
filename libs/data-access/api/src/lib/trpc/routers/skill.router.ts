@@ -7,7 +7,6 @@ import {
 	SkillFormModel,
 	skillFormSchema
 } from "@self-learning/types";
-import fieldTypes from "rehype-citation/node/src/citation-js/plugin-bibtex/input/fieldTypes";
 
 type RawSkill = {
 	id: string;
