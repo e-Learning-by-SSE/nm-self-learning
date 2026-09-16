@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { trpc } from "@self-learning/api-client";
-import { DropdownMenu } from "@self-learning/ui/common";
+import { DropdownMenu, LoadingBox } from "@self-learning/ui/common";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { HeatmapModal } from "./HeatmapModal";
 import { useTranslation } from "next-i18next";
@@ -171,8 +171,10 @@ export function GeneralHeatmap() {
 		"correctTasks"
 	];
 
-	const { data: dailyLearning } = trpc.metrics.getStudentMetric_DailyLearningTime.useQuery();
-	const { data: hourlyQuiz } = trpc.metrics.getStudentMetric_HourlyAverageQuizAnswers.useQuery();
+	const { data: dailyLearning, isLoading: dailyLearningLoading } =
+		trpc.metrics.getStudentMetric_DailyLearningTime.useQuery();
+	const { data: hourlyQuiz, isLoading: hourlyQuizLoading } =
+		trpc.metrics.getStudentMetric_HourlyAverageQuizAnswers.useQuery();
 
 	const groupedData = useMemo(() => {
 		if (!dailyLearning && !hourlyQuiz) return null;
@@ -245,7 +247,11 @@ export function GeneralHeatmap() {
 		}
 
 		return { day, week, month: monthData, year };
-	}, [dailyLearning, hourlyQuiz, selected, currentDate, i18n.language]); // Add i18n.language to dependency array
+	}, [dailyLearning, hourlyQuiz, selected, currentDate, i18n.language]);
+
+	if (dailyLearningLoading || hourlyQuizLoading) {
+		return <LoadingBox />;
+	}
 
 	const renderRow = (
 		label: string,
@@ -393,13 +399,14 @@ export function GeneralHeatmap() {
 							])}
 						</div>
 
-						<p
+						<button
+							type="button"
 							onClick={() => setShowModal(true)}
 							id="open-detailed-heatmaps"
 							className="text-sm text-center text-c-primary cursor-pointer mt-4"
 						>
 							{t("openDetailedHeatmaps")} <span className="text-base">→</span>
-						</p>
+						</button>
 					</>
 				) : (
 					<p className="text-gray-400 text-center py-2 text-sm sm:text-base">
