@@ -129,14 +129,14 @@ export function MyLearningPath() {
 					>
 						<button
 							type="button"
-							className="block w-full rounded-full focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+							className="block w-full rounded-full focus:outline-none focus:ring-2 focus:ring-c-primary focus:ring-offset-2"
 							aria-label={t("showCourseProgressDetails")}
 							aria-describedby="course-progress-tooltip"
 							onClick={() => setShowCourseDetails(true)}
 						>
 							<span className="block h-3 overflow-hidden rounded-full bg-gray-200">
 								<span
-									className="block h-3 rounded-full bg-emerald-500 transition-all duration-500"
+									className="block h-3 rounded-full bg-c-primary transition-all duration-500"
 									style={{ width: `${progress}%` }}
 								/>
 							</span>
@@ -180,7 +180,7 @@ export function MyLearningPath() {
 											</div>
 											<div className="h-1 overflow-hidden rounded-full bg-gray-600">
 												<div
-													className="h-full rounded-full bg-emerald-400"
+													className="h-full rounded-full bg-c-primary"
 													style={{ width: `${courseProgress}%` }}
 												/>
 											</div>
@@ -209,7 +209,7 @@ export function MyLearningPath() {
 			<div className="mt-auto pt-4 sm:pt-6 flex justify-center sm:justify-start">
 				<button
 					onClick={handleContinue}
-					className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs sm:text-sm font-medium px-4 sm:px-5 py-2 rounded-md shadow-sm transition focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+					className="bg-c-primary hover:bg-c-primary-strong text-white text-xs sm:text-sm font-medium px-4 sm:px-5 py-2 rounded-md shadow-sm transition focus:outline-none focus:ring-2 focus:ring-c-primary focus:ring-offset-2"
 				>
 					{t("continueLearning")}
 				</button>

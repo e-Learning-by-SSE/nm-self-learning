@@ -185,19 +185,13 @@ export function GeneralHeatmap() {
 		const dailyMap = new Map<string, number>();
 
 		if (metric === "timeMetric" && dailyLearning) {
-			for (const e of dailyLearning as any[]) {
-				const iso = normalizeDate(e.day ?? (e as any).date);
+			for (const e of dailyLearning) {
+				const iso = normalizeDate(e.day);
 				if (!iso) continue;
-				const seconds =
-					typeof e.timeSeconds === "number"
-						? e.timeSeconds
-						: typeof (e as any).seconds === "number"
-							? (e as any).seconds
-							: 0;
-				dailyMap.set(iso, seconds / 3600);
+				dailyMap.set(iso, e.timeSeconds / 3600);
 			}
 		} else if (hourlyQuiz) {
-			for (const e of hourlyQuiz as any[]) {
+			for (const e of hourlyQuiz) {
 				const iso = normalizeDate(e.hour);
 				if (!iso) continue;
 				const val =
@@ -316,7 +310,7 @@ export function GeneralHeatmap() {
 						key={selected}
 						title={t("selectHeatmapType")}
 						button={
-							<div className="flex items-center justify-between w-48 sm:w-56 rounded-md px-3 py-1.5 sm:px-4 sm:py-2 font-semibold transition-colors bg-emerald-500 text-white">
+							<div className="flex items-center justify-between w-48 sm:w-56 rounded-md px-3 py-1.5 sm:px-4 sm:py-2 font-semibold transition-colors bg-c-primary text-white">
 								<span className="truncate">{t(selected)}</span>
 								<XMarkIcon
 									className="h-4 w-4 ml-2 cursor-pointer hover:text-gray-200"
@@ -337,8 +331,8 @@ export function GeneralHeatmap() {
 								}}
 								className={`cursor-pointer block px-4 py-2 w-full sm:w-56 text-left transition-colors ${
 									selected === option
-										? "bg-emerald-500 text-white"
-										: "hover:bg-emerald-500 hover:text-white"
+										? "bg-c-primary text-white"
+										: "hover:bg-c-primary-strong hover:text-white"
 								} ${
 									i === 0
 										? "rounded-t-md"
@@ -355,7 +349,7 @@ export function GeneralHeatmap() {
 			</div>
 
 			{/* Heatmap */}
-			<div className="rounded-lg border border-emerald-300 bg-gray-50 px-6 py-5 flex flex-col justify-between">
+			<div className="rounded-lg border border-c-primary bg-gray-50 px-6 py-5 flex flex-col justify-between">
 				{groupedData ? (
 					<>
 						<div className="flex flex-col justify-between gap-4">
@@ -402,10 +396,9 @@ export function GeneralHeatmap() {
 						<p
 							onClick={() => setShowModal(true)}
 							id="open-detailed-heatmaps"
-							className="text-sm text-center text-emerald-600 cursor-pointer mt-4"
+							className="text-sm text-center text-c-primary cursor-pointer mt-4"
 						>
-							{t("openDetailedHeatmaps")}
-							<span className="text-emerald-600 text-base"> →</span>
+							{t("openDetailedHeatmaps")} <span className="text-base">→</span>
 						</p>
 					</>
 				) : (
