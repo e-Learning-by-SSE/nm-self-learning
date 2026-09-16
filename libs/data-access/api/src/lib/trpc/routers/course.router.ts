@@ -1,5 +1,5 @@
 import { AccessLevel, CourseType, Prisma } from "@prisma/client";
-import { database } from "@self-learning/database";
+import { database, logJobProgress } from "@self-learning/database";
 import {
 	courseFormSchema,
 	getFullCourseExport,
@@ -30,6 +30,8 @@ import {
 import { randomUUID } from "crypto";
 import { resolveLessonPath } from "../../lesson-path/lesson-path.service";
 import { createCourseSummary, mapCourseContent } from "@self-learning/course";
+import { And, Empty, LearningUnit, Variable } from "@e-learning-by-sse/nm-skill-lib";
+import { workerServiceClient } from "@self-learning/worker-api";
 
 export const courseRouter = t.router({
 	getCourseData: authProcedure
@@ -362,6 +364,19 @@ export const courseRouter = t.router({
 				content: content,
 				summary: summary
 			};
+		}),
+	getCourseGraph: authProcedure
+		.input(
+			z.object({
+				courseId: z.string(),
+				knowledge: z.array(z.string())
+			})
+		)
+		.query(async ({ input }) => {
+			const jobId = enqueueCourseGraphJob(input.courseId);
+
+			// TODO @ Artsiom: jobId May be used at site to pull for new results
+			return jobId;
 		}),
 	generateLessonPath: authProcedure
 		.input(
@@ -724,4 +739,131 @@ function normalizeContent(
 				: [],
 			description: "description" in item ? item.description : undefined
 		}));
+}
+
+async function enqueueCourseGraphJob(courseId: string): Promise<string> {
+	// TODO any permissions? I think VIEW is enough
+	const course = await database.course.findUnique({
+		where: { courseId },
+		select: {
+			title: true,
+			type: true,
+			authors: true,
+			subtitle: true,
+			slug: true,
+			description: true,
+			imgUrl: true,
+			provides: {
+				select: {
+					id: true,
+					name: true,
+					description: true,
+					authorId: true,
+					children: { select: { id: true } }
+				}
+			}
+		}
+	});
+	if (!course) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Failed to find requested course"
+		});
+	}
+	if (course.type !== CourseType.DYNAMIC) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Requested course is not dynamic"
+		});
+	}
+
+	const [dbSkills, lessons] = await Promise.all([
+		database.skill.findMany({
+			select: {
+				id: true,
+				children: { select: { id: true } }
+			}
+		}),
+		database.lesson.findMany({
+			select: {
+				lessonId: true,
+				requires: { select: { id: true } },
+				provides: { select: { id: true } }
+			}
+		})
+	]);
+
+	const libSkills = dbSkills.map(s => ({
+		id: s.id,
+		children: s.children?.map(c => c.id) ?? []
+	}));
+
+	const findSkill = (id: string) => libSkills.find(s => s.id === id);
+
+	// Goals of the course
+	const goals = course.provides;
+	// All relevant skills:
+	// TODO @ Artsiom please check if you get this context data out of your course object
+	const relevantSkills = goals.map(s => ({
+		id: s.id,
+		repositoryId: "",
+		children: s.children?.map(c => ({ id: c.id })) ?? []
+	})); // + relevant Skills
+	// Relevant learning units
+	// TODO @ Artsiom Filter learning Units for relevant learning units of course context
+	const relevantLearningUnits = lessons.map(l => ({
+		lessonId: l.lessonId,
+		requires: (l.requires ?? [])
+			.map(p => findSkill(p.id))
+			.filter((s): s is (typeof libSkills)[number] => !!s),
+		provides: (l.provides ?? [])
+			.map(p => findSkill(p.id))
+			.filter((s): s is (typeof libSkills)[number] => !!s)
+	}));
+
+	const jobId = randomUUID();
+	subscribeCourseGraphAnalysis(jobId, courseId).catch(err => {
+		console.error(
+			"[CourseRouter] Subscription error",
+			{
+				courseId,
+				error: err instanceof Error ? err.message : String(err)
+			},
+			{ jobId }
+		);
+	});
+
+	await workerServiceClient.submitJob.mutate({
+		jobId: jobId,
+		jobType: "courseGraphAnalysis",
+		payload: {
+			dbSkills: relevantSkills,
+			lessons: relevantLearningUnits
+		}
+	});
+
+	return jobId;
+}
+
+async function subscribeCourseGraphAnalysis(jobId: string, courseId: string): Promise<void> {
+	try {
+		workerServiceClient.jobQueue.subscribe(
+			{ jobId },
+			{
+				onData: async event => {
+					await logJobProgress(jobId, event);
+					if (event.status === "finished") {
+						// TODO @ Artsiom: Display to the user when finished (e.g., via storing result in table and constantly pulling in page)
+					} else if (event.status === "aborted") {
+						// TODO @ Artsiom: Abort constantly pulling
+					}
+				},
+				onError: error => {
+					// TODO @ Artsiom: Abort constantly pulling
+				}
+			}
+		);
+	} catch (error) {
+		// TODO @ Artsiom: Abort constantly pulling
+	}
 }

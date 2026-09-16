@@ -55,6 +55,16 @@ export const pathGenerationPayloadSchema = z.object({
 });
 
 /******************************************************************************
+ ************************* Course Graph Analysis ******************************
+ ******************************************************************************/
+
+export const courseGraphAnalysisPayloadSchema = pathGenerationPayloadSchema.omit({
+	userGlobalKnowledge: true,
+	course: true,
+	knowledge: true
+});
+
+/******************************************************************************
  ******************************  RAG Embedding ******************************
  ******************************************************************************/
 
@@ -128,6 +138,10 @@ export const SubmitJobInput = z.discriminatedUnion("jobType", [
 		payload: pathGenerationPayloadSchema
 	}),
 	BaseJobSchema.extend({
+		jobType: z.literal("courseGraphAnalysis"),
+		payload: courseGraphAnalysisPayloadSchema
+	}),
+	BaseJobSchema.extend({
 		jobType: z.literal("ragEmbed"),
 		payload: ragEmbedPayloadSchema
 	}),
@@ -140,6 +154,10 @@ export const SubmitJobInput = z.discriminatedUnion("jobType", [
 export const JobResponse = z.discriminatedUnion("jobType", [
 	BaseJobSchema.extend({
 		jobType: z.literal("pathGeneration"),
+		response: unknown()
+	}),
+	BaseJobSchema.extend({
+		jobType: z.literal("courseGraphAnalysis"),
 		response: unknown()
 	}),
 	BaseJobSchema.extend({
