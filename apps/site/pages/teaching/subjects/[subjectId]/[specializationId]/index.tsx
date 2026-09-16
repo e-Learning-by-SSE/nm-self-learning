@@ -130,8 +130,8 @@ export default function SpecializationManagementPage() {
 		<div className="flex flex-col gap-8 pb-32">
 			<TopicHeader
 				imgUrlBanner={specialization.imgUrlBanner}
-				parentLink="/subjects"
-				parentTitle={t_common("Topic")}
+				parentLink={`/teaching/subjects/${specialization.subjectId}`}
+				parentTitle={specialization.subject.title}
 				title={specialization.title}
 				subtitle={specialization.subtitle}
 			>
