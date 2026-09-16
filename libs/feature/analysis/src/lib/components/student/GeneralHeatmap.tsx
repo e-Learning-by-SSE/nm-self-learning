@@ -171,8 +171,10 @@ export function GeneralHeatmap() {
 		"correctTasks"
 	];
 
+	// Used for timeMetric
 	const { data: dailyLearning, isLoading: dailyLearningLoading } =
 		trpc.metrics.getStudentMetric_DailyLearningTime.useQuery();
+	// Used for completedTasks, correctTasks
 	const { data: hourlyQuiz, isLoading: hourlyQuizLoading } =
 		trpc.metrics.getStudentMetric_HourlyAverageQuizAnswers.useQuery();
 
@@ -250,7 +252,10 @@ export function GeneralHeatmap() {
 	}, [dailyLearning, hourlyQuiz, selected, currentDate, i18n.language]);
 
 	if (dailyLearningLoading || hourlyQuizLoading) {
-		return <LoadingBox />;
+		const isLoading = selected === "timeMetric" ? dailyLearningLoading : hourlyQuizLoading;
+		if (isLoading) {
+			return <LoadingBox />;
+		}
 	}
 
 	const renderRow = (
