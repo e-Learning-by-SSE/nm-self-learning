@@ -77,7 +77,6 @@ async function updateCourseProgress(courseId: string, content: CourseContent, us
 	const progress = Math.floor((completedIds.size / lessons.size) * 100);
 	// CompletedLesson is the source of truth for individual lessons. Persist the
 	// derived course completion on Enrollment, which is what analytics queries.
-	const completedAt = progress === 100 ? new Date() : null;
 
 	let completedAt = null;
 	if (progress === 100) {
