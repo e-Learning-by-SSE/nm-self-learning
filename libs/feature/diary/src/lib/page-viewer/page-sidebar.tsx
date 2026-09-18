@@ -132,8 +132,8 @@ function SidebarContentMobile({
 											onClick={() => onSelectPage(page.id)}
 											className="block"
 										>
-											<div className="flex items-center justify-between p-2 rounded break-words whitespace-normal">
-												<span className="flex-grow">{`${pages.indexOf(page) + 1}: ${page.course.title}`}</span>
+											<div className="flex items-center justify-between p-2 rounded wrap-break-word whitespace-normal">
+												<span className="grow">{`${pages.indexOf(page) + 1}: ${page.course.title}`}</span>
 												<span className="ml-4">
 													<LearningDiaryEntryStatusBadge
 														{...page}
@@ -214,8 +214,8 @@ function SideBarContent({
 	return (
 		<li className={`mb-1 rounded hover:bg-c-neutral-muted ${selected ? "bg-c-surface-2" : ""}`}>
 			<Link href={"/learning-diary/page/" + page.id} onClick={() => changePage(page.id)}>
-				<div className="flex items-center justify-between pt-2 pl-1 rounded break-words whitespace-normal">
-					<span className="flex-grow mr-1">{`${index}. ${page.course.title}`}</span>
+				<div className="flex items-center justify-between pt-2 pl-1 rounded wrap-break-word whitespace-normal">
+					<span className="grow mr-1">{`${index}. ${page.course.title}`}</span>
 					<span className="ml-4 mr-1">
 						<LearningDiaryEntryStatusBadge {...page} className="top-2" />
 					</span>

@@ -72,11 +72,11 @@ export function AchievementCard({
 		<div className={`p-4 rounded-lg border ${cardClassName}`}>
 			<div className="flex items-start">
 				{isRedeemed ? (
-					<CheckCircleIcon className="w-6 h-6 text-green-500 mr-2 flex-shrink-0" />
+					<CheckCircleIcon className="w-6 h-6 text-green-500 mr-2 shrink-0" />
 				) : isEarnedNotRedeemed ? (
-					<TrophyIcon className="w-6 h-6 text-yellow-500 mr-2 flex-shrink-0" />
+					<TrophyIcon className="w-6 h-6 text-yellow-500 mr-2 shrink-0" />
 				) : (
-					<TrophyIcon className="w-6 h-6 text-gray-400 mr-2 flex-shrink-0" />
+					<TrophyIcon className="w-6 h-6 text-gray-400 mr-2 shrink-0" />
 				)}
 				<div className="flex-1">
 					<h4 className="font-semibold">{achievement.title}</h4>

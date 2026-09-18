@@ -127,13 +127,13 @@ function GradeBreakdownDialog({
 									{/* Progress Bar */}
 									<div className="w-24 bg-c-surface-3 rounded-full h-3">
 										<div
-											className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500 ease-out"
+											className="bg-linear-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500 ease-out"
 											style={{ width: `${percentage}%` }}
 										></div>
 									</div>
 
 									{/* Count and Percentage */}
-									<div className="text-right min-w-[4rem]">
+									<div className="text-right min-w-16">
 										<div className="text-lg font-bold text-gray-900">
 											{count}
 										</div>
@@ -282,7 +282,7 @@ export function PlatformStatsAchievementsSection({
 							Deine Erfolge
 						</h3>
 
-						<div className="bg-gradient-to-br from-white to-c-surface-1 rounded-lg border border-c-border p-4">
+						<div className="bg-linear-to-br from-white to-c-surface-1 rounded-lg border border-c-border p-4">
 							<div className="grid grid-cols-3 divide-x divide-c-border">
 								{/* Streak */}
 								<div className="text-center">
@@ -358,7 +358,7 @@ export function PlatformStatsAchievementsSection({
 
 						{/* Container mit goldenem Rand */}
 						<div
-							className={`bg-gradient-to-br from-white to-c-surface-1 rounded-lg border-2 ${stats.topUser.isCurrentUser ? "border-purple-300 shadow-purple-100 " : "border-yellow-300 shadow-yellow-100 "}  shadow-lg  p-4`}
+							className={`bg-linear-to-br from-white to-c-surface-1 rounded-lg border-2 ${stats.topUser.isCurrentUser ? "border-purple-300 shadow-purple-100 " : "border-yellow-300 shadow-yellow-100 "}  shadow-lg  p-4`}
 						>
 							<div className="grid grid-cols-3 divide-x divide-c-border">
 								{/* Streak */}
@@ -456,7 +456,7 @@ export function PlatformStatsAchievementsSection({
 							{/* Longest Learning Session */}
 							<div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
 								<div className="flex items-center gap-3">
-									<ClockIcon className="h-8 w-8 text-blue-500 flex-shrink-0" />
+									<ClockIcon className="h-8 w-8 text-blue-500 shrink-0" />
 									<div>
 										<div className="text-xl font-bold text-blue-900">
 											{formatTimeIntervalToString(
@@ -475,7 +475,7 @@ export function PlatformStatsAchievementsSection({
 							{/* Most Lessons Completed */}
 							<div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
 								<div className="flex items-center gap-3">
-									<TrophyIcon className="h-8 w-8 text-blue-500 flex-shrink-0" />
+									<TrophyIcon className="h-8 w-8 text-blue-500 shrink-0" />
 									<div>
 										<div className="text-xl font-bold text-blue-900">
 											{stats.today.mostLessonsCompleted}

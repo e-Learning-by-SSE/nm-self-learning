@@ -6,11 +6,11 @@
 	--c-surface-3: #e5e7eb; /* gray-200 */
 
 	/* Primary (Alpha) */
-	--c-primary: 16 185 129; /* emerald-500 */
-	--c-primary-strong: 5 150 105; /* emerald-600 */
-	--c-primary-muted: 52 211 153; /* emerald-400 */
-	--c-primary-subtle: 236 253 245; /* emerald-50 */
+	--c-primary: 128 63 90; /* emerald-500 */
+	--c-primary-strong: 105 48 72; /* emerald-600 */
+	--c-primary-muted: 158 88 117; /* emerald-400 */
+	--c-primary-subtle: 249 240 244; /* emerald-50 */
 
 	/* Secondary (Alpha) */
-	--color-secondary: 16 185 129; /* emerald-500 */
+	--color-secondary: 128 63 90; /* emerald-500 */
 }

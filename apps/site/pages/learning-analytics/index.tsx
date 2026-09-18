@@ -44,7 +44,7 @@ export default function LearningAnalyticsPage() {
 	if (isCreator && (enrollments?.length ?? 0) > 0) {
 		return (
 			<div className="bg-gray-50 min-h-screen">
-				<div className="flex flex-col px-4 max-w-screen-xl mx-auto">
+				<div className="flex flex-col px-4 max-w-(--breakpoint-xl) mx-auto">
 					<Tabs selectedIndex={selectedTab} onChange={setSelectedTab}>
 						<Tab>{t("Creator_Analytics")}</Tab>
 						<Tab>{t("My_Learning_Analytics")}</Tab>

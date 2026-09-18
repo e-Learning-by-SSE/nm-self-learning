@@ -13,7 +13,7 @@ function resolveGrade(rating: Rating): PerformanceGrade {
 
 export function SmallGradeBadge({
 	rating,
-	sizeClassName = "min-w-[2rem] px-2 py-1"
+	sizeClassName = "min-w-8 px-2 py-1"
 }: {
 	rating: Rating;
 	sizeClassName?: string;
@@ -29,7 +29,7 @@ export function SmallGradeBadge({
 				return {
 					text: "1+",
 					className:
-						"text-purple-700 bg-gradient-to-br from-purple-100 to-amber-100 border-purple-300"
+						"text-purple-700 bg-linear-to-br from-purple-100 to-amber-100 border-purple-300"
 				};
 			case "VERY_GOOD":
 				return {
@@ -84,7 +84,7 @@ export function GradeBadge({
 		switch (grade) {
 			case "PERFECT":
 				return {
-					color: "text-purple-700 bg-gradient-to-br from-purple-100 to-amber-100 border-2 border-purple-300",
+					color: "text-purple-700 bg-linear-to-br from-purple-100 to-amber-100 border-2 border-purple-300",
 					text: "Perfekt",
 					display: "1+"
 				};

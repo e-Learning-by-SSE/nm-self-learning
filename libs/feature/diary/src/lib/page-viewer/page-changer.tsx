@@ -72,7 +72,7 @@ export function PageChanger({ pages, currentPageId }: { pages: PagesMeta; curren
 	};
 
 	return (
-		<div className="flex flex-row flex-grow justify-between items-stretch space-x-4">
+		<div className="flex flex-row grow justify-between items-stretch space-x-4">
 			<Tooltip className="flex" placement={"bottom"} content="Zum ersten Eintrag springen">
 				<button
 					className="flex place-content-center items-center gap-2 rounded-lg bg-c-primary px-4 xl:px-8 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:bg-opacity-25"
@@ -105,7 +105,7 @@ export function PageChanger({ pages, currentPageId }: { pages: PagesMeta; curren
 					min={1}
 					max={pages.length}
 				/>
-				<span className="flex items-center ml-2 flex-shrink-0">/ {pages.length}</span>
+				<span className="flex items-center ml-2 shrink-0">/ {pages.length}</span>
 			</form>
 			<Tooltip className="flex" placement={"bottom"} content="Zum nächsten Eintrag springen">
 				<button

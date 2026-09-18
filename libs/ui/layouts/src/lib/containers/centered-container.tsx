@@ -9,7 +9,7 @@ export function CenteredContainer({
 }: PropsWithChildren<{ className?: string }>) {
 	return (
 		<div
-			className={`mx-auto w-full max-w-screen-lg px-4 xl:px-0 ${className ? className : ""}`}
+			className={`mx-auto w-full max-w-(--breakpoint-lg) px-4 xl:px-0 ${className ? className : ""}`}
 		>
 			{children}
 		</div>
@@ -25,7 +25,7 @@ export function CenteredContainerXL({
 }: PropsWithChildren<{ className?: string }>) {
 	return (
 		<div
-			className={`mx-auto w-full max-w-screen-xl px-4 xl:px-0 ${className ? className : ""}`}
+			className={`mx-auto w-full max-w-(--breakpoint-xl) px-4 xl:px-0 ${className ? className : ""}`}
 		>
 			{children}
 		</div>

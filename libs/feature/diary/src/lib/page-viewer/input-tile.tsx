@@ -21,7 +21,7 @@ export function Tile({
 }>) {
 	return (
 		<div
-			className={`flex flex-grow justify-center items-center w-full min-h-48 px-4 py-2 rounded-lg cursor-pointer ${
+			className={`flex grow justify-center items-center w-full min-h-48 px-4 py-2 rounded-lg cursor-pointer ${
 				isFilled ? "bg-green-100" : "bg-c-surface-2"
 			}`}
 			onClick={() => onClick(true)}
@@ -105,12 +105,12 @@ export function InfoTile({
 		<div className="flex flex-col xl:grid xl:grid-cols-4 items-stretch w-full h-full space-y-1 xl:space-y-0 xl:space-x-4">
 			<div className="flex flex-col xl:col-span-1 bg-c-surface-3 rounded-lg text-center p-4 min-h-48">
 				<span className="text-c-text-strong font-semibold">{tileName}:</span>
-				<span className="text-gray-600 mt-1 py-4 info-tile-scroll flex-grow overflow-y-auto">
+				<span className="text-gray-600 mt-1 py-4 info-tile-scroll grow overflow-y-auto">
 					{tileDescription}
 				</span>
 			</div>
 
-			<div className="flex-grow flex xl:col-span-3 items-stretch">
+			<div className="grow flex xl:col-span-3 items-stretch">
 				<Tile onClick={onClick} isFilled={isFilled}>
 					{children}
 				</Tile>
@@ -224,7 +224,7 @@ export function LocationChooseDialog({
 								{location.iconURL && location.iconURL !== "" && (
 									<Image src={location.iconURL} alt={""} width={48} height={48} />
 								)}
-								<span className="text-c-text-strong flex-grow">
+								<span className="text-c-text-strong grow">
 									{location.name}
 								</span>
 								{!location.defaultLocation && (
@@ -326,7 +326,7 @@ export function MarkDownInputTile({
 			tileDescription={"Platz für persönliche Anmerkungen."}
 			tileName={"Notizen"}
 		>
-			<div className="flex flex-grow min-h-40 overflow-auto">
+			<div className="flex grow min-h-40 overflow-auto">
 				{initialNote === "" ? (
 					<span className="m-auto">Bisher wurden noch keine Notizen erstellt.</span>
 				) : (

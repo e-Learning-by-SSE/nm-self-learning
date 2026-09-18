@@ -25,7 +25,7 @@ export function StreakIndicatorCircle({
 				</AnimatedFlame>
 			</div>
 			{/* Circle with streak cound */}
-			<div className="absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-orange-200 via-yellow-100 to-white text-orange-600 text-xl font-extrabold shadow-[0_0_20px_rgba(255,180,100,0.6)] backdrop-blur-sm">
+			<div className="absolute inset-0 flex items-center justify-center rounded-full bg-linear-to-br from-orange-200 via-yellow-100 to-white text-orange-600 text-xl font-extrabold shadow-[0_0_20px_rgba(255,180,100,0.6)] backdrop-blur-sm">
 				{count} {StatusIcon && <StatusIcon className="w-4 h-4 ml-2" />}
 			</div>
 		</div>

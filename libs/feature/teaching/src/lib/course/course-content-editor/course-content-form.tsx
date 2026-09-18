@@ -176,7 +176,7 @@ function LessonNode({
 
 			<div className="flex gap-4">
 				{(data?.meta as LessonMeta)?.hasQuiz && (
-					<span className="flex items-center justify-center rounded-full bg-c-primary px-3 py-1 text-xs font-medium text-white min-h-[2rem]">
+					<span className="flex items-center justify-center rounded-full bg-c-primary px-3 py-1 text-xs font-medium text-white min-h-8">
 						Lernkontrolle
 					</span>
 				)}

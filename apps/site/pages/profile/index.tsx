@@ -514,7 +514,7 @@ export default function ProfilPage({
 				{/* Left column - Profile Card und Meine Funktionen */}
 				<div className="lg:col-span-1 flex flex-col space-y-6 h-full">
 					{/* Profile Card */}
-					<div className="flex-shrink-0">
+					<div className="shrink-0">
 						<ProfileCard
 							student={student}
 							openSettings={openSettings}
@@ -647,7 +647,7 @@ function MyFunctionsCard() {
 								href={func.href}
 								className="group flex items-center p-3 rounded-lg hover:bg-c-neutral-subtle transition-colors duration-150 cursor-pointer"
 							>
-								<div className="flex-shrink-0 mr-3">
+								<div className="shrink-0 mr-3">
 									<func.icon className="h-5 w-5 text-c-text-muted group-hover:text-c-text transition-colors" />
 								</div>
 								<div className="flex-1 min-w-0">
@@ -655,7 +655,7 @@ function MyFunctionsCard() {
 										<p className="text-sm font-medium text-c-text-strong group-hover:text-c-text transition-colors">
 											{func.title}
 										</p>
-										<LinkIcon className="h-4 w-4 text-c-text-muted group-hover:text-c-text ml-2 flex-shrink-0 transition-colors" />
+										<LinkIcon className="h-4 w-4 text-c-text-muted group-hover:text-c-text ml-2 shrink-0 transition-colors" />
 									</div>
 									<p className="text-xs text-c-text-muted mt-1">
 										{func.description}
@@ -706,7 +706,7 @@ function ProfileCard({
 	);
 
 	return (
-		<section className="relative rounded-xl bg-gradient-to-br from-white to-c-surface-0 shadow-sm border border-c-border-muted p-6 space-y-6">
+		<section className="relative rounded-xl bg-linear-to-br from-white to-c-surface-0 shadow-sm border border-c-border-muted p-6 space-y-6">
 			<div className="absolute -top-3 -right-3 h-16 w-16 z-10">
 				<StreakIndicatorCircle
 					count={gamificationProfile.loginStreak.count}
@@ -883,7 +883,7 @@ function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 									</div>
 
 									{/* Right side: Completion Status */}
-									<div className="flex items-center gap-2 ml-4 flex-shrink-0">
+									<div className="flex items-center gap-2 ml-4 shrink-0">
 										{lesson.completed ? (
 											<>
 												<CheckIcon className="h-5 w-5 text-c-primary" />

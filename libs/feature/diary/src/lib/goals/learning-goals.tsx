@@ -361,7 +361,7 @@ function GoalRow({
 	return (
 		<section>
 			<li className="flex flex-col gap-2 rounded-lg bg-c-surface-2 p-4">
-				<div className="group flex flex-row flex-grow justify-between mb-2">
+				<div className="group flex flex-row grow justify-between mb-2">
 					<div className="flex">
 						<div className="relative mr-4 flex">
 							<GoalStatusCheckbox
@@ -454,7 +454,7 @@ function SubGoalRow({
 
 	return (
 		<span className="flex w-full justify-between gap-4 rounded-lg bg-white px-4 py-2">
-			<div className="group flex flex-row flex-grow justify-between">
+			<div className="group flex flex-row grow justify-between">
 				<div className="flex">
 					<div className="flex mr-2">
 						<GoalStatusCheckbox

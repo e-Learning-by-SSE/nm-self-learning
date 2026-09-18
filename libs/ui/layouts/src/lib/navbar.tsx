@@ -37,7 +37,7 @@ export function Navbar() {
 			{({ open }) => (
 				<>
 					<div className="mx-auto px-2 lg:px-6 xl:px-8">
-						<div className="relative flex h-16 items-center justify-between">
+						<div className="relative flex h-16 items-center">
 							<div className="absolute inset-y-0 left-0 flex items-center lg:hidden">
 								{/* Mobile dropdown-menu button*/}
 								<DisclosureButton className="inline-flex items-center justify-center rounded-md p-2 py-2 text-c-text-muted hover:bg-c-neutral hover:text-c-text focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
@@ -49,11 +49,11 @@ export function Navbar() {
 									)}
 								</DisclosureButton>
 							</div>
-							<div className="flex flex-1 items-center justify-center lg:items-stretch lg:justify-start">
-								<div className="flex flex-shrink-0 items-center">
-									<Link href="/" className="flex items-center gap-4">
+							<div className="flex flex-1 items-center lg:items-stretch justify-start">
+								<div className="flex shrink-0 items-center">
+									<Link href="/" className="flex shrink-0 items-center gap-4">
 										<div className="rounded-full bg-c-primary p-1">
-											<AcademicCapIcon className="h-8 shrink-0 text-white" />
+											<AcademicCapIcon className="h-8 w-8 text-white" />
 										</div>
 										<div className="hidden w-0 flex-col lg:flex lg:w-fit">
 											<span className="whitespace-nowrap text-sm text-c-text-muted">
@@ -65,12 +65,12 @@ export function Navbar() {
 										</div>
 									</Link>
 								</div>
-								<div className="hidden lg:ml-6 lg:block">
+								<div className="flex h-full flex-row items-center gap-2 px-1 text-sm font-medium">
 									{user && <NavbarNavigationLink />}
 								</div>
 							</div>
 							<SearchBar />
-							<div className="absolute inset-y-0 right-0 flex items-center pr-2 lg:static lg:inset-auto lg:ml-6 lg:pr-0">
+							<div className="ml-auto flex items-center pr-2 lg:ml-6 lg:pr-0">
 								{/* Profile dropdown */}
 								{!user ? (
 									<button

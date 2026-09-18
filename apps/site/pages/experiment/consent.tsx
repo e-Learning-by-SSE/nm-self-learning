@@ -224,7 +224,7 @@ function ConsentConfirmation({ consentDate }: { consentDate?: Date }) {
 	return (
 		<div className="mb-8 rounded-lg bg-emerald-50 p-6 border border-emerald-200">
 			<div className="flex items-center gap-4">
-				<CheckIcon className="h-12 w-12 text-c-primary flex-shrink-0" />
+				<CheckIcon className="h-12 w-12 text-c-primary shrink-0" />
 				<div>
 					<h2 className="text-xl font-bold text-emerald-900">
 						Einverständnis bereits erteilt

@@ -177,7 +177,7 @@ export function LessonEditor({
 				onSubmit={form.handleSubmit(onSubmit, showValidationErrors)}
 				className="w-full"
 			>
-				<div className="flex flex-col px-4 max-w-screen-xl mx-auto">
+				<div className="flex flex-col px-4 max-w-(--breakpoint-xl) mx-auto">
 					<div className="flex justify-between mb-8">
 						<div className="flex flex-col gap-2">
 							<span className="font-semibold text-2xl text-c-primary">

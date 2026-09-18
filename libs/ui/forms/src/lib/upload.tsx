@@ -725,7 +725,7 @@ function AssetOptionsMenu({ asset }: { asset: Asset }) {
 			<MenuButton className="rounded-full p-2 hover:bg-c-neutral-subtle">
 				<EllipsisVerticalIcon className="h-5 text-gray-400" />
 			</MenuButton>
-			<MenuItems className="absolute left-4 top-4 divide-y divide-c-border-muted rounded-md bg-white object-left-top text-sm shadow-lg ring-1 ring-c-primary ring-opacity-5 focus:outline-none">
+			<MenuItems className="absolute left-4 top-4 divide-y divide-c-border-muted rounded-md bg-white object-top-left text-sm shadow-lg ring-1 ring-c-primary ring-opacity-5 focus:outline-none">
 				<MenuItem as="div" className="p-1">
 					{({ focus }) => (
 						<button

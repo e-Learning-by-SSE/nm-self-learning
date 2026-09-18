@@ -1,33 +1,52 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer utilities {
-	.animation-delay-3000 {
-		animation-delay: 3s;
-	}
+@config "../tailwind.config.js";
 
-	.animation-delay-5000 {
-		animation-delay: 5s;
+@source "../";
+@source "../../../libs";
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+	*,
+	::after,
+	::before,
+	::backdrop,
+	::file-selector-button {
+		border-color: var(--color-gray-200, currentcolor);
 	}
 }
 
+@utility animation-delay-3000 {
+	animation-delay: 3s;
+}
+
+@utility animation-delay-5000 {
+	animation-delay: 5s;
+}
+
 :root {
-	--color-light: theme("colors.slate.500"); /* DEPRECATED */
-	--color-light-border: theme("colors.slate.200"); /* DEPRECATED */
+	--color-light: var(--color-slate-500); /* DEPRECATED */
+	--color-light-border: var(--color-slate-200); /* DEPRECATED */
 	--gradient: linear-gradient(62deg, #c2dbf3, #d7b6f5);
 
-	--c-neutral-0: theme("colors.white");
-	--c-neutral-50: theme("colors.gray.50");
-	--c-neutral-100: theme("colors.gray.100");
-	--c-neutral-200: theme("colors.gray.200");
-	--c-neutral-300: theme("colors.gray.300");
-	--c-neutral-400: theme("colors.gray.400");
-	--c-neutral-500: theme("colors.gray.500");
-	--c-neutral-600: theme("colors.gray.600");
-	--c-neutral-700: theme("colors.gray.700");
-	--c-neutral-800: theme("colors.gray.800");
-	--c-neutral-900: theme("colors.gray.900");
+	--c-neutral-0: var(--color-white);
+	--c-neutral-50: var(--color-gray-50);
+	--c-neutral-100: var(--color-gray-100);
+	--c-neutral-200: var(--color-gray-200);
+	--c-neutral-300: var(--color-gray-300);
+	--c-neutral-400: var(--color-gray-400);
+	--c-neutral-500: var(--color-gray-500);
+	--c-neutral-600: var(--color-gray-600);
+	--c-neutral-700: var(--color-gray-700);
+	--c-neutral-800: var(--color-gray-800);
+	--c-neutral-900: var(--color-gray-900);
 
 	/* Text */
 	--c-text: var(--c-neutral-700);
@@ -41,9 +60,9 @@
 	--c-border-muted: var(--c-neutral-100);
 
 	/* Accent */
-	--c-accent: theme("colors.purple.500");
-	--c-accent-strong: theme("colors.purple.600");
-	--c-accent-muted: theme("colors.purple.400");
+	--c-accent: var(--color-purple-500);
+	--c-accent-strong: var(--color-purple-600);
+	--c-accent-muted: var(--color-purple-400);
 
 	/* Semantic Colors */
 	--c-neutral: var(--c-neutral-200);
@@ -51,21 +70,21 @@
 	--c-neutral-muted: var(--c-neutral-100);
 	--c-neutral-subtle: var(--c-neutral-50);
 
-	--c-success: theme("colors.green.500");
-	--c-success-muted: theme("colors.green.200");
+	--c-success: var(--color-green-500);
+	--c-success-muted: var(--color-green-200);
 
-	--c-danger: theme("colors.red.500");
-	--c-danger-strong: theme("colors.red.600");
-	--c-danger-muted: theme("colors.red.400");
-	--c-danger-subtle: theme("colors.red.100");
+	--c-danger: var(--color-red-500);
+	--c-danger-strong: var(--color-red-600);
+	--c-danger-muted: var(--color-red-400);
+	--c-danger-subtle: var(--color-red-100);
 
-	--c-info: theme("colors.blue.500");
-	--c-info-strong: theme("colors.blue.600");
-	--c-info-muted: theme("colors.blue.400");
-	--c-info-subtle: theme("colors.blue.50");
+	--c-info: var(--color-blue-500);
+	--c-info-strong: var(--color-blue-600);
+	--c-info-muted: var(--color-blue-400);
+	--c-info-subtle: var(--color-blue-50);
 
-	--c-attention: theme("colors.orange.500");
-	--c-attention-muted: theme("colors.orange.400");
+	--c-attention: var(--color-orange-500);
+	--c-attention-muted: var(--color-orange-400);
 }
 
 @font-face {
@@ -80,11 +99,11 @@
 }
 
 .sidenav::-webkit-scrollbar-track {
-	background-color: theme("colors.transparent");
+	background-color: transparent;
 }
 
 .sidenav::-webkit-scrollbar-thumb {
-	background-color: theme("colors.slate.600");
+	background-color: var(--color-slate-600);
 }
 
 .playlist-scroll::-webkit-scrollbar {
@@ -93,11 +112,11 @@
 }
 
 .playlist-scroll::-webkit-scrollbar-track {
-	background-color: theme("colors.transparent");
+	background-color: transparent;
 }
 
 .playlist-scroll::-webkit-scrollbar-thumb {
-	background-color: theme("colors.neutral.400");
+	background-color: var(--color-neutral-400);
 }
 
 .info-tile-scroll::-webkit-scrollbar {
@@ -106,11 +125,11 @@
 }
 
 .info-tile-scroll::-webkit-scrollbar-track {
-	background-color: theme("colors.transparent");
+	background-color: transparent;
 }
 
 .info-tile-scroll::-webkit-scrollbar-thumb {
-	background-color: theme("colors.neutral.400");
+	background-color: var(--color-neutral-400);
 }
 
 html {
@@ -138,7 +157,7 @@ h3 {
 }
 
 video {
-	border-radius: theme("borderRadius.lg");
+	border-radius: var(--radius-lg);
 }
 
 video::cue {
@@ -167,38 +186,17 @@ video::cue {
 	@apply bg-c-primary text-c-text-inverted hover:bg-c-primary-strong;
 }
 
-.hover-highlight-scale {
-	@apply transition-transform hover:scale-105 duration-300;
-}
-
 .hover-highlight-ease {
 	@apply transition-transform duration-300 ease-in-out;
 }
 
 .btn-gamify {
-	@apply inline-block px-6 py-3 font-medium text-white rounded-md transition-all duration-300 ease-in-out hover-highlight-scale;
-	@apply bg-gradient-to-br from-purple-500/80 to-indigo-700/80 backdrop-blur-sm;
-	@apply border border-purple-400/30 shadow-sm;
-	@apply hover:shadow-md hover:from-purple-600/90 hover:to-indigo-800/90 hover:translate-y-[-1px];
-	@apply focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-50;
-	@apply active:shadow-inner active:translate-y-[1px] active:scale-[0.99];
-}
-
-.hover-highlight-scale {
-	@apply transition-transform hover:scale-105 duration-300;
-}
-
-.hover-highlight-ease {
-	@apply transition-transform duration-300 ease-in-out;
-}
-
-.btn-gamify {
-	@apply inline-block px-6 py-3 font-medium text-white rounded-md transition-all duration-300 ease-in-out hover-highlight-scale;
-	@apply bg-gradient-to-br from-purple-500/80 to-indigo-700/80 backdrop-blur-sm;
-	@apply border border-purple-400/30 shadow-sm;
-	@apply hover:shadow-md hover:from-purple-600/90 hover:to-indigo-800/90 hover:translate-y-[-1px];
-	@apply focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-50;
-	@apply active:shadow-inner active:translate-y-[1px] active:scale-[0.99];
+	@apply inline-block px-6 py-3 font-medium text-white rounded-md transition-all duration-300 ease-in-out hover:scale-105;
+	@apply bg-linear-to-br from-purple-500/80 to-indigo-700/80 backdrop-blur-xs;
+	@apply border border-purple-400/30 shadow-xs;
+	@apply hover:shadow-md hover:from-purple-600/90 hover:to-indigo-800/90 hover:-translate-y-px;
+	@apply focus:outline-hidden focus:ring-2 focus:ring-purple-400/50;
+	@apply active:shadow-inner active:translate-y-px active:scale-[0.99];
 }
 
 /* Secondary button: green outline, green text */
@@ -223,7 +221,7 @@ video::cue {
 
 /* Show more / Show less button: Blue border, blue text, white background  */
 .btn-info {
-	@apply mt-4 border border-c-info text-c-info bg-white rounded hover:bg-c-info-subtle;
+	@apply mt-4 border border-c-info text-c-info bg-white rounded-sm hover:bg-c-info-subtle;
 }
 
 /* X Mark Button: Text Gray, Hover Gray  */
@@ -238,7 +236,7 @@ video::cue {
 
 /* Icon-only buttons (no border when only icon is shown) */
 .btn-icon-only {
-	@apply inline-flex border-0 p-2 rounded hover:bg-c-neutral-strong;
+	@apply inline-flex border-0 p-2 rounded-sm hover:bg-c-neutral-strong;
 }
 
 .icon {
@@ -246,27 +244,26 @@ video::cue {
 }
 
 .checkbox {
-	@apply rounded text-c-primary accent-c-primary focus:ring-c-primary;
+	@apply rounded-sm text-c-primary accent-c-primary focus:ring-c-primary;
 }
 
 .select {
 	@apply h-fit rounded-lg border border-light-border py-2  text-sm placeholder:text-slate-400 focus:border-secondary focus:ring-secondary bg-c-surface-0 disabled:bg-gray-100;
 }
 
-input,
-textarea,
-select,
-.textfield {
-	@apply h-fit rounded-lg border border-light-border p-2 text-sm 
-	placeholder:text-slate-400 focus:border-secondary focus:ring-secondary bg-c-surface-0 disabled:bg-gray-100;
+@layer components {
+	input,
+	textarea,
+	select,
+	.textfield {
+		@apply h-fit rounded-lg border border-light-border p-2 text-sm
+      placeholder:text-slate-400 focus:border-secondary focus:ring-secondary
+      bg-c-surface-0 disabled:bg-gray-100;
+	}
 }
 
 .glass {
 	@apply bg-white shadow-lg;
-}
-
-.glass-hover {
-	@apply transition-colors hover:bg-opacity-90;
 }
 
 .border-card {
@@ -291,15 +288,15 @@ select,
 }
 
 .code-line.inserted {
-	@apply bg-green-500 bg-opacity-20;
+	@apply bg-green-500/20;
 }
 
 .code-line.deleted {
-	@apply bg-red-500 bg-opacity-20;
+	@apply bg-red-500/20;
 }
 
 .highlight-line {
-	@apply -mx-4 border-l-4 border-sky-400  bg-sky-900 bg-opacity-20;
+	@apply -mx-4 border-l-4 border-sky-400  bg-sky-900/20;
 }
 
 .line-number::before {
@@ -608,7 +605,7 @@ pre[class*="language-"] > code[class*="language-"] {
 
 .animate-highlight-shimmering::before {
 	content: "";
-	@apply absolute inset-0 pointer-events-none z-[1];
+	@apply absolute inset-0 pointer-events-none z-1;
 	background: linear-gradient(
 		90deg,
 		transparent 0%,
@@ -627,7 +624,7 @@ pre[class*="language-"] > code[class*="language-"] {
 
 .hover\:animate-highlight-shimmering::before {
 	content: "";
-	@apply absolute inset-0 pointer-events-none z-[1];
+	@apply absolute inset-0 pointer-events-none z-1;
 	background: linear-gradient(
 		90deg,
 		transparent 0%,

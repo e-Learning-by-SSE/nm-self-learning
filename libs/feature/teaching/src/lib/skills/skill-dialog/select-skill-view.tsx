@@ -138,7 +138,7 @@ function InlineRemoveButton({
 		<div className="inline-block">
 			<div className="flex items-center rounded-lg border border-c-border bg-white text-sm">
 				<button
-					className="flex flex-grow cursor-pointer flex-col px-4 hover:text-c-primary"
+					className="flex grow cursor-pointer flex-col px-4 hover:text-c-primary"
 					onClick={onClick}
 					type="button"
 				>

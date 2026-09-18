@@ -80,7 +80,7 @@ export function AddChildButton({
 		<IconOnlyButton
 			title="Neuen Skill in dieser Skillgruppe erstellen"
 			icon={<FolderPlusIcon className="h-5 text-lg" />}
-			className="hover:text-c-primary !px-2 !py-0"
+			className="hover:text-c-primary px-2! py-0!"
 			onClick={handleAddSkill}
 		/>
 	);
@@ -127,7 +127,7 @@ export function SkillDeleteOption({
 	return (
 		<IconOnlyButton
 			icon={<TrashIcon className={`h-5 w-5 ${inline ? "text-lg" : ""}`} />}
-			className={inline ? "hover:text-c-danger !px-2 !py-0" : "btn-danger"}
+			className={inline ? "hover:text-c-danger px-2! py-0!" : "btn-danger"}
 			title="Skill löschen"
 			onClick={handleDelete}
 		/>

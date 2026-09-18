@@ -90,7 +90,7 @@ export function MarkdownListboxMenu({
 			<MinorScaleFadeIn>
 				<ListboxOptions
 					anchor={dropdownPosition}
-					className={`z-10 w-max min-w-[8rem] max-w-xs ${
+					className={`z-10 w-max min-w-32 max-w-xs ${
 						dropdownPosition === "top" ? "rounded-t" : "rounded-b"
 					} bg-white shadow-lg cursor-default`}
 					style={{
