@@ -1,37 +1,48 @@
-import { PencilIcon, PuzzlePieceIcon } from "@heroicons/react/24/solid";
+import { PuzzlePieceIcon } from "@heroicons/react/24/solid";
 import { AccessLevel } from "@prisma/client";
 import { database } from "@self-learning/database";
-import { CourseMeta, Defined, ResolvedValue } from "@self-learning/types";
+import { CourseMeta, ResolvedValue } from "@self-learning/types";
+import { I18N_NAMESPACE as NS_TEACHING, SpecializationHeader } from "@self-learning/teaching";
 import { ImageCard, ImageCardBadge } from "@self-learning/ui/common";
-import { ItemCardGrid, testResourceGuard, TopicHeader } from "@self-learning/ui/layouts";
+import { ItemCardGrid, testResourceGuard } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
-import { useTranslation } from "next-i18next";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@self-learning/util/auth/server";
 import { withTranslations } from "@self-learning/api";
 
 type SpecializationPageProps = {
-	specialization: ResolvedValue<typeof getSpecialization>;
+	specialization: Omit<ResolvedValue<typeof getSpecialization>, "permissions">;
+	canEdit: boolean;
 };
 
-export const getServerSideProps = withTranslations(["common"], async ({ params, locale }) => {
-	const specializationSlug = params?.specializationSlug;
+export const getServerSideProps = withTranslations<SpecializationPageProps>(
+	NS_TEACHING,
+	async ({ params, req, res }) => {
+		const specializationSlug = params?.specializationSlug;
 
-	if (typeof specializationSlug !== "string") {
-		throw new Error("[specializationSlug] must be a string.");
+		if (typeof specializationSlug !== "string") {
+			throw new Error("[specializationSlug] must be a string.");
+		}
+
+		const specialization = await getSpecialization(specializationSlug);
+		if (!specialization) {
+			return { notFound: true };
+		}
+
+		const session = await getServerSession(req, res, authOptions);
+		const { permissions, ...publicSpecialization } = specialization;
+		const canEdit =
+			!!session?.user && testResourceGuard(session.user, AccessLevel.EDIT, permissions);
+
+		return {
+			props: {
+				specialization: publicSpecialization,
+				canEdit
+			}
+		};
 	}
-
-	const specialization = await getSpecialization(specializationSlug);
-
-	return {
-		props: {
-			...(await serverSideTranslations(locale ?? "en", ["common"])),
-			specialization: specialization as Defined<typeof specialization>
-		},
-		notFound: !specialization
-	};
-});
+);
 
 async function getSpecialization(specializationSlug: string) {
 	return await database.specialization.findUnique({
@@ -64,33 +75,16 @@ async function getSpecialization(specializationSlug: string) {
 	});
 }
 
-export default function SpecializationPage({ specialization }: SpecializationPageProps) {
-	const { title, subtitle, imgUrlBanner, subject, courses } = specialization;
-	const { t } = useTranslation("common");
-	const { data: session } = useSession();
-	const canEdit =
-		!!session?.user &&
-		testResourceGuard(session.user, AccessLevel.EDIT, specialization.permissions);
+export default function SpecializationPage({ specialization, canEdit }: SpecializationPageProps) {
+	const { subject, courses } = specialization;
 
 	return (
 		<div className="pb-32">
-			<TopicHeader
-				imgUrlBanner={imgUrlBanner}
+			<SpecializationHeader
+				specialization={specialization}
 				parentLink={`/subjects/${subject.slug}`}
-				parentTitle={subject.title}
-				title={title}
-				subtitle={subtitle}
-			>
-				{canEdit && (
-					<Link
-						href={`/teaching/subjects/${specialization.subjectId}/${specialization.specializationId}/edit`}
-						className="btn-primary absolute top-8 w-fit self-end"
-					>
-						<PencilIcon className="icon h-5" />
-						<span>{t("edit")}</span>
-					</Link>
-				)}
-			</TopicHeader>
+				canEdit={canEdit}
+			/>
 			<div className="mx-auto flex max-w-screen-xl flex-col px-4 pt-8 xl:px-0">
 				{courses.length > 0 ? (
 					<ItemCardGrid>
