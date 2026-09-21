@@ -9,7 +9,8 @@ import {
 	ImageOrPlaceholder,
 	LoadingBox,
 	Paginator,
-	SectionHeader
+	SectionHeader,
+	Tooltip
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { VoidSvg } from "@self-learning/ui/static";
@@ -180,6 +181,16 @@ function AuthorResourceRow({
 	const links = getAuthorResourceLinks(resource);
 	const canEdit = isAdmin || greaterOrEqAccessLevel(accessLevel, AccessLevel.EDIT);
 	const canManage = isAdmin || greaterOrEqAccessLevel(accessLevel, AccessLevel.FULL);
+	// Hover text for the access badge: full, edit, or view.
+	const accessTooltip =
+		accessLevel === AccessLevel.FULL
+			? t("Access_Full_Tooltip")
+			: accessLevel === AccessLevel.EDIT
+				? t("Access_Edit_Tooltip")
+				: t("Access_View_Tooltip");
+	const accessBadge = (
+		<Badge text={accessLevel} className="bg-green-100 text-green-700 border-green-300" />
+	);
 
 	return (
 		<li className="flex items-center rounded-lg border border-c-border bg-white">
@@ -194,19 +205,25 @@ function AuthorResourceRow({
 				<div className="flex flex-wrap justify-end gap-4">
 					<span className="flex flex-row flex-wrap gap-1">
 						{resource.kind === "course" && (
-							<Badge
-								text={
+							// Static vs dynamic: how the course is delivered.
+							<Tooltip
+								content={
 									resource.courseType === "DYNAMIC"
-										? t("Course_Type_Dynamic")
-										: t("Course_Type_Static")
+										? t("Course_Type_Dynamic_Tooltip")
+										: t("Course_Type_Static_Tooltip")
 								}
-								className="bg-green-100 text-green-700 border-green-300"
-							/>
+							>
+								<Badge
+									text={
+										resource.courseType === "DYNAMIC"
+											? t("Course_Type_Dynamic")
+											: t("Course_Type_Static")
+									}
+									className="bg-green-100 text-green-700 border-green-300"
+								/>
+							</Tooltip>
 						)}
-						<Badge
-							text={accessLevel}
-							className="bg-green-100 text-green-700 border-green-300"
-						/>
+						<Tooltip content={accessTooltip}>{accessBadge}</Tooltip>
 					</span>
 					{canEdit && links.editHref && (
 						<Link href={links.editHref}>
