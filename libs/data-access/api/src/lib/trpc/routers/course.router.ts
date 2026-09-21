@@ -30,7 +30,6 @@ import {
 import { randomUUID } from "crypto";
 import { resolveLessonPath } from "../../lesson-path/lesson-path.service";
 import { createCourseSummary, mapCourseContent } from "@self-learning/course";
-import { And, Empty, LearningUnit, Variable } from "@e-learning-by-sse/nm-skill-lib";
 import { workerServiceClient } from "@self-learning/worker-api";
 
 export const courseRouter = t.router({
@@ -365,20 +364,32 @@ export const courseRouter = t.router({
 				summary: summary
 			};
 		}),
-	getCourseGraph: authProcedure
+	createCourseGraphJob: authProcedure
 		.input(
 			z.object({
-				courseId: z.string(),
-				knowledge: z.array(z.string())
+				courseId: z.string()
+				// knowledge: z.array(z.string()) TODO not used
 			})
 		)
-		.query(async ({ input }) => {
-			const jobId = enqueueCourseGraphJob(input.courseId);
-
-			// TODO @ Artsiom: jobId May be used at site to pull for new results
-			return jobId;
+		.mutation(async ({ input }) => {
+			return await enqueueCourseGraphJob(input.courseId);
 		}),
-	generateLessonPath: authProcedure
+	getCourseGraphJobStatus: authProcedure
+		.input(z.object({ jobId: z.string() }))
+		.query(async ({ input }) => {
+			const job = await database.jobQueue.findUnique({
+				where: { id: input.jobId }
+			});
+			if (!job) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
+			}
+			return {
+				status: job.status,
+				cause: job.cause,
+				result: job.context ? JSON.parse(job.context) : null
+			};
+		}),
+	createLessonPath: authProcedure
 		.input(
 			z.object({
 				courseId: z.string(),
@@ -465,46 +476,7 @@ export const courseRouter = t.router({
 			})
 		)
 		.query(async ({ input }) => {
-			const course = await database.course.findUnique({
-				where: input,
-				select: {
-					courseId: true,
-					content: true,
-					requires: { select: { id: true } },
-					provides: { select: { id: true } }
-				}
-			});
-			if (!course) {
-				throw new TRPCError({
-					code: "NOT_FOUND",
-					message: `Course not found for id: ${input.courseId}`
-				});
-			}
-
-			const lessonIds = extractLessonIds(normalizeContent(course.content));
-			const lessons = lessonIds.length
-				? await database.lesson.findMany({
-						where: { lessonId: { in: lessonIds } },
-						select: {
-							lessonId: true,
-							requires: { select: { id: true } },
-							provides: { select: { id: true } }
-						}
-					})
-				: [];
-
-			const flattenSkillId = (skill: { id: string }) => skill.id;
-
-			return {
-				courseId: course.courseId,
-				requires: course.requires.map(flattenSkillId),
-				provides: course.provides.map(flattenSkillId),
-				lessons: lessons.map(lesson => ({
-					lessonId: lesson.lessonId,
-					requires: lesson.requires.map(flattenSkillId),
-					provides: lesson.provides.map(flattenSkillId)
-				}))
-			};
+			return await getSkillContext(input.courseId);
 		}),
 	fullExport: t.procedure.input(z.object({ slug: z.string() })).query(async ({ input, ctx }) => {
 		const fullExport = await getFullCourseExport(input.slug);
@@ -725,6 +697,56 @@ export const courseRouter = t.router({
 		})
 });
 
+/**
+ * Gathers required and provided skill ids of the course and its lessons (from default content)
+ * @param courseId - id of course to get context for
+ * @returns object with course requires and provides, as well as its lessons with requires and provides
+ */
+async function getSkillContext(courseId: string) {
+	const course = await database.course.findUnique({
+		where: { courseId },
+		select: {
+			type: true,
+			courseId: true,
+			content: true,
+			requires: { select: { id: true } },
+			provides: { select: { id: true } }
+		}
+	});
+	if (!course) {
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: `Course not found for id: ${courseId}`
+		});
+	}
+
+	const lessonIds = extractLessonIds(normalizeContent(course.content));
+	const lessons = lessonIds.length
+		? await database.lesson.findMany({
+				where: { lessonId: { in: lessonIds } },
+				select: {
+					lessonId: true,
+					requires: { select: { id: true } },
+					provides: { select: { id: true } }
+				}
+			})
+		: [];
+
+	const flattenSkillId = (skill: { id: string }) => skill.id;
+
+	return {
+		type: course.type,
+		courseId: course.courseId,
+		requires: course.requires.map(flattenSkillId),
+		provides: course.provides.map(flattenSkillId),
+		lessons: lessons.map(lesson => ({
+			lessonId: lesson.lessonId,
+			requires: lesson.requires.map(flattenSkillId),
+			provides: lesson.provides.map(flattenSkillId)
+		}))
+	};
+}
+
 function normalizeContent(
 	raw: unknown
 ): { title: string; content: { lessonId: string }[]; description?: string | null }[] {
@@ -742,128 +764,104 @@ function normalizeContent(
 }
 
 async function enqueueCourseGraphJob(courseId: string): Promise<string> {
-	// TODO any permissions? I think VIEW is enough
-	const course = await database.course.findUnique({
-		where: { courseId },
-		select: {
-			title: true,
-			type: true,
-			authors: true,
-			subtitle: true,
-			slug: true,
-			description: true,
-			imgUrl: true,
-			provides: {
-				select: {
-					id: true,
-					name: true,
-					description: true,
-					authorId: true,
-					children: { select: { id: true } }
-				}
-			}
-		}
-	});
-	if (!course) {
-		throw new TRPCError({
-			code: "BAD_REQUEST",
-			message: "Failed to find requested course"
-		});
-	}
-	if (course.type !== CourseType.DYNAMIC) {
+	// get relevant skills for this course (default lesson path)
+	const ctx = await getSkillContext(courseId);
+	if (ctx.type !== CourseType.DYNAMIC) {
 		throw new TRPCError({
 			code: "BAD_REQUEST",
 			message: "Requested course is not dynamic"
 		});
 	}
 
-	const [dbSkills, lessons] = await Promise.all([
-		database.skill.findMany({
-			select: {
-				id: true,
-				children: { select: { id: true } }
-			}
-		}),
-		database.lesson.findMany({
-			select: {
-				lessonId: true,
-				requires: { select: { id: true } },
-				provides: { select: { id: true } }
-			}
-		})
+	const ctxSkills = new Set([
+		...ctx.requires,
+		...ctx.provides,
+		...ctx.lessons.flatMap(l => [...l.requires, ...l.provides])
 	]);
+	if (ctxSkills.size === 0) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Requested course does not have any skills required and provided"
+		});
+	}
 
-	const libSkills = dbSkills.map(s => ({
-		id: s.id,
-		children: s.children?.map(c => c.id) ?? []
-	}));
+	// TODO select all skill rows into memory might be expensive in the future
+	const allSkills = await database.skill.findMany({
+		select: { id: true, children: { select: { id: true } } }
+	});
+	// as skills form a tree, no way to know that a child can be learned by parent without loading all children skills (do DFS)
+	const dfsQueue = [...ctxSkills];
+	const skillMap = new Map(allSkills.map(s => [s.id, s]));
+	while (dfsQueue.length > 0) {
+		const skill = skillMap.get(dfsQueue.pop() as string); // can contain only string, length is checked
+		for (const child of skill?.children ?? []) {
+			if (!ctxSkills.has(child.id)) {
+				ctxSkills.add(child.id);
+				dfsQueue.push(child.id);
+			}
+		}
+	}
+	const relevantSkills = allSkills
+		.filter(s => ctxSkills.has(s.id))
+		.map(s => ({
+			id: s.id,
+			repositoryId: "",
+			children: s.children
+		}));
 
-	const findSkill = (id: string) => libSkills.find(s => s.id === id);
-
-	// Goals of the course
-	const goals = course.provides;
-	// All relevant skills:
-	// TODO @ Artsiom please check if you get this context data out of your course object
-	const relevantSkills = goals.map(s => ({
-		id: s.id,
-		repositoryId: "",
-		children: s.children?.map(c => ({ id: c.id })) ?? []
-	})); // + relevant Skills
-	// Relevant learning units
-	// TODO @ Artsiom Filter learning Units for relevant learning units of course context
-	const relevantLearningUnits = lessons.map(l => ({
-		lessonId: l.lessonId,
-		requires: (l.requires ?? [])
-			.map(p => findSkill(p.id))
-			.filter((s): s is (typeof libSkills)[number] => !!s),
-		provides: (l.provides ?? [])
-			.map(p => findSkill(p.id))
-			.filter((s): s is (typeof libSkills)[number] => !!s)
-	}));
-
-	const jobId = randomUUID();
-	subscribeCourseGraphAnalysis(jobId, courseId).catch(err => {
-		console.error(
-			"[CourseRouter] Subscription error",
-			{
-				courseId,
-				error: err instanceof Error ? err.message : String(err)
-			},
-			{ jobId }
-		);
+	// get relevant learning units (must have at least one skill from ctx)
+	const skillIds = [...ctxSkills.keys()];
+	// ctx lessons are ignored. If they are valid, they should reappear with this query
+	const relevantLessons = await database.lesson.findMany({
+		where: {
+			OR: [
+				{ requires: { some: { id: { in: skillIds } } } },
+				{ provides: { some: { id: { in: skillIds } } } }
+			]
+		},
+		select: {
+			lessonId: true,
+			requires: { select: { id: true } },
+			provides: { select: { id: true } }
+		}
 	});
 
+	const jobId = randomUUID();
+	const subscription = workerServiceClient.jobQueue.subscribe(
+		{ jobId },
+		{
+			onData: async event => {
+				const result =
+					event.status === "finished" ? JSON.stringify(event.result) : undefined;
+				await logJobProgress(jobId, event, result);
+
+				if (event.status === "finished" || event.status === "aborted") {
+					subscription.unsubscribe();
+				}
+			},
+			onError: async error => {
+				console.error("[CourseRouter] Graph job subscription error", {
+					jobId,
+					courseId,
+					error: error instanceof Error ? error.message : String(error)
+				});
+				await logJobProgress(jobId, {
+					type: "courseGraphAnalysis",
+					status: "aborted",
+					cause: error instanceof Error ? error.message : String(error)
+				});
+				subscription.unsubscribe();
+			}
+		}
+	);
 	await workerServiceClient.submitJob.mutate({
-		jobId: jobId,
+		jobId,
 		jobType: "courseGraphAnalysis",
 		payload: {
 			dbSkills: relevantSkills,
-			lessons: relevantLearningUnits
+			lessons: relevantLessons
 		}
 	});
 
 	return jobId;
-}
-
-async function subscribeCourseGraphAnalysis(jobId: string, courseId: string): Promise<void> {
-	try {
-		workerServiceClient.jobQueue.subscribe(
-			{ jobId },
-			{
-				onData: async event => {
-					await logJobProgress(jobId, event);
-					if (event.status === "finished") {
-						// TODO @ Artsiom: Display to the user when finished (e.g., via storing result in table and constantly pulling in page)
-					} else if (event.status === "aborted") {
-						// TODO @ Artsiom: Abort constantly pulling
-					}
-				},
-				onError: error => {
-					// TODO @ Artsiom: Abort constantly pulling
-				}
-			}
-		);
-	} catch (error) {
-		// TODO @ Artsiom: Abort constantly pulling
-	}
 }
