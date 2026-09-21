@@ -339,21 +339,16 @@ export const courseRouter = t.router({
 				courseProvides: course.provides,
 				userKnowledgeIds: input.knowledge
 			});
-			if (!path) {
-				throw new TRPCError({
-					code: "NOT_FOUND",
-					message:
-						"Unable to generate a valid lesson path with current prerequisites and knowledge."
-				});
-			}
-
-			const courseContent = [
-				{
-					title: "generatedLessonPathTitle",
-					description: "generatedLessonPathDescription",
-					content: path
-				} as CourseChapter
-			];
+			// Unsolvable path is an empty preview, not an error the page must catch.
+			const courseContent = path
+				? [
+						{
+							title: "generatedLessonPathTitle",
+							description: "generatedLessonPathDescription",
+							content: path
+						} as CourseChapter
+					]
+				: [];
 
 			const content = await mapCourseContent(courseContent);
 			const summary = createCourseSummary(content);
@@ -441,11 +436,7 @@ export const courseRouter = t.router({
 			});
 
 			if (!content) {
-				throw new TRPCError({
-					code: "NOT_FOUND",
-					message:
-						"Unable to generate a valid lesson path with current prerequisites and knowledge."
-				});
+				return null;
 			}
 			const courseChapter: CourseChapter = {
 				title: "",

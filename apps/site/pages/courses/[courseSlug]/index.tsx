@@ -176,7 +176,8 @@ export const getServerSideProps = withTranslations(
 			const path = course.generatedLessonPaths?.at(0);
 			isGenerated = !!path;
 			isStale = path?.courseVersion !== course.version;
-			rawContent = path?.content ?? [];
+			// Personal path when the student has one, otherwise the course default path.
+			rawContent = path?.content ?? course.content;
 		}
 
 		const content = await mapCourseContent((rawContent ?? []) as CourseContent);
@@ -619,7 +620,7 @@ function CoursePath({
 	hasGeneratedPath: boolean;
 	isStale: boolean;
 }) {
-	const { mutateAsync } = trpc.course.generateLessonPath.useMutation();
+	const { mutateAsync } = trpc.course.createLessonPath.useMutation();
 	const router = useRouter();
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [isComplete, setIsComplete] = useState(false);
@@ -628,10 +629,20 @@ function CoursePath({
 		try {
 			setIsGenerating(true);
 			setIsComplete(false);
-			await mutateAsync({
+			// Empty knowledge: the server still adds the student's own skills.
+			const created = await mutateAsync({
 				courseId: course.courseId,
 				knowledge: []
 			});
+			if (!created) {
+				setIsGenerating(false);
+				showToast({
+					type: "error",
+					title: "Fehler",
+					subtitle: "Der Kurs konnte nicht generiert werden."
+				});
+				return;
+			}
 			await new Promise(resolve => setTimeout(resolve, 1000));
 			setIsComplete(true);
 		} catch (error) {
