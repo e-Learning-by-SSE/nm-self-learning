@@ -1,7 +1,9 @@
 import { IconOnlyButton, TableDataColumn, Tooltip } from "@self-learning/ui/common";
 import {
+	AcademicCapIcon,
+	CheckBadgeIcon,
 	ChevronDownIcon,
-	FolderIcon,
+	Squares2X2Icon,
 	ArrowPathRoundedSquareIcon,
 	ShieldExclamationIcon,
 	ChevronRightIcon,
@@ -242,7 +244,7 @@ function SkillRow({
 											onClick={() => handleSelection(skill.id)}
 										>
 											<div className="flex items-center px-2 gap-1 min-w-[2rem]">
-												{skill.isFolder && (
+												{skill.isFolder ? (
 													<>
 														<div className="mr-1">
 															{skill.isExpanded ? (
@@ -257,12 +259,19 @@ function SkillRow({
 																/>
 															)}
 														</div>
-														{isRootItem(skill) && (
-															<FolderIcon
+														{/* Area, nested group, and leaf are different shapes. */}
+														{isRootItem(skill) ? (
+															<AcademicCapIcon
 																className={`icon h-5 text-lg ${isProvided ? "text-emerald-500" : ""}`}
 															/>
+														) : (
+															<Squares2X2Icon className="icon h-5 text-lg" />
 														)}
 													</>
+												) : (
+													<div className="ml-6">
+														<CheckBadgeIcon className="icon h-5 text-lg" />
+													</div>
 												)}
 											</div>
 											{cycleError && (

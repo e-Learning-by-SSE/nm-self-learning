@@ -1,13 +1,14 @@
 import { TableDataColumn } from "@self-learning/ui/common";
 import React from "react";
 import {
+	AcademicCapIcon,
+	CheckBadgeIcon,
 	ChevronDownIcon,
-	FolderIcon,
+	Squares2X2Icon,
 	ArrowPathRoundedSquareIcon,
 	ShieldExclamationIcon,
 	ChevronRightIcon
 } from "@heroicons/react/24/solid";
-import { PuzzlePieceIcon as PuzzlePieceIconOutline } from "@heroicons/react/24/outline";
 import { AddChildButton } from "../skill-taskbar";
 import styles from "../folder-table.module.css";
 import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "../skill-display";
@@ -238,13 +239,16 @@ function SkillRow({
 																/>
 															)}
 														</div>
-														<FolderIcon
-															className={`icon h-5 text-lg`}
-														/>
+														{/* Area, nested group, and leaf are different shapes. */}
+														{skill.skill.parents.length === 0 ? (
+															<AcademicCapIcon className="icon h-5 text-lg" />
+														) : (
+															<Squares2X2Icon className="icon h-5 text-lg" />
+														)}
 													</>
 												) : (
 													<div className="ml-6">
-														<PuzzlePieceIconOutline className="icon h-5 text-lg" />
+														<CheckBadgeIcon className="icon h-5 text-lg" />
 													</div>
 												)}
 											</div>
