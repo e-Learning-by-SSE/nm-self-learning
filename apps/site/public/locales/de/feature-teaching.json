@@ -39,6 +39,7 @@
     "Search_Group_Placeholder": "Suche nach $t(common:Groups)",
     "Add_Member_To_Search": "Mitglied zur Suche hinzufügen",
     "Show_Only_My_Groups": "Nur meine $t(common:Groups) anzeigen",
+    "Show_Only_My_Skills": "Nur meine $t(common:Skill_other) anzeigen",
     "Course_Type_Static": "Statisch",
     "Course_Type_Dynamic": "Dynamisch",
     "Course_Type_Static_Tooltip": "Fester Kurs, immer wie vom Autor festgelegt.",

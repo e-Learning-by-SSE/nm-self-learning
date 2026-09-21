@@ -39,6 +39,7 @@
     "Search_Group_Placeholder": "Search $t(common:Groups)",
     "Add_Member_To_Search": "Add member to search",
     "Show_Only_My_Groups": "Show only my $t(common:Groups)",
+    "Show_Only_My_Skills": "Show only my $t(common:Skill_other)",
     "Course_Type_Static": "Static",
     "Course_Type_Dynamic": "Dynamic",
     "Course_Type_Static_Tooltip": "Fixed course, always served as the author defined it.",

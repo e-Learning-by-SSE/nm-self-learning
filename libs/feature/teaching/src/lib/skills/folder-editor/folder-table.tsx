@@ -14,6 +14,7 @@ import { ListSkillEntryWithChildren } from "./skilltree/skill-row-entry";
 import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "./skill-display";
 import { Skill } from "@prisma/client";
 import { PlusIcon } from "@heroicons/react/24/solid";
+import { OnlyOwnSkillsCheckbox } from "../only-own-skills-checkbox";
 import { AddSkillDialog, SkillDialogResult } from "../skill-dialog/add-skill-dialog";
 import { trpc } from "@self-learning/api-client";
 import { DragDropContext, OnDragEndResponder } from "@hello-pangea/dnd";
@@ -34,6 +35,7 @@ export function SkillFolderTable({
 	authorId: number;
 }) {
 	const [searchTerm, setSearchTerm] = useState("");
+	const [onlyOwnSkills, setOnlyOwnSkills] = useState(false);
 	const skillsToDisplay = useMemo(() => {
 		const skills = Array.from(skillDisplayData.values());
 
@@ -46,6 +48,15 @@ export function SkillFolderTable({
 				skill.displayName?.toLowerCase().includes(normalizedSearchTerm)
 		);
 	}, [skillDisplayData, searchTerm]);
+	// Ids created by this author. Ancestors stay visible so an own skill under someone else's area is not lost.
+	const ownSkillIds = useMemo(() => {
+		if (!onlyOwnSkills) return undefined;
+		const ids = new Set<string>();
+		for (const row of skillDisplayData.values()) {
+			if (row.skill.authorId === authorId) ids.add(row.id);
+		}
+		return ids;
+	}, [onlyOwnSkills, skillDisplayData, authorId]);
 	const [openNewSkillDialog, setOpenNewSkillDialog] = useState(false);
 	const { mutateAsync: createNewSkill } = trpc.skill.createSkill.useMutation();
 	const { mutateAsync: updateSkillParent } = trpc.skill.updateSkill.useMutation();
@@ -177,7 +188,9 @@ export function SkillFolderTable({
 				<div className="mb-16 flex items-center justify-between gap-4">
 					<button className="btn-primary" onClick={() => setOpenNewSkillDialog(true)}>
 						<PlusIcon className="icon h-5" />
-						<span>Skill hinzufügen</span>
+						<span>
+							{selectedSkill ? "Skill hinzufügen" : "Skillbereich hinzufügen"}
+						</span>
 					</button>
 					{openNewSkillDialog && (
 						<AddSkillDialog
@@ -194,13 +207,19 @@ export function SkillFolderTable({
 						setSearchTerm(e.target.value);
 					}}
 				/>
+				<OnlyOwnSkillsCheckbox checked={onlyOwnSkills} onChange={setOnlyOwnSkills} />
 
 				<DialogHandler id={"alert"} />
 				<DragDropContext onDragEnd={onDragEnd} key={"element.id"}>
 					<Table head={<TableHeaderColumn>Bezeichnung</TableHeaderColumn>}>
 						{skillsToDisplay
 							.sort(byChildrenLength)
-							.filter(IsTopLevelSkill)
+							.filter(
+								skill =>
+									IsTopLevelSkill(skill) &&
+									(!ownSkillIds ||
+										subtreeHasOwnSkill(skill, ownSkillIds, skillDisplayData))
+							)
 							.map(element => (
 								<ListSkillEntryWithChildren
 									key={`${element.id}-0`}
@@ -210,6 +229,7 @@ export function SkillFolderTable({
 									skillResolver={skillId => skillDisplayData.get(skillId)}
 									parentNodeId={""} // No parent for the top level - Repositories
 									authorId={authorId}
+									matchingSkillIds={ownSkillIds}
 								/>
 							))}
 					</Table>
@@ -240,3 +260,23 @@ const byChildrenLength = (a: SkillFolderVisualization, b: SkillFolderVisualizati
 const IsTopLevelSkill = (skill: SkillFolderVisualization) => {
 	return skill.skill.parents.length === 0 || skill.isCycleMember;
 };
+
+// True when this node or a descendant was created by the current author. Seen stops cycles.
+function subtreeHasOwnSkill(
+	skill: SkillFolderVisualization,
+	ownIds: Set<string>,
+	skillMap: Map<string, SkillFolderVisualization>
+): boolean {
+	const seen = new Set<string>();
+	const visit = (node: SkillFolderVisualization): boolean => {
+		if (seen.has(node.id)) return false;
+		seen.add(node.id);
+		if (ownIds.has(node.id)) return true;
+		for (const childId of node.children) {
+			const child = skillMap.get(childId);
+			if (child && visit(child)) return true;
+		}
+		return false;
+	};
+	return visit(skill);
+}

@@ -1,6 +1,7 @@
+import { trpc } from "@self-learning/api-client";
 import { DialogHandler, IconTextButton, Table, TableHeaderColumn } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
-import { CenteredSection } from "@self-learning/ui/layouts";
+import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import React, { useMemo, useState } from "react";
 import {
 	SkillCreateHandler,
@@ -8,6 +9,7 @@ import {
 	SkillSelectHandler,
 	UpdateVisuals
 } from "../folder-editor/skill-display";
+import { OnlyOwnSkillsCheckbox } from "../only-own-skills-checkbox";
 import { ListSkillEntryWithChildren } from "./skill-row-editor";
 import { PlusIcon } from "@heroicons/react/24/solid";
 
@@ -23,15 +25,27 @@ export function SkillTreeEditor({
 	onSkillCreate: SkillCreateHandler;
 }) {
 	const [searchTerm, setSearchTerm] = useState("");
+	const [onlyOwnSkills, setOnlyOwnSkills] = useState(false);
+	const session = useRequiredSession();
+	const username = session.data?.user.name;
+	const { data: author } = trpc.author.getByUsername.useQuery(
+		{ username: username ?? "" },
+		{ enabled: !!username }
+	);
+	const authorId = author?.id;
 	const normalized = searchTerm.toLowerCase().trim();
 	const allSkills = Array.from(skillDisplayData.values());
 	const matchingSkillIds: Set<string> = new Set(
 		allSkills
-			.filter(
-				skill =>
+			.filter(skill => {
+				const nameMatches =
 					skill.skill.name.toLowerCase().includes(normalized) ||
-					skill.displayName?.toLowerCase().includes(normalized)
-			)
+					skill.displayName?.toLowerCase().includes(normalized);
+				// Until the author id is known, do not hide the whole tree.
+				const ownMatches =
+					!onlyOwnSkills || authorId === undefined || skill.skill.authorId === authorId;
+				return nameMatches && ownMatches;
+			})
 			.map(skill => skill.id)
 	);
 	const skillIdsToAutoExpand: Set<string> = new Set();
@@ -40,14 +54,21 @@ export function SkillTreeEditor({
 		matchingSkillIds.forEach(skillId => {
 			collectAncestors(skillId, skillDisplayData, skillIdsToRender, skillIdsToAutoExpand);
 		});
-		if (!searchTerm?.trim()) {
+		if (!searchTerm?.trim() && !onlyOwnSkills) {
 			return allSkills.filter(IsTopLevelSkill).sort(byChildrenLength);
 		}
 		return allSkills
 			.filter(skill => IsTopLevelSkill(skill) && skillIdsToRender.has(skill.id))
 			.sort(byChildrenLength);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [skillDisplayData, searchTerm, matchingSkillIds, skillIdsToAutoExpand, allSkills]);
+	}, [
+		skillDisplayData,
+		searchTerm,
+		onlyOwnSkills,
+		matchingSkillIds,
+		skillIdsToAutoExpand,
+		allSkills
+	]);
 
 	function collectAncestors(
 		skillId: string,
@@ -75,6 +96,7 @@ export function SkillTreeEditor({
 						setSearchTerm(e.target.value);
 					}}
 				/>
+				<OnlyOwnSkillsCheckbox checked={onlyOwnSkills} onChange={setOnlyOwnSkills} />
 				<IconTextButton
 					text={"Neu Skill Hinzufügen"}
 					className="btn-secondary"
