@@ -47,7 +47,6 @@ export function AddSkillDialog({
 		const selected = selectedSkill && skills.find(item => item.id === selectedSkill.id);
 		return selected ? [selected] : [];
 	});
-
 	const excludeIds = new Set<string>([
 		...(skill ? [skill.id, ...skill.children] : []),
 		...parentSkills.map(item => item.id)
@@ -58,7 +57,16 @@ export function AddSkillDialog({
 	};
 
 	return (
-		<Dialog title={isEdit ? "Skill bearbeiten" : "Skill hinzufügen"} onClose={onClose}>
+		<Dialog
+			title={
+				isEdit
+					? "Skill bearbeiten"
+					: parentSkills.length > 0
+						? "Skill hinzufügen"
+						: "Skillbereich hinzufügen"
+			}
+			onClose={onClose}
+		>
 			<form
 				onSubmit={e => {
 					e.stopPropagation();
