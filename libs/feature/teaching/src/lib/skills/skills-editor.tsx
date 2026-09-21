@@ -10,6 +10,7 @@ import { SkillTreeEditor } from "./skill-tree/skill-tree-editor";
 import { useMemo, useRef, useState } from "react";
 import { SkillResourceProvider } from "./skill-tree/skill-resource-context";
 import { SkillCatalogDialog, SkillCatalogDialogState } from "./skill-dialog/skill-catalog-dialog";
+import { useTranslation } from "react-i18next";
 
 /**
  * If you edit a course or standalone lesson - provide nothing
@@ -28,6 +29,8 @@ export function SkillsEditor(
 	const { target, courseId } = props;
 	const lessonId = props.target === "lesson" ? props.lessonId : undefined;
 	const isLesson = target === "lesson";
+
+	const { t } = useTranslation("feature-teaching");
 
 	const { control, getValues } = useFormContext<ResourceSkillsFormType>();
 	const {
@@ -151,6 +154,19 @@ export function SkillsEditor(
 			if (item.id === skillId) updateRequires(index, { ...item, name, description });
 		});
 	}
+	// Lesson skills mean something different in a static course, a dynamic course, and on their own.
+	const skillEditorSubtitle =
+		target === "dynamicCourse"
+			? t("Skills_Subtitle_Dynamic_Course")
+			: target === "staticCourse"
+				? t("Skills_Subtitle_Static_Course")
+				: ctx?.type === "DYNAMIC"
+					? t("Skills_Lesson_Dynamic_Course")
+					: ctx?.type === "STATIC"
+						? t("Skills_Lesson_Static_Course")
+						: courseId
+							? t("Skills_Subtitle_Lesson")
+							: t("Skills_Lesson_Standalone");
 
 	return (
 		<SkillResourceProvider
@@ -192,7 +208,7 @@ export function SkillsEditor(
 							removeSkill={removeSkill}
 							excludeIds={currentIds}
 							catalog={catalog}
-							target={target}
+							subtitle={skillEditorSubtitle}
 						/>
 					</SidebarEditorLayout>
 				</div>

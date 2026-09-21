@@ -13,13 +13,13 @@ export function LessonSkillManagerDragDrop({
 	removeSkill = () => {},
 	excludeIds,
 	catalog,
-	target
+	subtitle
 }: {
 	addSkills?: (skillsToAdd: SkillFormModel[], field: "provides" | "requires") => void;
 	removeSkill?: (skill: SkillFormModel, field: "provides" | "requires") => void;
 	excludeIds?: ReadonlySet<string>;
 	catalog?: SkillFormModel[];
-	target?: "lesson" | "staticCourse" | "dynamicCourse";
+	subtitle: string;
 }) {
 	const { watch } = useFormContext<LessonFormModel>();
 
@@ -29,13 +29,6 @@ export function LessonSkillManagerDragDrop({
 		requires: watch("requires"),
 		provides: watch("provides")
 	};
-
-	const subtitle =
-		target === "dynamicCourse"
-			? t("Skills_Subtitle_Dynamic_Course")
-			: target === "staticCourse"
-				? t("Skills_Subtitle_Static_Course")
-				: t("Skills_Subtitle_Lesson");
 
 	return (
 		<Form.SidebarSection>
