@@ -166,7 +166,7 @@ export function HeatmapModal({ onClose }: { onClose: () => void }) {
 						<DropdownMenu
 							title={t("heatmapModal.selectMetricTitle")}
 							button={
-								<div className="flex items-center justify-between w-44 rounded-md bg-emerald-500 text-white font-semibold px-4 py-2">
+								<div className="flex items-center justify-between w-44 rounded-md bg-c-primary text-white font-semibold px-4 py-2">
 									<span id="HeatmapTypeButton" className="truncate">
 										{t(selectedMetric)}
 									</span>
@@ -181,15 +181,15 @@ export function HeatmapModal({ onClose }: { onClose: () => void }) {
 								</div>
 							}
 						>
-						{metricOptions.map((option, i) => (
-							<span
-								id={`HeatmapTypeOption-${option}`}
-								key={option}
-								onClick={() => setSelectedMetric(option)}
+							{metricOptions.map((option, i) => (
+								<span
+									id={`HeatmapTypeOption-${option}`}
+									key={option}
+									onClick={() => setSelectedMetric(option)}
 									className={`cursor-pointer block px-4 py-2 w-44 text-left transition-colors ${
 										selectedMetric === option
-											? "bg-emerald-500 text-white"
-											: "hover:bg-emerald-500 hover:text-white"
+											? "bg-c-primary text-white"
+											: "hover:bg-c-primary-strong hover:text-white"
 									} ${
 										i === 0
 											? "rounded-t-md"
