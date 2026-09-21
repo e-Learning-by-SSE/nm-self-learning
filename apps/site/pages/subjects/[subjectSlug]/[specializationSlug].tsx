@@ -1,6 +1,6 @@
 import { PuzzlePieceIcon } from "@heroicons/react/24/solid";
 import { database } from "@self-learning/database";
-import { CourseMeta, ResolvedValue } from "@self-learning/types";
+import { CourseContent, CourseMeta, extractLessonIds, ResolvedValue } from "@self-learning/types";
 import { ImageCard, ImageCardBadge, Tooltip } from "@self-learning/ui/common";
 import { ItemCardGrid, TopicHeader } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
@@ -15,6 +15,12 @@ import { CourseType } from "@prisma/client";
 type SpecializationPageProps = {
 	specialization: ResolvedValue<typeof getSpecialization>;
 };
+
+function hasLearningContent(course: { type: CourseType; content: unknown }): boolean {
+	if (course.type !== CourseType.DYNAMIC) return true;
+	const content = Array.isArray(course.content) ? (course.content as CourseContent) : [];
+	return extractLessonIds(content).length > 0;
+}
 
 export const getServerSideProps = withTranslations(["common", "feature-teaching"], async ctx => {
 	const { req, res, params, locale } = ctx;
@@ -34,7 +40,10 @@ export const getServerSideProps = withTranslations(["common", "feature-teaching"
 	return {
 		props: {
 			...(await serverSideTranslations(locale ?? "en", ["common", "feature-teaching"])),
-			specialization
+			specialization: specialization && {
+				...specialization,
+				courses: specialization.courses.filter(hasLearningContent)
+			}
 		},
 		notFound: !specialization
 	};
@@ -65,7 +74,8 @@ async function getSpecialization(specializationSlug: string, username: string | 
 					imgUrl: true,
 					title: true,
 					subtitle: true,
-					meta: true
+					meta: true,
+					content: true // to determine if a dynamic course has a default lesson path
 				}
 			},
 			subject: {
