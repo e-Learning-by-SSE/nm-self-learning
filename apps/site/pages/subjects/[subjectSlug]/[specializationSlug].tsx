@@ -1,10 +1,11 @@
 import { PuzzlePieceIcon } from "@heroicons/react/24/solid";
 import { database } from "@self-learning/database";
 import { CourseMeta, ResolvedValue } from "@self-learning/types";
-import { ImageCard, ImageCardBadge } from "@self-learning/ui/common";
+import { ImageCard, ImageCardBadge, Tooltip } from "@self-learning/ui/common";
 import { ItemCardGrid, TopicHeader } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
 import Link from "next/link";
+import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { withTranslations } from "@self-learning/api";
 import { getServerSession } from "next-auth";
@@ -15,7 +16,7 @@ type SpecializationPageProps = {
 	specialization: ResolvedValue<typeof getSpecialization>;
 };
 
-export const getServerSideProps = withTranslations(["common"], async ctx => {
+export const getServerSideProps = withTranslations(["common", "feature-teaching"], async ctx => {
 	const { req, res, params, locale } = ctx;
 
 	const session = await getServerSession(req, res, authOptions);
@@ -32,7 +33,7 @@ export const getServerSideProps = withTranslations(["common"], async ctx => {
 
 	return {
 		props: {
-			...(await serverSideTranslations(locale ?? "en", ["common"])),
+			...(await serverSideTranslations(locale ?? "en", ["common", "feature-teaching"])),
 			specialization
 		},
 		notFound: !specialization
@@ -115,8 +116,10 @@ function CourseCard({
 }: {
 	course: SpecializationPageProps["specialization"]["courses"][0];
 }) {
+	const { t } = useTranslation("feature-teaching");
 	const meta = course.meta as CourseMeta;
-	const type = course.type === CourseType.STATIC ? "Lernkurs" : "Dynamischer Kurs";
+	const isStatic = course.type === CourseType.STATIC;
+	const type = isStatic ? "Lernkurs" : "Dynamischer Kurs";
 
 	return (
 		<Link href={`/courses/${course.slug}`} className="flex">
@@ -125,7 +128,18 @@ function CourseCard({
 				imgUrl={course.imgUrl}
 				title={course.title}
 				subtitle={course.subtitle}
-				badge={<ImageCardBadge text={type} className="bg-c-primary" />}
+				badge={
+					// Same static/dynamic explanation as on the author dashboard.
+					<Tooltip
+						content={
+							isStatic
+								? t("Course_Type_Static_Tooltip")
+								: t("Course_Type_Dynamic_Tooltip")
+						}
+					>
+						<ImageCardBadge text={type} className="bg-c-primary" />
+					</Tooltip>
+				}
 				footer={
 					<span className="flex items-center gap-3 text-sm font-semibold text-c-primary">
 						<PuzzlePieceIcon className="h-5" />

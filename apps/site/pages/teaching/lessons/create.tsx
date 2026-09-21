@@ -48,7 +48,7 @@ export default function CreateLessonPage() {
 }
 
 export const getServerSideProps = withTranslations(
-	["common", "feature-question-types"],
+	["common", "feature-teaching", "feature-question-types"],
 	withAuth(async (_ctx, user) => {
 		if (!(await canCreate(user))) {
 			return { redirect: { destination: "/403", permanent: false } };

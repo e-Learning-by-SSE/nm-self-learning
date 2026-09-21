@@ -1,4 +1,4 @@
-import { Badge, ImageOrPlaceholder } from "@self-learning/ui/common";
+import { Badge, ImageOrPlaceholder, QuestionMarkTooltip, Tooltip } from "@self-learning/ui/common";
 import {
 	Form,
 	InputWithButton,
@@ -90,36 +90,55 @@ export function CourseInfoForm({ isNew }: { isNew: boolean }) {
 					<LabeledField label={t("Course_Type")} error={errors.type?.message}>
 						{isNew ? (
 							<div className="flex gap-4">
-								<label className="flex items-center gap-2">
-									<input
-										type="radio"
-										value={CourseType.STATIC}
-										disabled={!isNew}
-										{...register("type")}
+								{/* Type is fixed after creation, so explain it before the choice. */}
+								<span className="flex items-center gap-2">
+									<label className="flex items-center gap-2">
+										<input
+											type="radio"
+											value={CourseType.STATIC}
+											disabled={!isNew}
+											{...register("type")}
+										/>
+										{t("Course_Type_Static")}
+									</label>
+									<QuestionMarkTooltip
+										content={t("Course_Type_Static_Tooltip")}
 									/>
-									{t("Course_Type_Static")}
-								</label>
-								<label className="flex items-center gap-2">
-									<input
-										type="radio"
-										value={CourseType.DYNAMIC}
-										disabled={!isNew}
-										{...register("type")}
+								</span>
+								<span className="flex items-center gap-2">
+									<label className="flex items-center gap-2">
+										<input
+											type="radio"
+											value={CourseType.DYNAMIC}
+											disabled={!isNew}
+											{...register("type")}
+										/>
+										{t("Course_Type_Dynamic")}
+									</label>
+									<QuestionMarkTooltip
+										content={t("Course_Type_Dynamic_Tooltip")}
 									/>
-									{t("Course_Type_Dynamic")}
-								</label>
+								</span>
 							</div>
 						) : (
-							<span>
-								<Badge
-									text={
+							<div className="inline-flex">
+								<Tooltip
+									content={
 										courseType === CourseType.DYNAMIC
-											? t("Course_Type_Dynamic")
-											: t("Course_Type_Static")
+											? t("Course_Type_Dynamic_Tooltip")
+											: t("Course_Type_Static_Tooltip")
 									}
-									className="bg-green-100 text-green-700 border-green-300"
-								/>
-							</span>
+								>
+									<Badge
+										text={
+											courseType === CourseType.DYNAMIC
+												? t("Course_Type_Dynamic")
+												: t("Course_Type_Static")
+										}
+										className="bg-green-100 text-green-700 border-green-300"
+									/>
+								</Tooltip>
+							</div>
 						)}
 					</LabeledField>
 
