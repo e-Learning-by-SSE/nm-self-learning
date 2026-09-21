@@ -16,7 +16,7 @@ export const courseFormSchema = z
 		subjectId: z.string().nullable(),
 		slug: z.string().min(3),
 		title: z.string().min(3),
-		subtitle: z.string().min(3),
+		subtitle: z.string(),
 		description: z.string().nullable(),
 		imgUrl: z.string().nullable(),
 		version: z.string().nullable(),

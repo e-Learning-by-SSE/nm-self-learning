@@ -142,7 +142,11 @@ export function CourseInfoForm({ isNew }: { isNew: boolean }) {
 						)}
 					</LabeledField>
 
-					<LabeledField label="Untertitel" error={errors.subtitle?.message}>
+					<LabeledField
+						label="Untertitel"
+						error={errors.subtitle?.message}
+						optional={true}
+					>
 						<textarea
 							{...register("subtitle")}
 							placeholder="1-2 Sätze über diesen Kurs."
