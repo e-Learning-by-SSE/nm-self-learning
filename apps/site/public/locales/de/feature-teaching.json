@@ -46,6 +46,8 @@
     "Access_Full_Tooltip": "Voller Zugriff: bearbeiten, löschen, veröffentlichen und zurückziehen.",
     "Access_Edit_Tooltip": "Bearbeitungs- und Ansichtszugriff.",
     "Access_View_Tooltip": "Nur Ansichtszugriff.",
+    "Course_Tab_Save_First": "Speichern Sie den Kurs zuerst.",
+    "Skills_Tab_Optional": "(optional)",
     "Skills_Title": "Skills",
     "Skills_Provides": "Vermittelte Skills",
     "Skills_Requires": "Benötigte Skills",

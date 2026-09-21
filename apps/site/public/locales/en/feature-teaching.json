@@ -46,6 +46,8 @@
     "Access_Full_Tooltip": "Full access: edit, delete, publish, and unpublish.",
     "Access_Edit_Tooltip": "Edit and view access.",
     "Access_View_Tooltip": "View access only.",
+    "Course_Tab_Save_First": "Save the course first.",
+    "Skills_Tab_Optional": "(optional)",
     "Skills_Title": "Skills",
     "Skills_Provides": "Taught skills",
     "Skills_Requires": "Required skills",

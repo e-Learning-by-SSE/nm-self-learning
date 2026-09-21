@@ -2,8 +2,9 @@
 import { FieldErrors, FormProvider, useForm, useWatch } from "react-hook-form";
 import { CourseFormModel, courseFormSchema } from "../course/course-form-model";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
-import { DialogActions, showToast, Tab, Tabs } from "@self-learning/ui/common";
+import { ReactNode, useState } from "react";
+import { useTranslation } from "next-i18next";
+import { DialogActions, showToast, Tab, Tabs, Tooltip } from "@self-learning/ui/common";
 import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { CourseType } from "@prisma/client";
 import { CourseContentForm } from "../course/course-content-editor/course-content-form";
@@ -25,6 +26,7 @@ export function CourseEditor({
 		title: string;
 	}>;
 }) {
+	const { t } = useTranslation("feature-teaching");
 	const router = useRouter();
 	const form = useForm({ defaultValues: course, resolver: zodResolver(courseFormSchema) });
 	const courseId = useWatch({ control: form.control, name: "courseId" });
@@ -33,6 +35,13 @@ export function CourseEditor({
 	const [tab, setTab] = useState(0);
 	const isPersisted = Boolean(courseId);
 	const isStatic = type === CourseType.STATIC;
+	// Locked tabs stay closed until the course itself exists.
+	const saveFirstTooltip = isPersisted ? undefined : t("Course_Tab_Save_First");
+	const skillsTooltip = isPersisted
+		? isStatic
+			? t("Skills_Lesson_Static_Course")
+			: t("Skills_Lesson_Dynamic_Course")
+		: saveFirstTooltip;
 
 	async function handleSave(data: CourseFormModel) {
 		const saved = await onSubmit(data);
@@ -89,9 +98,24 @@ export function CourseEditor({
 					</div>
 					<Tabs selectedIndex={tab} onChange={onTabChange}>
 						<Tab>Grunddaten</Tab>
-						<Tab disabled={!isPersisted}>Skills</Tab>
-						<Tab disabled={!isPersisted}>Inhalt</Tab>
-						{!isStatic && <Tab disabled={!isPersisted}>Vorschau</Tab>}
+						<CourseEditorTab disabled={!isPersisted} tooltip={skillsTooltip}>
+							<span className="inline-flex items-center gap-1">
+								Skills
+								{isStatic && (
+									<i className="text-xs font-normal">
+										{t("Skills_Tab_Optional")}
+									</i>
+								)}
+							</span>
+						</CourseEditorTab>
+						<CourseEditorTab disabled={!isPersisted} tooltip={saveFirstTooltip}>
+							Inhalt
+						</CourseEditorTab>
+						{!isStatic && (
+							<CourseEditorTab disabled={!isPersisted} tooltip={saveFirstTooltip}>
+								Vorschau
+							</CourseEditorTab>
+						)}
 					</Tabs>
 					{tab === 0 && <CourseInfoForm isNew={!isPersisted} />}
 					{isPersisted && (
@@ -111,6 +135,21 @@ export function CourseEditor({
 			</form>
 		</FormProvider>
 	);
+}
+
+function CourseEditorTab({
+	disabled = false,
+	tooltip,
+	children
+}: {
+	disabled?: boolean;
+	tooltip?: string;
+	children: ReactNode;
+}) {
+	const tab = <Tab disabled={disabled}>{children}</Tab>;
+	// Same hint wrapper for a locked tab and for the Skills explanation.
+	if (!tooltip) return tab;
+	return <Tooltip content={tooltip}>{tab}</Tooltip>;
 }
 
 function showCourseValidationErrors(errors: FieldErrors) {
