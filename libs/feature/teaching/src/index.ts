@@ -8,6 +8,7 @@ export * from "./lib/lesson/lesson-form-model";
 export * from "./lib/course/course-form-model";
 export * from "./lib/course-new/course-editor";
 export * from "./lib/subject/subject-editor";
+export * from "./lib/subject/specialization-header";
 export * from "./lib/lesson/forms/license-form";
 export * from "./lib/skills/folder-editor";
 export * from "./lib/skills/skills-editor";

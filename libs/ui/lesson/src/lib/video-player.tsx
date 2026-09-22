@@ -34,7 +34,24 @@ type VideoPlayerProps = Readonly<{
 	courseId?: string;
 }>;
 
-export const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(function VideoPlayer(
+function readPlaybackRate(courseId?: string): number {
+	if (!courseId || typeof window === "undefined") return 1;
+	try {
+		const rate = Number(window.sessionStorage.getItem(`video-playback-rate:${courseId}`));
+		return Number.isFinite(rate) && rate > 0 ? rate : 1;
+	} catch {
+		return 1;
+	}
+}
+
+export const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(
+	function VideoPlayer(props, externalRef) {
+		// Reset player state when changing courses, including navigation without a page reload.
+		return <CoursePlayer key={props.courseId ?? ""} {...props} ref={externalRef} />;
+	}
+);
+
+const CoursePlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(function CoursePlayer(
 	{ url, subtitle, startAt = 0, parentLessonId, courseId },
 	externalRef: React.Ref<VideoPlayerHandle | null>
 ) {
@@ -55,6 +72,7 @@ export const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(funct
 	const [isReady, setIsReady] = useState(false);
 	const [lastRenderTime, setLastRenderTime] = useState(new Date().getTime());
 	const [subtitleUrl, setSubtitleUrl] = useState<string | null>(null);
+	const [playbackRate, setPlaybackRate] = useState(() => readPlaybackRate(courseId));
 
 	useEffect(() => {
 		if (!subtitle?.src) {
@@ -129,7 +147,19 @@ export const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(funct
 
 	function onPlaybackRateChange() {
 		const videoSpeed = playerRef?.current?.playbackRate;
-		if (videoSpeed === undefined) return;
+		if (videoSpeed === undefined || !Number.isFinite(videoSpeed) || videoSpeed <= 0) return;
+		// ReactPlayer reapplies this prop after renders, including those caused by event logging.
+		setPlaybackRate(videoSpeed);
+		if (courseId) {
+			try {
+				window.sessionStorage.setItem(
+					`video-playback-rate:${courseId}`,
+					String(videoSpeed)
+				);
+			} catch {
+				// Keep the control working even when browser storage is unavailable.
+			}
+		}
 		newEvent({
 			type: "LESSON_VIDEO_SPEED",
 			payload: { videoSpeed }
@@ -161,6 +191,7 @@ export const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(funct
 			height="100%"
 			width="100%"
 			controls={true}
+			playbackRate={playbackRate}
 			onStart={onStart}
 			onPause={onPause}
 			onEnded={onEnded}

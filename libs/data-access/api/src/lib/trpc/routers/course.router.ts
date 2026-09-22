@@ -33,6 +33,69 @@ import { createCourseSummary, mapCourseContent } from "@self-learning/course";
 import { workerServiceClient } from "@self-learning/worker-api";
 
 export const courseRouter = t.router({
+	listAvailableCourses: authProcedure
+		.meta({
+			openapi: {
+				enabled: true,
+				method: "GET",
+				path: "/courses",
+				tags: ["Courses"],
+				protect: true,
+				summary: "Search available courses"
+			}
+		})
+		.input(
+			paginationSchema.extend({
+				title: z
+					.string()
+					.describe(
+						"Title of the course to search for. Keep empty to list all; includes insensitive search and contains search."
+					)
+					.optional(),
+				specializationId: z
+					.string()
+					.describe("Filter by assigned specializations")
+					.optional(),
+				authorId: z.string().describe("Filter by author username").optional(),
+				pageSize: z.number().describe("Number of results per page").optional()
+			})
+		)
+		.output(
+			z.object({
+				result: z.array(z.object({ title: z.string(), slug: z.string() })),
+				pageSize: z.number(),
+				page: z.number(),
+				totalCount: z.number()
+			})
+		)
+		.query(async ({ input }) => {
+			const pageSize = input.pageSize ?? 20;
+
+			const where: Prisma.CourseWhereInput = {
+				title:
+					input.title && input.title.length > 0
+						? { contains: input.title, mode: "insensitive" }
+						: undefined,
+				specializations: input.specializationId
+					? { some: { specializationId: input.specializationId } }
+					: undefined,
+				authors: input.authorId ? { some: { username: input.authorId } } : undefined
+			};
+
+			const result = await database.course.findMany({
+				select: { slug: true, title: true },
+				...paginate(pageSize, input.page),
+				orderBy: { title: "asc" },
+				where
+			});
+
+			return {
+				result,
+				pageSize: pageSize,
+				page: input.page,
+				totalCount: result.length
+			} satisfies Paginated<{ title: string; slug: string }>;
+		}),
 	getCourseData: authProcedure
 		.meta({
 			openapi: {

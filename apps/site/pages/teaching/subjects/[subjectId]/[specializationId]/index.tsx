@@ -1,7 +1,11 @@
 import { LinkIcon, LinkSlashIcon, PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { SearchCourseDialog } from "@self-learning/admin";
 import { trpc } from "@self-learning/api-client";
-import { I18N_NAMESPACE as NS_TEACHING, ResourceGroupChips } from "@self-learning/teaching";
+import {
+	I18N_NAMESPACE as NS_TEACHING,
+	ResourceGroupChips,
+	SpecializationHeader
+} from "@self-learning/teaching";
 import {
 	ImageOrPlaceholder,
 	I18N_NAMESPACE as NS_UI_COMMON,
@@ -16,12 +20,7 @@ import {
 	IconOnlyButton
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
-import {
-	CenteredContainerXL,
-	TopicHeader,
-	useCanCreate,
-	useResourceGuard
-} from "@self-learning/ui/layouts";
+import { CenteredContainerXL, useCanCreate, useResourceGuard } from "@self-learning/ui/layouts";
 import { AccessLevel } from "@prisma/client";
 import { TRPCClientError } from "@trpc/client";
 import Link from "next/link";
@@ -128,23 +127,11 @@ export default function SpecializationManagementPage() {
 
 	return (
 		<div className="flex flex-col gap-8 pb-32">
-			<TopicHeader
-				imgUrlBanner={specialization.imgUrlBanner}
-				parentLink="/subjects"
-				parentTitle={t_common("Topic")}
-				title={specialization.title}
-				subtitle={specialization.subtitle}
-			>
-				{canEdit && (
-					<Link
-						href={`/teaching/subjects/${specialization.subjectId}/${specialization.specializationId}/edit`}
-						className="btn-primary absolute top-8 w-fit self-end"
-					>
-						<PencilIcon className="icon h-5" />
-						<span>{t_common("edit")}</span>
-					</Link>
-				)}
-			</TopicHeader>
+			<SpecializationHeader
+				specialization={specialization}
+				parentLink={`/teaching/subjects/${specialization.subjectId}`}
+				canEdit={canEdit}
+			/>
 
 			<CenteredContainerXL>
 				<ResourceGroupChips permissions={specialization.permissions} />

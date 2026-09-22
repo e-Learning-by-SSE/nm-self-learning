@@ -63,6 +63,7 @@ export const specializationRouter = t.router({
 				select: {
 					specializationId: true,
 					subjectId: true,
+					subject: { select: { title: true } },
 					slug: true,
 					title: true,
 					subtitle: true,

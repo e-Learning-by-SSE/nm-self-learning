@@ -1,19 +1,21 @@
 import { PuzzlePieceIcon } from "@heroicons/react/24/solid";
+import { AccessLevel } from "@prisma/client";
 import { database } from "@self-learning/database";
 import { CourseContent, CourseMeta, extractLessonIds, ResolvedValue } from "@self-learning/types";
+import { I18N_NAMESPACE as NS_TEACHING, SpecializationHeader } from "@self-learning/teaching";
 import { ImageCard, ImageCardBadge, Tooltip } from "@self-learning/ui/common";
-import { ItemCardGrid, TopicHeader } from "@self-learning/ui/layouts";
+import { ItemCardGrid, testResourceGuard } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
 import Link from "next/link";
 import { useTranslation } from "next-i18next";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { withTranslations } from "@self-learning/api";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@self-learning/util/auth/server";
+import { withTranslations } from "@self-learning/api";
 import { CourseType } from "@prisma/client";
 
 type SpecializationPageProps = {
-	specialization: ResolvedValue<typeof getSpecialization>;
+	specialization: Omit<ResolvedValue<typeof getSpecialization>, "permissions">;
+	canEdit: boolean;
 };
 
 function hasLearningContent(course: { type: CourseType; content: unknown }): boolean {
@@ -22,37 +24,50 @@ function hasLearningContent(course: { type: CourseType; content: unknown }): boo
 	return extractLessonIds(content).length > 0;
 }
 
-export const getServerSideProps = withTranslations(["common", "feature-teaching"], async ctx => {
-	const { req, res, params, locale } = ctx;
+export const getServerSideProps = withTranslations<SpecializationPageProps>(
+	NS_TEACHING,
+	async ctx => {
+		const { req, res, params } = ctx;
 
-	const session = await getServerSession(req, res, authOptions);
+		const session = await getServerSession(req, res, authOptions);
 
-	const username = session?.user?.name ?? null;
+		const username = session?.user?.name ?? null;
 
-	const specializationSlug = params?.specializationSlug;
+		const specializationSlug = params?.specializationSlug;
 
-	if (typeof specializationSlug !== "string") {
-		throw new Error("[specializationSlug] must be a string.");
-	}
+		if (typeof specializationSlug !== "string") {
+			throw new Error("[specializationSlug] must be a string.");
+		}
 
-	const specialization = await getSpecialization(specializationSlug, username);
+		const specialization = await getSpecialization(specializationSlug, username);
+		if (!specialization) {
+			return { notFound: true };
+		}
 
-	return {
-		props: {
-			...(await serverSideTranslations(locale ?? "en", ["common", "feature-teaching"])),
-			specialization: specialization && {
-				...specialization,
-				courses: specialization.courses.filter(hasLearningContent)
+		const { permissions, courses, ...publicSpecialization } = specialization;
+		const filteredSpecialization = {
+			...publicSpecialization,
+			courses: courses.filter(hasLearningContent)
+		};
+		const canEdit =
+			!!session?.user && testResourceGuard(session.user, AccessLevel.EDIT, permissions);
+
+		return {
+			props: {
+				specialization: filteredSpecialization,
+				canEdit
 			}
-		},
-		notFound: !specialization
-	};
-});
+		};
+	}
+);
 
 async function getSpecialization(specializationSlug: string, username: string | null) {
 	return await database.specialization.findUnique({
 		where: { slug: specializationSlug },
 		select: {
+			specializationId: true,
+			subjectId: true,
+			permissions: { select: { groupId: true, accessLevel: true } },
 			imgUrlBanner: true,
 			slug: true,
 			title: true,
@@ -88,16 +103,15 @@ async function getSpecialization(specializationSlug: string, username: string | 
 	});
 }
 
-export default function SpecializationPage({ specialization }: SpecializationPageProps) {
-	const { title, subtitle, imgUrlBanner, subject, courses } = specialization;
+export default function SpecializationPage({ specialization, canEdit }: SpecializationPageProps) {
+	const { subject, courses } = specialization;
+
 	return (
 		<div className="pb-32">
-			<TopicHeader
-				imgUrlBanner={imgUrlBanner}
+			<SpecializationHeader
+				specialization={specialization}
 				parentLink={`/subjects/${subject.slug}`}
-				parentTitle={subject.title}
-				title={title}
-				subtitle={subtitle}
+				canEdit={canEdit}
 			/>
 			<div className="mx-auto flex max-w-screen-xl flex-col px-4 pt-8 xl:px-0">
 				{courses.length > 0 ? (
