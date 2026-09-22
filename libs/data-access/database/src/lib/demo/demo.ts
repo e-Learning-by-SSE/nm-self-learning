@@ -55,7 +55,6 @@ export async function seedDemos(): Promise<void> {
 
 	// Blue Metric Data:
 	console.log("\x1b[94m%s\x1b[0m", "Metric Data:");
-
 	await createEventLog();
 
 	await createSubjects();
