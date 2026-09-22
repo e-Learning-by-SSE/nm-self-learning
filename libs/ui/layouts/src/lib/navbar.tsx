@@ -143,6 +143,17 @@ function NavbarNavigationLink() {
 					});
 				}
 				localStorage.setItem("navigation", JSON.stringify(newNavigation));
+			} else if (typeof query.subjectId === "string") {
+				newNavigation.push({
+					name: query.subjectId,
+					href: `/teaching/subjects/${query.subjectId}`
+				});
+				if (typeof query.specializationId === "string") {
+					newNavigation.push({
+						name: query.specializationId,
+						href: `/teaching/subjects/${query.subjectId}/${query.specializationId}`
+					});
+				}
 			} else if (query.courseSlug) {
 				newNavigation = JSON.parse(localStorage.getItem("navigation") ?? "[]");
 				if (newNavigation.length < 1) {

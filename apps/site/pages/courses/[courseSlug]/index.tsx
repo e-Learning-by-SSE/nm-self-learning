@@ -69,7 +69,6 @@ function mapToTocContent(
 
 async function mapCourseContent(content: CourseContent, username?: string): Promise<ToC.Content> {
 	const lessonIds = extractLessonIds(content);
-	console.log("LessonIDs", lessonIds);
 
 	const lessons = await database.lesson.findMany({
 		where: { lessonId: { in: lessonIds } },
@@ -89,8 +88,6 @@ async function mapCourseContent(content: CourseContent, username?: string): Prom
 			}
 		}
 	});
-
-	console.log("lessons", lessons);
 
 	const map = new Map<string, LessonInfo>();
 
