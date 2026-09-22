@@ -72,7 +72,12 @@ const CoursePlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(function Co
 	const [isReady, setIsReady] = useState(false);
 	const [lastRenderTime, setLastRenderTime] = useState(new Date().getTime());
 	const [subtitleUrl, setSubtitleUrl] = useState<string | null>(null);
-	const [playbackRate, setPlaybackRate] = useState(() => readPlaybackRate(courseId));
+const [playbackRate, setPlaybackRate] = useState(1);
+
+useEffect(() => {
+	if (!isClient) return;
+	setPlaybackRate(readPlaybackRate(courseId));
+}, [isClient, courseId]);
 
 	useEffect(() => {
 		if (!subtitle?.src) {
