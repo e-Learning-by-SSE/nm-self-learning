@@ -75,15 +75,30 @@ describe("REST API of Course Router", () => {
 			(database.course.findMany as jest.Mock).mockImplementation(async query => {
 				let courses = [...coursesMock];
 
-				// Simulate filtering by author (WHERE query)
-				if (query.where && query.where.authors) {
+				if (query.where?.authors) {
 					courses = courses.filter(course =>
 						course.authors.some(
 							author => author.username === query.where.authors.some.username
 						)
 					);
 				}
-				return courses;
+
+				if (query.orderBy?.title === "asc") {
+					courses.sort((a, b) => (a.title ?? "").localeCompare(b.title ?? ""));
+				}
+
+				if (query.skip !== undefined) {
+					courses = courses.slice(query.skip);
+				}
+
+				if (query.take !== undefined) {
+					courses = courses.slice(0, query.take);
+				}
+
+				return courses.map(course => ({
+					title: course.title,
+					slug: course.slug
+				}));
 			});
 		});
 
