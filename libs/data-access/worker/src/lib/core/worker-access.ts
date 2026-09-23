@@ -5,20 +5,18 @@ import { logJobProgress } from "@self-learning/database";
 
 /**
  * Subscribes the backend to job events for a specific job.
- * Must not be exported outside of the library as this may "infect" client code with backend-specific logic.
+ * Must not be imported by client-side code.
  * @param param0
  */
 export async function subscribeToJobEvents<T extends JobKey>({
 	jobId,
 	jobType,
-	// itemId,
 	onFinish,
 	onAbort,
 	onError
 }: {
 	jobId: string;
 	jobType: T;
-	// itemId?: string;
 	onFinish?: (result: ReturnTypeOf<T>) => void;
 	onAbort?: (cause: string) => void;
 	onError?: (errorMsg: string) => void;
