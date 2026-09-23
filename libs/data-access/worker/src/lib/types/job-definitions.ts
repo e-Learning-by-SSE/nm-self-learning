@@ -41,17 +41,21 @@ const learningUnitSchema = z.object({
 });
 
 export const pathGenerationPayloadSchema = z.object({
-	dbSkills: z.array(skillSchema),
-	userGlobalKnowledge: z
-		.object({
-			received: z.array(z.object({ id: z.string() })).optional()
-		})
-		.optional(),
-	course: z.object({
-		teachingGoals: z.array(skillSchema).optional()
-	}),
-	lessons: z.array(learningUnitSchema),
-	knowledge: z.array(z.string()).optional()
+	dbSkills: z
+		.array(skillSchema)
+		.describe("A list of all skills to consider (probably all skills of the platform)"),
+	lessons: z
+		.array(learningUnitSchema)
+		.describe("A list of all lessons to consider (probably all lessons of the platform)"),
+	knowledge: z
+		.array(z.string())
+		.optional()
+		.describe(
+			"Either the knowledge of the user (already learned skills) or the prerequisites of the course (i.e., when computing default path)"
+		),
+	goal: z
+		.array(skillSchema)
+		.describe("The learning objective to achieve, either of the course of personal goal")
 });
 
 const pathGenerationResponseSchema = z.object({
@@ -64,8 +68,6 @@ const pathGenerationResponseSchema = z.object({
  ******************************************************************************/
 
 export const courseGraphAnalysisPayloadSchema = pathGenerationPayloadSchema.omit({
-	userGlobalKnowledge: true,
-	course: true,
 	knowledge: true
 });
 

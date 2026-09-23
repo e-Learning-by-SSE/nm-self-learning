@@ -133,11 +133,9 @@ export async function enqueueCoursePath(
 		payload: {
 			dbSkills,
 			lessons: lessons,
-			course: {
-				teachingGoals: dbSkills.filter(skill =>
-					course.provides.some(provide => provide.id === skill.id)
-				)
-			},
+			goal: dbSkills.filter(skill =>
+				course.provides.some(provide => provide.id === skill.id)
+			),
 			knowledge
 		}
 	});
