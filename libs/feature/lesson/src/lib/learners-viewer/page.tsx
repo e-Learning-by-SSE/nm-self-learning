@@ -11,7 +11,7 @@ import {
 import { AccessLevel, LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 //import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
-import { getCombinedSmallCourse, useLessonContext } from "@self-learning/lesson";
+// import { getCombinedSmallCourse, useLessonContext } from "@self-learning/lesson";
 
 import {
 	SmallGradeBadge,

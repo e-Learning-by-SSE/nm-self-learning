@@ -727,13 +727,13 @@ async function enqueueRagEmbedJob(
 		subscribeToJobEvents({
 			jobId,
 			jobType: "ragEmbed",
-			onFinish: () => {
+			onFinish: async () => {
 				console.log("[LessonRouter] RAG job completed", {
 					jobId,
 					lessonId
 				});
 			},
-			onAbort: (cause: string) => {
+			onAbort: async (cause: string) => {
 				console.error(
 					"[LessonRouter] RAG job aborted",
 					{
@@ -743,7 +743,7 @@ async function enqueueRagEmbedJob(
 					{ jobId }
 				);
 			},
-			onError: (errorMsg: string) => {
+			onError: async (errorMsg: string) => {
 				console.error(
 					"[LessonRouter] RAG job error",
 					{

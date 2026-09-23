@@ -12,12 +12,11 @@ import {
 	Variable
 } from "@e-learning-by-sse/nm-skill-lib";
 import { JobDefinition } from "../lib/core/job-registry";
-import { pathGenerationPayloadSchema } from "@self-learning/worker-api";
 
 export const pathGenerationJob: JobDefinition<"pathGeneration"> = {
 	name: "pathGeneration",
 	description: "Generates a learning path based on skills and goals",
-	schema: pathGenerationPayloadSchema,
+
 	run: async payload => {
 		const { dbSkills, goal, lessons, knowledge } = payload;
 

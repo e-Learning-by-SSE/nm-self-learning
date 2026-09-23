@@ -7,13 +7,11 @@ import {
 	Variable
 } from "@e-learning-by-sse/nm-skill-lib";
 import { JobDefinition } from "../lib/core/job-registry";
-import { courseGraphAnalysisPayloadSchema } from "@self-learning/worker-api";
 
 export const courseGraphAnalysisJob: JobDefinition<"courseGraphAnalysis"> = {
 	name: "courseGraphAnalysis",
 	description:
 		"Creates a graph showing connected and unconnected nodes (skills and learning units) in the course",
-	schema: courseGraphAnalysisPayloadSchema,
 
 	run: async payload => {
 		const { dbSkills, lessons } = payload;
