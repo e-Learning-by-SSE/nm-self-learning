@@ -30,8 +30,8 @@ import {
 } from "../../permissions/permission.service";
 import { randomUUID } from "crypto";
 import { resolveLessonPath } from "../../lesson-path/lesson-path.service";
-import { createCourseSummary, mapCourseContent } from "@self-learning/course";
-import { workerServiceClient, subscribeToJobEvents } from "@self-learning/worker-api";
+import { mapCourseContent } from "@self-learning/course";
+import { enqueueCourseGraphJob, enqueueCoursePath } from "../../learning-path/learning-path";
 
 export const courseRouter = t.router({
 	listAvailableCourses: authProcedure
@@ -324,9 +324,7 @@ export const courseRouter = t.router({
 
 				specializations: course.specializations ?? [],
 
-				authors: course.authors.map(a => ({
-					username: a.username
-				})),
+				authors: course.authors,
 
 				type: course.type,
 				version: course.version,
@@ -356,18 +354,19 @@ export const courseRouter = t.router({
 				}))
 			};
 		}),
-	getCoursePreview: authProcedure
+	updateDefaultPath: authProcedure
 		.input(
 			z.object({
-				courseId: z.string(),
+				slug: z.string(),
 				knowledge: z.array(z.string())
 			})
 		)
-		.query(async ({ input }) => {
+		.mutation(async ({ input }) => {
 			// TODO any permissions? I think VIEW is enough
 			const course = await database.course.findUnique({
-				where: { courseId: input.courseId },
+				where: { slug: input.slug },
 				select: {
+					courseId: true,
 					title: true,
 					type: true,
 					authors: true,
@@ -376,6 +375,15 @@ export const courseRouter = t.router({
 					description: true,
 					imgUrl: true,
 					provides: {
+						select: {
+							id: true,
+							name: true,
+							description: true,
+							authorId: true,
+							children: { select: { id: true } }
+						}
+					},
+					requires: {
 						select: {
 							id: true,
 							name: true,
@@ -399,29 +407,29 @@ export const courseRouter = t.router({
 				});
 			}
 
-			const path = await resolveLessonPath({
-				courseProvides: course.provides,
-				userKnowledgeIds: input.knowledge
-			});
-			// Unsolvable path is an empty preview, not an error the page must catch.
-			const courseContent = path
-				? [
+			const jobId = enqueueCoursePath(course, async result => {
+				if (result) {
+					const content: CourseContent = await mapCourseContent([
 						{
 							title: "generatedLessonPathTitle",
 							description: "generatedLessonPathDescription",
-							content: path
+							content: (result.lessonIds ?? []).map(lessonId => ({ lessonId }))
 						} as CourseChapter
-					]
-				: [];
+					]);
 
-			const content = await mapCourseContent(courseContent);
-			const summary = createCourseSummary(content);
+					await database.course.update({
+						where: { courseId: course.courseId },
+						data: {
+							content: content,
+							meta: createCourseMeta({ content: content })
+						}
+					});
+				} else {
+					console.log("Path generation failed or returned no result");
+				}
+			});
 
-			return {
-				course: course,
-				content: content,
-				summary: summary
-			};
+			return jobId;
 		}),
 	createCourseGraphJob: authProcedure
 		.input(
@@ -806,87 +814,4 @@ function parseCourseContent(raw: Prisma.JsonValue): CourseContent {
 	const result = courseContentSchema.safeParse(raw);
 
 	return result.success ? result.data : [];
-}
-
-async function enqueueCourseGraphJob(courseId: string): Promise<string> {
-	// get relevant skills for this course (default lesson path)
-	const ctx = await getSkillContext(courseId);
-	if (ctx.type !== CourseType.DYNAMIC) {
-		throw new TRPCError({
-			code: "BAD_REQUEST",
-			message: "Requested course is not dynamic"
-		});
-	}
-
-	const ctxSkills = new Set([
-		...ctx.requires,
-		...ctx.provides,
-		...ctx.lessons.flatMap(l => [...l.requires, ...l.provides])
-	]);
-	if (ctxSkills.size === 0) {
-		throw new TRPCError({
-			code: "BAD_REQUEST",
-			message: "Requested course does not have any skills required and provided"
-		});
-	}
-
-	// TODO select all skill rows into memory might be expensive in the future
-	const allSkills = await database.skill.findMany({
-		select: { id: true, children: { select: { id: true } } }
-	});
-	// as skills form a tree, no way to know that a child can be learned by parent without loading all children skills (do DFS)
-	const dfsQueue = [...ctxSkills];
-	const skillMap = new Map(allSkills.map(s => [s.id, s]));
-	while (dfsQueue.length > 0) {
-		const skill = skillMap.get(dfsQueue.pop() as string); // can contain only string, length is checked
-		for (const child of skill?.children ?? []) {
-			if (!ctxSkills.has(child.id)) {
-				ctxSkills.add(child.id);
-				dfsQueue.push(child.id);
-			}
-		}
-	}
-	const relevantSkills = allSkills
-		.filter(s => ctxSkills.has(s.id))
-		.map(s => ({
-			id: s.id,
-			repositoryId: "",
-			children: s.children
-		}));
-
-	// get relevant learning units (must have at least one skill from ctx)
-	const skillIds = [...ctxSkills.keys()];
-	// ctx lessons are ignored. If they are valid, they should reappear with this query
-	const relevantLessons = await database.lesson.findMany({
-		where: {
-			OR: [
-				{ requires: { some: { id: { in: skillIds } } } },
-				{ provides: { some: { id: { in: skillIds } } } }
-			]
-		},
-		select: {
-			lessonId: true,
-			requires: { select: { id: true } },
-			provides: { select: { id: true } }
-		}
-	});
-
-	const jobId = randomUUID();
-	subscribeToJobEvents({
-		jobId,
-		jobType: "courseGraphAnalysis",
-		onFinish: result => {
-			console.log("Job finished with result:", result);
-		}
-	});
-	await workerServiceClient.submitJob.mutate({
-		jobId,
-		jobType: "courseGraphAnalysis",
-		payload: {
-			dbSkills: relevantSkills,
-			lessons: relevantLessons
-		}
-	});
-
-	return jobId;
 }

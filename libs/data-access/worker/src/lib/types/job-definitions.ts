@@ -54,6 +54,11 @@ export const pathGenerationPayloadSchema = z.object({
 	knowledge: z.array(z.string()).optional()
 });
 
+const pathGenerationResponseSchema = z.object({
+	lessonIds: z.array(z.string()).nullable(),
+	cost: z.number().optional()
+});
+
 /******************************************************************************
  ************************* Course Graph Analysis ******************************
  ******************************************************************************/
@@ -154,7 +159,7 @@ export const SubmitJobInput = z.discriminatedUnion("jobType", [
 export const JobResponse = z.discriminatedUnion("jobType", [
 	BaseJobSchema.extend({
 		jobType: z.literal("pathGeneration"),
-		response: unknown()
+		response: pathGenerationResponseSchema
 	}),
 	BaseJobSchema.extend({
 		jobType: z.literal("courseGraphAnalysis"),

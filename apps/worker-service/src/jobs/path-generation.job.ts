@@ -7,6 +7,7 @@ import {
 	isCompositeGuard,
 	LearningUnit as LibLearningUnit,
 	Skill as LibSkill,
+	Path,
 	Unit,
 	Variable
 } from "@e-learning-by-sse/nm-skill-lib";
@@ -21,8 +22,8 @@ export const pathGenerationJob: JobDefinition<"pathGeneration"> = {
 		const fnCost = () => 1;
 
 		const guard: isCompositeGuard<LibLearningUnit> = (
-			element: Unit<LibLearningUnit>
-		): element is CompositeUnit<LibLearningUnit> => {
+			_element: Unit<LibLearningUnit>
+		): _element is CompositeUnit<LibLearningUnit> => {
 			return false;
 		};
 
@@ -95,6 +96,17 @@ export const pathGenerationJob: JobDefinition<"pathGeneration"> = {
 			costOptions: DefaultCostParameter
 		});
 
-		return result;
+		if (result == null || result.path.length === 0) {
+			return null;
+		}
+
+		return {
+			lessonIds: extractLearningUnitIds(result),
+			cost: result.cost
+		};
 	}
 };
+
+function extractLearningUnitIds(path: Path<LibLearningUnit>): string[] {
+	return [...(path.origin ? [path.origin.id] : []), ...path.path.flatMap(extractLearningUnitIds)];
+}

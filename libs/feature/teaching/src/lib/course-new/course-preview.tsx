@@ -1,9 +1,8 @@
 import { useFormContext, useWatch } from "react-hook-form";
 import { CourseFormModel } from "../course/course-form-model";
 import { trpc } from "@self-learning/api-client";
-import { Alert, AuthorProps, AuthorsList, LoadingBox } from "@self-learning/ui/common";
+import { Alert, AuthorsList, LoadingBox } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
-import { Summary } from "@self-learning/types";
 import * as ToC from "@self-learning/ui/course";
 import { inferProcedureOutput } from "@trpc/server";
 import { AppRouter } from "@self-learning/api";
@@ -11,73 +10,156 @@ import { useTranslation } from "react-i18next";
 import Image from "next/image";
 import { formatSeconds } from "@self-learning/util/common";
 import Link from "next/link";
+import { useEffect } from "react";
 
-type CoursePreviewModel = inferProcedureOutput<AppRouter["course"]["getCoursePreview"]>["course"];
+type CoursePreviewModel = inferProcedureOutput<AppRouter["course"]["getCourse"]>;
+type CourseContentPreviewModel = inferProcedureOutput<AppRouter["course"]["getContent"]>;
 
 export function CoursePreview() {
 	const form = useFormContext<CourseFormModel>();
-	const courseId = useWatch({ control: form.control, name: "courseId" });
+	const slug = useWatch({ control: form.control, name: "slug" });
+
+	// Mutation definition
 	const {
-		data: preview,
-		isLoading,
+		mutate: updateDefaultPath,
+		data: jobId,
+		isPending,
 		isError,
 		error
-	} = trpc.course.getCoursePreview.useQuery(
+	} = trpc.course.updateDefaultPath.useMutation();
+
+	// Submits the job
+	useEffect(() => {
+		if (!slug) return;
+
+		updateDefaultPath({
+			slug,
+			knowledge: []
+		});
+	}, [slug, updateDefaultPath]);
+
+	// Fetch job status
+	const { data: status, isLoading: isStatusLoading } = trpc.jobQueue.getStatus.useQuery(
 		{
-			courseId: courseId as string,
-			knowledge: [] // default path, no knowledge
+			jobId: jobId ?? ""
 		},
 		{
-			enabled: !!courseId
+			enabled: !!jobId,
+			refetchInterval: query => (query.state.data?.status === "FINISHED" ? false : 1000)
 		}
 	);
 
-	if (!courseId) {
-		console.error("CoursePreview used for course without valid courseId");
-		return <Alert type={{ severity: "ERROR", message: "This course could not be found." }} />;
+	/// Fetch course after job finished
+	const { data: preview, isLoading: isPreviewLoading } = trpc.course.getCourse.useQuery(
+		{
+			slug: slug ?? ""
+		},
+		{
+			enabled: !!slug && !!jobId && status?.status === "FINISHED"
+		}
+	);
+
+	if (!slug) {
+		console.error("CoursePreview used for course without valid slug");
+
+		return (
+			<Alert
+				type={{
+					severity: "ERROR",
+					message: "This course could not be found."
+				}}
+			/>
+		);
 	}
 
-	if (isLoading) {
+	if (
+		isPending ||
+		(!!jobId && status?.status !== "FINISHED") ||
+		isStatusLoading ||
+		isPreviewLoading
+	) {
 		return <LoadingBox />;
 	}
 
-	if (isError || !preview) {
-		console.error(error?.message);
+	if (isError || status?.cause) {
+		const errMsg = error?.message ?? status?.cause ?? "Unknown error";
+
+		console.error(errMsg);
+
 		return (
 			<section className="mt-4">
-				<Alert type={{ severity: "ERROR", message: "Preview could not be created." }} />
+				<Alert
+					type={{
+						severity: "ERROR",
+						message: `Preview could not be created: ${errMsg}`
+					}}
+				/>
 			</section>
 		);
 	}
 
+	if (!preview) {
+		return <LoadingBox />;
+	}
+
 	return (
 		<CenteredSection className="bg-gray-50">
-			<Course course={preview.course} content={preview.content} summary={preview.summary} />
+			<Course course={preview} />
 		</CenteredSection>
 	);
 }
 
-function Course({
-	course,
-	summary,
-	content
-}: {
-	course: CoursePreviewModel;
-	summary: Summary;
-	content: ToC.Content;
-}) {
-	const hasContent = content.length > 0;
+function createCourseSummary(content: CourseContentPreviewModel) {
+	const chapters = content.content.length;
+	let lessons = 0;
+	let duration = 0;
+
+	for (const chapter of content.content) {
+		for (const lesson of chapter.content) {
+			const mappedLesson = content.lessonMap[lesson.lessonId];
+			lessons++;
+			duration +=
+				mappedLesson.meta.mediaTypes.video?.duration ??
+				mappedLesson.meta.mediaTypes.article?.estimatedDuration ??
+				0;
+		}
+	}
+
+	return { lessons, chapters, duration };
+}
+
+function Course({ course }: { course: CoursePreviewModel }) {
+	const { data: contentPreview, isLoading: isPreviewLoading } = trpc.course.getContent.useQuery({
+		slug: course.slug
+	});
+	const { data: allAuthors, isLoading: isAuthorsLoading } = trpc.author.getAll.useQuery();
+	const hasContent = course.content.length > 0;
 	const hasTeachingGoal = course.provides.length > 0;
 
-	let mappedAuthors: AuthorProps[] = [];
-
-	if (course) {
-		mappedAuthors = course.authors.map(a => ({
-			displayName: a.displayName ?? "Unknown",
-			slug: a.slug ?? a.username,
-			imgUrl: a.imgUrl ?? null
-		}));
+	if (isPreviewLoading || isAuthorsLoading) {
+		return <LoadingBox />;
 	}
+	if (!contentPreview || !allAuthors) {
+		return (
+			<Alert type={{ severity: "ERROR", message: "Content preview could not be loaded." }} />
+		);
+	}
+	const summary = createCourseSummary(contentPreview);
+	const content = course.content.map(chapter => ({
+		title: chapter.title,
+		description: chapter.description,
+		content: chapter.content
+			.map(({ lessonId }, index) => ({
+				...contentPreview.lessonMap[lessonId],
+				lessonType: "",
+				performanceScore: null,
+				lessonNr: index + 1
+			}))
+			.filter((lesson): lesson is NonNullable<typeof lesson> => lesson !== undefined)
+	}));
+	const authors = course.authors
+		.map(author => allAuthors.find(a => a.username === author.username))
+		.filter((author): author is NonNullable<typeof author> => author !== undefined);
 
 	return (
 		<section className="flex flex-col gap-16">
@@ -95,7 +177,7 @@ function Course({
 					</div>
 
 					<div className="flex flex-col gap-4">
-						<AuthorsList authors={mappedAuthors} />
+						<AuthorsList authors={authors} />
 					</div>
 				</div>
 

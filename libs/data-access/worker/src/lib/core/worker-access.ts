@@ -17,28 +17,27 @@ export async function subscribeToJobEvents<T extends JobKey>({
 }: {
 	jobId: string;
 	jobType: T;
-	onFinish?: (result: ReturnTypeOf<T>) => void;
-	onAbort?: (cause: string) => void;
-	onError?: (errorMsg: string) => void;
+	onFinish?: (result: ReturnTypeOf<T>) => Promise<void>;
+	onAbort?: (cause: string) => Promise<void>;
+	onError?: (errorMsg: string) => Promise<void>;
 }) {
 	try {
 		const subscription = workerServiceClient.jobQueue.subscribe(
 			{ jobId },
 			{
 				onData: async (event: JobEvent) => {
-					await logJobProgress(jobId, event);
-
 					if (event.status === "finished") {
-						onFinish?.(event.result as ReturnTypeOf<T>);
+						await onFinish?.(event.result as ReturnTypeOf<T>);
 						subscription.unsubscribe();
 					} else if (event.status === "aborted") {
-						onAbort?.(event.cause);
+						await onAbort?.(event.cause);
 						subscription.unsubscribe();
 					}
+					await logJobProgress(jobId, event);
 				},
 				onError: async error => {
 					const errorMsg = error instanceof Error ? error.message : String(error);
-					onError?.(errorMsg);
+					await onError?.(errorMsg);
 					await logJobProgress(jobId, {
 						type: jobType,
 						status: "aborted",
@@ -50,7 +49,7 @@ export async function subscribeToJobEvents<T extends JobKey>({
 		);
 	} catch (error) {
 		const errorMsg = error instanceof Error ? error.message : String(error);
-		onError?.(errorMsg);
+		await onError?.(errorMsg);
 		await logJobProgress(jobId, {
 			type: jobType,
 			status: "aborted",
