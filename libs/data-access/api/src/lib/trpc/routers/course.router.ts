@@ -1,5 +1,5 @@
 import { AccessLevel, CourseType, Prisma } from "@prisma/client";
-import { database, logJobProgress } from "@self-learning/database";
+import { database } from "@self-learning/database";
 import {
 	courseFormSchema,
 	getFullCourseExport,
@@ -9,6 +9,7 @@ import {
 import {
 	CourseChapter,
 	CourseContent,
+	courseContentSchema,
 	CourseMeta,
 	createCourseMeta,
 	extractLessonIds,
@@ -30,7 +31,7 @@ import {
 import { randomUUID } from "crypto";
 import { resolveLessonPath } from "../../lesson-path/lesson-path.service";
 import { createCourseSummary, mapCourseContent } from "@self-learning/course";
-import { workerServiceClient } from "@self-learning/worker-api";
+import { workerServiceClient, subscribeToJobEvents } from "@self-learning/worker-api";
 
 export const courseRouter = t.router({
 	listAvailableCourses: authProcedure
@@ -250,7 +251,7 @@ export const courseRouter = t.router({
 			}
 		});
 
-		const content = (course.content ?? []) as CourseContent;
+		const content = parseCourseContent(course.content);
 
 		const lessonIds = extractLessonIds(content);
 
@@ -319,7 +320,7 @@ export const courseRouter = t.router({
 				description: course.description ?? null,
 				imgUrl: course.imgUrl ?? null,
 
-				content: normalizeContent(course.content),
+				content: parseCourseContent(course.content),
 
 				specializations: course.specializations ?? [],
 
@@ -738,7 +739,7 @@ export const courseRouter = t.router({
 				where: { courseId: input.courseId },
 				select: { content: true }
 			});
-			const content = (course.content ?? []) as CourseContent;
+			const content = parseCourseContent(course.content);
 			const newContent = content.map(chapter => ({
 				...chapter,
 				content: chapter.content.filter(lesson => lesson.lessonId !== input.lessonId)
@@ -774,7 +775,7 @@ async function getSkillContext(courseId: string) {
 		});
 	}
 
-	const lessonIds = extractLessonIds(normalizeContent(course.content));
+	const lessonIds = extractLessonIds(parseCourseContent(course.content));
 	const lessons = lessonIds.length
 		? await database.lesson.findMany({
 				where: { lessonId: { in: lessonIds } },
@@ -801,20 +802,10 @@ async function getSkillContext(courseId: string) {
 	};
 }
 
-function normalizeContent(
-	raw: unknown
-): { title: string; content: { lessonId: string }[]; description?: string | null }[] {
-	if (!Array.isArray(raw)) return [];
+function parseCourseContent(raw: Prisma.JsonValue): CourseContent {
+	const result = courseContentSchema.safeParse(raw);
 
-	return raw
-		.filter((item): item is any => item && typeof item === "object") // Remove null and non-objects
-		.map((item: any) => ({
-			title: typeof item.title === "string" ? item.title : "Untitled",
-			content: Array.isArray(item.content)
-				? item.content.filter((c: any) => typeof c.lessonId === "string")
-				: [],
-			description: "description" in item ? item.description : undefined
-		}));
+	return result.success ? result.data : [];
 }
 
 async function enqueueCourseGraphJob(courseId: string): Promise<string> {
@@ -881,33 +872,13 @@ async function enqueueCourseGraphJob(courseId: string): Promise<string> {
 	});
 
 	const jobId = randomUUID();
-	const subscription = workerServiceClient.jobQueue.subscribe(
-		{ jobId },
-		{
-			onData: async event => {
-				const result =
-					event.status === "finished" ? JSON.stringify(event.result) : undefined;
-				await logJobProgress(jobId, event, result);
-
-				if (event.status === "finished" || event.status === "aborted") {
-					subscription.unsubscribe();
-				}
-			},
-			onError: async error => {
-				console.error("[CourseRouter] Graph job subscription error", {
-					jobId,
-					courseId,
-					error: error instanceof Error ? error.message : String(error)
-				});
-				await logJobProgress(jobId, {
-					type: "courseGraphAnalysis",
-					status: "aborted",
-					cause: error instanceof Error ? error.message : String(error)
-				});
-				subscription.unsubscribe();
-			}
+	subscribeToJobEvents({
+		jobId,
+		jobType: "courseGraphAnalysis",
+		onFinish: result => {
+			console.log("Job finished with result:", result);
 		}
-	);
+	});
 	await workerServiceClient.submitJob.mutate({
 		jobId,
 		jobType: "courseGraphAnalysis",

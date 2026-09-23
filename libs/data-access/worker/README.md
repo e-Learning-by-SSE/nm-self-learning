@@ -31,8 +31,12 @@ Shared Library to be used by `site` (as client) and `worker-service` (as server)
       caught `Error`s.
     - Log events as follows:
         ```ts
-        import { logJobProgress } from "@self-learning/database";
-        logJobProgress(jobId, data);
+        import { subscribeToJobEvents } from "@self-learning/worker-api";
+        subscribeToJobEvents({
+            jobId,
+            jobType: <jobType>,
+            onFinish: result => ...
+        });
         ```
     - Submit your job, via `workerServiceClient.submitJob.mutate`,
       this should be the last step to avoid that the `worker-service`

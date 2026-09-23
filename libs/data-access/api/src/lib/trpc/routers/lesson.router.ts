@@ -1,5 +1,5 @@
 import { AccessLevel, Course, Prisma } from "@prisma/client";
-import { database, save_subtitle_for_lesson, logJobProgress } from "@self-learning/database";
+import { database, save_subtitle_for_lesson } from "@self-learning/database";
 import {
 	createLessonMeta,
 	EventTypeMap,
@@ -27,7 +27,7 @@ import {
 	prepareRagContent,
 	deleteEmbedding
 } from "@self-learning/rag-processing";
-import { workerServiceClient } from "@self-learning/worker-api";
+import { subscribeToJobEvents, workerServiceClient } from "@self-learning/worker-api";
 import crypto from "crypto";
 
 const saveSubtitleInputSchema = z.object({
@@ -724,7 +724,36 @@ async function enqueueRagEmbedJob(
 			lessonTitle
 		});
 		const jobId = crypto.randomUUID();
-
+		subscribeToJobEvents({
+			jobId,
+			jobType: "ragEmbed",
+			onFinish: () => {
+				console.log("[LessonRouter] RAG job completed", {
+					jobId,
+					lessonId
+				});
+			},
+			onAbort: (cause: string) => {
+				console.error(
+					"[LessonRouter] RAG job aborted",
+					{
+						lessonId,
+						error: new Error(cause)
+					},
+					{ jobId }
+				);
+			},
+			onError: (errorMsg: string) => {
+				console.error(
+					"[LessonRouter] RAG job error",
+					{
+						lessonId,
+						error: errorMsg
+					},
+					{ jobId }
+				);
+			}
+		});
 		await workerServiceClient.submitJob.mutate({
 			jobId,
 			jobType: "ragEmbed",
@@ -738,16 +767,6 @@ async function enqueueRagEmbedJob(
 				h5pSources: preparedContent.h5pSources
 			}
 		});
-		subscribeToRagJobEvents(jobId, lessonId).catch(err => {
-			console.error(
-				"[LessonRouter] Subscription error",
-				{
-					lessonId,
-					error: err instanceof Error ? err.message : String(err)
-				},
-				{ jobId }
-			);
-		});
 		return jobId;
 	} catch (error) {
 		console.error("[LessonRouter] Failed to enqueue RAG job", {
@@ -755,52 +774,5 @@ async function enqueueRagEmbedJob(
 			error: error instanceof Error ? error.message : String(error)
 		});
 		throw error;
-	}
-}
-
-async function subscribeToRagJobEvents(jobId: string, lessonId: string): Promise<void> {
-	try {
-		workerServiceClient.jobQueue.subscribe(
-			{ jobId },
-			{
-				onData: async event => {
-					await logJobProgress(jobId, event);
-					if (event.status === "finished") {
-						console.log("[LessonRouter] RAG job completed", {
-							jobId,
-							lessonId
-						});
-					} else if (event.status === "aborted") {
-						console.error(
-							"[LessonRouter] RAG job aborted",
-							{
-								lessonId,
-								error: new Error(event.cause)
-							},
-							{ jobId }
-						);
-					}
-				},
-				onError: error => {
-					console.error(
-						"[LessonRouter] RAG subscription error",
-						{
-							lessonId,
-							error: error instanceof Error ? error.message : String(error)
-						},
-						{ jobId }
-					);
-				}
-			}
-		);
-	} catch (error) {
-		console.error(
-			"[LessonRouter] Failed to subscribe to RAG events",
-			{
-				lessonId,
-				error: error instanceof Error ? error.message : String(error)
-			},
-			{ jobId }
-		);
 	}
 }
