@@ -570,11 +570,11 @@ function CreatedUpdatedDates({ createdAt, updatedAt }: { createdAt: string; upda
 	return (
 		<div className="flex flex-wrap gap-2 text-xs text-c-text-muted">
 			<span>
-				Erstellt: <span>{createdAt}</span>
+				Erstellt: <span suppressHydrationWarning>{createdAt}</span>
 			</span>
 			<span>|</span>
 			<span>
-				Letzte Änderung: <span>{updatedAt}</span>
+				Letzte Änderung: <span suppressHydrationWarning>{updatedAt}</span>
 			</span>
 		</div>
 	);
@@ -619,32 +619,62 @@ function CoursePath({
 }) {
 	const { mutateAsync } = trpc.course.createLessonPath.useMutation();
 	const router = useRouter();
+	const [jobId, setJobId] = useState<string | null>(null);
 	const [isGenerating, setIsGenerating] = useState(false);
-	const [isComplete, setIsComplete] = useState(false);
+
+	const { data: status } = trpc.jobQueue.getStatus.useQuery(
+		{ jobId: jobId ?? "" },
+		{
+			enabled: !!jobId,
+			refetchInterval: query => {
+				const status = query.state.data?.status;
+
+				if (status === "FINISHED" || status === "ABORTED") {
+					return false;
+				}
+
+				return 1000;
+			}
+		}
+	);
+	const isComplete = status?.status === "FINISHED";
+
+	useEffect(() => {
+		if (status?.status === "ABORTED") {
+			showToast({
+				type: "error",
+				title: "Fehler",
+				subtitle: "Der Kurs konnte nicht generiert werden."
+			});
+		}
+	}, [status?.status]);
 
 	const generateDynamicCourse = async () => {
 		try {
 			setIsGenerating(true);
-			setIsComplete(false);
-			// Empty knowledge: the server still adds the student's own skills.
-			const created = await mutateAsync({
-				courseId: course.courseId,
-				knowledge: []
+
+			const createdJobId = await mutateAsync({
+				courseId: course.courseId
 			});
-			if (!created) {
+
+			if (!createdJobId) {
 				setIsGenerating(false);
+
 				showToast({
 					type: "error",
 					title: "Fehler",
 					subtitle: "Der Kurs konnte nicht generiert werden."
 				});
+
 				return;
 			}
-			await new Promise(resolve => setTimeout(resolve, 1000));
-			setIsComplete(true);
+
+			setJobId(createdJobId);
 		} catch (error) {
 			setIsGenerating(false);
-			console.error("Error generating course preview:", error);
+
+			console.error("Error generating course:", error);
+
 			showToast({
 				type: "error",
 				title: "Fehler",

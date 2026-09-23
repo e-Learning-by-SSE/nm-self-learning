@@ -68,7 +68,8 @@ const pathGenerationResponseSchema = z.object({
  ******************************************************************************/
 
 export const courseGraphAnalysisPayloadSchema = pathGenerationPayloadSchema.omit({
-	knowledge: true
+	knowledge: true,
+	goal: true
 });
 
 /******************************************************************************

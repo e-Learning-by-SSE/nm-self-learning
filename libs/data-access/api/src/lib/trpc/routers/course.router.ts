@@ -29,7 +29,6 @@ import {
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
 import { randomUUID } from "crypto";
-import { resolveLessonPath } from "../../lesson-path/lesson-path.service";
 import { mapCourseContent } from "@self-learning/course";
 import { enqueueCourseGraphJob, enqueueCoursePath } from "../../learning-path/learning-path";
 
@@ -407,25 +406,28 @@ export const courseRouter = t.router({
 				});
 			}
 
-			const jobId = enqueueCoursePath(course, async result => {
-				if (result) {
-					const content: CourseContent = await mapCourseContent([
-						{
-							title: "generatedLessonPathTitle",
-							description: "generatedLessonPathDescription",
-							content: (result.lessonIds ?? []).map(lessonId => ({ lessonId }))
-						} as CourseChapter
-					]);
+			const jobId = enqueueCoursePath({
+				course,
+				onFinish: async result => {
+					if (result) {
+						const content: CourseContent = await mapCourseContent([
+							{
+								title: "generatedLessonPathTitle",
+								description: "generatedLessonPathDescription",
+								content: (result.lessonIds ?? []).map(lessonId => ({ lessonId }))
+							} as CourseChapter
+						]);
 
-					await database.course.update({
-						where: { courseId: course.courseId },
-						data: {
-							content: content,
-							meta: createCourseMeta({ content: content })
-						}
-					});
-				} else {
-					console.log("Path generation failed or returned no result");
+						await database.course.update({
+							where: { courseId: course.courseId },
+							data: {
+								content: content,
+								meta: createCourseMeta({ content: content })
+							}
+						});
+					} else {
+						console.log("Path generation failed or returned no result");
+					}
 				}
 			});
 
@@ -459,8 +461,7 @@ export const courseRouter = t.router({
 	createLessonPath: authProcedure
 		.input(
 			z.object({
-				courseId: z.string(),
-				knowledge: z.array(z.string())
+				courseId: z.string()
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
@@ -468,9 +469,19 @@ export const courseRouter = t.router({
 			const course = await database.course.findUnique({
 				where: { courseId: input.courseId },
 				select: {
+					courseId: true,
 					version: true,
 					type: true,
 					provides: {
+						select: {
+							id: true,
+							children: {
+								// Needed for nestedSkills
+								select: { id: true }
+							}
+						}
+					},
+					requires: {
 						select: {
 							id: true,
 							children: {
@@ -494,43 +505,32 @@ export const courseRouter = t.router({
 				});
 			}
 
-			const userGlobalKnowledge = await database.student.findUnique({
-				where: { username: ctx.user.name },
-				select: { received: { select: { id: true } } }
+			const jobId = await enqueueCoursePath({
+				course,
+				onFinish: async result => {
+					const courseChapter: CourseChapter = {
+						title: "",
+						description: "",
+						content: (result.lessonIds ?? []).map(id => ({ lessonId: id }))
+					};
+
+					await database.generatedLessonPath.create({
+						data: {
+							content: [courseChapter],
+							courseVersion: course.version,
+							slug: randomUUID(),
+							courseId: input.courseId,
+							meta: createCourseMeta({ content: [courseChapter] }),
+							username: ctx.user.name,
+							createdAt: new Date(),
+							updatedAt: new Date()
+						}
+					});
+				},
+				userId: ctx.user.id
 			});
 
-			const userGlobalKnowledgeIds = (userGlobalKnowledge?.received ?? []).map(s => s.id);
-			const userKnowledge = [...(input.knowledge ?? []), ...userGlobalKnowledgeIds];
-
-			const content = await resolveLessonPath({
-				courseProvides: course.provides,
-				userKnowledgeIds: userKnowledge
-			});
-
-			if (!content) {
-				return null;
-			}
-			const courseChapter: CourseChapter = {
-				title: "",
-				description: "",
-				content: content
-			};
-			const courseContent: CourseContent = [courseChapter];
-
-			const generatedCourse = await database.generatedLessonPath.create({
-				data: {
-					content: courseContent,
-					courseVersion: course.version,
-					slug: randomUUID(),
-					courseId: input.courseId,
-					meta: createCourseMeta({ content: courseContent }),
-					username: ctx.user.name,
-					createdAt: new Date(),
-					updatedAt: new Date()
-				}
-			});
-
-			return generatedCourse;
+			return jobId;
 		}),
 	getSkillContext: authProcedure
 		.input(

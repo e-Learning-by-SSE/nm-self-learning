@@ -71,11 +71,15 @@ type CourseQuery = {
 	}[];
 };
 
-export async function enqueueCoursePath(
-	course: CourseQuery,
-	onFinish: (result: ReturnTypeOf<"pathGeneration">) => void,
-	userId?: string
-) {
+export async function enqueueCoursePath({
+	course,
+	onFinish,
+	userId
+}: {
+	course: CourseQuery;
+	onFinish: (result: ReturnTypeOf<"pathGeneration">) => void;
+	userId?: string;
+}) {
 	const [skills, lessons] = await Promise.all([
 		database.skill.findMany({
 			select: {
