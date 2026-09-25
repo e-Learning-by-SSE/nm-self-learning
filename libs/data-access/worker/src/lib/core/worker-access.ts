@@ -28,21 +28,19 @@ export async function subscribeToJobEvents<T extends JobKey>({
 			{ jobId },
 			{
 				onData: async (event: JobEvent) => {
+					let serializedResult: string | undefined;
 					if (event.status === "finished") {
 						await onFinish?.(event.result as ReturnTypeOf<T>);
 						subscription.unsubscribe();
-						const serializedResult = attachResultToStatus
+						serializedResult = attachResultToStatus
 							? JSON.stringify(event.result)
 							: undefined;
-						console.log("Serialized result:", serializedResult);
-						await logJobProgress(jobId, event, serializedResult);
 					} else if (event.status === "aborted") {
 						await onAbort?.(event.cause);
 						subscription.unsubscribe();
-						await logJobProgress(jobId, event);
-					} else {
-						await logJobProgress(jobId, event);
 					}
+
+					await logJobProgress(jobId, event, serializedResult);
 				},
 				onError: async error => {
 					const errorMsg = error instanceof Error ? error.message : String(error);
