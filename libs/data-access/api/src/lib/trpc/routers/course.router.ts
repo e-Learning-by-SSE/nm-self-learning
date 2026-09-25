@@ -437,11 +437,15 @@ export const courseRouter = t.router({
 		.input(
 			z.object({
 				courseId: z.string()
-				// knowledge: z.array(z.string()) TODO not used
 			})
 		)
 		.mutation(async ({ input }) => {
-			return await enqueueCourseGraphJob(input.courseId);
+			return await enqueueCourseGraphJob({
+				courseId: input.courseId,
+				onFinish: result => {
+					console.log("Course graph job finished with result:", result);
+				}
+			});
 		}),
 	getCourseGraphJobStatus: authProcedure
 		.input(z.object({ jobId: z.string() }))

@@ -147,7 +147,13 @@ export async function enqueueCoursePath({
 	return jobId;
 }
 
-export async function enqueueCourseGraphJob(courseId: string): Promise<string> {
+export async function enqueueCourseGraphJob({
+	courseId,
+	onFinish
+}: {
+	courseId: string;
+	onFinish: (result: ReturnTypeOf<"courseGraphAnalysis">) => void;
+}): Promise<string> {
 	// get relevant skills for this course (default lesson path)
 	const ctx = await getSkillContext(courseId);
 	if (ctx.type !== CourseType.DYNAMIC) {
@@ -215,7 +221,7 @@ export async function enqueueCourseGraphJob(courseId: string): Promise<string> {
 		jobId,
 		jobType: "courseGraphAnalysis",
 		onFinish: async result => {
-			console.log("Job finished with result:", result);
+			onFinish(result);
 		}
 	});
 	// Do not wait for results (must be handled via subscription)
