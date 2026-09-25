@@ -20,7 +20,9 @@ describe("Daily Learning Time by Course for Student", () => {
 				slug: "daily-learning-time-by-course-test-course",
 				subtitle: "A course to test daily learning time by course metric",
 				content: {},
-				meta: {}
+				meta: {},
+				version: "1",
+				type: "STATIC"
 			}
 		});
 

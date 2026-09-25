@@ -19,7 +19,9 @@ describe("Learning Time by Course for Student", () => {
 				slug: "learning-time-by-course-test-course",
 				subtitle: "A course to test learning time by course metric",
 				content: {},
-				meta: {}
+				meta: {},
+				version: "1",
+				type: "STATIC"
 			}
 		});
 

@@ -31,7 +31,9 @@ describe("Courses Completed by Subject for Student", () => {
 				slug: "average-lesson-completion-rate-by-course-test-course",
 				subtitle: "A course to test average lesson completion rate by course metric",
 				content: {},
-				meta: {}
+				meta: {},
+				version: "1",
+				type: "STATIC"
 			}
 		});
 
