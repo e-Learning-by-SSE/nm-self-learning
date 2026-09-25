@@ -8,5 +8,9 @@
 	"noTeachingGoalTitle": "This course has no learning goal",
 	"noTeachingGoalDescription": "Your course doesn’t have any teaching goals yet. Without them, it’s not possible to generate a course path. Please define the learning objectives and try again.",
 	"generatedLessonPathTitle": "Course Content",
-	"generatedLessonPathDescription": "This lesson path is AI-generated based on the learning goals of this course."
+	"generatedLessonPathDescription": "This lesson path is AI-generated based on the learning goals of this course.",
+    "No_Learning_Units": {
+        "Title": "No $t(common:Nano-Module_other) available",
+        "Description": "There are no $t(common:Nano-Module_other) available for this course."
+    }
 }

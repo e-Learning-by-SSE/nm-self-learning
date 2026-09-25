@@ -77,7 +77,7 @@ export const courseGraphAnalysisPayloadSchema = pathGenerationPayloadSchema.omit
 	goal: true
 });
 
-const graphResponseSchema = z.object({
+export const graphResponseSchema = z.object({
 	nodes: z.array(z.string()).describe("List of Skill/Learning Unit IDs in the graph"),
 	edges: z.array(edgeSchema).describe("Connections among the nodes in the graph"),
 	learningUnits: z

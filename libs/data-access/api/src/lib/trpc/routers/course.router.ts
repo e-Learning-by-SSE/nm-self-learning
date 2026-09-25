@@ -31,6 +31,7 @@ import {
 import { randomUUID } from "crypto";
 import { mapCourseContent } from "@self-learning/course";
 import { enqueueCourseGraphJob, enqueueCoursePath } from "../../learning-path/learning-path";
+import { graphResponseSchema } from "@self-learning/worker-api";
 
 export const courseRouter = t.router({
 	listAvailableCourses: authProcedure
@@ -449,11 +450,40 @@ export const courseRouter = t.router({
 		.mutation(async ({ input }) => {
 			return await enqueueCourseGraphJob({
 				courseId: input.courseId,
-				onFinish: result => {
-					console.log("Course graph job finished with result:", result);
-				}
+				onFinish: () => {}
 			});
 		}),
+	getGraphContent: authProcedure.input(graphResponseSchema).query(async ({ input }) => {
+		const [skills, learningUnits] = await Promise.all([
+			database.skill.findMany({
+				select: {
+					id: true,
+					name: true,
+					children: { select: { id: true } }
+				},
+				where: {
+					id: { in: input.skills }
+				}
+			}),
+			database.lesson.findMany({
+				select: {
+					lessonId: true,
+					title: true,
+					slug: true,
+					requires: { select: { id: true } },
+					provides: { select: { id: true } }
+				},
+				where: {
+					lessonId: { in: input.learningUnits }
+				}
+			})
+		]);
+		return {
+			skills,
+			learningUnits,
+			edges: input.edges
+		};
+	}),
 	getCourseGraphJobStatus: authProcedure
 		.input(z.object({ jobId: z.string() }))
 		.query(async ({ input }) => {
