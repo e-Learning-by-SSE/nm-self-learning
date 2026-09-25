@@ -426,7 +426,14 @@ export const courseRouter = t.router({
 							}
 						});
 					} else {
-						console.log("Path generation failed or returned no result");
+						// Store empty content (no chapter, no lesson) to indicate that the path generation failed
+						await database.course.update({
+							where: { courseId: course.courseId },
+							data: {
+								content: [],
+								meta: createCourseMeta({ content: [] })
+							}
+						});
 					}
 				}
 			});

@@ -11,6 +11,7 @@ import Image from "next/image";
 import { formatSeconds } from "@self-learning/util/common";
 import Link from "next/link";
 import { useEffect } from "react";
+import { PathAnalysis } from "./course-error-analysis";
 
 type CoursePreviewModel = inferProcedureOutput<AppRouter["course"]["getCourse"]>;
 type CourseContentPreviewModel = inferProcedureOutput<AppRouter["course"]["getContent"]>;
@@ -101,6 +102,8 @@ export function CoursePreview() {
 	if (!preview) {
 		return <LoadingBox />;
 	}
+
+	console.log("Preview data:", preview);
 
 	return (
 		<CenteredSection className="bg-gray-50">
@@ -242,7 +245,7 @@ function LessonPath({ content, course }: { content: ToC.Content; course: CourseP
 	const hasContent = content.length > 0;
 
 	if (!hasContent) {
-		return <Warning title="noCoursePathTitle" description="noCoursePathDescription" />;
+		return <PathAnalysis course={course} />;
 	}
 
 	return (

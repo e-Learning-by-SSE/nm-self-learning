@@ -12,7 +12,8 @@ export const jobEventRouter = t.router({
 		.output(
 			z.object({
 				status: z.string().nullable(),
-				cause: z.string().nullable()
+				cause: z.string().nullable(),
+				result: z.string().nullable()
 			})
 		)
 		.query(async ({ input }) => {
@@ -23,7 +24,8 @@ export const jobEventRouter = t.router({
 			});
 			return {
 				status: status?.status ?? null,
-				cause: status?.cause ?? null
+				cause: status?.cause ?? null,
+				result: status?.context ?? null
 			};
 		})
 });

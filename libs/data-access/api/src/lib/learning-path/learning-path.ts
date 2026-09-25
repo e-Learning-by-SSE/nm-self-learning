@@ -220,6 +220,7 @@ export async function enqueueCourseGraphJob({
 	subscribeToJobEvents({
 		jobId,
 		jobType: "courseGraphAnalysis",
+		attachResultToStatus: true,
 		onFinish: async result => {
 			onFinish(result);
 		}
