@@ -94,7 +94,7 @@ export function SkillInfoForm({
 							skillToChange={skill}
 						/>
 					</div>
-					<div className="flex justify-between">
+					<div className="flex justify-between gap-2">
 						<button type="submit" className="btn-primary w-full">
 							Speichern
 						</button>

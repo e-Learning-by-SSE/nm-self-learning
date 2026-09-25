@@ -4,11 +4,11 @@ import {
 	Background,
 	Controls,
 	ReactFlow,
-	MarkerType,
 	type Edge,
 	Position,
 	type Node,
-	type NodeProps
+	type NodeProps,
+	NodeMouseHandler
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { inferProcedureOutput, inferProcedureInput } from "@trpc/server";
@@ -16,7 +16,7 @@ import { AppRouter } from "@self-learning/api";
 import { useTranslation } from "react-i18next";
 import { trpc } from "@self-learning/api-client";
 import { skipToken } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { LoadingBox } from "@self-learning/ui/common";
 type GraphRawInput = inferProcedureInput<AppRouter["course"]["getGraphContent"]>;
 
@@ -67,6 +67,13 @@ export function PathAnalysis({ course }: { course: CoursePreviewModel }) {
 }
 
 function GraphAnalysis({ status }: { status?: string | null }) {
+	const [selectedElement, setSelectedElement] = useState<
+		LearningUnitNodeData | SkillNodeData | null
+	>(null);
+	const [dialogPosition, setDialogPosition] = useState<{
+		x: number;
+		y: number;
+	} | null>(null);
 	let graphRawData: GraphRawInput | undefined;
 	if (status != null) {
 		graphRawData = JSON.parse(status) as {
@@ -129,11 +136,17 @@ function GraphAnalysis({ status }: { status?: string | null }) {
 			y: 100
 		},
 		data: {
-			label: lu.title
+			label: lu.title,
+			provides: lu.provides.map(
+				goal => graphData.skills.find(skill => skill.id === goal.id)?.name ?? ""
+			),
+			requires: lu.requires.map(
+				req => graphData.skills.find(skill => skill.id === req.id)?.name ?? ""
+			)
 		}
 	}));
 
-	const skillNodes = graphData.skills.map((skill, index) => ({
+	const skillNodes: SkillNodeType[] = graphData.skills.map((skill, index) => ({
 		id: skill.id,
 		type: "skill",
 		position: {
@@ -141,9 +154,39 @@ function GraphAnalysis({ status }: { status?: string | null }) {
 			y: 200
 		},
 		data: {
-			label: skill.name
+			label: skill.name,
+			taughtBy: graphData.learningUnits
+				.filter(lu => lu.provides.some(goal => goal.id === skill.id))
+				.map(lu => lu.title),
+			requiredBy: graphData.learningUnits
+				.filter(lu => lu.requires.some(req => req.id === skill.id))
+				.map(lu => lu.title)
 		}
 	}));
+
+	const onNodeClick: NodeMouseHandler<LearningUnitNodeType | SkillNodeType> = (event, node) => {
+		if (node.type === "learningUnit" || node.type === "skill") {
+			setSelectedElement(node.data);
+
+			const element = (event.target as HTMLElement).closest(".react-flow__node");
+
+			if (element) {
+				const rect = element.getBoundingClientRect();
+
+				setDialogPosition({
+					x: rect.left + rect.width / 2,
+					y: rect.top
+				});
+			}
+		}
+
+		return;
+	};
+
+	const onPaneClick = () => {
+		setSelectedElement(null);
+		setDialogPosition(null);
+	};
 
 	const nodeTypes = {
 		skill: SkillNode,
@@ -157,16 +200,91 @@ function GraphAnalysis({ status }: { status?: string | null }) {
 				nodeTypes={nodeTypes}
 				fitView
 				proOptions={{ hideAttribution: true }}
+				onNodeClick={onNodeClick}
+				onPaneClick={onPaneClick}
 			>
 				<Background />
 				<Controls />
 			</ReactFlow>
+			{selectedElement && dialogPosition && (
+				<DetailsDialog selectedElement={selectedElement} dialogPosition={dialogPosition} />
+			)}
+		</div>
+	);
+}
+
+function isLearningUnit(
+	element: LearningUnitNodeData | SkillNodeData
+): element is LearningUnitNodeData {
+	return "provides" in element;
+}
+
+function DetailsDialog({
+	selectedElement,
+	dialogPosition
+}: {
+	selectedElement: LearningUnitNodeData | SkillNodeData;
+	dialogPosition: { x: number; y: number };
+}) {
+	const sections = isLearningUnit(selectedElement)
+		? [
+				{
+					title: "Lernziel(e):",
+					items: selectedElement.provides,
+					className: "text-green-700"
+				},
+				{
+					title: "Voraussetzung(en):",
+					items: selectedElement.requires,
+					className: "text-red-700"
+				}
+			]
+		: [
+				{
+					title: "Wird gelehrt in:",
+					items: selectedElement.taughtBy,
+					className: "text-green-700"
+				},
+				{
+					title: "Wird benötigt in:",
+					items: selectedElement.requiredBy,
+					className: "text-red-700"
+				}
+			];
+
+	return (
+		<div
+			className="fixed z-50 w-[320px] -translate-x-1/2 -translate-y-full rounded-lg border bg-gray-100 p-4 shadow-xl"
+			style={{
+				left: dialogPosition.x,
+				top: dialogPosition.y - 8
+			}}
+			onClick={event => event.stopPropagation()}
+		>
+			<h2 className="mb-3 font-semibold">{selectedElement.label}</h2>
+
+			{sections.map((section, index) => (
+				<div
+					key={section.title}
+					className={index < sections.length - 1 ? "mb-3" : undefined}
+				>
+					<h3 className={`font-semibold ${section.className}`}>{section.title}</h3>
+
+					<ul className="list-disc pl-5">
+						{section.items.map(item => (
+							<li key={item}>{item}</li>
+						))}
+					</ul>
+				</div>
+			))}
 		</div>
 	);
 }
 
 type SkillNodeData = {
 	label: string;
+	taughtBy: string[];
+	requiredBy: string[];
 };
 
 type SkillNodeType = Node<SkillNodeData, "skill">;
@@ -193,6 +311,8 @@ function SkillNode({ data }: NodeProps<SkillNodeType>) {
 
 type LearningUnitNodeData = {
 	label: string;
+	provides: string[];
+	requires: string[];
 };
 
 type LearningUnitNodeType = Node<LearningUnitNodeData, "learningUnit">;

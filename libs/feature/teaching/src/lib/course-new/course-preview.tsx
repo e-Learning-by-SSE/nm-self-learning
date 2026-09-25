@@ -103,8 +103,6 @@ export function CoursePreview() {
 		return <LoadingBox />;
 	}
 
-	console.log("Preview data:", preview);
-
 	return (
 		<CenteredSection className="bg-gray-50">
 			<Course course={preview} />

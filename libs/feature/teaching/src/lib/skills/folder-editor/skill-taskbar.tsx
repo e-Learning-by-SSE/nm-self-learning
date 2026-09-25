@@ -138,7 +138,8 @@ export function SkillDeleteOption({
 	if (!inline) {
 		return (
 			<IconOnlyButton
-				icon={<TrashIcon className="h-5 w-5 btn-danger" />}
+				icon={<TrashIcon className="h-5 w-5" />}
+				className="text-red-600 hover:text-red-700"
 				onClick={handleDelete}
 			/>
 		);
