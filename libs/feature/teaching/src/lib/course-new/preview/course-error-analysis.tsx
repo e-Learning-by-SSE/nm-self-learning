@@ -14,13 +14,16 @@ import {
 import "@xyflow/react/dist/style.css";
 import { inferProcedureOutput, inferProcedureInput } from "@trpc/server";
 import { AppRouter } from "@self-learning/api";
-import { useTranslation } from "react-i18next";
 import { trpc } from "@self-learning/api-client";
 import { skipToken } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { LoadingBox } from "@self-learning/ui/common";
 import dagre from "@dagrejs/dagre";
+import { Warning } from "./warning";
+
 type GraphRawInput = inferProcedureInput<AppRouter["course"]["getGraphContent"]>;
+export type GraphAnalysisType = inferProcedureOutput<AppRouter["course"]["getGraphContent"]>;
+
 type SkillNodeData = {
 	label: string;
 	taughtBy: string[];
@@ -76,18 +79,6 @@ function layoutGraph(nodes: GraphNode[], edges: Edge[]) {
 }
 
 type CoursePreviewModel = inferProcedureOutput<AppRouter["course"]["getCourse"]>;
-
-function Warning({ title, description }: { title: string; description: string }) {
-	const { t } = useTranslation("kee");
-	return (
-		<div className="flex flex-col gap-4 p-8 rounded-lg bg-gray-100">
-			<h3 className="heading flex gap-4 text-2xl">
-				<span className="text-secondary">{t(title)}</span>
-			</h3>
-			<span className="mt-4 text-light">{t(description)}</span>
-		</div>
-	);
-}
 
 export function PathAnalysis({ course }: { course: CoursePreviewModel }) {
 	// Mutation definition
