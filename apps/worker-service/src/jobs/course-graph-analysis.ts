@@ -47,6 +47,29 @@ export const courseGraphAnalysisJob: JobDefinition<"courseGraphAnalysis"> = {
 			suggestedSkills: []
 		}));
 
-		return getConnectedGraphForLearningUnit(learningUnits ?? [], libSkills ?? []);
+		// Actual computation
+		const resultGraph = getConnectedGraphForLearningUnit(learningUnits ?? [], libSkills ?? []);
+
+		// Temporary structures to ease retrieval
+		const elementsById = new Map(resultGraph.nodes.map(node => [node.id, node.element]));
+		const elementUsage = [...elementsById.entries()];
+		const learningUnitIds = new Set(learningUnits.map(learningUnit => learningUnit.id));
+
+		return {
+			// Use IDs of platform instead of artificial references of the algorithm
+			nodes: resultGraph.nodes.map(node => node.element.id),
+
+			// Map edges to use platform IDs instead of algorithm references
+			edges: resultGraph.edges.map(edge => ({
+				from: elementsById.get(edge.from).id,
+				to: elementsById.get(edge.to).id
+			})),
+
+			// Filter for relevant / used learning units
+			learningUnits: elementUsage.filter(([id]) => learningUnitIds.has(id)).map(([id]) => id),
+
+			// Filter for relevant / used skills
+			skills: elementUsage.filter(([id]) => findSkill(id)).map(([id]) => id)
+		};
 	}
 };
