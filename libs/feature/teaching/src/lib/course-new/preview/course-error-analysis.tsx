@@ -4,12 +4,9 @@ import {
 	Background,
 	Controls,
 	ReactFlow,
-	type Edge,
 	Position,
-	type Node,
 	type NodeProps,
-	NodeMouseHandler,
-	MarkerType
+	NodeMouseHandler
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { inferProcedureOutput, inferProcedureInput } from "@trpc/server";
@@ -18,68 +15,25 @@ import { trpc } from "@self-learning/api-client";
 import { skipToken } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { LoadingBox } from "@self-learning/ui/common";
-import dagre from "@dagrejs/dagre";
 import { Warning } from "./warning";
+import {
+	type LearningUnitNodeData,
+	type SkillNodeData,
+	type LearningUnitNodeType,
+	type SkillNodeType,
+	createGraph
+} from "./graph-analysis";
 
 type GraphRawInput = inferProcedureInput<AppRouter["course"]["getGraphContent"]>;
-export type GraphAnalysisType = inferProcedureOutput<AppRouter["course"]["getGraphContent"]>;
-
-type SkillNodeData = {
-	label: string;
-	taughtBy: string[];
-	requiredBy: string[];
-};
-
-type SkillNodeType = Node<SkillNodeData, "skill">;
-
-type LearningUnitNodeData = {
-	label: string;
-	provides: string[];
-	requires: string[];
-};
-
-type LearningUnitNodeType = Node<LearningUnitNodeData, "learningUnit">;
-type GraphNode = SkillNodeType | LearningUnitNodeType;
-
-function layoutGraph(nodes: GraphNode[], edges: Edge[]) {
-	const graph = new dagre.graphlib.Graph();
-
-	graph.setDefaultEdgeLabel(() => ({}));
-
-	graph.setGraph({
-		rankdir: "TB", // Top -> Bottom
-		nodesep: 50,
-		ranksep: 80
-	});
-
-	nodes.forEach(node => {
-		graph.setNode(node.id, {
-			width: 150,
-			height: 50
-		});
-	});
-
-	edges.forEach(edge => {
-		graph.setEdge(edge.source, edge.target);
-	});
-
-	dagre.layout(graph);
-
-	return nodes.map(node => {
-		const position = graph.node(node.id);
-
-		return {
-			...node,
-			position: {
-				x: position.x - 150 / 2,
-				y: position.y - 50 / 2
-			}
-		};
-	});
-}
 
 type CoursePreviewModel = inferProcedureOutput<AppRouter["course"]["getCourse"]>;
 
+/**
+ * Entry Point component.
+ * Fetches analysis data and returns error if no valid data was computed, otherwise handles over to the GraphAnalysis component.
+ * @param param0
+ * @returns
+ */
 export function PathAnalysis({ course }: { course: CoursePreviewModel }) {
 	// Mutation definition
 	const { mutate: createGraph, data: jobId } = trpc.course.createCourseGraphJob.useMutation();
@@ -112,6 +66,11 @@ export function PathAnalysis({ course }: { course: CoursePreviewModel }) {
 	);
 }
 
+/**
+ * Graph drawing component
+ * @param param0
+ * @returns
+ */
 function GraphAnalysis({ status }: { status?: string | null }) {
 	const [selectedElement, setSelectedElement] = useState<
 		LearningUnitNodeData | SkillNodeData | null
@@ -147,80 +106,6 @@ function GraphAnalysis({ status }: { status?: string | null }) {
 		);
 	}
 
-	const learningUnitIds = new Set(graphData.learningUnits.map(lu => lu.lessonId));
-	const skillIds = new Set(graphData.skills.map(skill => skill.id));
-
-	const edges: Edge[] = graphData.edges.map((edge, index) => {
-		const sourceIsLearningUnit = learningUnitIds.has(edge.from);
-		const targetIsLearningUnit = learningUnitIds.has(edge.to);
-
-		const sourceIsSkill = skillIds.has(edge.from);
-		const targetIsSkill = skillIds.has(edge.to);
-
-		const isSkillLearningUnitEdge =
-			(sourceIsSkill && targetIsLearningUnit) || (sourceIsLearningUnit && targetIsSkill);
-
-		const color = sourceIsLearningUnit
-			? "#dc2626"
-			: targetIsLearningUnit
-				? "#16a34a"
-				: "#64748b";
-
-		return {
-			id: `e-${index}`,
-			source: edge.from,
-			target: edge.to,
-			style: {
-				stroke: color,
-				strokeWidth: 1
-			},
-			markerEnd: isSkillLearningUnitEdge
-				? {
-						type: MarkerType.ArrowClosed,
-						color,
-						width: 16,
-						height: 16
-					}
-				: undefined
-		};
-	});
-
-	const luNodes: LearningUnitNodeType[] = graphData.learningUnits.map((lu, index) => ({
-		id: lu.lessonId,
-		type: "learningUnit",
-		position: {
-			x: index * 300,
-			y: 100
-		},
-		data: {
-			label: lu.title,
-			provides: lu.provides.map(
-				goal => graphData.skills.find(skill => skill.id === goal.id)?.name ?? ""
-			),
-			requires: lu.requires.map(
-				req => graphData.skills.find(skill => skill.id === req.id)?.name ?? ""
-			)
-		}
-	}));
-
-	const skillNodes: SkillNodeType[] = graphData.skills.map((skill, index) => ({
-		id: skill.id,
-		type: "skill",
-		position: {
-			x: index * 300 - 150,
-			y: 200
-		},
-		data: {
-			label: skill.name,
-			taughtBy: graphData.learningUnits
-				.filter(lu => lu.provides.some(goal => goal.id === skill.id))
-				.map(lu => lu.title),
-			requiredBy: graphData.learningUnits
-				.filter(lu => lu.requires.some(req => req.id === skill.id))
-				.map(lu => lu.title)
-		}
-	}));
-
 	const onNodeClick: NodeMouseHandler<LearningUnitNodeType | SkillNodeType> = (event, node) => {
 		if (node.type === "learningUnit" || node.type === "skill") {
 			setSelectedElement(node.data);
@@ -245,37 +130,17 @@ function GraphAnalysis({ status }: { status?: string | null }) {
 		setDialogPosition(null);
 	};
 
-	const nodeTypes = {
-		skill: SkillNode,
-		learningUnit: LearningUnitNode
-	};
-
-	const nodes = layoutGraph([...luNodes, ...skillNodes], edges);
-
-	const nodeMap = new Map(nodes.map(node => [node.id, node]));
-	const layoutedEdges = edges.map(edge => {
-		const source = nodeMap.get(edge.source);
-		const target = nodeMap.get(edge.target);
-
-		if (!source || !target) {
-			return edge;
-		}
-
-		const { sourceHandle, targetHandle } = getHandlePositions(source, target);
-
-		return {
-			...edge,
-			sourceHandle,
-			targetHandle
-		};
-	});
+	const { nodes, edges } = createGraph(graphData);
 
 	return (
 		<div className="h-[500px] w-full">
 			<ReactFlow
 				nodes={nodes}
-				edges={layoutedEdges}
-				nodeTypes={nodeTypes}
+				edges={edges}
+				nodeTypes={{
+					skill: SkillNode,
+					learningUnit: LearningUnitNode
+				}}
 				fitView
 				proOptions={{ hideAttribution: true }}
 				onNodeClick={onNodeClick}
@@ -291,12 +156,6 @@ function GraphAnalysis({ status }: { status?: string | null }) {
 	);
 }
 
-function isLearningUnit(
-	element: LearningUnitNodeData | SkillNodeData
-): element is LearningUnitNodeData {
-	return "provides" in element;
-}
-
 function DetailsDialog({
 	selectedElement,
 	dialogPosition
@@ -304,6 +163,11 @@ function DetailsDialog({
 	selectedElement: LearningUnitNodeData | SkillNodeData;
 	dialogPosition: { x: number; y: number };
 }) {
+	function isLearningUnit(
+		element: LearningUnitNodeData | SkillNodeData
+	): element is LearningUnitNodeData {
+		return "provides" in element;
+	}
 	const sections = isLearningUnit(selectedElement)
 		? [
 				{
@@ -412,35 +276,4 @@ function NodeHandles() {
 			<Handle id="left-target" type="target" position={Position.Left} />
 		</>
 	);
-}
-
-function getHandlePositions(source: GraphNode, target: GraphNode) {
-	const dx = target.position.x - source.position.x;
-	const dy = target.position.y - source.position.y;
-
-	if (Math.abs(dx) > Math.abs(dy)) {
-		if (dx > 0) {
-			return {
-				sourceHandle: "right-source",
-				targetHandle: "left-target"
-			};
-		}
-
-		return {
-			sourceHandle: "left-source",
-			targetHandle: "right-target"
-		};
-	}
-
-	if (dy > 0) {
-		return {
-			sourceHandle: "bottom-source",
-			targetHandle: "top-target"
-		};
-	}
-
-	return {
-		sourceHandle: "top-source",
-		targetHandle: "bottom-target"
-	};
 }
