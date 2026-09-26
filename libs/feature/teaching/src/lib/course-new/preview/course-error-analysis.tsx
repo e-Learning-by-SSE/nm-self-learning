@@ -173,24 +173,24 @@ function DetailsDialog({
 				{
 					title: "Lernziel(e):",
 					items: selectedElement.provides,
-					className: "text-green-700"
+					box: "rounded-lg border bg-green-50 border-green-300"
 				},
 				{
 					title: "Voraussetzung(en):",
 					items: selectedElement.requires,
-					className: "text-red-700"
+					box: "rounded-lg border bg-red-50 border-red-300"
 				}
 			]
 		: [
 				{
 					title: "Wird gelehrt in:",
 					items: selectedElement.taughtBy,
-					className: "text-green-700"
+					box: "rounded-lg border bg-green-50 border-green-300"
 				},
 				{
 					title: "Wird benötigt in:",
 					items: selectedElement.requiredBy,
-					className: "text-red-700"
+					box: "rounded-lg border bg-red-50 border-red-300"
 				}
 			];
 
@@ -210,13 +210,15 @@ function DetailsDialog({
 					key={section.title}
 					className={index < sections.length - 1 ? "mb-3" : undefined}
 				>
-					<h3 className={`font-semibold ${section.className}`}>{section.title}</h3>
+					<div className={`${section.box}`}>
+						<h3>{section.title}</h3>
 
-					<ul className="list-disc pl-5">
-						{section.items.map(item => (
-							<li key={item}>{item}</li>
-						))}
-					</ul>
+						<ul className="list-disc pl-5">
+							{section.items.map(item => (
+								<li key={item}>{item}</li>
+							))}
+						</ul>
+					</div>
 				</div>
 			))}
 		</div>
