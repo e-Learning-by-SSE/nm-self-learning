@@ -38,7 +38,6 @@ model User {
     student              Student?
     gamificationProfile  GamificationProfile?
     uploadedAssets       UploadedAssets[]
-    skillRepositories    SkillRepository[]
     notifications        NotificationUser[]
     reminders            ReminderLog[]
     notificationSettings UserNotificationSetting[]

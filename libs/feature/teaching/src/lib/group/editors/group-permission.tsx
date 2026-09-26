@@ -9,12 +9,27 @@ import {
 import {
 	IconOnlyButton,
 	OnDialogCloseFn,
+	QuestionMarkTooltip,
 	Table,
 	TableDataColumn,
-	TableHeaderColumn
+	TableHeaderColumn,
+	Tooltip
 } from "@self-learning/ui/common";
+import { useTranslation } from "next-i18next";
 import { GenericCombobox } from "./group-members";
 import { ArrayDiffStatus, TableDiffColumn } from "../misc/use-array-diff";
+
+/** Hover text for FULL, EDIT, and VIEW. Keys live in feature-teaching. */
+export function accessLevelTooltip(level: AccessLevel, t: (key: string) => string): string {
+	switch (level) {
+		case AccessLevel.FULL:
+			return t("Access_Full_Tooltip");
+		case AccessLevel.EDIT:
+			return t("Access_Edit_Tooltip");
+		case AccessLevel.VIEW:
+			return t("Access_View_Tooltip");
+	}
+}
 
 export type PermissionFormModel = ResourceAccessFormType;
 
@@ -83,6 +98,7 @@ export function GroupPermissionRowEditor({
 	onChange: OnDialogCloseFn<PermissionFormModel>;
 	onDelete?: OnDialogCloseFn<PermissionFormModel>;
 }) {
+	const { t } = useTranslation("feature-teaching");
 	const { setLevel } = usePermissionEditor(onChange, permission);
 	const p = normalizeFormResourceAccess(permission);
 
@@ -100,12 +116,19 @@ export function GroupPermissionRowEditor({
 			</TableDataColumn>
 
 			<TableDataColumn>
-				<GenericCombobox
-					value={permission?.accessLevel ?? null}
-					onChange={setLevel}
-					options={accessLevelOptions}
-					label={"Auswählen"}
-				/>
+				<span className="flex items-center gap-2">
+					<GenericCombobox
+						value={permission?.accessLevel ?? null}
+						onChange={setLevel}
+						options={accessLevelOptions}
+						label={"Auswählen"}
+					/>
+					{permission?.accessLevel && (
+						<QuestionMarkTooltip
+							content={accessLevelTooltip(permission.accessLevel, t)}
+						/>
+					)}
+				</span>
 			</TableDataColumn>
 			<TableDataColumn>
 				<IconOnlyButton
@@ -176,6 +199,7 @@ export function GroupPermissionRow({
 	onDelete?: OnDialogCloseFn<PermissionFormModel>;
 	onRelations?: OnDialogCloseFn<PermissionFormModel>;
 }) {
+	const { t } = useTranslation("feature-teaching");
 	const p = normalizeFormResourceAccess(ResourceAccessFormSchema.parse(permission));
 
 	return (
@@ -191,7 +215,9 @@ export function GroupPermissionRow({
 				<span className="text-light">{p.slug}</span>
 			</TableDataColumn>
 			<TableDataColumn>
-				<span className="text-light">{p.accessLevel}</span>
+				<Tooltip content={accessLevelTooltip(p.accessLevel, t)}>
+					<span className="text-light">{p.accessLevel}</span>
+				</Tooltip>
 			</TableDataColumn>
 			<TableDataColumn className="p-2 flex">
 				<IconOnlyButton

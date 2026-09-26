@@ -7,56 +7,43 @@ import {
 	isCompositeGuard,
 	LearningUnit as LibLearningUnit,
 	Skill as LibSkill,
+	Path,
 	Unit,
 	Variable
 } from "@e-learning-by-sse/nm-skill-lib";
 import { JobDefinition } from "../lib/core/job-registry";
-import { pathGenerationPayloadSchema } from "@self-learning/worker-api";
 
 export const pathGenerationJob: JobDefinition<"pathGeneration"> = {
 	name: "pathGeneration",
 	description: "Generates a learning path based on skills and goals",
-	schema: pathGenerationPayloadSchema,
+
 	run: async payload => {
+		const { dbSkills, goal, lessons, knowledge } = payload;
+
+		// TODO SE: May be replaced by estimated time
 		const fnCost = () => 1;
 
+		// TODO SE: Supported by library, but not by the platform
 		const guard: isCompositeGuard<LibLearningUnit> = (
-			element: Unit<LibLearningUnit>
-		): element is CompositeUnit<LibLearningUnit> => {
+			_element: Unit<LibLearningUnit>
+		): _element is CompositeUnit<LibLearningUnit> => {
 			return false;
 		};
 
-		const { dbSkills, userGlobalKnowledge, course, lessons, knowledge } = payload;
-
-		const userGlobalKnowledgeIds = (userGlobalKnowledge?.received ?? [])
-			.filter((skill): skill is { id: string } => typeof skill?.id === "string")
-			.map(skill => skill.id);
-
-		const userKnowledge = [...(knowledge ?? []), ...userGlobalKnowledgeIds];
-
-		// const libSkills: LibSkill[] = (dbSkills ?? []).map((skill: any) => ({
-		// 	id: skill.id,
-		// 	repositoryId: skill.repositoryId,
-		// 	children: (skill.children ?? []).map((child: any) => child.id)
-		// }));
 		const libSkills: LibSkill[] = dbSkills.map(skill => ({
 			id: skill.id,
 			children: (skill.children ?? []).map(child => child.id)
 		}));
 
+		// Used to resolve skills
 		const findSkill = (id: string) => libSkills.find(skill => skill.id === id);
 
-		// const goalLibSkills: LibSkill[] = (course.teachingGoals ?? []).map((goal: any) => ({
-		// 	id: goal.id,
-		// 	repositoryId: goal.repositoryId,
-		// 	children: (goal.children ?? []).map((child: any) => child.id)
-		// }));
-		const goalLibSkills: LibSkill[] = (course.teachingGoals ?? []).map(goal => ({
+		const goalLibSkills: LibSkill[] = goal.map(goal => ({
 			id: goal.id,
 			children: (goal.children ?? []).map(child => child.id)
 		}));
 
-		const knowledgeLibSkills: LibSkill[] = userKnowledge
+		const knowledgeLibSkills: LibSkill[] = (knowledge ?? [])
 			.map(skillId => findSkill(skillId))
 			.filter((skill): skill is LibSkill => !!skill);
 
@@ -75,7 +62,7 @@ export const pathGenerationJob: JobDefinition<"pathGeneration"> = {
 			return new And(variables);
 		};
 
-		const learningUnits: LibLearningUnit[] = (lessons ?? []).map(lesson => ({
+		const learningUnits: LibLearningUnit[] = lessons.map(lesson => ({
 			id: lesson.lessonId,
 			requires: convertToExpression((lesson.requires ?? []).map(req => req.id)),
 			provides: (lesson.provides ?? [])
@@ -89,12 +76,23 @@ export const pathGenerationJob: JobDefinition<"pathGeneration"> = {
 			skills: libSkills ?? [],
 			fnCost: fnCost,
 			isComposite: guard,
-			learningUnits: learningUnits ?? [],
-			knowledge: knowledgeLibSkills ?? [],
+			learningUnits: learningUnits,
+			knowledge: knowledgeLibSkills,
 			goal: goalLibSkills,
 			costOptions: DefaultCostParameter
 		});
 
-		return result;
+		if (result == null || result.path.length === 0) {
+			return null;
+		}
+
+		return {
+			lessonIds: extractLearningUnitIds(result),
+			cost: result.cost
+		};
 	}
 };
+
+function extractLearningUnitIds(path: Path<LibLearningUnit>): string[] {
+	return [...(path.origin ? [path.origin.id] : []), ...path.path.flatMap(extractLearningUnitIds)];
+}

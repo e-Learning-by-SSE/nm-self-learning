@@ -47,7 +47,9 @@ describe("Hourly Average Quiz Answers for Student", () => {
 				slug: "average-lesson-completion-rate-test-course",
 				subtitle: "A course to test average lesson completion rate metric",
 				content: {},
-				meta: {}
+				meta: {},
+				version: "1",
+				type: "STATIC"
 			}
 		});
 

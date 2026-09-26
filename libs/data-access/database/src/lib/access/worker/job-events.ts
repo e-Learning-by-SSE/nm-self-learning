@@ -1,6 +1,6 @@
 import { database } from "@self-learning/database";
 import { JobStatus } from "@prisma/client";
-import { JobEvent } from "@self-learning/worker-api";
+import type { JobEvent } from "@self-learning/worker-api";
 
 // Mapping of JobEvent types to Prisma JobEvent types
 type JobEventType = Exclude<JobEvent["type"], "ready">;

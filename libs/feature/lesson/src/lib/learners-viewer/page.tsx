@@ -10,6 +10,9 @@ import {
 } from "@heroicons/react/24/solid";
 import { AccessLevel, LessonType } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
+//import { useCourseCompletion, useMarkAsCompleted } from "@self-learning/completion";
+// import { getCombinedSmallCourse, useLessonContext } from "@self-learning/lesson";
+
 import {
 	SmallGradeBadge,
 	useCourseCompletion,
@@ -90,7 +93,7 @@ export async function getSspLearnersView(
 			performanceScore: true
 		},
 		orderBy: { performanceScore: "desc" },
-		take: 1 // Nur den höchsten Score nehmen
+		take: 1 // Take the highest performance score only
 	});
 
 	const lessonWithScore = { ...lesson, performanceScore: data[0]?.performanceScore ?? null };

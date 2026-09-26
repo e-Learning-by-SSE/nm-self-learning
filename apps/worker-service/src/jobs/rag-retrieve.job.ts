@@ -1,6 +1,5 @@
 import { JobDefinition } from "../lib/core/job-registry";
 import { vectorStore } from "@self-learning/rag-processing";
-import { ragRetrievePayloadSchema } from "@self-learning/worker-api";
 import { RAG_CONFIG } from "@self-learning/rag-processing";
 
 /**
@@ -13,7 +12,6 @@ import { RAG_CONFIG } from "@self-learning/rag-processing";
 export const ragRetrieveJob: JobDefinition<"ragRetrieve"> = {
 	name: "ragRetrieve",
 	description: "Retrieves relevant context for a question using vector search",
-	schema: ragRetrievePayloadSchema,
 
 	run: async payload => {
 		const { lessonId, question, topK = RAG_CONFIG.RETRIEVAL.DEFAULT_TOP_K } = payload;

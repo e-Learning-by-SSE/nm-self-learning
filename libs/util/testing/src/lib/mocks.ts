@@ -2,6 +2,7 @@ import {
 	AccessLevel,
 	Author,
 	Course,
+	CourseType,
 	Group,
 	Lesson,
 	Permission,
@@ -29,6 +30,9 @@ export function createExampleCourse(
 		description: `This is a description for ${courseId}.`,
 		imgUrl: null,
 		content,
+		version: "1.0",
+		type: CourseType.STATIC,
+		createdAt: new Date(),
 		meta: {}
 	};
 
@@ -43,6 +47,10 @@ type ContentMockDefinition = {
 	lessons: string[];
 }[];
 
+type PermissionMock = Partial<Permission> & { group: Partial<Group> };
+
+type SkillMock = Skill & { parents: Skill[] };
+
 export function createCourseMock({
 	courseId,
 	authors,
@@ -51,7 +59,9 @@ export function createCourseMock({
 	title,
 	subtitle,
 	description,
-	meta
+	meta,
+	requires,
+	provides
 }: {
 	courseId: string;
 	authors: string[];
@@ -61,9 +71,11 @@ export function createCourseMock({
 	subtitle?: string;
 	description?: string;
 	meta?: CourseMeta;
+	requires?: SkillMock[];
+	provides?: SkillMock[];
 }): Partial<Course> & { authors: Pick<Author, "username">[] } & { content: CourseContent } & {
-	permissions: (Partial<Permission> & { group: Partial<Group> })[];
-} {
+	permissions: PermissionMock[];
+} & { requires: SkillMock[] } & { provides: SkillMock[] } {
 	return {
 		courseId,
 		slug: slug ?? courseId,
@@ -78,7 +90,9 @@ export function createCourseMock({
 		meta: meta ?? {
 			lessonCount: content.reduce((acc, chapter) => acc + chapter.lessons.length, 0)
 		},
-		permissions: [{ accessLevel: AccessLevel.FULL, group: { id: 1, name: "Group 1" } }]
+		permissions: [{ accessLevel: AccessLevel.FULL, group: { id: 1, name: "Group 1" } }],
+		requires: requires ?? [],
+		provides: provides ?? []
 	};
 }
 
@@ -103,10 +117,10 @@ export function createLessonMock({
 		permissions: (Partial<Permission> & { group: Partial<Group> })[];
 	} {
 	const defaultSkill: Skill = {
+		authorId: 1,
 		id: "skill:1",
 		name: "Skill1",
-		description: "Skill1 description",
-		repositoryId: "repo:1"
+		description: "Skill1 description"
 	};
 
 	return {

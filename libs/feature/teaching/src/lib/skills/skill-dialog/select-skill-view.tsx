@@ -1,48 +1,59 @@
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { SkillFormModel } from "@self-learning/types";
-import { IconTextButton, IconOnlyButton } from "@self-learning/ui/common";
+
+import { IconOnlyButton, IconTextButton } from "@self-learning/ui/common";
+
 import { LabeledField } from "@self-learning/ui/forms";
 import { useState } from "react";
 import { SelectSkillDialog } from "./select-skill-dialog";
+import { Droppable } from "@hello-pangea/dnd";
 
-export function LabeledFieldSelectSkillsView({
+export function LabeledFieldSelectSkillsViewDragDrop({
 	skills,
 	onDeleteSkill,
 	onAddSkill,
-	repoId,
-	label
+	label,
+	droppableId,
+	excludeIds,
+	catalog
 }: {
 	skills: SkillFormModel[];
 	onDeleteSkill: (skill: SkillFormModel) => void;
 	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
-	repoId: string;
 	label: string;
+	droppableId?: string;
+	excludeIds?: ReadonlySet<string>;
+	catalog?: SkillFormModel[];
 }) {
 	const [selectSkillModal, setSelectSkillModal] = useState<boolean>(false);
 
 	return (
-		<LabeledField
-			label={label}
-			button={
-				<IconTextButton
-					text="Hinzufügen"
-					icon={<PlusIcon className="h-5 w-5" />}
-					className="btn-secondary"
-					onClick={() => setSelectSkillModal(true)}
-					title={"Hinzufügen"}
-					data-testid="BenoetigteSkills-add"
-				/>
-			}
-		>
-			<SkillManagementComponent
-				skills={skills}
-				setSelectSkillModal={setSelectSkillModal}
-				onAddSkill={onAddSkill}
-				selectSkillModal={selectSkillModal}
-				onDeleteSkill={onDeleteSkill}
-				repoId={repoId}
-			/>
-		</LabeledField>
+		<Droppable droppableId={droppableId ? droppableId : "select-skills"}>
+			{provided => (
+				<div ref={provided.innerRef} {...provided.droppableProps}>
+					<LabeledField label={label} button={null}>
+						<button
+							type="button"
+							onClick={() => setSelectSkillModal(true)}
+							className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-gray-400 rounded py-2 mb-3 text-grey-500 hover:bg-emerald-50 transition text-sm"
+							data-testid="BenoetigteSkills-add"
+						>
+							Klicken zum Auswählen oder mit Drag & Drop einfügen
+						</button>
+						<SkillManagementComponent
+							skills={skills}
+							setSelectSkillModal={setSelectSkillModal}
+							onAddSkill={onAddSkill}
+							selectSkillModal={selectSkillModal}
+							onDeleteSkill={onDeleteSkill}
+							excludeIds={excludeIds}
+							catalog={catalog}
+						/>
+					</LabeledField>
+					{provided.placeholder}
+				</div>
+			)}
+		</Droppable>
 	);
 }
 
@@ -51,18 +62,23 @@ export function SelectSkillsView({
 	skills,
 	onDeleteSkill,
 	onAddSkill,
-	repoId
+	disabled = false,
+	excludeIds,
+	catalog
 }: {
 	skills: SkillFormModel[];
 	onDeleteSkill: (skill: SkillFormModel) => void;
 	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
-	repoId: string;
+	disabled?: boolean;
+	excludeIds?: ReadonlySet<string>;
+	catalog?: SkillFormModel[];
 }) {
 	const [selectSkillModal, setSelectSkillModal] = useState(false);
 
 	return (
 		<>
 			<IconTextButton
+				disabled={disabled ? disabled : false}
 				text="Hinzufügen"
 				icon={<PlusIcon className="h-5 w-5" />}
 				className="btn-secondary"
@@ -76,26 +92,29 @@ export function SelectSkillsView({
 				onAddSkill={onAddSkill}
 				selectSkillModal={selectSkillModal}
 				onDeleteSkill={onDeleteSkill}
-				repoId={repoId}
+				excludeIds={excludeIds}
+				catalog={catalog}
 			/>
 		</>
 	);
 }
 
-function SkillManagementComponent({
+export function SkillManagementComponent({
 	skills,
 	onDeleteSkill,
 	onAddSkill,
-	repoId,
 	setSelectSkillModal,
-	selectSkillModal
+	selectSkillModal,
+	excludeIds,
+	catalog
 }: {
 	skills: SkillFormModel[];
-	onDeleteSkill: (skill: SkillFormModel) => void;
+	onDeleteSkill: (skill: SkillFormModel, index: number) => void;
 	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
-	repoId: string;
 	setSelectSkillModal: (value: boolean | ((prevVar: boolean) => boolean)) => void;
 	selectSkillModal: boolean;
+	excludeIds?: ReadonlySet<string>;
+	catalog?: SkillFormModel[];
 }) {
 	return (
 		<div className="flex flex-col">
@@ -105,20 +124,21 @@ function SkillManagementComponent({
 			<div className="mt-3 max-h-40 overflow-auto">
 				{skills.map((skill, index) => (
 					<InlineRemoveButton
-						key={index}
+						key={skill.id}
 						label={skill.name}
-						onRemove={() => onDeleteSkill(skill)}
+						onRemove={() => onDeleteSkill(skill, index)}
 						onClick={() => {}} //TODO
 					/>
 				))}
 			</div>
 			{selectSkillModal && (
 				<SelectSkillDialog
+					skills={catalog}
+					excludeIds={excludeIds}
 					onClose={skill => {
 						setSelectSkillModal(false);
 						onAddSkill(skill);
 					}}
-					repositoryId={repoId}
 				/>
 			)}
 		</div>

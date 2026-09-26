@@ -46,7 +46,9 @@ describe("Average Quiz Answers for Student", () => {
 				slug: "average-quiz-answers-test-course",
 				subtitle: "A course to test average quiz answers metric",
 				content: {},
-				meta: {}
+				meta: {},
+				version: "1",
+				type: "STATIC"
 			}
 		});
 

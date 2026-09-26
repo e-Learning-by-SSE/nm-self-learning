@@ -13,7 +13,6 @@ import { AccessLevel } from "@prisma/client";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
-import { LessonSkillManager } from "./lesson-skill-manager";
 import { GroupAccessEditor } from "../../group/forms/group-form";
 // import { AiTutorConsent } from "./ai-tutor-consent";
 
@@ -147,7 +146,6 @@ export function LessonInfoEditor({ isNew }: { isNew: boolean }) {
 			/>
 			{/* <AiTutorConsent /> */}
 			<LicenseForm />
-			<LessonSkillManager />
 		</>
 	);
 }

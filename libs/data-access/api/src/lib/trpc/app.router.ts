@@ -27,6 +27,7 @@ import { aiTutorProfileRouter } from "./routers/ai-tutor-profile.router";
 import { permissionRouter } from "./routers/permission.router";
 import { aiTutorRouter } from "./routers/ai-tutor.router";
 import { textEvaluationRouter } from "./routers/text-evaluation.router";
+import { jobEventRouter } from "./routers/job.router";
 
 export const appRouter = t.router({
 	admin: adminRouter,
@@ -54,7 +55,8 @@ export const appRouter = t.router({
 	aiTutorProfile: aiTutorProfileRouter,
 	permission: permissionRouter,
 	aiTutor: aiTutorRouter,
-	textEvaluation: textEvaluationRouter
+	textEvaluation: textEvaluationRouter,
+	jobQueue: jobEventRouter
 });
 
 // export type definition of API

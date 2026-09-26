@@ -18,7 +18,13 @@ export const authorRouter = t.router({
 	getByUsername: authProcedure.input(z.object({ username: z.string() })).query(({ input }) => {
 		return database.author.findUniqueOrThrow({
 			where: { username: input.username },
-			select: { username: true, slug: true, displayName: true, imgUrl: true }
+			select: {
+				username: true,
+				slug: true,
+				displayName: true,
+				imgUrl: true,
+				id: true
+			}
 		});
 	}),
 	getAll: authProcedure.query(() => {
@@ -34,7 +40,13 @@ export const authorRouter = t.router({
 				name: true,
 				role: true,
 				author: { select: { slug: true, displayName: true, imgUrl: true } },
-				memberships: { select: { role: true, expiresAt: true, group: { select: { id: true, name: true } } } },
+				memberships: {
+					select: {
+						role: true,
+						expiresAt: true,
+						group: { select: { id: true, name: true } }
+					}
+				},
 				defaultGroupId: true
 			}
 		});

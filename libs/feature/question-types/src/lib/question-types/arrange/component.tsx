@@ -29,7 +29,6 @@ export default function ArrangeQuestion() {
 					{order
 						.filter(containerId => containerId !== "_init")
 						.map(containerId => (
-							// eslint-disable-next-line react/jsx-no-useless-fragment
 							<Fragment key={containerId}>
 								{containerId === "_init" ? null : (
 									<ul

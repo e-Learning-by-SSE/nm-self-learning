@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, CourseType } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -12,7 +12,9 @@ export async function createCourses() {
 				subtitle: "An Introduction to Magic and Spellcasting",
 				content: [],
 				meta: {},
-				subjectId: "wizardry"
+				subjectId: "wizardry",
+				version: "1",
+				type: CourseType.STATIC
 			},
 			{
 				courseId: "advanced-magical-theory",
@@ -21,7 +23,9 @@ export async function createCourses() {
 				subtitle: "Exploring the Depths of Magic",
 				content: [],
 				meta: {},
-				subjectId: "wizardry"
+				subjectId: "wizardry",
+				version: "1",
+				type: CourseType.STATIC
 			},
 			{
 				courseId: "magical-creatures",
@@ -30,7 +34,9 @@ export async function createCourses() {
 				subtitle: "Understanding the Beasts of the Wizarding World",
 				content: [],
 				meta: {},
-				subjectId: "wizardry"
+				subjectId: "wizardry",
+				version: "1",
+				type: CourseType.STATIC
 			},
 			{
 				courseId: "potions-and-elixirs",
@@ -39,7 +45,9 @@ export async function createCourses() {
 				subtitle: "The Art and Science of Potion Making",
 				content: [],
 				meta: {},
-				subjectId: "wizardry"
+				subjectId: "wizardry",
+				version: "1",
+				type: CourseType.STATIC
 			},
 			{
 				courseId: "defense-against-the-dark-arts",
@@ -48,7 +56,9 @@ export async function createCourses() {
 				subtitle: "Protecting Yourself from Dark Magic",
 				content: [],
 				meta: {},
-				subjectId: "wizardry"
+				subjectId: "wizardry",
+				version: "1",
+				type: CourseType.STATIC
 			}
 		];
 
