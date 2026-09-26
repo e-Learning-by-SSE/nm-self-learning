@@ -24,6 +24,7 @@ import { createCourses } from "./metrics/seed-courses";
 import { createSubjects } from "./metrics/seed-subject";
 import { seedDummy } from "./seed-dummy";
 import { seedAdminUser } from "./seed-admin-user";
+import { seedSkillbasedSeminars } from "./kee-demo";
 
 const prisma = new PrismaClient();
 
@@ -50,6 +51,8 @@ export async function seedDemos(): Promise<void> {
 	await generateLearningDiaryDemoData();
 
 	await generateEventlogDate();
+
+	await seedSkillbasedSeminars();
 
 	await seedSkillbasedModelling();
 
