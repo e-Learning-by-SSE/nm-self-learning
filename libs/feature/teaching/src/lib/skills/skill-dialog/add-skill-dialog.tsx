@@ -91,7 +91,7 @@ export function AddSkillDialog({
 					<SelectSkillsView
 						skills={parentSkills}
 						catalog={skills}
-						excludeIds={excludeIds}
+						excludedIds={excludeIds}
 						onDeleteSkill={removed =>
 							setParentSkills(prev => prev.filter(item => item.id !== removed.id))
 						}

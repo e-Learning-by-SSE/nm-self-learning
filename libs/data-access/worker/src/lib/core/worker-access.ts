@@ -24,23 +24,26 @@ export async function subscribeToJobEvents<T extends JobKey>({
 	onError?: (errorMsg: string) => Promise<void>;
 }) {
 	try {
+		let eventQueue = Promise.resolve();
 		const subscription = workerServiceClient.jobQueue.subscribe(
 			{ jobId },
 			{
-				onData: async (event: JobEvent) => {
-					let serializedResult: string | undefined;
-					if (event.status === "finished") {
-						await onFinish?.(event.result as ReturnTypeOf<T>);
-						subscription.unsubscribe();
-						serializedResult = attachResultToStatus
-							? JSON.stringify(event.result)
-							: undefined;
-					} else if (event.status === "aborted") {
-						await onAbort?.(event.cause);
-						subscription.unsubscribe();
-					}
-
-					await logJobProgress(jobId, event, serializedResult);
+				onData: (event: JobEvent) => {
+					eventQueue = eventQueue.then(async () => {
+						let serializedResult: string | undefined;
+						if (event.status === "finished") {
+							await onFinish?.(event.result as ReturnTypeOf<T>);
+							serializedResult = attachResultToStatus
+								? JSON.stringify(event.result)
+								: undefined;
+						} else if (event.status === "aborted") {
+							await onAbort?.(event.cause);
+						}
+						await logJobProgress(jobId, event, serializedResult);
+						if (event.status === "finished" || event.status === "aborted") {
+							subscription.unsubscribe();
+						}
+					});
 				},
 				onError: async error => {
 					const errorMsg = error instanceof Error ? error.message : String(error);
