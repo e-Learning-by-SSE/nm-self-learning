@@ -206,7 +206,6 @@ export function SkillsEditor(
 						<LessonSkillManagerDragDrop
 							addSkills={addSkills}
 							removeSkill={removeSkill}
-							excludeIds={currentIds}
 							catalog={catalog}
 							subtitle={skillEditorSubtitle}
 						/>

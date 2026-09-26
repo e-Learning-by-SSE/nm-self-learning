@@ -2,20 +2,30 @@
 import { SkillFormModel } from "@self-learning/types";
 import { Dialog, DialogActions, LoadingBox, OnDialogCloseFn } from "@self-learning/ui/common";
 import { trpc } from "@self-learning/api-client";
-import { memo, useContext, useEffect, useState } from "react";
+import { memo, useContext, useEffect, useMemo, useState } from "react";
 import { SearchField } from "@self-learning/ui/forms";
-import { FolderIcon } from "@heroicons/react/24/solid";
+import { AcademicCapIcon, CheckBadgeIcon, Squares2X2Icon } from "@heroicons/react/24/solid";
 import { SkillResourceContext } from "../skill-tree/skill-resource-context";
 import { ConnectedSkill } from "../skill-tree/skill-row-editor";
+import { isTruthy } from "@self-learning/util/common";
+
+export type SkillSelectionChange = {
+	added: SkillFormModel[];
+	removed: SkillFormModel[];
+};
 
 export function SelectSkillDialog({
 	onClose,
 	skills: skillsFromParent,
-	excludeIds
+	excludedIds,
+	selectedIds,
+	allowSelectRoots = true
 }: {
-	onClose: OnDialogCloseFn<SkillFormModel[]>;
+	onClose: OnDialogCloseFn<SkillSelectionChange>;
 	skills?: SkillFormModel[];
-	excludeIds?: ReadonlySet<string>;
+	excludedIds?: ReadonlySet<string>;
+	selectedIds?: ReadonlySet<string>;
+	allowSelectRoots: boolean;
 }) {
 	const ctx = useContext(SkillResourceContext);
 	if (!ctx) console.warn("SelectSkillDialog: SkillResourceContext missing");
@@ -24,7 +34,7 @@ export function SelectSkillDialog({
 		enabled: !skillsFromParent
 	});
 	const skills = (skillsFromParent ?? (fetched as SkillFormModel[] | undefined) ?? []).filter(
-		skill => !excludeIds?.has(skill.id)
+		skill => selectedIds?.has(skill.id) || !excludedIds?.has(skill.id)
 	);
 
 	return (
@@ -37,6 +47,8 @@ export function SelectSkillDialog({
 						onClose={onClose}
 						//skills is missing some properties here
 						skills={skills}
+						selectedIds={selectedIds}
+						allowSelectRoots={allowSelectRoots}
 					/>
 				</>
 			)}
@@ -46,14 +58,18 @@ export function SelectSkillDialog({
 
 function SelectSkillForm({
 	onClose,
-	skills
+	skills,
+	selectedIds,
+	allowSelectRoots
 }: {
-	onClose: OnDialogCloseFn<SkillFormModel[]>;
+	onClose: OnDialogCloseFn<SkillSelectionChange>;
 	skills: SkillFormModel[];
+	selectedIds?: ReadonlySet<string>;
+	allowSelectRoots: boolean;
 }) {
 	const [search, setSearch] = useState("");
 	// key by id — object identity breaks after getSkills refetch
-	const [checkedIds, setCheckedIds] = useState(new Set<string>());
+	const [checkedIds, setCheckedIds] = useState(() => new Set(selectedIds));
 
 	const setSkill = (skill: SkillFormModel) => {
 		setCheckedIds(prev => {
@@ -64,10 +80,12 @@ function SelectSkillForm({
 		});
 	};
 
+	// Search hides rows; it must not rebuild the tree order.
+	const orderedSkills = useMemo(() => orderSkillsByTree(skills), [skills]);
 	const filteredSkills =
 		search !== ""
-			? skills.filter(skill => skill.name.toLowerCase().includes(search.toLowerCase()))
-			: skills;
+			? orderedSkills.filter(skill => skill.name.toLowerCase().includes(search.toLowerCase()))
+			: orderedSkills;
 
 	return (
 		<>
@@ -83,20 +101,19 @@ function SelectSkillForm({
 						{skills.length === 0 && <p>Keine Skills vorhanden</p>}
 						{skills.length > 0 && (
 							<>
-								{filteredSkills
-									.sort((a, b) => a.name.localeCompare(b.name))
-									.map((skill, index) => (
-										<span
-											key={skill.id + index}
-											className="flex items-center gap-2"
-										>
-											<SkillElementMemorized
-												skill={skill}
-												value={checkedIds.has(skill.id)}
-												setSkill={setSkill}
-											/>
-										</span>
-									))}
+								{filteredSkills.map((skill, index) => (
+									<span
+										key={skill.id + index}
+										className="flex items-center gap-2"
+									>
+										<SkillElementMemorized
+											skill={skill}
+											value={checkedIds.has(skill.id)}
+											setSkill={setSkill}
+											allowSelectRoots={allowSelectRoots}
+										/>
+									</span>
+								))}
 							</>
 						)}
 					</div>
@@ -107,7 +124,15 @@ function SelectSkillForm({
 					type="button"
 					className="btn-primary"
 					onClick={() => {
-						onClose(skills.filter(skill => checkedIds.has(skill.id)));
+						const added: SkillFormModel[] = [];
+						const removed: SkillFormModel[] = [];
+						for (const skill of skills) {
+							const wasSelected = selectedIds?.has(skill.id) ?? false;
+							const isChecked = checkedIds.has(skill.id);
+							if (isChecked && !wasSelected) added.push(skill);
+							else if (!isChecked && wasSelected) removed.push(skill);
+						}
+						onClose({ added, removed });
 					}}
 				>
 					Speichern
@@ -122,11 +147,13 @@ const SkillElementMemorized = memo(SkillElement);
 function SkillElement({
 	skill,
 	setSkill,
-	value
+	value,
+	allowSelectRoots = true
 }: {
 	skill: SkillFormModel;
 	setSkill: (skill: SkillFormModel) => void;
 	value: boolean;
+	allowSelectRoots: boolean;
 }) {
 	const ctx = useContext(SkillResourceContext);
 	const [checked, setChecked] = useState(value);
@@ -143,14 +170,12 @@ function SkillElement({
 	const isFolder = skill.children.length > 0;
 	const isRoot = isFolder && skill.parents.length === 0;
 
-	if (isRoot) return null; // do not allow to pick root skills for some reason
-
 	return (
 		<>
 			<input
 				id={"checkbox:" + skill.id}
 				type={"checkbox"}
-				className="checkbox"
+				className={`checkbox ${allowSelectRoots || !isRoot ? "" : "invisible"}`}
 				checked={checked}
 				onChange={() => {
 					setChecked(!checked);
@@ -158,9 +183,14 @@ function SkillElement({
 				}}
 			/>
 			<div className="flex">
-				<FolderIcon
-					className={`h-5 ${isProvided ? "text-emerald-500" : ""} ${isFolder ? "" : "invisible"}`}
-				/>
+				{/**TODO duplicated from skill-row-editor.tsx */}
+				{isRoot ? (
+					<AcademicCapIcon className={`icon h-5 text-lg`} />
+				) : isFolder ? (
+					<Squares2X2Icon className="icon h-5 text-lg" />
+				) : (
+					<CheckBadgeIcon className="icon h-5 text-lg" />
+				)}
 				<label htmlFor={"checkbox:" + skill.id} className="text-sm font-semibold">
 					<ConnectedSkill
 						name={skill.name}
@@ -174,4 +204,35 @@ function SkillElement({
 			</div>
 		</>
 	);
+}
+
+// Preorder of the skill graph, same sibling order as the skill tree.
+// Each skill is emitted once; `seen` also stops cycles.
+function orderSkillsByTree(skills: SkillFormModel[]): SkillFormModel[] {
+	const byId = new Map(skills.map(skill => [skill.id, skill]));
+	const seen = new Set<string>();
+	const ordered: SkillFormModel[] = [];
+	const byChildrenLength = (left: SkillFormModel, right: SkillFormModel) =>
+		right.children.length - left.children.length || left.name.localeCompare(right.name);
+
+	const visit = (skill: SkillFormModel) => {
+		if (seen.has(skill.id)) return;
+		seen.add(skill.id);
+		ordered.push(skill);
+		for (const child of skill.children
+			.map(childId => byId.get(childId))
+			.filter(isTruthy)
+			.sort(byChildrenLength)) {
+			visit(child);
+		}
+	};
+
+	// A parent removed by excludeIds is absent from byId, so the child becomes a root.
+	const roots = skills
+		.filter(skill => skill.parents.every(parentId => !byId.has(parentId)))
+		.sort(byChildrenLength);
+	for (const root of roots) visit(root);
+	// A cycle with no outside parent is not reachable from those roots.
+	for (const skill of skills) visit(skill);
+	return ordered;
 }

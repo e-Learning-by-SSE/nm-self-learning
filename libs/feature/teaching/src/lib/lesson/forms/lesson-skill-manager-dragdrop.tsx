@@ -11,13 +11,13 @@ import { useTranslation } from "react-i18next";
 export function LessonSkillManagerDragDrop({
 	addSkills = () => {},
 	removeSkill = () => {},
-	excludeIds,
+	excludedIds,
 	catalog,
 	subtitle
 }: {
 	addSkills?: (skillsToAdd: SkillFormModel[], field: "provides" | "requires") => void;
 	removeSkill?: (skill: SkillFormModel, field: "provides" | "requires") => void;
-	excludeIds?: ReadonlySet<string>;
+	excludedIds?: ReadonlySet<string>;
 	catalog?: SkillFormModel[];
 	subtitle: string;
 }) {
@@ -45,7 +45,7 @@ export function LessonSkillManagerDragDrop({
 						if (skill) addSkills(skill, "provides");
 					}}
 					droppableId="provides"
-					excludeIds={excludeIds}
+					excludedIds={excludedIds}
 					catalog={catalog}
 				/>
 
@@ -59,7 +59,7 @@ export function LessonSkillManagerDragDrop({
 						if (skill) addSkills(skill, "requires");
 					}}
 					droppableId="requires"
-					excludeIds={excludeIds}
+					excludedIds={excludedIds}
 					catalog={catalog}
 				/>
 			</>

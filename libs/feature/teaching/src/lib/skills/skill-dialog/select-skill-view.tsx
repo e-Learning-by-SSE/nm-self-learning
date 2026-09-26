@@ -4,7 +4,7 @@ import { SkillFormModel } from "@self-learning/types";
 import { IconOnlyButton, IconTextButton } from "@self-learning/ui/common";
 
 import { LabeledField } from "@self-learning/ui/forms";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { SelectSkillDialog } from "./select-skill-dialog";
 import { Droppable } from "@hello-pangea/dnd";
 
@@ -14,7 +14,7 @@ export function LabeledFieldSelectSkillsViewDragDrop({
 	onAddSkill,
 	label,
 	droppableId,
-	excludeIds,
+	excludedIds,
 	catalog
 }: {
 	skills: SkillFormModel[];
@@ -22,7 +22,7 @@ export function LabeledFieldSelectSkillsViewDragDrop({
 	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
 	label: string;
 	droppableId?: string;
-	excludeIds?: ReadonlySet<string>;
+	excludedIds?: ReadonlySet<string>;
 	catalog?: SkillFormModel[];
 }) {
 	const [selectSkillModal, setSelectSkillModal] = useState<boolean>(false);
@@ -46,8 +46,9 @@ export function LabeledFieldSelectSkillsViewDragDrop({
 							onAddSkill={onAddSkill}
 							selectSkillModal={selectSkillModal}
 							onDeleteSkill={onDeleteSkill}
-							excludeIds={excludeIds}
+							excludedIds={excludedIds}
 							catalog={catalog}
+							allowSelectRoots={false}
 						/>
 					</LabeledField>
 					{provided.placeholder}
@@ -57,20 +58,19 @@ export function LabeledFieldSelectSkillsViewDragDrop({
 	);
 }
 
-// TODO looks like a duplicate of the above component
 export function SelectSkillsView({
 	skills,
 	onDeleteSkill,
 	onAddSkill,
 	disabled = false,
-	excludeIds,
+	excludedIds,
 	catalog
 }: {
 	skills: SkillFormModel[];
 	onDeleteSkill: (skill: SkillFormModel) => void;
 	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
 	disabled?: boolean;
-	excludeIds?: ReadonlySet<string>;
+	excludedIds?: ReadonlySet<string>;
 	catalog?: SkillFormModel[];
 }) {
 	const [selectSkillModal, setSelectSkillModal] = useState(false);
@@ -92,8 +92,9 @@ export function SelectSkillsView({
 				onAddSkill={onAddSkill}
 				selectSkillModal={selectSkillModal}
 				onDeleteSkill={onDeleteSkill}
-				excludeIds={excludeIds}
+				excludedIds={excludedIds}
 				catalog={catalog}
+				allowSelectRoots={true}
 			/>
 		</>
 	);
@@ -105,17 +106,22 @@ export function SkillManagementComponent({
 	onAddSkill,
 	setSelectSkillModal,
 	selectSkillModal,
-	excludeIds,
-	catalog
+	excludedIds,
+	catalog,
+	allowSelectRoots = true // allow to select root skills, set to false when picking course/lesson skills
 }: {
 	skills: SkillFormModel[];
 	onDeleteSkill: (skill: SkillFormModel, index: number) => void;
 	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
 	setSelectSkillModal: (value: boolean | ((prevVar: boolean) => boolean)) => void;
 	selectSkillModal: boolean;
-	excludeIds?: ReadonlySet<string>;
+	excludedIds?: ReadonlySet<string>;
 	catalog?: SkillFormModel[];
+	allowSelectRoots: boolean;
 }) {
+	// Ids of skills picked in the dialog. In the dialog those checkboxes are checked
+	const selectedIds = useMemo(() => new Set(skills.map(skill => skill.id)), [skills]);
+
 	return (
 		<div className="flex flex-col">
 			{skills.length === 0 && (
@@ -134,10 +140,19 @@ export function SkillManagementComponent({
 			{selectSkillModal && (
 				<SelectSkillDialog
 					skills={catalog}
-					excludeIds={excludeIds}
-					onClose={skill => {
+					excludedIds={excludedIds}
+					selectedIds={selectedIds}
+					allowSelectRoots={allowSelectRoots}
+					onClose={change => {
 						setSelectSkillModal(false);
-						onAddSkill(skill);
+						if (!change) return;
+						for (const skill of change.removed) {
+							onDeleteSkill(
+								skill,
+								skills.findIndex(item => item.id === skill.id)
+							);
+						}
+						if (change.added.length > 0) onAddSkill(change.added);
 					}}
 				/>
 			)}
