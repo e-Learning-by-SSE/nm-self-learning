@@ -16,7 +16,8 @@ import {
 	createLessonMeta,
 	extractLessonIds,
 	LessonContent,
-	LessonContentType
+	LessonContentType,
+	ResourcePermissions
 } from "@self-learning/types";
 import { slugify } from "@self-learning/util/common";
 import { subDays, subHours } from "date-fns";
@@ -70,8 +71,11 @@ export function createLesson({
 	licenseId,
 	lessonType,
 	selfRegulatedQuestion,
+	requires,
 	provides,
-	courseId
+	courseId,
+	lessonId,
+	permissions
 }: {
 	title: string;
 	subtitle: string | null;
@@ -81,12 +85,15 @@ export function createLesson({
 	licenseId?: number | null;
 	lessonType?: LessonType;
 	selfRegulatedQuestion?: string;
+	requires?: string[];
 	provides?: string[];
 	courseId?: string;
+	lessonId?: string;
+	permissions?: ResourcePermissions;
 }) {
 	const lesson: Prisma.LessonCreateInput = {
 		title,
-		lessonId: faker.string.uuid(),
+		lessonId: lessonId ?? faker.string.uuid(),
 		slug: slugify(faker.string.alphanumeric(8) + title, { lower: true, strict: true }),
 		subtitle: subtitle,
 		description: description,
@@ -96,7 +103,20 @@ export function createLesson({
 		quiz: { questions, config: null },
 		meta: {},
 		license: licenseId ? { connect: { licenseId: licenseId } } : undefined,
-		provides: provides ? { connect: provides.map(goalId => ({ id: goalId })) } : undefined
+		requires: requires ? { connect: requires.map(goalId => ({ id: goalId })) } : undefined,
+		provides: provides ? { connect: provides.map(goalId => ({ id: goalId })) } : undefined,
+		permissions: permissions
+			? {
+					create: permissions.map(p => ({
+						group: {
+							connect: {
+								id: p.groupId
+							}
+						},
+						accessLevel: AccessLevel.FULL
+					}))
+				}
+			: undefined
 	};
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any

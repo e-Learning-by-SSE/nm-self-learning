@@ -2,6 +2,7 @@ import { AccessLevel, PrismaClient } from "@prisma/client";
 import { slugify } from "@self-learning/util/common";
 import { softwareentwicklungDemoGroup } from "../seedSpecializations";
 import { CourseContent, createCourseMeta } from "@self-learning/types";
+import { createLesson } from "../seed-functions";
 
 const prisma = new PrismaClient();
 
@@ -176,31 +177,20 @@ export async function seedSkillbasedSeminars() {
 	});
 
 	for (const unit of units) {
-		await prisma.lesson.create({
-			data: {
-				title: unit.title,
-				lessonId: unit.lessonId,
-				requires: {
-					connect: unit.requires?.map(id => ({ id })) || []
-				},
-				provides: {
-					connect: unit.provides.map(id => ({ id }))
-				},
-				slug: slugify(unit.title),
-				content: [],
-				meta: [],
-				permissions: {
-					create: {
-						group: {
-							connect: {
-								id: group.id
-							}
-						},
-						accessLevel: AccessLevel.FULL
-					}
+		const lesson = createLesson({
+			...unit,
+			subtitle: null,
+			description: null,
+			content: [],
+			questions: [],
+			permissions: [
+				{
+					groupId: group.id,
+					accessLevel: AccessLevel.FULL
 				}
-			}
+			]
 		});
+		await prisma.lesson.create({ data: lesson });
 	}
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Nanomodules of Seminar-Example");
 
