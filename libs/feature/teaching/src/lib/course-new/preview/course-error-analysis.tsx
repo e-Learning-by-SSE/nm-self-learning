@@ -13,7 +13,8 @@ import { inferProcedureOutput, inferProcedureInput } from "@trpc/server";
 import { AppRouter } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { skipToken } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useJob } from "./use-job";
 import { LoadingBox } from "@self-learning/ui/common";
 import { Warning } from "./warning";
 import {
@@ -35,33 +36,15 @@ type CoursePreviewModel = inferProcedureOutput<AppRouter["course"]["getCourse"]>
  * @returns
  */
 export function PathAnalysis({ course }: { course: CoursePreviewModel }) {
-	// Mutation definition
-	const { mutate: createGraph, data: jobId } = trpc.course.createCourseGraphJob.useMutation();
-
-	// Submits the job
-	useEffect(() => {
-		if (!course.courseId) return;
-
-		createGraph({
-			courseId: course.courseId
-		});
-	}, [course.courseId, createGraph]);
-
-	// Fetch job status
-	const { data: status, isLoading: isStatusLoading } = trpc.jobQueue.getStatus.useQuery(
-		{
-			jobId: jobId ?? ""
-		},
-		{
-			enabled: !!jobId,
-			refetchInterval: query => (query.state.data?.status === "FINISHED" ? false : 1000)
-		}
+	const job = useJob(
+		trpc.course.createCourseGraphJob,
+		course.courseId ? { courseId: course.courseId } : undefined
 	);
 
 	return (
 		<>
 			<Warning title="noCoursePathTitle" description="noCoursePathDescription" />
-			{isStatusLoading ? <LoadingBox /> : <GraphAnalysis status={status?.result} />}
+			{job.isPending ? <LoadingBox /> : <GraphAnalysis status={job.data?.result} />}
 		</>
 	);
 }

@@ -10,9 +10,9 @@ import { useTranslation } from "react-i18next";
 import Image from "next/image";
 import { formatSeconds } from "@self-learning/util/common";
 import Link from "next/link";
-import { useEffect } from "react";
 import { PathAnalysis } from "./course-error-analysis";
 import { Warning } from "./warning";
+import { useJob } from "./use-job";
 
 type CoursePreviewModel = inferProcedureOutput<AppRouter["course"]["getCourse"]>;
 type CourseContentPreviewModel = inferProcedureOutput<AppRouter["course"]["getContent"]>;
@@ -20,44 +20,15 @@ type CourseContentPreviewModel = inferProcedureOutput<AppRouter["course"]["getCo
 export function CoursePreview() {
 	const form = useFormContext<CourseFormModel>();
 	const slug = useWatch({ control: form.control, name: "slug" });
+	const job = useJob(trpc.course.updateDefaultPath, slug ? { slug, knowledge: [] } : undefined);
 
-	// Mutation definition
-	const {
-		mutate: updateDefaultPath,
-		data: jobId,
-		isPending,
-		isError,
-		error
-	} = trpc.course.updateDefaultPath.useMutation();
-
-	// Submits the job
-	useEffect(() => {
-		if (!slug) return;
-
-		updateDefaultPath({
-			slug,
-			knowledge: []
-		});
-	}, [slug, updateDefaultPath]);
-
-	// Fetch job status
-	const { data: status, isLoading: isStatusLoading } = trpc.jobQueue.getStatus.useQuery(
-		{
-			jobId: jobId ?? ""
-		},
-		{
-			enabled: !!jobId,
-			refetchInterval: query => (query.state.data?.status === "FINISHED" ? false : 1000)
-		}
-	);
-
-	/// Fetch course after job finished
+	// Fetch course after job finished
 	const { data: preview, isLoading: isPreviewLoading } = trpc.course.getCourse.useQuery(
 		{
 			slug: slug ?? ""
 		},
 		{
-			enabled: !!slug && !!jobId && status?.status === "FINISHED"
+			enabled: !!slug && job.isSuccess
 		}
 	);
 
@@ -74,17 +45,8 @@ export function CoursePreview() {
 		);
 	}
 
-	if (
-		isPending ||
-		(!!jobId && status?.status !== "FINISHED") ||
-		isStatusLoading ||
-		isPreviewLoading
-	) {
-		return <LoadingBox />;
-	}
-
-	if (isError || status?.cause) {
-		const errMsg = error?.message ?? status?.cause ?? "Unknown error";
+	if (job.isError) {
+		const errMsg = job.error?.message ?? "Unknown error";
 
 		console.error(errMsg);
 
@@ -100,7 +62,7 @@ export function CoursePreview() {
 		);
 	}
 
-	if (!preview) {
+	if (job.isPending || isPreviewLoading || !preview) {
 		return <LoadingBox />;
 	}
 
