@@ -1,6 +1,7 @@
 import { AccessLevel, PrismaClient } from "@prisma/client";
 import { slugify } from "@self-learning/util/common";
 import { softwareentwicklungDemoGroup } from "../seedSpecializations";
+import { CourseContent, createCourseMeta } from "@self-learning/types";
 
 const prisma = new PrismaClient();
 
@@ -204,6 +205,13 @@ export async function seedSkillbasedSeminars() {
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Nanomodules of Seminar-Example");
 
 	for (const course of dynCourses) {
+		const content: CourseContent = [
+			{
+				title: "",
+				description: "",
+				content: units.map(unit => ({ lessonId: unit.lessonId }))
+			}
+		];
 		await prisma.course.create({
 			data: {
 				title: course.title,
@@ -212,8 +220,8 @@ export async function seedSkillbasedSeminars() {
 				courseId: course.courseId,
 				slug: slugify(course.title),
 				type: "DYNAMIC",
-				content: [],
-				meta: [],
+				content,
+				meta: createCourseMeta({ content }),
 				requires: {
 					connect: course.requires?.map(id => ({ id })) || []
 				},
