@@ -484,21 +484,6 @@ export const courseRouter = t.router({
 			edges: input.edges
 		};
 	}),
-	getCourseGraphJobStatus: authProcedure
-		.input(z.object({ jobId: z.string() }))
-		.query(async ({ input }) => {
-			const job = await database.jobQueue.findUnique({
-				where: { id: input.jobId }
-			});
-			if (!job) {
-				throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
-			}
-			return {
-				status: job.status,
-				cause: job.cause,
-				result: job.context ? JSON.parse(job.context) : null
-			};
-		}),
 	createLessonPath: authProcedure
 		.input(
 			z.object({
