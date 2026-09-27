@@ -13,28 +13,25 @@ const jobStatusMap: Record<JobEventType, JobStatus> = {
 };
 
 export async function logJobProgress(jobId: string, event: JobEvent, context?: string) {
-	if (event.status !== "ready") {
-		const cause = event.status === "aborted" ? event.cause : undefined;
+	if (event.status === "ready") return undefined;
+	const cause = event.status === "aborted" ? event.cause : undefined;
 
-		// Always upsert without checking existing status
-		// Better would be to check if state is newer than before, but this requires transactions,
-		// which may in turn block events of being saved
-		return database.jobQueue.upsert({
-			where: { id: jobId },
-			create: {
-				id: jobId,
-				jobType: event.type,
-				status: jobStatusMap[event.status],
-				cause,
-				context: context ?? null
-			},
-			update: {
-				status: jobStatusMap[event.status],
-				cause,
-				...(context !== undefined ? { context } : {})
-			}
-		});
-	} else {
-		return undefined;
-	}
+	// Always upsert without checking existing status
+	// Better would be to check if state is newer than before, but this requires transactions,
+	// which may in turn block events of being saved
+	return database.jobQueue.upsert({
+		where: { id: jobId },
+		create: {
+			id: jobId,
+			jobType: event.type,
+			status: jobStatusMap[event.status],
+			cause,
+			context: context ?? null
+		},
+		update: {
+			status: jobStatusMap[event.status],
+			cause,
+			...(context !== undefined ? { context } : {})
+		}
+	});
 }

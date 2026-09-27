@@ -54,6 +54,8 @@ export function useJob<TInput>(procedure: JobMutation<TInput>, input: TInput | u
 		}
 	});
 
+	const isTerminal = job.data?.status === "FINISHED" || job.data?.status === "ABORTED";
+
 	let error: { message: string } | null = null;
 	if (mutationError) {
 		error = { message: mutationError.message };
@@ -61,7 +63,7 @@ export function useJob<TInput>(procedure: JobMutation<TInput>, input: TInput | u
 		error = { message: job.data.cause };
 	} else if (job.data?.status === "ABORTED") {
 		error = { message: "Unknown error" };
-	} else if (isTimedOut) {
+	} else if (isTimedOut && !isTerminal) {
 		error = { message: "timeout" };
 	}
 
