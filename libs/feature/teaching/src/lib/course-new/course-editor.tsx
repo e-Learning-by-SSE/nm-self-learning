@@ -24,6 +24,7 @@ export function CourseEditor({
 		courseId: string;
 		slug: string;
 		title: string;
+		version: number;
 	}>;
 }) {
 	const { t } = useTranslation("feature-teaching");
@@ -44,8 +45,9 @@ export function CourseEditor({
 		: saveFirstTooltip;
 
 	async function handleSave(data: CourseFormModel) {
+		console.log("[CourseEditor.handleSave]: Saving course", data);
 		const saved = await onSubmit(data);
-		form.reset({ ...data, courseId: saved.courseId, slug: saved.slug });
+		form.reset({ ...data, courseId: saved.courseId, slug: saved.slug, version: saved.version });
 	}
 
 	function onClose() {

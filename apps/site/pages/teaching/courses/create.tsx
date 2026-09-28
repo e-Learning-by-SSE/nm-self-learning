@@ -12,6 +12,7 @@ export type CourseSaveResult = {
 	courseId: string;
 	slug: string;
 	title: string;
+	version: number;
 };
 
 export default function CreateCoursePage() {
@@ -78,7 +79,7 @@ export default function CreateCoursePage() {
 						requires: [],
 						provides: [],
 						type: CourseType.STATIC,
-						version: "1.0"
+						version: 1
 					}}
 				/>
 			)}

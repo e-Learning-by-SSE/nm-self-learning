@@ -606,7 +606,7 @@ export const courseRouter = t.router({
 
 		const created = await database.course.create({
 			data: courseForDb,
-			select: { title: true, slug: true, courseId: true }
+			select: { title: true, slug: true, courseId: true, version: true }
 		});
 
 		console.log("[courseRouter.create]: Course created by", ctx.user.name, created);
@@ -670,7 +670,7 @@ export const courseRouter = t.router({
 				return await tx.course.update({
 					where: { courseId: input.courseId },
 					data: courseForDb,
-					select: { title: true, slug: true, courseId: true }
+					select: { title: true, slug: true, courseId: true, version: true }
 				});
 			});
 		}),
