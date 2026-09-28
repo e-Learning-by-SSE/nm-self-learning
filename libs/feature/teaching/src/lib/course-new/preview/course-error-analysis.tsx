@@ -6,7 +6,8 @@ import {
 	ReactFlow,
 	Position,
 	type NodeProps,
-	NodeMouseHandler
+	NodeMouseHandler,
+	useNodesState
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { inferProcedureOutput, inferProcedureInput } from "@trpc/server";
@@ -55,22 +56,12 @@ export function PathAnalysis({ course }: { course: CoursePreviewModel }) {
  * @returns
  */
 function GraphAnalysis({ status }: { status?: string | null }) {
-	const [selectedElement, setSelectedElement] = useState<
-		LearningUnitNodeData | SkillNodeData | null
-	>(null);
-	const [dialogPosition, setDialogPosition] = useState<{
-		x: number;
-		y: number;
-	} | null>(null);
 	let graphRawData: GraphRawInput | undefined;
+
 	if (status != null) {
-		graphRawData = JSON.parse(status) as {
-			nodes: string[];
-			edges: { from: string; to: string }[];
-			learningUnits: string[];
-			skills: string[];
-		};
+		graphRawData = JSON.parse(status) as GraphRawInput;
 	}
+
 	const { data: graphData, isLoading: isStatusLoading } = trpc.course.getGraphContent.useQuery(
 		graphRawData ?? skipToken
 	);
@@ -89,6 +80,31 @@ function GraphAnalysis({ status }: { status?: string | null }) {
 		);
 	}
 
+	return <Graph graphData={graphData} />;
+}
+
+function Graph({
+	graphData
+}: {
+	graphData: inferProcedureOutput<AppRouter["course"]["getGraphContent"]>;
+}) {
+	const [selectedElement, setSelectedElement] = useState<
+		LearningUnitNodeData | SkillNodeData | null
+	>(null);
+
+	const [dialogPosition, setDialogPosition] = useState<{
+		x: number;
+		y: number;
+	} | null>(null);
+
+	const initialGraph = createGraph(graphData);
+
+	const [nodes, , onNodesChange] = useNodesState<LearningUnitNodeType | SkillNodeType>(
+		initialGraph.nodes
+	);
+
+	const edges = initialGraph.edges;
+
 	const onNodeClick: NodeMouseHandler<LearningUnitNodeType | SkillNodeType> = (event, node) => {
 		if (node.type === "learningUnit" || node.type === "skill") {
 			setSelectedElement(node.data);
@@ -104,8 +120,6 @@ function GraphAnalysis({ status }: { status?: string | null }) {
 				});
 			}
 		}
-
-		return;
 	};
 
 	const onPaneClick = () => {
@@ -113,13 +127,12 @@ function GraphAnalysis({ status }: { status?: string | null }) {
 		setDialogPosition(null);
 	};
 
-	const { nodes, edges } = createGraph(graphData);
-
 	return (
 		<div className="h-[500px] w-full">
 			<ReactFlow
 				nodes={nodes}
 				edges={edges}
+				onNodesChange={onNodesChange}
 				nodeTypes={{
 					skill: SkillNode,
 					learningUnit: LearningUnitNode
@@ -132,6 +145,7 @@ function GraphAnalysis({ status }: { status?: string | null }) {
 				<Background />
 				<Controls />
 			</ReactFlow>
+
 			{selectedElement && dialogPosition && (
 				<DetailsDialog selectedElement={selectedElement} dialogPosition={dialogPosition} />
 			)}
@@ -186,7 +200,7 @@ function DetailsDialog({
 			}}
 			onClick={event => event.stopPropagation()}
 		>
-			<h2 className="mb-3 font-semibold">{selectedElement.label}</h2>
+			<h2 className="mb-3">{selectedElement.label}</h2>
 
 			{sections.map((section, index) => (
 				<div

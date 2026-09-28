@@ -3,7 +3,7 @@ import dagre from "@dagrejs/dagre";
 import { inferProcedureOutput } from "@trpc/server";
 import { AppRouter } from "@self-learning/api";
 
-type GraphAnalysisType = inferProcedureOutput<AppRouter["course"]["getGraphContent"]>;
+export type GraphAnalysisType = inferProcedureOutput<AppRouter["course"]["getGraphContent"]>;
 
 export type SkillNodeData = {
 	label: string;

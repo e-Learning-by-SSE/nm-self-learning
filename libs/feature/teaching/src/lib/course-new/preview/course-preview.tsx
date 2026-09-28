@@ -83,8 +83,8 @@ function createCourseSummary(content: CourseContentPreviewModel) {
 			const mappedLesson = content.lessonMap[lesson.lessonId];
 			lessons++;
 			duration +=
-				mappedLesson.meta.mediaTypes.video?.duration ??
-				mappedLesson.meta.mediaTypes.article?.estimatedDuration ??
+				mappedLesson.meta?.mediaTypes?.video?.duration ??
+				mappedLesson.meta?.mediaTypes?.article?.estimatedDuration ??
 				0;
 		}
 	}

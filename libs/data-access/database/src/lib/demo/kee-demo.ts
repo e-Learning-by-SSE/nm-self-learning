@@ -123,13 +123,13 @@ const units: LearningUnit[] = [
 		lessonId: "LU::Citing::CS",
 		title: "Citing in Computer Science",
 		provides: ["SK::Citing::CS"],
-		requires: ["SK::Citing"]
+		requires: ["SK::PW::Writing::Citations"]
 	},
 	{
 		lessonId: "LU::Citing::Economics",
 		title: "Citing in Economics",
 		provides: ["SK::Citing::Economics"],
-		requires: ["SK::Citing"]
+		requires: ["SK::PW::Writing::Citations"]
 	}
 ];
 
