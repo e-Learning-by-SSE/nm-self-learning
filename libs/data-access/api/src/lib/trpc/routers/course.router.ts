@@ -633,7 +633,8 @@ export const courseRouter = t.router({
 					}
 				});
 
-				// Check if there are any other skills or lessons used than before
+				// If [skills | lessons] have changed => increment course version
+				// Previous [skills | lessons]
 				const lessonIds = (prevCourse?.content as CourseContent).flatMap(chapter =>
 					chapter.content.map(lesson => lesson.lessonId)
 				);
@@ -642,18 +643,18 @@ export const courseRouter = t.router({
 					...(prevCourse?.provides ?? [])
 				].flatMap(requirement => requirement.id);
 
+				// Current [skills | lessons]
 				const newLessonIds = (courseForDb.content as CourseContent).flatMap(chapter =>
 					chapter.content.map(lesson => lesson.lessonId)
 				);
-
 				const newSkillIds = [...input.course.requires, ...input.course.provides].map(
 					requirement => requirement.id
 				);
 
+				// Determine change
 				const lessonsChanged =
 					lessonIds.some(id => !newLessonIds.includes(id)) ||
 					newLessonIds.some(id => !lessonIds.includes(id));
-
 				const skillsChanged =
 					skillIds.some(id => !newSkillIds.includes(id)) ||
 					newSkillIds.some(id => !skillIds.includes(id));
