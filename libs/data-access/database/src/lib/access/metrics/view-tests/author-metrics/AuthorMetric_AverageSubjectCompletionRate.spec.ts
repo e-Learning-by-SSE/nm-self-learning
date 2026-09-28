@@ -52,7 +52,7 @@ describe("Average Subject Completion Rate for Author", () => {
 					// Id of the author needed and not the user id
 					connect: { id: authors[0].id }
 				},
-				version: "1",
+				version: 1,
 				type: "STATIC"
 			}
 		});

@@ -622,10 +622,55 @@ export const courseRouter = t.router({
 			);
 			const courseForDb = mapCourseFormToUpdate(input.course, input.courseId, permissions);
 
-			return await database.course.update({
-				where: { courseId: input.courseId },
-				data: courseForDb,
-				select: { title: true, slug: true, courseId: true }
+			return database.$transaction(async tx => {
+				const prevCourse = await tx.course.findUnique({
+					where: { courseId: input.courseId },
+					select: {
+						version: true,
+						content: true,
+						requires: true,
+						provides: true
+					}
+				});
+
+				// Check if there are any other skills or lessons used than before
+				const lessonIds = (prevCourse?.content as CourseContent).flatMap(chapter =>
+					chapter.content.map(lesson => lesson.lessonId)
+				);
+				const skillIds = [
+					...(prevCourse?.requires ?? []),
+					...(prevCourse?.provides ?? [])
+				].flatMap(requirement => requirement.id);
+
+				const newLessonIds = (courseForDb.content as CourseContent).flatMap(chapter =>
+					chapter.content.map(lesson => lesson.lessonId)
+				);
+
+				const newSkillIds = [...input.course.requires, ...input.course.provides].map(
+					requirement => requirement.id
+				);
+
+				const lessonsChanged =
+					lessonIds.some(id => !newLessonIds.includes(id)) ||
+					newLessonIds.some(id => !lessonIds.includes(id));
+
+				const skillsChanged =
+					skillIds.some(id => !newSkillIds.includes(id)) ||
+					newSkillIds.some(id => !skillIds.includes(id));
+
+				if (
+					(lessonsChanged || skillsChanged) &&
+					prevCourse?.version === courseForDb.version
+				) {
+					const prevVersion = input.course.version ?? prevCourse?.version ?? 1;
+					courseForDb.version = prevVersion + 1;
+				}
+
+				return await tx.course.update({
+					where: { courseId: input.courseId },
+					data: courseForDb,
+					select: { title: true, slug: true, courseId: true }
+				});
 			});
 		}),
 	deleteCourse: authProcedure

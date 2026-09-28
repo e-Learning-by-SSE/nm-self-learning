@@ -78,7 +78,7 @@ export default function CreateCoursePage() {
 						requires: [],
 						provides: [],
 						type: CourseType.STATIC,
-						version: ""
+						version: "1.0"
 					}}
 				/>
 			)}

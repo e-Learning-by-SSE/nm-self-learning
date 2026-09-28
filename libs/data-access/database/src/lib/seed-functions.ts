@@ -193,7 +193,7 @@ export function createCourse({
 	const course = {
 		courseId,
 		type: CourseType.STATIC,
-		version: "1.0.0",
+		version: 1,
 		title: title,
 		slug: slugify(title, { lower: true, strict: true }),
 		subtitle: subtitle ?? "",

@@ -13,7 +13,7 @@ export async function createCourses() {
 				content: [],
 				meta: {},
 				subjectId: "wizardry",
-				version: "1",
+				version: 1,
 				type: CourseType.STATIC
 			},
 			{
@@ -24,7 +24,7 @@ export async function createCourses() {
 				content: [],
 				meta: {},
 				subjectId: "wizardry",
-				version: "1",
+				version: 1,
 				type: CourseType.STATIC
 			},
 			{
@@ -35,7 +35,7 @@ export async function createCourses() {
 				content: [],
 				meta: {},
 				subjectId: "wizardry",
-				version: "1",
+				version: 1,
 				type: CourseType.STATIC
 			},
 			{
@@ -46,7 +46,7 @@ export async function createCourses() {
 				content: [],
 				meta: {},
 				subjectId: "wizardry",
-				version: "1",
+				version: 1,
 				type: CourseType.STATIC
 			},
 			{
@@ -57,7 +57,7 @@ export async function createCourses() {
 				content: [],
 				meta: {},
 				subjectId: "wizardry",
-				version: "1",
+				version: 1,
 				type: CourseType.STATIC
 			}
 		];

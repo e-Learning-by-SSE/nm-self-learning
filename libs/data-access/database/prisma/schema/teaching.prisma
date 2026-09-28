@@ -97,7 +97,7 @@ model Course {
     description          String?
     imgUrl               String?
     // helps understand whether GeneratedLessonPath has diverged from Course (same as updatedAt???)
-    version              String
+    version              Int                   @default(1)
     // default course content path (as if student has no skills from `provides` set)
     content              Json
     meta                 Json
@@ -124,7 +124,7 @@ model GeneratedLessonPath {
     lessonPathId  String   @id @default(cuid())
     content       Json
     meta          Json
-    courseVersion String
+    courseVersion Int
     username      String
     slug          String   @unique
     courseId      String

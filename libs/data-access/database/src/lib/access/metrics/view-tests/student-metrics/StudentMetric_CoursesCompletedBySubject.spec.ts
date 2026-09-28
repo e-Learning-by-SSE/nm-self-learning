@@ -32,7 +32,7 @@ describe("Courses Completed by Subject for Student", () => {
 				subtitle: "A course to test average lesson completion rate by course metric",
 				content: {},
 				meta: {},
-				version: "1",
+				version: 1,
 				type: "STATIC"
 			}
 		});

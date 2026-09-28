@@ -21,7 +21,7 @@ describe("Daily Learning Time by Course for Student", () => {
 				subtitle: "A course to test daily learning time by course metric",
 				content: {},
 				meta: {},
-				version: "1",
+				version: 1,
 				type: "STATIC"
 			}
 		});

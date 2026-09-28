@@ -47,7 +47,7 @@ describe("Average Quiz Answers for Student", () => {
 				subtitle: "A course to test average quiz answers metric",
 				content: {},
 				meta: {},
-				version: "1",
+				version: 1,
 				type: "STATIC"
 			}
 		});

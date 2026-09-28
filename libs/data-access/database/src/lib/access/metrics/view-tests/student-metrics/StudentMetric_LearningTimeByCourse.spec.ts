@@ -20,7 +20,7 @@ describe("Learning Time by Course for Student", () => {
 				subtitle: "A course to test learning time by course metric",
 				content: {},
 				meta: {},
-				version: "1",
+				version: 1,
 				type: "STATIC"
 			}
 		});

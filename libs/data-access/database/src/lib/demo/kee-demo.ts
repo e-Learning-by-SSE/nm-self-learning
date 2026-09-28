@@ -206,7 +206,7 @@ export async function seedSkillbasedSeminars() {
 			data: {
 				title: course.title,
 				subtitle: "",
-				version: "1.0",
+				version: 1,
 				courseId: course.courseId,
 				slug: slugify(course.title),
 				type: "DYNAMIC",

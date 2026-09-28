@@ -19,7 +19,7 @@ export const courseFormSchema = z
 		subtitle: z.string(),
 		description: z.string().nullable(),
 		imgUrl: z.string().nullable(),
-		version: z.string().nullable(),
+		version: z.int().nullable(),
 		authors: authorsRelationSchema,
 		content: courseContentSchema,
 		specializationId: z.string().nullable().optional(),
@@ -37,8 +37,18 @@ export function mapCourseFormToInsert(
 	courseId: string,
 	permissions: PermissionsForCreate
 ): Prisma.CourseCreateInput {
-	const { type, title, slug, subtitle, description, imgUrl, content, subjectId, authors } =
-		course;
+	const {
+		type,
+		title,
+		slug,
+		subtitle,
+		description,
+		imgUrl,
+		content,
+		subjectId,
+		authors,
+		version
+	} = course;
 
 	const courseForDb: Prisma.CourseCreateInput = {
 		type,
@@ -47,7 +57,7 @@ export function mapCourseFormToInsert(
 		title,
 		subtitle,
 		content: content,
-		version: Date.now().toString(), // always overwrite? TODO
+		version: version ?? 1,
 		imgUrl: stringOrNull(imgUrl),
 		description: stringOrNull(description),
 		meta: createCourseMeta(course),
@@ -64,7 +74,8 @@ export function mapCourseFormToUpdate(
 	courseId: string,
 	permissions: PermissionsForUpdate
 ): Prisma.CourseUpdateInput {
-	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors } = course;
+	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors, version } =
+		course;
 
 	// TODO cannot change course type
 	const courseForDb: Prisma.CourseUpdateInput = {
@@ -73,7 +84,7 @@ export function mapCourseFormToUpdate(
 		title,
 		subtitle,
 		content,
-		version: Date.now().toString(), // always overwrite? TODO
+		version: version ?? 1, // always overwrite? TODO
 		imgUrl: stringOrNull(imgUrl),
 		description: stringOrNull(description),
 		meta: createCourseMeta(course),
