@@ -151,8 +151,6 @@ describe("Average Lesson Completion Rate by Course", () => {
 			where: { authorId: users[0].id }
 		});
 
-		console.log("Average Lesson Completion Rate Course Result:", result);
-
 		expect(result).not.toBeNull();
 		expect(result?.authorId).toBe(users[0].id);
 		expect(result?.authorUsername).toBe(users[0].name);

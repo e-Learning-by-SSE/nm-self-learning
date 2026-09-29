@@ -70,8 +70,6 @@ describe("Average Course Completion Rate", () => {
 			where: { authorId: users[0].id }
 		});
 
-		console.log("Average Completion Rate Result:", result);
-
 		expect(result).not.toBeNull();
 		expect(result?.authorId).toBe(users[0].id);
 		expect(result?.authorUsername).toBe(users[0].name);

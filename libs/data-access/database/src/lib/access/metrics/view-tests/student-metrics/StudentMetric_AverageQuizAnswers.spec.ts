@@ -111,8 +111,6 @@ describe("Average Quiz Answers for Student", () => {
 			where: { userId: users[0].id }
 		});
 
-		console.log("Average Quiz Answers Result:", result);
-
 		expect(result).not.toBeNull();
 		expect(result?.userId).toBe(users[0].id);
 		expect(result?.username).toBe(users[0].name);

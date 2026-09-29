@@ -79,8 +79,6 @@ describe("Courses Completed by Subject for Student", () => {
 			where: { userId: users[0].id }
 		});
 
-		console.log("Average Courses Completed by Subject Result:", result);
-
 		expect(result).not.toBeNull();
 		expect(result?.userId).toBe(users[0].id);
 		expect(result?.username).toBe(users[0].name);
