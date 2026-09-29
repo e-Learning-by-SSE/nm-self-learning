@@ -31,6 +31,19 @@ const content = createCourseContent([
 	])
 ]);
 
+// Do not start wsClient, which will cause flaky tests in the CI environment
+jest.mock("@trpc/client", () => {
+	const actual = jest.requireActual<typeof import("@trpc/client")>("@trpc/client");
+
+	return {
+		...actual,
+		createWSClient: jest.fn(() => ({
+			request: jest.fn(),
+			close: jest.fn()
+		}))
+	};
+});
+
 beforeAll(async () => {
 	await createTestUser(username);
 	await createLicense(1);
