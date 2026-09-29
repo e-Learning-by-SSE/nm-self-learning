@@ -54,6 +54,8 @@ describe("markAsCompleted", () => {
 						courseId,
 						title: "Mark as completed course",
 						subtitle: "Mark as completed course subtitle",
+						type: "STATIC",
+						version: 1,
 						slug: courseSlug,
 						meta: {},
 						content
