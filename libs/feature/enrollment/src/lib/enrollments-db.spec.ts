@@ -81,7 +81,7 @@ describe("enrollUser", () => {
 			expect(error).toBeInstanceOf(ApiError);
 		}
 
-		expect(createUserEvent).not.toHaveBeenCalled();
+		expect(database.enrollment.create).not.toHaveBeenCalled();
 	});
 
 	it("should throw an ApiError if the course is not found", async () => {
