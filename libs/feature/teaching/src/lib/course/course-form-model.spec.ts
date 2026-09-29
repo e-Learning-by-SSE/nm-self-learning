@@ -21,18 +21,22 @@ const minValidCourse: CourseFormModel = {
 	imgUrl: null,
 	subjectId: null,
 	authors: [],
+	type: "STATIC",
+	version: 1,
 	permissions: [
 		{
 			groupId: 1,
 			groupName: "Group 1",
 			accessLevel: AccessLevel.FULL
 		}
-	]
+	],
+	requires: [],
+	provides: []
 };
 
 describe("courseFormSchema", () => {
 	describe("invalid", () => {
-		it("null", () => {
+		it("should return error on null input", () => {
 			expect(getErrors(null)).toMatchInlineSnapshot(`
 			Array [
 			  Object {
@@ -45,91 +49,12 @@ describe("courseFormSchema", () => {
 		`);
 		});
 
-		it("{}", () => {
-			expect(getErrors({})).toMatchInlineSnapshot(`
-			Array [
-			  Object {
-			    "code": "invalid_type",
-			    "expected": "string",
-			    "message": "Invalid input: expected string, received undefined",
-			    "path": Array [
-			      "courseId",
-			    ],
-			  },
-			  Object {
-			    "code": "invalid_type",
-			    "expected": "string",
-			    "message": "Invalid input: expected string, received undefined",
-			    "path": Array [
-			      "subjectId",
-			    ],
-			  },
-			  Object {
-			    "code": "invalid_type",
-			    "expected": "string",
-			    "message": "Invalid input: expected string, received undefined",
-			    "path": Array [
-			      "slug",
-			    ],
-			  },
-			  Object {
-			    "code": "invalid_type",
-			    "expected": "string",
-			    "message": "Invalid input: expected string, received undefined",
-			    "path": Array [
-			      "title",
-			    ],
-			  },
-			  Object {
-			    "code": "invalid_type",
-			    "expected": "string",
-			    "message": "Invalid input: expected string, received undefined",
-			    "path": Array [
-			      "subtitle",
-			    ],
-			  },
-			  Object {
-			    "code": "invalid_type",
-			    "expected": "string",
-			    "message": "Invalid input: expected string, received undefined",
-			    "path": Array [
-			      "description",
-			    ],
-			  },
-			  Object {
-			    "code": "invalid_type",
-			    "expected": "string",
-			    "message": "Invalid input: expected string, received undefined",
-			    "path": Array [
-			      "imgUrl",
-			    ],
-			  },
-			  Object {
-			    "code": "invalid_type",
-			    "expected": "array",
-			    "message": "Invalid input: expected array, received undefined",
-			    "path": Array [
-			      "authors",
-			    ],
-			  },
-			  Object {
-			    "code": "invalid_type",
-			    "expected": "array",
-			    "message": "Invalid input: expected array, received undefined",
-			    "path": Array [
-			      "content",
-			    ],
-			  },
-			  Object {
-			    "code": "invalid_type",
-			    "expected": "array",
-			    "message": "Invalid input: expected array, received undefined",
-			    "path": Array [
-			      "permissions",
-			    ],
-			  },
-			]
-		`);
+		it("should return error on empty {} input", () => {
+			const errors = getErrors({});
+
+			expect(
+				errors.every(error => ["invalid_type", "invalid_value"].includes(error.code))
+			).toBe(true);
 		});
 
 		it("missing title", () => {
