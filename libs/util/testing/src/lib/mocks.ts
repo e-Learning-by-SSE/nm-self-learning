@@ -30,7 +30,7 @@ export function createExampleCourse(
 		description: `This is a description for ${courseId}.`,
 		imgUrl: null,
 		content,
-		version: "1.0",
+		version: 1,
 		type: CourseType.STATIC,
 		createdAt: new Date(),
 		meta: {}
