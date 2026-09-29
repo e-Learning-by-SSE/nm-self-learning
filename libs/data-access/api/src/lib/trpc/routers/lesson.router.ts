@@ -348,7 +348,7 @@ export const lessonRouter = t.router({
 				}
 			},
 			data: {
-				version: Date.now().toString()
+				version: { increment: 1 }
 			}
 		});
 

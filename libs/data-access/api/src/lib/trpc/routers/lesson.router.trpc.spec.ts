@@ -22,6 +22,9 @@ jest.mock("@self-learning/database", () => ({
 			create: jest.fn(),
 			findUnique: jest.fn()
 		},
+		course: {
+			updateMany: jest.fn()
+		},
 		permission: {
 			findMany: jest.fn()
 		}
@@ -88,6 +91,8 @@ describe("tRPC API of Lesson Router", () => {
 			slug: "test-lessonId",
 			title: "Test Lesson",
 			description: "A lesson for testing",
+			version: 1,
+			type: "STATIC",
 			content: [],
 			meta: {},
 			authors: [{ username: "author1" }],
@@ -98,6 +103,7 @@ describe("tRPC API of Lesson Router", () => {
 					name: "Resource 1",
 					id: "res1",
 					description: "",
+					authorId: 1,
 					children: [],
 					repositoryId: "rid",
 					parents: []
@@ -109,6 +115,7 @@ describe("tRPC API of Lesson Router", () => {
 					id: "res2",
 					description: "",
 					children: [],
+					authorId: 1,
 					repositoryId: "rid",
 					parents: []
 				}
