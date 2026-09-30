@@ -16,7 +16,7 @@ import { Warning } from "./warning";
 import { useJob } from "./use-job";
 
 type CoursePreviewModel = inferProcedureOutput<AppRouter["course"]["getCourse"]>;
-type CourseContentPreviewModel = inferProcedureOutput<AppRouter["course"]["getContent"]>;
+type CourseContentPreviewModel = inferProcedureOutput<AppRouter["course"]["getDefaultPathPreview"]>;
 
 export function CoursePreview() {
 	const form = useFormContext<CourseFormModel>();
@@ -91,9 +91,10 @@ function createCourseSummary(content: CourseContentPreviewModel) {
 }
 
 function Course({ course }: { course: CoursePreviewModel }) {
-	const { data: contentPreview, isLoading: isPreviewLoading } = trpc.course.getContent.useQuery({
-		slug: course.slug
-	});
+	const { data: contentPreview, isLoading: isPreviewLoading } =
+		trpc.course.getDefaultPathPreview.useQuery({
+			slug: course.slug
+		});
 	const { data: allAuthors, isLoading: isAuthorsLoading } = trpc.author.getAll.useQuery();
 	const hasContent = course.content.length > 0;
 	const hasTeachingGoal = course.provides.length > 0;

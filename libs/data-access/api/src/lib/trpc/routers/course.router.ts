@@ -243,43 +243,58 @@ export const courseRouter = t.router({
 				totalCount: count
 			} satisfies Paginated<unknown>;
 		}),
-	getContent: t.procedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
-		const course = await database.course.findUniqueOrThrow({
-			where: { slug: input.slug },
-			select: {
-				content: true
+	getDefaultPathPreview: t.procedure
+		.meta({
+			description: "Returns the default path (preview during editing) of a dynamic course"
+		})
+		.input(z.object({ slug: z.string() }))
+		.query(async ({ input }) => {
+			const course = await database.course.findUniqueOrThrow({
+				where: { slug: input.slug },
+				select: {
+					content: true
+				}
+			});
+
+			return await extractCoursePathContent(course.content);
+		}),
+	getContent: authProcedure
+		.meta({
+			description: "Returns the content of a static/dynamic course"
+		})
+		.input(z.object({ slug: z.string() }))
+		.query(async ({ input, ctx }) => {
+			// Obtain course definition (static or dynamic)
+			const course = await database.course.findUniqueOrThrow({
+				where: { slug: input.slug },
+				select: {
+					content: true,
+					type: true,
+					slug: true
+				}
+			});
+
+			// Check if its dynamic and generate content
+			let raw: Prisma.JsonValue = course.content;
+			if (course.type === CourseType.DYNAMIC && ctx.user?.name) {
+				// Obtain individual learning path
+				const dynCourse = await database.generatedLessonPath.findUnique({
+					where: {
+						slug_username: {
+							slug: course.slug,
+							username: ctx.user.name
+						}
+					},
+					select: {
+						content: true
+					}
+				});
+				console.log("Use Dyn content");
+				raw = dynCourse?.content ?? course.content;
 			}
-		});
 
-		const content = parseCourseContent(course.content);
-
-		const lessonIds = extractLessonIds(content);
-
-		const lessons = await database.lesson.findMany({
-			where: { lessonId: { in: lessonIds } },
-			select: {
-				lessonId: true,
-				slug: true,
-				title: true,
-				meta: true
-			}
-		});
-
-		const lessonMap: {
-			[lessonId: string]: {
-				title: string;
-				lessonId: string;
-				slug: string;
-				meta: LessonMeta;
-			};
-		} = {};
-
-		for (const lesson of lessons) {
-			lessonMap[lesson.lessonId] = lesson as (typeof lessons)[0] & { meta: LessonMeta };
-		}
-
-		return { content, lessonMap };
-	}),
+			return await extractCoursePathContent(raw);
+		}),
 	getCourse: authorProcedure
 		.input(z.object({ slug: z.string() }))
 		.output(courseFormSchema)
@@ -498,6 +513,7 @@ export const courseRouter = t.router({
 					courseId: true,
 					version: true,
 					type: true,
+					slug: true,
 					provides: {
 						select: {
 							id: true,
@@ -544,7 +560,7 @@ export const courseRouter = t.router({
 						data: {
 							content: [courseChapter],
 							courseVersion: course.version,
-							slug: randomUUID(),
+							slug: course.slug,
 							courseId: input.courseId,
 							meta: createCourseMeta({ content: [courseChapter] }),
 							username: ctx.user.name,
@@ -831,6 +847,37 @@ export const courseRouter = t.router({
 			});
 		})
 });
+
+async function extractCoursePathContent(raw: Prisma.JsonValue) {
+	const content = parseCourseContent(raw);
+
+	const lessonIds = extractLessonIds(content);
+
+	const lessons = await database.lesson.findMany({
+		where: { lessonId: { in: lessonIds } },
+		select: {
+			lessonId: true,
+			slug: true,
+			title: true,
+			meta: true
+		}
+	});
+
+	const lessonMap: {
+		[lessonId: string]: {
+			title: string;
+			lessonId: string;
+			slug: string;
+			meta: LessonMeta;
+		};
+	} = {};
+
+	for (const lesson of lessons) {
+		lessonMap[lesson.lessonId] = lesson as (typeof lessons)[0] & { meta: LessonMeta };
+	}
+
+	return { content, lessonMap };
+}
 
 /**
  * Gathers required and provided skill ids of the course and its lessons (from default content)

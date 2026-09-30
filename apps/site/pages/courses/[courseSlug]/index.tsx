@@ -4,7 +4,11 @@ import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { SmallGradeBadge, useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
-import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
+import {
+	useEnrollmentMutations,
+	useEnrollments,
+	usePersonalLearningPaths
+} from "@self-learning/enrollment";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
 	getLessonDuration,
@@ -264,6 +268,7 @@ function CourseHeader({
 	const isDynamic = course.type === CourseType.DYNAMIC;
 
 	const enrollments = useEnrollments();
+	const paths = usePersonalLearningPaths();
 	const { enroll } = useEnrollmentMutations();
 	const { data: completion, refetch: fetchCourseCompletion } =
 		trpc.completion.getCourseCompletion.useQuery(
@@ -281,8 +286,12 @@ function CourseHeader({
 
 	const isEnrolled = useMemo(() => {
 		if (!enrollments) return false;
-		return !!enrollments.find(e => e.course.slug === course.slug);
-	}, [enrollments, course]);
+
+		const enrolledInStatic = enrollments.find(e => e.course.slug === course.slug);
+		const enrolledInGenerated = paths?.find(p => p.slug === course.slug);
+
+		return !!enrolledInStatic || !!enrolledInGenerated;
+	}, [enrollments, course, paths]);
 
 	const nextLessonSlug: string | null = useMemo(() => {
 		if (!completion) return null;
@@ -314,6 +323,8 @@ function CourseHeader({
 	}, [content]);
 
 	const isParticipant = session.data?.user.featureFlags.experimental ?? false;
+
+	console.log("Course-Content:", content);
 
 	return (
 		<section className="flex flex-col gap-16">
@@ -416,31 +427,32 @@ function CourseHeader({
 						</Link>
 					)}
 
-					{!isEnrolled && (
-						<button
-							className="btn-primary disabled:opacity-50"
-							onClick={() => {
-								withAuth(() => {
-									enroll({ courseId: course.courseId });
-								});
-							}}
-						>
-							{isAuthenticated && (
-								<>
-									<span>Zum Lernplan hinzufügen</span>
-									<PlusCircleIcon className="h-5" />
-								</>
-							)}
-							{!isAuthenticated && <span>Lernplan nach Login verfügbar</span>}
-						</button>
-					)}
-					{isDynamic && (
-						<CoursePath
-							course={course}
-							hasGeneratedPath={isGenerated}
-							isStale={isStale}
-						/>
-					)}
+					{!isEnrolled &&
+						(isDynamic ? (
+							<CoursePath
+								course={course}
+								hasGeneratedPath={isGenerated}
+								isStale={isStale}
+							/>
+						) : (
+							<button
+								className="btn-primary disabled:opacity-50"
+								onClick={() => {
+									withAuth(() => {
+										enroll({ courseId: course.courseId });
+									});
+								}}
+							>
+								{isAuthenticated ? (
+									<>
+										<span>Zum Lernplan hinzufügen</span>
+										<PlusCircleIcon className="h-5" />
+									</>
+								) : (
+									<span>Lernplan nach Login verfügbar</span>
+								)}
+							</button>
+						))}
 				</div>
 			</div>
 		</section>

@@ -126,12 +126,14 @@ model GeneratedLessonPath {
     meta          Json
     courseVersion Int
     username      String
-    slug          String   @unique
+    slug          String
     courseId      String
     createdAt     DateTime @default(now())
     updatedAt     DateTime @updatedAt
     student       Student  @relation(fields: [username], references: [username], onDelete: Cascade)
     course        Course   @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
+
+    @@unique([slug, username])
 }
 
 model Enrollment {
