@@ -1,10 +1,10 @@
 import { TableDataColumn } from "@self-learning/ui/common";
 import React from "react";
+import { AcademicCapIcon as SkillLeafIcon } from "@heroicons/react/24/outline";
 import {
-	AcademicCapIcon,
-	CheckBadgeIcon,
+	AcademicCapIcon as SkillGroupIcon,
 	ChevronDownIcon,
-	Squares2X2Icon,
+	Squares2X2Icon as SkillRepositoryIcon,
 	ArrowPathRoundedSquareIcon,
 	ShieldExclamationIcon,
 	ChevronRightIcon
@@ -241,14 +241,14 @@ function SkillRow({
 														</div>
 														{/* Area, nested group, and leaf are different shapes. */}
 														{skill.skill.parents.length === 0 ? (
-															<AcademicCapIcon className="icon h-5 text-lg" />
+															<SkillRepositoryIcon className="icon h-5 text-lg" />
 														) : (
-															<Squares2X2Icon className="icon h-5 text-lg" />
+															<SkillGroupIcon className="icon h-5 text-lg" />
 														)}
 													</>
 												) : (
 													<div className="ml-6">
-														<CheckBadgeIcon className="icon h-5 text-lg" />
+														<SkillLeafIcon className="icon h-5 text-lg" />
 													</div>
 												)}
 											</div>

@@ -4,7 +4,11 @@ import { Dialog, DialogActions, LoadingBox, OnDialogCloseFn } from "@self-learni
 import { trpc } from "@self-learning/api-client";
 import { memo, useContext, useEffect, useMemo, useState } from "react";
 import { SearchField } from "@self-learning/ui/forms";
-import { AcademicCapIcon, CheckBadgeIcon, Squares2X2Icon } from "@heroicons/react/24/solid";
+import { AcademicCapIcon as SkillLeafIcon } from "@heroicons/react/24/outline";
+import {
+	AcademicCapIcon as SkillGroupIcon,
+	Squares2X2Icon as SkillRepositoryIcon
+} from "@heroicons/react/24/solid";
 import { SkillResourceContext } from "../skill-tree/skill-resource-context";
 import { ConnectedSkill } from "../skill-tree/skill-row-editor";
 import { isTruthy } from "@self-learning/util/common";
@@ -185,11 +189,11 @@ function SkillElement({
 			<div className="flex">
 				{/**TODO duplicated from skill-row-editor.tsx */}
 				{isRoot ? (
-					<AcademicCapIcon className={`icon h-5 text-lg`} />
+					<SkillRepositoryIcon className={`icon h-5 text-lg`} />
 				) : isFolder ? (
-					<Squares2X2Icon className="icon h-5 text-lg" />
+					<SkillGroupIcon className="icon h-5 text-lg" />
 				) : (
-					<CheckBadgeIcon className="icon h-5 text-lg" />
+					<SkillLeafIcon className="icon h-5 text-lg" />
 				)}
 				<label htmlFor={"checkbox:" + skill.id} className="text-sm font-semibold">
 					<ConnectedSkill

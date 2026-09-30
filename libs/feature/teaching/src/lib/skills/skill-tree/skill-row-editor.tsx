@@ -1,16 +1,16 @@
 import { IconOnlyButton, TableDataColumn, Tooltip } from "@self-learning/ui/common";
+import { AcademicCapIcon as SkillLeafIcon } from "@heroicons/react/24/outline";
 import {
-	AcademicCapIcon,
-	CheckBadgeIcon,
+	AcademicCapIcon as SkillGroupIcon,
 	ChevronDownIcon,
-	Squares2X2Icon,
+	Squares2X2Icon as SkillRepositoryIcon,
 	ArrowPathRoundedSquareIcon,
 	ShieldExclamationIcon,
 	ChevronRightIcon,
 	ArrowRightStartOnRectangleIcon,
 	ArrowRightEndOnRectangleIcon
 } from "@heroicons/react/24/solid";
-import { LockClosedIcon, ArrowLongRightIcon, FolderPlusIcon } from "@heroicons/react/24/outline";
+import { LockClosedIcon, ArrowLongRightIcon, DocumentPlusIcon } from "@heroicons/react/24/outline";
 import styles from "../folder-editor/folder-table.module.css";
 import { isTruthy } from "@self-learning/util/common";
 import { Draggable, DraggableStateSnapshot, DraggableStyle, Droppable } from "@hello-pangea/dnd";
@@ -261,16 +261,16 @@ function SkillRow({
 														</div>
 														{/* Area, nested group, and leaf are different shapes. */}
 														{isRootItem(skill) ? (
-															<AcademicCapIcon
+															<SkillRepositoryIcon
 																className={`icon h-5 text-lg ${isProvided ? "text-emerald-500" : ""}`}
 															/>
 														) : (
-															<Squares2X2Icon className="icon h-5 text-lg" />
+															<SkillGroupIcon className="icon h-5 text-lg" />
 														)}
 													</>
 												) : (
 													<div className="ml-6">
-														<CheckBadgeIcon className="icon h-5 text-lg" />
+														<SkillLeafIcon className="icon h-5 text-lg" />
 													</div>
 												)}
 											</div>
@@ -299,7 +299,7 @@ function SkillRow({
 											</span>
 										</div>
 										<IconOnlyButton
-											icon={<FolderPlusIcon className="h-4 w-4" />}
+											icon={<DocumentPlusIcon className="h-4 w-4" />}
 											className={`${styles["skill-row-add"]} invisible group-hover:visible ml-auto !p-1`}
 											title={"Neuen Skill in dieser Skillgruppe erstellen"}
 											onClick={event => {

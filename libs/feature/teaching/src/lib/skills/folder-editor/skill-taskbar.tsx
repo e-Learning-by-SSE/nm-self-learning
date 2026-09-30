@@ -8,7 +8,7 @@ import {
 	SimpleDialog
 } from "@self-learning/ui/common";
 import { TrashIcon } from "@heroicons/react/24/solid";
-import { FolderPlusIcon } from "@heroicons/react/24/outline";
+import { DocumentPlusIcon } from "@heroicons/react/24/outline";
 import { SkillSelectHandler, UpdateVisuals } from "./skill-display";
 import { trpc } from "@self-learning/api-client";
 import { Skill } from "@prisma/client";
@@ -84,7 +84,7 @@ export function AddChildButton({
 	return (
 		<IconOnlyButton
 			title="Neuen Skill in dieser Skillgruppe erstellen"
-			icon={<FolderPlusIcon className="h-5 text-lg" />}
+			icon={<DocumentPlusIcon className="h-5 text-lg" />}
 			className="hover:text-c-primary !px-2 !py-0"
 			onClick={handleAddSkill}
 		/>
