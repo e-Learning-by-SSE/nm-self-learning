@@ -6,7 +6,12 @@ import { SmallGradeBadge, useCourseCompletion } from "@self-learning/completion"
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
-import { CourseContent, extractLessonIds, LessonInfo } from "@self-learning/types";
+import {
+	getLessonDuration,
+	CourseContent,
+	extractLessonIds,
+	LessonInfo
+} from "@self-learning/types";
 import {
 	AuthorsList,
 	OnlineHelpLink,
@@ -118,10 +123,7 @@ function createCourseSummary(content: ToC.Content): Summary {
 	for (const chapter of content) {
 		for (const lesson of chapter.content) {
 			lessons++;
-			duration +=
-				lesson.meta.mediaTypes.video?.duration ??
-				lesson.meta.mediaTypes.article?.estimatedDuration ??
-				0;
+			duration += getLessonDuration(lesson.meta);
 		}
 	}
 

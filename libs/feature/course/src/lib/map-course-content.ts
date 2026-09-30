@@ -1,6 +1,12 @@
 import { LessonType } from "@prisma/client";
 import { database } from "@self-learning/database";
-import { CourseContent, extractLessonIds, LessonInfo, Summary } from "@self-learning/types";
+import {
+	getLessonDuration,
+	CourseContent,
+	extractLessonIds,
+	LessonInfo,
+	Summary
+} from "@self-learning/types";
 import * as ToC from "@self-learning/ui/course";
 
 export function mapToTocContent(
@@ -63,10 +69,7 @@ export function createCourseSummary(content: ToC.Content): Summary {
 	for (const chapter of content) {
 		for (const lesson of chapter.content) {
 			lessons++;
-			duration +=
-				lesson.meta?.mediaTypes.video?.duration ??
-				lesson.meta?.mediaTypes.article?.estimatedDuration ??
-				0;
+			duration += getLessonDuration(lesson.meta);
 		}
 	}
 

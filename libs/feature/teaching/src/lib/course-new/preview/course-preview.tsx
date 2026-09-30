@@ -1,3 +1,4 @@
+import { getLessonDuration } from "@self-learning/types";
 import { useFormContext, useWatch } from "react-hook-form";
 import { CourseFormModel } from "../../course/course-form-model";
 import { trpc } from "@self-learning/api-client";
@@ -82,10 +83,7 @@ function createCourseSummary(content: CourseContentPreviewModel) {
 		for (const lesson of chapter.content) {
 			const mappedLesson = content.lessonMap[lesson.lessonId];
 			lessons++;
-			duration +=
-				mappedLesson.meta?.mediaTypes?.video?.duration ??
-				mappedLesson.meta?.mediaTypes?.article?.estimatedDuration ??
-				0;
+			duration += getLessonDuration(mappedLesson.meta);
 		}
 	}
 
