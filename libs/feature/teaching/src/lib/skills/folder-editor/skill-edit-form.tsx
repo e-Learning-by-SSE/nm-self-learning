@@ -1,3 +1,4 @@
+import { useTranslation } from "next-i18next";
 import { useEffect, useState } from "react";
 import { Form, LabeledField } from "@self-learning/ui/forms";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,6 +33,7 @@ export function SkillInfoForm({
 	skill: SkillFormModel;
 	handleSelection: SkillSelectHandler;
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	const { mutateAsync: updateSkill } = trpc.skill.updateSkill.useMutation();
 	const { data: dbSkill } = trpc.skill.getSkillById.useQuery({
 		skillId: skill.id
@@ -50,7 +52,7 @@ export function SkillInfoForm({
 
 		showToast({
 			type: "success",
-			title: "Skill gespeichert!",
+			title: t("Skills_Saved"),
 			subtitle: ""
 		});
 	};
@@ -70,22 +72,25 @@ export function SkillInfoForm({
 				<Form.SidebarSection>
 					<div className="flex justify-between">
 						<Form.SidebarSectionTitle
-							title="Bearbeiten"
-							subtitle="Informationen über den rechts ausgewählten Skill"
+							title={t("common:edit")}
+							subtitle={t("Skills_Edit_Subtitle")}
 						/>
 
 						<IconOnlyButton
 							icon={<XMarkIcon className="h-5" />}
 							onClick={resetEditTarget}
-							title="Ansicht ohne Veränderungen schließen"
+							title={t("Skills_Close_Without_Changes")}
 							className="btn-tertiary px-4"
 						/>
 					</div>
 					<div className="flex flex-col gap-4 border-b-2 border-c-border">
-						<LabeledField label="Name" error={errors.name?.message}>
+						<LabeledField label={t("common:Name")} error={errors.name?.message}>
 							<input type="text" className="textfield" {...form.register("name")} />
 						</LabeledField>
-						<LabeledField label="Beschreibung" error={errors.description?.message}>
+						<LabeledField
+							label={t("common:Description")}
+							error={errors.description?.message}
+						>
 							<textarea {...form.register("description")} />
 						</LabeledField>
 						<SkillToSkillDepsInfo
@@ -96,7 +101,7 @@ export function SkillInfoForm({
 					</div>
 					<div className="flex justify-between gap-2">
 						<button type="submit" className="btn-primary w-full">
-							Speichern
+							{t("common:save")}
 						</button>
 						<SkillDeleteOption skill={skill} />
 					</div>
@@ -115,6 +120,7 @@ function SkillToSkillDepsInfo({
 	children: SkillResolved["children"];
 	skillToChange: SkillFormModel;
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	const [parentItems, setParentItems] = useState<SkillResolved["parents"]>(parents);
 	const [childItems, setChildItems] = useState<SkillResolved["children"]>(children);
 	const { setValue } = useFormContext<SkillFormModel>();
@@ -152,9 +158,7 @@ function SkillToSkillDepsInfo({
 	return (
 		<>
 			<label>
-				<span className="text-sm font-semibold">
-					{"Beinhaltet folgende Skills (Kinder):"}
-				</span>
+				<span className="text-sm font-semibold">{t("Skills_Children_Label")}</span>
 			</label>
 			<div>
 				<SelectSkillsView
@@ -175,9 +179,7 @@ function SkillToSkillDepsInfo({
 				/>
 			</div>
 			<label>
-				<span className="text-sm font-semibold">
-					{"Ist Teil von folgenden Skills (Eltern):"}
-				</span>
+				<span className="text-sm font-semibold">{t("Skills_Parents_Label")}</span>
 			</label>
 			<div>
 				<SelectSkillsView

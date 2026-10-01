@@ -1,3 +1,4 @@
+import { useTranslation } from "next-i18next";
 import { trpc } from "@self-learning/api-client";
 import { DialogHandler, IconTextButton, Table, TableHeaderColumn } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
@@ -24,6 +25,7 @@ export function SkillTreeEditor({
 	onSkillSelect: SkillSelectHandler;
 	onSkillCreate: SkillCreateHandler;
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [onlyOwnSkills, setOnlyOwnSkills] = useState(false);
 	const session = useRequiredSession();
@@ -91,21 +93,21 @@ export function SkillTreeEditor({
 		<div>
 			<CenteredSection className="!py-0">
 				<SearchField
-					placeholder="Suche nach Skill"
+					placeholder={t("Skills_Search")}
 					onChange={e => {
 						setSearchTerm(e.target.value);
 					}}
 				/>
 				<OnlyOwnSkillsCheckbox checked={onlyOwnSkills} onChange={setOnlyOwnSkills} />
 				<IconTextButton
-					text={"Neu Skill Hinzufügen"}
+					text={t("Skills_Add")}
 					className="btn-secondary"
 					onClick={() => onSkillCreate({ name: searchTerm })}
 					icon={<PlusIcon className="icon h-5" />}
 				/>
 				<DialogHandler id={"alert"} />
 				<div className="pt-4" />
-				<Table head={<TableHeaderColumn>Skills</TableHeaderColumn>}>
+				<Table head={<TableHeaderColumn>{t("Skills_Title")}</TableHeaderColumn>}>
 					{skillsToDisplay.sort(byChildrenLength).map(element => (
 						<ListSkillEntryWithChildren
 							key={element.id}

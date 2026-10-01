@@ -1,3 +1,4 @@
+import { useTranslation } from "next-i18next";
 import { TableDataColumn } from "@self-learning/ui/common";
 import type React from "react";
 import type { ReactNode } from "react";
@@ -41,6 +42,7 @@ export function SkillTreeRow({
 	isRepository,
 	isDragDisabled
 }: SkillTreeRowProps) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	const depthCssStyle = {
 		"--depth": depth
 	} as React.CSSProperties;
@@ -57,9 +59,9 @@ export function SkillTreeRow({
 	};
 	let title = "";
 	if (skill.isCycleMember) {
-		title = "Dieser Skill ist Teil eines Zyklus.";
+		title = t("Skills_Cycle_Member");
 	} else if (skill.hasNestedCycleMembers) {
-		title = "Dieser Ordner enthält einen Zyklus, ist aber kein Teil davon.";
+		title = t("Skills_Nested_Cycle");
 	}
 	const cycleError = skill.isCycleMember;
 	const cycleWarning = skill.hasNestedCycleMembers && !skill.isSelected && !skill.isCycleMember;

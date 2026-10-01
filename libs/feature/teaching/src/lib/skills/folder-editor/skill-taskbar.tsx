@@ -1,3 +1,5 @@
+import { useTranslation } from "next-i18next";
+import type { TFunction } from "i18next";
 import { SkillFormModel } from "@self-learning/types";
 import {
 	ButtonActions,
@@ -13,19 +15,19 @@ import { SkillSelectHandler, UpdateVisuals } from "./skill-display";
 import { trpc } from "@self-learning/api-client";
 import { Skill } from "@prisma/client";
 
-const withErrorHandling = async (fn: () => Promise<void>) => {
+const withErrorHandling = async (t: TFunction, fn: () => Promise<void>) => {
 	try {
 		await fn();
 		showToast({
 			type: "success",
-			title: "Aktion erfolgreich!",
+			title: t("Skills_Action_Success"),
 			subtitle: ""
 		});
 	} catch (error) {
 		if (error instanceof Error) {
 			showToast({
 				type: "error",
-				title: "Ihre Aktion konnte nicht durchgeführt werden",
+				title: t("Skills_Action_Failed"),
 				subtitle: error.message ?? ""
 			});
 		}
@@ -48,18 +50,22 @@ export function AddChildButton({
 	skillDefaults?: Partial<Skill>;
 	authorId: number;
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	const { mutateAsync: addSkillOnParent } = trpc.skill.createSkillWithParents.useMutation();
 
 	const newSkill = {
-		name: `${childrenNumber + 1}. Kind - ${parentSkill.name}`,
-		description: "Add here",
+		name: t("Skills_Default_Child_Name", {
+			number: childrenNumber + 1,
+			name: parentSkill.name
+		}),
+		description: t("Skills_Default_Description"),
 		children: [],
 		parents: [parentSkill.id],
 		...skillDefaults
 	};
 
 	const handleAddSkill = async () =>
-		await withErrorHandling(async () => {
+		await withErrorHandling(t, async () => {
 			const result = await addSkillOnParent({
 				authorId: authorId,
 				parentSkillId: parentSkill.id,
@@ -77,7 +83,7 @@ export function AddChildButton({
 				]);
 				handleSelection(createdSkill.id);
 			} else {
-				throw new Error("Could not create skill");
+				throw new Error(t("Skills_Create_Failed"));
 			}
 		});
 
@@ -93,10 +99,11 @@ export function SkillDeleteOption({
 	inline?: boolean;
 	onDeleteSuccess?: () => void | PromiseLike<void>;
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	const { mutateAsync: deleteSkills } = trpc.skill.deleteSkills.useMutation();
 
 	const onClose = async () => {
-		await withErrorHandling(async () => {
+		await withErrorHandling(t, async () => {
 			await deleteSkills({ ids: [skill.id] });
 			await onDeleteSuccess?.();
 		});
@@ -105,7 +112,7 @@ export function SkillDeleteOption({
 	const handleDelete = () => {
 		dispatchDialog(
 			<SimpleDialog
-				name="Warnung"
+				name={t("common:Warning")}
 				onClose={async (type: ButtonActions) => {
 					if (type === ButtonActions.CANCEL) {
 						freeDialog("simpleDialog");
@@ -118,9 +125,7 @@ export function SkillDeleteOption({
 				Soll der Skill wirklich gelöscht werden?
 				{skill.parents.length > 1 && (
 					<div className="text-sm mt-2 text-red-600">
-						Hinweis: {skill.name} ist noch mindestens einem weiteren Eltern-Skill
-						zugeordnet. Wenn Sie {skill.name} löschen, wird er automatisch aus allen
-						zugehörigen Eltern-Skills entfernt.
+						{t("Skills_Delete_Shared_Warning", { name: skill.name })}
 					</div>
 				)}
 			</SimpleDialog>,
@@ -154,14 +159,22 @@ export function NewSkillButton({
 	onSuccess?: (skill: Skill) => void | Promise<void>;
 	skillDefaults?: Partial<Skill>;
 }) {
+	const { t, i18n } = useTranslation(["feature-teaching", "common"]);
 	const { mutateAsync: createNewSkill } = trpc.skill.createSkill.useMutation();
 
 	const date = new Date();
-	const formattedDate = date.toLocaleDateString("de-DE");
+	const formattedDate = date.toLocaleDateString(i18n.language);
 
 	const newSkill = {
-		name: `Skill vom ${formattedDate}  ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`,
-		description: "Add here",
+		name: t("Skills_Default_Name", {
+			date: formattedDate,
+			time: date.toLocaleTimeString(i18n.language, {
+				hour: "2-digit",
+				minute: "2-digit",
+				second: "2-digit"
+			})
+		}),
+		description: t("Skills_Default_Description"),
 		children: [],
 		...skillDefaults
 	};
@@ -174,7 +187,7 @@ export function NewSkillButton({
 	};
 	return (
 		<button type="button" className="btn btn-primary" onClick={onCreateSkill}>
-			Skill erstellen
+			{t("Skills_Create")}
 		</button>
 	);
 }

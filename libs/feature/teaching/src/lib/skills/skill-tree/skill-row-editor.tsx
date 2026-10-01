@@ -1,3 +1,4 @@
+import { useTranslation } from "next-i18next";
 import { Tooltip } from "@self-learning/ui/common";
 import {
 	ArrowRightStartOnRectangleIcon,
@@ -121,6 +122,7 @@ export function ConnectedSkill({
 	isCourseRequired: boolean;
 	isCourseProvided: boolean;
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	const requiresFlagRed = isCourseRequired && isLessonProvided;
 	const requiresFlagGreen = isCourseRequired && isLessonRequired;
 	const RequiresFlagIcon = ArrowRightStartOnRectangleIcon;
@@ -130,16 +132,18 @@ export function ConnectedSkill({
 	const ProvidesFlagIcon = ArrowRightEndOnRectangleIcon;
 
 	const baseText = isCourseRequired
-		? "required by course"
+		? t("Skills_Course_Required")
 		: isCourseProvided
-			? "provided by course"
+			? t("Skills_Course_Provided")
 			: "";
 	const starText = requiresFlagRed
-		? "course provides what requires"
+		? t("Skills_Course_Required_Lesson_Provided")
 		: providesFlagRed
-			? "course requires what provides"
+			? t("Skills_Course_Provided_Lesson_Required")
 			: requiresFlagGreen || providesFlagGreen
-				? `${baseText} and by lesson(s)`
+				? isCourseRequired
+					? t("Skills_Course_Lessons_Required")
+					: t("Skills_Course_Lessons_Provided")
 				: baseText;
 
 	const error = requiresFlagRed || providesFlagRed;
@@ -171,12 +175,12 @@ export function ConnectedSkill({
 	const middleStyle = error ? DISCONNECTED_COLOR : isParticipating ? CONNECTED_COLOR : "";
 	const pointText =
 		isLessonRequired && isLessonProvided
-			? "required and provided by lessons"
+			? t("Skills_Lessons_Required_Provided")
 			: isLessonRequired
-				? "required by lesson(s)"
+				? t("Skills_Lessons_Required")
 				: isLessonProvided
-					? "provided by lesson(s)"
-					: "not allocated";
+					? t("Skills_Lessons_Provided")
+					: t("Skills_Unassigned");
 	const text = isCourseRequired || isCourseProvided ? starText : pointText;
 
 	if (!enabled) {

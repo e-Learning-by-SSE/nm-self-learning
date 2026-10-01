@@ -88,5 +88,8 @@
 	"subjects": "Subjects",
     "Close": "Close",
     "Help": "Help",
-    "Open_Menu": "Open Menu"
+    "Open_Menu": "Open Menu",
+    "Description": "Description",
+    "Confirm": "Confirm",
+    "Warning": "Warning"
 }

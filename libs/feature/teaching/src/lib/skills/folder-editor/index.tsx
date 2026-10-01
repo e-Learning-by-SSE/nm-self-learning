@@ -1,4 +1,6 @@
 "use client";
+import { useTranslation } from "next-i18next";
+
 import { SidebarEditorLayout, useRequiredSession } from "@self-learning/ui/layouts";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DialogHandler, LoadingBox } from "@self-learning/ui/common";
@@ -24,6 +26,7 @@ export function CreateAndViewSkills({
 	initialSkills: SkillFormModel[];
 	selectedSkill?: SkillFormModel;
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	const { data: skills = initialSkills, isLoading } = trpc.skill.getParentSkills.useQuery();
 
 	const session = useRequiredSession();
@@ -38,7 +41,7 @@ export function CreateAndViewSkills({
 	}
 
 	if (!author) {
-		return <div>Author Missing</div>;
+		return <div>{t("Skills_Author_Missing")}</div>;
 	}
 
 	const treeContent = new Map<string, SkillFormModel>();
@@ -173,6 +176,7 @@ function SidebarContentEditor({
 	skill?: SkillFormModel;
 	changeEditTarget: SkillSelectHandler;
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	return (
 		<div>
 			{skill ? (
@@ -181,7 +185,7 @@ function SidebarContentEditor({
 					onSkillSelect={changeEditTarget}
 				/>
 			) : (
-				"Einen Skill aus der Liste auswählen um das Bearbeiten zu starten..."
+				t("Skills_Select_To_Edit")
 			)}
 		</div>
 	);

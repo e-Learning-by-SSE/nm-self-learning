@@ -1,3 +1,4 @@
+import { useTranslation } from "next-i18next";
 /* eslint-disable react/jsx-no-useless-fragment */
 import { SkillFormModel } from "@self-learning/types";
 import { Dialog, DialogActions, LoadingBox, OnDialogCloseFn } from "@self-learning/ui/common";
@@ -28,6 +29,7 @@ export function SelectSkillDialog({
 	selectedIds?: ReadonlySet<string>;
 	allowSelectRoots: boolean;
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	const ctx = useContext(SkillResourceContext);
 	if (!ctx) console.warn("SelectSkillDialog: SkillResourceContext missing");
 
@@ -39,7 +41,7 @@ export function SelectSkillDialog({
 	);
 
 	return (
-		<Dialog onClose={() => onClose(undefined)} title={"Füge die Skills hinzu"}>
+		<Dialog onClose={() => onClose(undefined)} title={t("Skills_Select_Title")}>
 			{!skillsFromParent && isLoading ? (
 				<LoadingBox />
 			) : (
@@ -68,6 +70,7 @@ function SelectSkillForm({
 	selectedIds?: ReadonlySet<string>;
 	allowSelectRoots: boolean;
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	const [search, setSearch] = useState("");
 	// key by id — object identity breaks after getSkills refetch
 	const [checkedIds, setCheckedIds] = useState(() => new Set(selectedIds));
@@ -91,7 +94,7 @@ function SelectSkillForm({
 	return (
 		<>
 			<SearchField
-				placeholder="Suche nach Skills"
+				placeholder={t("Skills_Search")}
 				onChange={e => {
 					setSearch(e.target.value);
 				}}
@@ -99,7 +102,7 @@ function SelectSkillForm({
 			<div className="flex flex-col justify-between overflow-auto">
 				<section className="flex h-64 flex-col rounded-lg border border-c-border p-4">
 					<div className="flex flex-col">
-						{skills.length === 0 && <p>Keine Skills vorhanden</p>}
+						{skills.length === 0 && <p>{t("Skills_Empty")}</p>}
 						{skills.length > 0 && (
 							<>
 								{filteredSkills.map((skill, index) => (
@@ -136,7 +139,7 @@ function SelectSkillForm({
 						onClose({ added, removed });
 					}}
 				>
-					Speichern
+					{t("common:save")}
 				</button>
 			</DialogActions>
 		</>

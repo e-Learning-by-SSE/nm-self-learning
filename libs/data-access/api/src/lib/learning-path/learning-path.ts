@@ -127,7 +127,9 @@ export async function enqueueCoursePath({
 		jobId,
 		jobType: "pathGeneration",
 		onFinish: async result => {
-			await onFinish(result);
+			if (result) {
+				onFinish(result);
+			}
 		}
 	});
 	// Do not wait for results (must be handled via subscription)

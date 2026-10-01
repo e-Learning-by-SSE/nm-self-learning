@@ -119,8 +119,8 @@ export function SkillsEditor(
 			if (attached.has(skill.id)) {
 				showToast({
 					type: "error",
-					title: "Skill bereits vorhanden",
-					subtitle: `Der Skill ${skill.name} ist bereits in der ausgewählten Liste enthalten.`
+					title: t("Skills_Already_Added"),
+					subtitle: t("Skills_Duplicate_Message", { name: skill.name })
 				});
 				continue;
 			}

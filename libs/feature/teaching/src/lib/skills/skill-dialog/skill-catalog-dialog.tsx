@@ -1,3 +1,4 @@
+import { useTranslation } from "next-i18next";
 import { createSkillFormModelFromSkillResolved, SkillFormModel } from "@self-learning/types";
 import { trpc } from "@self-learning/api-client";
 import { showToast } from "@self-learning/ui/common";
@@ -20,6 +21,7 @@ export function SkillCatalogDialog({
 	onClose: () => void;
 	onUpdated?: (skillId: string, name: string, description: string) => void;
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	// get author for newly created skills
 	const session = useRequiredSession();
 	const username = session.data?.user?.name;
@@ -41,8 +43,8 @@ export function SkillCatalogDialog({
 		if (!author) {
 			showToast({
 				type: "error",
-				title: "Skill konnte nicht gespeichert werden",
-				subtitle: "Autor nicht gefunden."
+				title: t("Skills_Save_Failed"),
+				subtitle: t("Skills_Author_Missing")
 			});
 			return;
 		}
@@ -77,12 +79,12 @@ export function SkillCatalogDialog({
 				}
 			}
 			onClose();
-			showToast({ type: "success", title: "Skill gespeichert!", subtitle: "" });
+			showToast({ type: "success", title: t("Skills_Saved"), subtitle: "" });
 		} catch (error) {
 			console.error(error);
 			showToast({
 				type: "error",
-				title: "Skill konnte nicht gespeichert werden",
+				title: t("Skills_Save_Failed"),
 				subtitle: ""
 			});
 		}

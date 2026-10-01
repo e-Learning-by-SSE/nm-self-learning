@@ -1,3 +1,4 @@
+import { useTranslation } from "next-i18next";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { SkillFormModel } from "@self-learning/types";
 
@@ -25,6 +26,7 @@ export function LabeledFieldSelectSkillsViewDragDrop({
 	excludedIds?: ReadonlySet<string>;
 	catalog?: SkillFormModel[];
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	const [selectSkillModal, setSelectSkillModal] = useState<boolean>(false);
 
 	return (
@@ -38,7 +40,7 @@ export function LabeledFieldSelectSkillsViewDragDrop({
 							className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-gray-400 rounded py-2 mb-3 text-grey-500 hover:bg-emerald-50 transition text-sm"
 							data-testid="BenoetigteSkills-add"
 						>
-							Klicken zum Auswählen oder mit Drag & Drop einfügen
+							{t("Skills_Select_Or_Drop")}
 						</button>
 						<SkillManagementComponent
 							skills={skills}
@@ -73,17 +75,18 @@ export function SelectSkillsView({
 	excludedIds?: ReadonlySet<string>;
 	catalog?: SkillFormModel[];
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	const [selectSkillModal, setSelectSkillModal] = useState(false);
 
 	return (
 		<>
 			<IconTextButton
 				disabled={disabled ? disabled : false}
-				text="Hinzufügen"
+				text={t("common:add")}
 				icon={<PlusIcon className="h-5 w-5" />}
 				className="btn-secondary"
 				onClick={() => setSelectSkillModal(true)}
-				title={"Hinzufügen"}
+				title={t("common:add")}
 				data-testid="BenoetigteSkills-add"
 			/>
 			<SkillManagementComponent
@@ -119,13 +122,14 @@ export function SkillManagementComponent({
 	catalog?: SkillFormModel[];
 	allowSelectRoots: boolean;
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	// Ids of skills picked in the dialog. In the dialog those checkboxes are checked
 	const selectedIds = useMemo(() => new Set(skills.map(skill => skill.id)), [skills]);
 
 	return (
 		<div className="flex flex-col">
 			{skills.length === 0 && (
-				<div className="mt-3 text-sm text-c-text-muted">Keine Skills vorhanden</div>
+				<div className="mt-3 text-sm text-c-text-muted">{t("Skills_Empty")}</div>
 			)}
 			<div className="mt-3 max-h-40 overflow-auto">
 				{skills.map((skill, index) => (
@@ -169,6 +173,7 @@ function InlineRemoveButton({
 	onRemove: () => void;
 	onClick: () => void;
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	return (
 		<div className="inline-block">
 			<div className="flex items-center rounded-lg border border-c-border bg-white text-sm">
@@ -181,7 +186,7 @@ function InlineRemoveButton({
 				</button>
 				<IconOnlyButton
 					onClick={onRemove}
-					title={"Skill entfernen"}
+					title={t("Skills_Remove")}
 					icon={<XMarkIcon className="h-5 w-5" />}
 					className="btn-x-mark p-2 mr-2"
 				/>

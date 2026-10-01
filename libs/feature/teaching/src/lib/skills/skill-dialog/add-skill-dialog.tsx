@@ -1,3 +1,5 @@
+import { useTranslation } from "next-i18next";
+import type { TFunction } from "i18next";
 import { Dialog, DialogActions, OnDialogCloseFn } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { useState } from "react";
@@ -7,12 +9,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { SkillFormModel } from "@self-learning/types";
 import { SelectSkillsView } from "./select-skill-view";
 
-const skillSchema = z.object({
-	name: z.string().min(1, "Name is required"),
-	description: z.string()
-});
+const createSkillSchema = (t: TFunction) =>
+	z.object({
+		name: z.string().min(1, t("Skills_Name_Required")),
+		description: z.string()
+	});
 
-export type SkillDialogResult = z.infer<typeof skillSchema> & { parents: string[] };
+export type SkillDialogResult = z.infer<ReturnType<typeof createSkillSchema>> & {
+	parents: string[];
+};
 
 export function AddSkillDialog({
 	onClose,
@@ -27,12 +32,14 @@ export function AddSkillDialog({
 	skills: SkillFormModel[];
 	onClose: OnDialogCloseFn<SkillDialogResult>;
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
+	const skillSchema = createSkillSchema(t);
 	const isEdit = Boolean(skill);
 	const {
 		register,
 		handleSubmit,
 		formState: { errors, isValid }
-	} = useForm<z.infer<typeof skillSchema>>({
+	} = useForm<z.infer<ReturnType<typeof createSkillSchema>>>({
 		resolver: zodResolver(skillSchema),
 		mode: "onChange", // Enable live validation
 		defaultValues: {
@@ -52,7 +59,7 @@ export function AddSkillDialog({
 		...parentSkills.map(item => item.id)
 	]);
 
-	const onSubmit = (data: z.infer<typeof skillSchema>) => {
+	const onSubmit = (data: z.infer<ReturnType<typeof createSkillSchema>>) => {
 		onClose({ ...data, parents: parentSkills.map(item => item.id) });
 	};
 
@@ -60,10 +67,10 @@ export function AddSkillDialog({
 		<Dialog
 			title={
 				isEdit
-					? "Skill bearbeiten"
+					? t("Skills_Edit")
 					: parentSkills.length > 0
-						? "Skill hinzufügen"
-						: "Skillbereich hinzufügen"
+						? t("Skills_Add")
+						: t("Skills_Add_Repository")
 			}
 			onClose={onClose}
 		>
@@ -74,7 +81,7 @@ export function AddSkillDialog({
 				}}
 				className="flex flex-col gap-4"
 			>
-				<LabeledField label="Name">
+				<LabeledField label={t("common:Name")}>
 					<input
 						type="text"
 						className={`textfield ${errors.name ? "border-red-500" : ""}`}
@@ -83,11 +90,11 @@ export function AddSkillDialog({
 					{errors.name && <span className="text-red-500">{errors.name.message}</span>}
 				</LabeledField>
 
-				<LabeledField label="Beschreibung" optional={true}>
+				<LabeledField label={t("common:Description")} optional={true}>
 					<input type="text" className="textfield" {...register("description")} />
 				</LabeledField>
 
-				<LabeledField label="Eltern">
+				<LabeledField label={t("Skills_Parents")}>
 					<SelectSkillsView
 						skills={parentSkills}
 						catalog={skills}
@@ -107,7 +114,7 @@ export function AddSkillDialog({
 
 				<DialogActions onClose={onClose}>
 					<button type="submit" className="btn-primary" disabled={!isValid}>
-						Bestätigen
+						{t("common:Confirm")}
 					</button>
 				</DialogActions>
 			</form>

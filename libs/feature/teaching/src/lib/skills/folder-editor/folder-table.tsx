@@ -1,4 +1,6 @@
+import { useTranslation } from "next-i18next";
 import {
+	Trans,
 	CopyMoveButtonActions,
 	CopyMoveDialog,
 	DialogHandler,
@@ -34,6 +36,7 @@ export function SkillFolderTable({
 	updateSkillDisplay: UpdateVisuals;
 	authorId: number;
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [onlyOwnSkills, setOnlyOwnSkills] = useState(false);
 	const skillsToDisplay = useMemo(() => {
@@ -143,7 +146,7 @@ export function SkillFolderTable({
 			} else {
 				dispatchDialog(
 					<CopyMoveDialog
-						name="Warnung"
+						name={t("common:Warning")}
 						onClose={async (type: CopyMoveButtonActions) => {
 							if (type !== CopyMoveButtonActions.CANCEL) {
 								updateSourceSkillParents(
@@ -159,18 +162,26 @@ export function SkillFolderTable({
 						hasParent={hasParent(sourceSkill)}
 					>
 						<div className="">
-							Sie haben <span className="text-secondary">{sourceSkill.name}</span> auf
-							<span className="text-secondary"> {destinationSkill.name} </span>{" "}
-							gezogen.
+							<Trans
+								namespace="feature-teaching"
+								i18nKey="Skills_Drop_Message"
+								values={{
+									source: sourceSkill.name,
+									destination: destinationSkill.name
+								}}
+								components={{
+									source: <span className="text-secondary" />,
+									destination: <span className="text-secondary" />
+								}}
+							/>
 						</div>
 						{hasParent(sourceSkill) ? (
 							<div className="text-sm mt-2">
-								Soll {destinationSkill.name} als zusätzlichen Eltern-Skill
-								hinzugefügt werden oder den aktuellen Eltern-Skill ersetzen?
+								{t("Skills_Drop_Replace_Parent", { name: destinationSkill.name })}
 							</div>
 						) : (
 							<div className="text-sm mt-2">
-								Soll {destinationSkill.name} als Eltern-Skill hinzugefügt werden?
+								{t("Skills_Drop_Add_Parent", { name: destinationSkill.name })}
 							</div>
 						)}
 					</CopyMoveDialog>,
@@ -188,9 +199,7 @@ export function SkillFolderTable({
 				<div className="mb-16 flex items-center justify-between gap-4">
 					<button className="btn-primary" onClick={() => setOpenNewSkillDialog(true)}>
 						<PlusIcon className="icon h-5" />
-						<span>
-							{selectedSkill ? "Skill hinzufügen" : "Skillbereich hinzufügen"}
-						</span>
+						<span>{selectedSkill ? t("Skills_Add") : t("Skills_Add_Repository")}</span>
 					</button>
 					{openNewSkillDialog && (
 						<AddSkillDialog
@@ -202,7 +211,7 @@ export function SkillFolderTable({
 				</div>
 
 				<SearchField
-					placeholder="Suche nach Skills"
+					placeholder={t("Skills_Search")}
 					onChange={e => {
 						setSearchTerm(e.target.value);
 					}}
@@ -211,7 +220,7 @@ export function SkillFolderTable({
 
 				<DialogHandler id={"alert"} />
 				<DragDropContext onDragEnd={onDragEnd} key={"element.id"}>
-					<Table head={<TableHeaderColumn>Bezeichnung</TableHeaderColumn>}>
+					<Table head={<TableHeaderColumn>{t("common:Name")}</TableHeaderColumn>}>
 						{skillsToDisplay
 							.sort(byChildrenLength)
 							.filter(
