@@ -651,17 +651,19 @@ function CoursePath({
 			}
 		}
 	);
-	const isComplete = status?.status === "FINISHED";
+	const isComplete = status?.status === "FINISHED" && status?.result != null;
 
 	useEffect(() => {
-		if (status?.status === "ABORTED") {
+		const aborted = status?.status === "ABORTED";
+		const failed = status?.status === "FINISHED" && status?.result == null;
+		if (aborted || failed) {
 			showToast({
 				type: "error",
 				title: "Fehler",
 				subtitle: "Der Kurs konnte nicht generiert werden."
 			});
 		}
-	}, [status?.status]);
+	}, [status]);
 
 	const generateDynamicCourse = async () => {
 		try {
