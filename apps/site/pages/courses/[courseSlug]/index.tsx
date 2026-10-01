@@ -652,18 +652,18 @@ function CoursePath({
 		}
 	);
 	const isComplete = status?.status === "FINISHED" && status?.result != null;
+	const failedCourseGeneration = status?.status === "FINISHED" && status?.result == null;
 
 	useEffect(() => {
 		const aborted = status?.status === "ABORTED";
-		const failed = status?.status === "FINISHED" && status?.result == null;
-		if (aborted || failed) {
+		if (aborted || failedCourseGeneration) {
 			showToast({
 				type: "error",
 				title: "Fehler",
 				subtitle: "Der Kurs konnte nicht generiert werden."
 			});
 		}
-	}, [status]);
+	}, [status, failedCourseGeneration]);
 
 	const generateDynamicCourse = async () => {
 		try {
@@ -704,6 +704,17 @@ function CoursePath({
 	}
 	if (hasGeneratedPath) {
 		return null;
+	}
+
+	if (failedCourseGeneration) {
+		return (
+			<button
+				className="btn-primary mt-4 w-full text-white p-3 rounded-lg flex items-center justify-center font-semibold"
+				disabled={true}
+			>
+				Derzeit kann kein Kurspfad generiert werden.
+			</button>
+		);
 	}
 
 	return (
