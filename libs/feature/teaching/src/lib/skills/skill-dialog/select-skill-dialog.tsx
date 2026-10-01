@@ -4,11 +4,8 @@ import { Dialog, DialogActions, LoadingBox, OnDialogCloseFn } from "@self-learni
 import { trpc } from "@self-learning/api-client";
 import { memo, useContext, useEffect, useMemo, useState } from "react";
 import { SearchField } from "@self-learning/ui/forms";
-import { AcademicCapIcon as SkillLeafIcon } from "@heroicons/react/24/outline";
-import {
-	AcademicCapIcon as SkillGroupIcon,
-	Squares2X2Icon as SkillRepositoryIcon
-} from "@heroicons/react/24/solid";
+import { SkillIcon } from "../skill-icon";
+import { compareSkills } from "../compare-skills";
 import { SkillResourceContext } from "../skill-tree/skill-resource-context";
 import { ConnectedSkill } from "../skill-tree/skill-row-editor";
 import { isTruthy } from "@self-learning/util/common";
@@ -171,15 +168,15 @@ function SkillElement({
 	const isCourseRequired = !!ctx?.courseRequired.has(skill.id);
 	const isCourseProvided = !!ctx?.courseProvided.has(skill.id);
 
-	const isFolder = skill.children.length > 0;
-	const isRoot = isFolder && skill.parents.length === 0;
+	const isGroup = skill.children.length > 0;
+	const isRepository = isGroup && skill.parents.length === 0;
 
 	return (
 		<>
 			<input
 				id={"checkbox:" + skill.id}
 				type={"checkbox"}
-				className={`checkbox ${allowSelectRoots || !isRoot ? "" : "invisible"}`}
+				className={`checkbox ${allowSelectRoots || !isRepository ? "" : "invisible"}`}
 				checked={checked}
 				onChange={() => {
 					setChecked(!checked);
@@ -187,14 +184,7 @@ function SkillElement({
 				}}
 			/>
 			<div className="flex">
-				{/**TODO duplicated from skill-row-editor.tsx */}
-				{isRoot ? (
-					<SkillRepositoryIcon className={`icon h-5 text-lg`} />
-				) : isFolder ? (
-					<SkillGroupIcon className="icon h-5 text-lg" />
-				) : (
-					<SkillLeafIcon className="icon h-5 text-lg" />
-				)}
+				<SkillIcon isRepository={isRepository} isGroup={isGroup} />
 				<label htmlFor={"checkbox:" + skill.id} className="text-sm font-semibold">
 					<ConnectedSkill
 						name={skill.name}
@@ -217,7 +207,10 @@ function orderSkillsByTree(skills: SkillFormModel[]): SkillFormModel[] {
 	const seen = new Set<string>();
 	const ordered: SkillFormModel[] = [];
 	const byChildrenLength = (left: SkillFormModel, right: SkillFormModel) =>
-		right.children.length - left.children.length || left.name.localeCompare(right.name);
+		compareSkills(
+			{ numberChildren: left.children.length, name: left.name },
+			{ numberChildren: right.children.length, name: right.name }
+		);
 
 	const visit = (skill: SkillFormModel) => {
 		if (seen.has(skill.id)) return;
