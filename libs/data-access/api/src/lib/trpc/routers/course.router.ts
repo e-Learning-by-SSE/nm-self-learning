@@ -422,9 +422,20 @@ export const courseRouter = t.router({
 				});
 			}
 
+			// TODO SE: Risky, but needed to ensure that preview is re-computed and used in future
+			// However, this will remove all linked content (ctx lessons)
+			await database.course.update({
+				where: { courseId: course.courseId },
+				data: {
+					content: [],
+					meta: createCourseMeta({ content: [] })
+				}
+			});
+
 			const jobId = enqueueCoursePath({
 				course,
 				onFinish: async result => {
+					console.log("Course path generation result:", result);
 					if (result) {
 						const content: CourseContent = await mapCourseContent([
 							{
