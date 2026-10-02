@@ -15,7 +15,7 @@ import { inferProcedureOutput, inferProcedureInput } from "@trpc/server";
 import { AppRouter } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { skipToken } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useJob } from "./use-job";
 import { LoadingBox } from "@self-learning/ui/common";
@@ -224,6 +224,36 @@ function DetailsDialog({
 		return "provides" in element;
 	}
 
+	// Used for dragging the details dialog
+	const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+	const dragStart = useRef({ x: 0, y: 0 });
+	const offsetStart = useRef({ x: 0, y: 0 });
+	const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+		event.preventDefault();
+
+		dragStart.current = {
+			x: event.clientX,
+			y: event.clientY
+		};
+
+		offsetStart.current = dragOffset;
+
+		const handlePointerMove = (event: PointerEvent) => {
+			setDragOffset({
+				x: offsetStart.current.x + event.clientX - dragStart.current.x,
+				y: offsetStart.current.y + event.clientY - dragStart.current.y
+			});
+		};
+
+		const handlePointerUp = () => {
+			window.removeEventListener("pointermove", handlePointerMove);
+			window.removeEventListener("pointerup", handlePointerUp);
+		};
+
+		window.addEventListener("pointermove", handlePointerMove);
+		window.addEventListener("pointerup", handlePointerUp);
+	};
+
 	const sections = isLearningUnit(selectedElement)
 		? [
 				{
@@ -267,12 +297,15 @@ function DetailsDialog({
 		<div
 			className="fixed z-50 w-[340px] -translate-x-1/2 -translate-y-full overflow-hidden rounded-xl border border-gray-400 bg-gray-100 shadow-xl"
 			style={{
-				left: dialogPosition.x,
-				top: dialogPosition.y - 10
+				left: dialogPosition.x + dragOffset.x,
+				top: dialogPosition.y - 10 + dragOffset.y
 			}}
 			onClick={event => event.stopPropagation()}
 		>
-			<div className={`flex items-center gap-2 border-b px-4 py-3 ${headerStyle}`}>
+			<div
+				className={`flex cursor-move select-none items-center gap-2 border-b px-4 py-2 ${headerStyle}`}
+				onPointerDown={handlePointerDown}
+			>
 				{learningUnit ? (
 					<PlayCircleIcon className="h-5 w-5 shrink-0" />
 				) : (
