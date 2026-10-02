@@ -1,22 +1,10 @@
 import { WorkerHost } from "../lib/core/worker-host";
 import { jobs } from "./index";
-import { pathGenerationPayloadSchema } from "@self-learning/worker-api";
-import type { z } from "zod";
-
-type PathGenerationPayload = z.infer<typeof pathGenerationPayloadSchema>;
-
-type GeneratedPathResult = null | {
-	path: Array<{
-		origin?: {
-			id: string;
-			provides: Array<{ id: string }>;
-		};
-	}>;
-};
+import type { PayloadFor, ReturnTypeOf } from "@self-learning/worker-api";
 
 let workerHost: WorkerHost | undefined;
 
-const runPathGeneration = async (payload: PathGenerationPayload) => {
+const runPathGeneration = async (payload: PayloadFor<"pathGeneration">) => {
 	if (!workerHost) {
 		throw new Error("WorkerHost not initialized");
 	}
@@ -24,7 +12,7 @@ const runPathGeneration = async (payload: PathGenerationPayload) => {
 	const { result } = await workerHost.runJob(jobId, "pathGeneration", payload, {
 		requestedBy: "path-generation-job-spec"
 	});
-	return result as GeneratedPathResult;
+	return result as ReturnTypeOf<"pathGeneration">;
 };
 
 describe("pathGenerationJob", () => {
@@ -56,37 +44,40 @@ describe("pathGenerationJob", () => {
 	];
 
 	const createPayload = (
-		overrides: Partial<PathGenerationPayload> = {}
-	): PathGenerationPayload => ({
+		overrides: Partial<PayloadFor<"pathGeneration">> = {}
+	): PayloadFor<"pathGeneration"> => ({
 		dbSkills: baseSkills,
-		userGlobalKnowledge: { received: [] },
-		course: {
-			teachingGoals: [{ id: "skill-target", repositoryId: "repo-1", children: [] }]
-		},
+		goal: [{ id: "skill-target", repositoryId: "repo-1", children: [] }],
 		lessons: baseLessons,
 		knowledge: [],
 		...overrides
 	});
 
 	it("builds an ordered learning path that satisfies prerequisites", async () => {
+		// Setup
 		const payload = createPayload();
 
+		// Exercise
 		const result = await runPathGeneration(payload);
 
+		// Verify
 		expect(result).not.toBeNull();
-		const orderedLessons = result?.path.map(segment => segment.origin?.id);
-		expect(orderedLessons).toEqual(["lesson-1", "lesson-2"]);
-		const lastProvides = result?.path.at(-1)?.origin?.provides.map(skill => skill.id);
-		expect(lastProvides).toContain("skill-target");
+		expect(result!.lessonIds).toEqual(["lesson-1", "lesson-2"]);
+		const lastSkill = baseLessons
+			.find(lesson => lesson.lessonId === result!.lessonIds.at(-1))
+			.provides.map(skill => skill.id);
+		expect(lastSkill).toContain("skill-target");
 	});
 
 	it("skips lessons for previously acquired knowledge", async () => {
+		// Setup
 		const payload = createPayload({ knowledge: ["skill-foundation"] });
 
+		// Exercise
 		const result = await runPathGeneration(payload);
 
+		// Verify
 		expect(result).not.toBeNull();
-		const orderedLessons = result?.path.map(segment => segment.origin?.id);
-		expect(orderedLessons).toEqual(["lesson-2"]);
+		expect(result.lessonIds).toEqual(["lesson-2"]);
 	});
 });

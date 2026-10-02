@@ -47,7 +47,9 @@ describe("Hourly Average Quiz Answers for Student", () => {
 				slug: "average-lesson-completion-rate-test-course",
 				subtitle: "A course to test average lesson completion rate metric",
 				content: {},
-				meta: {}
+				meta: {},
+				version: 1,
+				type: "STATIC"
 			}
 		});
 
@@ -110,8 +112,6 @@ describe("Hourly Average Quiz Answers for Student", () => {
 		const result = await prisma.studentMetric_HourlyAverageQuizAnswers.findFirst({
 			where: { userId: users[0].id }
 		});
-
-		console.log("Average Lesson Completion Rate Result:", result);
 
 		expect(result).not.toBeNull();
 		expect(result?.userId).toBe(users[0].id);

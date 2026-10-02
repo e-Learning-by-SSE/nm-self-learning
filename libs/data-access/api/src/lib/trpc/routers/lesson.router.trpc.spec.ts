@@ -9,7 +9,7 @@ import {
 	preparePermissionsForCreate,
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
-import { lessonRouter } from "./lesson.router";
+import { buildLinkedLessonQuery, lessonRouter } from "./lesson.router";
 import { AccessLevel, LessonType } from "@prisma/client";
 
 jest.mock("@self-learning/database", () => ({
@@ -21,6 +21,9 @@ jest.mock("@self-learning/database", () => ({
 			update: jest.fn(),
 			create: jest.fn(),
 			findUnique: jest.fn()
+		},
+		course: {
+			updateMany: jest.fn()
 		},
 		permission: {
 			findMany: jest.fn()
@@ -88,6 +91,8 @@ describe("tRPC API of Lesson Router", () => {
 			slug: "test-lessonId",
 			title: "Test Lesson",
 			description: "A lesson for testing",
+			version: 1,
+			type: "STATIC",
 			content: [],
 			meta: {},
 			authors: [{ username: "author1" }],
@@ -98,6 +103,7 @@ describe("tRPC API of Lesson Router", () => {
 					name: "Resource 1",
 					id: "res1",
 					description: "",
+					authorId: 1,
 					children: [],
 					repositoryId: "rid",
 					parents: []
@@ -109,6 +115,7 @@ describe("tRPC API of Lesson Router", () => {
 					id: "res2",
 					description: "",
 					children: [],
+					authorId: 1,
 					repositoryId: "rid",
 					parents: []
 				}
@@ -273,6 +280,17 @@ describe("tRPC API of Lesson Router", () => {
 
 			await expect(caller.edit(defaultLesson)).resolves.toBeDefined();
 			expect(database.lesson.update).toHaveBeenCalledTimes(1);
+		});
+	});
+
+	describe("findLinkedLessonEntities", () => {
+		it("guards nested JSON content extraction against scalar values", () => {
+			const sql = buildLinkedLessonQuery("lesson-123");
+
+			expect(sql).toContain("jsonb_typeof(c.\"content\") = 'array'");
+			expect(sql).toContain("jsonb_typeof(chapter) = 'object'");
+			expect(sql).toContain("jsonb_typeof(chapter->'content') = 'array'");
+			expect(sql).toContain("lesson->>'lessonId' =");
 		});
 	});
 

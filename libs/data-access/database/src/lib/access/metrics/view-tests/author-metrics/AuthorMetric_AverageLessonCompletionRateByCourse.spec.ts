@@ -73,7 +73,9 @@ describe("Average Lesson Completion Rate by Course", () => {
 				authors: {
 					// Id of the author needed and not the user id
 					connect: { id: authors[0].id }
-				}
+				},
+				version: 1,
+				type: "STATIC"
 			}
 		});
 
@@ -148,8 +150,6 @@ describe("Average Lesson Completion Rate by Course", () => {
 		const result = await prisma.authorMetric_AverageLessonCompletionRateByCourse.findFirst({
 			where: { authorId: users[0].id }
 		});
-
-		console.log("Average Lesson Completion Rate Course Result:", result);
 
 		expect(result).not.toBeNull();
 		expect(result?.authorId).toBe(users[0].id);

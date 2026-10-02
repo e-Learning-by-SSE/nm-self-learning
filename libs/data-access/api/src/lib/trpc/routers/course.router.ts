@@ -1,4 +1,4 @@
-import { AccessLevel, Prisma } from "@prisma/client";
+import { AccessLevel, CourseType, Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import {
 	courseFormSchema,
@@ -7,8 +7,11 @@ import {
 	mapCourseFormToUpdate
 } from "@self-learning/teaching";
 import {
+	CourseChapter,
 	CourseContent,
+	courseContentSchema,
 	CourseMeta,
+	createCourseMeta,
 	extractLessonIds,
 	greaterAccessLevel,
 	LessonMeta
@@ -16,7 +19,7 @@ import {
 import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { authProcedure, t } from "../trpc";
+import { authProcedure, authorProcedure, t } from "../trpc";
 import { getCourseResource } from "../../permissions/course.utils";
 import {
 	canCreate,
@@ -25,6 +28,9 @@ import {
 	preparePermissionsForCreate,
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
+import { mapCourseContent } from "@self-learning/course";
+import { enqueueCourseGraphJob, enqueueCoursePath } from "../../learning-path/learning-path";
+import { graphResponseSchema } from "@self-learning/worker-api";
 
 export const courseRouter = t.router({
 	listAvailableCourses: authProcedure
@@ -192,7 +198,8 @@ export const courseRouter = t.router({
 		.input(
 			paginationSchema.extend({
 				title: z.string().optional(),
-				specializationId: z.string().optional()
+				specializationId: z.string().optional(),
+				type: z.enum(CourseType).optional()
 			})
 		)
 		.query(async ({ input }) => {
@@ -205,10 +212,11 @@ export const courseRouter = t.router({
 						: undefined,
 				specializations: input.specializationId
 					? { some: { specializationId: input.specializationId } }
-					: undefined
+					: undefined,
+				type: input.type
 			};
 
-			const [result, count] = await database.$transaction([
+			const [resultCourse, count] = await database.$transaction([
 				database.course.findMany({
 					select: {
 						courseId: true,
@@ -225,6 +233,8 @@ export const courseRouter = t.router({
 				database.course.count({ where })
 			]);
 
+			const result = resultCourse.sort((a, b) => a.title.localeCompare(b.title));
+
 			return {
 				result,
 				pageSize: pageSize,
@@ -232,30 +242,357 @@ export const courseRouter = t.router({
 				totalCount: count
 			} satisfies Paginated<unknown>;
 		}),
-	getContent: t.procedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
-		const course = await database.course.findUniqueOrThrow({
-			where: { slug: input.slug },
-			select: { content: true }
-		});
+	getDefaultPathPreview: t.procedure
+		.meta({
+			description: "Returns the default path (preview during editing) of a dynamic course"
+		})
+		.input(z.object({ slug: z.string() }))
+		.query(async ({ input }) => {
+			const course = await database.course.findUniqueOrThrow({
+				where: { slug: input.slug },
+				select: {
+					content: true
+				}
+			});
 
-		const content = (course.content ?? []) as CourseContent;
-		const lessonIds = extractLessonIds(content);
+			return await extractCoursePathContent(course.content);
+		}),
+	getContent: authProcedure
+		.meta({
+			description: "Returns the content of a static/dynamic course"
+		})
+		.input(z.object({ slug: z.string() }))
+		.query(async ({ input, ctx }) => {
+			// Obtain course definition (static or dynamic)
+			const course = await database.course.findUniqueOrThrow({
+				where: { slug: input.slug },
+				select: {
+					content: true,
+					type: true,
+					slug: true
+				}
+			});
 
-		const lessons = await database.lesson.findMany({
-			where: { lessonId: { in: lessonIds } },
-			select: { lessonId: true, slug: true, title: true, meta: true }
-		});
+			// Check if its dynamic and generate content
+			let raw: Prisma.JsonValue = course.content;
+			if (course.type === CourseType.DYNAMIC && ctx.user?.name) {
+				// Obtain individual learning path
+				const dynCourse = await database.generatedLessonPath.findUnique({
+					where: {
+						slug_username: {
+							slug: course.slug,
+							username: ctx.user.name
+						}
+					},
+					select: {
+						content: true
+					}
+				});
+				console.log("Use Dyn content");
+				raw = dynCourse?.content ?? course.content;
+			}
 
-		const lessonMap: {
-			[lessonId: string]: { title: string; lessonId: string; slug: string; meta: LessonMeta };
-		} = {};
+			return await extractCoursePathContent(raw);
+		}),
+	getCourse: authorProcedure
+		.input(z.object({ slug: z.string() }))
+		.output(courseFormSchema)
+		.query(async ({ input }) => {
+			const course = await database.course.findUniqueOrThrow({
+				where: { slug: input.slug },
+				include: {
+					authors: true,
+					provides: {
+						include: {
+							children: true,
+							parents: true
+						}
+					},
+					requires: {
+						include: {
+							children: true,
+							parents: true
+						}
+					},
+					specializations: true,
+					permissions: {
+						select: {
+							groupId: true,
+							group: true,
+							accessLevel: true
+						}
+					}
+				}
+			});
 
-		for (const lesson of lessons) {
-			lessonMap[lesson.lessonId] = lesson as (typeof lessons)[0] & { meta: LessonMeta };
-		}
+			return {
+				courseId: course.courseId,
+				subjectId: course.subjectId ?? null,
+				slug: course.slug,
+				title: course.title,
+				subtitle: course.subtitle ?? "",
+				description: course.description ?? null,
+				imgUrl: course.imgUrl ?? null,
 
-		return { content, lessonMap };
+				content: parseCourseContent(course.content),
+
+				specializations: course.specializations ?? [],
+
+				authors: course.authors,
+
+				type: course.type,
+				version: course.version,
+
+				provides: course.provides.map(s => ({
+					id: s.id,
+					name: s.name,
+					description: s.description ?? null,
+					authorId: s.authorId,
+					children: s.children.map(child => child.id),
+					parents: s.parents.map(parent => parent.id)
+				})),
+
+				requires: course.requires.map(s => ({
+					id: s.id,
+					name: s.name,
+					description: s.description ?? null,
+					authorId: s.authorId,
+					children: s.children.map(child => child.id),
+					parents: s.parents.map(parent => parent.id)
+				})),
+
+				permissions: course.permissions.map(p => ({
+					groupId: p.groupId,
+					groupName: p.group.name,
+					accessLevel: p.accessLevel
+				}))
+			};
+		}),
+	updateDefaultPath: authProcedure
+		.input(
+			z.object({
+				slug: z.string(),
+				knowledge: z.array(z.string())
+			})
+		)
+		.mutation(async ({ input }) => {
+			// TODO any permissions? I think VIEW is enough
+			const course = await database.course.findUnique({
+				where: { slug: input.slug },
+				select: {
+					courseId: true,
+					title: true,
+					type: true,
+					authors: true,
+					subtitle: true,
+					slug: true,
+					description: true,
+					imgUrl: true,
+					provides: {
+						select: {
+							id: true,
+							name: true,
+							description: true,
+							authorId: true,
+							children: { select: { id: true } }
+						}
+					},
+					requires: {
+						select: {
+							id: true,
+							name: true,
+							description: true,
+							authorId: true,
+							children: { select: { id: true } }
+						}
+					}
+				}
+			});
+			if (!course) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Failed to find requested course"
+				});
+			}
+			if (course.type !== CourseType.DYNAMIC) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Requested course is not dynamic"
+				});
+			}
+
+			// TODO SE: Risky, but needed to ensure that preview is re-computed and used in future
+			// However, this will remove all linked content (ctx lessons)
+			await database.course.update({
+				where: { courseId: course.courseId },
+				data: {
+					content: [],
+					meta: createCourseMeta({ content: [] })
+				}
+			});
+
+			const jobId = enqueueCoursePath({
+				course,
+				onFinish: async result => {
+					console.log("Course path generation result:", result);
+					if (result) {
+						const content: CourseContent = await mapCourseContent([
+							{
+								title: "generatedLessonPathTitle",
+								description: "generatedLessonPathDescription",
+								content: (result.lessonIds ?? []).map(lessonId => ({ lessonId }))
+							} as CourseChapter
+						]);
+
+						await database.course.update({
+							where: { courseId: course.courseId },
+							data: {
+								content: content,
+								meta: createCourseMeta({ content: content })
+							}
+						});
+					} else {
+						// Store empty content (no chapter, no lesson) to indicate that the path generation failed
+						await database.course.update({
+							where: { courseId: course.courseId },
+							data: {
+								content: [],
+								meta: createCourseMeta({ content: [] })
+							}
+						});
+					}
+				}
+			});
+
+			return jobId;
+		}),
+	createCourseGraphJob: authProcedure
+		.input(
+			z.object({
+				courseId: z.string()
+			})
+		)
+		.mutation(async ({ input }) => {
+			return await enqueueCourseGraphJob({
+				courseId: input.courseId,
+				onFinish: () => {}
+			});
+		}),
+	getGraphContent: authProcedure.input(graphResponseSchema).query(async ({ input }) => {
+		const [skills, learningUnits] = await Promise.all([
+			database.skill.findMany({
+				select: {
+					id: true,
+					name: true,
+					children: { select: { id: true } }
+				},
+				where: {
+					id: { in: input.skills }
+				}
+			}),
+			database.lesson.findMany({
+				select: {
+					lessonId: true,
+					title: true,
+					slug: true,
+					requires: { select: { id: true } },
+					provides: { select: { id: true } }
+				},
+				where: {
+					lessonId: { in: input.learningUnits }
+				}
+			})
+		]);
+		return {
+			skills,
+			learningUnits,
+			edges: input.edges
+		};
 	}),
+	createLessonPath: authProcedure
+		.input(
+			z.object({
+				courseId: z.string()
+			})
+		)
+		.mutation(async ({ input, ctx }) => {
+			// TODO any permissions? I think VIEW is enough
+			const course = await database.course.findUnique({
+				where: { courseId: input.courseId },
+				select: {
+					courseId: true,
+					version: true,
+					type: true,
+					slug: true,
+					provides: {
+						select: {
+							id: true,
+							children: {
+								// Needed for nestedSkills
+								select: { id: true }
+							}
+						}
+					},
+					requires: {
+						select: {
+							id: true,
+							children: {
+								// Needed for nestedSkills
+								select: { id: true }
+							}
+						}
+					}
+				}
+			});
+			if (!course) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Failed to find requested course"
+				});
+			}
+			if (course.type !== CourseType.DYNAMIC) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Requested course is not dynamic"
+				});
+			}
+
+			const jobId = await enqueueCoursePath({
+				course,
+				onFinish: async result => {
+					const courseChapter: CourseChapter = {
+						title: "",
+						description: "",
+						content: (result.lessonIds ?? []).map(id => ({ lessonId: id }))
+					};
+
+					await database.generatedLessonPath.create({
+						data: {
+							content: [courseChapter],
+							courseVersion: course.version,
+							slug: course.slug,
+							courseId: input.courseId,
+							meta: createCourseMeta({ content: [courseChapter] }),
+							username: ctx.user.name,
+							createdAt: new Date(),
+							updatedAt: new Date()
+						}
+					});
+				},
+				userId: ctx.user.id
+			});
+
+			return jobId;
+		}),
+	getSkillContext: authProcedure
+		.input(
+			z.object({
+				courseId: z.string()
+			})
+		)
+		.query(async ({ input }) => {
+			return await getSkillContext(input.courseId);
+		}),
 	fullExport: t.procedure.input(z.object({ slug: z.string() })).query(async ({ input, ctx }) => {
 		const fullExport = await getFullCourseExport(input.slug);
 
@@ -276,6 +613,7 @@ export const courseRouter = t.router({
 		return fullExport;
 	}),
 	create: authProcedure.input(courseFormSchema).mutation(async ({ input, ctx }) => {
+		// TODO do I need any course type dependent checks here?
 		if (input.authors.length <= 0 && ctx.user.role !== "ADMIN") {
 			throw new TRPCError({
 				code: "FORBIDDEN",
@@ -294,7 +632,7 @@ export const courseRouter = t.router({
 
 		const created = await database.course.create({
 			data: courseForDb,
-			select: { title: true, slug: true, courseId: true }
+			select: { title: true, slug: true, courseId: true, version: true }
 		});
 
 		console.log("[courseRouter.create]: Course created by", ctx.user.name, created);
@@ -310,10 +648,56 @@ export const courseRouter = t.router({
 			);
 			const courseForDb = mapCourseFormToUpdate(input.course, input.courseId, permissions);
 
-			return await database.course.update({
-				where: { courseId: input.courseId },
-				data: courseForDb,
-				select: { title: true, slug: true, courseId: true }
+			return database.$transaction(async tx => {
+				const prevCourse = await tx.course.findUnique({
+					where: { courseId: input.courseId },
+					select: {
+						version: true,
+						content: true,
+						requires: true,
+						provides: true
+					}
+				});
+
+				// If [skills | lessons] have changed => increment course version
+				// Previous [skills | lessons]
+				const lessonIds = (prevCourse?.content as CourseContent).flatMap(chapter =>
+					chapter.content.map(lesson => lesson.lessonId)
+				);
+				const skillIds = [
+					...(prevCourse?.requires ?? []),
+					...(prevCourse?.provides ?? [])
+				].flatMap(requirement => requirement.id);
+
+				// Current [skills | lessons]
+				const newLessonIds = (courseForDb.content as CourseContent).flatMap(chapter =>
+					chapter.content.map(lesson => lesson.lessonId)
+				);
+				const newSkillIds = [...input.course.requires, ...input.course.provides].map(
+					requirement => requirement.id
+				);
+
+				// Determine change
+				const lessonsChanged =
+					lessonIds.some(id => !newLessonIds.includes(id)) ||
+					newLessonIds.some(id => !lessonIds.includes(id));
+				const skillsChanged =
+					skillIds.some(id => !newSkillIds.includes(id)) ||
+					newSkillIds.some(id => !skillIds.includes(id));
+
+				if (
+					(lessonsChanged || skillsChanged) &&
+					prevCourse?.version === courseForDb.version
+				) {
+					const prevVersion = input.course.version ?? prevCourse?.version ?? 1;
+					courseForDb.version = prevVersion + 1;
+				}
+
+				return await tx.course.update({
+					where: { courseId: input.courseId },
+					data: courseForDb,
+					select: { title: true, slug: true, courseId: true, version: true }
+				});
 			});
 		}),
 	deleteCourse: authProcedure
@@ -461,7 +845,7 @@ export const courseRouter = t.router({
 				where: { courseId: input.courseId },
 				select: { content: true }
 			});
-			const content = (course.content ?? []) as CourseContent;
+			const content = parseCourseContent(course.content);
 			const newContent = content.map(chapter => ({
 				...chapter,
 				content: chapter.content.filter(lesson => lesson.lessonId !== input.lessonId)
@@ -473,3 +857,90 @@ export const courseRouter = t.router({
 			});
 		})
 });
+
+async function extractCoursePathContent(raw: Prisma.JsonValue) {
+	const content = parseCourseContent(raw);
+
+	const lessonIds = extractLessonIds(content);
+
+	const lessons = await database.lesson.findMany({
+		where: { lessonId: { in: lessonIds } },
+		select: {
+			lessonId: true,
+			slug: true,
+			title: true,
+			meta: true
+		}
+	});
+
+	const lessonMap: {
+		[lessonId: string]: {
+			title: string;
+			lessonId: string;
+			slug: string;
+			meta: LessonMeta;
+		};
+	} = {};
+
+	for (const lesson of lessons) {
+		lessonMap[lesson.lessonId] = lesson as (typeof lessons)[0] & { meta: LessonMeta };
+	}
+
+	return { content, lessonMap };
+}
+
+/**
+ * Gathers required and provided skill ids of the course and its lessons (from default content)
+ * @param courseId - id of course to get context for
+ * @returns object with course requires and provides, as well as its lessons with requires and provides
+ */
+async function getSkillContext(courseId: string) {
+	const course = await database.course.findUnique({
+		where: { courseId },
+		select: {
+			type: true,
+			courseId: true,
+			content: true,
+			requires: { select: { id: true } },
+			provides: { select: { id: true } }
+		}
+	});
+	if (!course) {
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: `Course not found for id: ${courseId}`
+		});
+	}
+
+	const lessonIds = extractLessonIds(parseCourseContent(course.content));
+	const lessons = lessonIds.length
+		? await database.lesson.findMany({
+				where: { lessonId: { in: lessonIds } },
+				select: {
+					lessonId: true,
+					requires: { select: { id: true } },
+					provides: { select: { id: true } }
+				}
+			})
+		: [];
+
+	const flattenSkillId = (skill: { id: string }) => skill.id;
+
+	return {
+		type: course.type,
+		courseId: course.courseId,
+		requires: course.requires.map(flattenSkillId),
+		provides: course.provides.map(flattenSkillId),
+		lessons: lessons.map(lesson => ({
+			lessonId: lesson.lessonId,
+			requires: lesson.requires.map(flattenSkillId),
+			provides: lesson.provides.map(flattenSkillId)
+		}))
+	};
+}
+
+function parseCourseContent(raw: Prisma.JsonValue): CourseContent {
+	const result = courseContentSchema.safeParse(raw);
+
+	return result.success ? result.data : [];
+}

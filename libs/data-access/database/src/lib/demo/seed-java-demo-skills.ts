@@ -1,4 +1,4 @@
-import { createRepositories, createSkillGroups, createSkills } from "../seed-functions";
+import { createSkillGroups, createSkills } from "../seed-functions";
 
 const skills = [
 	{
@@ -191,19 +191,10 @@ const skillGroups = [
 	}
 ];
 
-const repository = {
-	id: "1",
-	name: "Java OO Repository",
-	description: "Example to demonstrate competence modelling capabilities"
-};
-
-export async function seedJavaDemoSkills() {
-	await createRepositories(repository);
-	console.log(" - %s\x1b[32m ✔\x1b[0m", "Repositories");
-
-	await createSkills(skills, repository.id);
+export async function seedJavaDemoSkills(adminId: number) {
+	await createSkills(adminId, skills);
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Skills");
 
-	await createSkillGroups(skillGroups, repository);
+	await createSkillGroups(adminId, skillGroups);
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Skill Groups");
 }

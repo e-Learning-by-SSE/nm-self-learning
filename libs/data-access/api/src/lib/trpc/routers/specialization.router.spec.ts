@@ -18,6 +18,9 @@ jest.mock("@self-learning/database", () => ({
 			findUniqueOrThrow: jest.fn(),
 			create: jest.fn(),
 			update: jest.fn()
+		},
+		course: {
+			findUnique: jest.fn()
 		}
 	}
 }));
@@ -134,9 +137,9 @@ describe("specializationRouter", () => {
 			(prepareResourceUpdate as jest.Mock).mockResolvedValue(undefined);
 			(database.specialization.update as jest.Mock).mockResolvedValue(defaultSpec);
 
-			await expect(
-				caller.update({ subjectId: "math", data: defaultSpec })
-			).resolves.toEqual(defaultSpec);
+			await expect(caller.update({ subjectId: "math", data: defaultSpec })).resolves.toEqual(
+				defaultSpec
+			);
 		});
 
 		it("throws FORBIDDEN when prepareResourceUpdate rejects", async () => {
@@ -156,6 +159,9 @@ describe("specializationRouter", () => {
 			const { caller } = prepare({ role: "ADMIN" });
 			(database.specialization.update as jest.Mock).mockResolvedValue({
 				specializationId: "algebra"
+			});
+			(database.course.findUnique as jest.Mock).mockResolvedValue({
+				courseId: "some id"
 			});
 
 			await caller.addCourse(attachInput);
@@ -196,7 +202,9 @@ describe("specializationRouter", () => {
 			const { caller } = prepare({ role: "USER", memberships: [1] });
 			(hasResourceAccess as jest.Mock).mockResolvedValue(false);
 
-			await expect(caller.addCourse(attachInput)).rejects.toMatchObject({ code: "FORBIDDEN" });
+			await expect(caller.addCourse(attachInput)).rejects.toMatchObject({
+				code: "FORBIDDEN"
+			});
 			expect(database.specialization.update).not.toHaveBeenCalled();
 		});
 
@@ -207,14 +215,18 @@ describe("specializationRouter", () => {
 				.mockResolvedValueOnce(false)
 				.mockResolvedValueOnce(false);
 
-			await expect(caller.addCourse(attachInput)).rejects.toMatchObject({ code: "FORBIDDEN" });
+			await expect(caller.addCourse(attachInput)).rejects.toMatchObject({
+				code: "FORBIDDEN"
+			});
 		});
 
 		it("removeCourse uses the same attach permission check", async () => {
 			const { caller } = prepare({ role: "USER", memberships: [1] });
 			(hasResourceAccess as jest.Mock).mockResolvedValue(false);
 
-			await expect(caller.removeCourse(attachInput)).rejects.toMatchObject({ code: "FORBIDDEN" });
+			await expect(caller.removeCourse(attachInput)).rejects.toMatchObject({
+				code: "FORBIDDEN"
+			});
 		});
 
 		it("removeCourse disconnects when attach is allowed", async () => {

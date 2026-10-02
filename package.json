@@ -1,6 +1,6 @@
 {
 	"name": "self-learning",
-	"version": "unstable",
+	"version": "0.5-SNAPSHOT",
 	"license": "MIT",
 	"scripts": {
 		"postinstall": "prisma generate --no-hints",
@@ -28,7 +28,7 @@
 		"seed": "prisma generate && prisma db push --force-reset --accept-data-loss && npm run prisma:views && prisma db seed",
 		"migrate": "tsx libs/data-access/database/prisma/deploy-migrations.ts",
 		"seed:analytics-test": "tsx --tsconfig tsconfig.base.json scripts/seed-analytics-test-users.ts",
-        "prisma:views": "for file in libs/data-access/database/prisma/views/*.sql; do npx prisma db execute --file \"$file\" --schema libs/data-access/database/prisma/schema || exit 1; done"
+		"prisma:views": "for file in libs/data-access/database/prisma/views/*.sql; do npx prisma db execute --file \"$file\" --schema libs/data-access/database/prisma/schema || exit 1; done"
 	},
 	"private": true,
 	"dependencies": {
@@ -53,6 +53,7 @@
 		"@trpc/next": "11.17.0",
 		"@trpc/react-query": "11.17.0",
 		"@trpc/server": "11.17.0",
+		"@xyflow/react": "^12.12.0",
 		"chart.js": "^4.5.1",
 		"chartjs-adapter-date-fns": "^3.0.0",
 		"chartjs-chart-matrix": "^2.1.1",
@@ -87,6 +88,7 @@
 		"react-dom": "19.2.6",
 		"react-hook-form": "^7.76.1",
 		"react-hot-toast": "^2.6.0",
+		"react-hotkeys-hook": "^4.6.2",
 		"react-is": "19.2.6",
 		"react-markdown": "^10.1.0",
 		"react-player": "^3.4.0",

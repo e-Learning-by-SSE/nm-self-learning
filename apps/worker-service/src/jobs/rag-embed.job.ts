@@ -1,5 +1,4 @@
 import { JobDefinition } from "../lib/core/job-registry";
-import { ragEmbedPayloadSchema } from "@self-learning/worker-api";
 import { processRagEmbedLesson } from "@self-learning/rag-processing";
 
 /**
@@ -22,7 +21,6 @@ import { processRagEmbedLesson } from "@self-learning/rag-processing";
 export const ragEmbedJob: JobDefinition<"ragEmbed"> = {
 	name: "ragEmbed",
 	description: "Processes and embeds lesson content into vector store",
-	schema: ragEmbedPayloadSchema,
 
 	run: async payload => {
 		return processRagEmbedLesson(payload);

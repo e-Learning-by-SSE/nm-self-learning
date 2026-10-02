@@ -37,7 +37,9 @@ describe("Average Course Completion Rate", () => {
 				authors: {
 					// Id of the author needed and not the user id
 					connect: { id: authors[0].id }
-				}
+				},
+				version: 1,
+				type: "STATIC"
 			}
 		});
 
@@ -67,8 +69,6 @@ describe("Average Course Completion Rate", () => {
 		const result = await prisma.authorMetric_AverageCompletionRate.findUnique({
 			where: { authorId: users[0].id }
 		});
-
-		console.log("Average Completion Rate Result:", result);
 
 		expect(result).not.toBeNull();
 		expect(result?.authorId).toBe(users[0].id);

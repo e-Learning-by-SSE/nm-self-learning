@@ -270,7 +270,7 @@ async function exportCourse({ course, lessons }: CourseWithLessons, exportOption
 				email: course.authors.map(author => author.user.email).join(", ")
 			}),
 			date: new Date().toLocaleDateString(),
-			version: "1.0",
+			version: course.version,
 			narrator: selectNarrator(options),
 			...(courseDescription && { comment: courseDescription }),
 			...(course.imgUrl && { logo: course.imgUrl })

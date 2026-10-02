@@ -88,5 +88,8 @@
 	"subjects": "Fachgebiete",
     "Close": "Schließen",
     "Help": "Hilfe",
-    "Open_Menu": "Menü öffnen"
+    "Open_Menu": "Menü öffnen",
+    "Description": "Beschreibung",
+    "Confirm": "Bestätigen",
+    "Warning": "Warnung"
 }

@@ -1,73 +1,92 @@
+import { useTranslation } from "next-i18next";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { SkillFormModel } from "@self-learning/types";
-import { IconTextButton, IconOnlyButton } from "@self-learning/ui/common";
-import { LabeledField } from "@self-learning/ui/forms";
-import { useState } from "react";
-import { SelectSkillDialog } from "./select-skill-dialog";
 
-export function LabeledFieldSelectSkillsView({
+import { IconOnlyButton, IconTextButton } from "@self-learning/ui/common";
+
+import { LabeledField } from "@self-learning/ui/forms";
+import { useMemo, useState } from "react";
+import { SelectSkillDialog } from "./select-skill-dialog";
+import { Droppable } from "@hello-pangea/dnd";
+
+export function LabeledFieldSelectSkillsViewDragDrop({
 	skills,
 	onDeleteSkill,
 	onAddSkill,
-	repoId,
-	label
+	label,
+	droppableId,
+	excludedIds,
+	catalog
 }: {
 	skills: SkillFormModel[];
 	onDeleteSkill: (skill: SkillFormModel) => void;
 	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
-	repoId: string;
 	label: string;
+	droppableId?: string;
+	excludedIds?: ReadonlySet<string>;
+	catalog?: SkillFormModel[];
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	const [selectSkillModal, setSelectSkillModal] = useState<boolean>(false);
 
 	return (
-		<LabeledField
-			label={label}
-			button={
-				<IconTextButton
-					text="Hinzufügen"
-					icon={<PlusIcon className="h-5 w-5" />}
-					className="btn-secondary"
-					onClick={() => setSelectSkillModal(true)}
-					title={"Hinzufügen"}
-					data-testid="BenoetigteSkills-add"
-				/>
-			}
-		>
-			<SkillManagementComponent
-				skills={skills}
-				setSelectSkillModal={setSelectSkillModal}
-				onAddSkill={onAddSkill}
-				selectSkillModal={selectSkillModal}
-				onDeleteSkill={onDeleteSkill}
-				repoId={repoId}
-			/>
-		</LabeledField>
+		<Droppable droppableId={droppableId ? droppableId : "select-skills"}>
+			{provided => (
+				<div ref={provided.innerRef} {...provided.droppableProps}>
+					<LabeledField label={label} button={null}>
+						<button
+							type="button"
+							onClick={() => setSelectSkillModal(true)}
+							className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-gray-400 rounded py-2 mb-3 text-grey-500 hover:bg-emerald-50 transition text-sm"
+							data-testid="BenoetigteSkills-add"
+						>
+							{t("Skills_Select_Or_Drop")}
+						</button>
+						<SkillManagementComponent
+							skills={skills}
+							setSelectSkillModal={setSelectSkillModal}
+							onAddSkill={onAddSkill}
+							selectSkillModal={selectSkillModal}
+							onDeleteSkill={onDeleteSkill}
+							excludedIds={excludedIds}
+							catalog={catalog}
+							allowSelectRoots={false}
+						/>
+					</LabeledField>
+					{provided.placeholder}
+				</div>
+			)}
+		</Droppable>
 	);
 }
 
-// TODO looks like a duplicate of the above component
 export function SelectSkillsView({
 	skills,
 	onDeleteSkill,
 	onAddSkill,
-	repoId
+	disabled = false,
+	excludedIds,
+	catalog
 }: {
 	skills: SkillFormModel[];
 	onDeleteSkill: (skill: SkillFormModel) => void;
 	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
-	repoId: string;
+	disabled?: boolean;
+	excludedIds?: ReadonlySet<string>;
+	catalog?: SkillFormModel[];
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	const [selectSkillModal, setSelectSkillModal] = useState(false);
 
 	return (
 		<>
 			<IconTextButton
-				text="Hinzufügen"
+				disabled={disabled ? disabled : false}
+				text={t("common:add")}
 				icon={<PlusIcon className="h-5 w-5" />}
 				className="btn-secondary"
 				onClick={() => setSelectSkillModal(true)}
-				title={"Hinzufügen"}
+				title={t("common:add")}
 				data-testid="BenoetigteSkills-add"
 			/>
 			<SkillManagementComponent
@@ -76,49 +95,69 @@ export function SelectSkillsView({
 				onAddSkill={onAddSkill}
 				selectSkillModal={selectSkillModal}
 				onDeleteSkill={onDeleteSkill}
-				repoId={repoId}
+				excludedIds={excludedIds}
+				catalog={catalog}
+				allowSelectRoots={true}
 			/>
 		</>
 	);
 }
 
-function SkillManagementComponent({
+export function SkillManagementComponent({
 	skills,
 	onDeleteSkill,
 	onAddSkill,
-	repoId,
 	setSelectSkillModal,
-	selectSkillModal
+	selectSkillModal,
+	excludedIds,
+	catalog,
+	allowSelectRoots = true // allow to select root skills, set to false when picking course/lesson skills
 }: {
 	skills: SkillFormModel[];
-	onDeleteSkill: (skill: SkillFormModel) => void;
+	onDeleteSkill: (skill: SkillFormModel, index: number) => void;
 	onAddSkill: (skill: SkillFormModel[] | undefined) => void;
-	repoId: string;
 	setSelectSkillModal: (value: boolean | ((prevVar: boolean) => boolean)) => void;
 	selectSkillModal: boolean;
+	excludedIds?: ReadonlySet<string>;
+	catalog?: SkillFormModel[];
+	allowSelectRoots: boolean;
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
+	// Ids of skills picked in the dialog. In the dialog those checkboxes are checked
+	const selectedIds = useMemo(() => new Set(skills.map(skill => skill.id)), [skills]);
+
 	return (
 		<div className="flex flex-col">
 			{skills.length === 0 && (
-				<div className="mt-3 text-sm text-c-text-muted">Keine Skills vorhanden</div>
+				<div className="mt-3 text-sm text-c-text-muted">{t("Skills_Empty")}</div>
 			)}
 			<div className="mt-3 max-h-40 overflow-auto">
 				{skills.map((skill, index) => (
 					<InlineRemoveButton
-						key={index}
+						key={skill.id}
 						label={skill.name}
-						onRemove={() => onDeleteSkill(skill)}
+						onRemove={() => onDeleteSkill(skill, index)}
 						onClick={() => {}} //TODO
 					/>
 				))}
 			</div>
 			{selectSkillModal && (
 				<SelectSkillDialog
-					onClose={skill => {
+					skills={catalog}
+					excludedIds={excludedIds}
+					selectedIds={selectedIds}
+					allowSelectRoots={allowSelectRoots}
+					onClose={change => {
 						setSelectSkillModal(false);
-						onAddSkill(skill);
+						if (!change) return;
+						for (const skill of change.removed) {
+							onDeleteSkill(
+								skill,
+								skills.findIndex(item => item.id === skill.id)
+							);
+						}
+						if (change.added.length > 0) onAddSkill(change.added);
 					}}
-					repositoryId={repoId}
 				/>
 			)}
 		</div>
@@ -134,6 +173,7 @@ function InlineRemoveButton({
 	onRemove: () => void;
 	onClick: () => void;
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	return (
 		<div className="inline-block">
 			<div className="flex items-center rounded-lg border border-c-border bg-white text-sm">
@@ -146,7 +186,7 @@ function InlineRemoveButton({
 				</button>
 				<IconOnlyButton
 					onClick={onRemove}
-					title={"Skill entfernen"}
+					title={t("Skills_Remove")}
 					icon={<XMarkIcon className="h-5 w-5" />}
 					className="btn-x-mark p-2 mr-2"
 				/>

@@ -227,7 +227,7 @@ export function SpecializationEditor({
 }
 
 export const getServerSideProps = withTranslations(
-	["common"],
+	["common", "feature-teaching"],
 	withAuth<CreateSpecializationProps>(async (ctx, user) => {
 		const subjectId = ctx.params?.subjectId;
 

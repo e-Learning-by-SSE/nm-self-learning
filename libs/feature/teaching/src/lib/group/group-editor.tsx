@@ -61,7 +61,7 @@ export async function onGroupEditorSubmit(
 			});
 		}
 		onClose();
-	} catch (error) {
+	} catch {
 		showToast({
 			type: "error",
 			title: "Fehler",

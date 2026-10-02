@@ -20,7 +20,9 @@ describe("Daily Learning Time by Course for Student", () => {
 				slug: "daily-learning-time-by-course-test-course",
 				subtitle: "A course to test daily learning time by course metric",
 				content: {},
-				meta: {}
+				meta: {},
+				version: 1,
+				type: "STATIC"
 			}
 		});
 
@@ -61,8 +63,6 @@ describe("Daily Learning Time by Course for Student", () => {
 		const result = await prisma.studentMetric_DailyLearningTimeByCourse.findFirst({
 			where: { userId: users[0].id }
 		});
-
-		console.log("Daily Learning Time by Course Result:", result);
 
 		expect(result).not.toBeNull();
 		expect(result?.userId).toBe(users[0].id);

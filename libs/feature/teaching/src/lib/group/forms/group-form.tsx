@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useFieldArray, useFormContext, useFormState } from "react-hook-form";
 import { LessonFormModel } from "../../lesson/lesson-form-model";
 import { Form, LabeledField } from "@self-learning/ui/forms";
-import { Chip, IconTextButton } from "@self-learning/ui/common";
+import { Chip, IconTextButton, QuestionMarkTooltip } from "@self-learning/ui/common";
 import { PlusIcon } from "@heroicons/react/24/solid";
 import {
 	GroupSearchEntry,
@@ -10,7 +10,9 @@ import {
 	useDefaultGroup
 } from "../dialogs/search-group-dialog";
 import { AccessLevel } from "@prisma/client";
+import { useTranslation } from "next-i18next";
 import { GenericCombobox } from "../editors/group-members";
+import { accessLevelTooltip } from "../editors/group-permission";
 import { useRequiredSession } from "@self-learning/ui/layouts";
 import { ResourcePermissionsFormType } from "@self-learning/types";
 
@@ -37,8 +39,11 @@ export function GroupAccessEditor({
 	subtitle: string;
 	doUseDefaultGroup: boolean;
 }) {
+	const { t } = useTranslation("feature-teaching");
 	const [isGroupDialogOpen, setGroupDialogOpen] = useState(false);
-	const { control } = useFormContext<{ permissions: ResourcePermissionsFormType }>();
+	const { control, reset, getValues } = useFormContext<{
+		permissions: ResourcePermissionsFormType;
+	}>();
 
 	// Admin can assign any group as main
 	const session = useRequiredSession();
@@ -117,10 +122,22 @@ export function GroupAccessEditor({
 	useEffect(() => {
 		if (hasSetSingleGroup.current) return;
 		if (!defaultGroup) return;
-		handleAddGroup(defaultGroup);
-
 		hasSetSingleGroup.current = true;
-	}, [defaultGroup, handleAddGroup]);
+		// as this is automated add, maintain form state clean
+		reset(
+			{
+				...getValues(),
+				permissions: [
+					{
+						groupId: defaultGroup.groupId,
+						accessLevel: AccessLevel.FULL,
+						groupName: defaultGroup.name
+					}
+				]
+			},
+			{ keepDirtyValues: true } // if user already did type smth, do not mark it as clean
+		);
+	}, [defaultGroup, reset, getValues]);
 
 	return (
 		<Form.SidebarSection>
@@ -152,7 +169,20 @@ export function GroupAccessEditor({
 										<span>
 											{field.value?.groupName} {tmp && <i>(Mitglied)</i>}
 										</span>
-										<LabeledField label="Zugriffsebene auswählen">
+										<LabeledField
+											label="Zugriffsebene auswählen"
+											button={
+												field.value?.accessLevel ? (
+													// Explains the access level currently selected.
+													<QuestionMarkTooltip
+														content={accessLevelTooltip(
+															field.value.accessLevel,
+															t
+														)}
+													/>
+												) : undefined
+											}
+										>
 											<GenericCombobox
 												value={field.value?.accessLevel ?? null}
 												onChange={newLevel =>

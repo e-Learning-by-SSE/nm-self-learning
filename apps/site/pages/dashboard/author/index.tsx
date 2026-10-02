@@ -7,7 +7,7 @@ import {
 	GroupDeleteOption,
 	GroupLeaveOption,
 	I18N_NAMESPACE as NS_FEATURE_TEACHING,
-	SkillRepositoryOverview
+	ParentSkillOverview
 } from "@self-learning/teaching";
 import {
 	Divider,
@@ -21,6 +21,7 @@ import { withAuth } from "@self-learning/util/auth";
 import Link from "next/link";
 import { GroupRole } from "@prisma/client";
 import { useTranslation } from "next-i18next";
+import { useState } from "react";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
 
@@ -34,7 +35,21 @@ export function getAuthor(username: string) {
 				select: {
 					slug: true,
 					displayName: true,
-					imgUrl: true
+					imgUrl: true,
+					courses: {
+						orderBy: { title: "asc" },
+						select: {
+							slug: true,
+							title: true,
+							subtitle: true,
+							imgUrl: true,
+							specializations: {
+								select: {
+									title: true
+								}
+							}
+						}
+					}
 				}
 			},
 			memberships: {
@@ -60,9 +75,7 @@ export function getAuthor(username: string) {
 }
 
 export const getServerSideProps = withTranslations(
-	Array.from(
-		new Set(["common", "pages-dashboard", ...NS_UI_COMMON, ...NS_FEATURE_TEACHING])
-	),
+	Array.from(new Set(["common", "pages-dashboard", ...NS_UI_COMMON, ...NS_FEATURE_TEACHING])),
 	withAuth<Props>(async (context, user) => {
 		if (user.isAuthor) {
 			return { props: { author: await getAuthor(user.name) } };
@@ -82,6 +95,9 @@ function AuthorDashboardPage({ author }: Props) {
 	const isAdmin = session.data?.user.role === "ADMIN";
 	const userId = session.data?.user.id;
 	const canCreate = isAdmin || author.memberships.length > 0;
+
+	// TODO SE: Required by KEE branch, check if this is still needed
+	const [viewExportDialog, setViewExportDialog] = useState(false);
 
 	return (
 		<CenteredSection className="bg-gray-50">
@@ -138,18 +154,17 @@ function AuthorDashboardPage({ author }: Props) {
 					<section>
 						<div className="flex justify-between gap-4">
 							<SectionHeader
-								title={t("My_Skill_Cards")}
-								subtitle={t("Author_Skill_Cards_Subtitle")}
+								title="Skillkarten"
+								subtitle="Besitzer der folgenden Skillkarten"
 							/>
-							<Link href="/skills/repository/create" className="mt-4">
-								<IconTextButton
-									icon={<PlusIcon className="icon h-5" />}
-									className="btn-secondary"
-									text={t("Create_Skill_Card")}
-								/>
+							<Link href="/skills">
+								<button type="button" className="btn-stroked w-fit self-end">
+									<PencilIcon className="icon" />
+									<span>Skills bearbeiten</span>
+								</button>
 							</Link>
 						</div>
-						<SkillRepositoryOverview />
+						<ParentSkillOverview />
 					</section>
 
 					<Divider />

@@ -1,4 +1,4 @@
-import { AccessLevel, Prisma } from "@prisma/client";
+import { AccessLevel, CourseType, Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import {
 	allResourceKinds,
@@ -32,13 +32,20 @@ type ResourceInfo = {
 	slug: string;
 	title: string;
 	imgUrl?: string | null;
+	courseType?: CourseType;
 };
 
 type TitleFilter = ReturnType<typeof getTitleFilter>;
 
 type PermissionResourceRow = {
 	accessLevel: AccessLevel;
-	course: { courseId: string; slug: string; title: string; imgUrl: string | null } | null;
+	course: {
+		courseId: string;
+		slug: string;
+		title: string;
+		imgUrl: string | null;
+		type: CourseType;
+	} | null;
 	lesson: { lessonId: string; slug: string; title: string; imgUrl: string | null } | null;
 	specialization: {
 		specializationId: string;
@@ -79,7 +86,8 @@ function toResourceEntry(
 		slug: resource.slug,
 		imgUrl: resource.imgUrl,
 		accessLevel,
-		parentId
+		parentId,
+		courseType: resource.courseType
 	};
 }
 
@@ -124,14 +132,15 @@ const resourceSearch: Record<ResourceKind, ResourceSearchConfig> = {
 		findAll: async title => {
 			const courses = await database.course.findMany({
 				where: { title },
-				select: { courseId: true, slug: true, title: true, imgUrl: true }
+				select: { courseId: true, slug: true, title: true, imgUrl: true, type: true }
 			});
 			return courses.map(course =>
 				toResourceEntry("course", {
 					id: course.courseId,
 					slug: course.slug,
 					title: course.title,
-					imgUrl: course.imgUrl
+					imgUrl: course.imgUrl,
+					courseType: course.type
 				})
 			);
 		},
@@ -144,7 +153,8 @@ const resourceSearch: Record<ResourceKind, ResourceSearchConfig> = {
 							id: permission.course.courseId,
 							slug: permission.course.slug,
 							title: permission.course.title,
-							imgUrl: permission.course.imgUrl
+							imgUrl: permission.course.imgUrl,
+							courseType: permission.course.type
 						},
 						permission.accessLevel
 					)
@@ -290,7 +300,9 @@ export async function searchMyResources(
 		},
 		select: {
 			accessLevel: true,
-			course: { select: { courseId: true, slug: true, title: true, imgUrl: true } },
+			course: {
+				select: { courseId: true, slug: true, title: true, imgUrl: true, type: true }
+			},
 			lesson: { select: { lessonId: true, slug: true, title: true, imgUrl: true } },
 			specialization: {
 				select: {

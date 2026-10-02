@@ -338,7 +338,7 @@ function TreeEditDialog({ value, onClose }: { value: string; onClose: (value?: s
 	const [initialTree, setInitialTree] = useState(() => {
 		try {
 			return parseTree(value);
-		} catch (e) {
+		} catch {
 			return null;
 		}
 	});
