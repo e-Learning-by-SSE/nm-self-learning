@@ -1,14 +1,17 @@
 import { MarkerType, type Edge, type Node } from "@xyflow/react";
 import dagre from "@dagrejs/dagre";
-import { inferProcedureOutput } from "@trpc/server";
-import { AppRouter } from "@self-learning/api";
+import type { inferProcedureOutput } from "@trpc/server";
+import type { AppRouter } from "@self-learning/api";
 
 export type GraphAnalysisType = inferProcedureOutput<AppRouter["course"]["getGraphContent"]>;
 
 export type SkillNodeData = {
 	label: string;
+	isCourseGoal: boolean;
 	taughtBy: string[];
 	requiredBy: string[];
+	parents: string[];
+	children: string[];
 };
 
 export type SkillNodeType = Node<SkillNodeData, "skill">;
@@ -22,7 +25,11 @@ export type LearningUnitNodeData = {
 export type LearningUnitNodeType = Node<LearningUnitNodeData, "learningUnit">;
 export type GraphNode = SkillNodeType | LearningUnitNodeType;
 
-export function createGraph(graphData: GraphAnalysisType) {
+export function createGraph(graphData: GraphAnalysisType, courseGoalIds: readonly string[] = []) {
+	const courseGoals = new Set(courseGoalIds);
+	const learningUnitIds = new Set(graphData.learningUnits.map(lu => lu.lessonId));
+	const skillsById = new Map(graphData.skills.map(skill => [skill.id, skill]));
+
 	const luNodes: LearningUnitNodeType[] = graphData.learningUnits.map((lu, index) => ({
 		id: lu.lessonId,
 		type: "learningUnit",
@@ -50,23 +57,33 @@ export function createGraph(graphData: GraphAnalysisType) {
 		},
 		data: {
 			label: skill.name,
+			isCourseGoal: courseGoals.has(skill.id),
 			taughtBy: graphData.learningUnits
 				.filter(lu => lu.provides.some(goal => goal.id === skill.id))
 				.map(lu => lu.title),
 			requiredBy: graphData.learningUnits
 				.filter(lu => lu.requires.some(req => req.id === skill.id))
-				.map(lu => lu.title)
+				.map(lu => lu.title),
+
+			children: skill.children
+				.map(child => skillsById.get(child.id)?.name)
+				.filter((name): name is string => name !== undefined),
+
+			parents: graphData.skills
+				.filter(parent => parent.children.some(child => child.id === skill.id))
+				.map(parent => parent.name)
 		}
 	}));
 
-	const learningUnitIds = new Set(graphData.learningUnits.map(lu => lu.lessonId));
-	const skillIds = new Set(graphData.skills.map(skill => skill.id));
-	const edges: Edge[] = createEdges(graphData.edges, learningUnitIds, skillIds);
+	const edges: Edge[] = createEdges(graphData.edges, learningUnitIds, skillsById);
 	const nodes = layoutNodes([...luNodes, ...skillNodes], edges);
 	const layoutedEdges = layoutEdges(nodes, edges);
 	return { nodes, edges: layoutedEdges };
 }
 
+/**
+ * Use of graph library (dagre) to layout the nodes in a top-to-bottom manner.
+ */
 function layoutNodes(nodes: GraphNode[], edges: Edge[]) {
 	const graph = new dagre.graphlib.Graph();
 
@@ -107,14 +124,20 @@ function layoutNodes(nodes: GraphNode[], edges: Edge[]) {
 function createEdges(
 	data: { from: string; to: string }[],
 	learningUnitIds: Set<string>,
-	skillIds: Set<string>
+	skillsById: Map<string, GraphAnalysisType["skills"][number]>
 ) {
 	return data.map((edge, index) => {
 		const sourceIsLearningUnit = learningUnitIds.has(edge.from);
 		const targetIsLearningUnit = learningUnitIds.has(edge.to);
 
-		const sourceIsSkill = skillIds.has(edge.from);
-		const targetIsSkill = skillIds.has(edge.to);
+		const sourceSkill = skillsById.get(edge.from);
+		const targetSkill = skillsById.get(edge.to);
+		const sourceIsSkill = !!sourceSkill;
+		const targetIsSkill = !!targetSkill;
+		const sourceIsParent =
+			targetIsSkill && sourceSkill?.children.some(child => child.id === edge.to);
+		const targetIsParent =
+			sourceIsSkill && targetSkill?.children.some(child => child.id === edge.from);
 
 		const isSkillLearningUnitEdge =
 			(sourceIsSkill && targetIsLearningUnit) || (sourceIsLearningUnit && targetIsSkill);
@@ -133,7 +156,17 @@ function createEdges(
 				stroke: color,
 				strokeWidth: 1
 			},
-			markerStart: isSkillLearningUnitEdge
+			// Hierarchy arrows point from the child to its parent, regardless of edge order.
+			markerStart:
+				isSkillLearningUnitEdge || sourceIsParent
+					? {
+							type: MarkerType.ArrowClosed,
+							color,
+							width: 16,
+							height: 16
+						}
+					: undefined,
+			markerEnd: targetIsParent
 				? {
 						type: MarkerType.ArrowClosed,
 						color,

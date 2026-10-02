@@ -110,5 +110,18 @@
     "Skills_Drop_Add_Parent": "Soll {{name}} als Eltern-Skill hinzugefügt werden?",
     "Skills_Course_Lessons_Required": "Von Kurs und Lerneinheiten benötigt",
     "Skills_Course_Lessons_Provided": "Von Kurs und Lerneinheiten vermittelt",
-    "Skills_Cycles_Warning": "Warnung: In Ihrer Modellierung der Lernziele ist ein Zyklus vorhanden. Aufgrund dessen kann der Algorithmus keinen gültigen Lernpfad mit den im Zyklus beteiligten Lernzielen finden. Die angegebenen Pfadziele sind nicht erreichbar und können nur privat gespeichert werden. Die betroffenen Skills können durch Klicken auf diesen Text angezeigt werden."
+    "Skills_Cycles_Warning": "Warnung: In Ihrer Modellierung der Lernziele ist ein Zyklus vorhanden. Aufgrund dessen kann der Algorithmus keinen gültigen Lernpfad mit den im Zyklus beteiligten Lernzielen finden. Die angegebenen Pfadziele sind nicht erreichbar und können nur privat gespeichert werden. Die betroffenen Skills können durch Klicken auf diesen Text angezeigt werden.",
+    "Graph_Analysis": {
+        "Course_Goal": "Kursziel",
+        "Learning_Goals": "Lernziel:",
+        "Learning_Goals_other": "Lernziele:",
+        "Prerequisites": "Voraussetzung:",
+        "Prerequisites_other": "Voraussetzungen:",
+        "Taught_In": "Wird gelehrt in:",
+        "Required_In": "Wird benötigt in:",
+        "Zoom_In": "Vergrößern",
+        "Zoom_Out": "Verkleinern",
+        "Fit_View": "Graph einpassen",
+        "Toggle_Interactivity": "Interaktion umschalten"
+    }
 }

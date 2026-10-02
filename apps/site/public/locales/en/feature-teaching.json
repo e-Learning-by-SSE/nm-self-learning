@@ -110,5 +110,18 @@
     "Skills_Drop_Add_Parent": "Should {{name}} be added as a parent skill?",
     "Skills_Course_Lessons_Required": "Required by course and lessons",
     "Skills_Course_Lessons_Provided": "Provided by course and lessons",
-    "Skills_Cycles_Warning": "Warning: Your learning objective model contains a cycle. The algorithm cannot find a valid learning path for the objectives involved in the cycle. The specified path goals cannot be reached and can only be saved privately. Click this text to view the affected skills."
+    "Skills_Cycles_Warning": "Warning: Your learning objective model contains a cycle. The algorithm cannot find a valid learning path for the objectives involved in the cycle. The specified path goals cannot be reached and can only be saved privately. Click this text to view the affected skills.",
+    "Graph_Analysis": {
+        "Course_Goal": "Course goal",
+        "Learning_Goals": "Learning goal:",
+        "Learning_Goals_other": "Learning goals:",
+        "Prerequisites": "Prerequisite:",
+        "Prerequisites_other": "Prerequisites:",
+        "Taught_In": "Taught in:",
+        "Required_In": "Required in:",
+        "Zoom_In": "Zoom in",
+        "Zoom_Out": "Zoom out",
+        "Fit_View": "Fit graph to view",
+        "Toggle_Interactivity": "Toggle interactivity"
+    }
 }
