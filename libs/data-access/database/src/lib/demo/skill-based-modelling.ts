@@ -653,12 +653,16 @@ export async function seedSkillbasedModelling() {
 
 	const author = await prisma.author.findFirst();
 
+	if (!author) {
+		throw new Error("No author found");
+	}
+
 	for (const skill of skills) {
 		await prisma.skill.create({
 			data: {
 				id: skill.id,
 				name: skill.name,
-				authorId: author?.id ?? 0,
+				authorId: author.id
 			}
 		});
 	}
