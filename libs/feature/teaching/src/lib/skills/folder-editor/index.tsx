@@ -27,7 +27,7 @@ export function CreateAndViewSkills({
 	selectedSkill?: SkillFormModel;
 }) {
 	const { t } = useTranslation(["feature-teaching", "common"]);
-	const { data: skills = initialSkills, isLoading } = trpc.skill.getParentSkills.useQuery();
+	const { data: skills = initialSkills, isLoading } = trpc.skill.getSkills.useQuery();
 
 	const session = useRequiredSession();
 	const username = session.data?.user.name;

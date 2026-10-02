@@ -65,20 +65,6 @@ async function createSkill(input: {
 	});
 }
 
-export async function getParentSkills() {
-	return database.skill.findMany({
-		where: { parents: { none: {} } },
-		select: {
-			id: true,
-			name: true,
-			description: true,
-			authorId: true,
-			children: { select: { id: true } },
-			parents: { select: { id: true } }
-		}
-	});
-}
-
 async function getSkills() {
 	return database.skill.findMany({
 		select: {
@@ -92,7 +78,7 @@ async function getSkills() {
 	});
 }
 
-export async function getParentSkillsByAuthorId(authorId: number) {
+async function getParentSkillsByAuthorId(authorId: number) {
 	return database.skill.findMany({
 		where: {
 			AND: [{ parents: { none: {} } }, { authorId: authorId }]
@@ -108,7 +94,7 @@ export async function getParentSkillsByAuthorId(authorId: number) {
 	});
 }
 
-export async function getSkillsByAuthorId(authorId: number) {
+async function getSkillsByAuthorId(authorId: number) {
 	const skills = await database.skill.findMany({
 		where: { authorId: authorId },
 		select: {
@@ -123,7 +109,7 @@ export async function getSkillsByAuthorId(authorId: number) {
 	return transformSkills(skills);
 }
 
-export function transformSkills(skills: RawSkill[]): TransformedSkill[] {
+function transformSkills(skills: RawSkill[]): TransformedSkill[] {
 	return skills.map(skill => ({
 		id: skill.id,
 		name: skill.name,
@@ -135,24 +121,10 @@ export function transformSkills(skills: RawSkill[]): TransformedSkill[] {
 }
 
 export const skillRouter = t.router({
-	getParentSkills: authorProcedure.query(async () => {
-		const skills = await database.skill.findMany({
-			select: {
-				id: true,
-				name: true,
-				description: true,
-				authorId: true,
-				children: { select: { id: true } },
-				parents: { select: { id: true } }
-			}
-		});
-
-		return transformSkills(skills);
-	}),
 	getSkills: authorProcedure.query(async () => {
 		return transformSkills(await getSkills());
 	}),
-	getSkillsByAuthorId: authorProcedure.query(async ({ input, ctx }) => {
+	getSkillsByAuthorId: authorProcedure.query(async ({ ctx }) => {
 		const authorId = (
 			await database.author.findUnique({
 				where: { username: ctx.user.name },
@@ -163,7 +135,7 @@ export const skillRouter = t.router({
 		return await getSkillsByAuthorId(authorId ? authorId : -1);
 	}),
 
-	getParentSkillsByAuthorId: authorProcedure.query(async ({ input, ctx }) => {
+	getParentSkillsByAuthorId: authorProcedure.query(async ({ ctx }) => {
 		const authorId = (
 			await database.author.findUnique({
 				where: { username: ctx.user.name },
