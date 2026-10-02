@@ -174,8 +174,6 @@ function Graph({
 						left: "48px"
 					}}
 				>
-					{/* <div className="flex flex-col items-start gap-2"> */}
-
 					<ul className="flex flex-wrap gap-3 rounded border border-gray-400 bg-white/95 px-3 py-2 text-xs text-gray-700 shadow-sm">
 						<li className="flex items-center gap-1.5">
 							<span
@@ -183,6 +181,13 @@ function Graph({
 								className="h-3 w-3 rounded-sm border border-blue-300 bg-blue-50"
 							/>
 							{t("common:Skill", { count: 1 })}
+						</li>
+						<li className="flex items-center gap-1.5">
+							<span
+								aria-hidden="true"
+								className="h-3 w-3 rounded-sm border-red-500 border-2 bg-blue-50"
+							/>
+							{t("Graph_Analysis.Untaught_Skill")}
 						</li>
 						<li className="flex items-center gap-1.5">
 							<span
@@ -199,7 +204,6 @@ function Graph({
 							{t("common:Lesson")}
 						</li>
 					</ul>
-					{/* </div> */}
 				</Panel>
 			</ReactFlow>
 
@@ -256,6 +260,7 @@ function DetailsDialog({
 
 	const sections = isLearningUnit(selectedElement)
 		? [
+				// Learning Units
 				{
 					title: t("Graph_Analysis.Learning_Goals", {
 						count: selectedElement.provides.length
@@ -272,6 +277,7 @@ function DetailsDialog({
 				}
 			]
 		: [
+				// Skills
 				{
 					title: t("Graph_Analysis.Taught_In"),
 					items: [...selectedElement.taughtBy, ...selectedElement.children],
@@ -350,14 +356,17 @@ function DetailsDialog({
 }
 
 function SkillNode({ data }: NodeProps<SkillNodeType>) {
+	const notTaught = data.taughtBy.length === 0 && data.children.length === 0;
+	const border = notTaught
+		? "border-red-500 border-2"
+		: data.isCourseGoal
+			? "border border-purple-300"
+			: "border border-blue-300";
+
+	const color = data.isCourseGoal ? "bg-purple-50 text-purple-800" : "bg-blue-50 text-blue-800";
+
 	return (
-		<div
-			className={`relative min-w-[150px] rounded border px-4 py-2 ${
-				data.isCourseGoal
-					? "border-purple-300 bg-purple-50 text-purple-800"
-					: "border-blue-300 bg-blue-50 text-blue-800"
-			}`}
-		>
+		<div className={`relative min-w-[150px] rounded px-4 py-2 ${border} ${color}`}>
 			<AcademicCapIcon
 				style={{
 					position: "absolute",

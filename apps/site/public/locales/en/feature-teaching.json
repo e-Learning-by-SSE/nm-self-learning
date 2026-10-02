@@ -113,6 +113,7 @@
     "Skills_Cycles_Warning": "Warning: Your learning objective model contains a cycle. The algorithm cannot find a valid learning path for the objectives involved in the cycle. The specified path goals cannot be reached and can only be saved privately. Click this text to view the affected skills.",
     "Graph_Analysis": {
         "Course_Goal": "Course goal",
+        "Untaught_Skill": "Untaught  $t(common:Skill)",
         "Learning_Goals": "Learning goal:",
         "Learning_Goals_other": "Learning goals:",
         "Prerequisites": "Prerequisite:",

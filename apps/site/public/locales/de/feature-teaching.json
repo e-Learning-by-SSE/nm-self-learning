@@ -113,6 +113,7 @@
     "Skills_Cycles_Warning": "Warnung: In Ihrer Modellierung der Lernziele ist ein Zyklus vorhanden. Aufgrund dessen kann der Algorithmus keinen gültigen Lernpfad mit den im Zyklus beteiligten Lernzielen finden. Die angegebenen Pfadziele sind nicht erreichbar und können nur privat gespeichert werden. Die betroffenen Skills können durch Klicken auf diesen Text angezeigt werden.",
     "Graph_Analysis": {
         "Course_Goal": "Kursziel",
+        "Untaught_Skill": "Nicht unterrichteter $t(common:Skill)",
         "Learning_Goals": "Lernziel:",
         "Learning_Goals_other": "Lernziele:",
         "Prerequisites": "Voraussetzung:",
