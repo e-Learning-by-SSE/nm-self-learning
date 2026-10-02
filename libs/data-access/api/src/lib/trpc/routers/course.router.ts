@@ -28,7 +28,6 @@ import {
 	preparePermissionsForCreate,
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
-import { randomUUID } from "crypto";
 import { mapCourseContent } from "@self-learning/course";
 import { enqueueCourseGraphJob, enqueueCoursePath } from "../../learning-path/learning-path";
 import { graphResponseSchema } from "@self-learning/worker-api";
