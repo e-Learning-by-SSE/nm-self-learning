@@ -48,7 +48,7 @@ model Skill {
     goalsOf        Lesson[] @relation("providedSkills")
     requirementsOf Lesson[] @relation("requiredSkills")
 
-    Student Student[] @relation("StudentToSkill")
+    student Student[] @relation("StudentToSkill")
 
     //@@unique([repositoryId, name])
     requiredBy Course[] @relation("courseRequiredSkills")
