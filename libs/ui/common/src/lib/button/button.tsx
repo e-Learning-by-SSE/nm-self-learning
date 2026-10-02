@@ -64,7 +64,8 @@ export function GreyBoarderButton(
 		<button
 			type="button"
 			{...props}
-			className={`border-1 border-gray-150 inline-flex items-center justify-center rounded-md border bg-white font-medium text-black hover:bg-gray-100 ${cl}`}
+			className={`inline-flex items-center justify-center rounded-md border border-gray-150 bg-white font-medium text-black hover:bg-gray-100 ${cl}`}
+
 		>
 			{props.children}
 		</button>
