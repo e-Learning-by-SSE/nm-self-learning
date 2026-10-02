@@ -1,4 +1,4 @@
-import { AcademicCapIcon, PlayCircleIcon } from "@heroicons/react/24/outline";
+import { AcademicCapIcon, PlayCircleIcon, StarIcon } from "@heroicons/react/24/outline";
 import {
 	Handle,
 	Background,
@@ -11,8 +11,8 @@ import {
 	useNodesState
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { inferProcedureOutput, inferProcedureInput } from "@trpc/server";
-import { AppRouter } from "@self-learning/api";
+import type { inferProcedureOutput, inferProcedureInput } from "@trpc/server";
+import type { AppRouter } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { skipToken } from "@tanstack/react-query";
 import { useRef, useState } from "react";
@@ -27,6 +27,36 @@ import {
 	type SkillNodeType,
 	createGraph
 } from "./graph-analysis";
+
+const nodeStyles = {
+	skill: {
+		border: "border-blue-300",
+		color: "bg-blue-50 text-blue-800",
+		Icon: AcademicCapIcon,
+		iconSize: "10px"
+	},
+	courseGoal: {
+		border: "border-purple-300",
+		color: "bg-purple-50 text-purple-800",
+		Icon: StarIcon,
+		iconSize: "10px"
+	},
+	learningUnit: {
+		border: "border-green-300",
+		color: "bg-green-50 text-green-800",
+		Icon: PlayCircleIcon,
+		iconSize: "12px"
+	}
+};
+
+const untaughtBorder = "border-2 border-red-500";
+
+const sectionStyles = {
+	provides: { border: "border-green-300", title: "text-green-700" },
+	requires: { border: "border-red-300", title: "text-red-700" }
+};
+
+type NodeVariant = keyof typeof nodeStyles;
 
 type GraphRawInput = inferProcedureInput<AppRouter["course"]["getGraphContent"]>;
 
@@ -175,34 +205,14 @@ function Graph({
 					}}
 				>
 					<ul className="flex flex-wrap gap-3 rounded border border-gray-400 bg-white/95 px-3 py-2 text-xs text-gray-700 shadow-sm">
-						<li className="flex items-center gap-1.5">
-							<span
-								aria-hidden="true"
-								className="h-3 w-3 rounded-sm border border-blue-300 bg-blue-50"
-							/>
-							{t("common:Skill", { count: 1 })}
-						</li>
-						<li className="flex items-center gap-1.5">
-							<span
-								aria-hidden="true"
-								className="h-3 w-3 rounded-sm border-red-500 border-2 bg-blue-50"
-							/>
-							{t("Graph_Analysis.Untaught_Skill")}
-						</li>
-						<li className="flex items-center gap-1.5">
-							<span
-								aria-hidden="true"
-								className="h-3 w-3 rounded-sm border border-purple-300 bg-purple-50"
-							/>
-							{t("Graph_Analysis.Course_Goal")}
-						</li>
-						<li className="flex items-center gap-1.5">
-							<span
-								aria-hidden="true"
-								className="h-3 w-3 rounded-sm border border-green-300 bg-green-50"
-							/>
-							{t("common:Lesson")}
-						</li>
+						<LegendItem variant="skill" label={t("common:Skill", { count: 1 })} />
+						<LegendItem
+							variant="skill"
+							untaught
+							label={t("Graph_Analysis.Untaught_Skill")}
+						/>
+						<LegendItem variant="courseGoal" label={t("Graph_Analysis.Course_Goal")} />
+						<LegendItem variant="learningUnit" label={t("common:Lesson")} />
 					</ul>
 				</Panel>
 			</ReactFlow>
@@ -211,6 +221,27 @@ function Graph({
 				<DetailsDialog selectedElement={selectedElement} dialogPosition={dialogPosition} />
 			)}
 		</div>
+	);
+}
+
+function LegendItem({
+	variant,
+	label,
+	untaught = false
+}: {
+	variant: NodeVariant;
+	label: string;
+	untaught?: boolean;
+}) {
+	const { border, color } = nodeStyles[variant];
+	return (
+		<li className="flex items-center gap-1.5">
+			<span
+				aria-hidden="true"
+				className={`h-3 w-3 rounded-sm ${color} ${untaught ? untaughtBorder : `border ${border}`}`}
+			/>
+			{label}
+		</li>
 	);
 }
 
@@ -266,14 +297,14 @@ function DetailsDialog({
 						count: selectedElement.provides.length
 					}),
 					items: selectedElement.provides,
-					box: "rounded-lg border bg-green-50 border-green-300"
+					style: sectionStyles.provides
 				},
 				{
 					title: t("Graph_Analysis.Prerequisites", {
 						count: selectedElement.requires.length
 					}),
 					items: selectedElement.requires,
-					box: "rounded-lg border bg-red-50 border-red-300"
+					style: sectionStyles.requires
 				}
 			]
 		: [
@@ -281,23 +312,21 @@ function DetailsDialog({
 				{
 					title: t("Graph_Analysis.Taught_In"),
 					items: [...selectedElement.taughtBy, ...selectedElement.children],
-					box: "rounded-lg border bg-green-50 border-green-300"
+					style: sectionStyles.provides
 				},
 				{
 					title: t("Graph_Analysis.Required_In"),
 					items: [...selectedElement.requiredBy, ...selectedElement.parents],
-					box: "rounded-lg border bg-red-50 border-red-300"
+					style: sectionStyles.requires
 				}
 			];
 
 	const visibleSections = sections.filter(section => section.items.length > 0);
 	const learningUnit = isLearningUnit(selectedElement);
 	const isCourseGoal = !learningUnit && selectedElement.isCourseGoal;
-	const headerStyle = learningUnit
-		? "border-green-300 bg-green-50 text-green-800"
-		: isCourseGoal
-			? "border-purple-300 bg-purple-50 text-purple-800"
-			: "border-blue-300 bg-blue-50 text-blue-800";
+	const headerStyle =
+		nodeStyles[learningUnit ? "learningUnit" : isCourseGoal ? "courseGoal" : "skill"];
+	const HeaderIcon = headerStyle.Icon;
 
 	return (
 		<div
@@ -309,95 +338,72 @@ function DetailsDialog({
 			onClick={event => event.stopPropagation()}
 		>
 			<div
-				className={`flex cursor-move select-none items-center gap-2 border-b px-4 py-2 ${headerStyle}`}
+				className={`flex cursor-move select-none items-center gap-2 border-b px-4 py-2 ${headerStyle.border} ${headerStyle.color}`}
 				onPointerDown={handlePointerDown}
 			>
-				{learningUnit ? (
-					<PlayCircleIcon className="h-5 w-5 shrink-0" />
-				) : (
-					<AcademicCapIcon className="h-5 w-5 shrink-0" />
-				)}
+				<HeaderIcon className="h-5 w-5 shrink-0" />
 
 				<h2 className="font-semibold">{selectedElement.label}</h2>
 			</div>
 
 			<div className="space-y-3 p-4">
-				{visibleSections.map((section, index) => {
-					const positive = index === 0;
-
-					return (
-						<div
-							key={section.title}
-							className={`border-l-4 pl-3 ${
-								positive ? "border-green-300" : "border-red-300"
-							}`}
-						>
-							<h3
-								className={`mb-1 text-sm font-medium ${
-									positive ? "text-green-700" : "text-red-700"
-								}`}
-							>
-								{section.title}
-							</h3>
-
-							<ul className="list-disc space-y-0.5 pl-5 text-sm text-gray-700">
-								{section.items.map(item => (
-									<li key={item} className="pl-0.5">
-										{item}
-									</li>
-								))}
-							</ul>
-						</div>
-					);
-				})}
+				{visibleSections.map(section => (
+					<div key={section.title} className={`border-l-4 pl-3 ${section.style.border}`}>
+						<h3 className={`mb-1 text-sm font-medium ${section.style.title}`}>
+							{section.title}
+						</h3>
+						<ul className="list-disc space-y-0.5 pl-5 text-sm text-gray-700">
+							{section.items.map(item => (
+								<li key={item} className="pl-0.5">
+									{item}
+								</li>
+							))}
+						</ul>
+					</div>
+				))}
 			</div>
 		</div>
 	);
 }
 
 function SkillNode({ data }: NodeProps<SkillNodeType>) {
-	const notTaught = data.taughtBy.length === 0 && data.children.length === 0;
-	const border = notTaught
-		? "border-red-500 border-2"
-		: data.isCourseGoal
-			? "border border-purple-300"
-			: "border border-blue-300";
-
-	const color = data.isCourseGoal ? "bg-purple-50 text-purple-800" : "bg-blue-50 text-blue-800";
-
 	return (
-		<div className={`relative min-w-[150px] rounded px-4 py-2 ${border} ${color}`}>
-			<AcademicCapIcon
-				style={{
-					position: "absolute",
-					top: "4px",
-					right: "4px",
-					width: "10px",
-					height: "10px"
-				}}
-			/>
-			<div>{data.label}</div>
-
-			<NodeHandles />
-		</div>
+		<GraphNode
+			label={data.label}
+			variant={data.isCourseGoal ? "courseGoal" : "skill"}
+			untaught={data.taughtBy.length === 0 && data.children.length === 0}
+		/>
 	);
 }
 
 function LearningUnitNode({ data }: NodeProps<LearningUnitNodeType>) {
+	return <GraphNode label={data.label} variant="learningUnit" />;
+}
+
+function GraphNode({
+	label,
+	variant,
+	untaught = false
+}: {
+	label: string;
+	variant: NodeVariant;
+	untaught?: boolean;
+}) {
+	const { border, color, Icon, iconSize } = nodeStyles[variant];
 	return (
-		<div className="relative min-w-[150px] rounded border border-green-300 bg-green-50 px-4 py-2 text-green-800">
-			<PlayCircleIcon
+		<div
+			className={`relative min-w-[150px] rounded px-4 py-2 ${untaught ? untaughtBorder : `border ${border}`} ${color}`}
+		>
+			<Icon
 				style={{
 					position: "absolute",
 					top: "4px",
 					right: "4px",
-					width: "12px",
-					height: "12px"
+					width: iconSize,
+					height: iconSize
 				}}
 			/>
-
-			<div>{data.label}</div>
-
+			<div>{label}</div>
 			<NodeHandles />
 		</div>
 	);
