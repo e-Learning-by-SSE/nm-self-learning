@@ -55,19 +55,3 @@ export function IconOnlyButton({
 		</button>
 	);
 }
-
-export function GreyBoarderButton(
-	props: PropsWithChildren<ButtonHTMLAttributes<HTMLButtonElement>>
-) {
-	const cl = props.className ? props.className : "px-2 py-2"; // done for compatiblity
-	return (
-		<button
-			type="button"
-			{...props}
-			className={`inline-flex items-center justify-center rounded-md border border-gray-150 bg-white font-medium text-black hover:bg-gray-100 ${cl}`}
-
-		>
-			{props.children}
-		</button>
-	);
-}
