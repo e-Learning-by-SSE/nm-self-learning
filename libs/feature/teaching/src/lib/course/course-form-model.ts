@@ -19,7 +19,7 @@ export const courseFormSchema = z
 		subtitle: z.string(),
 		description: z.string().nullable(),
 		imgUrl: z.string().nullable(),
-		version: z.int().nullable(),
+		version: z.number().int().nullable(),
 		authors: authorsRelationSchema,
 		content: courseContentSchema,
 		specializationId: z.string().nullable().optional(),
