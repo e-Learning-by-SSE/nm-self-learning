@@ -9,6 +9,7 @@ jest.mock("@self-learning/database", () => ({
 		lesson: { findMany: jest.fn() },
 		specialization: { findMany: jest.fn() },
 		subject: { findMany: jest.fn() },
+		skill: { findMany: jest.fn() },
 		permission: { findMany: jest.fn() }
 	}
 }));
@@ -16,6 +17,7 @@ jest.mock("@self-learning/database", () => ({
 describe("resource-search.service", () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
+		(database.skill.findMany as jest.Mock).mockResolvedValue([]);
 	});
 
 	describe("searchAllResources", () => {
@@ -58,6 +60,21 @@ describe("resource-search.service", () => {
 			const page = await searchAllResources({ page: 1, kinds: ["lesson"] });
 
 			expect(page.result[0].kind).toBe("lesson");
+		});
+
+		it("maps a skill using its name and id", async () => {
+			(database.skill.findMany as jest.Mock).mockResolvedValue([
+				{ id: "sk1", name: "Algebra" }
+			]);
+
+			const page = await searchAllResources({ page: 1, kinds: ["skill"] });
+
+			expect(page.result[0]).toMatchObject({
+				kind: "skill",
+				id: "sk1",
+				slug: "sk1",
+				title: "Algebra"
+			});
 		});
 
 		it("filters by kinds when provided", async () => {
@@ -170,6 +187,29 @@ describe("resource-search.service", () => {
 				kind: "specialization",
 				id: "sp1",
 				parentId: "sb1",
+				accessLevel: AccessLevel.EDIT
+			});
+		});
+
+		it("maps skill permissions", async () => {
+			(database.permission.findMany as jest.Mock).mockResolvedValue([
+				{
+					accessLevel: AccessLevel.EDIT,
+					course: null,
+					lesson: null,
+					specialization: null,
+					subject: null,
+					skill: { id: "sk1", name: "Algebra" }
+				}
+			]);
+
+			const page = await searchMyResources("user-1", { page: 1, kinds: ["skill"] });
+
+			expect(page.result[0]).toMatchObject({
+				kind: "skill",
+				id: "sk1",
+				slug: "sk1",
+				title: "Algebra",
 				accessLevel: AccessLevel.EDIT
 			});
 		});

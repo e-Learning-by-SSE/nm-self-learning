@@ -55,6 +55,7 @@ type PermissionResourceRow = {
 		cardImgUrl: string | null;
 	} | null;
 	subject: { subjectId: string; slug: string; title: string; cardImgUrl: string | null } | null;
+	skill: { id: string; name: string } | null;
 };
 
 type ResourceSearchConfig = {
@@ -262,6 +263,35 @@ const resourceSearch: Record<ResourceKind, ResourceSearchConfig> = {
 						permission.accessLevel
 					)
 				: null
+	},
+	// Skill has `name` and no slug. Search entries reuse id as slug and name as title.
+	skill: {
+		findAll: async title => {
+			const skills = await database.skill.findMany({
+				where: { name: title },
+				select: { id: true, name: true }
+			});
+			return skills.map(skill =>
+				toResourceEntry("skill", {
+					id: skill.id,
+					slug: skill.id,
+					title: skill.name
+				})
+			);
+		},
+		permissionWhere: title => (title ? { skill: { name: title } } : { skillId: { not: null } }),
+		fromPermission: permission =>
+			permission.skill
+				? toResourceEntry(
+						"skill",
+						{
+							id: permission.skill.id,
+							slug: permission.skill.id,
+							title: permission.skill.name
+						},
+						permission.accessLevel
+					)
+				: null
 	}
 };
 
@@ -313,7 +343,8 @@ export async function searchMyResources(
 					cardImgUrl: true
 				}
 			},
-			subject: { select: { subjectId: true, slug: true, title: true, cardImgUrl: true } }
+			subject: { select: { subjectId: true, slug: true, title: true, cardImgUrl: true } },
+			skill: { select: { id: true, name: true } }
 		}
 	});
 	const resources = permissions.flatMap(permission => {
