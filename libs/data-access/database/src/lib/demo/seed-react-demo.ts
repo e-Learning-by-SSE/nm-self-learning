@@ -658,7 +658,11 @@ export async function seedReactDemo(admin: AuthorUser) {
 		accessLevel: AccessLevel.FULL,
 		courseId: c.courseId
 	}));
-	const perms = [...lessonsPermissions, ...coursesPermissions];
+	const skillsPermissions = [...skills, ...skillGroups].map(s => ({
+		accessLevel: AccessLevel.FULL,
+		skillId: s.id
+	}));
+	const perms = [...lessonsPermissions, ...coursesPermissions, ...skillsPermissions];
 	await prisma.group.upsert({
 		where: { name: softwareentwicklungDemoGroup.name },
 		create: { name: softwareentwicklungDemoGroup.name, permissions: { create: perms } },

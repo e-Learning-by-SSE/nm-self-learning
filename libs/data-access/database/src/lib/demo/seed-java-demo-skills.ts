@@ -1,3 +1,4 @@
+import { AccessLevel, Prisma, PrismaClient } from "@prisma/client";
 import { createSkillGroups, createSkills } from "../seed-functions";
 
 const skills = [
@@ -191,10 +192,26 @@ const skillGroups = [
 	}
 ];
 
-export async function seedJavaDemoSkills(adminId: number) {
+const prisma = new PrismaClient();
+
+export async function seedJavaDemoSkills(adminId: number, group: Prisma.GroupCreateInput | null) {
 	await createSkills(adminId, skills);
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Skills");
 
 	await createSkillGroups(adminId, skillGroups);
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Skill Groups");
+
+	// create permissions (TODO seeding courses is extremely inconsistent across the places, has to be refactored)
+	if (group) {
+		const perms = [...skills, ...skillGroups].map(s => ({
+			accessLevel: AccessLevel.FULL,
+			skillId: s.id
+		}));
+		await prisma.group.upsert({
+			where: { name: group.name },
+			create: { name: group.name, permissions: { create: perms } },
+			update: { permissions: { createMany: { data: perms, skipDuplicates: true } } }
+		});
+		console.log(" - %s\x1b[32m ✔\x1b[0m", "Create a group with FULL permissions to skills");
+	}
 }

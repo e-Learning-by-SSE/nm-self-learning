@@ -185,6 +185,6 @@ const authors = [
 ];
 
 export async function seedJavaDemo(admin: AuthorUser): Promise<void> {
+	await seedJavaDemoSkills(admin.author.id, softwareentwicklungDemoGroup);
 	await seedCaseStudy("Java", courses, chapters, softwareentwicklungDemoGroup, authors);
-	await seedJavaDemoSkills(admin.author.id);
 }
