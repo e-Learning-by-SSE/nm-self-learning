@@ -28,6 +28,7 @@
     "Edit_Lesson": "$t(common:Lesson) bearbeiten",
     "Edit_Subject": "$t(common:Topic) bearbeiten",
     "Edit_Specialization": "$t(common:Focus) bearbeiten",
+    "Edit_Skill": "$t(common:Skill_one) bearbeiten",
     "Export": "Export",
     "Export_Course": "$t(common:Course) exportieren",
     "Delete_Not_Possible": "$t(common:delete) nicht möglich",

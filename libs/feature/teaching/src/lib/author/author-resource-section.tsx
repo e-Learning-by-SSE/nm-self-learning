@@ -67,6 +67,11 @@ function getAuthorResourceLinks(resource: ResourceSearchEntry): AuthorResourceLi
 				viewHref: `/teaching/subjects/${resource.parentId}/${resource.id}`,
 				editHref: `/teaching/subjects/${resource.parentId}/${resource.id}/edit`
 			};
+		case "skill":
+			return {
+				viewHref: `/skills/${resource.id}`,
+				editHref: `/skills/${resource.id}`
+			};
 	}
 }
 
@@ -212,6 +217,7 @@ function AuthorResourceRow({
 										? t("Course_Type_Dynamic_Tooltip")
 										: t("Course_Type_Static_Tooltip")
 								}
+								className="flex flex-row"
 							>
 								<Badge
 									text={
@@ -223,7 +229,9 @@ function AuthorResourceRow({
 								/>
 							</Tooltip>
 						)}
-						<Tooltip content={accessTooltip}>{accessBadge}</Tooltip>
+						<Tooltip content={accessTooltip} className="flex flex-row">
+							{accessBadge}
+						</Tooltip>
 					</span>
 					{canEdit && links.editHref && (
 						<Link href={links.editHref}>
@@ -274,5 +282,7 @@ function editTitle(kind: ResourceKind, t: (key: string) => string): string {
 			return t("Edit_Subject");
 		case "specialization":
 			return t("Edit_Specialization");
+		case "skill":
+			return t("Edit_Skill");
 	}
 }

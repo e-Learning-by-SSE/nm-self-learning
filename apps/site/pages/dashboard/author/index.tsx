@@ -151,6 +151,17 @@ function AuthorDashboardPage({ author }: Props) {
 
 					<Divider />
 
+					<AuthorResourceSection
+						kind="skill"
+						title={t("My_Skills")}
+						subtitle={t("Author_Skills_Subtitle")}
+						searchPlaceholder={t("Search_Skills")}
+						emptyMessage={t("No_Accessible_Skills")}
+						isAdmin={isAdmin}
+					/>
+
+					<Divider />
+
 					<section>
 						<div className="flex justify-between gap-4">
 							<SectionHeader
