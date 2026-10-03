@@ -54,6 +54,8 @@ model Skill {
     requiredBy Course[] @relation("courseRequiredSkills")
     providedBy Course[] @relation("courseProvidedSkills")
 
+    permissions Permission[]
+
     @@map("skills")
 }
 
