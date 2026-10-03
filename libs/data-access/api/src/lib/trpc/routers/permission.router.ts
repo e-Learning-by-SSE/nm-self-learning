@@ -35,6 +35,7 @@ function getResourceKey(resource: ResourceInput): string {
 	if (resource.lessonId) return `lesson-${resource.lessonId}`;
 	if (resource.specializationId) return `specialization-${resource.specializationId}`;
 	if (resource.subjectId) return `subject-${resource.subjectId}`;
+	if (resource.skillId) return `skill-${resource.skillId}`;
 
 	throw new Error("Invalid resource input: No valid ID provided");
 }
@@ -249,6 +250,7 @@ export const permissionRouter = t.router({
 		const activeLessonIds = perms.flatMap(p => p.lessonId ?? []);
 		const activeSpecIds = perms.flatMap(p => p.specializationId ?? []);
 		const activeSubjectIds = perms.flatMap(p => p.subjectId ?? []);
+		const activeSkillIds = perms.flatMap(p => p.skillId ?? []);
 
 		// 4. run update
 		return await database.group.update({
@@ -264,25 +266,36 @@ export const permissionRouter = t.router({
 								courseId: { notIn: activeCourseIds },
 								lessonId: null,
 								specializationId: null,
-								subjectId: null
+								subjectId: null,
+								skillId: null
 							},
 							{
 								lessonId: { notIn: activeLessonIds },
 								courseId: null,
 								specializationId: null,
-								subjectId: null
+								subjectId: null,
+								skillId: null
 							},
 							{
 								specializationId: { notIn: activeSpecIds },
 								courseId: null,
 								lessonId: null,
-								subjectId: null
+								subjectId: null,
+								skillId: null
 							},
 							{
 								subjectId: { notIn: activeSubjectIds },
 								courseId: null,
 								lessonId: null,
-								specializationId: null
+								specializationId: null,
+								skillId: null
+							},
+							{
+								skillId: { notIn: activeSkillIds },
+								courseId: null,
+								lessonId: null,
+								specializationId: null,
+								subjectId: null
 							}
 						]
 					},
@@ -323,6 +336,13 @@ export const permissionRouter = t.router({
 								},
 								update: { accessLevel: p.accessLevel },
 								create: { subjectId: p.subjectId, accessLevel: p.accessLevel }
+							};
+						}
+						if ("skillId" in p && p.skillId) {
+							return {
+								where: { groupId_skillId: { groupId: id, skillId: p.skillId } },
+								update: { accessLevel: p.accessLevel },
+								create: { skillId: p.skillId, accessLevel: p.accessLevel }
 							};
 						}
 						throw new TRPCError({
@@ -444,7 +464,8 @@ export const permissionRouter = t.router({
 						specialization: v.specializationId
 							? { connect: { specializationId: v.specializationId } }
 							: undefined,
-						subject: v.subjectId ? { connect: { subjectId: v.subjectId } } : undefined
+						subject: v.subjectId ? { connect: { subjectId: v.subjectId } } : undefined,
+						skill: v.skillId ? { connect: { id: v.skillId } } : undefined
 					}))
 				},
 				children: {

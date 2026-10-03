@@ -236,13 +236,15 @@ export async function hasResourceAccessBatch(userId: string, checks: ResourceAcc
 	const lessonIds = checks.flatMap(c => c.lessonId ?? []);
 	const specializationIds = checks.flatMap(c => c.specializationId ?? []);
 	const subjectIds = checks.flatMap(c => c.subjectId ?? []);
+	const skillIds = checks.flatMap(c => c.skillId ?? []);
 	const perms = await database.permission.findMany({
 		where: {
 			OR: [
 				{ courseId: { in: courseIds } },
 				{ lessonId: { in: lessonIds } },
 				{ specializationId: { in: specializationIds } },
-				{ subjectId: { in: subjectIds } }
+				{ subjectId: { in: subjectIds } },
+				{ skillId: { in: skillIds } }
 			],
 			group: {
 				members: {
@@ -258,6 +260,7 @@ export async function hasResourceAccessBatch(userId: string, checks: ResourceAcc
 	const courses: Record<string, AccessLevel> = {};
 	const specializations: Record<string, AccessLevel> = {};
 	const subjects: Record<string, AccessLevel> = {};
+	const skills: Record<string, AccessLevel> = {};
 
 	// Compute best access per resource
 	for (const perm of perms) {
@@ -267,8 +270,15 @@ export async function hasResourceAccessBatch(userId: string, checks: ResourceAcc
 				? lessons
 				: perm.specializationId
 					? specializations
-					: subjects;
-		const key = perm.courseId ?? perm.lessonId ?? perm.specializationId ?? perm.subjectId;
+					: perm.subjectId
+						? subjects
+						: skills;
+		const key =
+			perm.courseId ??
+			perm.lessonId ??
+			perm.specializationId ??
+			perm.subjectId ??
+			perm.skillId;
 		if (!key) continue; // should not happen
 		if (!target[key] || greaterAccessLevel(perm.accessLevel, target[key])) {
 			target[key] = perm.accessLevel;
@@ -289,6 +299,9 @@ export async function hasResourceAccessBatch(userId: string, checks: ResourceAcc
 		} else if ("subjectId" in check && check.subjectId) {
 			target = subjects;
 			key = check.subjectId;
+		} else if ("skillId" in check && check.skillId) {
+			target = skills;
+			key = check.skillId;
 		}
 		if (!key || !target) return false; // should not happen
 		return !!target[key] && greaterOrEqAccessLevel(target[key], check.accessLevel);
@@ -440,13 +453,19 @@ export async function hasGroupRole(groupId: number, userId: string, role: GroupR
 	return !!groupRole && greaterOrEqGroupRole(groupRole, role);
 }
 
+/** Skill fields are different from classic resource fields (title/slug). Map them */
+function toSkillAccessRelation(skill: { id: string; name: string } | null) {
+	if (!skill) return null;
+	return { skillId: skill.id, slug: skill.id, title: skill.name };
+}
+
 /**
  * fetches detailed information about a group, including its permissions and members.
  * @param groupId - ID of the group to fetch
  * @returns detailed information about a group, including its permissions and members
  */
 export async function getGroup(groupId: number) {
-	return await database.group.findUnique({
+	const group = await database.group.findUnique({
 		where: { id: groupId },
 		select: {
 			id: true,
@@ -460,7 +479,8 @@ export async function getGroup(groupId: number) {
 					course: { select: { courseId: true, title: true, slug: true } },
 					lesson: { select: { lessonId: true, title: true, slug: true } },
 					specialization: { select: { specializationId: true, title: true, slug: true } },
-					subject: { select: { subjectId: true, title: true, slug: true } }
+					subject: { select: { subjectId: true, title: true, slug: true } },
+					skill: { select: { id: true, name: true } }
 				}
 			},
 			members: {
@@ -480,6 +500,14 @@ export async function getGroup(groupId: number) {
 			}
 		}
 	});
+	if (!group) return null;
+	return {
+		...group,
+		permissions: group.permissions.map(permission => ({
+			...permission,
+			skill: toSkillAccessRelation(permission.skill)
+		}))
+	};
 }
 
 /**
@@ -493,7 +521,7 @@ export async function getSingleOwnedResources(groupId: number) {
 			none: { accessLevel: AccessLevel.FULL, NOT: { groupId } }
 		}
 	};
-	return await database.permission.findMany({
+	const rows = await database.permission.findMany({
 		where: {
 			groupId,
 			accessLevel: AccessLevel.FULL,
@@ -501,7 +529,8 @@ export async function getSingleOwnedResources(groupId: number) {
 				{ course: permissions },
 				{ lesson: permissions },
 				{ specialization: permissions },
-				{ subject: permissions }
+				{ subject: permissions },
+				{ skill: permissions }
 			]
 		},
 		select: {
@@ -510,9 +539,11 @@ export async function getSingleOwnedResources(groupId: number) {
 			specialization: {
 				select: { title: true, specializationId: true, slug: true, subjectId: true }
 			},
-			subject: { select: { title: true, subjectId: true, slug: true } }
+			subject: { select: { title: true, subjectId: true, slug: true } },
+			skill: { select: { id: true, name: true } }
 		}
 	});
+	return rows.map(row => ({ ...row, skill: toSkillAccessRelation(row.skill) }));
 }
 
 /**
@@ -663,6 +694,14 @@ export async function preparePermissionsForUpdate(
 				groupId_subjectId: {
 					groupId: p.groupId,
 					subjectId: resource.subjectId
+				}
+			};
+		}
+		if ("skillId" in resource && resource.skillId) {
+			return {
+				groupId_skillId: {
+					groupId: p.groupId,
+					skillId: resource.skillId
 				}
 			};
 		}
