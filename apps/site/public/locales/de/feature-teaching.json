@@ -111,6 +111,8 @@
     "Skills_Course_Lessons_Required": "Von Kurs und Lerneinheiten benötigt",
     "Skills_Course_Lessons_Provided": "Von Kurs und Lerneinheiten vermittelt",
     "Skills_Cycles_Warning": "Warnung: In Ihrer Modellierung der Lernziele ist ein Zyklus vorhanden. Aufgrund dessen kann der Algorithmus keinen gültigen Lernpfad mit den im Zyklus beteiligten Lernzielen finden. Die angegebenen Pfadziele sind nicht erreichbar und können nur privat gespeichert werden. Die betroffenen Skills können durch Klicken auf diesen Text angezeigt werden.",
+    "Course_Content_Duplicate_Lesson_Title": "Duplikat-Fehler",
+    "Course_Content_Duplicate_Lesson_Message": "Diese Lektion ist bereits in diesem Kurs enthalten.",
     "Graph_Analysis": {
         "Course_Goal": "Kursziel",
         "Untaught_Skill": "Nicht unterrichteter $t(common:Skill)",

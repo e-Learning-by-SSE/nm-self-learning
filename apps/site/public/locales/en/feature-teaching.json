@@ -111,6 +111,8 @@
     "Skills_Course_Lessons_Required": "Required by course and lessons",
     "Skills_Course_Lessons_Provided": "Provided by course and lessons",
     "Skills_Cycles_Warning": "Warning: Your learning objective model contains a cycle. The algorithm cannot find a valid learning path for the objectives involved in the cycle. The specified path goals cannot be reached and can only be saved privately. Click this text to view the affected skills.",
+    "Course_Content_Duplicate_Lesson_Title": "Duplicate error",
+    "Course_Content_Duplicate_Lesson_Message": "This lesson is already included in this course.",
     "Graph_Analysis": {
         "Course_Goal": "Course goal",
         "Untaught_Skill": "Untaught  $t(common:Skill)",
