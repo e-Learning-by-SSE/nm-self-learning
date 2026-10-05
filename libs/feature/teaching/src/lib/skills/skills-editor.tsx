@@ -1,12 +1,13 @@
 import { ResourceSkillsFormType, SkillFormModel } from "@self-learning/types";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { LessonSkillManagerDragDrop } from "../lesson/forms/lesson-skill-manager-dragdrop";
-import { SidebarEditorLayout } from "@self-learning/ui/layouts";
+import { SidebarEditorLayout, useRequiredSession } from "@self-learning/ui/layouts";
 import { trpc } from "@self-learning/api-client";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import { useTableSkillDisplay } from "./folder-editor";
 import { showToast } from "@self-learning/ui/common";
 import { SkillTreeEditor } from "./skill-tree/skill-tree-editor";
+import { useAccessibleSkillIds } from "./only-own-skills-checkbox";
 import { useMemo, useRef, useState } from "react";
 import { SkillResourceProvider } from "./skill-tree/skill-resource-context";
 import { SkillCatalogDialog, SkillCatalogDialogState } from "./skill-dialog/skill-catalog-dialog";
@@ -31,6 +32,9 @@ export function SkillsEditor(
 	const isLesson = target === "lesson";
 
 	const { t } = useTranslation("feature-teaching");
+	const session = useRequiredSession();
+	const isAdmin = session.data?.user.role === "ADMIN";
+	const accessibleSkillIds = useAccessibleSkillIds(!isAdmin);
 
 	const { control, getValues } = useFormContext<ResourceSkillsFormType>();
 	const {
@@ -142,6 +146,15 @@ export function SkillsEditor(
 		// TODO ::: is used as separator - contract must be declared in one place or use separator as constant
 		const skillId = result.draggableId.split(":::").pop() ?? "";
 		const skill = allSkills.get(skillId);
+		// Non-admins cannot drop a provided skill they cannot reach.
+		if (skill && destination === "provides" && !isAdmin && !accessibleSkillIds?.has(skill.id)) {
+			showToast({
+				type: "error",
+				title: t("Skills_No_Access"),
+				subtitle: t("Skills_No_Access_Message", { name: skill.name })
+			});
+			return;
+		}
 		if (skill) addSkills([skill], destination);
 	}
 

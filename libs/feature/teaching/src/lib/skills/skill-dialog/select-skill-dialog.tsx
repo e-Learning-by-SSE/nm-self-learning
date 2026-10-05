@@ -5,6 +5,8 @@ import { Dialog, DialogActions, LoadingBox, OnDialogCloseFn } from "@self-learni
 import { trpc } from "@self-learning/api-client";
 import { memo, useContext, useEffect, useMemo, useState } from "react";
 import { SearchField } from "@self-learning/ui/forms";
+import { useRequiredSession } from "@self-learning/ui/layouts";
+import { OnlyOwnSkillsCheckbox, useAccessibleSkillIds } from "../only-own-skills-checkbox";
 import { SkillIcon } from "../skill-icon";
 import { compareSkills } from "../compare-skills";
 import { SkillResourceContext } from "../skill-tree/skill-resource-context";
@@ -21,13 +23,15 @@ export function SelectSkillDialog({
 	skills: skillsFromParent,
 	excludedIds,
 	selectedIds,
-	allowSelectRoots = true
+	allowSelectRoots = true,
+	restrictToOwnSkills = false
 }: {
 	onClose: OnDialogCloseFn<SkillSelectionChange>;
 	skills?: SkillFormModel[];
 	excludedIds?: ReadonlySet<string>;
 	selectedIds?: ReadonlySet<string>;
 	allowSelectRoots: boolean;
+	restrictToOwnSkills?: boolean;
 }) {
 	const { t } = useTranslation(["feature-teaching", "common"]);
 	const ctx = useContext(SkillResourceContext);
@@ -52,6 +56,7 @@ export function SelectSkillDialog({
 						skills={skills}
 						selectedIds={selectedIds}
 						allowSelectRoots={allowSelectRoots}
+						restrictToOwnSkills={restrictToOwnSkills}
 					/>
 				</>
 			)}
@@ -63,15 +68,24 @@ function SelectSkillForm({
 	onClose,
 	skills,
 	selectedIds,
-	allowSelectRoots
+	allowSelectRoots,
+	restrictToOwnSkills = false
 }: {
 	onClose: OnDialogCloseFn<SkillSelectionChange>;
 	skills: SkillFormModel[];
 	selectedIds?: ReadonlySet<string>;
 	allowSelectRoots: boolean;
+	restrictToOwnSkills?: boolean;
 }) {
 	const { t } = useTranslation(["feature-teaching", "common"]);
+	const session = useRequiredSession();
+	const isAdmin = session.data?.user.role === "ADMIN";
+	// Non-admins cannot turn the filter off when choosing provided skills.
+	const lockToOwnSkills = restrictToOwnSkills && !isAdmin;
 	const [search, setSearch] = useState("");
+	const [onlyOwnSkills, setOnlyOwnSkills] = useState(true);
+	const filterToOwnSkills = lockToOwnSkills || onlyOwnSkills;
+	const accessibleSkillIds = useAccessibleSkillIds(filterToOwnSkills);
 	// key by id — object identity breaks after getSkills refetch
 	const [checkedIds, setCheckedIds] = useState(() => new Set(selectedIds));
 
@@ -90,6 +104,15 @@ function SelectSkillForm({
 		search !== ""
 			? orderedSkills.filter(skill => skill.name.toLowerCase().includes(search.toLowerCase()))
 			: orderedSkills;
+	// Membership filter. An already selected skill stays visible so it can be unchecked.
+	const visibleSkills = filteredSkills.filter(skill => {
+		if (!filterToOwnSkills) return true;
+		// Locked list must not flash the full catalog while membership ids load.
+		if (!accessibleSkillIds) {
+			return !lockToOwnSkills || (selectedIds?.has(skill.id) ?? false);
+		}
+		return accessibleSkillIds.has(skill.id) || selectedIds?.has(skill.id);
+	});
 
 	return (
 		<>
@@ -99,13 +122,16 @@ function SelectSkillForm({
 					setSearch(e.target.value);
 				}}
 			/>
+			{!lockToOwnSkills && (
+				<OnlyOwnSkillsCheckbox checked={onlyOwnSkills} onChange={setOnlyOwnSkills} />
+			)}
 			<div className="flex flex-col justify-between overflow-auto">
 				<section className="flex h-64 flex-col rounded-lg border border-c-border p-4">
 					<div className="flex flex-col">
 						{skills.length === 0 && <p>{t("Skills_Empty")}</p>}
 						{skills.length > 0 && (
 							<>
-								{filteredSkills.map((skill, index) => (
+								{visibleSkills.map((skill, index) => (
 									<span
 										key={skill.id + index}
 										className="flex items-center gap-2"

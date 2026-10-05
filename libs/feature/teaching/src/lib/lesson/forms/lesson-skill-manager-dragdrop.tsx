@@ -47,6 +47,7 @@ export function LessonSkillManagerDragDrop({
 					droppableId="provides"
 					excludedIds={excludedIds}
 					catalog={catalog}
+					restrictToOwnSkills
 				/>
 
 				<LabeledFieldSelectSkillsViewDragDrop

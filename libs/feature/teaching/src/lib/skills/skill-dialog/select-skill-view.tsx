@@ -16,7 +16,8 @@ export function LabeledFieldSelectSkillsViewDragDrop({
 	label,
 	droppableId,
 	excludedIds,
-	catalog
+	catalog,
+	restrictToOwnSkills = false
 }: {
 	skills: SkillFormModel[];
 	onDeleteSkill: (skill: SkillFormModel) => void;
@@ -25,6 +26,7 @@ export function LabeledFieldSelectSkillsViewDragDrop({
 	droppableId?: string;
 	excludedIds?: ReadonlySet<string>;
 	catalog?: SkillFormModel[];
+	restrictToOwnSkills?: boolean;
 }) {
 	const { t } = useTranslation(["feature-teaching", "common"]);
 	const [selectSkillModal, setSelectSkillModal] = useState<boolean>(false);
@@ -51,6 +53,7 @@ export function LabeledFieldSelectSkillsViewDragDrop({
 							excludedIds={excludedIds}
 							catalog={catalog}
 							allowSelectRoots={false}
+							restrictToOwnSkills={restrictToOwnSkills}
 						/>
 					</LabeledField>
 					{provided.placeholder}
@@ -111,7 +114,8 @@ export function SkillManagementComponent({
 	selectSkillModal,
 	excludedIds,
 	catalog,
-	allowSelectRoots = true // allow to select root skills, set to false when picking course/lesson skills
+	allowSelectRoots = true, // allow to select root skills, set to false when picking course/lesson skills
+	restrictToOwnSkills = false
 }: {
 	skills: SkillFormModel[];
 	onDeleteSkill: (skill: SkillFormModel, index: number) => void;
@@ -121,6 +125,7 @@ export function SkillManagementComponent({
 	excludedIds?: ReadonlySet<string>;
 	catalog?: SkillFormModel[];
 	allowSelectRoots: boolean;
+	restrictToOwnSkills?: boolean;
 }) {
 	const { t } = useTranslation(["feature-teaching", "common"]);
 	// Ids of skills picked in the dialog. In the dialog those checkboxes are checked
@@ -147,6 +152,7 @@ export function SkillManagementComponent({
 					excludedIds={excludedIds}
 					selectedIds={selectedIds}
 					allowSelectRoots={allowSelectRoots}
+					restrictToOwnSkills={restrictToOwnSkills}
 					onClose={change => {
 						setSelectSkillModal(false);
 						if (!change) return;
