@@ -44,8 +44,8 @@ export function GroupLeaveOption({
 	function handleCancel() {
 		setShowConfirmation(false);
 	}
-
-	const notPossible = group.members.length <= 1 && group.members[0].userId === userId;
+	// this works only because group.members are filtered by ADMIN
+	const notPossible = group.members.length === 1 && group.members[0].userId === userId;
 
 	return (
 		<>

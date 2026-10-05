@@ -81,13 +81,14 @@ export function AdminGuard({
 export function MemberGuard({
 	children,
 	groupId,
-	groupRole = GroupRole.MEMBER // TODO
+	groupRole = GroupRole.MEMBER, // TODO
+	fallback
 }: {
 	groupRole: GroupRole;
 	groupId?: number;
 	children?: React.ReactNode;
+	fallback: "hidden" | "unauthorized";
 }) {
-	const error = `Um darauf zugreifen zu können, müssen Sie Mitglied einer Gruppe sein.`;
 	const session = useRequiredSession();
 	const isAdmin = session.data?.user.role === "ADMIN";
 	// const isAuthor = session.data?.user.isAuthor;
@@ -95,11 +96,19 @@ export function MemberGuard({
 	// TODO now I sacrifize expiresAt & groupRole to make it simple; const now = new Date();
 
 	if (session.status === "loading" || groupId === undefined) {
-		return <LoadingBox />;
+		return fallback === "unauthorized" ? <LoadingBox /> : null;
 	}
 
 	const hasAccess = isAdmin || userGroups.has(groupId);
-	return <AuthorizedGuard condition={hasAccess} children={children} error={error} />;
+	if (hasAccess) {
+		// eslint-disable-next-line react/jsx-no-useless-fragment
+		return <>{children}</>;
+	}
+	if (fallback === "unauthorized") {
+		const error = `Um darauf zugreifen zu können, müssen Sie Mitglied einer Gruppe mit der Rolle '${groupRole}' sein.`;
+		return <Unauthorized>{error}</Unauthorized>;
+	}
+	return null; // hide
 }
 
 export function testResourceGuard(

@@ -259,7 +259,11 @@ function GroupsPaginatedView({
 						</TableDataColumn>
 
 						<TableDataColumn>
-							<MemberGuard groupId={group.groupId} groupRole={GroupRole.MEMBER}>
+							<MemberGuard
+								fallback="hidden"
+								groupId={group.groupId}
+								groupRole={GroupRole.MEMBER}
+							>
 								<Link href={`/teaching/groups/${group.groupId}/edit`}>
 									<IconOnlyButton
 										icon={<PencilIcon className="h-5 w-5" />}
