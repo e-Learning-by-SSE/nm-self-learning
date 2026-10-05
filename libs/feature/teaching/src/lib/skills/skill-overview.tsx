@@ -117,7 +117,7 @@ function RepositoryTaskbar({ skillId }: { skillId: string }) {
 	);
 }
 
-function RepositoryDeleteOption({ skillId }: { skillId: string }) {
+export function RepositoryDeleteOption({ skillId }: { skillId: string }) {
 	const { t } = useTranslation(["feature-teaching", "common"]);
 	const { mutateAsync: deleteSkill } = trpc.skill.deleteSkills.useMutation();
 	const [showConfirmation, setShowConfirmation] = useState(false);
