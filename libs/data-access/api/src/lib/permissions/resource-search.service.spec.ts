@@ -1,6 +1,6 @@
 import { database } from "@self-learning/database";
 import { AccessLevel } from "@prisma/client";
-import { searchAllResources, searchMyResources } from "./resource-search.service";
+import { getMySkillIds, searchAllResources, searchMyResources } from "./resource-search.service";
 
 jest.mock("@self-learning/database", () => ({
 	__esModule: true,
@@ -212,6 +212,32 @@ describe("resource-search.service", () => {
 				title: "Algebra",
 				accessLevel: AccessLevel.EDIT
 			});
+		});
+	});
+
+	describe("getMySkillIds", () => {
+		it("returns distinct skill ids reachable by an active membership", async () => {
+			(database.permission.findMany as jest.Mock).mockResolvedValue([
+				{ skillId: "sk1" },
+				{ skillId: "sk2" },
+				{ skillId: null }
+			]);
+
+			const ids = await getMySkillIds("user-1");
+
+			expect(ids).toEqual(["sk1", "sk2"]);
+			expect(database.permission.findMany).toHaveBeenCalledWith(
+				expect.objectContaining({
+					distinct: ["skillId"],
+					select: { skillId: true },
+					where: expect.objectContaining({
+						skillId: { not: null },
+						group: {
+							members: { some: expect.objectContaining({ userId: "user-1" }) }
+						}
+					})
+				})
+			);
 		});
 	});
 });

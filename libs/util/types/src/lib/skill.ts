@@ -34,7 +34,7 @@ export const ResourceSkillsFormSchema = z.object({
 });
 export type ResourceSkillsFormType = z.infer<typeof ResourceSkillsFormSchema>;
 
-// TODO used once, name not descriptive, to specialized
+// TODO used once, name not descriptive, too specialized
 export const createSkillFormModelFromSkillResolved = (
 	skill: Pick<SkillResolved, "name" | "description" | "children" | "id" | "authorId" | "parents">
 ): SkillFormModel => {

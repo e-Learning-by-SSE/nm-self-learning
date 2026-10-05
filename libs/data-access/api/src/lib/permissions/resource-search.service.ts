@@ -322,11 +322,7 @@ export async function searchMyResources(
 	const permissions = await database.permission.findMany({
 		where: {
 			OR: permissionFilters,
-			group: {
-				members: {
-					some: getActiveMembershipWhere(userId)
-				}
-			}
+			...reachableByMember(userId)
 		},
 		select: {
 			accessLevel: true,
@@ -356,4 +352,21 @@ export async function searchMyResources(
 	});
 
 	return paginateResources(aggregateBestResourceAccess(resources), input);
+}
+
+/** Skill ids reachable through an active group membership. Same rule as getMyResources, without paging. */
+export async function getMySkillIds(userId: string): Promise<string[]> {
+	const rows = await database.permission.findMany({
+		where: {
+			...resourceSearch.skill.permissionWhere(undefined),
+			...reachableByMember(userId)
+		},
+		distinct: ["skillId"],
+		select: { skillId: true }
+	});
+	return rows.flatMap(row => row.skillId ?? []);
+}
+
+function reachableByMember(userId: string): Prisma.PermissionWhereInput {
+	return { group: { members: { some: getActiveMembershipWhere(userId) } } };
 }

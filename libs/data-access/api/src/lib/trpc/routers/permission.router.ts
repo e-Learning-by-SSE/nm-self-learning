@@ -28,7 +28,11 @@ import {
 	testGroupCircularParent
 } from "../../permissions/permission.service";
 import { anyTrue } from "../../permissions/permission.utils";
-import { searchMyResources, searchAllResources } from "../../permissions/resource-search.service";
+import {
+	searchMyResources,
+	searchAllResources,
+	getMySkillIds
+} from "../../permissions/resource-search.service";
 
 function getResourceKey(resource: ResourceInput): string {
 	if (resource.courseId) return `course-${resource.courseId}`;
@@ -46,6 +50,10 @@ export const permissionRouter = t.router({
 	}),
 	getMyResources: authProcedure.input(ResourceSearchInputSchema).query(async ({ input, ctx }) => {
 		return searchMyResources(ctx.user.id, input);
+	}),
+	// Unpaged ids for the skill tree filter. getMyResources drops parent links by pagination
+	getMySkillIds: authProcedure.query(async ({ ctx }) => {
+		return getMySkillIds(ctx.user.id);
 	}),
 	// Can be done by "parent" group admins or website admins
 	createGroup: authProcedure

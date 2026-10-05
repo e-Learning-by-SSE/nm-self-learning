@@ -1,8 +1,7 @@
 import { useTranslation } from "next-i18next";
-import { trpc } from "@self-learning/api-client";
 import { DialogHandler, IconTextButton, Table, TableHeaderColumn } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
-import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
+import { CenteredSection } from "@self-learning/ui/layouts";
 import React, { useMemo, useState } from "react";
 import {
 	SkillCreateHandler,
@@ -10,7 +9,7 @@ import {
 	SkillSelectHandler,
 	UpdateVisuals
 } from "../folder-editor/skill-display";
-import { OnlyOwnSkillsCheckbox } from "../only-own-skills-checkbox";
+import { OnlyOwnSkillsCheckbox, useAccessibleSkillIds } from "../only-own-skills-checkbox";
 import { ListSkillEntryWithChildren } from "./skill-row-editor";
 import { PlusIcon } from "@heroicons/react/24/solid";
 
@@ -27,14 +26,9 @@ export function SkillTreeEditor({
 }) {
 	const { t } = useTranslation(["feature-teaching", "common"]);
 	const [searchTerm, setSearchTerm] = useState("");
-	const [onlyOwnSkills, setOnlyOwnSkills] = useState(false);
-	const session = useRequiredSession();
-	const username = session.data?.user.name;
-	const { data: author } = trpc.author.getByUsername.useQuery(
-		{ username: username ?? "" },
-		{ enabled: !!username }
-	);
-	const authorId = author?.id;
+	const [onlyOwnSkills, setOnlyOwnSkills] = useState(true);
+	// Undefined while loading, so the tree is not hidden before membership ids arrive.
+	const accessibleSkillIds = useAccessibleSkillIds(onlyOwnSkills);
 	const normalized = searchTerm.toLowerCase().trim();
 	const allSkills = Array.from(skillDisplayData.values());
 	const matchingSkillIds: Set<string> = new Set(
@@ -43,10 +37,9 @@ export function SkillTreeEditor({
 				const nameMatches =
 					skill.skill.name.toLowerCase().includes(normalized) ||
 					skill.displayName?.toLowerCase().includes(normalized);
-				// Until the author id is known, do not hide the whole tree.
-				const ownMatches =
-					!onlyOwnSkills || authorId === undefined || skill.skill.authorId === authorId;
-				return nameMatches && ownMatches;
+				const isAccessible =
+					!onlyOwnSkills || !accessibleSkillIds || accessibleSkillIds.has(skill.id);
+				return nameMatches && isAccessible;
 			})
 			.map(skill => skill.id)
 	);

@@ -16,7 +16,11 @@ import {
 	testGroupCircularParent,
 	getEffectiveResourceAccesses
 } from "../../permissions/permission.service";
-import { searchAllResources, searchMyResources } from "../../permissions/resource-search.service";
+import {
+	getMySkillIds,
+	searchAllResources,
+	searchMyResources
+} from "../../permissions/resource-search.service";
 import {
 	greaterAccessLevel,
 	greaterGroupRole,
@@ -75,7 +79,8 @@ jest.mock("@self-learning/types", () => {
 
 jest.mock("../../permissions/resource-search.service", () => ({
 	searchAllResources: jest.fn(),
-	searchMyResources: jest.fn()
+	searchMyResources: jest.fn(),
+	getMySkillIds: jest.fn()
 }));
 
 function prepare(user: Partial<UserFromSession>) {
@@ -175,6 +180,18 @@ describe("permissionRouter", () => {
 
 			expect(searchMyResources).toHaveBeenCalledWith("my-user", { page: 2, title: "math" });
 			expect(result).toEqual(payload);
+		});
+	});
+
+	describe("getMySkillIds", () => {
+		it("delegates to the membership skill id query", async () => {
+			const { caller } = prepare({ id: "my-user" });
+			(getMySkillIds as jest.Mock).mockResolvedValue(["sk1"]);
+
+			const result = await caller.getMySkillIds();
+
+			expect(getMySkillIds).toHaveBeenCalledWith("my-user");
+			expect(result).toEqual(["sk1"]);
 		});
 	});
 
