@@ -2,11 +2,21 @@ import { authorProcedure, t } from "../trpc";
 import * as z from "zod";
 import { database, getSkillById } from "@self-learning/database";
 import {
-	createSkillFormModelFromSkillResolved,
-	skillCreationFormSchema,
+	ResourceAccess,
+	skillCreateSchema,
+	skillEditSchema,
 	SkillFormModel,
-	skillFormSchema
+	toResourcePermissionsForm
 } from "@self-learning/types";
+import { TRPCError } from "@trpc/server";
+import { AccessLevel, Prisma } from "@prisma/client";
+import {
+	canCreate,
+	canEdit,
+	hasEffectiveResourceAccessBatch,
+	preparePermissionsForCreate,
+	prepareResourceUpdate
+} from "../../permissions/permission.service";
 
 type RawSkill = {
 	id: string;
@@ -26,7 +36,10 @@ type TransformedSkill = {
 	parents: string[];
 };
 
-async function updateSkill(skill: SkillFormModel) {
+async function updateSkill(
+	skill: SkillFormModel,
+	permissions?: Prisma.SkillUpdateInput["permissions"]
+) {
 	const children = skill.children.map(id => ({ id }));
 	const parents = skill.parents.map(id => ({ id }));
 
@@ -37,7 +50,8 @@ async function updateSkill(skill: SkillFormModel) {
 			description: skill.description,
 			children: { set: children },
 			parents: { set: parents },
-			author: { connect: { id: skill.authorId } }
+			author: { connect: { id: skill.authorId } },
+			permissions
 		},
 		include: {
 			children: true,
@@ -49,14 +63,17 @@ async function updateSkill(skill: SkillFormModel) {
 async function createSkill(input: {
 	skill: { children: string[]; name: string; description: string | null };
 	authorId: number;
+	permissions: Prisma.SkillCreateInput["permissions"];
 }) {
 	return database.skill.create({
 		data: {
-			...input.skill,
+			name: input.skill.name,
+			description: input.skill.description,
 			author: { connect: { id: input.authorId } },
 			children: {
 				connect: input.skill.children.map(id => ({ id }))
-			}
+			},
+			permissions: input.permissions
 		},
 		include: {
 			children: true,
@@ -148,42 +165,85 @@ export const skillRouter = t.router({
 	updateSkill: authorProcedure
 		.input(
 			z.object({
-				skill: skillFormSchema
+				skill: skillEditSchema
 			})
 		)
-		.mutation(async ({ input }) => {
-			return updateSkill(input.skill);
+		.mutation(async ({ ctx, input }) => {
+			const { permissions: formPermissions, ...skill } = input.skill;
+			// diff parents (must have EDIT)
+			const oldSkill = await getSkillById(skill.id);
+			if (!oldSkill) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Skill not found." });
+			}
+			const oldParents = new Set(oldSkill.parents.map(p => p.id));
+			const newParents = new Set(skill.parents);
+			// A.symmetricDifference(B)
+			const symmetricDiff = [
+				...[...oldParents].filter(x => !newParents.has(x)),
+				...[...newParents].filter(x => !oldParents.has(x))
+			];
+			const checks = symmetricDiff.map(skillId => ({
+				skillId,
+				accessLevel: AccessLevel.EDIT
+			}));
+			const canUpdate = await hasEffectiveResourceAccessBatch(ctx.user, checks);
+			if (!canUpdate) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
+			}
+			const permissions = await prepareResourceUpdate(
+				ctx.user,
+				{ skillId: skill.id },
+				formPermissions
+			);
+			return updateSkill(skill, permissions);
 		}),
 
 	createSkill: authorProcedure
 		.input(
 			z.object({
 				authorId: z.number(),
-				skill: skillCreationFormSchema
+				skill: skillCreateSchema
 			})
 		)
-		.mutation(async ({ input }) => {
-			return await createSkill(input);
+		.mutation(async ({ ctx, input }) => {
+			if (!(await canCreate(ctx.user))) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
+			}
+			const { permissions: formPermissions, ...skill } = input.skill;
+			const permissions = await preparePermissionsForCreate(formPermissions);
+			return await createSkill({ authorId: input.authorId, skill, permissions });
 		}),
 	createSkillWithParents: authorProcedure
 		.input(
 			z.object({
 				authorId: z.number(),
 				parentSkillId: z.string(),
-				skill: skillCreationFormSchema
+				// permissions are copied from parent skill
+				skill: skillCreateSchema.omit({ permissions: true })
 			})
 		)
-		.mutation(async ({ input }) => {
+		.mutation(async ({ ctx, input }) => {
 			const parentSkill = await getSkillById(input.parentSkillId);
 			if (!parentSkill) return null;
+			if (!(await canCreate(ctx.user))) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
+			}
+			if (!(await canEdit(ctx.user, { skillId: input.parentSkillId }))) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
+			}
+			// The child starts with a copy of the parent's rows.
+			const permissions = await preparePermissionsForCreate(
+				toResourcePermissionsForm(parentSkill.permissions)
+			);
 			const createdSkill = await createSkill({
 				authorId: input.authorId,
-				skill: input.skill
+				skill: input.skill,
+				permissions
 			});
-			const parentSkillFormModel = createSkillFormModelFromSkillResolved(parentSkill);
-			const updatedParentSkill = await updateSkill({
-				...parentSkillFormModel,
-				children: [...parentSkillFormModel.children, createdSkill.id]
+			const updatedParentSkill = await database.skill.update({
+				where: { id: parentSkill.id },
+				data: { children: { connect: { id: createdSkill.id } } },
+				include: { children: true, parents: true }
 			});
 			return { parentSkill: updatedParentSkill, createdSkill };
 		}),
@@ -220,7 +280,17 @@ export const skillRouter = t.router({
 				ids: z.array(z.string())
 			})
 		)
-		.mutation(async ({ input }) => {
+		.mutation(async ({ input, ctx }) => {
+			// test permission for each skill
+			const checks: ResourceAccess[] = input.ids.map(skillId => ({
+				skillId,
+				accessLevel: AccessLevel.FULL // canDelete required FULL
+			}));
+			// TODO returns no feedback
+			const canDelete = await hasEffectiveResourceAccessBatch(ctx.user, checks);
+			if (!canDelete) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
+			}
 			// TODO decide what to do with children
 			return database.skill.deleteMany({
 				where: { id: { in: input.ids } }

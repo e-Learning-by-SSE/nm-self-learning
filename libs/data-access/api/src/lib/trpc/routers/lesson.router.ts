@@ -19,6 +19,7 @@ import {
 	canCreate,
 	canDelete,
 	canEdit,
+	hasEffectiveResourceAccessBatch,
 	preparePermissionsForCreate,
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
@@ -301,6 +302,15 @@ export const lessonRouter = t.router({
 			} satisfies Paginated<unknown>;
 		}),
 	create: authProcedure.input(lessonSchema).mutation(async ({ input, ctx }) => {
+		// check permissions to provide skills (TODO provides no detailed feedback)
+		const checks = input.provides.map(s => ({
+			skillId: s.id,
+			accessLevel: AccessLevel.EDIT
+		}));
+		const canProvide = await hasEffectiveResourceAccessBatch(ctx.user, checks);
+		if (!canProvide) {
+			throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+		}
 		// check permissions
 		if (!(await canCreate(ctx.user))) {
 			throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
@@ -363,6 +373,15 @@ export const lessonRouter = t.router({
 	edit: authProcedure
 		.input(z.object({ lessonId: z.string(), lesson: lessonSchema }))
 		.mutation(async ({ input, ctx }) => {
+			// check permissions to provide skills (TODO provides no detailed feedback)
+			const checks = input.lesson.provides.map(s => ({
+				skillId: s.id,
+				accessLevel: AccessLevel.EDIT
+			}));
+			const canProvide = await hasEffectiveResourceAccessBatch(ctx.user, checks);
+			if (!canProvide) {
+				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+			}
 			const permissions = await prepareResourceUpdate(
 				ctx.user,
 				input,

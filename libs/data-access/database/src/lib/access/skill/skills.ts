@@ -6,7 +6,14 @@ export function getSkillById(id: string) {
 		where: { id },
 		include: {
 			children: true,
-			parents: true
+			parents: true,
+			// Same shape as resourcePermissionSelect.
+			permissions: {
+				select: {
+					accessLevel: true,
+					group: { select: { id: true, name: true } }
+				}
+			}
 		}
 	});
 }
