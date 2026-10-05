@@ -206,6 +206,7 @@ function SkillToSkillDepsInfo({
 			</label>
 			<div>
 				<SelectSkillsView
+					restrictToOwnSkills
 					skills={parentItems.map(skill => {
 						return {
 							...skill,

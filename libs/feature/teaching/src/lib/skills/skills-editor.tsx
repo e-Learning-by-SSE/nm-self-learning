@@ -11,6 +11,12 @@ import { useAccessibleSkillIds } from "./only-own-skills-checkbox";
 import { useMemo, useRef, useState } from "react";
 import { SkillResourceProvider } from "./skill-tree/skill-resource-context";
 import { SkillCatalogDialog, SkillCatalogDialogState } from "./skill-dialog/skill-catalog-dialog";
+import {
+	AddSkillChildrenDialog,
+	directChildSkills,
+	isSkillArea,
+	toastDeniedSkillAccess
+} from "./skill-dialog/add-skill-children-dialog";
 import { useTranslation } from "react-i18next";
 
 /**
@@ -110,6 +116,10 @@ export function SkillsEditor(
 	const catalog = useMemo(() => Array.from(allSkills.values()), [allSkills]);
 
 	const [dialog, setDialog] = useState<SkillCatalogDialogState>({ kind: "closed" });
+	const [pendingArea, setPendingArea] = useState<{
+		parent: SkillFormModel;
+		field: "provides" | "requires";
+	} | null>(null);
 	// avoid rerendering the whole tree when dragging a skill
 	const treeRef = useRef<HTMLDivElement>(null);
 
@@ -146,16 +156,17 @@ export function SkillsEditor(
 		// TODO ::: is used as separator - contract must be declared in one place or use separator as constant
 		const skillId = result.draggableId.split(":::").pop() ?? "";
 		const skill = allSkills.get(skillId);
-		// Non-admins cannot drop a provided skill they cannot reach.
-		if (skill && destination === "provides" && !isAdmin && !accessibleSkillIds?.has(skill.id)) {
-			showToast({
-				type: "error",
-				title: t("Skills_No_Access"),
-				subtitle: t("Skills_No_Access_Message", { name: skill.name })
-			});
+		if (!skill) return;
+		// No access to the dropped skill, including a skill area. Do not open the children dialog.
+		if (destination === "provides" && !isAdmin && !accessibleSkillIds?.has(skill.id)) {
+			toastDeniedSkillAccess(t, skill.name);
 			return;
 		}
-		if (skill) addSkills([skill], destination);
+		if (isSkillArea(skill)) {
+			setPendingArea({ parent: skill, field: destination });
+			return;
+		}
+		addSkills([skill], destination);
 	}
 
 	function onSkillUpdated(skillId: string, name: string, description: string) {
@@ -180,6 +191,23 @@ export function SkillsEditor(
 						: courseId
 							? t("Skills_Subtitle_Lesson")
 							: t("Skills_Lesson_Standalone");
+
+	function confirmAddChildren(confirmed: boolean) {
+		const prompt = pendingArea;
+		setPendingArea(null);
+		if (!confirmed || !prompt) return;
+		const children = directChildSkills(prompt.parent, skillId => allSkills.get(skillId));
+		const restrict = prompt.field === "provides" && !isAdmin;
+		const allowed: SkillFormModel[] = [];
+		for (const child of children) {
+			if (restrict && !accessibleSkillIds?.has(child.id)) {
+				toastDeniedSkillAccess(t, child.name);
+				continue;
+			}
+			allowed.push(child);
+		}
+		if (allowed.length > 0) addSkills(allowed, prompt.field);
+	}
 
 	return (
 		<SkillResourceProvider
@@ -225,6 +253,12 @@ export function SkillsEditor(
 					</SidebarEditorLayout>
 				</div>
 			</DragDropContext>
+			{pendingArea && (
+				<AddSkillChildrenDialog
+					skillName={pendingArea.parent.name}
+					onClose={confirmAddChildren}
+				/>
+			)}
 			<SkillCatalogDialog
 				dialog={dialog}
 				skills={allSkills}

@@ -69,7 +69,8 @@ export function SelectSkillsView({
 	onAddSkill,
 	disabled = false,
 	excludedIds,
-	catalog
+	catalog,
+	restrictToOwnSkills = false
 }: {
 	skills: SkillFormModel[];
 	onDeleteSkill: (skill: SkillFormModel) => void;
@@ -77,6 +78,7 @@ export function SelectSkillsView({
 	disabled?: boolean;
 	excludedIds?: ReadonlySet<string>;
 	catalog?: SkillFormModel[];
+	restrictToOwnSkills?: boolean;
 }) {
 	const { t } = useTranslation(["feature-teaching", "common"]);
 	const [selectSkillModal, setSelectSkillModal] = useState(false);
@@ -101,6 +103,7 @@ export function SelectSkillsView({
 				excludedIds={excludedIds}
 				catalog={catalog}
 				allowSelectRoots={true}
+				restrictToOwnSkills={restrictToOwnSkills}
 			/>
 		</>
 	);

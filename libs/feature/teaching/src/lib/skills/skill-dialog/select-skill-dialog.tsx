@@ -3,9 +3,15 @@ import { useTranslation } from "next-i18next";
 import { SkillFormModel } from "@self-learning/types";
 import { Dialog, DialogActions, LoadingBox, OnDialogCloseFn } from "@self-learning/ui/common";
 import { trpc } from "@self-learning/api-client";
-import { memo, useContext, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { SearchField } from "@self-learning/ui/forms";
 import { useRequiredSession } from "@self-learning/ui/layouts";
+import {
+	AddSkillChildrenDialog,
+	directChildSkills,
+	isSkillArea,
+	toastDeniedSkillAccess
+} from "./add-skill-children-dialog";
 import { OnlyOwnSkillsCheckbox, useAccessibleSkillIds } from "../only-own-skills-checkbox";
 import { SkillIcon } from "../skill-icon";
 import { compareSkills } from "../compare-skills";
@@ -88,6 +94,18 @@ function SelectSkillForm({
 	const accessibleSkillIds = useAccessibleSkillIds(filterToOwnSkills);
 	// key by id — object identity breaks after getSkills refetch
 	const [checkedIds, setCheckedIds] = useState(() => new Set(selectedIds));
+	const [pendingArea, setPendingArea] = useState<SkillFormModel | null>(null);
+	const pickSkillArea = useCallback(
+		(skill: SkillFormModel) => {
+			// Same rule as drop: no access to the area means no children dialog.
+			if (lockToOwnSkills && !accessibleSkillIds?.has(skill.id)) {
+				toastDeniedSkillAccess(t, skill.name);
+				return;
+			}
+			setPendingArea(skill);
+		},
+		[accessibleSkillIds, lockToOwnSkills, t]
+	);
 
 	const setSkill = (skill: SkillFormModel) => {
 		setCheckedIds(prev => {
@@ -114,8 +132,34 @@ function SelectSkillForm({
 		return accessibleSkillIds.has(skill.id) || selectedIds?.has(skill.id);
 	});
 
+	function confirmAddChildren(confirmed: boolean) {
+		const area = pendingArea;
+		setPendingArea(null);
+		if (!confirmed || !area) return;
+		const children = directChildSkills(area, skillId =>
+			skills.find(item => item.id === skillId)
+		);
+		const allowed: SkillFormModel[] = [];
+		for (const child of children) {
+			if (lockToOwnSkills && !accessibleSkillIds?.has(child.id)) {
+				toastDeniedSkillAccess(t, child.name);
+				continue;
+			}
+			allowed.push(child);
+		}
+		if (allowed.length === 0) return;
+		setCheckedIds(prev => {
+			const next = new Set(prev);
+			for (const child of allowed) next.add(child.id);
+			return next;
+		});
+	}
+
 	return (
 		<>
+			{pendingArea && (
+				<AddSkillChildrenDialog skillName={pendingArea.name} onClose={confirmAddChildren} />
+			)}
 			<SearchField
 				placeholder={t("Skills_Search")}
 				onChange={e => {
@@ -141,6 +185,9 @@ function SelectSkillForm({
 											value={checkedIds.has(skill.id)}
 											setSkill={setSkill}
 											allowSelectRoots={allowSelectRoots}
+											onPickArea={
+												allowSelectRoots ? undefined : pickSkillArea
+											}
 										/>
 									</span>
 								))}
@@ -178,12 +225,14 @@ function SkillElement({
 	skill,
 	setSkill,
 	value,
-	allowSelectRoots = true
+	allowSelectRoots = true,
+	onPickArea
 }: {
 	skill: SkillFormModel;
 	setSkill: (skill: SkillFormModel) => void;
 	value: boolean;
 	allowSelectRoots: boolean;
+	onPickArea?: (skill: SkillFormModel) => void;
 }) {
 	const ctx = useContext(SkillResourceContext);
 	const [checked, setChecked] = useState(value);
@@ -205,9 +254,15 @@ function SkillElement({
 			<input
 				id={"checkbox:" + skill.id}
 				type={"checkbox"}
-				className={`checkbox ${allowSelectRoots || !isRepository ? "" : "invisible"}`}
+				className="checkbox"
 				checked={checked}
 				onChange={() => {
+					// A skill area is not attached. Ask to add its direct children instead.
+					if (onPickArea && isRepository && isSkillArea(skill)) {
+						onPickArea(skill);
+						return;
+					}
+					if (!allowSelectRoots && isRepository) return;
 					setChecked(!checked);
 					setSkill(skill);
 				}}

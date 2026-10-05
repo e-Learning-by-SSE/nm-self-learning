@@ -126,6 +126,7 @@ export function AddSkillDialog({
 
 					<LabeledField label={t("Skills_Parents")}>
 						<SelectSkillsView
+							restrictToOwnSkills
 							skills={parentSkills}
 							catalog={skills}
 							excludedIds={excludeIds}

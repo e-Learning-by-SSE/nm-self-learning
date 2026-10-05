@@ -82,7 +82,7 @@ function SkillRow({
 			{...rowProps}
 			skill={skill}
 			isRepository={isRootItem}
-			isDragDisabled={isUsedInCurrent || isRootItem}
+			isDragDisabled={isUsedInCurrent}
 			className={isUsedInCurrent ? "bg-gray-50" : ""}
 			repositoryIconClassName={isProvided ? "text-emerald-500" : ""}
 			label={
