@@ -7,6 +7,7 @@ import {
 	ReactFlow,
 	Position,
 	type NodeProps,
+	type ReactFlowInstance,
 	NodeMouseHandler,
 	useNodesState
 } from "@xyflow/react";
@@ -15,7 +16,7 @@ import type { inferProcedureOutput, inferProcedureInput } from "@trpc/server";
 import type { AppRouter } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { skipToken } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useJob } from "./use-job";
 import { LoadingBox } from "@self-learning/ui/common";
@@ -25,7 +26,8 @@ import {
 	type SkillNodeData,
 	type LearningUnitNodeType,
 	type SkillNodeType,
-	createGraph
+	createGraph,
+	layoutGraph
 } from "./graph-analysis";
 
 const nodeStyles = {
@@ -151,11 +153,25 @@ function Graph({
 
 	const initialGraph = createGraph(graphData, courseGoalIds);
 
-	const [nodes, , onNodesChange] = useNodesState<LearningUnitNodeType | SkillNodeType>(
+	const [nodes, setNodes, onNodesChange] = useNodesState<LearningUnitNodeType | SkillNodeType>(
 		initialGraph.nodes
 	);
 
-	const edges = initialGraph.edges;
+	const [edges, setEdges] = useState(initialGraph.edges);
+	const [flow, setFlow] = useState<ReactFlowInstance<LearningUnitNodeType | SkillNodeType> | null>(null);
+	const lastDimensions = useRef("");
+
+	useEffect(() => {
+		if (!flow || nodes.length === 0 || nodes.some(node => !node.measured?.width || !node.measured?.height)) return;
+		const dimensions = JSON.stringify(nodes.map(node => [node.id, node.measured?.width, node.measured?.height]));
+		if (dimensions === lastDimensions.current) return;
+		lastDimensions.current = dimensions;
+		const layout = layoutGraph(nodes, edges);
+		setNodes(layout.nodes);
+		setEdges(layout.edges);
+		// Wait for ReactFlow to apply the new positions before fitting the viewport.
+		requestAnimationFrame(() => { void flow.fitView(); });
+	}, [nodes, edges, flow, setNodes]);
 
 	const onNodeClick: NodeMouseHandler<LearningUnitNodeType | SkillNodeType> = (event, node) => {
 		if (node.type === "learningUnit" || node.type === "skill") {
@@ -182,6 +198,7 @@ function Graph({
 	return (
 		<div className="w-full shrink-0 bg-gray-100 rounded-lg" style={{ height: 650 }}>
 			<ReactFlow
+				onInit={setFlow}
 				nodes={nodes}
 				edges={edges}
 				onNodesChange={onNodesChange}
@@ -396,7 +413,8 @@ function GraphNode({
 	const { border, color, Icon, iconSize } = nodeStyles[variant];
 	return (
 		<div
-			className={`relative min-w-[150px] rounded px-4 py-2 ${untaught ? untaughtBorder : `border ${border}`} ${color}`}
+			className={`relative flex items-center rounded px-4 py-2 ${untaught ? untaughtBorder : `border ${border}`} ${color}`}
+			title={label}
 		>
 			<Icon
 				style={{
@@ -407,7 +425,7 @@ function GraphNode({
 					height: iconSize
 				}}
 			/>
-			<div>{label}</div>
+			<div className="whitespace-nowrap">{label}</div>
 			<NodeHandles />
 		</div>
 	);

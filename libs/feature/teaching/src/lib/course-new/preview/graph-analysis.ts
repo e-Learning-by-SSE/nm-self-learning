@@ -25,6 +25,15 @@ export type LearningUnitNodeData = {
 export type LearningUnitNodeType = Node<LearningUnitNodeData, "learningUnit">;
 export type GraphNode = SkillNodeType | LearningUnitNodeType;
 
+// Estimates for the first render, before ReactFlow measures the nodes.
+const GRAPH_NODE_WIDTH = 240;
+const GRAPH_NODE_HEIGHT = 80;
+
+export function layoutGraph(nodes: GraphNode[], edges: Edge[]) {
+	const layoutedNodes = layoutNodes(nodes, edges);
+	return { nodes: layoutedNodes, edges: layoutEdges(layoutedNodes, edges) };
+}
+
 export function createGraph(graphData: GraphAnalysisType, courseGoalIds: readonly string[] = []) {
 	const courseGoals = new Set(courseGoalIds);
 	const learningUnitIds = new Set(graphData.learningUnits.map(lu => lu.lessonId));
@@ -91,14 +100,14 @@ function layoutNodes(nodes: GraphNode[], edges: Edge[]) {
 
 	graph.setGraph({
 		rankdir: "TB", // Top -> Bottom
-		nodesep: 50,
+		nodesep: 70,
 		ranksep: 80
 	});
 
 	nodes.forEach(node => {
 		graph.setNode(node.id, {
-			width: 150,
-			height: 50
+			width: node.measured?.width ?? GRAPH_NODE_WIDTH,
+			height: node.measured?.height ?? GRAPH_NODE_HEIGHT
 		});
 	});
 
@@ -114,8 +123,8 @@ function layoutNodes(nodes: GraphNode[], edges: Edge[]) {
 		return {
 			...node,
 			position: {
-				x: position.x - 150 / 2,
-				y: position.y - 50 / 2
+				x: position.x - position.width / 2,
+				y: position.y - position.height / 2
 			}
 		};
 	});
