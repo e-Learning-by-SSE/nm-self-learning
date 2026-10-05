@@ -83,7 +83,7 @@ export const pathGenerationJob: JobDefinition<"pathGeneration"> = {
 		});
 
 		if (result == null || result.path.length === 0) {
-			return null;
+			throw new Error("No valid learning path found");
 		}
 
 		return {

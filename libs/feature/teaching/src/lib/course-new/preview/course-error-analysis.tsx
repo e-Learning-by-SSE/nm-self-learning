@@ -74,8 +74,12 @@ export function PathAnalysis({ course }: { course: CoursePreviewModel }) {
 		course.courseId ? { courseId: course.courseId } : undefined
 	);
 
+	if (job.isError) {
+		return <Warning title="noCoursePathTitle" description="noCoursePathDescription" />;
+	}
+
 	return (
-		<>
+		<div className="flex w-full flex-col gap-4">
 			<Warning title="noCoursePathTitle" description="noCoursePathDescription" />
 			{job.isPending ? (
 				<LoadingBox />
@@ -85,7 +89,7 @@ export function PathAnalysis({ course }: { course: CoursePreviewModel }) {
 					courseGoalIds={course.provides.map(skill => skill.id)}
 				/>
 			)}
-		</>
+		</div>
 	);
 }
 
@@ -176,7 +180,7 @@ function Graph({
 	};
 
 	return (
-		<div className="h-[500px] w-full bg-gray-100 rounded-lg">
+		<div className="w-full shrink-0 bg-gray-100 rounded-lg" style={{ height: 650 }}>
 			<ReactFlow
 				nodes={nodes}
 				edges={edges}

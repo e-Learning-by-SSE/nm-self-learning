@@ -5,8 +5,8 @@ import { trpc } from "@self-learning/api-client";
 import { Alert, AuthorsList, LoadingBox } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import * as ToC from "@self-learning/ui/course";
-import { inferProcedureOutput } from "@trpc/server";
-import { AppRouter } from "@self-learning/api";
+import type { inferProcedureOutput } from "@trpc/server";
+import type { AppRouter } from "@self-learning/api";
 import { useTranslation } from "react-i18next";
 import Image from "next/image";
 import { formatSeconds } from "@self-learning/util/common";
@@ -23,13 +23,13 @@ export function CoursePreview() {
 	const slug = useWatch({ control: form.control, name: "slug" });
 	const job = useJob(trpc.course.updateDefaultPath, slug ? { slug, knowledge: [] } : undefined);
 
-	// Fetch course after job finished
+	// Fetch course after the job finishes, including failures that need path analysis.
 	const { data: preview, isLoading: isPreviewLoading } = trpc.course.getCourse.useQuery(
 		{
 			slug: slug ?? ""
 		},
 		{
-			enabled: !!slug && job.isSuccess
+			enabled: !!slug && (job.isSuccess || job.isError)
 		}
 	);
 
@@ -46,25 +46,16 @@ export function CoursePreview() {
 		);
 	}
 
-	if (job.isError) {
-		const errMsg = job.error?.message ?? "Unknown error";
-
-		console.error(errMsg);
-
-		return (
-			<section className="mt-4">
-				<Alert
-					type={{
-						severity: "ERROR",
-						message: `Preview could not be created: ${errMsg}`
-					}}
-				/>
-			</section>
-		);
-	}
-
 	if (job.isPending || isPreviewLoading || !preview) {
 		return <LoadingBox />;
+	}
+
+	if (job.isError) {
+		return (
+			<section className="w-full bg-gray-50 py-16">
+				<PathAnalysis course={preview} />
+			</section>
+		);
 	}
 
 	return (
