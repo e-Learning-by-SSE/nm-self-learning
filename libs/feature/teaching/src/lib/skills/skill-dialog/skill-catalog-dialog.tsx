@@ -1,5 +1,9 @@
 import { useTranslation } from "next-i18next";
-import { createSkillFormModelFromSkillResolved, SkillFormModel } from "@self-learning/types";
+import {
+	createSkillFormModelFromSkillResolved,
+	SkillFormModel,
+	toResourcePermissionsForm
+} from "@self-learning/types";
 import { trpc } from "@self-learning/api-client";
 import { showToast } from "@self-learning/ui/common";
 import { useRequiredSession } from "@self-learning/ui/layouts";
@@ -31,9 +35,16 @@ export function SkillCatalogDialog({
 	);
 	const { mutateAsync: createSkill } = trpc.skill.createSkill.useMutation();
 	const { mutateAsync: updateSkill } = trpc.skill.updateSkill.useMutation();
+	const editingSkillId = dialog.kind === "edit" ? dialog.skillId : undefined;
+	const { data: editedSkill } = trpc.skill.getSkillById.useQuery(
+		{ skillId: editingSkillId ?? "" },
+		{ enabled: !!editingSkillId }
+	);
 
 	const editingSkill = dialog.kind === "edit" ? skills.get(dialog.skillId) : undefined;
-	if (dialog.kind === "closed" || (dialog.kind === "edit" && !editingSkill)) return null;
+	if (dialog.kind === "closed" || (dialog.kind === "edit" && (!editingSkill || !editedSkill))) {
+		return null;
+	}
 
 	async function onSubmit(result?: SkillDialogResult) {
 		if (!result) {
@@ -56,24 +67,27 @@ export function SkillCatalogDialog({
 						...editingSkill,
 						name: result.name,
 						description: result.description,
-						parents: result.parents
+						parents: result.parents,
+						permissions: result.permissions
 					}
 				});
-				onUpdated?.(editingSkill.id, result.name, result.description);
+				onUpdated?.(editingSkill.id, result.name, result.description ?? "");
 			} else {
 				const created = await createSkill({
 					authorId: author.id,
 					skill: {
 						name: result.name,
 						description: result.description,
-						children: []
+						children: [],
+						permissions: result.permissions
 					}
 				});
 				if (result.parents.length) {
 					await updateSkill({
 						skill: {
 							...createSkillFormModelFromSkillResolved(created),
-							parents: result.parents
+							parents: result.parents,
+							permissions: result.permissions
 						}
 					});
 				}
@@ -94,6 +108,9 @@ export function SkillCatalogDialog({
 		<AddSkillDialog
 			skills={Array.from(skills.values())}
 			skill={editingSkill}
+			initialPermissions={
+				editedSkill ? toResourcePermissionsForm(editedSkill.permissions) : undefined
+			}
 			defaultName={dialog.kind === "create" ? dialog.defaultName : undefined}
 			selectedSkill={
 				dialog.kind === "create" && dialog.parentId ? { id: dialog.parentId } : undefined

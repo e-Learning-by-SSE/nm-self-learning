@@ -21,7 +21,7 @@ import { AddSkillDialog, SkillDialogResult } from "../skill-dialog/add-skill-dia
 import { trpc } from "@self-learning/api-client";
 import { DragDropContext, OnDragEndResponder } from "@hello-pangea/dnd";
 import { isHotkeyPressed } from "react-hotkeys-hook";
-import { SkillFormModel } from "@self-learning/types";
+import { SkillFormModel, toResourcePermissionsForm } from "@self-learning/types";
 
 export function SkillFolderTable({
 	skillDisplayData,
@@ -63,12 +63,18 @@ export function SkillFolderTable({
 	const [openNewSkillDialog, setOpenNewSkillDialog] = useState(false);
 	const { mutateAsync: createNewSkill } = trpc.skill.createSkill.useMutation();
 	const { mutateAsync: updateSkillParent } = trpc.skill.updateSkill.useMutation();
+	const utils = trpc.useUtils();
 
 	async function handleAddSkillDialogClose(result?: SkillDialogResult) {
 		if (result) {
 			const created = await createNewSkill({
 				authorId: authorId,
-				skill: { name: result.name, description: result.description, children: [] }
+				skill: {
+					name: result.name,
+					description: result.description,
+					children: [],
+					permissions: result.permissions
+				}
 			});
 			if (result.parents.length) {
 				await updateSkillParent({
@@ -78,7 +84,8 @@ export function SkillFolderTable({
 						description: created.description,
 						authorId: created.authorId,
 						children: created.children.map(child => child.id),
-						parents: result.parents
+						parents: result.parents,
+						permissions: result.permissions
 					}
 				});
 				updateSkillDisplay(
@@ -105,7 +112,17 @@ export function SkillFolderTable({
 
 		sourceSkill.parents.push(destinationSkill.id);
 
-		const updateSkill = async () => await updateSkillParent({ skill: sourceSkill });
+		const updateSkill = async () => {
+			// TODO can I get permission without fetch?
+			const current = await utils.skill.getSkillById.fetch({ skillId: sourceSkill.id });
+			if (!current) return;
+			await updateSkillParent({
+				skill: {
+					...sourceSkill,
+					permissions: toResourcePermissionsForm(current.permissions)
+				}
+			});
+		};
 		updateSkill();
 	};
 

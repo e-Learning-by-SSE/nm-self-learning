@@ -85,6 +85,8 @@
     "Skills_Action_Success": "Action completed successfully!",
     "Skills_Action_Failed": "Your action could not be completed",
     "Skills_Create_Failed": "Could not create skill",
+    "Skills_Default_Group_Missing": "Set a default group first.",
+    "Skills_Group_Access_Subtitle": "Groups that can access this $t(common:Skill_one)",
     "Skills_Create": "Create skill",
     "Skills_Default_Description": "Add here",
     "Skills_Edit_Subtitle": "Information about the skill selected on the right",

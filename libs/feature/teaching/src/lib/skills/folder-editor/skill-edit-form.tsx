@@ -2,8 +2,9 @@ import { useTranslation } from "next-i18next";
 import { useEffect, useState } from "react";
 import { Form, LabeledField } from "@self-learning/ui/forms";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormProvider, useForm, useFormContext } from "react-hook-form";
-import { SkillFormModel, skillFormSchema } from "@self-learning/types";
+import { FormProvider, useForm, useFormContext, useWatch } from "react-hook-form";
+import { z } from "zod";
+import { skillEditSchema, SkillFormModel, toResourcePermissionsForm } from "@self-learning/types";
 import { trpc } from "@self-learning/api-client";
 import { SkillResolved } from "@self-learning/database";
 import { SkillDeleteOption } from "./skill-taskbar";
@@ -11,6 +12,11 @@ import { IconOnlyButton, showToast } from "@self-learning/ui/common";
 import { SelectSkillsView } from "../skill-dialog/select-skill-view";
 import { SkillSelectHandler } from "./skill-display";
 import { XMarkIcon } from "@heroicons/react/24/solid";
+import { useResourceGuard } from "@self-learning/ui/layouts";
+import { AccessLevel } from "@prisma/client";
+import { GroupAccessEditor } from "../../group/forms/group-form";
+
+type SkillEditForm = z.infer<typeof skillEditSchema>;
 
 export function SelectedSkillsInfoForm({
 	skills,
@@ -39,7 +45,7 @@ export function SkillInfoForm({
 		skillId: skill.id
 	});
 
-	const onSubmit = async (data: SkillFormModel) => {
+	const onSubmit = async (data: SkillEditForm) => {
 		await updateSkill({
 			skill: {
 				...data,
@@ -57,14 +63,25 @@ export function SkillInfoForm({
 		});
 	};
 
-	const form = useForm({
-		defaultValues: skill,
-		resolver: zodResolver(skillFormSchema)
+	const form = useForm<SkillEditForm>({
+		defaultValues: { ...skill, permissions: [] },
+		resolver: zodResolver(skillEditSchema)
 	});
 	const errors = form.formState.errors;
 	form.setValue("name", skill.name);
 	form.setValue("description", skill?.description);
+	// wait until permissions are loaded
+	const { setValue } = form;
+	useEffect(() => {
+		if (!dbSkill) return;
+		setValue("permissions", toResourcePermissionsForm(dbSkill.permissions));
+	}, [dbSkill, setValue]);
 	const resetEditTarget = () => handleSelection(undefined);
+
+	const isNew = false; // always edit
+	const permissions = useWatch({ control: form.control, name: "permissions" }) ?? [];
+	const hasFull = useResourceGuard(AccessLevel.FULL, permissions);
+	const showGroupAccessEditor = isNew || hasFull;
 
 	return (
 		<FormProvider {...form}>
@@ -93,6 +110,12 @@ export function SkillInfoForm({
 						>
 							<textarea {...form.register("description")} />
 						</LabeledField>
+						{showGroupAccessEditor && (
+							<GroupAccessEditor
+								subtitle={t("Skills_Group_Access_Subtitle")}
+								doUseDefaultGroup={isNew}
+							/>
+						)}
 						<SkillToSkillDepsInfo
 							parents={dbSkill?.parents ?? []}
 							children={dbSkill?.children ?? []}
@@ -100,7 +123,7 @@ export function SkillInfoForm({
 						/>
 					</div>
 					<div className="flex justify-between gap-2">
-						<button type="submit" className="btn-primary w-full">
+						<button type="submit" className="btn-primary w-full" disabled={!dbSkill}>
 							{t("common:save")}
 						</button>
 						<SkillDeleteOption skill={skill} />
