@@ -10,6 +10,7 @@ import {
 	OnDialogCloseFn,
 	Paginator
 } from "@self-learning/ui/common";
+import { useRequiredSession } from "@self-learning/ui/layouts";
 import { keepPreviousData } from "@tanstack/react-query";
 import { useTranslation } from "next-i18next";
 import { Fragment, useState } from "react";
@@ -159,33 +160,57 @@ export function SearchGroupDialog({
 }
 
 /**
- * useDefaultGroup - Hook to fetch a single group by ID, typically for pre-selecting a user's default group.
+ * useDefaultGroup - Hook to fetch the current user's default group
+ * @param enabled - If false, the query doesn't run
+ * @returns default group of current user as GroupSearchEntry or null if user has no default group
+ */
+export function useDefaultGroup(enabled: boolean) {
+	const session = useRequiredSession();
+	const defaultGroupId = session.data?.user.defaultGroupId;
+	const shouldFetch = enabled && defaultGroupId !== undefined;
+	return trpc.permission.getGroup.useQuery(
+		{ id: defaultGroupId ?? 0 },
+		{
+			enabled: shouldFetch,
+			select: (data): GroupSearchEntry | null =>
+				data && {
+					groupId: data.id,
+					name: data.name,
+					members: data.members.map(m => m.user.displayName),
+					slug: data.slug
+				}
+		}
+	);
+}
+
+/**
+ * useGroup - Hook to fetch a single group by ID
  *
- * Usage: Used in group creation forms to auto-fill the parent group field based on the current user's
- * defaultGroupId setting. Fetches only when enabled and returns null until data loads.
- *
- * @param defaultGroupId - The group ID to fetch (e.g., from session.user.defaultGroupId)
+ * @param groupId - The group ID to fetch
  * @param enabled - If false, the query doesn't run; set true when the form is ready
  * @returns GroupSearchEntry or null if not found or not enabled
  */
-export function useDefaultGroup({
-	defaultGroupId,
+export function useGroup({
+	groupId,
 	enabled: shouldFetch = false
 }: {
-	defaultGroupId?: number;
+	groupId?: number;
 	enabled?: boolean;
-}): GroupSearchEntry | null {
-	const enabled = defaultGroupId !== undefined && shouldFetch;
-	const query = trpc.permission.getGroup.useQuery({ id: defaultGroupId ?? 0 }, { enabled });
-
-	return enabled && query.data
-		? {
-				groupId: query.data.id,
-				name: query.data.name,
-				members: query.data.members.map(m => m.user.displayName),
-				slug: query.data.slug
-			}
-		: null;
+}) {
+	const enabled = groupId !== undefined && shouldFetch;
+	return trpc.permission.getGroup.useQuery(
+		{ id: groupId ?? 0 },
+		{
+			enabled,
+			select: (data): GroupSearchEntry | null =>
+				data && {
+					groupId: data.id,
+					name: data.name,
+					members: data.members.map(m => m.user.displayName),
+					slug: data.slug
+				}
+		}
+	);
 }
 
 /**

@@ -14,7 +14,6 @@ import { CreateChildSkillButton } from "../create-child-skill-button";
 import { SkillSelectHandler, UpdateVisuals } from "./skill-display";
 import { trpc } from "@self-learning/api-client";
 import { AccessLevel, Skill } from "@prisma/client";
-import { useRequiredSession } from "@self-learning/ui/layouts";
 import { useDefaultGroup } from "../../group/dialogs/search-group-dialog";
 import { useMemo } from "react";
 
@@ -168,12 +167,7 @@ export function NewSkillButton({
 	const date = new Date();
 	const formattedDate = date.toLocaleDateString(i18n.language);
 
-	const session = useRequiredSession();
-	const defaultGroupId = session.data?.user.defaultGroupId;
-	const group = useDefaultGroup({
-		defaultGroupId,
-		enabled: defaultGroupId !== undefined
-	});
+	const { data: group } = useDefaultGroup(true);
 	const permissions = useMemo(() => {
 		if (!group) return null;
 		return [

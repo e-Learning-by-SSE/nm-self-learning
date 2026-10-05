@@ -41,7 +41,7 @@ export function GroupAccessEditor({
 }) {
 	const { t } = useTranslation("feature-teaching");
 	const [isGroupDialogOpen, setGroupDialogOpen] = useState(false);
-	const { control, reset, getValues } = useFormContext<{
+	const { control, resetField } = useFormContext<{
 		permissions: ResourcePermissionsFormType;
 	}>();
 
@@ -114,30 +114,28 @@ export function GroupAccessEditor({
 	}
 
 	// If user creates a group, and has default group set - preset group parent (once)
-	const hasSetSingleGroup = useRef(false);
-	const defaultGroup = useDefaultGroup({
-		defaultGroupId: session.data?.user.defaultGroupId,
-		enabled: doUseDefaultGroup && editor.fields.length === 0
-	});
+	const { data: defaultGroup, isLoading } = useDefaultGroup(
+		doUseDefaultGroup && editor.fields.length === 0
+	);
+	const isDefaultGroupApplied = useRef(false);
 	useEffect(() => {
-		if (hasSetSingleGroup.current) return;
+		// run once
+		if (isDefaultGroupApplied.current || isLoading) return;
+		isDefaultGroupApplied.current = true;
+		// guard again because values may change between renders
+		if (!doUseDefaultGroup || editor.fields.length > 0) return;
 		if (!defaultGroup) return;
-		hasSetSingleGroup.current = true;
-		// as this is automated add, maintain form state clean
-		reset(
-			{
-				...getValues(),
-				permissions: [
-					{
-						groupId: defaultGroup.groupId,
-						accessLevel: AccessLevel.FULL,
-						groupName: defaultGroup.name
-					}
-				]
-			},
-			{ keepDirtyValues: true } // if user already did type smth, do not mark it as clean
-		);
-	}, [defaultGroup, reset, getValues]);
+		// keeps form clean
+		resetField("permissions", {
+			defaultValue: [
+				{
+					groupId: defaultGroup.groupId,
+					accessLevel: AccessLevel.FULL,
+					groupName: defaultGroup.name
+				}
+			]
+		});
+	}, [defaultGroup, isLoading, resetField, doUseDefaultGroup, editor.fields.length]);
 
 	return (
 		<Form.SidebarSection>
