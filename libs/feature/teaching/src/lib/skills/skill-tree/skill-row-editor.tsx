@@ -101,7 +101,10 @@ function SkillRow({
 				</>
 			}
 			actions={
-				<CreateChildSkillButton onCreate={() => handleCreation({ parentId: skill.id })} />
+				<CreateChildSkillButton
+					parentId={skill.id}
+					onCreate={() => handleCreation({ parentId: skill.id })}
+				/>
 			}
 		/>
 	);

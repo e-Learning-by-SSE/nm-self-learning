@@ -89,7 +89,7 @@ export function AddChildButton({
 			}
 		});
 
-	return <CreateChildSkillButton onCreate={handleAddSkill} />;
+	return <CreateChildSkillButton parentId={parentSkill.id} onCreate={handleAddSkill} />;
 }
 
 export function SkillDeleteOption({
