@@ -214,7 +214,7 @@ export function useGroup({
 }
 
 /**
- * MemberFilter - Chip-based filter component for selecting multiple users to filter groups by members.
+ * MemberFilter - Chip-based multi user picker.
  *
  * Usage: Displays selected users as removable chips with an "Add member" button. Opens SearchUserDialog
  * to add users. Used in group search dialogs and filter sections to narrow group results by membership.

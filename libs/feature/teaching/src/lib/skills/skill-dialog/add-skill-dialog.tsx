@@ -107,7 +107,7 @@ export function AddSkillDialog({
 						e.stopPropagation();
 						handleSubmit(onSubmit)(e);
 					}}
-					className="flex flex-col gap-4"
+					className="flex flex-col gap-4 overflow-auto pr-4"
 				>
 					<LabeledField label={t("common:Name")}>
 						<input
