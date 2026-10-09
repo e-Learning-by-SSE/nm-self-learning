@@ -18,6 +18,7 @@ import { clsx } from "clsx";
 import { SkillTreeRows } from "../skill-tree-rows";
 import { SkillTreeRow } from "../skill-tree-row";
 import type { SkillTreeRowProps } from "../skill-tree-row";
+import { SkillRowDeleteButton } from "../skill-row-delete-button";
 
 export function ListSkillEntryWithChildren({
 	handleSelection,
@@ -101,7 +102,12 @@ function SkillRow({
 				</>
 			}
 			actions={
-				<CreateChildSkillButton onCreate={() => handleCreation({ parentId: skill.id })} />
+				<>
+					<CreateChildSkillButton
+						onCreate={() => handleCreation({ parentId: skill.id })}
+					/>
+					<SkillRowDeleteButton skillId={skill.id} />
+				</>
 			}
 		/>
 	);
