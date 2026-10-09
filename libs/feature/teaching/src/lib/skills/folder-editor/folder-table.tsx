@@ -38,7 +38,7 @@ export function SkillFolderTable({
 }) {
 	const { t } = useTranslation(["feature-teaching", "common"]);
 	const [searchTerm, setSearchTerm] = useState("");
-	const [onlyOwnSkills, setOnlyOwnSkills] = useState(false);
+	const [onlyOwnSkills, setOnlyOwnSkills] = useState(true);
 	const skillsToDisplay = useMemo(() => {
 		const skills = Array.from(skillDisplayData.values());
 

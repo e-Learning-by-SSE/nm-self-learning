@@ -83,6 +83,7 @@ async function getParentSkillsByAuthorId(authorId: number) {
 		where: {
 			AND: [{ parents: { none: {} } }, { authorId: authorId }]
 		},
+		orderBy: { name: "asc" },
 		select: {
 			id: true,
 			name: true,
