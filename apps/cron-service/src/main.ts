@@ -67,7 +67,9 @@ async function generateSubtitlesForExistingVideos() {
 		}
 
 		// Trigger migration
-		const socket = io(process.env.NEXT_PUBLIC_TRANSCRIPTION_SERVICE_URL);
+		const socket = io(process.env.TRANSCRIPTION_SERVICE_INTERNAL_URL, {
+			transports: ["websocket"]
+		});
 		let currentIndex = 0;
 		let isProcessing = false;
 
