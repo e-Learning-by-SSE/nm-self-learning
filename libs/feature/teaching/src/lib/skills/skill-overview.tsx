@@ -2,13 +2,10 @@
 import { useTranslation } from "next-i18next";
 
 import {
-	Dialog,
-	DialogActions,
 	LoadingBox,
 	Table,
 	TableDataColumn,
 	TableHeaderColumn,
-	IconOnlyButton,
 	IconTextButton
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
@@ -16,7 +13,8 @@ import { AuthorGuard, useRequiredSession } from "@self-learning/ui/layouts";
 import { Fragment, useMemo, useState } from "react";
 import Link from "next/link";
 import { trpc } from "@self-learning/api-client";
-import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { PencilIcon } from "@heroicons/react/24/solid";
+import { SkillDeleteButton } from "./skill-row-delete-button";
 
 export function ParentSkillOverview() {
 	const { t } = useTranslation(["feature-teaching", "common"]);
@@ -112,47 +110,7 @@ function RepositoryTaskbar({ skillId }: { skillId: string }) {
 					title={t("common:edit")}
 				/>
 			</Link>
-			<RepositoryDeleteOption skillId={skillId} />
+			<SkillDeleteButton skillId={skillId} variant="default" />
 		</div>
-	);
-}
-
-function RepositoryDeleteOption({ skillId }: { skillId: string }) {
-	const { t } = useTranslation(["feature-teaching", "common"]);
-	const { mutateAsync: deleteSkill } = trpc.skill.deleteSkills.useMutation();
-	const [showConfirmation, setShowConfirmation] = useState(false);
-
-	const handleDelete = async () => {
-		await deleteSkill({ ids: [skillId] });
-	};
-
-	const handleConfirm = () => {
-		handleDelete();
-		setShowConfirmation(false);
-	};
-
-	const handleCancel = () => {
-		setShowConfirmation(false);
-	};
-
-	return (
-		<>
-			<IconOnlyButton
-				icon={<TrashIcon className="h-5 w-5" />}
-				className="btn-danger"
-				onClick={() => setShowConfirmation(true)}
-				title={t("Skills_Delete_Repository")}
-			/>
-			{showConfirmation && (
-				<Dialog title={t("common:delete")} onClose={handleCancel}>
-					{t("Skills_Delete_Repository_Confirm")}
-					<DialogActions onClose={handleCancel}>
-						<button className="btn-primary hover:bg-c-danger" onClick={handleConfirm}>
-							{t("common:delete")}
-						</button>
-					</DialogActions>
-				</Dialog>
-			)}
-		</>
 	);
 }

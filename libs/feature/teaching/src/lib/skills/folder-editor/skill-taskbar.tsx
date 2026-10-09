@@ -1,16 +1,9 @@
 import { useTranslation } from "next-i18next";
 import type { TFunction } from "i18next";
 import { SkillFormModel } from "@self-learning/types";
-import {
-	ButtonActions,
-	dispatchDialog,
-	freeDialog,
-	IconOnlyButton,
-	showToast,
-	SimpleDialog
-} from "@self-learning/ui/common";
-import { TrashIcon } from "@heroicons/react/24/solid";
+import { showToast } from "@self-learning/ui/common";
 import { CreateChildSkillButton } from "../create-child-skill-button";
+import { SkillDeleteButton } from "../skill-row-delete-button";
 import { SkillSelectHandler, UpdateVisuals } from "./skill-display";
 import { trpc } from "@self-learning/api-client";
 import { Skill } from "@prisma/client";
@@ -99,55 +92,14 @@ export function SkillDeleteOption({
 	inline?: boolean;
 	onDeleteSuccess?: () => void | PromiseLike<void>;
 }) {
-	const { t } = useTranslation(["feature-teaching", "common"]);
-	const { mutateAsync: deleteSkills } = trpc.skill.deleteSkills.useMutation();
-
-	const onClose = async () => {
-		await withErrorHandling(t, async () => {
-			await deleteSkills({ ids: [skill.id] });
-			await onDeleteSuccess?.();
-		});
-	};
-
-	const handleDelete = () => {
-		dispatchDialog(
-			<SimpleDialog
-				name={t("common:Warning")}
-				onClose={async (type: ButtonActions) => {
-					if (type === ButtonActions.CANCEL) {
-						freeDialog("simpleDialog");
-						return;
-					}
-					onClose();
-					freeDialog("simpleDialog");
-				}}
-			>
-				Soll der Skill wirklich gelöscht werden?
-				{skill.parents.length > 1 && (
-					<div className="text-sm mt-2 text-red-600">
-						{t("Skills_Delete_Shared_Warning", { name: skill.name })}
-					</div>
-				)}
-			</SimpleDialog>,
-			"simpleDialog"
-		);
-	};
-
-	if (!inline) {
-		return (
-			<IconOnlyButton
-				icon={<TrashIcon className="h-5 w-5" />}
-				className="text-red-600 hover:text-red-700"
-				onClick={handleDelete}
-			/>
-		);
-	} else {
-		return (
-			<button type="button" className={"px-2 hover:text-secondary"} onClick={handleDelete}>
-				<TrashIcon className="h-5 " style={{ cursor: "pointer" }} />
-			</button>
-		);
-	}
+	return (
+		<SkillDeleteButton
+			skillId={skill.id}
+			variant={inline ? "row" : "default"}
+			sharedSkillName={skill.parents.length > 1 ? skill.name : undefined}
+			onDeleteSuccess={onDeleteSuccess}
+		/>
+	);
 }
 
 export function NewSkillButton({
