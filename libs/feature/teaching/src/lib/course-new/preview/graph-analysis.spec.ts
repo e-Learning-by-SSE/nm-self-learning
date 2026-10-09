@@ -4,9 +4,24 @@ import { createGraph, layoutGraph, type GraphAnalysisType } from "./graph-analys
 // Setup
 const graphData: GraphAnalysisType = {
 	skills: [
-		{ id: "goal", name: "Course goal", children: [{ id: "basics" }] },
-		{ id: "basics", name: "Basics", children: [] },
-		{ id: "prerequisite", name: "Prerequisite", children: [] }
+		{
+			id: "goal",
+			name: "Course goal",
+			children: [{ id: "basics" }],
+			topLevelParent: { id: "repository", name: "Repository outside the graph" }
+		},
+		{
+			id: "basics",
+			name: "Basics",
+			children: [],
+			topLevelParent: { id: "repository", name: "Repository outside the graph" }
+		},
+		{
+			id: "prerequisite",
+			name: "Prerequisite",
+			children: [],
+			topLevelParent: { id: "prerequisite", name: "Prerequisite" }
+		}
 	],
 	learningUnits: [
 		{
@@ -37,6 +52,7 @@ describe("course preview graph", () => {
 		});
 		expect(nodes.find(node => node.id === "basics")?.data).toEqual({
 			label: "Basics",
+			topLevelParent: { id: "repository", name: "Repository outside the graph" },
 			isCourseGoal: false,
 			taughtBy: ["Lesson"],
 			requiredBy: [],

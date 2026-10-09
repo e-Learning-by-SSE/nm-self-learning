@@ -7,6 +7,7 @@ export type GraphAnalysisType = inferProcedureOutput<AppRouter["course"]["getGra
 
 export type SkillNodeData = {
 	label: string;
+	topLevelParent: GraphAnalysisType["skills"][number]["topLevelParent"];
 	isCourseGoal: boolean;
 	taughtBy: string[];
 	requiredBy: string[];
@@ -62,6 +63,7 @@ export function createGraph(graphData: GraphAnalysisType, courseGoalIds: readonl
 		},
 		data: {
 			label: skill.name,
+			topLevelParent: skill.topLevelParent,
 			isCourseGoal: courseGoals.has(skill.id),
 			taughtBy: graphData.learningUnits
 				.filter(lu => lu.provides.some(goal => goal.id === skill.id))

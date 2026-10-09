@@ -16,7 +16,13 @@ import {
 	greaterAccessLevel,
 	LessonMeta
 } from "@self-learning/types";
-import { getRandomId, paginate, Paginated, paginationSchema } from "@self-learning/util/common";
+import {
+	getRandomId,
+	getTopLevelSkillIds,
+	paginate,
+	Paginated,
+	paginationSchema
+} from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { authProcedure, authorProcedure, t } from "../trpc";
@@ -485,9 +491,6 @@ export const courseRouter = t.router({
 					id: true,
 					name: true,
 					children: { select: { id: true } }
-				},
-				where: {
-					id: { in: input.skills }
 				}
 			}),
 			database.lesson.findMany({
@@ -503,8 +506,19 @@ export const courseRouter = t.router({
 				}
 			})
 		]);
+		const topLevelSkillIds = getTopLevelSkillIds(skills);
+		const skillsById = new Map(skills.map(skill => [skill.id, skill]));
+		const graphSkillIds = new Set(input.skills);
 		return {
-			skills,
+			skills: skills
+				.filter(skill => graphSkillIds.has(skill.id))
+				.map(skill => {
+					const root = skillsById.get(topLevelSkillIds.get(skill.id) ?? "");
+					return {
+						...skill,
+						topLevelParent: root ? { id: root.id, name: root.name } : null
+					};
+				}),
 			learningUnits,
 			edges: input.edges
 		};

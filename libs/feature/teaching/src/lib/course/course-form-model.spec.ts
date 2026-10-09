@@ -128,6 +128,8 @@ describe("courseFormSchema", () => {
 				title: "A Course",
 				slug: "a-course",
 				subtitle: "A Subtitle",
+				type: "STATIC",
+				version: 1,
 				content: [
 					{
 						title: "Chapter 1",
@@ -139,6 +141,8 @@ describe("courseFormSchema", () => {
 				description: "A description",
 				imgUrl: "http://example.com/image.png",
 				subjectId: "subject-1",
+				provides: [],
+				requires: [],
 
 				authors: [{ username: "author-a" }, { username: "author-b" }],
 				permissions: []
