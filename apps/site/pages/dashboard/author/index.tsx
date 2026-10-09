@@ -21,7 +21,6 @@ import { withAuth } from "@self-learning/util/auth";
 import Link from "next/link";
 import { GroupRole } from "@prisma/client";
 import { useTranslation } from "next-i18next";
-import { useState } from "react";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
 
@@ -95,9 +94,6 @@ function AuthorDashboardPage({ author }: Props) {
 	const isAdmin = session.data?.user.role === "ADMIN";
 	const userId = session.data?.user.id;
 	const canCreate = isAdmin || author.memberships.length > 0;
-
-	// TODO SE: Required by KEE branch, check if this is still needed
-	const [viewExportDialog, setViewExportDialog] = useState(false);
 
 	return (
 		<CenteredSection className="bg-gray-50">
