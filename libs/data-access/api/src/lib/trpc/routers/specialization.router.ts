@@ -75,6 +75,14 @@ export const specializationRouter = t.router({
 				}
 			});
 		}),
+	getAll: authProcedure.query(() => {
+		return database.specialization.findMany({
+			select: {
+				specializationId: true,
+				title: true
+			}
+		});
+	}),
 	create: authProcedure
 		.input(z.object({ subjectId: z.string(), data: specializationSchema }))
 		.mutation(async ({ ctx, input }) => {
@@ -189,6 +197,18 @@ export const specializationRouter = t.router({
 		}
 
 		const { specializationId, courseId } = input;
+
+		// TODO maybe just try catch update of specialization
+		const validCourse = await database.course.findUnique({
+			where: { courseId },
+			select: { courseId: true }
+		});
+		if (!validCourse) {
+			throw new TRPCError({
+				code: "NOT_FOUND",
+				message: `Course with ID ${courseId} not found.`
+			});
+		}
 
 		const added = await database.specialization.update({
 			where: { specializationId },

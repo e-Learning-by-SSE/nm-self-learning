@@ -3,7 +3,7 @@ import { Worker } from "worker_threads";
 import * as path from "path";
 import { jobEvents } from "../../event-bus";
 import { existsSync } from "fs";
-import { JobContext, JobRunner } from "@self-learning/worker-api";
+import type { JobContext, JobRunner } from "@self-learning/worker-api";
 import { JobRegistry } from "../../jobs";
 
 interface WorkerHostOptions {

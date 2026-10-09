@@ -3,6 +3,7 @@ import { SkillFormModel } from "@self-learning/types";
 import { OnDialogCloseFn } from "@self-learning/ui/common";
 
 export type SkillSelectHandler = OnDialogCloseFn<string>;
+export type SkillCreateHandler = OnDialogCloseFn<{ name?: string; parentId?: string }>;
 
 export type OptionalVisualizationWithRequiredId = Pick<SkillFolderVisualization, "id"> &
 	Partial<Omit<SkillFolderVisualization, "id">>;
@@ -16,6 +17,7 @@ export type SkillFolderVisualization = {
 	hasNestedCycleMembers: boolean;
 	skill: SkillFormModel;
 	isExpanded: boolean;
+	children: string[];
 	numberChildren: number;
 	shortHighlight: boolean;
 	isFolder: boolean;
@@ -35,8 +37,9 @@ export const visualSkillDefaultValues = {
 const inferInformationFromSkill = (skill: SkillFormModel) => {
 	return {
 		isFolder: skill.children.length > 0,
-		numberChildren: skill.children.length,
+		numberChildren: skill.children ? skill.children.length : 0,
 		id: skill.id,
+		children: skill.children,
 		skill
 	};
 };
@@ -113,8 +116,13 @@ export function getCycleDisplayInformation(skills: Map<string, SkillFormModel>) 
 		...skill,
 		nestedSkills: skill.children
 	}));
-	const cycleParents = findParentsOfCycledSkills(libSkills);
+
+	if (!libSkills) return [];
+
+	const cycleParents = findParentsOfCycledSkills(libSkills.map(skills => ({ ...skills })));
+
 	if (!cycleParents) return [];
+
 	const children = cycleParents.nestingSkills.map(cycle => ({
 		...cycle,
 		hasNestedCycleMembers: true

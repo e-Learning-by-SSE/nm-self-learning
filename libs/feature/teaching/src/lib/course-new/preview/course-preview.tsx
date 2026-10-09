@@ -1,0 +1,226 @@
+import { getLessonDuration } from "@self-learning/types";
+import { useFormContext, useWatch } from "react-hook-form";
+import type { CourseFormModel } from "../../course/course-form-model";
+import { trpc } from "@self-learning/api-client";
+import { Alert, AuthorsList, LoadingBox } from "@self-learning/ui/common";
+import { CenteredSection } from "@self-learning/ui/layouts";
+import type { inferProcedureOutput } from "@trpc/server";
+import type { AppRouter } from "@self-learning/api";
+import { useTranslation } from "react-i18next";
+import Image from "next/image";
+import { formatSeconds } from "@self-learning/util/common";
+import Link from "next/link";
+import { PathAnalysis } from "./course-error-analysis";
+import { Warning } from "./warning";
+import { useJob } from "./use-job";
+
+type CoursePreviewModel = inferProcedureOutput<AppRouter["course"]["getCourse"]>;
+type CourseContentPreviewModel = inferProcedureOutput<AppRouter["course"]["getDefaultPathPreview"]>;
+
+export function CoursePreview() {
+	const form = useFormContext<CourseFormModel>();
+	const slug = useWatch({ control: form.control, name: "slug" });
+	const job = useJob(trpc.course.updateDefaultPath, slug ? { slug, knowledge: [] } : undefined);
+
+	// Fetch course after the job finishes, including failures that need path analysis.
+	const { data: preview, isLoading: isPreviewLoading } = trpc.course.getCourse.useQuery(
+		{
+			slug: slug ?? ""
+		},
+		{
+			enabled: !!slug && (job.isSuccess || job.isError)
+		}
+	);
+
+	if (!slug) {
+		console.error("CoursePreview used for course without valid slug");
+
+		return (
+			<Alert
+				type={{
+					severity: "ERROR",
+					message: "This course could not be found."
+				}}
+			/>
+		);
+	}
+
+	if (job.isPending || isPreviewLoading || !preview) {
+		return <LoadingBox />;
+	}
+
+	if (job.isError) {
+		return (
+			<section className="w-full bg-gray-50 py-16">
+				<PathAnalysis
+					courseId={preview.courseId}
+					courseGoalIds={preview.provides.map(skill => skill.id)}
+				/>
+			</section>
+		);
+	}
+
+	return (
+		<CenteredSection className="bg-gray-50">
+			<Course course={preview} />
+		</CenteredSection>
+	);
+}
+
+function createCourseSummary(content: CourseContentPreviewModel) {
+	const chapters = content.content.length;
+	let lessons = 0;
+	let duration = 0;
+
+	for (const chapter of content.content) {
+		for (const lesson of chapter.content) {
+			const mappedLesson = content.lessonMap[lesson.lessonId];
+			lessons++;
+			duration += getLessonDuration(mappedLesson.meta);
+		}
+	}
+
+	return { lessons, chapters, duration };
+}
+
+function Course({ course }: { course: CoursePreviewModel }) {
+	const { data: contentPreview, isLoading: isPreviewLoading } =
+		trpc.course.getDefaultPathPreview.useQuery({
+			slug: course.slug
+		});
+	const { data: allAuthors, isLoading: isAuthorsLoading } = trpc.author.getAll.useQuery();
+	const hasContent = course.content.length > 0;
+	const hasTeachingGoal = course.provides.length > 0;
+
+	if (isPreviewLoading || isAuthorsLoading) {
+		return <LoadingBox />;
+	}
+	if (!contentPreview || !allAuthors) {
+		return (
+			<Alert type={{ severity: "ERROR", message: "Content preview could not be loaded." }} />
+		);
+	}
+	const summary = createCourseSummary(contentPreview);
+	const content = course.content.map(chapter => ({
+		title: chapter.title,
+		description: chapter.description,
+		content: chapter.content.map(({ lessonId }, index) => ({
+			...contentPreview.lessonMap[lessonId],
+			lessonNr: index + 1
+		}))
+	}));
+	const authors = course.authors
+		.map(author => allAuthors.find(a => a.username === author.username))
+		.filter((author): author is NonNullable<typeof author> => author !== undefined);
+
+	return (
+		<section className="flex flex-col gap-16">
+			<div className="flex flex-wrap-reverse gap-12 md:flex-nowrap">
+				<div className="flex flex-col justify-between gap-12">
+					<div className="flex min-w-[50%] flex-col-reverse gap-12 md:flex-col">
+						<div>
+							<h1 className="mb-12 text-4xl md:text-6xl">{course.title}</h1>
+							{course.subtitle && (
+								<div className="text-lg tracking-tight text-light">
+									{course.subtitle}
+								</div>
+							)}
+						</div>
+					</div>
+
+					<div className="flex flex-col gap-4">
+						<AuthorsList authors={authors} />
+					</div>
+				</div>
+
+				<div className="flex w-full flex-col gap-4 rounded-lg ">
+					<div className="relative h-64 w-full shrink-0 grow ">
+						{course.imgUrl && (
+							<Image
+								priority
+								className="shrink-0 rounded-lg bg-white object-cover"
+								src={course.imgUrl}
+								fill={true}
+								sizes="600px"
+								alt=""
+							></Image>
+						)}
+						{hasContent && hasTeachingGoal && (
+							<ul className="absolute bottom-0 grid w-full grid-cols-3 divide-x divide-secondary rounded-b-lg border border-light-border border-t-transparent bg-white bg-opacity-80 p-2 text-center">
+								{[
+									["Lerneinheiten", summary.lessons],
+									["Kapitel", summary.chapters],
+									["Dauer", formatSeconds(summary.duration)]
+								].map(([label, value]) => (
+									<li key={label} className="flex flex-col">
+										<span className="font-semibold text-secondary">
+											{label}
+										</span>
+										<span className="text-light">{value}</span>
+									</li>
+								))}
+							</ul>
+						)}
+					</div>
+				</div>
+			</div>
+			{!hasTeachingGoal ? (
+				<Warning title="noTeachingGoalTitle" description="noTeachingGoalDescription" />
+			) : hasContent ? (
+				<LessonPath content={content} slug={course.slug} />
+			) : (
+				<PathAnalysis
+					courseId={course.courseId}
+					courseGoalIds={course.provides.map(skill => skill.id)}
+				/>
+			)}
+		</section>
+	);
+}
+
+function LessonPath({
+	content,
+	slug
+}: {
+	content: {
+		title: string;
+		description?: string | null;
+		content: { lessonId: string; slug: string; title: string; lessonNr: number }[];
+	}[];
+	slug: string;
+}) {
+	const { t } = useTranslation("kee");
+
+	return (
+		<section className="flex flex-col gap-8">
+			<h2 className="mb-4 text-4xl">Inhalt</h2>
+			<ul className="flex flex-col gap-16">
+				{content.map((chapter, index) => (
+					<li key={index} className="flex flex-col rounded-lg bg-gray-100 p-8">
+						<h3 className="heading flex gap-4 text-2xl">
+							<span className="text-secondary">{t(chapter.title)}</span>
+						</h3>
+						<span className="mt-4 text-light">{t(chapter.description ?? "")}</span>
+
+						<ul className="mt-8 flex flex-col gap-1">
+							{chapter.content.map(lesson => (
+								<Link
+									key={lesson.lessonId}
+									href={`/courses/${slug}/${lesson.slug}`}
+									className="flex gap-2 rounded-r-lg border-l-4 border-gray-300 bg-white px-4 py-2 text-sm"
+								>
+									<span className="flex">
+										<span className="w-8 shrink-0 self-center font-medium text-secondary">
+											{lesson.lessonNr}
+										</span>
+										<span>{lesson.title}</span>
+									</span>
+								</Link>
+							))}
+						</ul>
+					</li>
+				))}
+			</ul>
+		</section>
+	);
+}

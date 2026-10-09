@@ -1,3 +1,4 @@
+import { useTranslation } from "next-i18next";
 import { useEffect, useState } from "react";
 import { Form, LabeledField } from "@self-learning/ui/forms";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,37 +26,6 @@ export function SelectedSkillsInfoForm({
 	}
 }
 
-// export function MassSelectedInfo(
-// 	skills,
-// 	onSelectItem
-// }: {
-// 	skills: SkillFormModel[];
-// 	onSelectItem: SkillSelectHandler;
-// }) {
-// 	return (
-// 		<>
-// 			<h2 className="text-xl">Ausgewählte Skills:</h2>
-// 			<span className="pb-4 text-sm text-c-text-muted">Die rechts ausgewählten Skills</span>
-
-// 			<section className="flex h-64 flex-col overflow-auto rounded-lg border border-c-border">
-// 				<div className="flex flex-col">
-// 					{skills.map((skill, index) => (
-// 						<span
-// 							key={"span: " + skill.id + index}
-// 							className="flex items-center gap-2 pl-1"
-// 						>
-// 							{skill.name}
-// 						</span>
-// 					))}
-// 				</div>
-// 			</section>
-// 			<div className="pt-4" />
-// 			<Divider />
-// 			<SkillDeleteOption skills={skills} classname={"py-2 px-8"} onChange={() => {}} />
-// 		</>
-// 	);
-// }
-
 export function SkillInfoForm({
 	skill,
 	handleSelection
@@ -63,6 +33,7 @@ export function SkillInfoForm({
 	skill: SkillFormModel;
 	handleSelection: SkillSelectHandler;
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	const { mutateAsync: updateSkill } = trpc.skill.updateSkill.useMutation();
 	const { data: dbSkill } = trpc.skill.getSkillById.useQuery({
 		skillId: skill.id
@@ -72,7 +43,6 @@ export function SkillInfoForm({
 		await updateSkill({
 			skill: {
 				...data,
-				repositoryId: skill.repositoryId,
 				id: skill.id,
 				// don't use the form values. parents|children are changed from inside the dependency info component
 				children: skill.children,
@@ -82,7 +52,7 @@ export function SkillInfoForm({
 
 		showToast({
 			type: "success",
-			title: "Skill gespeichert!",
+			title: t("Skills_Saved"),
 			subtitle: ""
 		});
 	};
@@ -102,40 +72,38 @@ export function SkillInfoForm({
 				<Form.SidebarSection>
 					<div className="flex justify-between">
 						<Form.SidebarSectionTitle
-							title="Bearbeiten"
-							subtitle="Informationen über den rechts ausgewählten Skill"
+							title={t("common:edit")}
+							subtitle={t("Skills_Edit_Subtitle")}
 						/>
 
 						<IconOnlyButton
 							icon={<XMarkIcon className="h-5" />}
 							onClick={resetEditTarget}
-							title="Ansicht ohne Veränderungen schließen"
+							title={t("Skills_Close_Without_Changes")}
 							className="btn-tertiary px-4"
 						/>
 					</div>
 					<div className="flex flex-col gap-4 border-b-2 border-c-border">
-						<LabeledField label="Name" error={errors.name?.message}>
+						<LabeledField label={t("common:Name")} error={errors.name?.message}>
 							<input type="text" className="textfield" {...form.register("name")} />
 						</LabeledField>
-						<LabeledField label="Beschreibung" error={errors.description?.message}>
+						<LabeledField
+							label={t("common:Description")}
+							error={errors.description?.message}
+						>
 							<textarea {...form.register("description")} />
 						</LabeledField>
 						<SkillToSkillDepsInfo
 							parents={dbSkill?.parents ?? []}
 							children={dbSkill?.children ?? []}
-							repoId={skill.repositoryId}
 							skillToChange={skill}
 						/>
 					</div>
-					<div className="flex justify-between">
+					<div className="flex justify-between gap-2">
 						<button type="submit" className="btn-primary w-full">
-							Speichern
+							{t("common:save")}
 						</button>
-						<SkillDeleteOption
-							skillIds={[skill.id]}
-							onDeleteSuccess={resetEditTarget}
-							inline={false}
-						/>
+						<SkillDeleteOption skill={skill} />
 					</div>
 				</Form.SidebarSection>
 			</form>
@@ -146,14 +114,13 @@ export function SkillInfoForm({
 function SkillToSkillDepsInfo({
 	parents,
 	children,
-	repoId,
 	skillToChange
 }: {
 	parents: SkillResolved["parents"];
 	children: SkillResolved["children"];
-	repoId: string;
 	skillToChange: SkillFormModel;
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	const [parentItems, setParentItems] = useState<SkillResolved["parents"]>(parents);
 	const [childItems, setChildItems] = useState<SkillResolved["children"]>(children);
 	const { setValue } = useFormContext<SkillFormModel>();
@@ -166,13 +133,14 @@ function SkillToSkillDepsInfo({
 		setChildItems(children);
 	}, [children]);
 
-	const removeParent = (id: string) => {
-		setParentItems(parentItems.filter(item => item.id !== id));
-		skillToChange.parents = skillToChange.parents.filter(item => item !== id);
-	};
 	const removeChild = (id: string) => {
 		setChildItems(childItems.filter(item => item.id !== id));
 		skillToChange.children = skillToChange.children.filter(item => item !== id);
+	};
+
+	const removeParent = (id: string) => {
+		setParentItems(parentItems.filter(item => item.id !== id));
+		skillToChange.parents = skillToChange.parents.filter(item => item !== id);
 	};
 
 	const addChildren = (skills: SkillFormModel[]) => {
@@ -190,9 +158,7 @@ function SkillToSkillDepsInfo({
 	return (
 		<>
 			<label>
-				<span className="text-sm font-semibold">
-					{"Beinhaltet folgende Skills (Kinder):"}
-				</span>
+				<span className="text-sm font-semibold">{t("Skills_Children_Label")}</span>
 			</label>
 			<div>
 				<SelectSkillsView
@@ -200,8 +166,7 @@ function SkillToSkillDepsInfo({
 						return {
 							...skill,
 							children: [],
-							parents: [],
-							repositoryId: repoId
+							parents: []
 						};
 					})}
 					onDeleteSkill={skill => {
@@ -211,13 +176,10 @@ function SkillToSkillDepsInfo({
 						if (!skills) return;
 						addChildren(skills);
 					}}
-					repoId={repoId}
 				/>
 			</div>
 			<label>
-				<span className="text-sm font-semibold">
-					{"Ist Teil von folgenden Skills (Eltern):"}
-				</span>
+				<span className="text-sm font-semibold">{t("Skills_Parents_Label")}</span>
 			</label>
 			<div>
 				<SelectSkillsView
@@ -225,18 +187,25 @@ function SkillToSkillDepsInfo({
 						return {
 							...skill,
 							children: [],
-							parents: [],
-							repositoryId: repoId
+							parents: []
 						};
 					})}
+					disabled={
+						skillToChange.children.length >= 1 && skillToChange.parents.length >= 0
+					}
 					onDeleteSkill={skill => {
 						removeParent(skill.id);
 					}}
 					onAddSkill={skills => {
 						if (!skills) return;
+						if (
+							skillToChange.children.length >= 1 &&
+							skillToChange.parents.length >= 1
+						) {
+							return;
+						}
 						addParent(skills);
 					}}
-					repoId={repoId}
 				/>
 			</div>
 		</>

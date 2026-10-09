@@ -1,31 +1,26 @@
+import { useTranslation } from "next-i18next";
+import type { TFunction } from "i18next";
 import { SkillFormModel } from "@self-learning/types";
-import {
-	ButtonActions,
-	dispatchDialog,
-	freeDialog,
-	IconOnlyButton,
-	showToast,
-	SimpleDialog
-} from "@self-learning/ui/common";
-import { TrashIcon } from "@heroicons/react/24/solid";
-import { FolderPlusIcon } from "@heroicons/react/24/outline";
+import { showToast } from "@self-learning/ui/common";
+import { CreateChildSkillButton } from "../create-child-skill-button";
+import { SkillDeleteButton } from "../skill-row-delete-button";
 import { SkillSelectHandler, UpdateVisuals } from "./skill-display";
 import { trpc } from "@self-learning/api-client";
 import { Skill } from "@prisma/client";
 
-const withErrorHandling = async (fn: () => Promise<void>) => {
+const withErrorHandling = async (t: TFunction, fn: () => Promise<void>) => {
 	try {
 		await fn();
 		showToast({
 			type: "success",
-			title: "Aktion erfolgreich!",
+			title: t("Skills_Action_Success"),
 			subtitle: ""
 		});
 	} catch (error) {
 		if (error instanceof Error) {
 			showToast({
 				type: "error",
-				title: "Ihre Aktion konnte nicht durchgeführt werden",
+				title: t("Skills_Action_Failed"),
 				subtitle: error.message ?? ""
 			});
 		}
@@ -35,28 +30,37 @@ const withErrorHandling = async (fn: () => Promise<void>) => {
 
 export function AddChildButton({
 	parentSkill,
+	childrenNumber,
 	updateSkillDisplay,
 	handleSelection,
-	skillDefaults
+	skillDefaults,
+	authorId
 }: {
 	parentSkill: SkillFormModel;
+	childrenNumber: number;
 	updateSkillDisplay: UpdateVisuals;
 	handleSelection: SkillSelectHandler;
 	skillDefaults?: Partial<Skill>;
+	authorId: number;
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	const { mutateAsync: addSkillOnParent } = trpc.skill.createSkillWithParents.useMutation();
+
 	const newSkill = {
-		name: `${parentSkill.children.length + 1}. Kind - ${parentSkill.name}`,
-		description: "Add here",
+		name: t("Skills_Default_Child_Name", {
+			number: childrenNumber + 1,
+			name: parentSkill.name
+		}),
+		description: t("Skills_Default_Description"),
 		children: [],
 		parents: [parentSkill.id],
-		repositoryId: parentSkill.repositoryId,
 		...skillDefaults
 	};
+
 	const handleAddSkill = async () =>
-		await withErrorHandling(async () => {
+		await withErrorHandling(t, async () => {
 			const result = await addSkillOnParent({
-				repoId: parentSkill.repositoryId,
+				authorId: authorId,
 				parentSkillId: parentSkill.id,
 				skill: newSkill
 			});
@@ -72,98 +76,70 @@ export function AddChildButton({
 				]);
 				handleSelection(createdSkill.id);
 			} else {
-				throw new Error("Could not create skill");
+				throw new Error(t("Skills_Create_Failed"));
 			}
 		});
 
-	return (
-		<IconOnlyButton
-			title="Neuen Skill in dieser Skillgruppe erstellen"
-			icon={<FolderPlusIcon className="h-5 text-lg" />}
-			className="hover:text-c-primary !px-2 !py-0"
-			onClick={handleAddSkill}
-		/>
-	);
+	return <CreateChildSkillButton onCreate={handleAddSkill} />;
 }
 
 export function SkillDeleteOption({
-	skillIds,
+	skill,
 	inline = false,
 	onDeleteSuccess
 }: {
-	skillIds: SkillFormModel["id"][];
+	skill: SkillFormModel;
 	inline?: boolean;
 	onDeleteSuccess?: () => void | PromiseLike<void>;
 }) {
-	const { mutateAsync: deleteSkills } = trpc.skill.deleteSkills.useMutation();
-
-	const onClose = async () => {
-		await withErrorHandling(async () => {
-			await deleteSkills({ ids: skillIds });
-			await onDeleteSuccess?.();
-		});
-	};
-
-	const handleDelete = () => {
-		dispatchDialog(
-			<SimpleDialog
-				name="Warnung"
-				onClose={async (type: ButtonActions) => {
-					if (type === ButtonActions.CANCEL) {
-						freeDialog("simpleDialog");
-						return;
-					}
-					onClose();
-					freeDialog("simpleDialog");
-				}}
-			>
-				{skillIds.length > 1 ? "Sollen die Skills " : "Soll der Skill"} wirklich gelöscht
-				werden?
-			</SimpleDialog>,
-			"simpleDialog"
-		);
-	};
-
 	return (
-		<IconOnlyButton
-			icon={<TrashIcon className={`h-5 w-5 ${inline ? "text-lg" : ""}`} />}
-			className={inline ? "hover:text-c-danger !px-2 !py-0" : "btn-danger"}
-			title="Skill löschen"
-			onClick={handleDelete}
+		<SkillDeleteButton
+			skillId={skill.id}
+			variant={inline ? "row" : "default"}
+			sharedSkillName={skill.parents.length > 1 ? skill.name : undefined}
+			onDeleteSuccess={onDeleteSuccess}
 		/>
 	);
 }
 
 export function NewSkillButton({
-	repoId,
+	authorId,
 	onSuccess,
 	skillDefaults
 }: {
-	repoId: string;
+	authorId: number;
 	onSuccess?: (skill: Skill) => void | Promise<void>;
 	skillDefaults?: Partial<Skill>;
 }) {
+	const { t, i18n } = useTranslation(["feature-teaching", "common"]);
 	const { mutateAsync: createNewSkill } = trpc.skill.createSkill.useMutation();
 
 	const date = new Date();
-	const formattedDate = date.toLocaleDateString("de-DE");
+	const formattedDate = date.toLocaleDateString(i18n.language);
 
 	const newSkill = {
-		name: `Skill vom ${formattedDate}  ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`,
-		description: "Add here",
+		name: t("Skills_Default_Name", {
+			date: formattedDate,
+			time: date.toLocaleTimeString(i18n.language, {
+				hour: "2-digit",
+				minute: "2-digit",
+				second: "2-digit"
+			})
+		}),
+		description: t("Skills_Default_Description"),
 		children: [],
 		...skillDefaults
 	};
 	const onCreateSkill = async () => {
 		const createdSkill = await createNewSkill({
-			repoId: repoId,
-			skill: newSkill
+			skill: newSkill,
+			authorId: authorId
 		});
 		await onSuccess?.(createdSkill ?? null);
 	};
 	return (
 		<button type="button" className="btn btn-primary" onClick={onCreateSkill}>
-			Skill erstellen
+			{t("Skills_Create")}
 		</button>
 	);
 }

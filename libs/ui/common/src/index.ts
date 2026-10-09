@@ -14,6 +14,7 @@ export * from "./lib/card/card";
 export * from "./lib/divider/divider";
 export * from "./lib/dialog/dialog";
 export * from "./lib/dialog/simple-dialog";
+export * from "./lib/dialog/copy-move-dialog";
 export * from "./lib/dialog/dialog-handler";
 export * from "./lib/table/table";
 export * from "./lib/image/image-placeholder";
@@ -39,6 +40,8 @@ export * from "./lib/effects/SlotCounter";
 export * from "./lib/effects/confetii-firework-onClick";
 export * from "./lib/effects/ConfettiRain";
 export * from "./lib/effects/bolt";
+
+export * from "./lib/badge/badge";
 
 export * from "./lib/screensize-hook/use-screensize";
 export * from "./lib/combobox/searchable-combobox";

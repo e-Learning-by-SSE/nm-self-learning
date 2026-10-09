@@ -41,17 +41,49 @@ const learningUnitSchema = z.object({
 });
 
 export const pathGenerationPayloadSchema = z.object({
-	dbSkills: z.array(skillSchema),
-	userGlobalKnowledge: z
-		.object({
-			received: z.array(z.object({ id: z.string() })).optional()
-		})
-		.optional(),
-	course: z.object({
-		teachingGoals: z.array(skillSchema).optional()
-	}),
-	lessons: z.array(learningUnitSchema),
-	knowledge: z.array(z.string()).optional()
+	dbSkills: z
+		.array(skillSchema)
+		.describe("A list of all skills to consider (probably all skills of the platform)"),
+	lessons: z
+		.array(learningUnitSchema)
+		.describe("A list of all lessons to consider (probably all lessons of the platform)"),
+	knowledge: z
+		.array(z.string())
+		.optional()
+		.describe(
+			"Either the knowledge of the user (already learned skills) or the prerequisites of the course (i.e., when computing default path)"
+		),
+	goal: z
+		.array(skillSchema)
+		.describe("The learning objective to achieve, either of the course of personal goal")
+});
+
+const pathGenerationResponseSchema = z.object({
+	lessonIds: z.array(z.string()).nullable(),
+	cost: z.number().optional()
+});
+
+/******************************************************************************
+ ************************* Course Graph Analysis ******************************
+ ******************************************************************************/
+
+const edgeSchema = z.object({
+	from: z.string(),
+	to: z.string()
+});
+
+export const courseGraphAnalysisPayloadSchema = pathGenerationPayloadSchema.omit({
+	knowledge: true,
+	goal: true
+});
+
+export const graphResponseSchema = z.object({
+	nodes: z.array(z.string()).describe("List of Skill/Learning Unit IDs in the graph"),
+	edges: z.array(edgeSchema).describe("Connections among the nodes in the graph"),
+	learningUnits: z
+		.array(z.string())
+		.describe("Involved Learning Units that are used as nodes in the graph."),
+	skills: z.array(z.string()).describe("Involved Skills that are used as nodes in the graph.")
 });
 
 /******************************************************************************
@@ -128,6 +160,10 @@ export const SubmitJobInput = z.discriminatedUnion("jobType", [
 		payload: pathGenerationPayloadSchema
 	}),
 	BaseJobSchema.extend({
+		jobType: z.literal("courseGraphAnalysis"),
+		payload: courseGraphAnalysisPayloadSchema
+	}),
+	BaseJobSchema.extend({
 		jobType: z.literal("ragEmbed"),
 		payload: ragEmbedPayloadSchema
 	}),
@@ -140,7 +176,11 @@ export const SubmitJobInput = z.discriminatedUnion("jobType", [
 export const JobResponse = z.discriminatedUnion("jobType", [
 	BaseJobSchema.extend({
 		jobType: z.literal("pathGeneration"),
-		response: unknown()
+		response: pathGenerationResponseSchema
+	}),
+	BaseJobSchema.extend({
+		jobType: z.literal("courseGraphAnalysis"),
+		response: graphResponseSchema
 	}),
 	BaseJobSchema.extend({
 		jobType: z.literal("ragEmbed"),

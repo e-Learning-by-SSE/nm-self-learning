@@ -1,4 +1,4 @@
-import { ButtonHTMLAttributes, DetailedHTMLProps } from "react";
+import { ButtonHTMLAttributes, DetailedHTMLProps, PropsWithChildren } from "react";
 
 /**
  * @deprecated since 2025-12

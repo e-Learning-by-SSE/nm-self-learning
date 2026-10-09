@@ -1,12 +1,11 @@
 "use client";
+import { useTranslation } from "next-i18next";
+
 import {
-	Dialog,
-	DialogActions,
 	LoadingBox,
 	Table,
 	TableDataColumn,
 	TableHeaderColumn,
-	IconOnlyButton,
 	IconTextButton
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
@@ -14,14 +13,16 @@ import { AuthorGuard, useRequiredSession } from "@self-learning/ui/layouts";
 import { Fragment, useMemo, useState } from "react";
 import Link from "next/link";
 import { trpc } from "@self-learning/api-client";
-import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { PencilIcon } from "@heroicons/react/24/solid";
+import { SkillDeleteButton } from "./skill-row-delete-button";
 
-export function SkillRepositoryOverview() {
+export function ParentSkillOverview() {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	useRequiredSession();
 
 	const [displayName, setDisplayName] = useState("");
 
-	const { data: skillTrees, isLoading } = trpc.skill.getRepositoriesByUser.useQuery();
+	const { data: skillTrees, isLoading } = trpc.skill.getParentSkillsByAuthorId.useQuery();
 
 	const filteredSkillTrees = useMemo(() => {
 		if (!skillTrees) return [];
@@ -36,7 +37,7 @@ export function SkillRepositoryOverview() {
 		<AuthorGuard>
 			<div className="flex min-h-[300px] flex-col">
 				<SearchField
-					placeholder="Suche nach Skillkarten"
+					placeholder={t("Skills_Search_Repositories")}
 					onChange={e => {
 						setDisplayName(e.target.value);
 					}}
@@ -48,7 +49,7 @@ export function SkillRepositoryOverview() {
 					<Table
 						head={
 							<>
-								<TableHeaderColumn>Name</TableHeaderColumn>
+								<TableHeaderColumn>{t("common:Name")}</TableHeaderColumn>
 								<TableHeaderColumn></TableHeaderColumn>
 							</>
 						}
@@ -60,15 +61,15 @@ export function SkillRepositoryOverview() {
 										<TableDataColumn>
 											<div className="flex flex-wrap gap-4">
 												<Link
-													className="text-sm font-medium hover:text-c-primary"
-													href={`/skills/repository/${id}`}
+													className="text-sm font-medium hover:text-secondary"
+													href={`/skills/${id}`}
 												>
 													{name}
 												</Link>
 											</div>
 										</TableDataColumn>
 										<TableDataColumn>
-											<RepositoryTaskbar repositoryId={id} />
+											<RepositoryTaskbar skillId={id} />
 										</TableDataColumn>
 									</tr>
 								)}
@@ -80,7 +81,7 @@ export function SkillRepositoryOverview() {
 									<TableDataColumn>
 										<div className="flex flex-wrap gap-4">
 											<span className="text-sm font-medium hover:text-c-primary">
-												Keine Skillkarten vorhanden
+												{t("Skills_Empty_Repositories")}
 											</span>
 										</div>
 									</TableDataColumn>
@@ -97,57 +98,19 @@ export function SkillRepositoryOverview() {
 	);
 }
 
-function RepositoryTaskbar({ repositoryId }: { repositoryId: string }) {
+function RepositoryTaskbar({ skillId }: { skillId: string }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	return (
 		<div className="flex flex-row justify-end gap-4">
-			<Link href={`/skills/repository/${repositoryId}`}>
+			<Link href={`/skills/${skillId}`}>
 				<IconTextButton
 					icon={<PencilIcon className="h-5 w-5" />}
-					text={"Bearbeiten"}
+					text={t("common:edit")}
 					className="btn-stroked"
-					title="Repository bearbeiten"
+					title={t("common:edit")}
 				/>
 			</Link>
-			<RepositoryDeleteOption repositoryId={repositoryId} />
+			<SkillDeleteButton skillId={skillId} variant="default" />
 		</div>
-	);
-}
-
-function RepositoryDeleteOption({ repositoryId }: { repositoryId: string }) {
-	const { mutateAsync: deleteRepo } = trpc.skill.deleteRepository.useMutation();
-	const [showConfirmation, setShowConfirmation] = useState(false);
-
-	const handleDelete = async () => {
-		await deleteRepo({ id: repositoryId });
-	};
-
-	const handleConfirm = () => {
-		handleDelete();
-		setShowConfirmation(false);
-	};
-
-	const handleCancel = () => {
-		setShowConfirmation(false);
-	};
-
-	return (
-		<>
-			<IconOnlyButton
-				icon={<TrashIcon className="h-5 w-5" />}
-				className="btn-danger"
-				onClick={() => setShowConfirmation(true)}
-				title={"Repository löschen"}
-			/>
-			{showConfirmation && (
-				<Dialog title={"Löschen"} onClose={handleCancel}>
-					Möchten Sie dieses Repository wirklich löschen?
-					<DialogActions onClose={handleCancel}>
-						<button className="btn-primary hover:bg-c-danger" onClick={handleConfirm}>
-							Löschen
-						</button>
-					</DialogActions>
-				</Dialog>
-			)}
-		</>
 	);
 }

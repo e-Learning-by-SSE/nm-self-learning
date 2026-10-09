@@ -142,7 +142,8 @@ export const ResourceSearchEntrySchema = z.object({
 	slug: z.string(),
 	imgUrl: z.string().nullish(),
 	accessLevel: z.enum(AccessLevel).optional(),
-	parentId: z.string().optional()
+	parentId: z.string().optional(),
+	courseType: z.string().optional()
 });
 
 export type ResourceSearchEntry = z.infer<typeof ResourceSearchEntrySchema>;

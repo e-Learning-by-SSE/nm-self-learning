@@ -7,7 +7,7 @@ import {
 	GroupDeleteOption,
 	GroupLeaveOption,
 	I18N_NAMESPACE as NS_FEATURE_TEACHING,
-	SkillRepositoryOverview
+	ParentSkillOverview
 } from "@self-learning/teaching";
 import {
 	Divider,
@@ -34,7 +34,21 @@ export function getAuthor(username: string) {
 				select: {
 					slug: true,
 					displayName: true,
-					imgUrl: true
+					imgUrl: true,
+					courses: {
+						orderBy: { title: "asc" },
+						select: {
+							slug: true,
+							title: true,
+							subtitle: true,
+							imgUrl: true,
+							specializations: {
+								select: {
+									title: true
+								}
+							}
+						}
+					}
 				}
 			},
 			memberships: {
@@ -60,9 +74,7 @@ export function getAuthor(username: string) {
 }
 
 export const getServerSideProps = withTranslations(
-	Array.from(
-		new Set(["common", "pages-dashboard", ...NS_UI_COMMON, ...NS_FEATURE_TEACHING])
-	),
+	Array.from(new Set(["common", "pages-dashboard", ...NS_UI_COMMON, ...NS_FEATURE_TEACHING])),
 	withAuth<Props>(async (context, user) => {
 		if (user.isAuthor) {
 			return { props: { author: await getAuthor(user.name) } };
@@ -138,18 +150,17 @@ function AuthorDashboardPage({ author }: Props) {
 					<section>
 						<div className="flex justify-between gap-4">
 							<SectionHeader
-								title={t("My_Skill_Cards")}
-								subtitle={t("Author_Skill_Cards_Subtitle")}
+								title="Skillkarten"
+								subtitle="Besitzer der folgenden Skillkarten"
 							/>
-							<Link href="/skills/repository/create" className="mt-4">
-								<IconTextButton
-									icon={<PlusIcon className="icon h-5" />}
-									className="btn-secondary"
-									text={t("Create_Skill_Card")}
-								/>
+							<Link href="/skills">
+								<button type="button" className="btn-stroked w-fit self-end">
+									<PencilIcon className="icon" />
+									<span>Skills bearbeiten</span>
+								</button>
 							</Link>
 						</div>
-						<SkillRepositoryOverview />
+						<ParentSkillOverview />
 					</section>
 
 					<Divider />

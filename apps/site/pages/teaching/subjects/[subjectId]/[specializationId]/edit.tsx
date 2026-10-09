@@ -15,7 +15,7 @@ type EditSpecializationProps = {
 };
 
 export const getServerSideProps = withTranslations(
-	["common"],
+	["common", "feature-teaching"],
 	withAuth<EditSpecializationProps>(async (ctx, user) => {
 		const specializationId = ctx.params?.specializationId;
 

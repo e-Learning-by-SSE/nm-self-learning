@@ -13,20 +13,28 @@ import {
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
 
-jest.mock("@self-learning/database", () => ({
-	__esModule: true,
-	database: {
+jest.mock("@self-learning/database", () => {
+	const database = {
 		course: {
 			delete: jest.fn(),
 			create: jest.fn(),
 			update: jest.fn(),
-			findUniqueOrThrow: jest.fn()
+			findUniqueOrThrow: jest.fn(),
+			findUnique: jest.fn()
 		},
 		permission: {
 			findMany: jest.fn()
 		}
-	}
-}));
+	};
+
+	return {
+		__esModule: true,
+		database: {
+			...database,
+			$transaction: jest.fn(async callback => callback(database))
+		}
+	};
+});
 
 jest.mock("../../permissions/course.utils", () => ({
 	getCourseResource: jest.fn()
@@ -71,7 +79,11 @@ describe("tRPC API of Course Router", () => {
 			title: "Test Course",
 			subtitle: "A course for testing",
 			description: "This is a test course",
+			type: "STATIC",
+			version: 1,
 			imgUrl: null,
+			provides: [],
+			requires: [],
 			authors: [{ username: "author1" }],
 			content: [],
 			permissions: [{ accessLevel: AccessLevel.FULL, groupId: 1, groupName: "Group 1" }]
@@ -204,6 +216,20 @@ describe("tRPC API of Course Router", () => {
 
 			(prepareResourceUpdate as jest.Mock).mockResolvedValue(undefined);
 
+			(database.course.findUnique as jest.Mock).mockResolvedValue({
+				version: defaultCourse.course.version,
+				content: defaultCourse.course.content,
+				requires: defaultCourse.course.requires,
+				provides: defaultCourse.course.provides
+			});
+
+			(database.course.update as jest.Mock).mockResolvedValue({
+				title: defaultCourse.course.title,
+				slug: defaultCourse.course.slug,
+				courseId: defaultCourse.courseId,
+				version: defaultCourse.course.version
+			});
+
 			await expect(caller.edit(defaultCourse)).resolves.toBeDefined();
 			expect(prepareResourceUpdate).toHaveBeenCalledWith(
 				expect.objectContaining({ id: "user-id" }),
@@ -219,6 +245,20 @@ describe("tRPC API of Course Router", () => {
 			(prepareResourceUpdate as jest.Mock).mockResolvedValue({
 				deleteMany: { groupId: { notIn: [1] } },
 				upsert: []
+			});
+
+			(database.course.findUnique as jest.Mock).mockResolvedValue({
+				version: defaultCourse.course.version,
+				content: defaultCourse.course.content,
+				requires: defaultCourse.course.requires,
+				provides: defaultCourse.course.provides
+			});
+
+			(database.course.update as jest.Mock).mockResolvedValue({
+				title: defaultCourse.course.title,
+				slug: defaultCourse.course.slug,
+				courseId: defaultCourse.courseId,
+				version: defaultCourse.course.version
 			});
 
 			await expect(caller.edit(defaultCourse)).resolves.toBeDefined();

@@ -5,13 +5,13 @@ import {
 	useMarkAsCompleted
 } from "@self-learning/completion";
 import {
-	ChapterName,
 	LessonCourseData,
-	LessonData,
 	LessonLayoutProps,
 	StandaloneLessonLayoutProps,
+	useLessonSession,
 	useLessonContext,
-	useLessonSession
+	ChapterName,
+	LessonData
 } from "@self-learning/lesson";
 import { MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuizContent } from "@self-learning/question-types";

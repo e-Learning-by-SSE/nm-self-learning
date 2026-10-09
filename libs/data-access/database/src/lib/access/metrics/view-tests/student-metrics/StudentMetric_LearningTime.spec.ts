@@ -44,8 +44,6 @@ describe("Learning Time for Student", () => {
 			where: { userId: users[0].id }
 		});
 
-		console.log("Learning Time Result:", result);
-
 		expect(result).not.toBeNull();
 		expect(result?.userId).toBe(users[0].id);
 		expect(result?.username).toBe(users[0].name);

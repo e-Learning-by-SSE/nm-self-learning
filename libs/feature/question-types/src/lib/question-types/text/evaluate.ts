@@ -84,7 +84,7 @@ export async function evaluateTextAnswerWithAI(
 			verdict: result.verdict,
 			feedback: result.feedback
 		};
-	} catch (error) {
+	} catch {
 		return buildErrorEvaluation();
 	}
 }
