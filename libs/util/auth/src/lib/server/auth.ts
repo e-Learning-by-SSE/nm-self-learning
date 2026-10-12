@@ -264,7 +264,64 @@ function getProviders(): Provider[] {
 export const authOptions: NextAuthOptions = {
 	theme: { colorScheme: "light" },
 	adapter: customPrismaAdapter,
-	callbacks: authCallbacks,
+	callbacks: {
+		...authCallbacks,
+
+		async signIn({ user, account, profile }) {
+			if (
+				account?.provider === DEFAULT_OIDC_PROVIDER_ID &&
+				profile &&
+				"preferred_username" in profile &&
+				typeof profile.preferred_username === "string"
+			) {
+				const username = profile.preferred_username;
+
+				// Check whether the new OIDC account already exists
+				const currentAccount = await database.account.findUnique({
+					where: {
+						provider_providerAccountId: {
+							provider: account.provider,
+							providerAccountId: account.providerAccountId
+						}
+					}
+				});
+
+				// Only migrate if the new OIDC account does not exist
+				if (!currentAccount) {
+					const existingUser = await database.user.findUnique({
+						where: { name: username },
+						include: { accounts: true }
+					});
+
+					if (existingUser) {
+						const existingAccount = existingUser.accounts.find(
+							a => a.provider === "keycloak" || a.provider === "oidc"
+						);
+
+						if (existingAccount) {
+							await database.account.update({
+								where: { id: existingAccount.id },
+								data: {
+									provider: account.provider,
+									providerAccountId: account.providerAccountId,
+									type: account.type,
+									access_token: account.access_token,
+									refresh_token: account.refresh_token,
+									expires_at: account.expires_at,
+									token_type: account.token_type,
+									scope: account.scope,
+									id_token: account.id_token,
+									session_state: account.session_state
+								}
+							});
+						}
+					}
+				}
+			}
+
+			return authCallbacks.signIn ? authCallbacks.signIn({ user, account, profile }) : true;
+		}
+	},
 	session: {
 		strategy: "jwt"
 	},
