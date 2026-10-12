@@ -3,45 +3,13 @@ import { getServerSession, Session } from "next-auth";
 import { getToken } from "next-auth/jwt";
 import { authOptions, createToken, incomingToLocalRole } from "@self-learning/util/auth/server";
 import jwt from "jsonwebtoken";
+import { introspectToken } from "./introspect-oidc-token";
 
 export type UserFromSession = Session["user"];
 
 export type Context = {
 	user?: UserFromSession;
 };
-
-/*
- * We have two options: call jwks endpoint to verify the token or introspect it.
- * or use the introspection endpoint to see the (and validate) the content of the token.
- * We used introspection endpoint here, because we don't have to add jwt decoding mechanisms.
- */
-async function introspectToken(token: string) {
-	const response = await fetch(
-		`${process.env.KEYCLOAK_ISSUER_URL}/protocol/openid-connect/token/introspect`,
-		{
-			method: "POST",
-			headers: {
-				"Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
-			},
-			body: new URLSearchParams({
-				token,
-				client_id: process.env.KEYCLOAK_CLIENT_ID as string,
-				client_secret: process.env.KEYCLOAK_CLIENT_SECRET as string
-			})
-		}
-	);
-
-	if (!response.ok) {
-		throw new Error("Failed to introspect token");
-	}
-
-	const data = await response.json();
-	if (!data.active) {
-		throw new Error("Token is invalid or expired");
-	}
-
-	return data; // Contains user claims if the token is valid
-}
 
 export async function createTrpcContext({
 	req,
@@ -55,7 +23,7 @@ export async function createTrpcContext({
 		// not authenticated via next-auth
 		if (!user && authHeader) {
 			// Auth header is present, but no session found
-			// This could be a REST API call with a non-valid token, possibly a Keycloak token
+			// This could be a REST API call with a non-valid token, possibly an OIDC token
 			// or manually generated via getJWTToken.
 			// We will try to introspect the token and create a user session if possible
 			// This is a fallback for non-NextAuth authentication, e.g., direct REST-API calls with Bearer tokens.
@@ -77,7 +45,7 @@ export async function createTrpcContext({
 				};
 			}
 
-			// Keycloak Token
+			// OIDC token
 			try {
 				const claims = await introspectToken(token);
 				if (claims.username || claims.preferred_username) {
