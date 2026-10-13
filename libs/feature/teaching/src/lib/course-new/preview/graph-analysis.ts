@@ -7,6 +7,7 @@ export type GraphAnalysisType = inferProcedureOutput<AppRouter["course"]["getGra
 
 export type SkillNodeData = {
 	label: string;
+	topLevelParent: GraphAnalysisType["skills"][number]["topLevelParent"];
 	isCourseGoal: boolean;
 	taughtBy: string[];
 	requiredBy: string[];
@@ -25,6 +26,15 @@ export type LearningUnitNodeData = {
 export type LearningUnitNodeType = Node<LearningUnitNodeData, "learningUnit">;
 export type GraphNode = SkillNodeType | LearningUnitNodeType;
 
+// Estimates for the first render, before ReactFlow measures the nodes.
+const GRAPH_NODE_WIDTH = 240;
+const GRAPH_NODE_HEIGHT = 80;
+
+export function layoutGraph(nodes: GraphNode[], edges: Edge[]) {
+	const layoutedNodes = layoutNodes(nodes, edges);
+	return { nodes: layoutedNodes, edges: layoutEdges(layoutedNodes, edges) };
+}
+
 export function createGraph(graphData: GraphAnalysisType, courseGoalIds: readonly string[] = []) {
 	const courseGoals = new Set(courseGoalIds);
 	const learningUnitIds = new Set(graphData.learningUnits.map(lu => lu.lessonId));
@@ -39,12 +49,8 @@ export function createGraph(graphData: GraphAnalysisType, courseGoalIds: readonl
 		},
 		data: {
 			label: lu.title,
-			provides: lu.provides.map(
-				goal => graphData.skills.find(skill => skill.id === goal.id)?.name ?? ""
-			),
-			requires: lu.requires.map(
-				req => graphData.skills.find(skill => skill.id === req.id)?.name ?? ""
-			)
+			provides: lu.provides.map(goal => skillsById.get(goal.id)?.name ?? ""),
+			requires: lu.requires.map(req => skillsById.get(req.id)?.name ?? "")
 		}
 	}));
 
@@ -57,6 +63,7 @@ export function createGraph(graphData: GraphAnalysisType, courseGoalIds: readonl
 		},
 		data: {
 			label: skill.name,
+			topLevelParent: skill.topLevelParent,
 			isCourseGoal: courseGoals.has(skill.id),
 			taughtBy: graphData.learningUnits
 				.filter(lu => lu.provides.some(goal => goal.id === skill.id))
@@ -76,9 +83,7 @@ export function createGraph(graphData: GraphAnalysisType, courseGoalIds: readonl
 	}));
 
 	const edges: Edge[] = createEdges(graphData.edges, learningUnitIds, skillsById);
-	const nodes = layoutNodes([...luNodes, ...skillNodes], edges);
-	const layoutedEdges = layoutEdges(nodes, edges);
-	return { nodes, edges: layoutedEdges };
+	return layoutGraph([...luNodes, ...skillNodes], edges);
 }
 
 /**
@@ -91,14 +96,14 @@ function layoutNodes(nodes: GraphNode[], edges: Edge[]) {
 
 	graph.setGraph({
 		rankdir: "TB", // Top -> Bottom
-		nodesep: 50,
+		nodesep: 70,
 		ranksep: 80
 	});
 
 	nodes.forEach(node => {
 		graph.setNode(node.id, {
-			width: 150,
-			height: 50
+			width: node.measured?.width ?? GRAPH_NODE_WIDTH,
+			height: node.measured?.height ?? GRAPH_NODE_HEIGHT
 		});
 	});
 
@@ -114,8 +119,8 @@ function layoutNodes(nodes: GraphNode[], edges: Edge[]) {
 		return {
 			...node,
 			position: {
-				x: position.x - 150 / 2,
-				y: position.y - 50 / 2
+				x: position.x - position.width / 2,
+				y: position.y - position.height / 2
 			}
 		};
 	});
@@ -148,6 +153,8 @@ function createEdges(
 				? "#16a34a"
 				: "#64748b";
 
+		const marker = { type: MarkerType.ArrowClosed, color, width: 16, height: 16 };
+
 		return {
 			id: `e-${index}`,
 			source: edge.from,
@@ -157,30 +164,15 @@ function createEdges(
 				strokeWidth: 1
 			},
 			// Hierarchy arrows point from the child to its parent, regardless of edge order.
-			markerStart:
-				isSkillLearningUnitEdge || sourceIsParent
-					? {
-							type: MarkerType.ArrowClosed,
-							color,
-							width: 16,
-							height: 16
-						}
-					: undefined,
-			markerEnd: targetIsParent
-				? {
-						type: MarkerType.ArrowClosed,
-						color,
-						width: 16,
-						height: 16
-					}
-				: undefined
+			markerStart: isSkillLearningUnitEdge || sourceIsParent ? marker : undefined,
+			markerEnd: targetIsParent ? marker : undefined
 		};
 	});
 }
 
 function layoutEdges(nodes: GraphNode[], edges: Edge[]) {
 	const nodeMap = new Map(nodes.map(node => [node.id, node]));
-	const layoutedEdges = edges.map(edge => {
+	return edges.map(edge => {
 		const source = nodeMap.get(edge.source);
 		const target = nodeMap.get(edge.target);
 
@@ -196,36 +188,19 @@ function layoutEdges(nodes: GraphNode[], edges: Edge[]) {
 			targetHandle
 		};
 	});
-	return layoutedEdges;
 }
 
 function getHandlePositions(source: GraphNode, target: GraphNode) {
 	const dx = target.position.x - source.position.x;
 	const dy = target.position.y - source.position.y;
 
-	if (Math.abs(dx) > Math.abs(dy)) {
-		if (dx > 0) {
-			return {
-				sourceHandle: "right-source",
-				targetHandle: "left-target"
-			};
-		}
-
-		return {
-			sourceHandle: "left-source",
-			targetHandle: "right-target"
-		};
-	}
-
-	if (dy > 0) {
-		return {
-			sourceHandle: "bottom-source",
-			targetHandle: "top-target"
-		};
-	}
-
-	return {
-		sourceHandle: "top-source",
-		targetHandle: "bottom-target"
-	};
+	const [sourcePosition, targetPosition] =
+		Math.abs(dx) > Math.abs(dy)
+			? dx > 0
+				? ["right", "left"]
+				: ["left", "right"]
+			: dy > 0
+				? ["bottom", "top"]
+				: ["top", "bottom"];
+	return { sourceHandle: `${sourcePosition}-source`, targetHandle: `${targetPosition}-target` };
 }

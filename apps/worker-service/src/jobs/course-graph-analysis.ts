@@ -51,25 +51,29 @@ export const courseGraphAnalysisJob: JobDefinition<"courseGraphAnalysis"> = {
 		const resultGraph = getConnectedGraphForLearningUnit(learningUnits ?? [], libSkills ?? []);
 
 		// Temporary structures to ease retrieval
-		const elementsById = new Map(resultGraph.nodes.map(node => [node.id, node.element]));
-		const elementUsage = [...elementsById.entries()];
+		const elementIdByNodeId = new Map(resultGraph.nodes.map(node => [node.id, node.element.id]));
+		const elementIds = resultGraph.nodes.map(node => node.element.id);
 		const learningUnitIds = new Set(learningUnits.map(learningUnit => learningUnit.id));
+		const skillIds = new Set(libSkills.map(skill => skill.id));
 
 		return {
 			// Use IDs of platform instead of artificial references of the algorithm
-			nodes: resultGraph.nodes.map(node => node.element.id),
+			nodes: elementIds,
 
 			// Map edges to use platform IDs instead of algorithm references
-			edges: resultGraph.edges.map(edge => ({
-				from: elementsById.get(edge.from).id,
-				to: elementsById.get(edge.to).id
-			})),
+			edges: resultGraph.edges
+				.map(edge => {
+					const from = elementIdByNodeId.get(edge.from);
+					const to = elementIdByNodeId.get(edge.to);
+					return from && to ? { from, to } : null;
+				})
+				.filter((edge): edge is { from: string; to: string } => edge !== null),
 
 			// Filter for relevant / used learning units
-			learningUnits: elementUsage.filter(([id]) => learningUnitIds.has(id)).map(([id]) => id),
+			learningUnits: elementIds.filter(id => learningUnitIds.has(id)),
 
 			// Filter for relevant / used skills
-			skills: elementUsage.filter(([id]) => findSkill(id)).map(([id]) => id)
+			skills: elementIds.filter(id => skillIds.has(id))
 		};
 	}
 };

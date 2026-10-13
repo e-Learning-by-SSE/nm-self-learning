@@ -30,8 +30,6 @@ export function useJob<TInput>(procedure: JobMutation<TInput>, input: TInput | u
 	useEffect(() => {
 		if (inputKey === "null") return;
 
-		console.log("inputKey", inputKey);
-
 		mutate(JSON.parse(inputKey) as TInput);
 	}, [inputKey, mutate]);
 

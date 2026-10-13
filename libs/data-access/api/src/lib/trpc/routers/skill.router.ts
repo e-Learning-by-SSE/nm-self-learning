@@ -100,6 +100,7 @@ async function getParentSkillsByAuthorId(authorId: number) {
 		where: {
 			AND: [{ parents: { none: {} } }, { authorId: authorId }]
 		},
+		orderBy: { name: "asc" },
 		select: {
 			id: true,
 			name: true,
@@ -124,6 +125,93 @@ async function getSkillsByAuthorId(authorId: number) {
 		}
 	});
 	return transformSkills(skills);
+}
+
+async function getSkillUsage(skillIds: string[]) {
+	const allSkills = await database.skill.findMany({
+		select: {
+			id: true,
+			name: true,
+			children: { select: { id: true } }
+		}
+	});
+	const skillsById = new Map(allSkills.map(skill => [skill.id, skill]));
+	const relevantSkillIds = new Set(skillIds);
+	const pendingSkillIds = [...skillIds];
+
+	while (pendingSkillIds.length > 0) {
+		const skillId = pendingSkillIds.pop();
+		if (!skillId) continue;
+
+		for (const child of skillsById.get(skillId)?.children ?? []) {
+			if (!relevantSkillIds.has(child.id)) {
+				relevantSkillIds.add(child.id);
+				pendingSkillIds.push(child.id);
+			}
+		}
+	}
+
+	const relevantIds = [...relevantSkillIds];
+	const [courses, lessons] = await Promise.all([
+		database.course.findMany({
+			where: {
+				OR: [
+					{ requires: { some: { id: { in: relevantIds } } } },
+					{ provides: { some: { id: { in: relevantIds } } } }
+				]
+			},
+			orderBy: { title: "asc" },
+			select: {
+				courseId: true,
+				slug: true,
+				title: true,
+				requires: { select: { id: true, name: true } },
+				provides: { select: { id: true, name: true } }
+			}
+		}),
+		database.lesson.findMany({
+			where: {
+				OR: [
+					{ requires: { some: { id: { in: relevantIds } } } },
+					{ provides: { some: { id: { in: relevantIds } } } }
+				]
+			},
+			orderBy: { title: "asc" },
+			select: {
+				lessonId: true,
+				slug: true,
+				title: true,
+				requires: { select: { id: true, name: true } },
+				provides: { select: { id: true, name: true } }
+			}
+		})
+	]);
+
+	const getUsedSkillNames = (
+		requires: { id: string; name: string }[],
+		provides: { id: string; name: string }[]
+	) => [
+		...new Map(
+			[...requires, ...provides]
+				.filter(skill => relevantSkillIds.has(skill.id))
+				.map(skill => [skill.id, skill.name])
+		).values()
+	];
+
+	return {
+		courses: courses.map(course => ({
+			id: course.courseId,
+			slug: course.slug,
+			title: course.title,
+			skills: getUsedSkillNames(course.requires, course.provides)
+		})),
+		lessons: lessons.map(lesson => ({
+			id: lesson.lessonId,
+			slug: lesson.slug,
+			title: lesson.title,
+			skills: getUsedSkillNames(lesson.requires, lesson.provides)
+		}))
+	};
 }
 
 function transformSkills(skills: RawSkill[]): TransformedSkill[] {
@@ -273,6 +361,9 @@ export const skillRouter = t.router({
 				}
 			});
 		}),
+	getDeleteUsage: authorProcedure
+		.input(z.object({ skillId: z.string() }))
+		.query(async ({ input }) => getSkillUsage([input.skillId])),
 
 	deleteSkills: authorProcedure
 		.input(
@@ -291,7 +382,13 @@ export const skillRouter = t.router({
 			if (!canDelete) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions." });
 			}
-			// TODO decide what to do with children
+			const usage = await getSkillUsage(input.ids);
+			if (usage.courses.length > 0 || usage.lessons.length > 0) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "The skill or one of its children is still in use."
+				});
+			}
 			return database.skill.deleteMany({
 				where: { id: { in: input.ids } }
 			});

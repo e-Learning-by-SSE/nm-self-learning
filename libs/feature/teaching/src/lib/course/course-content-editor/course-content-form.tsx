@@ -102,7 +102,7 @@ export function CourseContentForm() {
 			<ul className="flex flex-col gap-12">
 				{content.map((chapter, index) => (
 					<ChapterNode
-						key={index}
+						key={chapter.title}
 						chapter={chapter}
 						index={index}
 						courseId={courseId}

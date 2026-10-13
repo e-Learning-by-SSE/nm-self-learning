@@ -1,12 +1,14 @@
 import { CourseContent, CourseLesson } from "@self-learning/types";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { CourseFormModel } from "../course-form-model";
-import { showToast } from "libs/ui/common/src/lib/toast/toast";
+import { showToast } from "@self-learning/ui/common";
+import { useTranslation } from "react-i18next";
 
 /**
  * content lives only in react-hook-form. No local useState, no syncing useEffect.
  */
 export function useCourseContentForm(defaultContent?: CourseContent) {
+	const { t } = useTranslation("feature-teaching");
 	const { control, getValues, setValue } = useFormContext<CourseFormModel>();
 	// insert default content if the form is empty & defaultContent is specified
 	const watched = useWatch({ control, name: "content" }) ?? [];
@@ -32,8 +34,8 @@ export function useCourseContentForm(defaultContent?: CourseContent) {
 		);
 		if (exists) {
 			showToast({
-				subtitle: "Diese Lektion ist bereits in diesem Kurs enthalten.",
-				title: "Duplikat Fehler",
+				title: t("Course_Content_Duplicate_Lesson_Title"),
+				subtitle: t("Course_Content_Duplicate_Lesson_Message"),
 				type: "error"
 			});
 			return;

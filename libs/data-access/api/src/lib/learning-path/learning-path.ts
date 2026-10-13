@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { randomUUID } from "crypto";
 import { workerServiceClient, subscribeToJobEvents, ReturnTypeOf } from "@self-learning/worker-api";
 import { CourseContent, courseContentSchema, extractLessonIds } from "@self-learning/types";
+import { getTopLevelSkillIds } from "@self-learning/util/common";
 
 function parseCourseContent(raw: Prisma.JsonValue): CourseContent {
 	const result = courseContentSchema.safeParse(raw);
@@ -96,13 +97,10 @@ export async function enqueueCoursePath({
 		})
 	]);
 
-	const dbSkills = skills.map(s => ({
-		id: s.id,
-		children:
-			s.children?.map(c => {
-				return { id: c.id };
-			}) ?? [],
-		repositoryId: ""
+	const topLevelSkillIds = getTopLevelSkillIds(skills);
+	const dbSkills = skills.map(skill => ({
+		...skill,
+		repositoryId: topLevelSkillIds.get(skill.id) ?? ""
 	}));
 
 	/**

@@ -7,4 +7,5 @@ export * from "./lib/umlaut-slugify";
 export * from "./lib/duplicate-remover/duplicates";
 export * from "./lib/sse-client";
 export * from "./lib/matches";
+export * from "./lib/top-level-skills";
 export * from "./lib/video-subtitle/subtitle-converter";
