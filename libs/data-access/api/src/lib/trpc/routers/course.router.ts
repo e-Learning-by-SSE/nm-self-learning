@@ -581,17 +581,22 @@ export const courseRouter = t.router({
 						content: (result.lessonIds ?? []).map(id => ({ lessonId: id }))
 					};
 
-					await database.generatedLessonPath.create({
-						data: {
-							content: [courseChapter],
-							courseVersion: course.version,
+					const pathData = {
+						content: [courseChapter],
+						courseVersion: course.version,
+						meta: createCourseMeta({ content: [courseChapter] })
+					};
+
+					// One path per (course, student): regenerating replaces the previous path.
+					await database.generatedLessonPath.upsert({
+						where: { slug_username: { slug: course.slug, username: ctx.user.name } },
+						create: {
+							...pathData,
 							slug: course.slug,
 							courseId: input.courseId,
-							meta: createCourseMeta({ content: [courseChapter] }),
-							username: ctx.user.name,
-							createdAt: new Date(),
-							updatedAt: new Date()
-						}
+							username: ctx.user.name
+						},
+						update: pathData
 					});
 				},
 				userId: ctx.user.id

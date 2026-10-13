@@ -32,7 +32,20 @@ export async function subscribeToJobEvents<T extends JobKey>({
 					eventQueue = eventQueue.then(async () => {
 						let serializedResult: string | undefined;
 						if (event.status === "finished") {
-							await onFinish?.(event.result as ReturnTypeOf<T>);
+							try {
+								await onFinish?.(event.result as ReturnTypeOf<T>);
+							} catch (error) {
+								// Do not leave the job unfinished when the result could not be processed.
+								const cause =
+									error instanceof Error ? error.message : String(error);
+								await logJobProgress(jobId, {
+									type: jobType,
+									status: "aborted",
+									cause
+								});
+								subscription.unsubscribe();
+								return;
+							}
 							serializedResult = attachResultToStatus
 								? JSON.stringify(event.result)
 								: undefined;

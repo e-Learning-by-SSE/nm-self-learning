@@ -1,4 +1,3 @@
-import { CourseType } from "@prisma/client";
 import { getCourseData } from "@self-learning/course";
 import { database } from "@self-learning/database";
 import { CourseContent, extractLessonIds } from "@self-learning/types";
@@ -16,12 +15,8 @@ export async function markAsCompleted({
 	performanceScore: number;
 }) {
 	const course = courseSlug ? await getCourseData(courseSlug, username) : null;
-	// TODO duplicated at all getCourseData call sites
-	const rawContent =
-		course?.type === CourseType.DYNAMIC
-			? course?.generatedLessonPaths?.at(0)?.content
-			: course?.content;
-	const content = (rawContent ?? []) as CourseContent;
+	// content is already this student's outline (see getCourseData).
+	const content = (course?.content ?? []) as CourseContent;
 
 	const result = await database.completedLesson.create({
 		data: {

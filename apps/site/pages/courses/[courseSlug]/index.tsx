@@ -4,11 +4,7 @@ import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { SmallGradeBadge, useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
-import {
-	useEnrollmentMutations,
-	useEnrollments,
-	usePersonalLearningPaths
-} from "@self-learning/enrollment";
+import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
 	getLessonDuration,
@@ -162,10 +158,6 @@ export const getServerSideProps = withTranslations(
 			};
 		}
 
-		// TODO move out in a common function
-		let isGenerated = false;
-		let isStale = false;
-
 		const session = await getServerSession(req, res, authOptions);
 		const sessionUser = session?.user;
 
@@ -173,17 +165,8 @@ export const getServerSideProps = withTranslations(
 		if (!course) {
 			return { notFound: true };
 		}
-		// TODO duplicated at all getCourseData call sites
-		let rawContent = course.content;
-		if (course.type === CourseType.DYNAMIC) {
-			const path = course.generatedLessonPaths?.at(0);
-			isGenerated = !!path;
-			isStale = path?.courseVersion !== course.version;
-			// Personal path when the student has one, otherwise the course default path.
-			rawContent = path?.content ?? course.content;
-		}
-
-		const content = await mapCourseContent((rawContent ?? []) as CourseContent);
+		// content, isGenerated and isStale are resolved in getCourseData.
+		const content = await mapCourseContent((course.content ?? []) as CourseContent);
 		let markdownDescription = null;
 
 		if (course.description && course.description.length > 0) {
@@ -195,14 +178,13 @@ export const getServerSideProps = withTranslations(
 
 		return {
 			props: {
-				isStale,
-				isGenerated,
+				isStale: course.isStale,
+				isGenerated: course.isGenerated,
 				course,
 				summary,
 				content,
 				markdownDescription
-			},
-			notFound: !course
+			}
 		};
 	})
 );
@@ -268,7 +250,6 @@ function CourseHeader({
 	const isDynamic = course.type === CourseType.DYNAMIC;
 
 	const enrollments = useEnrollments();
-	const paths = usePersonalLearningPaths();
 	const { enroll } = useEnrollmentMutations();
 	const { data: completion, refetch: fetchCourseCompletion } =
 		trpc.completion.getCourseCompletion.useQuery(
@@ -284,14 +265,11 @@ function CourseHeader({
 		}
 	}, [session.status, fetchCourseCompletion, completion]);
 
-	const isEnrolled = useMemo(() => {
-		if (!enrollments) return false;
-
-		const enrolledInStatic = enrollments.find(e => e.course.slug === course.slug);
-		const enrolledInGenerated = paths?.find(p => p.slug === course.slug);
-
-		return !!enrolledInStatic || !!enrolledInGenerated;
-	}, [enrollments, course, paths]);
+	// A personal path (known from the server) or an enrollment means the student started the course.
+	const isEnrolled = useMemo(
+		() => isGenerated || !!enrollments?.some(e => e.course.slug === course.slug),
+		[isGenerated, enrollments, course.slug]
+	);
 
 	const nextLessonSlug: string | null = useMemo(() => {
 		if (!completion) return null;
@@ -324,8 +302,6 @@ function CourseHeader({
 
 	const isParticipant = session.data?.user.featureFlags.experimental ?? false;
 
-	console.log("Course-Content:", content);
-
 	return (
 		<section className="flex flex-col gap-16">
 			<div className="flex flex-wrap-reverse gap-12 md:flex-nowrap">
@@ -334,11 +310,6 @@ function CourseHeader({
 						<div className="flex items-center gap-2">
 							<h1 className="mb-12 text-4xl md:text-6xl">{course.title}</h1>
 							<OnlineHelpLink relativePath="course-page.html#course-overview" />
-							{course.subtitle && (
-								<div className="text-lg tracking-tight text-c-text-muted">
-									{course.subtitle}
-								</div>
-							)}
 						</div>
 						{course.subtitle && (
 							<div className="text-lg tracking-tight text-light">
@@ -427,32 +398,30 @@ function CourseHeader({
 						</Link>
 					)}
 
-					{!isEnrolled &&
-						(isDynamic ? (
-							<CoursePath
-								course={course}
-								hasGeneratedPath={isGenerated}
-								isStale={isStale}
-							/>
-						) : (
-							<button
-								className="btn-primary disabled:opacity-50"
-								onClick={() => {
-									withAuth(() => {
-										enroll({ courseId: course.courseId });
-									});
-								}}
-							>
-								{isAuthenticated ? (
-									<>
-										<span>Zum Lernplan hinzufügen</span>
-										<PlusCircleIcon className="h-5" />
-									</>
-								) : (
-									<span>Lernplan nach Login verfügbar</span>
-								)}
-							</button>
-						))}
+					{isDynamic
+						? // Generate a personal path, or refresh it when the course changed.
+							(!isGenerated || isStale) && (
+								<CoursePath course={course} isStale={isStale} />
+							)
+						: !isEnrolled && (
+								<button
+									className="btn-primary disabled:opacity-50"
+									onClick={() => {
+										withAuth(() => {
+											enroll({ courseId: course.courseId });
+										});
+									}}
+								>
+									{isAuthenticated ? (
+										<>
+											<span>Zum Lernplan hinzufügen</span>
+											<PlusCircleIcon className="h-5" />
+										</>
+									) : (
+										<span>Lernplan nach Login verfügbar</span>
+									)}
+								</button>
+							)}
 				</div>
 			</div>
 		</section>
@@ -622,15 +591,7 @@ function RefreshGeneratedCourse({ onClick }: { onClick: () => void }) {
 	);
 }
 
-function CoursePath({
-	course,
-	hasGeneratedPath,
-	isStale
-}: {
-	course: CourseData;
-	hasGeneratedPath: boolean;
-	isStale: boolean;
-}) {
+function CoursePath({ course, isStale }: { course: CourseData; isStale: boolean }) {
 	const { mutateAsync } = trpc.course.createLessonPath.useMutation();
 	const router = useRouter();
 	const [jobId, setJobId] = useState<string | null>(null);
@@ -651,22 +612,25 @@ function CoursePath({
 			}
 		}
 	);
-	const isComplete = status?.status === "FINISHED" && status?.result != null;
-	const failedCourseGeneration = status?.status === "FINISHED" && status?.result == null;
+	// The job result is not stored for path generation: FINISHED means the path was saved.
+	const isComplete = status?.status === "FINISHED";
+	const isFailed = status?.status === "ABORTED";
 
+	// Report the failure
 	useEffect(() => {
-		const aborted = status?.status === "ABORTED";
-		if (aborted || failedCourseGeneration) {
+		if (isFailed) {
 			showToast({
 				type: "error",
 				title: "Fehler",
 				subtitle: "Der Kurs konnte nicht generiert werden."
 			});
 		}
-	}, [status, failedCourseGeneration]);
+	}, [isFailed]);
 
 	const generateDynamicCourse = async () => {
 		try {
+			// Drop the previous job so its ABORTED status does not hide the new dialog.
+			setJobId(null);
 			setIsGenerating(true);
 
 			const createdJobId = await mutateAsync({
@@ -699,42 +663,38 @@ function CoursePath({
 		}
 	};
 
-	if (hasGeneratedPath && isStale) {
-		return <RefreshGeneratedCourse onClick={generateDynamicCourse} />;
-	}
-	if (hasGeneratedPath) {
-		return null;
-	}
+	// The dialog closes on its own when the job failed.
+	const isDialogOpen = isGenerating && !isFailed;
+	// Reload re-reads content, isGenerated and isStale from getCourseData.
+	const generationDialog = isDialogOpen ? (
+		<GeneratingCourseDialog
+			isComplete={isComplete}
+			onClose={() => {
+				setIsGenerating(false);
+				if (isComplete) {
+					router.reload();
+				}
+			}}
+		/>
+	) : null;
 
-	if (failedCourseGeneration) {
+	if (isStale) {
 		return (
-			<button
-				className="btn-primary mt-4 w-full text-white p-3 rounded-lg flex items-center justify-center font-semibold"
-				disabled={true}
-			>
-				Derzeit kann kein Kurspfad generiert werden.
-			</button>
+			<>
+				{generationDialog}
+				<RefreshGeneratedCourse onClick={generateDynamicCourse} />
+			</>
 		);
 	}
 
 	return (
 		<div>
-			{isGenerating && (
-				<GeneratingCourseDialog
-					isComplete={isComplete}
-					onClose={() => {
-						setIsGenerating(false);
-						if (isComplete) {
-							router.reload();
-						}
-					}}
-				/>
-			)}
+			{generationDialog}
 			<h3 className="font-semibold text-lg">Kurspfad generieren</h3>
 			<button
 				className="btn-primary mt-4 w-full text-white p-3 rounded-lg flex items-center justify-center font-semibold"
 				onClick={generateDynamicCourse}
-				disabled={isGenerating}
+				disabled={isDialogOpen}
 			>
 				Generieren
 			</button>

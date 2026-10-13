@@ -16,8 +16,11 @@ export function useEnrollments() {
  * Provides hooks for signing up to courses and out of courses.
  */
 export function useEnrollmentMutations() {
-	const { mutate: enroll } = trpc.enrollment.enroll.useMutation();
-	const { mutate: disenroll } = trpc.enrollment.disenroll.useMutation();
+	const utils = trpc.useUtils();
+	// Refresh the enrollment list so the UI reflects the change without a reload.
+	const onSuccess = () => utils.enrollment.getEnrollments.invalidate();
+	const { mutate: enroll } = trpc.enrollment.enroll.useMutation({ onSuccess });
+	const { mutate: disenroll } = trpc.enrollment.disenroll.useMutation({ onSuccess });
 
 	return { enroll, disenroll };
 }
