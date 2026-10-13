@@ -31,7 +31,7 @@ type OidcProviderConfig = {
 	issuer: string;
 	clientId: string;
 	clientSecret: string;
-	useEmailAsUsername?: boolean;
+	preferEmailAsUsername?: boolean;
 	scope?: string;
 };
 
@@ -49,7 +49,7 @@ export function createOidcProvider({
 	issuer,
 	clientId,
 	clientSecret,
-	useEmailAsUsername = false,
+	preferEmailAsUsername = false,
 	scope = OIDC_SCOPES
 }: OidcProviderConfig): OAuthConfig<OidcProfile> {
 	const normalizedIssuer = issuer.replace(/\/+$/, "");
@@ -58,6 +58,7 @@ export function createOidcProvider({
 		id,
 		name,
 		type: "oauth",
+		issuer: normalizedIssuer,
 		wellKnown: `${normalizedIssuer}/.well-known/openid-configuration`,
 		clientId,
 		clientSecret,
@@ -82,7 +83,7 @@ export function createOidcProvider({
 		},
 		profile(profile) {
 			let username: string;
-			if (useEmailAsUsername) {
+			if (preferEmailAsUsername) {
 				username = profile.email ? profile.email : profile.sub;
 				if (!username) {
 					throw new Error(`OIDC provider "${name}" must return an email address`);
@@ -215,7 +216,7 @@ export function createOidcProviders(
 			issuer,
 			clientId,
 			clientSecret,
-			useEmailAsUsername: index > 0,
+			preferEmailAsUsername: index > 0,
 			scope: typeof scopes === "string" ? scopes : env.OIDC_SCOPES || OIDC_SCOPES
 		});
 	});
