@@ -79,8 +79,6 @@
     "Skills_Save_Failed": "Could not save skill",
     "Skills_Author_Missing": "Author not found.",
     "Skills_Already_Added": "Skill already added",
-    "Skills_Search_Repositories": "Search for skill maps",
-    "Skills_Empty_Repositories": "No skill maps available",
     "Skills_Delete_Repository": "Delete repository",
     "Skills_Delete_Repository_Confirm": "Are you sure you want to delete this repository?",
     "Skills_Delete_Confirm": "Are you sure you want to delete this skill?",

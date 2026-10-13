@@ -95,23 +95,6 @@ async function getSkills() {
 	});
 }
 
-async function getParentSkillsByAuthorId(authorId: number) {
-	return database.skill.findMany({
-		where: {
-			AND: [{ parents: { none: {} } }, { authorId: authorId }]
-		},
-		orderBy: { name: "asc" },
-		select: {
-			id: true,
-			name: true,
-			description: true,
-			authorId: true,
-			children: { select: { id: true } },
-			parents: { select: { id: true } }
-		}
-	});
-}
-
 async function getSkillsByAuthorId(authorId: number) {
 	const skills = await database.skill.findMany({
 		where: { authorId: authorId },
@@ -239,17 +222,8 @@ export const skillRouter = t.router({
 
 		return await getSkillsByAuthorId(authorId ? authorId : -1);
 	}),
-
-	getParentSkillsByAuthorId: authorProcedure.query(async ({ ctx }) => {
-		const authorId = (
-			await database.author.findUnique({
-				where: { username: ctx.user.name },
-				select: { id: true }
-			})
-		)?.id;
-
-		return getParentSkillsByAuthorId(authorId ? authorId : -1);
-	}),
+	// TODO use getMyResources or create a separate method for any user
+	// getParentSkillsByAuthorId - removed
 	updateSkill: authorProcedure
 		.input(
 			z.object({

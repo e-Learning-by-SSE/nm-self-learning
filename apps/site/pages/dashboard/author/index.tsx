@@ -6,8 +6,7 @@ import {
 	AuthorResourceSection,
 	GroupDeleteOption,
 	GroupLeaveOption,
-	I18N_NAMESPACE as NS_FEATURE_TEACHING,
-	ParentSkillOverview
+	I18N_NAMESPACE as NS_FEATURE_TEACHING
 } from "@self-learning/teaching";
 import {
 	Divider,
@@ -157,24 +156,6 @@ function AuthorDashboardPage({ author }: Props) {
 						isAdmin={isAdmin}
 						canCreate={canCreate}
 					/>
-
-					<Divider />
-
-					<section>
-						<div className="flex justify-between gap-4">
-							<SectionHeader
-								title="Skillkarten"
-								subtitle="Besitzer der folgenden Skillkarten"
-							/>
-							<Link href="/skills">
-								<button type="button" className="btn-stroked w-fit self-end">
-									<PencilIcon className="icon" />
-									<span>Skills bearbeiten</span>
-								</button>
-							</Link>
-						</div>
-						<ParentSkillOverview />
-					</section>
 
 					<Divider />
 

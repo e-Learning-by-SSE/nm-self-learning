@@ -42,7 +42,6 @@ export function SkillDeleteButton({
 		await deleteSkill({ ids: [skillId] });
 		await Promise.all([
 			utils.skill.getSkills.invalidate(),
-			utils.skill.getParentSkillsByAuthorId.invalidate(),
 			utils.permission.getMyResources.invalidate()
 		]);
 		await onDeleteSuccess?.();

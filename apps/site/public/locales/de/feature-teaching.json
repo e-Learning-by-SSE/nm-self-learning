@@ -79,8 +79,6 @@
     "Skills_Save_Failed": "Skill konnte nicht gespeichert werden",
     "Skills_Author_Missing": "Autor nicht gefunden.",
     "Skills_Already_Added": "Skill bereits vorhanden",
-    "Skills_Search_Repositories": "Suche nach Skillkarten",
-    "Skills_Empty_Repositories": "Keine Skillkarten vorhanden",
     "Skills_Delete_Repository": "Repository löschen",
     "Skills_Delete_Repository_Confirm": "Möchten Sie dieses Repository wirklich löschen?",
     "Skills_Delete_Confirm": "Soll der Skill wirklich gelöscht werden?",

@@ -268,7 +268,7 @@ const resourceSearch: Record<ResourceKind, ResourceSearchConfig> = {
 	skill: {
 		findAll: async title => {
 			const skills = await database.skill.findMany({
-				where: { name: title },
+				where: { name: title }, // TODO only root? { parents: { none: {} } }
 				select: { id: true, name: true }
 			});
 			return skills.map(skill =>
@@ -340,7 +340,7 @@ export async function searchMyResources(
 				}
 			},
 			subject: { select: { subjectId: true, slug: true, title: true, cardImgUrl: true } },
-			skill: { select: { id: true, name: true } }
+			skill: { select: { id: true, name: true } } // TODO show only root skills? getParentSkillsByAuthorId was doing that
 		}
 	});
 	const resources = permissions.flatMap(permission => {
