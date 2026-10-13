@@ -1,6 +1,12 @@
 import { useTranslation } from "next-i18next";
 import Link from "next/link";
-import { Dialog, DialogActions, IconOnlyButton, LoadingBox } from "@self-learning/ui/common";
+import {
+	Dialog,
+	DialogActions,
+	IconOnlyButton,
+	LoadingBox,
+	showToast
+} from "@self-learning/ui/common";
 import { trpc } from "@self-learning/api-client";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
@@ -9,6 +15,9 @@ import styles from "./folder-editor/folder-table.module.css";
 type SkillDeleteButtonProps = {
 	skillId: string;
 	variant?: "row" | "default";
+	// Set only when this skill is known to have more than one parent.
+	// The confirm dialog then warns that deletion removes it from every parent.
+	// Leave unset when the parent count is unknown
 	sharedSkillName?: string;
 	onDeleteSuccess?: () => void | PromiseLike<void>;
 };
@@ -23,7 +32,6 @@ export function SkillDeleteButton({
 	const { mutateAsync: deleteSkill, isPending: isDeleting } =
 		trpc.skill.deleteSkills.useMutation();
 	const [showConfirmation, setShowConfirmation] = useState(false);
-	const [deleteError, setDeleteError] = useState(false);
 	const usageQuery = trpc.skill.getDeleteUsage.useQuery(
 		{ skillId },
 		{ enabled: showConfirmation }
@@ -34,23 +42,31 @@ export function SkillDeleteButton({
 		await deleteSkill({ ids: [skillId] });
 		await Promise.all([
 			utils.skill.getSkills.invalidate(),
-			utils.skill.getParentSkillsByAuthorId.invalidate()
+			utils.skill.getParentSkillsByAuthorId.invalidate(),
+			utils.permission.getMyResources.invalidate()
 		]);
 		await onDeleteSuccess?.();
 	};
 
 	const handleConfirm = async () => {
-		setDeleteError(false);
 		try {
 			await handleDelete();
 			setShowConfirmation(false);
-		} catch {
-			setDeleteError(true);
+			showToast({
+				type: "success",
+				title: t("Skills_Delete_Success"),
+				subtitle: ""
+			});
+		} catch (error) {
+			showToast({
+				type: "error",
+				title: t("Skills_Delete_Failed"),
+				subtitle: error instanceof Error ? error.message : ""
+			});
 		}
 	};
 
 	const handleOpen = () => {
-		setDeleteError(false);
 		setShowConfirmation(true);
 	};
 
@@ -83,7 +99,7 @@ export function SkillDeleteButton({
 				<Dialog title={t("common:delete")} onClose={handleCancel}>
 					{isCheckingUsage ? (
 						<LoadingBox />
-					) : usageQuery.isError || deleteError ? (
+					) : usageQuery.isError ? (
 						<>
 							<p className="text-red-600">{t("Skills_Delete_Check_Failed")}</p>
 							<DialogActions onClose={handleCancel} />

@@ -88,6 +88,8 @@
     "Skills_Delete_Used_In_Courses": "Kurse",
     "Skills_Delete_Used_In_Lessons": "Lerneinheiten",
     "Skills_Delete_Check_Failed": "Die Verwendung des Skills konnte nicht geprüft werden. Der Skill kann daher nicht gelöscht werden.",
+    "Skills_Delete_Success": "Skill gelöscht",
+    "Skills_Delete_Failed": "Skill konnte nicht gelöscht werden",
     "Skills_Action_Success": "Aktion erfolgreich!",
     "Skills_Action_Failed": "Ihre Aktion konnte nicht durchgeführt werden",
     "Skills_Create_Failed": "Skill konnte nicht erstellt werden",

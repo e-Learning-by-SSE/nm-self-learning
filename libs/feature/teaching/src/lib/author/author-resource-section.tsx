@@ -21,7 +21,7 @@ import { useTranslation } from "next-i18next";
 import { CourseExportType, ExportCourseDialog } from "../course/course-export/course-export-dialog";
 import { CourseDeleteOption } from "./course-delete-option";
 import { LessonDeleteOption } from "./lesson-delete-option";
-import { RepositoryDeleteOption } from "../skills/skill-overview";
+import { SkillDeleteButton } from "../skills/skill-row-delete-button";
 
 type AuthorResourceLinks = {
 	viewHref: string;
@@ -247,7 +247,7 @@ function AuthorResourceRow({
 						</Link>
 					)}
 					{canManage && resource.kind === "skill" && (
-						<RepositoryDeleteOption skillId={resource.id} />
+						<SkillDeleteButton skillId={resource.id} variant="default" />
 					)}
 					{canManage && resource.kind === "course" && onExport && (
 						<>
