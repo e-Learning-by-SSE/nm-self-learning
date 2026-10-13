@@ -3,21 +3,22 @@ import { database } from "@self-learning/database";
 import { jwtDecode } from "jwt-decode";
 import { CallbacksOptions, Session } from "next-auth";
 
-export function getIdpSelflearnAdminRole(access_token: string | undefined): UserRole | undefined {
-	if (!access_token) return;
+export function getIdpSelflearnAdminRole(
+	accessToken: string | undefined,
+	idToken?: string
+): UserRole | undefined {
+	for (const token of [accessToken, idToken]) {
+		if (!token) continue;
 
-	try {
-		const claims = jwtDecode<OidcClaims>(access_token);
-		const roles = claims.realm_access?.roles;
-		if (!Array.isArray(roles)) return;
-
-		// Avoid demoting admins to user if they promoted in the platform, but not in the IdP
-		return incomingToLocalRole(roles) === UserRole.ADMIN ? UserRole.ADMIN : undefined;
-	} catch {
-		// Access tokens are allowed to be opaque in OIDC. If the token cannot be
-		// decoded, authentication continues without automatic admin promotion.
-		return;
+		try {
+			const claims = jwtDecode<OidcClaims>(token);
+			const roles = [...(claims.realm_access?.roles ?? []), ...(claims.roles ?? [])];
+			if (incomingToLocalRole(roles) === UserRole.ADMIN) return UserRole.ADMIN;
+		} catch {
+			// Access tokens may be opaque and providers may omit role claims.
+		}
 	}
+	return undefined;
 }
 
 export function incomingToLocalRole(tokenRoles: string[]): UserRole {
@@ -32,6 +33,7 @@ type OidcClaims = {
 	realm_access?: {
 		roles?: string[];
 	};
+	roles?: string[];
 };
 
 const ADMIN_ROLE = "selflearn_admin";
@@ -96,15 +98,19 @@ export const authCallbacks: Partial<CallbacksOptions> = {
 		const { name } = user;
 
 		let incomingRole: UserRole | undefined;
-		if (!account?.access_token && process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE) {
+		if (
+			!account?.access_token &&
+			!account?.id_token &&
+			process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE
+		) {
 			// In demo instance, we don't have an access token => demo accounts
 			const { role } = await database.user.findUniqueOrThrow({
 				where: { name },
 				select: { role: true }
 			});
 			incomingRole = role;
-		} else if (account?.access_token) {
-			incomingRole = getIdpSelflearnAdminRole(account.access_token);
+		} else if (account?.access_token || account?.id_token) {
+			incomingRole = getIdpSelflearnAdminRole(account.access_token, account.id_token);
 		}
 
 		const ownToken = await createToken(name, incomingRole ?? "USER");
