@@ -181,5 +181,9 @@ function startCronSendEmail() {
 	});
 }
 
-startCronSendEmail();
+if (process.env.RESEND_API_KEY) {
+	startCronSendEmail();
+} else {
+	console.log("Send mail process stopped, because RESEND_API_KEY is not defined.");
+}
 generateSubtitlesForExistingVideos();
