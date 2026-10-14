@@ -1,169 +1,43 @@
 /**
  * @jest-environment node
  */
-import {
-	Author,
-	Course,
-	EnrollmentStatus,
-	PrismaClient,
-	Student,
-	User,
-	Lesson
-} from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
+import { createAuthorMetricFixture, AuthorMetricFixture } from "./author-metrics.fixture";
+
 const prisma = new PrismaClient();
-
-import {
-	createStudents,
-	deleteStudents,
-	createEnrollments,
-	deleteEnrollments,
-	createAuthors,
-	deleteAuthors,
-	createUsers,
-	deleteUsers,
-	createLessons,
-	deleteLessons,
-	createStartedLesson,
-	deleteStartedLesson,
-	createCompletedLesson,
-	deleteCompletedLesson
-} from "../helper";
-
-let users: User[];
-let authors: Author[];
-let students: Student[];
-let course: Course;
-let lessons: Lesson[];
+let fixture: AuthorMetricFixture | undefined;
 
 describe("Average Lesson Completion Rate", () => {
 	beforeAll(async () => {
-		users = await createUsers([
-			"author_avg_lesson_completion",
-			"student_avg_lesson_completion-1",
-			"student_avg_lesson_completion-2",
-			"student_avg_lesson_completion-3",
-			"student_avg_lesson_completion-4",
-			"student_avg_lesson_completion-5",
-			"student_avg_lesson_completion-6",
-			"student_avg_lesson_completion-7",
-			"student_avg_lesson_completion-8"
-		]);
-
-		authors = await createAuthors([users[0]]);
-
-		students = await createStudents([
-			users[1],
-			users[2],
-			users[3],
-			users[4],
-			users[5],
-			users[6],
-			users[7],
-			users[8]
-		]);
-
-		course = await prisma.course.create({
-			data: {
-				courseId: "average-lesson-completion-rate-test-course",
-				title: "Average Lesson Completion Rate Test Course",
-				slug: "average-lesson-completion-rate-test-course",
-				subtitle: "A course to test average lesson completion rate metric",
-				content: {},
-				meta: {},
-				authors: {
-					// Id of the author needed and not the user id
-					connect: { id: authors[0].id }
-				},
-				version: 1,
-				type: "STATIC"
-			}
+		fixture = await createAuthorMetricFixture(prisma, {
+			name: "average-lesson-completion-rate",
+			studentCount: 8,
+			lessonCount: 1,
+			withLessonActivity: true
 		});
-
-		await createEnrollments([
-			{
-				courseId: course.courseId,
-				// name of the student needed and not the user name
-				username: students[0].username,
-				status: EnrollmentStatus.COMPLETED
-			},
-			{
-				courseId: course.courseId,
-				username: students[1].username,
-				status: EnrollmentStatus.COMPLETED
-			},
-			{
-				courseId: course.courseId,
-				username: students[2].username,
-				status: EnrollmentStatus.COMPLETED
-			},
-			{
-				courseId: course.courseId,
-				username: students[3].username,
-				status: EnrollmentStatus.COMPLETED
-			},
-			{
-				courseId: course.courseId,
-				username: students[4].username,
-				status: EnrollmentStatus.COMPLETED
-			},
-			{
-				courseId: course.courseId,
-				username: students[5].username,
-				status: EnrollmentStatus.COMPLETED
-			},
-			{
-				courseId: course.courseId,
-				username: students[6].username,
-				status: EnrollmentStatus.COMPLETED
-			},
-			{
-				courseId: course.courseId,
-				username: students[7].username,
-				status: EnrollmentStatus.COMPLETED
-			}
-		]);
-
-		lessons = await createLessons(course.courseId, ["Lesson 1"]);
-
-		await createStartedLesson(lessons[0], course.courseId, students);
-
-		await createCompletedLesson(lessons[0], course.courseId, students);
 	});
 
 	afterAll(async () => {
-		// Clean up created data in reverse order
-		await deleteCompletedLesson(lessons[0]);
-
-		await deleteStartedLesson(lessons[0]);
-
-		await deleteLessons([lessons[0]]);
-
-		await deleteEnrollments([course]);
-
-		await prisma.course.deleteMany({
-			where: { courseId: course.courseId }
-		});
-
-		await deleteAuthors(authors);
-
-		await deleteStudents(students);
-
-		await deleteUsers(users);
-
-		await prisma.$disconnect();
+		try {
+			await fixture?.cleanup();
+		} finally {
+			await prisma.$disconnect();
+		}
 	});
+
 	it("should calculate 100% average lesson completion rate for author", async () => {
+		const lesson = fixture!.lessons[0];
 		const result = await prisma.authorMetric_AverageLessonCompletionRate.findFirst({
-			where: { authorId: users[0].id }
+			where: { authorId: fixture!.authorUser.id }
 		});
 
 		expect(result).not.toBeNull();
-		expect(result?.authorId).toBe(users[0].id);
-		expect(result?.authorUsername).toBe(users[0].name);
-		expect(result?.courseId).toBe(course.courseId);
-		expect(result?.courseTitle).toBe(course.title);
-		expect(result?.lessonId).toBe(lessons[0].lessonId);
-		expect(result?.lessonTitle).toBe(lessons[0].title);
+		expect(result?.authorId).toBe(fixture!.authorUser.id);
+		expect(result?.authorUsername).toBe(fixture!.authorUser.name);
+		expect(result?.courseId).toBe(fixture!.course.courseId);
+		expect(result?.courseTitle).toBe(fixture!.course.title);
+		expect(result?.lessonId).toBe(lesson.lessonId);
+		expect(result?.lessonTitle).toBe(lesson.title);
 		expect(result?.usersStarted).toBe(8);
 		expect(result?.usersFinished).toBe(8);
 		expect(result?.averageCompletionRate).toBe(100);
