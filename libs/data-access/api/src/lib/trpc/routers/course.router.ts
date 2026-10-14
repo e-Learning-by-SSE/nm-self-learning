@@ -378,8 +378,7 @@ export const courseRouter = t.router({
 	updateDefaultPath: authProcedure
 		.input(
 			z.object({
-				slug: z.string(),
-				knowledge: z.array(z.string())
+				slug: z.string()
 			})
 		)
 		.mutation(async ({ input }) => {

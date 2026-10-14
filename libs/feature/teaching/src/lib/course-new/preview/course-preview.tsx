@@ -20,7 +20,7 @@ type CourseContentPreviewModel = inferProcedureOutput<AppRouter["course"]["getDe
 export function CoursePreview() {
 	const form = useFormContext<CourseFormModel>();
 	const slug = useWatch({ control: form.control, name: "slug" });
-	const job = useJob(trpc.course.updateDefaultPath, slug ? { slug, knowledge: [] } : undefined);
+	const job = useJob(trpc.course.updateDefaultPath, { slug });
 
 	// Fetch course after the job finishes, including failures that need path analysis.
 	const { data: preview, isLoading: isPreviewLoading } = trpc.course.getCourse.useQuery(
