@@ -2,8 +2,7 @@ import { useTranslation } from "next-i18next";
 import { DocumentPlusIcon } from "@heroicons/react/24/outline";
 import { IconOnlyButton } from "@self-learning/ui/common";
 import styles from "./folder-editor/folder-table.module.css";
-import { useRequiredSession } from "@self-learning/ui/layouts";
-import { useAccessibleSkillIds } from "./only-own-skills-checkbox";
+import { useSkillGuard } from "@self-learning/ui/layouts";
 
 export function CreateChildSkillButton({
 	parentId,
@@ -14,10 +13,8 @@ export function CreateChildSkillButton({
 }) {
 	const { t } = useTranslation(["feature-teaching", "common"]);
 
-	const session = useRequiredSession();
-	const isAdmin = session.data?.user.role === "ADMIN";
-	const accessibleSkillIds = useAccessibleSkillIds(!isAdmin);
-	if (!isAdmin && !accessibleSkillIds?.has(parentId)) return null;
+	const hasAccess = useSkillGuard(parentId);
+	if (!hasAccess) return null;
 
 	return (
 		<IconOnlyButton

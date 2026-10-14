@@ -15,7 +15,7 @@ import type {
 import { useContext } from "react";
 import { SkillResourceContext } from "./skill-resource-context";
 import { clsx } from "clsx";
-import { SkillTreeRows } from "../skill-tree-rows";
+import { SkillTreeRows, type SkillIdLookup } from "../skill-tree-rows";
 import { SkillTreeRow } from "../skill-tree-row";
 import type { SkillTreeRowProps } from "../skill-tree-row";
 import { SkillRowDeleteButton } from "../skill-row-delete-button";
@@ -39,7 +39,7 @@ export function ListSkillEntryWithChildren({
 	// DnD id = ancestor path joined with ":::" (parsed on drop as last segment)
 	parentNodeId: string;
 	// search: keep a child only if it or a descendant matches
-	matchingSkillIds?: Set<string>;
+	matchingSkillIds?: SkillIdLookup;
 	autoExpandIds?: Set<string>;
 	textClassName?: string;
 }) {

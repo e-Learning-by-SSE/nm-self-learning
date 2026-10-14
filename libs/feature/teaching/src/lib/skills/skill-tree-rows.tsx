@@ -9,6 +9,9 @@ export type SkillTreeRowPosition = {
 	nodeId: string;
 };
 
+// Satisfied by both a Set of skill ids and a Map keyed by skill id
+export type SkillIdLookup = Pick<ReadonlySet<string>, "has">;
+
 export function SkillTreeRows({
 	skillResolver,
 	skillDisplayData,
@@ -25,7 +28,7 @@ export function SkillTreeRows({
 	renderedIds?: Set<string>;
 	parentNodeId: string;
 	renderRow: (props: SkillTreeRowPosition) => ReactNode;
-	matchingSkillIds?: Set<string>;
+	matchingSkillIds?: SkillIdLookup;
 	autoExpandIds?: Set<string>;
 }) {
 	const wasNotRendered = (skill: SkillFolderVisualization) => !renderedIds.has(skill.id);

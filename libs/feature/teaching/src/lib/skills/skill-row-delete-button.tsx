@@ -9,8 +9,10 @@ import {
 } from "@self-learning/ui/common";
 import { trpc } from "@self-learning/api-client";
 import { TrashIcon } from "@heroicons/react/24/outline";
+import { AccessLevel } from "@prisma/client";
 import { useState } from "react";
 import styles from "./folder-editor/folder-table.module.css";
+import { useSkillGuard } from "@self-learning/ui/layouts";
 
 type SkillDeleteButtonProps = {
 	skillId: string;
@@ -37,6 +39,8 @@ export function SkillDeleteButton({
 		{ enabled: showConfirmation }
 	);
 	const utils = trpc.useUtils();
+	// Deleting requires FULL access, same as the deleteSkills mutation
+	const canDelete = useSkillGuard(skillId, AccessLevel.FULL);
 
 	const handleDelete = async () => {
 		await deleteSkill({ ids: [skillId] });
@@ -77,6 +81,8 @@ export function SkillDeleteButton({
 	const usage = usageQuery.data;
 	const isCheckingUsage = usageQuery.isFetching || usageQuery.isPending;
 	const hasUsage = !!usage && (usage.courses.length > 0 || usage.lessons.length > 0);
+
+	if (!canDelete) return null;
 
 	return (
 		<>

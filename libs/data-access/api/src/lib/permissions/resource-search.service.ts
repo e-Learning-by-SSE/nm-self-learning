@@ -2,6 +2,7 @@ import { AccessLevel, CourseType, Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import {
 	allResourceKinds,
+	bestAccessLevel,
 	getResourceSearchEntryKey,
 	greaterAccessLevel,
 	ResourceKind,
@@ -354,17 +355,22 @@ export async function searchMyResources(
 	return paginateResources(aggregateBestResourceAccess(resources), input);
 }
 
-/** Skill ids reachable through an active group membership. Same rule as getMyResources, without paging. */
-export async function getMySkillIds(userId: string): Promise<string[]> {
+/** Best access level per skill reachable through an active group membership. Same rule as getMyResources, without paging. */
+export async function getMySkillPermissions(userId: string): Promise<Map<string, AccessLevel>> {
 	const rows = await database.permission.findMany({
 		where: {
 			...resourceSearch.skill.permissionWhere(undefined),
 			...reachableByMember(userId)
 		},
-		distinct: ["skillId"],
-		select: { skillId: true }
+		select: { skillId: true, accessLevel: true }
 	});
-	return rows.flatMap(row => row.skillId ?? []);
+	const levels = new Map<string, AccessLevel>();
+	for (const { skillId, accessLevel } of rows) {
+		// A skill can be granted by several groups - keep the best level
+		if (!skillId) continue;
+		levels.set(skillId, bestAccessLevel(accessLevel, levels.get(skillId) ?? accessLevel));
+	}
+	return levels;
 }
 
 function reachableByMember(userId: string): Prisma.PermissionWhereInput {

@@ -5,14 +5,14 @@ import { Dialog, DialogActions, LoadingBox, OnDialogCloseFn } from "@self-learni
 import { trpc } from "@self-learning/api-client";
 import { memo, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { SearchField } from "@self-learning/ui/forms";
-import { useRequiredSession } from "@self-learning/ui/layouts";
+import { useMySkillPermissions, useRequiredSession } from "@self-learning/ui/layouts";
 import {
 	AddSkillChildrenDialog,
 	directChildSkills,
 	isSkillArea,
 	toastDeniedSkillAccess
 } from "./add-skill-children-dialog";
-import { OnlyOwnSkillsCheckbox, useAccessibleSkillIds } from "../only-own-skills-checkbox";
+import { OnlyOwnSkillsCheckbox } from "../only-own-skills-checkbox";
 import { SkillIcon } from "../skill-icon";
 import { compareSkills } from "../compare-skills";
 import { SkillResourceContext } from "../skill-tree/skill-resource-context";
@@ -91,20 +91,20 @@ function SelectSkillForm({
 	const [search, setSearch] = useState("");
 	const [onlyOwnSkills, setOnlyOwnSkills] = useState(true);
 	const filterToOwnSkills = lockToOwnSkills || onlyOwnSkills;
-	const accessibleSkillIds = useAccessibleSkillIds(filterToOwnSkills);
+	const skillPermissions = useMySkillPermissions(filterToOwnSkills);
 	// key by id — object identity breaks after getSkills refetch
 	const [checkedIds, setCheckedIds] = useState(() => new Set(selectedIds));
 	const [pendingArea, setPendingArea] = useState<SkillFormModel | null>(null);
 	const pickSkillArea = useCallback(
 		(skill: SkillFormModel) => {
 			// Same rule as drop: no access to the area means no children dialog.
-			if (lockToOwnSkills && !accessibleSkillIds?.has(skill.id)) {
+			if (lockToOwnSkills && !skillPermissions?.has(skill.id)) {
 				toastDeniedSkillAccess(t, skill.name);
 				return;
 			}
 			setPendingArea(skill);
 		},
-		[accessibleSkillIds, lockToOwnSkills, t]
+		[skillPermissions, lockToOwnSkills, t]
 	);
 
 	const setSkill = (skill: SkillFormModel) => {
@@ -126,10 +126,10 @@ function SelectSkillForm({
 	const visibleSkills = filteredSkills.filter(skill => {
 		if (!filterToOwnSkills) return true;
 		// Locked list must not flash the full catalog while membership ids load.
-		if (!accessibleSkillIds) {
+		if (!skillPermissions) {
 			return !lockToOwnSkills || (selectedIds?.has(skill.id) ?? false);
 		}
-		return accessibleSkillIds.has(skill.id) || selectedIds?.has(skill.id);
+		return skillPermissions.has(skill.id) || selectedIds?.has(skill.id);
 	});
 
 	function confirmAddChildren(confirmed: boolean) {
@@ -141,7 +141,7 @@ function SelectSkillForm({
 		);
 		const allowed: SkillFormModel[] = [];
 		for (const child of children) {
-			if (lockToOwnSkills && !accessibleSkillIds?.has(child.id)) {
+			if (lockToOwnSkills && !skillPermissions?.has(child.id)) {
 				toastDeniedSkillAccess(t, child.name);
 				continue;
 			}

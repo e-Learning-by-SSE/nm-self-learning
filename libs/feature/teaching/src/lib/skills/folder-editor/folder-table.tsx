@@ -10,13 +10,14 @@ import {
 	TableHeaderColumn
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
-import { CenteredSection } from "@self-learning/ui/layouts";
+import { CenteredSection, useMySkillPermissions } from "@self-learning/ui/layouts";
 import React, { useMemo, useState } from "react";
 import { ListSkillEntryWithChildren } from "./skilltree/skill-row-entry";
 import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "./skill-display";
 import { Skill } from "@prisma/client";
 import { PlusIcon } from "@heroicons/react/24/solid";
-import { OnlyOwnSkillsCheckbox, useAccessibleSkillIds } from "../only-own-skills-checkbox";
+import { OnlyOwnSkillsCheckbox } from "../only-own-skills-checkbox";
+import type { SkillIdLookup } from "../skill-tree-rows";
 import { AddSkillDialog, SkillDialogResult } from "../skill-dialog/add-skill-dialog";
 import { trpc } from "@self-learning/api-client";
 import { DragDropContext, OnDragEndResponder } from "@hello-pangea/dnd";
@@ -52,7 +53,7 @@ export function SkillFolderTable({
 		);
 	}, [skillDisplayData, searchTerm]);
 	// Membership, not authorship. Ancestors stay visible so a skill under someone else's area is not lost.
-	const accessibleSkillIds = useAccessibleSkillIds(onlyOwnSkills);
+	const skillPermissions = useMySkillPermissions(onlyOwnSkills);
 	const [openNewSkillDialog, setOpenNewSkillDialog] = useState(false);
 	const { mutateAsync: createNewSkill } = trpc.skill.createSkill.useMutation();
 	const { mutateAsync: updateSkillParent } = trpc.skill.updateSkill.useMutation();
@@ -236,10 +237,10 @@ export function SkillFolderTable({
 							.filter(
 								skill =>
 									IsTopLevelSkill(skill) &&
-									(!accessibleSkillIds ||
+									(!skillPermissions ||
 										subtreeHasAccessibleSkill(
 											skill,
-											accessibleSkillIds,
+											skillPermissions,
 											skillDisplayData
 										))
 							)
@@ -252,7 +253,7 @@ export function SkillFolderTable({
 									skillResolver={skillId => skillDisplayData.get(skillId)}
 									parentNodeId={""} // No parent for the top level - Repositories
 									authorId={authorId}
-									matchingSkillIds={accessibleSkillIds}
+									matchingSkillIds={skillPermissions}
 								/>
 							))}
 					</Table>
@@ -287,7 +288,7 @@ const IsTopLevelSkill = (skill: SkillFolderVisualization) => {
 // True when this node or a descendant is in the accessible set. Seen stops cycles.
 function subtreeHasAccessibleSkill(
 	skill: SkillFolderVisualization,
-	skillIds: Set<string>,
+	skillIds: SkillIdLookup,
 	skillMap: Map<string, SkillFolderVisualization>
 ): boolean {
 	const seen = new Set<string>();

@@ -1,6 +1,6 @@
 import { AddChildButton } from "../skill-taskbar";
 import type { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "../skill-display";
-import { SkillTreeRows } from "../../skill-tree-rows";
+import { SkillTreeRows, type SkillIdLookup } from "../../skill-tree-rows";
 import { SkillTreeRow } from "../../skill-tree-row";
 import { SkillRowDeleteButton } from "../../skill-row-delete-button";
 
@@ -18,7 +18,7 @@ export function ListSkillEntryWithChildren({
 	renderedIds?: Set<string>;
 	parentNodeId: string;
 	authorId: number;
-	matchingSkillIds?: Set<string>;
+	matchingSkillIds?: SkillIdLookup;
 	autoExpandIds?: Set<string>;
 }) {
 	return (

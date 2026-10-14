@@ -17,7 +17,7 @@ import {
 	getEffectiveResourceAccesses
 } from "../../permissions/permission.service";
 import {
-	getMySkillIds,
+	getMySkillPermissions,
 	searchAllResources,
 	searchMyResources
 } from "../../permissions/resource-search.service";
@@ -80,7 +80,7 @@ jest.mock("@self-learning/types", () => {
 jest.mock("../../permissions/resource-search.service", () => ({
 	searchAllResources: jest.fn(),
 	searchMyResources: jest.fn(),
-	getMySkillIds: jest.fn()
+	getMySkillPermissions: jest.fn()
 }));
 
 function prepare(user: Partial<UserFromSession>) {
@@ -183,15 +183,16 @@ describe("permissionRouter", () => {
 		});
 	});
 
-	describe("getMySkillIds", () => {
-		it("delegates to the membership skill id query", async () => {
+	describe("getMySkillPermissions", () => {
+		it("delegates to the membership skill permission query", async () => {
 			const { caller } = prepare({ id: "my-user" });
-			(getMySkillIds as jest.Mock).mockResolvedValue(["sk1"]);
+			const permissions = new Map([["sk1", AccessLevel.FULL]]);
+			(getMySkillPermissions as jest.Mock).mockResolvedValue(permissions);
 
-			const result = await caller.getMySkillIds();
+			const result = await caller.getMySkillPermissions();
 
-			expect(getMySkillIds).toHaveBeenCalledWith("my-user");
-			expect(result).toEqual(["sk1"]);
+			expect(getMySkillPermissions).toHaveBeenCalledWith("my-user");
+			expect(result).toEqual(permissions);
 		});
 	});
 

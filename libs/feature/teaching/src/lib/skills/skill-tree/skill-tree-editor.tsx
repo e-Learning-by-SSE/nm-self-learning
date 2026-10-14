@@ -1,7 +1,7 @@
 import { useTranslation } from "next-i18next";
 import { DialogHandler, IconTextButton, Table, TableHeaderColumn } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
-import { CenteredSection } from "@self-learning/ui/layouts";
+import { CenteredSection, useMySkillPermissions } from "@self-learning/ui/layouts";
 import React, { useMemo, useState } from "react";
 import {
 	SkillCreateHandler,
@@ -9,7 +9,7 @@ import {
 	SkillSelectHandler,
 	UpdateVisuals
 } from "../folder-editor/skill-display";
-import { OnlyOwnSkillsCheckbox, useAccessibleSkillIds } from "../only-own-skills-checkbox";
+import { OnlyOwnSkillsCheckbox } from "../only-own-skills-checkbox";
 import { ListSkillEntryWithChildren } from "./skill-row-editor";
 import { PlusIcon } from "@heroicons/react/24/solid";
 
@@ -28,7 +28,7 @@ export function SkillTreeEditor({
 	const [searchTerm, setSearchTerm] = useState("");
 	const [onlyOwnSkills, setOnlyOwnSkills] = useState(true);
 	// Undefined while loading, so the tree is not hidden before membership ids arrive.
-	const accessibleSkillIds = useAccessibleSkillIds(onlyOwnSkills);
+	const skillPermissions = useMySkillPermissions(onlyOwnSkills);
 	const normalized = searchTerm.toLowerCase().trim();
 	const allSkills = Array.from(skillDisplayData.values());
 	const matchingSkillIds: Set<string> = new Set(
@@ -38,7 +38,7 @@ export function SkillTreeEditor({
 					skill.skill.name.toLowerCase().includes(normalized) ||
 					skill.displayName?.toLowerCase().includes(normalized);
 				const isAccessible =
-					!onlyOwnSkills || !accessibleSkillIds || accessibleSkillIds.has(skill.id);
+					!onlyOwnSkills || !skillPermissions || skillPermissions.has(skill.id);
 				return nameMatches && isAccessible;
 			})
 			.map(skill => skill.id)

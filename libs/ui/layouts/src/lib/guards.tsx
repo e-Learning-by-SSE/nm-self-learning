@@ -14,6 +14,7 @@ import {
 import { AccessLevel, GroupRole } from "@prisma/client";
 import { useRouter } from "next/router";
 import { UserFromSession } from "@self-learning/api";
+import { trpc } from "@self-learning/api-client";
 
 /**
  * Wrapper for `useSession` from `next-auth` that redirects the user to the login page if they are not authenticated.
@@ -164,6 +165,25 @@ export function useCanCreate(): boolean {
 		if (!user) return false;
 		return user.role === "ADMIN" || (user.memberships?.length ?? 0) > 0;
 	}, [session.data?.user]);
+}
+
+/**
+ * Best access level per skill the user can reach through an active group membership.
+ * Undefined while disabled or still loading, so the tree stays visible.
+ */
+export function useMySkillPermissions(enabled: boolean) {
+	const { data: permissions } = trpc.permission.getMySkillPermissions.useQuery(undefined, {
+		enabled
+	});
+	return enabled ? permissions : undefined;
+}
+
+/** Admins always pass; others need an active group permission of at least `requiredAccess`. */
+export function useSkillGuard(skillId: string, requiredAccess: AccessLevel = AccessLevel.VIEW) {
+	const session = useRequiredSession();
+	const isAdmin = session.data?.user.role === "ADMIN";
+	const userAccess = useMySkillPermissions(!isAdmin)?.get(skillId);
+	return isAdmin || (!!userAccess && greaterOrEqAccessLevel(userAccess, requiredAccess));
 }
 
 export function ResourceGuard({

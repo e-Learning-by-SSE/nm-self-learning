@@ -31,7 +31,7 @@ import { anyTrue } from "../../permissions/permission.utils";
 import {
 	searchMyResources,
 	searchAllResources,
-	getMySkillIds
+	getMySkillPermissions
 } from "../../permissions/resource-search.service";
 
 function getResourceKey(resource: ResourceInput): string {
@@ -51,9 +51,9 @@ export const permissionRouter = t.router({
 	getMyResources: authProcedure.input(ResourceSearchInputSchema).query(async ({ input, ctx }) => {
 		return searchMyResources(ctx.user.id, input);
 	}),
-	// Unpaged ids for the skill tree filter. getMyResources drops parent links by pagination
-	getMySkillIds: authProcedure.query(async ({ ctx }) => {
-		return getMySkillIds(ctx.user.id);
+	// Unpaged skill id -> best access level map. getMyResources drops parent links by pagination
+	getMySkillPermissions: authProcedure.query(async ({ ctx }) => {
+		return getMySkillPermissions(ctx.user.id);
 	}),
 	// Can be done by "parent" group admins or website admins
 	createGroup: authProcedure

@@ -1,13 +1,16 @@
 import { ResourceSkillsFormType, SkillFormModel } from "@self-learning/types";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { LessonSkillManagerDragDrop } from "../lesson/forms/lesson-skill-manager-dragdrop";
-import { SidebarEditorLayout, useRequiredSession } from "@self-learning/ui/layouts";
+import {
+	SidebarEditorLayout,
+	useMySkillPermissions,
+	useRequiredSession
+} from "@self-learning/ui/layouts";
 import { trpc } from "@self-learning/api-client";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import { useTableSkillDisplay } from "./folder-editor";
 import { showToast } from "@self-learning/ui/common";
 import { SkillTreeEditor } from "./skill-tree/skill-tree-editor";
-import { useAccessibleSkillIds } from "./only-own-skills-checkbox";
 import { useMemo, useRef, useState } from "react";
 import { SkillResourceProvider } from "./skill-tree/skill-resource-context";
 import { SkillCatalogDialog, SkillCatalogDialogState } from "./skill-dialog/skill-catalog-dialog";
@@ -40,7 +43,7 @@ export function SkillsEditor(
 	const { t } = useTranslation("feature-teaching");
 	const session = useRequiredSession();
 	const isAdmin = session.data?.user.role === "ADMIN";
-	const accessibleSkillIds = useAccessibleSkillIds(!isAdmin);
+	const skillPermissions = useMySkillPermissions(!isAdmin);
 
 	const { control, getValues } = useFormContext<ResourceSkillsFormType>();
 	const {
@@ -158,7 +161,7 @@ export function SkillsEditor(
 		const skill = allSkills.get(skillId);
 		if (!skill) return;
 		// No access to the dropped skill, including a skill area. Do not open the children dialog.
-		if (destination === "provides" && !isAdmin && !accessibleSkillIds?.has(skill.id)) {
+		if (destination === "provides" && !isAdmin && !skillPermissions?.has(skill.id)) {
 			toastDeniedSkillAccess(t, skill.name);
 			return;
 		}
@@ -200,7 +203,7 @@ export function SkillsEditor(
 		const restrict = prompt.field === "provides" && !isAdmin;
 		const allowed: SkillFormModel[] = [];
 		for (const child of children) {
-			if (restrict && !accessibleSkillIds?.has(child.id)) {
+			if (restrict && !skillPermissions?.has(child.id)) {
 				toastDeniedSkillAccess(t, child.name);
 				continue;
 			}

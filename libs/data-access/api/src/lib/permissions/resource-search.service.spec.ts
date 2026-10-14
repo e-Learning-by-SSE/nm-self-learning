@@ -1,6 +1,10 @@
 import { database } from "@self-learning/database";
 import { AccessLevel } from "@prisma/client";
-import { getMySkillIds, searchAllResources, searchMyResources } from "./resource-search.service";
+import {
+	getMySkillPermissions,
+	searchAllResources,
+	searchMyResources
+} from "./resource-search.service";
 
 jest.mock("@self-learning/database", () => ({
 	__esModule: true,
@@ -215,21 +219,27 @@ describe("resource-search.service", () => {
 		});
 	});
 
-	describe("getMySkillIds", () => {
-		it("returns distinct skill ids reachable by an active membership", async () => {
+	describe("getMySkillPermissions", () => {
+		it("returns the best skill access level reachable by an active membership", async () => {
 			(database.permission.findMany as jest.Mock).mockResolvedValue([
-				{ skillId: "sk1" },
-				{ skillId: "sk2" },
-				{ skillId: null }
+				{ skillId: "sk1", accessLevel: AccessLevel.EDIT },
+				{ skillId: "sk1", accessLevel: AccessLevel.FULL },
+				{ skillId: "sk1", accessLevel: AccessLevel.VIEW },
+				{ skillId: "sk2", accessLevel: AccessLevel.EDIT },
+				{ skillId: null, accessLevel: AccessLevel.VIEW }
 			]);
 
-			const ids = await getMySkillIds("user-1");
+			const permissions = await getMySkillPermissions("user-1");
 
-			expect(ids).toEqual(["sk1", "sk2"]);
+			expect(permissions).toEqual(
+				new Map([
+					["sk1", AccessLevel.FULL],
+					["sk2", AccessLevel.EDIT]
+				])
+			);
 			expect(database.permission.findMany).toHaveBeenCalledWith(
 				expect.objectContaining({
-					distinct: ["skillId"],
-					select: { skillId: true },
+					select: { skillId: true, accessLevel: true },
 					where: expect.objectContaining({
 						skillId: { not: null },
 						group: {
