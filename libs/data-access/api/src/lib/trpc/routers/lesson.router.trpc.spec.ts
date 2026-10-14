@@ -6,6 +6,7 @@ import { TRPCError } from "@trpc/server";
 import {
 	canCreate,
 	canDelete,
+	canProvideSkills,
 	preparePermissionsForCreate,
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
@@ -36,6 +37,7 @@ jest.mock("../../permissions/permission.service", () => ({
 	canEdit: jest.fn(),
 	canDelete: jest.fn(),
 	canCreate: jest.fn(),
+	canProvideSkills: jest.fn().mockResolvedValue(true),
 	preparePermissionsForCreate: jest.fn(),
 	prepareResourceUpdate: jest.fn()
 }));
@@ -158,6 +160,17 @@ describe("tRPC API of Lesson Router", () => {
 			expect(database.lesson.create).toHaveBeenCalled();
 		});
 
+		it("should throw FORBIDDEN if user cannot provide the skills", async () => {
+			const { caller } = prepare({});
+
+			(canProvideSkills as jest.Mock).mockResolvedValueOnce(false);
+
+			await expect(caller.create(defaultLesson.lesson)).rejects.toMatchObject({
+				code: "FORBIDDEN"
+			} as Partial<TRPCError>);
+			expect(database.lesson.create).not.toHaveBeenCalled();
+		});
+
 		it("should throw BAD_REQUEST if lesson has not FULL permission assigned to it", async () => {
 			const { caller } = prepare({});
 
@@ -228,6 +241,26 @@ describe("tRPC API of Lesson Router", () => {
 			await expect(caller.edit(defaultLesson)).rejects.toMatchObject({
 				code: "BAD_REQUEST"
 			} as Partial<TRPCError>);
+			expect(database.lesson.update).not.toHaveBeenCalled();
+		});
+
+		it("throws FORBIDDEN when user cannot provide newly added skills", async () => {
+			const { caller } = prepare({});
+
+			(canProvideSkills as jest.Mock).mockResolvedValueOnce(false);
+			(database.lesson.findUnique as jest.Mock).mockResolvedValue({
+				provides: [{ id: "old-skill" }]
+			});
+
+			await expect(caller.edit(defaultLesson)).rejects.toMatchObject({
+				code: "FORBIDDEN"
+			} as Partial<TRPCError>);
+			// Already provided skills are not checked again
+			expect(canProvideSkills).toHaveBeenCalledWith(
+				expect.anything(),
+				["res2"],
+				["old-skill"]
+			);
 			expect(database.lesson.update).not.toHaveBeenCalled();
 		});
 

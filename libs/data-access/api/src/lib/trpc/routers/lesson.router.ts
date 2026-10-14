@@ -19,7 +19,7 @@ import {
 	canCreate,
 	canDelete,
 	canEdit,
-	hasEffectiveResourceAccessBatch,
+	canProvideSkills,
 	preparePermissionsForCreate,
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
@@ -303,12 +303,8 @@ export const lessonRouter = t.router({
 		}),
 	create: authProcedure.input(lessonSchema).mutation(async ({ input, ctx }) => {
 		// check permissions to provide skills (TODO provides no detailed feedback)
-		const checks = input.provides.map(s => ({
-			skillId: s.id,
-			accessLevel: AccessLevel.EDIT
-		}));
-		const canProvide = await hasEffectiveResourceAccessBatch(ctx.user, checks);
-		if (!canProvide) {
+		const providedSkillIds = input.provides.map(s => s.id);
+		if (!(await canProvideSkills(ctx.user, providedSkillIds))) {
 			throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 		}
 		// check permissions
@@ -348,7 +344,6 @@ export const lessonRouter = t.router({
 		});
 
 		// bump up dependent courses version
-		const providedSkillIds = input.provides.map(s => s.id);
 		await database.course.updateMany({
 			where: {
 				provides: {
@@ -373,13 +368,14 @@ export const lessonRouter = t.router({
 	edit: authProcedure
 		.input(z.object({ lessonId: z.string(), lesson: lessonSchema }))
 		.mutation(async ({ input, ctx }) => {
+			const currentLesson = await database.lesson.findUnique({
+				where: { lessonId: input.lessonId },
+				select: { provides: { select: { id: true } } }
+			});
+			const providedSkillIds = input.lesson.provides.map(s => s.id);
+			const currentSkillIds = (currentLesson?.provides ?? []).map(s => s.id);
 			// check permissions to provide skills (TODO provides no detailed feedback)
-			const checks = input.lesson.provides.map(s => ({
-				skillId: s.id,
-				accessLevel: AccessLevel.EDIT
-			}));
-			const canProvide = await hasEffectiveResourceAccessBatch(ctx.user, checks);
-			if (!canProvide) {
+			if (!(await canProvideSkills(ctx.user, providedSkillIds, currentSkillIds))) {
 				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 			}
 			const permissions = await prepareResourceUpdate(

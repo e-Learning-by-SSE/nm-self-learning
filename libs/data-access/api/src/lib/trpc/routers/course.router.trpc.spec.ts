@@ -9,6 +9,7 @@ import { AccessLevel } from "@prisma/client";
 import {
 	canCreate,
 	canDelete,
+	canProvideSkills,
 	preparePermissionsForCreate,
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
@@ -44,6 +45,7 @@ jest.mock("../../permissions/permission.service", () => ({
 	canCreate: jest.fn(),
 	canDelete: jest.fn(),
 	canEdit: jest.fn(),
+	canProvideSkills: jest.fn().mockResolvedValue(true),
 	preparePermissionsForCreate: jest.fn(),
 	prepareResourceUpdate: jest.fn()
 }));
@@ -263,6 +265,26 @@ describe("tRPC API of Course Router", () => {
 
 			await expect(caller.edit(defaultCourse)).resolves.toBeDefined();
 			expect(database.course.update).toHaveBeenCalledTimes(1);
+		});
+
+		it("throws FORBIDDEN when user cannot provide newly added skills", async () => {
+			const { caller } = prepare({});
+
+			(prepareResourceUpdate as jest.Mock).mockResolvedValue(undefined);
+			(canProvideSkills as jest.Mock).mockResolvedValueOnce(false);
+			(database.course.findUnique as jest.Mock).mockResolvedValue({
+				version: 1,
+				content: [],
+				requires: [],
+				provides: [{ id: "old-skill" }]
+			});
+
+			await expect(caller.edit(defaultCourse)).rejects.toMatchObject({
+				code: "FORBIDDEN"
+			} as Partial<TRPCError>);
+			// Already provided skills are not checked again
+			expect(canProvideSkills).toHaveBeenCalledWith(expect.anything(), [], ["old-skill"]);
+			expect(database.course.update).not.toHaveBeenCalled();
 		});
 	});
 

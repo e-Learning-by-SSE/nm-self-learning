@@ -31,7 +31,7 @@ import {
 	canCreate,
 	canDelete,
 	canEdit,
-	hasEffectiveResourceAccessBatch,
+	canProvideSkills,
 	preparePermissionsForCreate,
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
@@ -642,12 +642,8 @@ export const courseRouter = t.router({
 			});
 		}
 		// check permissions to provide skills (TODO provides no detailed feedback)
-		const checks = input.provides.map(s => ({
-			skillId: s.id,
-			accessLevel: AccessLevel.EDIT
-		}));
-		const canProvide = await hasEffectiveResourceAccessBatch(ctx.user, checks);
-		if (!canProvide) {
+		const providedSkillIds = input.provides.map(s => s.id);
+		if (!(await canProvideSkills(ctx.user, providedSkillIds))) {
 			throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
 		}
 		// check permissions
@@ -670,15 +666,6 @@ export const courseRouter = t.router({
 	edit: authProcedure
 		.input(z.object({ courseId: z.string(), course: courseFormSchema }))
 		.mutation(async ({ input, ctx }) => {
-			// check permissions to provide skills (TODO provides no detailed feedback)
-			const checks = input.course.provides.map(s => ({
-				skillId: s.id,
-				accessLevel: AccessLevel.EDIT
-			}));
-			const canProvide = await hasEffectiveResourceAccessBatch(ctx.user, checks);
-			if (!canProvide) {
-				throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
-			}
 			const permissions = await prepareResourceUpdate(
 				ctx.user,
 				input,
@@ -696,6 +683,13 @@ export const courseRouter = t.router({
 						provides: true
 					}
 				});
+
+				// check permissions to provide skills (TODO provides no detailed feedback)
+				const providedSkillIds = input.course.provides.map(s => s.id);
+				const prevProvidedSkillIds = (prevCourse?.provides ?? []).map(s => s.id);
+				if (!(await canProvideSkills(ctx.user, providedSkillIds, prevProvidedSkillIds))) {
+					throw new TRPCError({ code: "FORBIDDEN", message: "Insufficient permissions" });
+				}
 
 				// If [skills | lessons] have changed => increment course version
 				// Previous [skills | lessons]

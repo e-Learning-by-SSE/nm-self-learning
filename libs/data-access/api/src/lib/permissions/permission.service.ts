@@ -88,6 +88,25 @@ export async function canCreate(user: UserFromSession): Promise<boolean> {
 }
 
 /**
+ * Ensures that user can provide (teach) skills by a lesson or a course.
+ * Only newly added skills require EDIT access, so collaborators can still edit existing resources.
+ * @param user - user from session (ctx.user)
+ * @param skillIds - skills provided after the change
+ * @param currentSkillIds - skills provided before the change (empty on create)
+ * @returns `true` if can provide all newly added skills
+ */
+export async function canProvideSkills(
+	user: UserFromSession,
+	skillIds: string[],
+	currentSkillIds: string[] = []
+): Promise<boolean> {
+	const checks = skillIds
+		.filter(skillId => !currentSkillIds.includes(skillId))
+		.map(skillId => ({ skillId, accessLevel: AccessLevel.EDIT }));
+	return hasEffectiveResourceAccessBatch(user, checks);
+}
+
+/**
  * "Effective" access means:
  * - ADMIN users are treated as having FULL access
  * - group-derived permissions are resolved

@@ -40,6 +40,7 @@ import {
 	canCreate,
 	canDelete,
 	canEdit,
+	canProvideSkills,
 	canRead,
 	preparePermissionsForCreate,
 	preparePermissionsForUpdate,
@@ -349,6 +350,38 @@ describe("permission.service", () => {
 
 			const ok = await hasEffectiveResourceAccessBatch(user, checks);
 			expect(ok).toBe(true);
+		});
+	});
+
+	describe("canProvideSkills", () => {
+		const user = { role: "USER", id: "u1" } as UserFromSession;
+
+		it("requires EDIT access for newly added skills", async () => {
+			(database.permission.findMany as jest.Mock).mockResolvedValue([
+				{ accessLevel: AccessLevel.VIEW, skillId: "s1" }
+			]);
+
+			expect(await canProvideSkills(user, ["s1"])).toBe(false);
+
+			(database.permission.findMany as jest.Mock).mockResolvedValue([
+				{ accessLevel: AccessLevel.EDIT, skillId: "s1" }
+			]);
+
+			expect(await canProvideSkills(user, ["s1"])).toBe(true);
+		});
+
+		it("does not check skills which are already provided", async () => {
+			(database.permission.findMany as jest.Mock).mockResolvedValue([]);
+
+			expect(await canProvideSkills(user, ["s1", "s2"], ["s1", "s2"])).toBe(true);
+		});
+
+		it("checks only the added skills", async () => {
+			(database.permission.findMany as jest.Mock).mockResolvedValue([
+				{ accessLevel: AccessLevel.EDIT, skillId: "s2" }
+			]);
+
+			expect(await canProvideSkills(user, ["s1", "s2"], ["s1"])).toBe(true);
 		});
 	});
 
