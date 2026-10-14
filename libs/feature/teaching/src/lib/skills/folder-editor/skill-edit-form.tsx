@@ -110,7 +110,7 @@ export function SkillInfoForm({
 							<input type="text" className="textfield" {...form.register("name")} />
 						</LabeledField>
 						<LabeledField
-							label={t("common:Description")}
+							label="Student*innen können … / Students can …"
 							error={errors.description?.message}
 						>
 							<textarea {...form.register("description")} />

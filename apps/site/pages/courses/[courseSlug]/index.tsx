@@ -5,6 +5,7 @@ import { trpc } from "@self-learning/api-client";
 import { SmallGradeBadge, useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
+import { LearningGoals } from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
 	getLessonDuration,
@@ -73,7 +74,10 @@ function mapToTocContent(
 	}));
 }
 
-async function mapCourseContent(content: CourseContent, username?: string): Promise<ToC.Content> {
+async function mapCourseContent(
+	content: CourseContent,
+	username?: string
+): Promise<{ content: ToC.Content; learningGoals: string[] }> {
 	const lessonIds = extractLessonIds(content);
 
 	const lessons = await database.lesson.findMany({
@@ -83,6 +87,9 @@ async function mapCourseContent(content: CourseContent, username?: string): Prom
 			slug: true,
 			title: true,
 			meta: true,
+			provides: {
+				select: { description: true }
+			},
 			completions: {
 				where: { username },
 				orderBy: { performanceScore: "desc" },
@@ -96,15 +103,28 @@ async function mapCourseContent(content: CourseContent, username?: string): Prom
 	});
 
 	const map = new Map<string, LessonInfo>();
+	const learningGoals = Array.from(
+		new Set(
+			lessons
+				.flatMap(lesson => lesson.provides.map(skill => skill.description?.trim()))
+				.filter((description): description is string => Boolean(description))
+		)
+	);
 
 	for (const lesson of lessons) {
-		const { completions, ...rest } = lesson;
+		const { completions } = lesson;
 		const performanceScore = completions.length > 0 ? completions[0].performanceScore : null;
-		const mappedLesson = { ...rest, performanceScore } as LessonInfo;
+		const mappedLesson = {
+			lessonId: lesson.lessonId,
+			slug: lesson.slug,
+			title: lesson.title,
+			meta: lesson.meta,
+			performanceScore
+		} as LessonInfo;
 		map.set(lesson.lessonId, mappedLesson);
 	}
 
-	return mapToTocContent(content, map);
+	return { content: mapToTocContent(content, map), learningGoals };
 }
 
 type Summary = {
@@ -137,6 +157,7 @@ type CourseProps = {
 	course: CourseData;
 	summary: Summary;
 	content: ToC.Content;
+	learningGoals: string[];
 	markdownDescription: CompiledMarkdown | null;
 };
 
@@ -166,8 +187,11 @@ export const getServerSideProps = withTranslations(
 		if (!course) {
 			return { notFound: true };
 		}
-		// content, isGenerated and isStale are resolved in getCourseData.
-		const content = await mapCourseContent((course.content ?? []) as CourseContent);
+
+		const { content, learningGoals } = await mapCourseContent(
+			(course.content ?? []) as CourseContent,
+			sessionUser?.name
+		);
 		let markdownDescription = null;
 
 		if (course.description && course.description.length > 0) {
@@ -184,17 +208,20 @@ export const getServerSideProps = withTranslations(
 				course,
 				summary,
 				content,
+				learningGoals,
 				markdownDescription
 			}
 		};
 	})
 );
 
+
 export default function Course({
 	isStale,
 	course,
 	summary,
 	content,
+	learningGoals,
 	markdownDescription,
 	isGenerated
 }: CourseProps) {
@@ -218,10 +245,14 @@ export default function Course({
 					</CenteredContainer>
 				</section>
 			)}
-
 			<CenteredSection>
 				<TableOfContents content={content} course={course} isGenerated={isGenerated} />
 			</CenteredSection>
+			{learningGoals.length > 0 && (
+				<CenteredSection>
+					<LearningGoals scope="course" goals={learningGoals} />
+				</CenteredSection>
+			)}
 			<FloatingTutorButton
 				onToggle={tutorState.toggleTutor}
 				disabled={tutorState.isAnimating}

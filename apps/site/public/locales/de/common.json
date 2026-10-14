@@ -51,6 +51,8 @@
 	"By": "Von",
 	"Lesson": "Lerneinheit",
 	"Lesson_other": "Lerneinheiten",
+	"Learning_Goals_Lesson": "Nach Abschluss dieser Lerneinheit kannst du:",
+	"Learning_Goals_Course": "Nach Abschluss dieses Kurses kannst du:",
     "Nano-Module": "Nanomodul",
     "Nano-Module_other": "Nanomodule",
     "Skill": "Kompetenz",

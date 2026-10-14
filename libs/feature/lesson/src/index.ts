@@ -13,5 +13,6 @@ export * from "./lib/learners-viewer/page";
 export * from "./lib/learners-viewer/standalone-lesson-layout";
 export * from "./lib/learners-viewer/course-lesson-layout";
 export * from "./lib/learners-viewer/h5p-viewer";
+export * from "./lib/learners-viewer/learning-goals";
 
 export const I18N_NAMESPACE = ["common", "feature-lesson"];
