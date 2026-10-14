@@ -11,8 +11,6 @@ import {
 	SkillFormModel
 } from "@self-learning/types";
 import { SelectSkillsView } from "./select-skill-view";
-import { useResourceGuard } from "@self-learning/ui/layouts";
-import { AccessLevel } from "@prisma/client";
 import { GroupAccessEditor } from "../../group/forms/group-form";
 
 export type SkillDialogResult = {
@@ -60,8 +58,6 @@ export function AddSkillDialog({
 	} = form;
 
 	const permissions = useWatch({ control, name: "permissions" });
-	const hasFull = useResourceGuard(AccessLevel.FULL, permissions);
-	const showGroupAccessEditor = !isEdit || hasFull;
 	// Default group is written after mount. Re-check so Confirm can enable.
 	useEffect(() => {
 		if (permissions.length > 0) void trigger("permissions");
@@ -143,12 +139,10 @@ export function AddSkillDialog({
 						/>
 					</LabeledField>
 
-					{showGroupAccessEditor && (
-						<GroupAccessEditor
-							subtitle={t("Skills_Group_Access_Subtitle")}
-							doUseDefaultGroup={!isEdit}
-						/>
-					)}
+					<GroupAccessEditor
+						subtitle={t("Skills_Group_Access_Subtitle")}
+						isNew={!isEdit}
+					/>
 
 					<DialogActions onClose={onClose}>
 						<button type="submit" className="btn-primary" disabled={!isValid}>

@@ -10,8 +10,7 @@ import {
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { CourseFormModel } from "./course-form-model";
 import { useTranslation } from "next-i18next";
-import { useResourceGuard } from "@self-learning/ui/layouts";
-import { AccessLevel, CourseType } from "@prisma/client";
+import { CourseType } from "@prisma/client";
 import { GroupAccessEditor } from "../group/forms/group-form";
 import { AuthorsForm } from "../author/authors-form";
 
@@ -43,10 +42,6 @@ export function CourseInfoForm({ isNew }: { isNew: boolean }) {
 	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
 	const { t } = useTranslation("feature-teaching");
 	const courseType = useWatch({ control, name: "type" });
-	const permissions = useWatch({ control: form.control, name: "permissions" }) ?? [];
-	const hasFull = useResourceGuard(AccessLevel.FULL, permissions);
-	const showGroupAccessEditor = isNew || hasFull;
-
 	return (
 		<>
 			<Form.SidebarSection>
@@ -193,12 +188,10 @@ export function CourseInfoForm({ isNew }: { isNew: boolean }) {
 					</LabeledField>
 				</div>
 			</Form.SidebarSection>
-			{showGroupAccessEditor && (
-				<GroupAccessEditor
-					subtitle="Gruppen, die auf diesen Kurs zugreifen können"
-					doUseDefaultGroup={isNew}
-				/>
-			)}
+			<GroupAccessEditor
+				subtitle="Gruppen, die auf diesen Kurs zugreifen können"
+				isNew={isNew}
+			/>
 			<AuthorsForm
 				subtitle="Die Autoren dieses Kurses."
 				emptyString="Für diesen Kurs sind noch keine Autoren hinterlegt."

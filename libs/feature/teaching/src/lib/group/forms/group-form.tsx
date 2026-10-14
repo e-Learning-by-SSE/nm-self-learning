@@ -13,8 +13,11 @@ import { AccessLevel } from "@prisma/client";
 import { useTranslation } from "next-i18next";
 import { GenericCombobox } from "../editors/group-members";
 import { accessLevelTooltip } from "../editors/group-permission";
-import { useRequiredSession } from "@self-learning/ui/layouts";
+import { ResourceGuard, useRequiredSession } from "@self-learning/ui/layouts";
 import { ResourcePermissionsFormType } from "@self-learning/types";
+
+type PermissionsFormValues = { permissions: ResourcePermissionsFormType };
+type GroupAccessEditorProps = { subtitle: string; isNew: boolean };
 
 /**
  * GroupAccessEditor - Sidebar form section for selecting group access and auto-filling default group.
@@ -30,20 +33,32 @@ import { ResourcePermissionsFormType } from "@self-learning/types";
  * Related: SearchGroupDialog, useDefaultGroup, LessonFormModel
  *
  * @param subtitle - Subtitle text for the sidebar section
- * @param doUseDefaultGroup - If true, auto-add the user's default group on first load when empty
+ * @param isNew - New resource: if true - auto adds default group if available
  */
-export function GroupAccessEditor({
-	subtitle,
-	doUseDefaultGroup
-}: {
-	subtitle: string;
-	doUseDefaultGroup: boolean;
-}) {
+export function GroupAccessEditor({ subtitle, isNew }: GroupAccessEditorProps) {
+	const { control } = useFormContext<PermissionsFormValues>();
+	const { defaultValues } = useFormState({ control });
+
+	return (
+		<ResourceGuard
+			requiredAccess={AccessLevel.FULL}
+			// undefined = always allow
+			permittedGroups={
+				isNew
+					? undefined
+					: ((defaultValues?.permissions ?? []) as ResourcePermissionsFormType)
+			}
+			fallback="hidden"
+		>
+			<GroupAccessEditorForm subtitle={subtitle} isNew={isNew} />
+		</ResourceGuard>
+	);
+}
+
+function GroupAccessEditorForm({ subtitle, isNew }: GroupAccessEditorProps) {
 	const { t } = useTranslation("feature-teaching");
 	const [isGroupDialogOpen, setGroupDialogOpen] = useState(false);
-	const { control, resetField } = useFormContext<{
-		permissions: ResourcePermissionsFormType;
-	}>();
+	const { control, setValue } = useFormContext<PermissionsFormValues>();
 
 	// Admin can assign any group as main
 	const session = useRequiredSession();
@@ -114,28 +129,24 @@ export function GroupAccessEditor({
 	}
 
 	// If user creates a group, and has default group set - preset group parent (once)
-	const { data: defaultGroup, isLoading } = useDefaultGroup(
-		doUseDefaultGroup && editor.fields.length === 0
-	);
+	const { data: defaultGroup, isLoading } = useDefaultGroup(isNew && editor.fields.length === 0);
 	const isDefaultGroupApplied = useRef(false);
 	useEffect(() => {
 		// run once
 		if (isDefaultGroupApplied.current || isLoading) return;
 		isDefaultGroupApplied.current = true;
 		// guard again because values may change between renders
-		if (!doUseDefaultGroup || editor.fields.length > 0) return;
+		if (!isNew || editor.fields.length > 0) return;
 		if (!defaultGroup) return;
-		// keeps form clean
-		resetField("permissions", {
-			defaultValue: [
-				{
-					groupId: defaultGroup.groupId,
-					accessLevel: AccessLevel.FULL,
-					groupName: defaultGroup.name
-				}
-			]
-		});
-	}, [defaultGroup, isLoading, resetField, doUseDefaultGroup, editor.fields.length]);
+		// Plain setValue and untouched defaults: attaching/removing default group produces no dirty state.
+		setValue("permissions", [
+			{
+				groupId: defaultGroup.groupId,
+				accessLevel: AccessLevel.FULL,
+				groupName: defaultGroup.name
+			}
+		]);
+	}, [defaultGroup, isLoading, setValue, isNew, editor.fields.length]);
 
 	return (
 		<Form.SidebarSection>

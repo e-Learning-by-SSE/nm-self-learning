@@ -8,9 +8,7 @@ import {
 	MarkdownField,
 	useSlugify
 } from "@self-learning/ui/forms";
-import { useResourceGuard } from "@self-learning/ui/layouts";
-import { AccessLevel } from "@prisma/client";
-import { Controller, useFormContext, useWatch } from "react-hook-form";
+import { Controller, useFormContext } from "react-hook-form";
 import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { GroupAccessEditor } from "../../group/forms/group-form";
@@ -25,10 +23,6 @@ export function LessonInfoEditor({ isNew }: { isNew: boolean }) {
 	} = form;
 
 	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
-	const permissions = useWatch({ control: form.control, name: "permissions" }) ?? [];
-	const hasFull = useResourceGuard(AccessLevel.FULL, permissions);
-	const showGroupAccessEditor = isNew || hasFull;
-
 	return (
 		<>
 			<Form.SidebarSection>
@@ -134,12 +128,10 @@ export function LessonInfoEditor({ isNew }: { isNew: boolean }) {
 					</LabeledField>
 				</div>
 			</Form.SidebarSection>
-			{showGroupAccessEditor && (
-				<GroupAccessEditor
-					subtitle="Gruppen, die auf diese Lerninhalt zugreifen können"
-					doUseDefaultGroup={isNew}
-				/>
-			)}
+			<GroupAccessEditor
+				subtitle="Gruppen, die auf diese Lerninhalt zugreifen können"
+				isNew={isNew}
+			/>
 			<AuthorsForm
 				subtitle="Autoren dieser Lerneinheit."
 				emptyString="Für diese Lerneinheit sind noch keine Autoren hinterlegt."
