@@ -11,6 +11,7 @@ bak
 /tmp
 /out-tsc
 /output
+/libs/*/*/output
 
 # dependencies
 /node_modules

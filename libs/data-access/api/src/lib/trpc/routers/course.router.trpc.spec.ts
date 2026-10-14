@@ -44,9 +44,27 @@ jest.mock("../../permissions/permission.service", () => ({
 	canCreate: jest.fn(),
 	canDelete: jest.fn(),
 	canEdit: jest.fn(),
+	hasEffectiveResourceAccessBatch: jest.fn().mockResolvedValue(true),
 	preparePermissionsForCreate: jest.fn(),
 	prepareResourceUpdate: jest.fn()
 }));
+
+// // Avoids starting event queue processing during tests, which leads to unterminated / tests
+jest.mock("@self-learning/worker-api", () => {
+	const { graphResponseSchema } = jest.requireActual(
+		"../../../../../worker/src/lib/types/job-definitions"
+	);
+
+	return {
+		__esModule: true,
+		graphResponseSchema,
+		workerServiceClient: {
+			submitJob: { mutate: jest.fn().mockResolvedValue(undefined) },
+			jobQueue: { subscribe: jest.fn() }
+		},
+		subscribeToJobEvents: jest.fn()
+	};
+});
 
 function prepare(user: Partial<UserFromSession>) {
 	const ctx: Context & { user: UserFromSession } = {
