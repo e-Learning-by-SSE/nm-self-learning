@@ -2,7 +2,7 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { createNewProfile } from "@self-learning/achievements";
 import { database } from "@self-learning/database";
 import { createInitialNotificationSettings } from "@self-learning/ui/notifications";
-import { randomBytes } from "crypto";
+import { createHash, randomBytes } from "crypto";
 import { addDays } from "date-fns";
 import { jwtDecode } from "jwt-decode";
 import { NextAuthOptions } from "next-auth";
@@ -31,6 +31,7 @@ type OidcProviderConfig = {
 	issuer: string;
 	clientId: string;
 	clientSecret: string;
+	preferEmailAsUsername?: boolean;
 	scope?: string;
 };
 
@@ -48,6 +49,7 @@ export function createOidcProvider({
 	issuer,
 	clientId,
 	clientSecret,
+	preferEmailAsUsername = false,
 	scope = OIDC_SCOPES
 }: OidcProviderConfig): OAuthConfig<OidcProfile> {
 	const normalizedIssuer = issuer.replace(/\/+$/, "");
@@ -56,6 +58,7 @@ export function createOidcProvider({
 		id,
 		name,
 		type: "oauth",
+		issuer: normalizedIssuer,
 		wellKnown: `${normalizedIssuer}/.well-known/openid-configuration`,
 		clientId,
 		clientSecret,
@@ -79,9 +82,17 @@ export function createOidcProvider({
 			}
 		},
 		profile(profile) {
-			const username =
-				profile.preferred_username ??
-				(profile.email ? mailToUsername(profile.email) : profile.sub);
+			let username: string;
+			if (preferEmailAsUsername) {
+				username = profile.email ? profile.email : profile.sub;
+				if (!username) {
+					throw new Error(`OIDC provider "${name}" must return an email address`);
+				}
+			} else {
+				username =
+					profile.preferred_username ??
+					(profile.email ? mailToUsername(profile.email) : profile.sub);
+			}
 
 			return {
 				id: profile.sub,
@@ -115,7 +126,7 @@ const customPrismaAdapter: Adapter = {
 			data: {
 				// Use IdP roles when supplied. Generic OIDC providers may omit
 				// realm_access, in which case the existing local role is preserved.
-				role: getIdpSelflearnAdminRole(account.access_token) ?? user.role,
+				role: getIdpSelflearnAdminRole(account.access_token, account.id_token) ?? user.role,
 				emailVerified: new Date() // OIDC always has verified emails
 			}
 		});
@@ -147,48 +158,72 @@ const customPrismaAdapter: Adapter = {
 	}
 };
 
+/** Configure OIDC providers exclusively through the OIDC_CLIENTS JSON array. */
+export function createOidcProviders(
+	env: Partial<NodeJS.ProcessEnv> = process.env
+): OAuthConfig<OidcProfile>[] {
+	if (!env.OIDC_CLIENTS?.trim()) return [];
+
+	let clients: unknown;
+	try {
+		clients = JSON.parse(env.OIDC_CLIENTS);
+	} catch {
+		throw new Error("OIDC_CLIENTS must be a valid JSON array");
+	}
+	if (!Array.isArray(clients)) {
+		throw new Error("OIDC_CLIENTS must be a JSON array");
+	}
+
+	const ids = new Set<string>();
+	return clients.map((client: unknown, index) => {
+		const label = `OIDC_CLIENTS[${index}]`;
+		if (!client || typeof client !== "object" || Array.isArray(client)) {
+			throw new Error(`${label} must be an object`);
+		}
+		const config = client as Record<string, unknown>;
+		const requiredString = (key: string): string => {
+			const value = config[key];
+			if (typeof value !== "string" || !value.trim()) {
+				throw new Error(`${label}.${key} must be a non-empty string`);
+			}
+			return value;
+		};
+		const issuer = requiredString("ISSUER_URL").replace(/\/+$/, "");
+		const clientId = requiredString("CLIENT_ID");
+		const clientSecret = requiredString("CLIENT_SECRET");
+		const name = requiredString("PROVIDER_NAME");
+		const scopes = config["SCOPES"];
+		if (scopes !== undefined && (typeof scopes !== "string" || !scopes.trim())) {
+			throw new Error(`${label}.SCOPES must be a non-empty string when provided`);
+		}
+		// Stable across array reordering, display-name changes and secret rotation.
+		const id =
+			config["PROVIDER_ID"] === undefined
+				? `oidc-${createHash("sha256")
+						.update(JSON.stringify([issuer, clientId]))
+						.digest("hex")}`
+				: requiredString("PROVIDER_ID");
+		if (!/^[a-zA-Z0-9_-]+$/.test(id) || id === "credentials") {
+			throw new Error(`${label}.PROVIDER_ID must be a URL-safe ID other than credentials`);
+		}
+		if (ids.has(id)) {
+			throw new Error(`${label} has a duplicate provider ID`);
+		}
+		ids.add(id);
+		return createOidcProvider({
+			id,
+			name,
+			issuer,
+			clientId,
+			clientSecret,
+			preferEmailAsUsername: index > 0,
+			scope: typeof scopes === "string" ? scopes : env.OIDC_SCOPES || OIDC_SCOPES
+		});
+	});
+}
+
 function getProviders(): Provider[] {
-	const genericOidcValues = [
-		process.env.OIDC_ISSUER_URL,
-		process.env.OIDC_CLIENT_ID,
-		process.env.OIDC_CLIENT_SECRET
-	];
-	const useGenericOidcConfig = genericOidcValues.some(Boolean);
-	const issuer = useGenericOidcConfig
-		? process.env.OIDC_ISSUER_URL
-		: process.env.KEYCLOAK_ISSUER_URL;
-	const clientId = useGenericOidcConfig
-		? process.env.OIDC_CLIENT_ID
-		: process.env.KEYCLOAK_CLIENT_ID;
-	const clientSecret = useGenericOidcConfig
-		? process.env.OIDC_CLIENT_SECRET
-		: process.env.KEYCLOAK_CLIENT_SECRET;
-	const oidcValues = [issuer, clientId, clientSecret];
-
-	if (oidcValues.some(Boolean) && !oidcValues.every(Boolean)) {
-		throw new Error(
-			`Incomplete ${
-				useGenericOidcConfig ? "OIDC" : "legacy Keycloak"
-			} configuration: issuer, client ID and client secret are all required`
-		);
-	}
-
-	const providers: Provider[] = [];
-	if (issuer && clientId && clientSecret) {
-		providers.push(
-			createOidcProvider({
-				id: DEFAULT_OIDC_PROVIDER_ID,
-				name:
-					process.env.OIDC_PROVIDER_NAME ||
-					process.env.KEYCLOAK_PROVIDER_NAME ||
-					"OpenID Connect",
-				issuer,
-				clientId,
-				clientSecret,
-				scope: process.env.OIDC_SCOPES || OIDC_SCOPES
-			})
-		);
-	}
+	const providers: Provider[] = createOidcProviders();
 
 	// Allow login with pre-configured demo accounts in demo mode (see seed.ts)
 	if (process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE === "true") {

@@ -15,11 +15,13 @@ export function useLoginRedirect() {
 			}
 
 			const providers = await getProviders();
-			const oidcProvider = Object.values(providers ?? {}).find(
+			const oidcProviders = Object.values(providers ?? {}).filter(
 				provider => provider.type === "oauth"
 			);
 
-			return signIn(oidcProvider?.id, { callbackUrl });
+			return signIn(oidcProviders.length === 1 ? oidcProviders[0].id : undefined, {
+				callbackUrl
+			});
 		},
 		[basePath, router.asPath]
 	);
