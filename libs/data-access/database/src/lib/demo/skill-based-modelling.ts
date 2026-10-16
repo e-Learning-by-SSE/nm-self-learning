@@ -30,7 +30,8 @@ const authors: Prisma.UserCreateInput[] = [
 			create: {
 				username: "slr-author_1"
 			}
-		}
+		},
+		featureFlags: { create: { username: "slr-author_1" } }
 	}
 ];
 

@@ -393,6 +393,7 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 			create: [{ provider: "demo", providerAccountId: "kent-c-dodds", type: "demo-account" }]
 		},
 		student: { create: { username: "kent-c-dodds" } },
+		featureFlags: { create: { username: "kent-c-dodds" } },
 		author: {
 			create: {
 				displayName: "Kent C Dodds",
@@ -424,6 +425,7 @@ const reactAuthors: Prisma.UserCreateInput[] = [
 			create: [{ provider: "demo", providerAccountId: "mcgonagall", type: "demo-account" }]
 		},
 		student: { create: { username: "mcgonagall" } },
+		featureFlags: { create: { username: "mcgonagall" } },
 		author: {
 			create: {
 				displayName: "Minerva McGonagall",

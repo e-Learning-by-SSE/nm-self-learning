@@ -160,6 +160,7 @@ export function createAuthor({
 			}
 		},
 		student: { create: { username: userName } },
+		featureFlags: { create: { username: userName } },
 		memberships: { create: { group: { connect: { name: group } }, role: role } }
 	};
 }
