@@ -5,9 +5,11 @@ import { useFormContext } from "react-hook-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { Form } from "@self-learning/ui/forms";
 import { MarkdownListboxMenu } from "@self-learning/markdown";
+import { useTranslation } from "next-i18next";
 
 // Handles loading of licenses and makes them selectable afterwards
 export function LicenseForm() {
+	const { t } = useTranslation("feature-teaching");
 	const { data: licenses, isLoading } = trpc.licenseRouter.getAll.useQuery();
 
 	if (isLoading) {
@@ -16,8 +18,8 @@ export function LicenseForm() {
 		return (
 			<Form.SidebarSection>
 				<Form.SidebarSectionTitle
-					title="Lizenz"
-					subtitle="Die Lizenz unter der diese Lerneinheit vertrieben wird"
+					title={t("License_Title")}
+					subtitle={t("License_Subtitle")}
 				/>
 				<OptionalLicenseSelector licenses={licenses} />
 			</Form.SidebarSection>
@@ -27,15 +29,17 @@ export function LicenseForm() {
 
 // Checks and handles if there are no licenses available
 function OptionalLicenseSelector({ licenses }: { licenses?: License[] }) {
+	const { t } = useTranslation("feature-teaching");
 	if (licenses && licenses.length > 0) {
 		return <LicenseSelector licenses={licenses} />;
 	} else {
-		return <p>No Licenses available</p>;
+		return <p>{t("License_None_Available")}</p>;
 	}
 }
 
 // Makes licenses selectable after checking if there are any
 export function LicenseSelector({ licenses }: { licenses: License[] }) {
+	const { t } = useTranslation("feature-teaching");
 	const { setValue, watch } = useFormContext<LessonFormModel>();
 	const currentValue = watch("licenseId");
 
@@ -48,7 +52,11 @@ export function LicenseSelector({ licenses }: { licenses: License[] }) {
 
 	const options = licenses
 		.filter(lic => lic.selectable)
-		.map(lic => (lic.oerCompatible ? lic.name : `~~${lic.name}~~ (Nicht OER-kompatibel)`));
+		.map(lic =>
+			lic.oerCompatible
+				? lic.name
+				: `~~${lic.name}~~ (${t("License_Not_OER_Compatible")})`
+		);
 
 	const handleChange = (selectedName: string) => {
 		const selected = licenses.find(lic => selectedName.includes(lic.name));
@@ -59,11 +67,11 @@ export function LicenseSelector({ licenses }: { licenses: License[] }) {
 
 	return (
 		<MarkdownListboxMenu
-			title="Lizenz wählen"
+			title={t("License_Select_Title")}
 			displayValue={
 				selectedLicense?.oerCompatible
 					? selectedLicense.name
-					: `~~${selectedLicense?.name}~~ (Nicht OER-kompatibel)`
+					: `~~${selectedLicense?.name}~~ (${t("License_Not_OER_Compatible")})`
 			}
 			options={options}
 			onChange={handleChange}

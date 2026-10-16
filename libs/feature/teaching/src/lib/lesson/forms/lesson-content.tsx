@@ -2,7 +2,6 @@ import { Bars3Icon, ChevronDownIcon, PlusIcon } from "@heroicons/react/24/solid"
 import { LessonFormModel } from "@self-learning/teaching";
 import {
 	CONTENT_TYPES,
-	getContentTypeDisplayName,
 	LessonContent,
 	LessonContentType,
 	ValueByContentType
@@ -29,6 +28,7 @@ import { VideoInput } from "../content-types/video";
 import { Button } from "@headlessui/react";
 import { NavigableContentOutline, NavigableContentViewer } from "@self-learning/ui/layouts";
 import { TrashIcon } from "@heroicons/react/24/outline";
+import { useTranslation } from "next-i18next";
 
 export type SetValueFn = <CType extends LessonContentType["type"]>(
 	type: CType,
@@ -37,6 +37,7 @@ export type SetValueFn = <CType extends LessonContentType["type"]>(
 ) => void;
 
 export function useLessonContentEditor(control: Control<{ content: LessonContent }>) {
+	const { t } = useTranslation("feature-teaching");
 	const {
 		append,
 		remove,
@@ -106,12 +107,12 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 
 	const removeContent = useCallback(
 		(index: number) => {
-			const confirmed = window.confirm("Inhalt entfernen ?");
+			const confirmed = window.confirm(t("Lesson_Content_Remove_Confirm"));
 			if (confirmed) {
 				remove(index);
 			}
 		},
-		[remove]
+		[remove, t]
 	);
 
 	return {
@@ -138,6 +139,7 @@ function ContentOutlineTab({
 	select?: () => void;
 	active?: boolean;
 }) {
+	const { t } = useTranslation("feature-teaching");
 	return (
 		<>
 			{item && (
@@ -147,24 +149,25 @@ function ContentOutlineTab({
 						className={`w-full ${active ? "text-c-primary" : "text-c-text-muted"}`}
 						onClick={select}
 					>
-						{getContentTypeDisplayName(item.type)}
+						{t(`Lesson_Content_Type_${item.type}`)}
 					</span>
 					{remove && (
 						<IconOnlyButton
 							icon={<TrashIcon className="h-5 w-5" />}
 							className="btn-x-mark"
 							onClick={remove}
-							title="Entfernen"
+							title={t("Course_Content_Remove_Lesson")}
 						/>
 					)}
 				</div>
 			)}
-			{!item && "Kein Inhalt"}
+			{!item && t("Lesson_Content_Empty")}
 		</>
 	);
 }
 
 export function LessonContentEditor() {
+	const { t } = useTranslation("feature-teaching");
 	const { control } = useFormContext<{ content: LessonContent }>();
 	const { content, addContent, removeContent, swapContent, contentTabIndex, setContentTabIndex } =
 		useLessonContentEditor(control);
@@ -177,7 +180,7 @@ export function LessonContentEditor() {
 		<div className="w-full lg:grid lg:grid-cols-[1fr_300px] gap-8">
 			<div className="w-full overflow-hidden flex flex-col gap-4 mb-8 mt-4">
 				<LessonDescriptionForm />
-				<h2 className="text-2xl mt-4">Inhalt</h2>
+				<h2 className="text-2xl mt-4">{t("Course_Content_Title")}</h2>
 				<NavigableContentViewer
 					content={content}
 					targetIndex={targetTabIndex}
@@ -233,14 +236,14 @@ export function LessonContentEditor() {
 						<ChevronDownIcon
 							className={`w-5 h-5 transition-transform duration-200 ${isOutlineOpen ? "rotate-0" : "-rotate-90"} lg:hidden`}
 						/>
-						<h2 className="text-xl">Inhalt</h2>
+						<h2 className="text-xl">{t("Course_Content_Title")}</h2>
 						<DropdownMenu
-							title="Inhalt hinzufügen"
+							title={t("Lesson_Content_Add")}
 							button={
 								<IconOnlyButton
 									icon={<PlusIcon className="h-5 w-5" />}
 									className="btn-primary"
-									title={"Inhalt hinzufügen"}
+									title={t("Lesson_Content_Add")}
 								/>
 							}
 						>
@@ -248,11 +251,11 @@ export function LessonContentEditor() {
 								<Button
 									key={contentType}
 									type={"button"}
-									title="Inhaltstyp Hinzufügen"
+									title={t("Lesson_Content_Add_Type")}
 									className={"w-full text-left px-3 py-1"}
 									onClick={() => addContent(contentType)}
 								>
-									{getContentTypeDisplayName(contentType)}
+									{t(`Lesson_Content_Type_${contentType}`)}
 								</Button>
 							))}
 						</DropdownMenu>
@@ -280,10 +283,11 @@ function RenderContentType({
 	index?: number;
 	item?: FieldArrayWithId<{ content: LessonContent }, "content", "id">;
 }) {
+	const { t } = useTranslation("feature-teaching");
 	if (!item || index === undefined || index === null) {
 		return (
 			<SectionCard>
-				<span className="text-c-text-muted">Diese Lerneinheit hat noch keinen Inhalt.</span>
+				<span className="text-c-text-muted">{t("Lesson_Content_No_Content")}</span>
 			</SectionCard>
 		);
 	}
@@ -304,10 +308,11 @@ function RenderContentType({
 		return <IFrameInput index={index} />;
 	}
 	// Must not happen!
-	return <span className="text-c-danger">Error: Unknown content type</span>;
+	return <span className="text-c-danger">{t("Lesson_Content_Unknown_Type")}</span>;
 }
 
 export function LessonDescriptionForm() {
+	const { t } = useTranslation("feature-teaching");
 	const form = useFormContext<LessonFormModel>();
 	const control = form.control;
 	const currentLessonType = form.watch("lessonType");
@@ -320,7 +325,10 @@ export function LessonDescriptionForm() {
 					data-testid="aktivierungsfrage-element"
 					className={`pt-4 rounded-md ${!suppressHighlight ? "animate-highlight" : ""}`}
 				>
-					<LabeledField label="Aktivierungsfrage" optional={false}>
+					<LabeledField
+						label={t("Lesson_Self_Regulated_Question_Label")}
+						optional={false}
+					>
 						<Controller
 							control={control}
 							name="selfRegulatedQuestion"
@@ -343,7 +351,7 @@ export function LessonDescriptionForm() {
 							content={field.value as string}
 							setValue={field.onChange}
 							compact={true}
-							header={{ text: "Beschreibung", sz: "2xl" }}
+							header={{ text: t("common:Description"), sz: "2xl" }}
 						/>
 					)}
 				/>

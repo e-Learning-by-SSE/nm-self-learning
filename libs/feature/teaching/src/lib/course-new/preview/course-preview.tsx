@@ -18,9 +18,10 @@ type CoursePreviewModel = inferProcedureOutput<AppRouter["course"]["getCourse"]>
 type CourseContentPreviewModel = inferProcedureOutput<AppRouter["course"]["getDefaultPathPreview"]>;
 
 export function CoursePreview() {
+	const { t } = useTranslation("feature-teaching");
 	const form = useFormContext<CourseFormModel>();
 	const slug = useWatch({ control: form.control, name: "slug" });
-	const job = useJob(trpc.course.updateDefaultPath, slug ? { slug, knowledge: [] } : undefined);
+	const job = useJob(trpc.course.updateDefaultPath, { slug });
 
 	// Fetch course after the job finishes, including failures that need path analysis.
 	const { data: preview, isLoading: isPreviewLoading } = trpc.course.getCourse.useQuery(
@@ -39,7 +40,7 @@ export function CoursePreview() {
 			<Alert
 				type={{
 					severity: "ERROR",
-					message: "This course could not be found."
+					message: t("Course_Preview_Course_Not_Found")
 				}}
 			/>
 		);
@@ -84,6 +85,7 @@ function createCourseSummary(content: CourseContentPreviewModel) {
 }
 
 function Course({ course }: { course: CoursePreviewModel }) {
+	const { t } = useTranslation("feature-teaching");
 	const { data: contentPreview, isLoading: isPreviewLoading } =
 		trpc.course.getDefaultPathPreview.useQuery({
 			slug: course.slug
@@ -97,7 +99,7 @@ function Course({ course }: { course: CoursePreviewModel }) {
 	}
 	if (!contentPreview || !allAuthors) {
 		return (
-			<Alert type={{ severity: "ERROR", message: "Content preview could not be loaded." }} />
+			<Alert type={{ severity: "ERROR", message: t("Course_Preview_Content_Not_Loaded") }} />
 		);
 	}
 	const summary = createCourseSummary(contentPreview);
@@ -148,9 +150,9 @@ function Course({ course }: { course: CoursePreviewModel }) {
 						{hasContent && hasTeachingGoal && (
 							<ul className="absolute bottom-0 grid w-full grid-cols-3 divide-x divide-secondary rounded-b-lg border border-light-border border-t-transparent bg-white bg-opacity-80 p-2 text-center">
 								{[
-									["Lerneinheiten", summary.lessons],
-									["Kapitel", summary.chapters],
-									["Dauer", formatSeconds(summary.duration)]
+					[t("Course_Preview_Lessons_Label"), summary.lessons],
+					[t("Course_Preview_Chapters_Label"), summary.chapters],
+					[t("Course_Preview_Duration_Label"), formatSeconds(summary.duration)]
 								].map(([label, value]) => (
 									<li key={label} className="flex flex-col">
 										<span className="font-semibold text-secondary">
@@ -193,7 +195,7 @@ function LessonPath({
 
 	return (
 		<section className="flex flex-col gap-8">
-			<h2 className="mb-4 text-4xl">Inhalt</h2>
+			<h2 className="mb-4 text-4xl">{t("Course_Content_Title")}</h2>
 			<ul className="flex flex-col gap-16">
 				{content.map((chapter, index) => (
 					<li key={index} className="flex flex-col rounded-lg bg-gray-100 p-8">

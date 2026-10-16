@@ -1,12 +1,14 @@
 import { trpc } from "@self-learning/api-client";
-import { getContentTypeDisplayName, IFrame } from "@self-learning/types";
+import { IFrame } from "@self-learning/types";
 import { SectionCard } from "@self-learning/ui/common";
 import { LabeledField, Upload } from "@self-learning/ui/forms";
 import { useState } from "react";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { H5PViewer } from "@self-learning/lesson";
+import { useTranslation } from "next-i18next";
 
 export function IFrameInput({ index }: { index: number }) {
+	const { t } = useTranslation("feature-teaching");
 	const { control } = useFormContext<{ content: IFrame[] }>();
 	const { update } = useFieldArray<{ content: IFrame[] }>({
 		name: "content"
@@ -49,18 +51,19 @@ export function IFrameInput({ index }: { index: number }) {
 				meta: { estimatedDuration: 0 }
 			});
 		} catch (err) {
-			setUploadError((err as Error).message ?? "Failed to unpack archive.");
+			setUploadError((err as Error).message ?? t("Lesson_IFrame_Unpack_Failed"));
 		}
 	}
 
 	return (
 		<SectionCard>
-			<h3 className="text-xl mb-2">{getContentTypeDisplayName("iframe")}</h3>
+			<h3 className="text-xl mb-2">{t("Lesson_Content_Type_iframe")}</h3>
 
 			{/* Tab switcher */}
 			<div className="flex gap-2 mb-4 border-b border-light-border">
 				<button
 					type="button"
+					data-testid="iframe-upload-tab"
 					onClick={() => setActiveTab("upload")}
 					className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
 						activeTab === "upload"
@@ -68,10 +71,11 @@ export function IFrameInput({ index }: { index: number }) {
 							: "border-transparent text-c-text-muted hover:text-c-text"
 					}`}
 				>
-					Datei hochladen
+					{t("common:Upload File")}
 				</button>
 				<button
 					type="button"
+					data-testid="iframe-url-tab"
 					onClick={() => setActiveTab("url")}
 					className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
 						activeTab === "url"
@@ -79,7 +83,7 @@ export function IFrameInput({ index }: { index: number }) {
 							: "border-transparent text-c-text-muted hover:text-c-text"
 					}`}
 				>
-					Externe URL
+					{t("Lesson_IFrame_External_URL")}
 				</button>
 			</div>
 
@@ -87,11 +91,12 @@ export function IFrameInput({ index }: { index: number }) {
 				{activeTab === "url" && (
 					<>
 						<span className="text-c-text-muted text-sm">
-							Hinweis: Nicht alle Webseiten erlauben das Einbetten von iFrames.
+							{t("Lesson_IFrame_Embed_Note")}
 						</span>
-						<LabeledField label="URL">
+						<LabeledField label={t("common:URL")}>
 							<input
 								type="text"
+								data-testid="iframe-url-input"
 								className="textfield w-full"
 								value={source && source !== "url" ? "" : url}
 								placeholder="https://example.com"
@@ -107,7 +112,7 @@ export function IFrameInput({ index }: { index: number }) {
 						{url && (!source || source === "url") && (
 							<iframe
 								src={url}
-								title="iframe"
+								title={t("Lesson_IFrame_Embedded_Content")}
 								width="100%"
 								height="500px"
 								sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
@@ -119,13 +124,12 @@ export function IFrameInput({ index }: { index: number }) {
 				{activeTab === "upload" && (
 					<>
 						<span className="text-c-text-muted text-sm">
-							Unterstützte Formate: einzelne HTML-Datei, ZIP-Archiv (mit index.html),
-							H5P-Datei (.h5p)
+							{t("Lesson_IFrame_Supported_Formats")}
 						</span>
 
 						{originalFileName && (
 							<div className="text-sm text-c-text-muted">
-								Aktuell hochgeladen:{" "}
+								{t("Lesson_IFrame_Currently_Uploaded")}{" "}
 								<span className="font-medium text-c-text">{originalFileName}</span>
 							</div>
 						)}
@@ -138,7 +142,7 @@ export function IFrameInput({ index }: { index: number }) {
 
 						{isUnpacking && (
 							<div className="text-sm text-c-text-muted animate-pulse">
-								Archiv wird entpackt und hochgeladen...
+								{t("Lesson_IFrame_Unpacking")}
 							</div>
 						)}
 
@@ -193,7 +197,7 @@ export function IFrameInput({ index }: { index: number }) {
 											<iframe
 												key={url}
 												src={url}
-												title="HTML5 Viewer"
+												title={t("Lesson_IFrame_Viewer_Title")}
 												width="100%"
 												height="100%"
 												sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"

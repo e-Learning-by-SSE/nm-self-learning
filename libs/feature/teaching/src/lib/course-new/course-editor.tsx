@@ -14,6 +14,7 @@ import { useRouter } from "next/router";
 import { collectErrorMessages } from "../lesson/lesson-editor";
 import { DynCourseContentForm } from "./dyn-course-content-form";
 import { CoursePreview } from "./preview/course-preview";
+import { trpc } from "@self-learning/api-client";
 
 export function CourseEditor({
 	course,
@@ -29,6 +30,7 @@ export function CourseEditor({
 }) {
 	const { t } = useTranslation("feature-teaching");
 	const router = useRouter();
+	const { mutate: triggerDefaultPath } = trpc.course.updateDefaultPath.useMutation();
 	const form = useForm({ defaultValues: course, resolver: zodResolver(courseFormSchema) });
 	const courseId = useWatch({ control: form.control, name: "courseId" });
 	const type = useWatch({ control: form.control, name: "type" });
@@ -44,14 +46,33 @@ export function CourseEditor({
 			: t("Skills_Lesson_Dynamic_Course")
 		: saveFirstTooltip;
 
-	async function handleSave(data: CourseFormModel) {
-		console.log("[CourseEditor.handleSave]: Saving course", data);
-		const saved = await onSubmit(data);
-		form.reset({ ...data, courseId: saved.courseId, slug: saved.slug, version: saved.version });
+	async function handleSave(data: CourseFormModel, triggerPath = false) {
+		const courseToSave =
+			data.type === CourseType.DYNAMIC
+				? {
+						...data,
+						context: data.content.flatMap(chapter =>
+							chapter.content.map(lesson => lesson.lessonId)
+						)
+					}
+				: data;
+		const saved = await onSubmit(courseToSave);
+		if (triggerPath && data.type === CourseType.DYNAMIC) {
+			triggerDefaultPath({ slug: saved.slug });
+		}
+		form.reset({
+			...courseToSave,
+			courseId: saved.courseId,
+			slug: saved.slug,
+			version: saved.version
+		});
 	}
 
 	function onClose() {
-		if (form.formState.isDirty && !window.confirm("Ungespeicherte Änderungen verwerfen?")) {
+		if (
+			form.formState.isDirty &&
+			!window.confirm(t("Course_Editor_Discard_Changes_Confirm"))
+		) {
 			return;
 		}
 		router.back();
@@ -69,6 +90,33 @@ export function CourseEditor({
 		}, showCourseValidationErrors)();
 	}
 
+	function showCourseValidationErrors(errors: FieldErrors) {
+		const errorMsg = collectErrorMessages(errors)
+			.map(item => {
+				switch (item.field) {
+					case "title":
+						return t("Course_Validation_Title_Required");
+					case "slug":
+						return t("Course_Validation_Slug_Invalid");
+					case "subtitle":
+						return t("Course_Validation_Subtitle_Required");
+					case "permissions":
+						return t("Course_Validation_Permissions_Required");
+					default:
+						return t("Course_Validation_Field_Error", {
+							field: item.field,
+							message: item.message
+						});
+				}
+			})
+			.join("\n");
+		showToast({
+			type: "error",
+			title: t("Course_Validation_Error_Title"),
+			subtitle: errorMsg || t("Course_Validation_Default_Message")
+		});
+	}
+
 	return (
 		<FormProvider {...form}>
 			<form
@@ -76,7 +124,7 @@ export function CourseEditor({
 				onSubmit={e => {
 					// lesson editor submit also triggers this
 					if ((e.target as HTMLFormElement).id !== "courseform") return;
-					form.handleSubmit(handleSave, showCourseValidationErrors)(e);
+					form.handleSubmit(data => handleSave(data, true), showCourseValidationErrors)(e);
 				}}
 				className="w-full"
 			>
@@ -85,24 +133,24 @@ export function CourseEditor({
 					<div className="flex justify-between mb-8">
 						<div className="flex flex-col gap-2">
 							<span className="font-semibold text-2xl text-c-primary">
-								{isPersisted ? "Kurs bearbeiten" : "Kurs erstellen"}
+								{t(isPersisted ? "Edit_Course" : "Create_Course")}
 							</span>
 							<h1 className="text-4xl">{title}</h1>
 						</div>
 						<div className="pointer-events-auto">
-							<DialogActions abortLabel="Schließen" onClose={onClose}>
+							<DialogActions abortLabel={t("common:Close")} onClose={onClose}>
 								<OpenAsJsonButton form={form} validationSchema={courseFormSchema} />
 								<button type="submit" className="btn-primary pointer-events-auto">
-									{isPersisted ? "Speichern" : "Erstellen"}
+									{t(isPersisted ? "common:save" : "common:create")}
 								</button>
 							</DialogActions>
 						</div>
 					</div>
 					<Tabs selectedIndex={tab} onChange={onTabChange}>
-						<Tab>Grunddaten</Tab>
+						<Tab>{t("Course_Editor_Tab_Basic_Info")}</Tab>
 						<CourseEditorTab disabled={!isPersisted} tooltip={skillsTooltip}>
 							<span className="inline-flex items-center gap-1">
-								Skills
+								{t("Skills_Title")}
 								{isStatic && (
 									<i className="text-xs font-normal">
 										{t("Skills_Tab_Optional")}
@@ -111,11 +159,11 @@ export function CourseEditor({
 							</span>
 						</CourseEditorTab>
 						<CourseEditorTab disabled={!isPersisted} tooltip={saveFirstTooltip}>
-							Inhalt
+							{t("Course_Editor_Tab_Content")}
 						</CourseEditorTab>
 						{!isStatic && (
 							<CourseEditorTab disabled={!isPersisted} tooltip={saveFirstTooltip}>
-								Vorschau
+								{t("Course_Editor_Tab_Preview")}
 							</CourseEditorTab>
 						)}
 					</Tabs>
@@ -152,28 +200,4 @@ function CourseEditorTab({
 	// Same hint wrapper for a locked tab and for the Skills explanation.
 	if (!tooltip) return tab;
 	return <Tooltip content={tooltip}>{tab}</Tooltip>;
-}
-
-function showCourseValidationErrors(errors: FieldErrors) {
-	const errorMsg = collectErrorMessages(errors)
-		.map(item => {
-			switch (item.field) {
-				case "title":
-					return "🞄 Kein Titel vergeben.";
-				case "slug":
-					return "🞄 Keine gültige URL-ID (Slug, mind. 3 Zeichen).";
-				case "subtitle":
-					return "🞄 Kein Untertitel vergeben.";
-				case "permissions":
-					return "🞄 Mindestens eine Gruppe mit Rechten wählen.";
-				default:
-					return `🞄 ${item.field}: ${item.message}`;
-			}
-		})
-		.join("\n");
-	showToast({
-		type: "error",
-		title: "Validierungsfehler",
-		subtitle: errorMsg || "Bitte Pflichtfelder prüfen."
-	});
 }

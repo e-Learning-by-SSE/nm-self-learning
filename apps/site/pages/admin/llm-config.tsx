@@ -1,17 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AdminGuard, CenteredSection } from "@self-learning/ui/layouts";
 import { trpc } from "@self-learning/api-client";
 import { showToast } from "@self-learning/ui/common";
 import { withTranslations } from "@self-learning/api";
 import { formatDateString } from "@self-learning/util/common";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "next-i18next";
 import { llmConfigSchema } from "@self-learning/types";
 import { TRPCClientError } from "@trpc/client";
+import { z } from "zod";
+
+type LlmConfigFormData = z.infer<typeof llmConfigSchema>;
 
 export default function LlmConfigPage() {
-	const { register, handleSubmit, reset, watch, setValue } = useForm({
+	const { register, handleSubmit, reset, control, setValue } = useForm<LlmConfigFormData>({
 		resolver: zodResolver(llmConfigSchema),
 		defaultValues: {
 			serverUrl: "",
@@ -19,30 +22,31 @@ export default function LlmConfigPage() {
 			defaultModel: ""
 		}
 	});
-	const formData = watch();
+	const serverUrl = useWatch({ control, name: "serverUrl" });
+	const apiKey = useWatch({ control, name: "apiKey" });
 	const [fetchingModels, setFetchingModels] = useState(false);
 	const [availableModels, setAvailableModels] = useState<string[]>([]);
 	const [errorMessage, setErrorMessage] = useState<{ code: string; message: string } | null>(
 		null
 	);
-	const [once, setOnce] = useState(false);
+	const hasInitializedForm = useRef(false);
 	const { data: config, isLoading, refetch } = trpc.llmConfig.get.useQuery();
 	const saveConfig = trpc.llmConfig.save.useMutation();
 	const getAvailableModels = trpc.llmConfig.getAvailableModels.useMutation();
 	const { t } = useTranslation("pages-admin-llm-config");
 
 	useEffect(() => {
-		if (config && !once) {
+		if (config && !hasInitializedForm.current) {
 			reset({
 				serverUrl: config.serverUrl,
 				apiKey: "",
 				defaultModel: config.defaultModel
 			});
-			setOnce(true);
+			hasInitializedForm.current = true;
 		}
-	}, [config, once, reset]);
+	}, [config, reset]);
 
-	const onSubmit = async (data: typeof formData) => {
+	const onSubmit = async (data: LlmConfigFormData) => {
 		try {
 			await saveConfig.mutateAsync({
 				serverUrl: data.serverUrl,
@@ -71,8 +75,8 @@ export default function LlmConfigPage() {
 		setFetchingModels(true);
 		try {
 			const result = await getAvailableModels.mutateAsync({
-				serverUrl: formData.serverUrl,
-				apiKey: formData.apiKey || undefined
+				serverUrl,
+				apiKey: apiKey || undefined
 			});
 
 			if (result.valid) {
@@ -189,7 +193,7 @@ export default function LlmConfigPage() {
 										disabled={
 											getAvailableModels.isPending ||
 											fetchingModels ||
-											!formData.serverUrl
+										!serverUrl
 										}
 										className="btn-secondary flex-1"
 									>

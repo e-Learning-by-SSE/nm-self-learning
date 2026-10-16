@@ -20,10 +20,12 @@ import { useMemo, useState } from "react";
 import { Control, Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { Button } from "@headlessui/react";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { useTranslation } from "next-i18next";
 
 type QuizForm = { quiz: Quiz };
 
 export function useQuizEditorForm() {
+	const { t } = useTranslation("feature-teaching");
 	const { control, register, setValue, getValues } = useFormContext<QuizForm>();
 	const {
 		append,
@@ -70,7 +72,7 @@ export function useQuizEditorForm() {
 	}
 
 	function removeQuestion(index: number) {
-		const confirm = window.confirm("Aufgabe entfernen?");
+		const confirm = window.confirm(t("Quiz_Remove_Question_Confirm"));
 		const removedId = quiz[index].questionId;
 		if (confirm) {
 			remove(index);
@@ -118,6 +120,7 @@ export function useQuizEditorForm() {
 }
 
 export function QuizEditor() {
+	const { t } = useTranslation("feature-teaching");
 	const {
 		control,
 		quiz,
@@ -133,16 +136,14 @@ export function QuizEditor() {
 	return (
 		<section className="flex flex-col gap-8">
 			<SectionHeader
-				title="Aufgaben"
-				subtitle="Aufgaben, die Studierenden nach Bearbeitung der Lerneinheit angezeigt werden sollen.
-					Die erfolgreiche Beantwortung der Fragen ist notwendig, um diese Lerneinheit
-					erfolgreich abzuschließen."
+				title={t("Quiz_Questions_Title")}
+				subtitle={t("Quiz_Questions_Subtitle")}
 				button={
 					<DropdownMenu
-						title="Aufgabe erstellen"
+						title={t("Quiz_Create_Question")}
 						button={
 							<div className="btn-primary">
-								<span className="font-semibold text-white">Aufgabe erstellen</span>
+								<span className="font-semibold text-white">{t("Quiz_Create_Question")}</span>
 							</div>
 						}
 					>
@@ -150,7 +151,7 @@ export function QuizEditor() {
 							<Button
 								key={type}
 								type={"button"}
-								title="Aufgabentyp hinzufügen"
+								title={t("Quiz_Add_Question_Type")}
 								className={"w-full text-left px-3 py-1"}
 								onClick={() => appendQuestion(type as QuestionType["type"])}
 							>
@@ -199,6 +200,7 @@ export function QuizEditor() {
 }
 
 function QuizConfigForm() {
+	const { t } = useTranslation("feature-teaching");
 	const { control, register, setValue } = useQuizEditorForm();
 
 	const config = useWatch({
@@ -238,15 +240,15 @@ function QuizConfigForm() {
 						onChange={e => (e.target.checked ? resetToDefault() : initCustomConfig())}
 					/>
 					<label htmlFor="customConfig" className="select-none text-sm">
-						Standard-Konfiguration verwenden
+							{t("Quiz_Use_Default_Config")}
 					</label>
 				</span>
 
 				{!config ? (
 					<ul className="list-inside list-disc text-sm text-c-text-muted">
-						<li>Alle Fragen müssen korrekt beantwortet werden</li>
-						<li>Lösungen werden nach falscher Beantwortung nicht angezeigt</li>
-						<li>Unbegrenzte Verwendung von Hinweisen</li>
+						<li>{t("Quiz_Default_All_Correct")}</li>
+						<li>{t("Quiz_Default_No_Solutions")}</li>
+						<li>{t("Quiz_Default_Unlimited_Hints")}</li>
 					</ul>
 				) : (
 					<div className="flex flex-col gap-4 text-sm">
@@ -258,7 +260,7 @@ function QuizConfigForm() {
 								className="checkbox"
 							></input>
 							<label htmlFor="showSolutions" className="select-none">
-								Lösungen anzeigen
+								{t("Quiz_Show_Solutions")}
 							</label>
 						</span>
 
@@ -270,20 +272,20 @@ function QuizConfigForm() {
 								className="checkbox"
 							></input>
 							<label htmlFor="hintsEnabled" className="select-none">
-								Hinweise aktivieren
+								{t("Quiz_Enable_Hints")}
 							</label>
 						</span>
 
-						<LabeledField label="Max. erlaubte Hinweise">
+						<LabeledField label={t("Quiz_Max_Hints_Label")}>
 							<input
 								{...register("quiz.config.hints.maxHints")}
 								type={"number"}
 								className="textfield w-fit"
-								placeholder="z. B. 2"
+								placeholder={t("Quiz_Number_Example")}
 							/>
 						</LabeledField>
 
-						<LabeledField label="Max. erlaubte falsche Antworten">
+						<LabeledField label={t("Quiz_Max_Wrong_Answers_Label")}>
 							<input
 								{...register("quiz.config.maxErrors")}
 								type={"number"}
@@ -309,9 +311,10 @@ function BaseQuestionForm({
 	control: Control<QuizForm, unknown>;
 	children: React.ReactNode;
 }) {
+	const { t } = useTranslation("feature-teaching");
 	return (
 		<div className="flex flex-col gap-6">
-			<h5 className="text-2xl font-semibold tracking-tight">Aufgabe</h5>
+			<h5 className="text-2xl font-semibold tracking-tight">{t("Quiz_Question_Title")}</h5>
 			<Controller
 				key={currentQuestion.questionId}
 				control={control}
@@ -333,6 +336,7 @@ function BaseQuestionForm({
 }
 
 function HintForm({ questionIndex }: { questionIndex: number }) {
+	const { t } = useTranslation("feature-teaching");
 	const { control } = useFormContext<QuizForm>();
 
 	const {
@@ -352,7 +356,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 	}
 
 	function removeHint(hintIndex: number) {
-		const confirmed = window.confirm("Hinweis entfernen?");
+		const confirmed = window.confirm(t("Quiz_Remove_Hint_Confirm"));
 		if (confirmed) {
 			remove(hintIndex);
 		}
@@ -361,19 +365,18 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 	return (
 		<section className="flex flex-col gap-4 mb-8">
 			<div className="flex items-center gap-4">
-				<h5 className="text-2xl font-semibold tracking-tight">Hinweise</h5>
+				<h5 className="text-2xl font-semibold tracking-tight">{t("Quiz_Hints_Title")}</h5>
 
 				<IconOnlyButton
 					icon={<PlusIcon className="h-5 w-5" />}
 					className="btn-primary"
 					onClick={addHint}
-					title={"Hinweis hinzufügen"}
+					title={t("Quiz_Add_Hint")}
 				/>
 			</div>
 
 			<p className="text-sm text-c-text-muted">
-				Studierende können die angegebenen Hinweise nutzen, wenn sie Probleme beim
-				Beantworten einer Frage haben.
+				{t("Quiz_Hints_Description")}
 			</p>
 
 			{hints.map((hint, hintIndex) => (
@@ -390,7 +393,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 									<MarkdownField
 										content={field.value}
 										setValue={field.onChange}
-										placeholder="Hinweis eingeben..."
+										placeholder={t("Quiz_Hint_Placeholder")}
 										inline={true}
 									/>
 								)}
@@ -401,7 +404,7 @@ function HintForm({ questionIndex }: { questionIndex: number }) {
 							icon={<TrashIcon className="h-4 w-4" />}
 							className="btn-danger"
 							onClick={() => removeHint(hintIndex)}
-							title={"Hinweis entfernen"}
+							title={t("Quiz_Remove_Hint")}
 						/>
 					</div>
 				</div>

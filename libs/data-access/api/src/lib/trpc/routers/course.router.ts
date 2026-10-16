@@ -378,8 +378,7 @@ export const courseRouter = t.router({
 	updateDefaultPath: authProcedure
 		.input(
 			z.object({
-				slug: z.string(),
-				knowledge: z.array(z.string())
+				slug: z.string()
 			})
 		)
 		.mutation(async ({ input }) => {
@@ -678,7 +677,9 @@ export const courseRouter = t.router({
 					where: { courseId: input.courseId },
 					select: {
 						version: true,
+						type: true,
 						content: true,
+						context: true,
 						requires: true,
 						provides: true
 					}
@@ -693,18 +694,22 @@ export const courseRouter = t.router({
 
 				// If [skills | lessons] have changed => increment course version
 				// Previous [skills | lessons]
-				const lessonIds = (prevCourse?.content as CourseContent).flatMap(chapter =>
-					chapter.content.map(lesson => lesson.lessonId)
-				);
+				const lessonIds =
+					prevCourse?.type === CourseType.DYNAMIC && Array.isArray(prevCourse.context)
+						? prevCourse.context.filter(
+								(lessonId): lessonId is string => typeof lessonId === "string"
+							)
+						: extractLessonIds(parseCourseContent(prevCourse?.content ?? []));
 				const skillIds = [
 					...(prevCourse?.requires ?? []),
 					...(prevCourse?.provides ?? [])
 				].flatMap(requirement => requirement.id);
 
 				// Current [skills | lessons]
-				const newLessonIds = (courseForDb.content as CourseContent).flatMap(chapter =>
-					chapter.content.map(lesson => lesson.lessonId)
-				);
+				const newLessonIds =
+					input.course.type === CourseType.DYNAMIC
+						? (input.course.context ?? [])
+						: extractLessonIds(input.course.content);
 				const newSkillIds = [...input.course.requires, ...input.course.provides].map(
 					requirement => requirement.id
 				);

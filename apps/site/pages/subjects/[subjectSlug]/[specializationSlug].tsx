@@ -31,15 +31,13 @@ export const getServerSideProps = withTranslations<SpecializationPageProps>(
 
 		const session = await getServerSession(req, res, authOptions);
 
-		const username = session?.user?.name ?? null;
-
 		const specializationSlug = params?.specializationSlug;
 
 		if (typeof specializationSlug !== "string") {
 			throw new Error("[specializationSlug] must be a string.");
 		}
 
-		const specialization = await getSpecialization(specializationSlug, username);
+		const specialization = await getSpecialization(specializationSlug);
 		if (!specialization) {
 			return { notFound: true };
 		}
@@ -61,7 +59,7 @@ export const getServerSideProps = withTranslations<SpecializationPageProps>(
 	}
 );
 
-async function getSpecialization(specializationSlug: string, username: string | null) {
+async function getSpecialization(specializationSlug: string) {
 	return await database.specialization.findUnique({
 		where: { slug: specializationSlug },
 		select: {
@@ -77,14 +75,6 @@ async function getSpecialization(specializationSlug: string, username: string | 
 				select: {
 					version: true,
 					type: true,
-					// TODO unused
-					// generatedLessonPaths: username
-					// 	? {
-					// 			where: {
-					// 				username
-					// 			}
-					// 		}
-					// 	: undefined,
 					slug: true,
 					imgUrl: true,
 					title: true,

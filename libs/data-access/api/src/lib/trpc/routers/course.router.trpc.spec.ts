@@ -5,7 +5,7 @@ import { t } from "../trpc";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { TRPCError } from "@trpc/server";
 import { getCourseResource } from "../../permissions/course.utils";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel, CourseType } from "@prisma/client";
 import {
 	canCreate,
 	canDelete,
@@ -46,9 +46,27 @@ jest.mock("../../permissions/permission.service", () => ({
 	canDelete: jest.fn(),
 	canEdit: jest.fn(),
 	canProvideSkills: jest.fn().mockResolvedValue(true),
+	hasEffectiveResourceAccessBatch: jest.fn().mockResolvedValue(true),
 	preparePermissionsForCreate: jest.fn(),
 	prepareResourceUpdate: jest.fn()
 }));
+
+// // Avoids starting event queue processing during tests, which leads to unterminated / tests
+jest.mock("@self-learning/worker-api", () => {
+	const { graphResponseSchema } = jest.requireActual(
+		"../../../../../worker/src/lib/types/job-definitions"
+	);
+
+	return {
+		__esModule: true,
+		graphResponseSchema,
+		workerServiceClient: {
+			submitJob: { mutate: jest.fn().mockResolvedValue(undefined) },
+			jobQueue: { subscribe: jest.fn() }
+		},
+		subscribeToJobEvents: jest.fn()
+	};
+});
 
 function prepare(user: Partial<UserFromSession>) {
 	const ctx: Context & { user: UserFromSession } = {
@@ -81,7 +99,7 @@ describe("tRPC API of Course Router", () => {
 			title: "Test Course",
 			subtitle: "A course for testing",
 			description: "This is a test course",
-			type: "STATIC",
+			type: CourseType.STATIC,
 			version: 1,
 			imgUrl: null,
 			provides: [],

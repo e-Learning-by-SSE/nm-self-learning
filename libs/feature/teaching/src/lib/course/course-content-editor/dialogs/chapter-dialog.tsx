@@ -2,6 +2,7 @@ import { CourseChapter } from "@self-learning/types";
 import { Dialog, DialogActions } from "@self-learning/ui/common";
 import { LabeledField } from "@self-learning/ui/forms";
 import { useState } from "react";
+import { useTranslation } from "next-i18next";
 
 export function ChapterDialog({
 	onClose,
@@ -10,14 +11,18 @@ export function ChapterDialog({
 	chapter?: CourseChapter;
 	onClose: (result?: CourseChapter) => void;
 }) {
+	const { t } = useTranslation("feature-teaching");
 	const [title, setTitle] = useState(chapter?.title ?? "");
 	const [description, setDescription] = useState(chapter?.description ?? "");
 	const [content] = useState(chapter?.content ?? []);
 
 	return (
-		<Dialog title={chapter ? "Kapitel bearbeiten" : "Kapitel erstellen"} onClose={onClose}>
+		<Dialog
+			title={t(chapter ? "Course_Content_Edit_Chapter_Title" : "Course_Content_Create_Chapter")}
+			onClose={onClose}
+		>
 			<div className="flex flex-col gap-4">
-				<LabeledField label="Titel">
+				<LabeledField label={t("common:Title")}>
 					<input
 						type="text"
 						className="textfield"
@@ -31,7 +36,7 @@ export function ChapterDialog({
 					/>
 				</LabeledField>
 
-				<LabeledField label="Beschreibung" optional={true}>
+				<LabeledField label={t("common:Description")} optional={true}>
 					<textarea
 						className="textfield"
 						rows={5}
@@ -53,7 +58,7 @@ export function ChapterDialog({
 					disabled={title.length === 0}
 					onClick={() => onClose({ title, description, content })}
 				>
-					{chapter ? "Speichern" : "Erstellen"}
+					{t(chapter ? "common:save" : "common:create")}
 				</button>
 			</DialogActions>
 		</Dialog>

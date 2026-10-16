@@ -25,6 +25,7 @@ import {
 import { IconOnlyButton, OnDialogCloseFn, SectionHeader } from "@self-learning/ui/common";
 import { useState } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
+import { useTranslation } from "next-i18next";
 import { CourseFormModel } from "../course-form-model";
 import { ChapterDialog } from "./dialogs/chapter-dialog";
 import { LessonEditorDialogWithGuard } from "./dialogs/lesson-editor-dialog";
@@ -50,6 +51,7 @@ type UseCourseContentForm = ReturnType<typeof useCourseContentForm>;
  * )
  */
 export function CourseContentForm() {
+	const { t } = useTranslation("feature-teaching");
 	const { control } = useFormContext<CourseFormModel>();
 	const courseId = useWatch({ control, name: "courseId" }) ?? undefined;
 	const {
@@ -74,7 +76,7 @@ export function CourseContentForm() {
 
 	function onRemoveChapter(index: number) {
 		const confirmed = window.confirm(
-			`Kapitel "${content[index].title}" wirklich entfernen? Hinweis: Enthaltene Lerneinheiten werden nicht gelöscht.`
+			t("Course_Content_Remove_Chapter_Confirm", { title: content[index].title })
 		);
 
 		if (confirmed) {
@@ -86,9 +88,7 @@ export function CourseContentForm() {
 		chapterIndex,
 		lessonId: string
 	) => {
-		const confirmed = window.confirm(
-			"Lerneinheit wirklich entfernen? Hinweis: Die Lerneinheit wird nur aus dem Kapitel entfernt und nicht gelöscht."
-		);
+		const confirmed = window.confirm(t("Course_Content_Remove_Lesson_Confirm"));
 
 		if (confirmed) {
 			removeLesson(chapterIndex, lessonId);
@@ -97,7 +97,10 @@ export function CourseContentForm() {
 
 	return (
 		<section>
-			<SectionHeader title="Inhalt" subtitle="Der Inhalt des Kurses." />
+			<SectionHeader
+				title={t("Course_Content_Title")}
+				subtitle={t("Course_Content_Section_Subtitle")}
+			/>
 
 			<ul className="flex flex-col gap-12">
 				{content.map((chapter, index) => (
@@ -121,7 +124,7 @@ export function CourseContentForm() {
 				className="btn-primary mt-4"
 				onClick={() => setOpenNewChapterDialog(true)}
 			>
-				<span>Kapitel erstellen</span>
+				<span>{t("Course_Content_Create_Chapter")}</span>
 			</button>
 
 			{openNewChapterDialog && <ChapterDialog onClose={handleAddChapterDialogClose} />}
@@ -141,6 +144,7 @@ export function LessonNode({
 	moveLesson: UseCourseContentForm["moveLesson"];
 	onRemove: () => void;
 }) {
+	const { t } = useTranslation("feature-teaching");
 	const { data } = trpc.lesson.findOne.useQuery({ lessonId: lesson.lessonId });
 	const [lessonEditorDialogOpen, setLessonEditorDialogOpen] = useState(false);
 
@@ -150,7 +154,7 @@ export function LessonNode({
 				<div className="flex gap-4">
 					<button
 						type="button"
-						title="Nach oben"
+						title={t("Course_Content_Move_Up")}
 						className="rounded p-1 hover:bg-c-neutral"
 						onClick={() => moveLesson(lesson.lessonId, "up")}
 					>
@@ -158,7 +162,7 @@ export function LessonNode({
 					</button>
 					<button
 						type="button"
-						title="Nach unten"
+						title={t("Course_Content_Move_Down")}
 						className="rounded p-1 hover:bg-c-neutral"
 						onClick={() => moveLesson(lesson.lessonId, "down")}
 					>
@@ -171,7 +175,7 @@ export function LessonNode({
 					className="flex items-center whitespace-nowrap hover:text-c-primary"
 					onClick={() => setLessonEditorDialogOpen(true)}
 				>
-					<span className="text-sm">{data ? data.title : "Loading..."}</span>
+					<span className="text-sm">{data ? data.title : t("Course_Content_Loading")}</span>
 
 					{lessonEditorDialogOpen && (
 						<EditExistingLessonDialog
@@ -186,14 +190,14 @@ export function LessonNode({
 			<div className="flex gap-4">
 				{(data?.meta as LessonMeta)?.hasQuiz && (
 					<span className="flex items-center justify-center rounded-full bg-c-primary px-3 py-1 text-xs font-medium text-white min-h-[2rem]">
-						Lernkontrolle
+						{t("Course_Content_Quiz_Badge")}
 					</span>
 				)}
 				<IconOnlyButton
 					onClick={onRemove}
 					icon={<LinkSlashIcon className="h-5 w-5" />}
 					className="btn-x-mark"
-					title="Entfernen"
+					title={t("Course_Content_Remove_Lesson")}
 				/>
 			</div>
 		</span>
@@ -221,6 +225,7 @@ function ChapterNode({
 	onRemove: () => void;
 	removeLesson: UseCourseContentForm["removeLesson"];
 }) {
+	const { t } = useTranslation("feature-teaching");
 	const { mutateAsync: createLessonAsync } = trpc.lesson.create.useMutation();
 	const [lessonSelectorOpen, setLessonSelectorOpen] = useState(false);
 	const [createLessonDialogOpen, setCreateLessonDialogOpen] = useState(false);
@@ -249,6 +254,7 @@ function ChapterNode({
 
 	async function handleCreateDialogClose(lesson?: LessonFormModel) {
 		const createdLesson = await onLessonCreatorSubmit(
+			t,
 			() => {
 				setCreateLessonDialogOpen(false);
 			},
@@ -274,22 +280,22 @@ function ChapterNode({
 				<div className="flex items-center gap-2">
 					{/* Chapter-Management Icons */}
 					<IconOnlyButton
-						title="Nach oben"
+						title={t("Course_Content_Move_Up")}
 						icon={<ArrowUpIcon className="h-4 w-4" />}
 						onClick={() => moveChapter(index, "up")}
 					/>
 					<IconOnlyButton
-						title="Nach unten"
+						title={t("Course_Content_Move_Down")}
 						icon={<ArrowDownIcon className="h-4 w-4" />}
 						onClick={() => moveChapter(index, "down")}
 					/>
 					<IconOnlyButton
-						title="Beschreibung bearbeiten"
+						title={t("Course_Content_Edit_Chapter")}
 						icon={<PencilIcon className="h-4 w-4" />}
 						onClick={() => setEditChapterDialogOpen(true)}
 					/>
 					<IconOnlyButton
-						title="Kapitel entfernen"
+						title={t("Course_Content_Remove_Chapter")}
 						icon={<TrashIcon className="h-4 w-4 text-c-danger" />}
 						className="hover:bg-c-danger-subtle"
 						onClick={onRemove}
@@ -335,7 +341,7 @@ function ChapterNode({
 							onClick={() => setCreateLessonDialogOpen(true)}
 						>
 							<PlusIcon className="icon" />
-							<span>Lerneinheit erstellen</span>
+							<span>{t("Create_Lesson")}</span>
 						</button>
 						<button
 							type="button"
@@ -343,7 +349,7 @@ function ChapterNode({
 							onClick={() => setLessonSelectorOpen(true)}
 						>
 							<LinkIcon className="icon" />
-							<span>Lerneinheit verknüpfen</span>
+							<span>{t("Course_Content_Link_Lesson")}</span>
 						</button>
 					</div>
 				</>
@@ -375,11 +381,13 @@ function EditExistingLessonDialog({
 	courseId?: string;
 	setLessonEditorDialogOpen: (value: boolean) => void;
 }) {
+	const { t } = useTranslation("feature-teaching");
 	const { data } = trpc.lesson.findOneAllProps.useQuery({ lessonId });
 	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
 
 	const handleEditDialogClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
 		await onLessonEditorSubmit(
+			t,
 			() => {
 				setLessonEditorDialogOpen(false);
 			},

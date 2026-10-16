@@ -101,6 +101,7 @@ model Course {
     // default course content path (as if student has no skills from `provides` set)
     content              Json
     meta                 Json
+    context              Json?                 // Optional array of lessonIds
     //
     createdAt            DateTime              @default(now())
     updatedAt            DateTime              @updatedAt

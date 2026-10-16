@@ -22,6 +22,7 @@ export const courseFormSchema = z
 		version: z.number().int().nullable(),
 		authors: authorsRelationSchema,
 		content: courseContentSchema,
+		context: z.array(z.string()).nullable().optional(),
 		specializationId: z.string().nullable().optional(),
 		permissions: ResourcePermissionsFormSchema
 	})
@@ -47,7 +48,8 @@ export function mapCourseFormToInsert(
 		content,
 		subjectId,
 		authors,
-		version
+		version,
+		context
 	} = course;
 
 	const courseForDb: Prisma.CourseCreateInput = {
@@ -56,7 +58,8 @@ export function mapCourseFormToInsert(
 		slug,
 		title,
 		subtitle,
-		content: content,
+		content: type === CourseType.DYNAMIC ? [] : content,
+		context: type === CourseType.DYNAMIC ? (context ?? undefined) : undefined,
 		version: version ?? 1,
 		imgUrl: stringOrNull(imgUrl),
 		description: stringOrNull(description),
@@ -74,8 +77,19 @@ export function mapCourseFormToUpdate(
 	courseId: string,
 	permissions: PermissionsForUpdate
 ): Prisma.CourseUpdateInput {
-	const { title, slug, subtitle, description, imgUrl, content, subjectId, authors, version } =
-		course;
+	const {
+		type,
+		title,
+		slug,
+		subtitle,
+		description,
+		imgUrl,
+		content,
+		context,
+		subjectId,
+		authors,
+		version
+	} = course;
 
 	// TODO cannot change course type
 	const courseForDb: Prisma.CourseUpdateInput = {
@@ -83,7 +97,8 @@ export function mapCourseFormToUpdate(
 		slug,
 		title,
 		subtitle,
-		content,
+		content: type === CourseType.DYNAMIC ? undefined : content,
+		context: type === CourseType.DYNAMIC ? (context ?? Prisma.DbNull) : undefined,
 		version: version ?? 1, // always overwrite? TODO
 		imgUrl: stringOrNull(imgUrl),
 		description: stringOrNull(description),

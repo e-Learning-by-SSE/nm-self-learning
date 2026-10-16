@@ -195,13 +195,8 @@ export async function seedSkillbasedSeminars() {
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Nanomodules of Seminar-Example");
 
 	for (const course of dynCourses) {
-		const content: CourseContent = [
-			{
-				title: "",
-				description: "",
-				content: units.map(unit => ({ lessonId: unit.lessonId }))
-			}
-		];
+		const context = units.map(unit => unit.lessonId);
+		const content: CourseContent = [];
 		await prisma.course.create({
 			data: {
 				title: course.title,
@@ -211,6 +206,7 @@ export async function seedSkillbasedSeminars() {
 				slug: slugify(course.title),
 				type: "DYNAMIC",
 				content,
+				context,
 				meta: createCourseMeta({ content }),
 				requires: {
 					connect: course.requires?.map(id => ({ id })) || []

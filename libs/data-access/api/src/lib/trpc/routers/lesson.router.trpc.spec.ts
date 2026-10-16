@@ -38,6 +38,7 @@ jest.mock("../../permissions/permission.service", () => ({
 	canDelete: jest.fn(),
 	canCreate: jest.fn(),
 	canProvideSkills: jest.fn().mockResolvedValue(true),
+	hasEffectiveResourceAccessBatch: jest.fn().mockResolvedValue(true),
 	preparePermissionsForCreate: jest.fn(),
 	prepareResourceUpdate: jest.fn()
 }));
