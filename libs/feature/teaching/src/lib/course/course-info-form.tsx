@@ -51,12 +51,12 @@ export function CourseInfoForm({ isNew }: { isNew: boolean }) {
 		<>
 			<Form.SidebarSection>
 				<Form.SidebarSectionTitle
-					title="Daten"
-					subtitle="Informationen über diesen Kurs."
+					title={t("common:Information")}
+					subtitle={t("Course_Info_Section_Subtitle")}
 				/>
 
 				<div className="flex flex-col gap-4">
-					<LabeledField label="Titel" error={errors.title?.message}>
+					<LabeledField label={t("common:Title")} error={errors.title?.message}>
 						<input
 							{...register("title")}
 							type="text"
@@ -65,7 +65,7 @@ export function CourseInfoForm({ isNew }: { isNew: boolean }) {
 							onBlur={slugifyIfEmpty}
 						/>
 					</LabeledField>
-					<LabeledField label="Slug" error={errors.slug?.message}>
+					<LabeledField label={t("common:Slug")} error={errors.slug?.message}>
 						<InputWithButton
 							input={
 								<input
@@ -81,7 +81,7 @@ export function CourseInfoForm({ isNew }: { isNew: boolean }) {
 									className="btn-stroked"
 									onClick={slugifyField}
 								>
-									Generieren
+									{t("common:Generate")}
 								</button>
 							}
 						/>
@@ -143,19 +143,19 @@ export function CourseInfoForm({ isNew }: { isNew: boolean }) {
 					</LabeledField>
 
 					<LabeledField
-						label="Untertitel"
+						label={t("common:Subtitle")}
 						error={errors.subtitle?.message}
 						optional={true}
 					>
 						<textarea
 							{...register("subtitle")}
-							placeholder="1-2 Sätze über diesen Kurs."
+							placeholder={t("Course_Subtitle_Placeholder")}
 							className="h-full"
 						/>
 					</LabeledField>
 
 					<LabeledField
-						label={"Beschreibung"}
+						label={t("common:Description")}
 						error={errors.description?.message}
 						optional={true}
 					>
@@ -167,13 +167,17 @@ export function CourseInfoForm({ isNew }: { isNew: boolean }) {
 									content={field.value as string}
 									setValue={field.onChange}
 									inline={true}
-									placeholder={"1-2 Sätze welche diesen Kurs beschreibt."}
+									placeholder={t("Course_Description_Placeholder")}
 								></MarkdownField>
 							)}
 						></Controller>
 					</LabeledField>
 
-					<LabeledField label="Bild" error={errors.imgUrl?.message} optional={true}>
+					<LabeledField
+						label={t("common:Image")}
+						error={errors.imgUrl?.message}
+						optional={true}
+					>
 						<Controller
 							control={control}
 							name="imgUrl"
@@ -195,13 +199,13 @@ export function CourseInfoForm({ isNew }: { isNew: boolean }) {
 			</Form.SidebarSection>
 			{showGroupAccessEditor && (
 				<GroupAccessEditor
-					subtitle="Gruppen, die auf diesen Kurs zugreifen können"
+					subtitle={t("Course_Group_Access_Subtitle")}
 					doUseDefaultGroup={isNew}
 				/>
 			)}
 			<AuthorsForm
-				subtitle="Die Autoren dieses Kurses."
-				emptyString="Für diesen Kurs sind noch keine Autoren hinterlegt."
+				subtitle={t("Course_Authors_Subtitle")}
+				emptyString={t("Course_Authors_Empty")}
 			/>
 		</>
 	);

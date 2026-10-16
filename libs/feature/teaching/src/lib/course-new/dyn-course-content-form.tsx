@@ -19,6 +19,7 @@ import { useTranslation } from "next-i18next";
 type UseCourseContentForm = ReturnType<typeof useCourseContentForm>;
 
 export function DynCourseContentForm() {
+	const { t } = useTranslation("feature-teaching");
 	const { content, moveLesson, addLesson, removeLesson } = useCourseContentForm([
 		{ title: "", content: [] }
 	]);
@@ -29,9 +30,7 @@ export function DynCourseContentForm() {
 		chapterIndex,
 		lessonId: string
 	) => {
-		const confirmed = window.confirm(
-			"Lerneinheit wirklich entfernen? Hinweis: Die Lerneinheit wird nur aus dem Kapitel entfernt und nicht gelöscht."
-		);
+		const confirmed = window.confirm(t("Course_Content_Remove_Lesson_Confirm"));
 
 		if (confirmed) {
 			removeLesson(chapterIndex, lessonId);
@@ -40,12 +39,15 @@ export function DynCourseContentForm() {
 
 	if (!courseId) {
 		console.error("CoursePreview used for course without valid courseId");
-		return <Alert type={{ severity: "ERROR", message: "This course could not be found." }} />;
+		return <Alert type={{ severity: "ERROR", message: t("Course_Preview_Course_Not_Found") }} />;
 	}
 
 	return (
 		<section>
-			<SectionHeader title="Inhalt" subtitle="Der Inhalt des Kurses." />
+			<SectionHeader
+				title={t("Course_Content_Title")}
+				subtitle={t("Course_Content_Section_Subtitle")}
+			/>
 			<div className="mb-4" />
 
 			<div>
@@ -132,7 +134,7 @@ function SingleChapterNode({
 					onClick={() => setCreateLessonDialogOpen(true)}
 				>
 					<PlusIcon className="icon" />
-					<span>Lerneinheit erstellen</span>
+					<span>{t("Create_Lesson")}</span>
 				</button>
 				<button
 					type="button"
@@ -140,7 +142,7 @@ function SingleChapterNode({
 					onClick={() => setLessonSelectorOpen(true)}
 				>
 					<LinkIcon className="icon" />
-					<span>Lerneinheit verknüpfen</span>
+					<span>{t("Course_Content_Link_Lesson")}</span>
 				</button>
 			</div>
 
