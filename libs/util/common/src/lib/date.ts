@@ -1,6 +1,7 @@
 import { differenceInDays, formatDistanceToNow, intervalToDuration, startOfDay } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 import { de, enUS } from "date-fns/locale";
+import type { TFunction } from "i18next";
 
 export const DISPLAY_TIMEZONE = "Europe/Berlin";
 
@@ -40,43 +41,27 @@ export function formatDateDistanceToNow(date: Date | string | number, locale: "d
 }
 
 /**
- * Preciece time interval formatting into a human readable string.
+ * Formats an interval down to whole minutes using the supplied common-namespace translator.
+ * Unit plurals, numbers and list conjunctions follow the translator's active language.
  * Do not use for long time intervals (years, months) as it becomes unreadable.
  * @param ms
- * @param locale
+ * @param t - A translator bound to the common namespace; use useTimeIntervalFormatter in React.
  * @returns
  */
-export function formatTimeIntervalToString(ms: number, locale: "de" | "en" = "de"): string {
+export function formatTimeIntervalToString(ms: number, t: TFunction<"common">): string {
 	const duration = intervalToDuration({ start: 0, end: ms });
+	const units = [
+		["years", "Duration_Year"],
+		["months", "Duration_Month"],
+		["days", "Duration_Day"],
+		["hours", "Duration_Hour"],
+		["minutes", "Duration_Minute"]
+	] as const;
+	const parts = units
+		.filter(([unit]) => (duration[unit] ?? 0) > 0)
+		.map(([unit, key]) => t(key, { count: duration[unit] }));
 
-	const { years, months, days, hours, minutes } = duration;
-
-	let result = "";
-
-	if (years && years > 0) {
-		result += `${years} ${years > 1 ? "Jahre" : "Jahr"}`;
-	}
-
-	if (months && months > 0) {
-		if (result) result += " und ";
-		result += `${months} ${months > 1 ? "Monate" : "Monat"}`;
-	}
-
-	if (days && days > 0) {
-		if (result) result += " und ";
-		result += `${days} ${days > 1 ? "Tage" : "Tag"}`;
-	}
-
-	if (hours && hours > 0) {
-		if (result) result += " und ";
-		result += `${hours} ${hours > 1 ? "Stunden" : "Stunde"}`;
-	}
-
-	if (minutes && minutes > 0) {
-		if (result) result += " und ";
-		result += `${minutes} ${minutes > 1 ? "Minuten" : "Minute"}`;
-	}
-	return result || "0 Minuten";
+	return parts.length ? t("Duration_List", { parts }) : t("Duration_Minute", { count: 0 });
 }
 
 export function getDifferenceInGermanDays(laterDate: Date, earlierDate: Date): number {

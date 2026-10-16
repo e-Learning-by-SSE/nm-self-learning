@@ -9,3 +9,5 @@ export * from "./lib/sse-client";
 export * from "./lib/matches";
 export * from "./lib/top-level-skills";
 export * from "./lib/video-subtitle/subtitle-converter";
+
+export const I18N_NAMESPACE = ["common"];

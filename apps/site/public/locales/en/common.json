@@ -13,6 +13,18 @@
     "IMPRINT_URL": "https://www.uni-hildesheim.de/en/impressum/",
     "IMPRINT_Label": "Imprint",
 
+	"Duration_Year_one": "{{count, number}} year",
+	"Duration_Year_other": "{{count, number}} years",
+	"Duration_Month_one": "{{count, number}} month",
+	"Duration_Month_other": "{{count, number}} months",
+	"Duration_Day_one": "{{count, number}} day",
+	"Duration_Day_other": "{{count, number}} days",
+	"Duration_Hour_one": "{{count, number}} hour",
+	"Duration_Hour_other": "{{count, number}} hours",
+	"Duration_Minute_one": "{{count, number}} minute",
+	"Duration_Minute_other": "{{count, number}} minutes",
+	"Duration_List": "{{parts, list}}",
+
 	"Author": "Author",
 	"Author_other": "Authors",
 	"Admin": "Admin",

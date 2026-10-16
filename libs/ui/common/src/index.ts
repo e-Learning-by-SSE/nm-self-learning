@@ -1,4 +1,5 @@
 import * as _DropdownDialog from "./lib/dialog/dropdown-dialog";
+import { I18N_NAMESPACE as UTIL_COMMON_I18N_NAMESPACE } from "@self-learning/util/common";
 
 export const DropdownDialog = {
 	..._DropdownDialog
@@ -50,6 +51,7 @@ export * from "./lib/dropdown-menu/dropdown-menu";
 export * from "./lib/dropdown-menu/combobox-menu";
 export * from "./lib/transition/minor-scale-fade-in";
 export * from "./lib/i18n/trans";
+export * from "./lib/i18n/use-time-interval-formatter";
 export * from "./lib/help/online-help-link";
 
-export const I18N_NAMESPACE = ["common", "features-ui-commons"];
+export const I18N_NAMESPACE = [...UTIL_COMMON_I18N_NAMESPACE, "features-ui-commons"];
