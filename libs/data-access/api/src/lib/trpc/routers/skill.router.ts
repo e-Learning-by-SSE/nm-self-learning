@@ -227,7 +227,8 @@ export const skillRouter = t.router({
 	updateSkill: authorProcedure
 		.input(
 			z.object({
-				skill: skillEditSchema
+				// Permissions are optional: omitted means unchanged
+				skill: skillEditSchema.partial({ permissions: true })
 			})
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -255,7 +256,7 @@ export const skillRouter = t.router({
 			const permissions = await prepareResourceUpdate(
 				ctx.user,
 				{ skillId: skill.id },
-				formPermissions
+				formPermissions ?? toResourcePermissionsForm(oldSkill.permissions)
 			);
 			return updateSkill(skill, permissions);
 		}),

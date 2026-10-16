@@ -6,6 +6,7 @@ import {
 	DialogHandler,
 	dispatchDialog,
 	freeDialog,
+	showToast,
 	Table,
 	TableHeaderColumn
 } from "@self-learning/ui/common";
@@ -22,7 +23,7 @@ import { AddSkillDialog, SkillDialogResult } from "../skill-dialog/add-skill-dia
 import { trpc } from "@self-learning/api-client";
 import { DragDropContext, OnDragEndResponder } from "@hello-pangea/dnd";
 import { isHotkeyPressed } from "react-hotkeys-hook";
-import { SkillFormModel, toResourcePermissionsForm } from "@self-learning/types";
+import { SkillFormModel } from "@self-learning/types";
 
 export function SkillFolderTable({
 	skillDisplayData,
@@ -57,7 +58,6 @@ export function SkillFolderTable({
 	const [openNewSkillDialog, setOpenNewSkillDialog] = useState(false);
 	const { mutateAsync: createNewSkill } = trpc.skill.createSkill.useMutation();
 	const { mutateAsync: updateSkillParent } = trpc.skill.updateSkill.useMutation();
-	const utils = trpc.useUtils();
 
 	async function handleAddSkillDialogClose(result?: SkillDialogResult) {
 		if (result) {
@@ -106,18 +106,10 @@ export function SkillFolderTable({
 
 		sourceSkill.parents.push(destinationSkill.id);
 
-		const updateSkill = async () => {
-			// TODO can I get permission without fetch?
-			const current = await utils.skill.getSkillById.fetch({ skillId: sourceSkill.id });
-			if (!current) return;
-			await updateSkillParent({
-				skill: {
-					...sourceSkill,
-					permissions: toResourcePermissionsForm(current.permissions)
-				}
-			});
-		};
-		updateSkill();
+		// Permissions are omitted, the server keeps them unchanged
+		updateSkillParent({ skill: sourceSkill }).catch((error: Error) =>
+			showToast({ type: "error", title: t("Skills_Save_Failed"), subtitle: error.message })
+		);
 	};
 
 	const onDragEnd: OnDragEndResponder = result => {

@@ -39,14 +39,16 @@ export function GroupAccessEditor({ subtitle, isNew }: GroupAccessEditorProps) {
 	const { control } = useFormContext<PermissionsFormValues>();
 	const { defaultValues } = useFormState({ control });
 
+	const perms = (defaultValues?.permissions ?? []) as ResourcePermissionsFormType;
+
 	return (
 		<ResourceGuard
 			requiredAccess={AccessLevel.FULL}
 			// undefined = always allow
 			permittedGroups={
-				isNew
+				isNew || !perms.length // illegal state - permissions are empty for existing resource
 					? undefined
-					: ((defaultValues?.permissions ?? []) as ResourcePermissionsFormType)
+					: perms
 			}
 			fallback="hidden"
 		>

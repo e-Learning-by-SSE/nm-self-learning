@@ -2,7 +2,7 @@ import { useTranslation } from "next-i18next";
 import { useEffect, useState } from "react";
 import { Form, LabeledField } from "@self-learning/ui/forms";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormProvider, useForm, useFormContext } from "react-hook-form";
+import { FieldErrors, FormProvider, useForm, useFormContext } from "react-hook-form";
 import { z } from "zod";
 import { skillEditSchema, SkillFormModel, toResourcePermissionsForm } from "@self-learning/types";
 import { trpc } from "@self-learning/api-client";
@@ -38,13 +38,18 @@ export function SkillInfoForm({
 	handleSelection: SkillSelectHandler;
 }) {
 	const { t } = useTranslation(["feature-teaching", "common"]);
-	const { mutateAsync: updateSkill } = trpc.skill.updateSkill.useMutation();
+	// mutate (not mutateAsync): errors go to onError instead of an unhandled rejection
+	const { mutate: updateSkill } = trpc.skill.updateSkill.useMutation({
+		onSuccess: () => showToast({ type: "success", title: t("Skills_Saved"), subtitle: "" }),
+		onError: error =>
+			showToast({ type: "error", title: t("Skills_Save_Failed"), subtitle: error.message })
+	});
 	const { data: dbSkill } = trpc.skill.getSkillById.useQuery({
 		skillId: skill.id
 	});
 
-	const onSubmit = async (data: SkillEditForm) => {
-		await updateSkill({
+	const onSubmit = (data: SkillEditForm) =>
+		updateSkill({
 			skill: {
 				...data,
 				id: skill.id,
@@ -54,12 +59,16 @@ export function SkillInfoForm({
 			}
 		});
 
+	// Any validation error is shown as toast, so a failed submit is never silent
+	const onInvalid = (invalid: FieldErrors<SkillEditForm>) =>
 		showToast({
-			type: "success",
-			title: t("Skills_Saved"),
-			subtitle: ""
+			type: "error",
+			title: t("Skills_Save_Failed"),
+			subtitle: Object.values(invalid)
+				.map(error => error?.message)
+				.filter(Boolean)
+				.join(", ")
 		});
-	};
 
 	const form = useForm<SkillEditForm>({
 		defaultValues: { ...skill, permissions: [] },
@@ -78,7 +87,10 @@ export function SkillInfoForm({
 
 	return (
 		<FormProvider {...form}>
-			<form className="flex flex-col justify-between" onSubmit={form.handleSubmit(onSubmit)}>
+			<form
+				className="flex flex-col justify-between"
+				onSubmit={form.handleSubmit(onSubmit, onInvalid)}
+			>
 				<Form.SidebarSection>
 					<div className="flex justify-between">
 						<Form.SidebarSectionTitle
@@ -103,10 +115,12 @@ export function SkillInfoForm({
 						>
 							<textarea {...form.register("description")} />
 						</LabeledField>
-						<GroupAccessEditor
-							subtitle={t("Skills_Group_Access_Subtitle")}
-							isNew={false}
-						/>
+						{dbSkill && (
+							<GroupAccessEditor
+								subtitle={t("Skills_Group_Access_Subtitle")}
+								isNew={false}
+							/>
+						)}
 						<SkillToSkillDepsInfo
 							parents={dbSkill?.parents ?? []}
 							children={dbSkill?.children ?? []}
