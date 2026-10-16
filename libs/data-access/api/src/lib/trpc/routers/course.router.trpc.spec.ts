@@ -51,7 +51,7 @@ jest.mock("../../permissions/permission.service", () => ({
 	prepareResourceUpdate: jest.fn()
 }));
 
-// // Avoids starting event queue processing during tests, which leads to unterminated / tests
+// Avoids starting event queue processing during tests, which leads to unterminated / tests
 jest.mock("@self-learning/worker-api", () => {
 	const { graphResponseSchema } = jest.requireActual(
 		"../../../../../worker/src/lib/types/job-definitions"
