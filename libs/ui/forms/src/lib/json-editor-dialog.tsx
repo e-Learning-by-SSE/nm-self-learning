@@ -42,7 +42,7 @@ export function JsonEditorDialog<T>({
 			}
 
 			onClose(parsedJson);
-		} catch (e) {
+		} catch {
 			setError("JSON-Format ist ungültig.");
 		}
 	}
