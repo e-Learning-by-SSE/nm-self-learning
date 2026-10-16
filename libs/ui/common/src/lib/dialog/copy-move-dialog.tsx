@@ -1,5 +1,5 @@
-import { Dialog, DialogActions } from "@self-learning/ui/common";
-import { CenteredContainer } from "@self-learning/ui/layouts";
+import { Dialog, DialogActions } from "./dialog";
+import { CenteredContainer } from "../container/centered-container";
 import React, { useState } from "react";
 
 export type CopyMoveButtonActions = "COPY" | "MOVE" | "CANCEL";
