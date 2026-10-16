@@ -14,6 +14,7 @@ import { useRouter } from "next/router";
 import { collectErrorMessages } from "../lesson/lesson-editor";
 import { DynCourseContentForm } from "./dyn-course-content-form";
 import { CoursePreview } from "./preview/course-preview";
+import { trpc } from "@self-learning/api-client";
 
 export function CourseEditor({
 	course,
@@ -29,6 +30,7 @@ export function CourseEditor({
 }) {
 	const { t } = useTranslation("feature-teaching");
 	const router = useRouter();
+	const { mutate: triggerDefaultPath } = trpc.course.updateDefaultPath.useMutation();
 	const form = useForm({ defaultValues: course, resolver: zodResolver(courseFormSchema) });
 	const courseId = useWatch({ control: form.control, name: "courseId" });
 	const type = useWatch({ control: form.control, name: "type" });
@@ -44,10 +46,26 @@ export function CourseEditor({
 			: t("Skills_Lesson_Dynamic_Course")
 		: saveFirstTooltip;
 
-	async function handleSave(data: CourseFormModel) {
-		console.log("[CourseEditor.handleSave]: Saving course", data);
-		const saved = await onSubmit(data);
-		form.reset({ ...data, courseId: saved.courseId, slug: saved.slug, version: saved.version });
+	async function handleSave(data: CourseFormModel, triggerPath = false) {
+		const courseToSave =
+			data.type === CourseType.DYNAMIC
+				? {
+						...data,
+						context: data.content.flatMap(chapter =>
+							chapter.content.map(lesson => lesson.lessonId)
+						)
+					}
+				: data;
+		const saved = await onSubmit(courseToSave);
+		if (triggerPath && data.type === CourseType.DYNAMIC) {
+			triggerDefaultPath({ slug: saved.slug });
+		}
+		form.reset({
+			...courseToSave,
+			courseId: saved.courseId,
+			slug: saved.slug,
+			version: saved.version
+		});
 	}
 
 	function onClose() {
@@ -76,7 +94,7 @@ export function CourseEditor({
 				onSubmit={e => {
 					// lesson editor submit also triggers this
 					if ((e.target as HTMLFormElement).id !== "courseform") return;
-					form.handleSubmit(handleSave, showCourseValidationErrors)(e);
+					form.handleSubmit(data => handleSave(data, true), showCourseValidationErrors)(e);
 				}}
 				className="w-full"
 			>

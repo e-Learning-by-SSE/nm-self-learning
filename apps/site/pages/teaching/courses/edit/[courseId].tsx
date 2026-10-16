@@ -107,9 +107,21 @@ export const getServerSideProps = withTranslations(
 			};
 		}
 
-		const content = course.content as CourseContent;
+		const context =
+			course.type === "DYNAMIC"
+				? Array.isArray(course.context)
+					? course.context.filter(
+							(lessonId): lessonId is string => typeof lessonId === "string"
+						)
+					: extractLessonIds(course.content as CourseContent)
+				: [];
+		const content =
+			course.type === "DYNAMIC"
+				? [{ title: "", content: context.map(lessonId => ({ lessonId })) }]
+				: (course.content as CourseContent);
 
-		const lessonIds = extractLessonIds(content);
+		const lessonIds =
+			course.type === "DYNAMIC" ? context : extractLessonIds(content);
 
 		const lessons = await database.lesson.findMany({
 			where: { lessonId: { in: lessonIds } },
@@ -139,6 +151,7 @@ export const getServerSideProps = withTranslations(
 			subjectId: course.subject?.subjectId ?? null,
 			authors: course.authors.map(author => ({ username: author.username })),
 			content: content,
+			context: course.type === "DYNAMIC" ? context : null,
 			requires: requirements,
 			provides: teachingGoals,
 			permissions
