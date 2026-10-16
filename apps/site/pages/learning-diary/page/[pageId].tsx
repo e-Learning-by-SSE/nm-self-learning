@@ -54,7 +54,7 @@ export default function DiaryPageDetail({
 
 	return (
 		<div className="w-full py-4 sm:w-2/3 mx-auto">
-			<div className="mb-4 flex justify-center">
+			<div className="mb-4 flex justify-center xl:hidden">
 				<PageChanger key={diaryId} pages={pages} currentPageId={diaryId} />
 			</div>
 
