@@ -100,7 +100,11 @@ export function createLesson({
 		content: content,
 		lessonType: lessonType ?? LessonType.TRADITIONAL,
 		selfRegulatedQuestion: selfRegulatedQuestion,
-		quiz: { questions, config: null },
+		quiz: {
+			questions,
+			questionOrder: questions.map(question => question.questionId),
+			config: null
+		},
 		meta: {},
 		license: licenseId ? { connect: { licenseId: licenseId } } : undefined,
 		requires: requires ? { connect: requires.map(goalId => ({ id: goalId })) } : undefined,
