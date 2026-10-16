@@ -69,7 +69,10 @@ export function CourseEditor({
 	}
 
 	function onClose() {
-		if (form.formState.isDirty && !window.confirm("Ungespeicherte Änderungen verwerfen?")) {
+		if (
+			form.formState.isDirty &&
+			!window.confirm(t("Course_Editor_Discard_Changes_Confirm"))
+		) {
 			return;
 		}
 		router.back();
@@ -85,6 +88,33 @@ export function CourseEditor({
 			await handleSave(data);
 			setTab(index);
 		}, showCourseValidationErrors)();
+	}
+
+	function showCourseValidationErrors(errors: FieldErrors) {
+		const errorMsg = collectErrorMessages(errors)
+			.map(item => {
+				switch (item.field) {
+					case "title":
+						return t("Course_Validation_Title_Required");
+					case "slug":
+						return t("Course_Validation_Slug_Invalid");
+					case "subtitle":
+						return t("Course_Validation_Subtitle_Required");
+					case "permissions":
+						return t("Course_Validation_Permissions_Required");
+					default:
+						return t("Course_Validation_Field_Error", {
+							field: item.field,
+							message: item.message
+						});
+				}
+			})
+			.join("\n");
+		showToast({
+			type: "error",
+			title: t("Course_Validation_Error_Title"),
+			subtitle: errorMsg || t("Course_Validation_Default_Message")
+		});
 	}
 
 	return (
@@ -103,24 +133,24 @@ export function CourseEditor({
 					<div className="flex justify-between mb-8">
 						<div className="flex flex-col gap-2">
 							<span className="font-semibold text-2xl text-c-primary">
-								{isPersisted ? "Kurs bearbeiten" : "Kurs erstellen"}
+								{t(isPersisted ? "Edit_Course" : "Create_Course")}
 							</span>
 							<h1 className="text-4xl">{title}</h1>
 						</div>
 						<div className="pointer-events-auto">
-							<DialogActions abortLabel="Schließen" onClose={onClose}>
+							<DialogActions abortLabel={t("common:Close")} onClose={onClose}>
 								<OpenAsJsonButton form={form} validationSchema={courseFormSchema} />
 								<button type="submit" className="btn-primary pointer-events-auto">
-									{isPersisted ? "Speichern" : "Erstellen"}
+									{t(isPersisted ? "common:save" : "common:create")}
 								</button>
 							</DialogActions>
 						</div>
 					</div>
 					<Tabs selectedIndex={tab} onChange={onTabChange}>
-						<Tab>Grunddaten</Tab>
+						<Tab>{t("Course_Editor_Tab_Basic_Info")}</Tab>
 						<CourseEditorTab disabled={!isPersisted} tooltip={skillsTooltip}>
 							<span className="inline-flex items-center gap-1">
-								Skills
+								{t("Skills_Title")}
 								{isStatic && (
 									<i className="text-xs font-normal">
 										{t("Skills_Tab_Optional")}
@@ -129,11 +159,11 @@ export function CourseEditor({
 							</span>
 						</CourseEditorTab>
 						<CourseEditorTab disabled={!isPersisted} tooltip={saveFirstTooltip}>
-							Inhalt
+							{t("Course_Editor_Tab_Content")}
 						</CourseEditorTab>
 						{!isStatic && (
 							<CourseEditorTab disabled={!isPersisted} tooltip={saveFirstTooltip}>
-								Vorschau
+								{t("Course_Editor_Tab_Preview")}
 							</CourseEditorTab>
 						)}
 					</Tabs>
@@ -170,28 +200,4 @@ function CourseEditorTab({
 	// Same hint wrapper for a locked tab and for the Skills explanation.
 	if (!tooltip) return tab;
 	return <Tooltip content={tooltip}>{tab}</Tooltip>;
-}
-
-function showCourseValidationErrors(errors: FieldErrors) {
-	const errorMsg = collectErrorMessages(errors)
-		.map(item => {
-			switch (item.field) {
-				case "title":
-					return "🞄 Kein Titel vergeben.";
-				case "slug":
-					return "🞄 Keine gültige URL-ID (Slug, mind. 3 Zeichen).";
-				case "subtitle":
-					return "🞄 Kein Untertitel vergeben.";
-				case "permissions":
-					return "🞄 Mindestens eine Gruppe mit Rechten wählen.";
-				default:
-					return `🞄 ${item.field}: ${item.message}`;
-			}
-		})
-		.join("\n");
-	showToast({
-		type: "error",
-		title: "Validierungsfehler",
-		subtitle: errorMsg || "Bitte Pflichtfelder prüfen."
-	});
 }

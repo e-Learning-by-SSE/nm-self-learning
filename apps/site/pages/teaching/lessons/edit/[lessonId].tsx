@@ -13,6 +13,7 @@ import { trpc } from "@self-learning/api-client";
 import { ResourceGuard, testResourceGuard } from "@self-learning/ui/layouts";
 import { AccessLevel } from "@prisma/client";
 import { withAuth } from "@self-learning/util/auth";
+import { useTranslation } from "next-i18next";
 
 type EditLessonProps = {
 	lesson: LessonFormModel;
@@ -103,12 +104,14 @@ export const getServerSideProps = withTranslations(
 );
 
 export default function EditLessonPage({ lesson }: EditLessonProps) {
+	const { t } = useTranslation("feature-teaching");
 	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
 	const router = useRouter();
 	const { courseId: rawCourseId } = router.query;
 	const courseId = typeof rawCourseId === "string" ? rawCourseId : undefined;
 	const handleEditClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
 		await onLessonEditorSubmit(
+			t,
 			() => {
 				router.push("/dashboard/author");
 			},

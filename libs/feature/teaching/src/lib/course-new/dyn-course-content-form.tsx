@@ -14,6 +14,7 @@ import { LessonEditorDialogWithGuard } from "../course/course-content-editor/dia
 import { LessonNode } from "../course/course-content-editor/course-content-form";
 import { useFormContext, useWatch } from "react-hook-form";
 import { CourseFormModel } from "../course/course-form-model";
+import { useTranslation } from "next-i18next";
 
 type UseCourseContentForm = ReturnType<typeof useCourseContentForm>;
 
@@ -74,6 +75,7 @@ function SingleChapterNode({
 	moveLesson: UseCourseContentForm["moveLesson"];
 	removeLesson: UseCourseContentForm["removeLesson"];
 }) {
+	const { t } = useTranslation("feature-teaching");
 	const { mutateAsync: createLessonAsync } = trpc.lesson.create.useMutation();
 	const [lessonSelectorOpen, setLessonSelectorOpen] = useState(false);
 	const [createLessonDialogOpen, setCreateLessonDialogOpen] = useState(false);
@@ -92,6 +94,7 @@ function SingleChapterNode({
 
 	async function handleCreateDialogClose(lesson?: LessonFormModel) {
 		const createdLesson = await onLessonCreatorSubmit(
+			t,
 			() => {
 				setCreateLessonDialogOpen(false);
 			},
