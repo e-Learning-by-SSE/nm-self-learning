@@ -112,7 +112,7 @@ export function useLessonContentEditor(control: Control<{ content: LessonContent
 				remove(index);
 			}
 		},
-		[remove]
+		[remove, t]
 	);
 
 	return {
@@ -325,7 +325,10 @@ export function LessonDescriptionForm() {
 					data-testid="aktivierungsfrage-element"
 					className={`pt-4 rounded-md ${!suppressHighlight ? "animate-highlight" : ""}`}
 				>
-					<LabeledField label={t("Lesson_Self_Regulated_Question_Label")} optional={false}>
+					<LabeledField
+						label={t("Lesson_Self_Regulated_Question_Label")}
+						optional={false}
+					>
 						<Controller
 							control={control}
 							name="selfRegulatedQuestion"

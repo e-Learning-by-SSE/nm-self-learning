@@ -27,6 +27,7 @@ export async function apiHandler(
 		return await handler();
 	} catch (error) {
 		if (error instanceof ZodError) {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			return withApiError(res, ValidationFailed(error.issues as any));
 		}
 
