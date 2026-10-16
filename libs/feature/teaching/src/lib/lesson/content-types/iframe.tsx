@@ -63,6 +63,7 @@ export function IFrameInput({ index }: { index: number }) {
 			<div className="flex gap-2 mb-4 border-b border-light-border">
 				<button
 					type="button"
+					data-testid="iframe-upload-tab"
 					onClick={() => setActiveTab("upload")}
 					className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
 						activeTab === "upload"
@@ -74,6 +75,7 @@ export function IFrameInput({ index }: { index: number }) {
 				</button>
 				<button
 					type="button"
+					data-testid="iframe-url-tab"
 					onClick={() => setActiveTab("url")}
 					className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
 						activeTab === "url"
@@ -94,6 +96,7 @@ export function IFrameInput({ index }: { index: number }) {
 						<LabeledField label={t("common:URL")}>
 							<input
 								type="text"
+								data-testid="iframe-url-input"
 								className="textfield w-full"
 								value={source && source !== "url" ? "" : url}
 								placeholder="https://example.com"
