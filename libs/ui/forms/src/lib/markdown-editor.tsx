@@ -6,6 +6,7 @@ import {
 	Dialog,
 	DialogActions,
 	IconTextButton,
+	MarkdownViewer,
 	OnDialogCloseFn
 } from "@self-learning/ui/common";
 import ReactMarkdown from "react-markdown";
@@ -666,4 +667,4 @@ function EditorQuickActionsCodeDropdown({ onChange }: { onChange: (value: string
 	);
 }
 
-export { MarkdownViewer } from "@self-learning/ui/common";
+export { MarkdownViewer };
