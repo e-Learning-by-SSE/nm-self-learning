@@ -82,7 +82,6 @@ export default function GroupsPage() {
 	const canCreateGroup = useCanCreate();
 
 	const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
-	const [groupSearchDialogOpen, setGroupSearchDialogOpen] = useState(false);
 
 	if (!router.isReady) {
 		return <LoadingBox />;
