@@ -12,6 +12,7 @@ import {
 import { OnlyOwnSkillsCheckbox } from "../only-own-skills-checkbox";
 import { ListSkillEntryWithChildren } from "./skill-row-editor";
 import { PlusIcon } from "@heroicons/react/24/solid";
+import { filterSkillTree } from "../filter-skill-tree";
 
 export function SkillTreeEditor({
 	skillDisplayData,
@@ -29,58 +30,15 @@ export function SkillTreeEditor({
 	const [onlyOwnSkills, setOnlyOwnSkills] = useState(true);
 	// Undefined while loading, so the tree is not hidden before membership ids arrive.
 	const skillPermissions = useMySkillPermissions(onlyOwnSkills);
-	const normalized = searchTerm.toLowerCase().trim();
-	const allSkills = Array.from(skillDisplayData.values());
-	const matchingSkillIds: Set<string> = new Set(
-		allSkills
-			.filter(skill => {
-				const nameMatches =
-					skill.skill.name.toLowerCase().includes(normalized) ||
-					skill.displayName?.toLowerCase().includes(normalized);
-				const isAccessible =
-					!onlyOwnSkills || !skillPermissions || skillPermissions.has(skill.id);
-				return nameMatches && isAccessible;
-			})
-			.map(skill => skill.id)
+	const { skillsToDisplay, matchingSkillIds, autoExpandIds } = useMemo(
+		() =>
+			filterSkillTree(
+				skillDisplayData,
+				searchTerm,
+				onlyOwnSkills ? skillPermissions : undefined
+			),
+		[skillDisplayData, searchTerm, onlyOwnSkills, skillPermissions]
 	);
-	const skillIdsToAutoExpand: Set<string> = new Set();
-	const skillsToDisplay = useMemo(() => {
-		const skillIdsToRender: Set<string> = new Set(matchingSkillIds);
-		matchingSkillIds.forEach(skillId => {
-			collectAncestors(skillId, skillDisplayData, skillIdsToRender, skillIdsToAutoExpand);
-		});
-		if (!searchTerm?.trim() && !onlyOwnSkills) {
-			return allSkills.filter(IsTopLevelSkill).sort(byChildrenLength);
-		}
-		return allSkills
-			.filter(skill => IsTopLevelSkill(skill) && skillIdsToRender.has(skill.id))
-			.sort(byChildrenLength);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [
-		skillDisplayData,
-		searchTerm,
-		onlyOwnSkills,
-		matchingSkillIds,
-		skillIdsToAutoExpand,
-		allSkills
-	]);
-
-	function collectAncestors(
-		skillId: string,
-		map: Map<string, SkillFolderVisualization>,
-		result: Set<string>,
-		autoExpand: Set<string>
-	) {
-		const skill = map.get(skillId);
-		if (!skill) return;
-		for (const parentId of skill.skill.parents) {
-			if (!result.has(parentId)) {
-				result.add(parentId);
-				autoExpand.add(parentId);
-				collectAncestors(parentId, map, result, autoExpand);
-			}
-		}
-	}
 
 	return (
 		<div>
@@ -101,7 +59,7 @@ export function SkillTreeEditor({
 				<DialogHandler id={"alert"} />
 				<div className="pt-4" />
 				<Table head={<TableHeaderColumn>{t("Skills_Title")}</TableHeaderColumn>}>
-					{skillsToDisplay.sort(byChildrenLength).map(element => (
+					{skillsToDisplay.map(element => (
 						<ListSkillEntryWithChildren
 							key={element.id}
 							skillDisplayData={element}
@@ -109,7 +67,7 @@ export function SkillTreeEditor({
 							skillResolver={skillId => skillDisplayData.get(skillId)}
 							parentNodeId={""}
 							matchingSkillIds={matchingSkillIds}
-							autoExpandIds={skillIdsToAutoExpand}
+							autoExpandIds={autoExpandIds}
 							handleSelection={onSkillSelect}
 							handleCreation={onSkillCreate}
 							textClassName="hover:text-emerald-500"
@@ -121,11 +79,3 @@ export function SkillTreeEditor({
 		</div>
 	);
 }
-
-const byChildrenLength = (a: SkillFolderVisualization, b: SkillFolderVisualization) => {
-	return b.numberChildren - a.numberChildren || a.skill.name.localeCompare(b.skill.name);
-};
-
-const IsTopLevelSkill = (skill: SkillFolderVisualization) => {
-	return skill.skill.parents.length === 0 || skill.isCycleMember;
-};

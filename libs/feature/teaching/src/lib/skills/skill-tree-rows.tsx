@@ -32,17 +32,14 @@ export function SkillTreeRows({
 	autoExpandIds?: Set<string>;
 }) {
 	const wasNotRendered = (skill: SkillFolderVisualization) => !renderedIds.has(skill.id);
-	const showChildren = skillDisplayData.isExpanded ?? false;
+	const showChildren =
+		skillDisplayData.isExpanded || (autoExpandIds?.has(skillDisplayData.id) ?? false);
 
 	const nodeId = generateNodeId(parentNodeId, skillDisplayData.id);
 
-	if (autoExpandIds?.has(skillDisplayData.id)) {
-		skillDisplayData.isExpanded = true;
-	}
-
 	return (
 		<>
-			{renderRow({ skill: skillDisplayData, depth, nodeId })}
+			{renderRow({ skill: { ...skillDisplayData, isExpanded: showChildren }, depth, nodeId })}
 			{showChildren &&
 				skillDisplayData.children
 					.map(childId => skillResolver(childId))
@@ -53,13 +50,16 @@ export function SkillTreeRows({
 						// Render descendants with the same row renderer.
 						if (matchingSkillIds) {
 							const hasMatchingDescendant = (
-								skill: SkillFolderVisualization
+								skill: SkillFolderVisualization,
+								seen = new Set<string>()
 							): boolean => {
 								if (matchingSkillIds.has(skill.id)) return true;
+								if (seen.has(skill.id)) return false;
+								seen.add(skill.id);
 								return skill.children
 									.map(childId => skillResolver(childId))
 									.filter(isTruthy)
-									.some(child => hasMatchingDescendant(child));
+									.some(child => hasMatchingDescendant(child, seen));
 							};
 
 							if (!hasMatchingDescendant(element)) {

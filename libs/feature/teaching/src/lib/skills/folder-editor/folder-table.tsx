@@ -18,7 +18,7 @@ import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "./s
 import { Skill } from "@prisma/client";
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { OnlyOwnSkillsCheckbox } from "../only-own-skills-checkbox";
-import type { SkillIdLookup } from "../skill-tree-rows";
+import { filterSkillTree } from "../filter-skill-tree";
 import { AddSkillDialog, SkillDialogResult } from "../skill-dialog/add-skill-dialog";
 import { trpc } from "@self-learning/api-client";
 import { DragDropContext, OnDragEndResponder } from "@hello-pangea/dnd";
@@ -41,20 +41,17 @@ export function SkillFolderTable({
 	const { t } = useTranslation(["feature-teaching", "common"]);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [onlyOwnSkills, setOnlyOwnSkills] = useState(true);
-	const skillsToDisplay = useMemo(() => {
-		const skills = Array.from(skillDisplayData.values());
-
-		if (!searchTerm?.trim()) return skills;
-
-		const normalizedSearchTerm = searchTerm.toLowerCase().trim();
-		return skills.filter(
-			skill =>
-				skill.skill.name.toLowerCase().includes(normalizedSearchTerm) ||
-				skill.displayName?.toLowerCase().includes(normalizedSearchTerm)
-		);
-	}, [skillDisplayData, searchTerm]);
 	// Membership, not authorship. Ancestors stay visible so a skill under someone else's area is not lost.
 	const skillPermissions = useMySkillPermissions(onlyOwnSkills);
+	const { skillsToDisplay, matchingSkillIds, autoExpandIds } = useMemo(
+		() =>
+			filterSkillTree(
+				skillDisplayData,
+				searchTerm,
+				onlyOwnSkills ? skillPermissions : undefined
+			),
+		[skillDisplayData, searchTerm, onlyOwnSkills, skillPermissions]
+	);
 	const [openNewSkillDialog, setOpenNewSkillDialog] = useState(false);
 	const { mutateAsync: createNewSkill } = trpc.skill.createSkill.useMutation();
 	const { mutateAsync: updateSkillParent } = trpc.skill.updateSkill.useMutation();
@@ -224,30 +221,19 @@ export function SkillFolderTable({
 				<DialogHandler id={"alert"} />
 				<DragDropContext onDragEnd={onDragEnd} key={"element.id"}>
 					<Table head={<TableHeaderColumn>{t("common:Name")}</TableHeaderColumn>}>
-						{skillsToDisplay
-							.sort(byChildrenLength)
-							.filter(
-								skill =>
-									IsTopLevelSkill(skill) &&
-									(!skillPermissions ||
-										subtreeHasAccessibleSkill(
-											skill,
-											skillPermissions,
-											skillDisplayData
-										))
-							)
-							.map(element => (
-								<ListSkillEntryWithChildren
-									key={`${element.id}-0`}
-									skillDisplayData={element}
-									updateSkillDisplay={updateSkillDisplay}
-									handleSelection={handleSelection}
-									skillResolver={skillId => skillDisplayData.get(skillId)}
-									parentNodeId={""} // No parent for the top level - Repositories
-									authorId={authorId}
-									matchingSkillIds={skillPermissions}
-								/>
-							))}
+						{skillsToDisplay.map(element => (
+							<ListSkillEntryWithChildren
+								key={`${element.id}-0`}
+								skillDisplayData={element}
+								updateSkillDisplay={updateSkillDisplay}
+								handleSelection={handleSelection}
+								skillResolver={skillId => skillDisplayData.get(skillId)}
+								parentNodeId={""} // No parent for the top level - Repositories
+								authorId={authorId}
+								matchingSkillIds={matchingSkillIds}
+								autoExpandIds={searchTerm.trim() ? autoExpandIds : undefined}
+							/>
+						))}
 					</Table>
 				</DragDropContext>
 				<DialogHandler id={"copyMoveDialog"} />
@@ -267,32 +253,4 @@ function DecodeNodeId(nodeId: string, nodeType: string): string | undefined {
 		return nodeIds.pop();
 	}
 	return nodeId;
-}
-
-const byChildrenLength = (a: SkillFolderVisualization, b: SkillFolderVisualization) => {
-	return b.numberChildren - a.numberChildren || a.skill.name.localeCompare(b.skill.name);
-};
-
-const IsTopLevelSkill = (skill: SkillFolderVisualization) => {
-	return skill.skill.parents.length === 0 || skill.isCycleMember;
-};
-
-// True when this node or a descendant is in the accessible set. Seen stops cycles.
-function subtreeHasAccessibleSkill(
-	skill: SkillFolderVisualization,
-	skillIds: SkillIdLookup,
-	skillMap: Map<string, SkillFolderVisualization>
-): boolean {
-	const seen = new Set<string>();
-	const visit = (node: SkillFolderVisualization): boolean => {
-		if (seen.has(node.id)) return false;
-		seen.add(node.id);
-		if (skillIds.has(node.id)) return true;
-		for (const childId of node.children) {
-			const child = skillMap.get(childId);
-			if (child && visit(child)) return true;
-		}
-		return false;
-	};
-	return visit(skill);
 }
