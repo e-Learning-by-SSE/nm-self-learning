@@ -9,7 +9,7 @@ const API_SECRET = process.env.SCHEDULER_SECRET;
 const API_URL = process.env.NEXT_PUBLIC_SITE_BASE_URL;
 
 if (!API_URL) {
-	console.error("❌ SITE_BASE_URL is missing in cron-service environment");
+	console.error("NEXT_PUBLIC_SITE_BASE_URL is missing in cron-service environment");
 	process.exit(1);
 }
 
