@@ -101,7 +101,7 @@ model Course {
     // default course content path (as if student has no skills from `provides` set)
     content              Json
     meta                 Json
-    context              Json?                 // Optional array of lessonIds
+    context              Json? // Optional array of lessonIds
     //
     createdAt            DateTime              @default(now())
     updatedAt            DateTime              @updatedAt
@@ -115,7 +115,7 @@ model Course {
     learningDiaryEntries LearningDiaryPage[]
     permissions          Permission[]
     // dynamic courses (custom learning path can be generated)
-    type                 CourseType
+    type                 CourseType            @default(STATIC)
     requires             Skill[]               @relation("courseRequiredSkills")
     provides             Skill[]               @relation("courseProvidedSkills")
     generatedLessonPaths GeneratedLessonPath[] // static course must have it as 0
