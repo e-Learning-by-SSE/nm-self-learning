@@ -5,7 +5,7 @@ Shared Library to be used by `site` (as client) and `worker-service` (as server)
 ## How to define new Job
 
 1. Write `schema` definitions, to define data types for data exchange in
-   `libs/data-access/worker/src/lib/job-definitions`:
+   `libs/data-access/worker/src/lib/types/job-definitions`:
     - `payload`: A schema to define what data is send to the `worker-service`
     - `returns`: A schema to define the result type. Through the event system,
       you will receive a response of type `any`, but this can safely be casted to
@@ -16,7 +16,7 @@ Shared Library to be used by `site` (as client) and `worker-service` (as server)
     - Name it as `<your-job-name>.job.ts
     - Add this to the `JobRegistry` of `apps/worker-service/src/jobs/index.ts`
     - Write tests
-3. Writer `router` in `libs/data-access/api/` to receive user input from pages
+3. Write `router` in `libs/data-access/api/` to receive user input from pages
    and forward this as a job request to the `worker-service`:
     - `import { workerServiceClient } from "@self-learning/worker-api";`
     - Generate unique `jobId` via `const jobId = crypto.randomUUID();`
@@ -31,8 +31,12 @@ Shared Library to be used by `site` (as client) and `worker-service` (as server)
       caught `Error`s.
     - Log events as follows:
         ```ts
-        import { logJobProgress } from "@self-learning/database";
-        logJobProgress(jobId, data);
+        import { subscribeToJobEvents } from "@self-learning/worker-api";
+        subscribeToJobEvents({
+            jobId,
+            jobType: <jobType>,
+            onFinish: result => ...
+        });
         ```
     - Submit your job, via `workerServiceClient.submitJob.mutate`,
       this should be the last step to avoid that the `worker-service`

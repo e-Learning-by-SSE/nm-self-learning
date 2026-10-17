@@ -1,6 +1,10 @@
 import { database } from "@self-learning/database";
 import { AccessLevel } from "@prisma/client";
-import { searchAllResources, searchMyResources } from "./resource-search.service";
+import {
+	getMySkillPermissions,
+	searchAllResources,
+	searchMyResources
+} from "./resource-search.service";
 
 jest.mock("@self-learning/database", () => ({
 	__esModule: true,
@@ -9,6 +13,7 @@ jest.mock("@self-learning/database", () => ({
 		lesson: { findMany: jest.fn() },
 		specialization: { findMany: jest.fn() },
 		subject: { findMany: jest.fn() },
+		skill: { findMany: jest.fn() },
 		permission: { findMany: jest.fn() }
 	}
 }));
@@ -16,6 +21,7 @@ jest.mock("@self-learning/database", () => ({
 describe("resource-search.service", () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
+		(database.skill.findMany as jest.Mock).mockResolvedValue([]);
 	});
 
 	describe("searchAllResources", () => {
@@ -58,6 +64,21 @@ describe("resource-search.service", () => {
 			const page = await searchAllResources({ page: 1, kinds: ["lesson"] });
 
 			expect(page.result[0].kind).toBe("lesson");
+		});
+
+		it("maps a skill using its name and id", async () => {
+			(database.skill.findMany as jest.Mock).mockResolvedValue([
+				{ id: "sk1", name: "Algebra" }
+			]);
+
+			const page = await searchAllResources({ page: 1, kinds: ["skill"] });
+
+			expect(page.result[0]).toMatchObject({
+				kind: "skill",
+				id: "sk1",
+				slug: "sk1",
+				title: "Algebra"
+			});
 		});
 
 		it("filters by kinds when provided", async () => {
@@ -172,6 +193,61 @@ describe("resource-search.service", () => {
 				parentId: "sb1",
 				accessLevel: AccessLevel.EDIT
 			});
+		});
+
+		it("maps skill permissions", async () => {
+			(database.permission.findMany as jest.Mock).mockResolvedValue([
+				{
+					accessLevel: AccessLevel.EDIT,
+					course: null,
+					lesson: null,
+					specialization: null,
+					subject: null,
+					skill: { id: "sk1", name: "Algebra" }
+				}
+			]);
+
+			const page = await searchMyResources("user-1", { page: 1, kinds: ["skill"] });
+
+			expect(page.result[0]).toMatchObject({
+				kind: "skill",
+				id: "sk1",
+				slug: "sk1",
+				title: "Algebra",
+				accessLevel: AccessLevel.EDIT
+			});
+		});
+	});
+
+	describe("getMySkillPermissions", () => {
+		it("returns the best skill access level reachable by an active membership", async () => {
+			(database.permission.findMany as jest.Mock).mockResolvedValue([
+				{ skillId: "sk1", accessLevel: AccessLevel.EDIT },
+				{ skillId: "sk1", accessLevel: AccessLevel.FULL },
+				{ skillId: "sk1", accessLevel: AccessLevel.VIEW },
+				{ skillId: "sk2", accessLevel: AccessLevel.EDIT },
+				{ skillId: null, accessLevel: AccessLevel.VIEW }
+			]);
+
+			const permissions = await getMySkillPermissions("user-1");
+
+			expect(permissions).toEqual(
+				new Map([
+					["sk1", AccessLevel.FULL],
+					["sk2", AccessLevel.EDIT]
+				])
+			);
+			expect(database.permission.findMany).toHaveBeenCalledWith(
+				expect.objectContaining({
+					select: { skillId: true, accessLevel: true },
+					where: expect.objectContaining({
+						skillId: { not: null },
+						group: {
+							members: { some: expect.objectContaining({ userId: "user-1" }) }
+						}
+					})
+				})
+			);
 		});
 	});
 });

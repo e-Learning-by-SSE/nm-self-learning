@@ -46,7 +46,9 @@ describe("Average Quiz Answers for Student", () => {
 				slug: "average-quiz-answers-test-course",
 				subtitle: "A course to test average quiz answers metric",
 				content: {},
-				meta: {}
+				meta: {},
+				version: 1,
+				type: "STATIC"
 			}
 		});
 
@@ -108,8 +110,6 @@ describe("Average Quiz Answers for Student", () => {
 		const result = await prisma.studentMetric_AverageQuizAnswers.findFirst({
 			where: { userId: users[0].id }
 		});
-
-		console.log("Average Quiz Answers Result:", result);
 
 		expect(result).not.toBeNull();
 		expect(result?.userId).toBe(users[0].id);

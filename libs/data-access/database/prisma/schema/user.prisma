@@ -38,7 +38,6 @@ model User {
     student              Student?
     gamificationProfile  GamificationProfile?
     uploadedAssets       UploadedAssets[]
-    skillRepositories    SkillRepository[]
     notifications        NotificationUser[]
     reminders            ReminderLog[]
     notificationSettings UserNotificationSetting[]
@@ -114,22 +113,25 @@ model Permission {
     lessonId         String?
     specializationId String?
     subjectId        String?
+    skillId          String?
 
     accessLevel AccessLevel
 
-    isPublic Boolean @default(false) // this permission applies to all groups
+    isPublic Boolean @default(false) // this permission applies to all groups, not implemented
 
     group          Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
     course         Course?         @relation(fields: [courseId], references: [courseId], onDelete: Cascade)
     lesson         Lesson?         @relation(fields: [lessonId], references: [lessonId], onDelete: Cascade)
     specialization Specialization? @relation(fields: [specializationId], references: [specializationId], onDelete: Cascade)
     subject        Subject?        @relation(fields: [subjectId], references: [subjectId], onDelete: Cascade)
+    skill          Skill?          @relation(fields: [skillId], references: [id], onDelete: Cascade)
 
     // Prohibit multiple permissions per one content
     @@unique([groupId, courseId])
     @@unique([groupId, lessonId])
     @@unique([groupId, specializationId])
     @@unique([groupId, subjectId])
+    @@unique([groupId, skillId])
 }
 
 model Features {

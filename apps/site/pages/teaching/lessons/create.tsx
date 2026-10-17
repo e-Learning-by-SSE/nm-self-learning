@@ -6,11 +6,15 @@ import { Unauthorized, useCanCreate, useRequiredSession } from "@self-learning/u
 import { withAuth } from "@self-learning/util/auth";
 import { useRouter } from "next/router";
 import { withTranslations } from "@self-learning/api";
+import { useTranslation } from "next-i18next";
 
 export default function CreateLessonPage() {
 	const session = useRequiredSession();
 	const canCreateResource = useCanCreate();
 	const router = useRouter();
+	const { t } = useTranslation("feature-teaching");
+	const { courseId: rawCourseId } = router.query;
+	const courseId = typeof rawCourseId === "string" ? rawCourseId : undefined;
 	const { mutateAsync: createLessonAsync } = trpc.lesson.create.useMutation();
 
 	if (session.status === "loading") {
@@ -27,6 +31,7 @@ export default function CreateLessonPage() {
 
 	async function handleCreateClose(lesson?: LessonFormModel) {
 		await onLessonCreatorSubmit(
+			t,
 			() => {
 				router.push("/dashboard/author");
 			},
@@ -35,11 +40,18 @@ export default function CreateLessonPage() {
 		);
 	}
 
-	return <LessonEditor onSubmit={handleCreateClose} isFullScreen={true} />;
+	return (
+		<LessonEditor
+			courseId={courseId}
+			onSubmit={handleCreateClose}
+			onClose={() => router.back()}
+			isFullScreen={true}
+		/>
+	);
 }
 
 export const getServerSideProps = withTranslations(
-	["common", "feature-question-types"],
+	["common", "feature-teaching", "feature-question-types"],
 	withAuth(async (_ctx, user) => {
 		if (!(await canCreate(user))) {
 			return { redirect: { destination: "/403", permanent: false } };

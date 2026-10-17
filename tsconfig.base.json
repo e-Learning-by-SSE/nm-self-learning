@@ -24,6 +24,7 @@
 			"@self-learning/api-client": ["libs/data-access/api-client/src/index.ts"],
 			"@self-learning/cms-api": ["libs/data-access/cms-api/src/index.ts"],
 			"@self-learning/completion": ["libs/feature/completion/src/index.ts"],
+			"@self-learning/course": ["libs/feature/course/src/index.ts"],
 			"@self-learning/database": ["libs/data-access/database/src/index.ts"],
 			"@self-learning/diary": ["libs/feature/diary/src/index.ts"],
 			"@self-learning/diary/server": ["libs/feature/diary/src/server.ts"],

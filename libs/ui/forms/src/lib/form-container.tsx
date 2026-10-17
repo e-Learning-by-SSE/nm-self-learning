@@ -1,5 +1,4 @@
-import { SectionCard as DefaultSectionCard } from "@self-learning/ui/common";
-import { CenteredContainer } from "@self-learning/ui/layouts";
+import { CenteredContainer, SectionCard as DefaultSectionCard } from "@self-learning/ui/common";
 
 /**
  * Stacks sections vertically.

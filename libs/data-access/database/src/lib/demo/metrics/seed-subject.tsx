@@ -11,12 +11,11 @@ export async function createSubjects() {
 				title: "Wizardry",
 				subtitle: "Fundamentals of Magical Arts and Spellcasting",
 				imgUrlBanner:
-					"https://c.pxhere.com/photos/1c/6b/magic_wizard_hat_wand_spellbook_potions_alchemy_mystic_fantasy-1582034.jpg!d",
+					"https://images.stockcake.com/public/c/f/6/cf6c946e-61f0-4c74-8ec5-8367a4bd50b3_large/magical-floating-hat-stockcake.jpg",
 				cardImgUrl:
-					"https://c.pxhere.com/photos/1c/6b/magic_wizard_hat_wand_spellbook_potions_alchemy_mystic_fantasy-1582034.jpg!d"
+					"https://images.stockcake.com/public/c/f/6/cf6c946e-61f0-4c74-8ec5-8367a4bd50b3_large/magical-floating-hat-stockcake.jpg"
 			}
 		});
-
 		console.log(" - %s\x1b[32m ✔\x1b[0m", "Subjects");
 	} catch (error) {
 		console.error("Error creating subjects:", error);

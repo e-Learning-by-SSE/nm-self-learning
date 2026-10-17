@@ -1,4 +1,5 @@
 import * as _DropdownDialog from "./lib/dialog/dropdown-dialog";
+import { I18N_NAMESPACE as UTIL_COMMON_I18N_NAMESPACE } from "@self-learning/util/common";
 
 export const DropdownDialog = {
 	..._DropdownDialog
@@ -11,14 +12,17 @@ export * from "./lib/chip/image-chip";
 export * from "./lib/collapsible/collapsible-box";
 export * from "./lib/chip/text-chip";
 export * from "./lib/card/card";
+export * from "./lib/container/centered-container";
 export * from "./lib/divider/divider";
 export * from "./lib/dialog/dialog";
 export * from "./lib/dialog/simple-dialog";
+export * from "./lib/dialog/copy-move-dialog";
 export * from "./lib/dialog/dialog-handler";
 export * from "./lib/table/table";
 export * from "./lib/image/image-placeholder";
 export * from "./lib/image-card/image-card";
 export * from "./lib/loading/loading";
+export * from "./lib/markdown/markdown-viewer";
 export * from "./lib/paginator/paginator";
 export * from "./lib/section-card/section-card";
 export * from "./lib/tabs/tabs";
@@ -40,6 +44,8 @@ export * from "./lib/effects/confetii-firework-onClick";
 export * from "./lib/effects/ConfettiRain";
 export * from "./lib/effects/bolt";
 
+export * from "./lib/badge/badge";
+
 export * from "./lib/screensize-hook/use-screensize";
 export * from "./lib/combobox/searchable-combobox";
 export * from "./lib/combobox/searchable-combobox-with-add";
@@ -47,6 +53,7 @@ export * from "./lib/dropdown-menu/dropdown-menu";
 export * from "./lib/dropdown-menu/combobox-menu";
 export * from "./lib/transition/minor-scale-fade-in";
 export * from "./lib/i18n/trans";
+export * from "./lib/i18n/use-time-interval-formatter";
 export * from "./lib/help/online-help-link";
 
-export const I18N_NAMESPACE = ["common", "features-ui-commons"];
+export const I18N_NAMESPACE = [...UTIL_COMMON_I18N_NAMESPACE, "features-ui-commons"];

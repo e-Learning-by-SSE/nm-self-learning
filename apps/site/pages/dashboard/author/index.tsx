@@ -6,8 +6,7 @@ import {
 	AuthorResourceSection,
 	GroupDeleteOption,
 	GroupLeaveOption,
-	I18N_NAMESPACE as NS_FEATURE_TEACHING,
-	SkillRepositoryOverview
+	I18N_NAMESPACE as NS_FEATURE_TEACHING
 } from "@self-learning/teaching";
 import {
 	Divider,
@@ -34,7 +33,21 @@ export function getAuthor(username: string) {
 				select: {
 					slug: true,
 					displayName: true,
-					imgUrl: true
+					imgUrl: true,
+					courses: {
+						orderBy: { title: "asc" },
+						select: {
+							slug: true,
+							title: true,
+							subtitle: true,
+							imgUrl: true,
+							specializations: {
+								select: {
+									title: true
+								}
+							}
+						}
+					}
 				}
 			},
 			memberships: {
@@ -60,9 +73,7 @@ export function getAuthor(username: string) {
 }
 
 export const getServerSideProps = withTranslations(
-	Array.from(
-		new Set(["common", "pages-dashboard", ...NS_UI_COMMON, ...NS_FEATURE_TEACHING])
-	),
+	Array.from(new Set(["common", "pages-dashboard", ...NS_UI_COMMON, ...NS_FEATURE_TEACHING])),
 	withAuth<Props>(async (context, user) => {
 		if (user.isAuthor) {
 			return { props: { author: await getAuthor(user.name) } };
@@ -135,22 +146,16 @@ function AuthorDashboardPage({ author }: Props) {
 
 					<Divider />
 
-					<section>
-						<div className="flex justify-between gap-4">
-							<SectionHeader
-								title={t("My_Skill_Cards")}
-								subtitle={t("Author_Skill_Cards_Subtitle")}
-							/>
-							<Link href="/skills/repository/create" className="mt-4">
-								<IconTextButton
-									icon={<PlusIcon className="icon h-5" />}
-									className="btn-secondary"
-									text={t("Create_Skill_Card")}
-								/>
-							</Link>
-						</div>
-						<SkillRepositoryOverview />
-					</section>
+					<AuthorResourceSection
+						kind="skill"
+						title={t("My_Skills")}
+						subtitle={t("Author_Skills_Subtitle")}
+						createLabel={"Skills bearbeiten"}
+						searchPlaceholder={t("Search_Skills")}
+						emptyMessage={t("No_Accessible_Skills")}
+						isAdmin={isAdmin}
+						canCreate={canCreate}
+					/>
 
 					<Divider />
 

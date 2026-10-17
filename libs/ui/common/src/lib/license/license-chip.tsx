@@ -2,9 +2,9 @@
 import { ImageOrPlaceholder } from "../image/image-placeholder";
 import Link from "next/link";
 import { useState } from "react";
-import { CenteredContainer } from "@self-learning/ui/layouts";
+import { CenteredContainer } from "../container/centered-container";
 import { DialogWithReactNodeTitle } from "../dialog/dialog";
-import { MarkdownViewer } from "@self-learning/ui/forms";
+import { MarkdownViewer } from "../markdown/markdown-viewer";
 import { ScaleIcon } from "@heroicons/react/24/outline";
 
 export function LicenseChip({

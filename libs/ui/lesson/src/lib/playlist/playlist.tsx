@@ -15,7 +15,7 @@ import {
 	LessonContentType,
 	LessonMeta
 } from "@self-learning/types";
-import { Divider, ProgressBar, useTimeout } from "@self-learning/ui/common";
+import { Divider, ProgressBar } from "@self-learning/ui/common";
 import { NavigableContentOutline } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -52,28 +52,120 @@ type PlaylistProps = {
 	completion?: CourseCompletion;
 };
 
-function useLearningDiaryRecording(courseSlug: string, lessonId: string) {
+type CourseDiaryRecording = {
+	startedAt: number;
+	lessonIds: string[];
+	recordedLessonIds: string[];
+	entryId?: string;
+};
+
+const COURSE_DIARY_THRESHOLD_MS = 60000;
+const COURSE_DIARY_MAX_AGE_MS = 6 * 60 * 60 * 1000;
+
+function getCourseDiaryStorageKey(courseSlug: string) {
+	return `learningDiaryRecording:${courseSlug}`;
+}
+
+function readCourseDiaryRecording(courseSlug: string): CourseDiaryRecording | null {
+	try {
+		const raw = sessionStorage.getItem(getCourseDiaryStorageKey(courseSlug));
+		if (!raw) return null;
+
+		const recording = JSON.parse(raw) as CourseDiaryRecording;
+		if (
+			!Number.isFinite(recording.startedAt) ||
+			Date.now() - recording.startedAt >= COURSE_DIARY_MAX_AGE_MS ||
+			!Array.isArray(recording.lessonIds) ||
+			!Array.isArray(recording.recordedLessonIds)
+		) {
+			return null;
+		}
+		return recording;
+	} catch {
+		return null;
+	}
+}
+
+function writeCourseDiaryRecording(courseSlug: string, recording: CourseDiaryRecording) {
+	try {
+		sessionStorage.setItem(getCourseDiaryStorageKey(courseSlug), JSON.stringify(recording));
+	} catch {
+		// Diary recording remains optional when browser storage is unavailable.
+	}
+}
+
+/** Records one course session across lesson route changes. */
+export function CourseDiaryRecorder({
+	courseSlug,
+	lessonId
+}: {
+	courseSlug: string;
+	lessonId: string;
+}) {
 	const { mutateAsync: createLearningDiaryEntry } = trpc.learningDiary.create.useMutation();
 	const { mutateAsync: createLearningDiaryLearnedLesson } =
 		trpc.learningDiary.addLearningDiaryLearnedLessons.useMutation();
-	// Exact starting time is required, otherwise we miss some events during the learning analysis
+	const [delay, setDelay] = useState<number | null>(null);
 
-	const log = useCallback(async () => {
-		const creationDate = new Date();
-
+	const recordSession = useCallback(async () => {
 		try {
-			const page = await createLearningDiaryEntry({
-				courseSlug: courseSlug,
-				date: creationDate
-			});
+			let recording = readCourseDiaryRecording(courseSlug);
+			if (!recording || Date.now() - recording.startedAt < COURSE_DIARY_THRESHOLD_MS) return;
 
-			await createLearningDiaryLearnedLesson({
-				entryId: page?.id ?? "",
-				lessonId
-			});
+			if (!recording.entryId) {
+				const page = await createLearningDiaryEntry({
+					courseSlug,
+					date: new Date(recording.startedAt)
+				});
+				recording = { ...recording, entryId: page.id };
+				writeCourseDiaryRecording(courseSlug, recording);
+			}
+
+			const entryId = recording.entryId;
+			if (!entryId) return;
+
+			for (const recordedLessonId of recording.lessonIds) {
+				if (recording.recordedLessonIds.includes(recordedLessonId)) continue;
+				await createLearningDiaryLearnedLesson({
+					entryId,
+					lessonId: recordedLessonId,
+					createdAt: new Date(recording.startedAt)
+				});
+				recording = {
+					...recording,
+					recordedLessonIds: [...recording.recordedLessonIds, recordedLessonId]
+				};
+				writeCourseDiaryRecording(courseSlug, recording);
+			}
 		} catch {}
-	}, [createLearningDiaryEntry, courseSlug, createLearningDiaryLearnedLesson, lessonId]);
-	useTimeout({ callback: log, delayInMilliseconds: 60000 });
+	}, [createLearningDiaryEntry, courseSlug, createLearningDiaryLearnedLesson]);
+
+	useEffect(() => {
+		const existing = readCourseDiaryRecording(courseSlug);
+		const recording = existing ?? {
+			startedAt: Date.now(),
+			lessonIds: [],
+			recordedLessonIds: []
+		};
+		if (!recording.lessonIds.includes(lessonId)) {
+			recording.lessonIds = [...recording.lessonIds, lessonId];
+		}
+		writeCourseDiaryRecording(courseSlug, recording);
+
+		const remaining = Math.max(
+			0,
+			COURSE_DIARY_THRESHOLD_MS - (Date.now() - recording.startedAt)
+		);
+		setDelay(recording.entryId ? 0 : remaining);
+	}, [courseSlug, lessonId]);
+
+	useEffect(() => {
+		if (delay === null) return;
+		const timer = setTimeout(() => void recordSession(), delay);
+		return () => clearTimeout(timer);
+	}, [delay, recordSession]);
+
+	return null;
 }
 
 function useContentWithCompletion(content: PlaylistContent, completion?: CourseCompletion) {
@@ -98,7 +190,6 @@ function useContentWithCompletion(content: PlaylistContent, completion?: CourseC
 
 export function Playlist({ content, course, lesson, completion }: PlaylistProps) {
 	const contentWithCompletion = useContentWithCompletion(content, completion);
-	useLearningDiaryRecording(course.slug, lesson.lessonId);
 
 	return (
 		<div className="flex h-full min-h-0 flex-col">
@@ -130,7 +221,6 @@ export function MobilePlayList({
 	onSelect
 }: PlaylistProps & { onSelect: () => void }) {
 	const contentWithCompletion = useContentWithCompletion(content, completion);
-	useLearningDiaryRecording(course.slug, lesson.lessonId);
 	const courseCompletion = completion?.courseCompletion;
 	const completionPercentage = courseCompletion?.completionPercentage ?? 0;
 

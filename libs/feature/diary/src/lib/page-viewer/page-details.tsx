@@ -4,10 +4,14 @@ import { LearningDiaryPageDetail } from "../access-learning-diary";
 import {
 	duplicateRemover,
 	formatDateStringFull,
-	formatTimeIntervalToString,
 	isTruthy
 } from "@self-learning/util/common";
-import { Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
+import {
+	Table,
+	TableDataColumn,
+	TableHeaderColumn,
+	useTimeIntervalFormatter
+} from "@self-learning/ui/common";
 import Link from "next/link";
 import { trpc } from "@self-learning/api-client";
 import { hintsUsed, isEventType, quizAttempts } from "libs/feature/analysis/src/lib/metrics";
@@ -20,6 +24,7 @@ export function DiaryLearnedContent({
 	endDate: Date;
 }) {
 	const [showMore, setShowMore] = useState(false);
+	const formatTimeInterval = useTimeIntervalFormatter();
 	return (
 		<div className="flex w-full flex-col space-y-2 py-4">
 			<div className="flex w-full flex-wrap gap-2">
@@ -35,7 +40,7 @@ export function DiaryLearnedContent({
 				/>
 				<DetailRow
 					label="Dauer"
-					value={formatTimeIntervalToString(page.totalDurationLearnedMs ?? 0)}
+					value={formatTimeInterval(page.totalDurationLearnedMs ?? 0)}
 					className="w-full sm:className-2/6"
 				/>
 				<DetailRow
@@ -162,6 +167,7 @@ function toPercentage(value: number) {
 
 function MoreDetails({ page, endDate }: { page: LearningDiaryPageDetail; endDate: Date }) {
 	const { lessonDetails } = useLessonDetails({ page, endDate });
+	const formatTimeInterval = useTimeIntervalFormatter();
 
 	return (
 		<div className="flex w-full flex-col space-y-4 mt-4">
@@ -188,7 +194,7 @@ function MoreDetails({ page, endDate }: { page: LearningDiaryPageDetail; endDate
 								</Link>
 							</TableDataColumn>
 							<TableDataColumn>
-								{formatTimeIntervalToString(lessonDetail.duration)}
+								{formatTimeInterval(lessonDetail.duration)}
 							</TableDataColumn>
 							<TableDataColumn>
 								{lessonDetail.tasksSolved}/{lessonDetail.tasks.length}
@@ -210,7 +216,7 @@ function MoreDetails({ page, endDate }: { page: LearningDiaryPageDetail; endDate
 						</div>
 						<div className="mb-2">
 							<strong>Dauer:</strong>{" "}
-							{formatTimeIntervalToString(lessonDetail.duration)}
+							{formatTimeInterval(lessonDetail.duration)}
 						</div>
 						<div className="mb-2">
 							<strong>Aufgaben gelöst:</strong> {lessonDetail.tasksSolved}/

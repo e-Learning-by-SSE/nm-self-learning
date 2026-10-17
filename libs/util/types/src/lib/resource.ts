@@ -9,11 +9,12 @@ export const ResourceInputSchema = z
 		courseId: z.string().nullish(),
 		lessonId: z.string().nullish(),
 		specializationId: z.string().nullish(),
-		subjectId: z.string().nullish()
+		subjectId: z.string().nullish(),
+		skillId: z.string().nullish()
 	})
 	.refine(
 		p => {
-			const resources = [p.courseId, p.lessonId, p.specializationId, p.subjectId];
+			const resources = [p.courseId, p.lessonId, p.specializationId, p.subjectId, p.skillId];
 			const providedResources = resources.filter(Boolean);
 			return providedResources.length === 1;
 		},
@@ -26,6 +27,7 @@ export const ResourceInputSchema = z
 		if (data.lessonId) return { lessonId: data.lessonId };
 		if (data.specializationId) return { specializationId: data.specializationId };
 		if (data.subjectId) return { subjectId: data.subjectId };
+		if (data.skillId) return { skillId: data.skillId };
 		throw new Error("Invalid resource input");
 	});
 export type ResourceInput = z.infer<typeof ResourceInputSchema>;
@@ -36,11 +38,12 @@ export const ResourceAccessSchema = z
 		lessonId: z.string().nullish(),
 		specializationId: z.string().nullish(),
 		subjectId: z.string().nullish(),
+		skillId: z.string().nullish(),
 		accessLevel: AccessLevelEnum
 	})
 	.refine(
 		p => {
-			const resources = [p.courseId, p.lessonId, p.specializationId, p.subjectId];
+			const resources = [p.courseId, p.lessonId, p.specializationId, p.subjectId, p.skillId];
 			const providedResources = resources.filter(Boolean);
 			return providedResources.length === 1;
 		},
@@ -54,6 +57,7 @@ export const ResourceAccessSchema = z
 		if (data.specializationId)
 			return { specializationId: data.specializationId, accessLevel: data.accessLevel };
 		if (data.subjectId) return { subjectId: data.subjectId, accessLevel: data.accessLevel };
+		if (data.skillId) return { skillId: data.skillId, accessLevel: data.accessLevel };
 		throw new Error("Invalid resource input");
 	});
 
@@ -72,11 +76,13 @@ export const ResourceAccessFormSchema = z
 				title: z.string()
 			})
 			.nullish(),
-		subject: z.object({ subjectId: z.string(), slug: z.string(), title: z.string() }).nullish()
+		subject: z.object({ subjectId: z.string(), slug: z.string(), title: z.string() }).nullish(),
+		// Skill has no slug. Callers put the id in `slug` so this matches the other resources.
+		skill: z.object({ skillId: z.string(), slug: z.string(), title: z.string() }).nullish()
 	})
 	.refine(
 		p => {
-			const resources = [p.course, p.lesson, p.specialization, p.subject];
+			const resources = [p.course, p.lesson, p.specialization, p.subject, p.skill];
 			const providedResources = resources.filter(Boolean);
 			return providedResources.length === 1;
 		},
@@ -122,16 +128,29 @@ export function toResourcePermissionsForm(
 
 // ===
 
-export const ResourceKindEnum = z.enum(["course", "lesson", "specialization", "subject"]);
+export const ResourceKindEnum = z.enum([
+	"course",
+	"lesson",
+	"specialization",
+	"subject",
+	"skill"
+]);
 export type ResourceKind = z.infer<typeof ResourceKindEnum>;
 
-export const allResourceKinds: ResourceKind[] = ["course", "lesson", "specialization", "subject"];
+export const allResourceKinds: ResourceKind[] = [
+	"course",
+	"lesson",
+	"specialization",
+	"subject",
+	"skill"
+];
 
 export const resourceLabels: Record<ResourceKind, string> = {
 	course: "Kurs",
 	lesson: "Lerneinheit",
 	specialization: "Spezialisierung",
-	subject: "Fachgebiet"
+	subject: "Fachgebiet",
+	skill: "Kompetenz"
 };
 
 export const ResourceSearchEntrySchema = z.object({
@@ -142,7 +161,8 @@ export const ResourceSearchEntrySchema = z.object({
 	slug: z.string(),
 	imgUrl: z.string().nullish(),
 	accessLevel: z.enum(AccessLevel).optional(),
-	parentId: z.string().optional()
+	parentId: z.string().optional(),
+	courseType: z.string().optional()
 });
 
 export type ResourceSearchEntry = z.infer<typeof ResourceSearchEntrySchema>;
@@ -204,16 +224,22 @@ export function toResourceAccessForm(
 				accessLevel,
 				subject: { subjectId: resource.id, slug: resource.slug, title: resource.title }
 			};
+		case "skill":
+			return {
+				accessLevel,
+				skill: { skillId: resource.id, slug: resource.slug, title: resource.title }
+			};
 	}
 }
 
 export function stripFormResourceAccess(data: ResourceAccessFormType): ResourceAccess {
-	const { accessLevel, course, lesson, specialization, subject } = data;
+	const { accessLevel, course, lesson, specialization, subject, skill } = data;
 
 	if (course) return { accessLevel, courseId: course.courseId };
 	if (lesson) return { accessLevel, lessonId: lesson.lessonId };
 	if (specialization) return { accessLevel, specializationId: specialization.specializationId };
 	if (subject) return { accessLevel, subjectId: subject.subjectId };
+	if (skill) return { accessLevel, skillId: skill.skillId };
 
 	throw new Error("Invalid resource input");
 }
@@ -273,6 +299,19 @@ export function normalizeFormResourceAccess(
 			accessLevel: permission.accessLevel
 		};
 	}
+	if (permission.skill) {
+		const id = permission.skill.skillId;
+		const kind = "skill";
+		return {
+			kind,
+			type: resourceLabels[kind],
+			id,
+			key: getResourceSearchEntryKey({ kind, id }),
+			title: permission.skill.title,
+			slug: permission.skill.slug,
+			accessLevel: permission.accessLevel
+		};
+	}
 	throw new Error("Invalid resource input");
 }
 
@@ -286,6 +325,8 @@ export function toResourceInput(entry: Pick<ResourceSearchEntry, "kind" | "id">)
 			return { specializationId: entry.id };
 		case "subject":
 			return { subjectId: entry.id };
+		case "skill":
+			return { skillId: entry.id };
 		default:
 			throw new Error(`Unsupported resource kind: ${entry.kind}`);
 	}

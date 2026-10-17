@@ -8,16 +8,15 @@ import {
 	MarkdownField,
 	useSlugify
 } from "@self-learning/ui/forms";
-import { useResourceGuard } from "@self-learning/ui/layouts";
-import { AccessLevel } from "@prisma/client";
-import { Controller, useFormContext, useWatch } from "react-hook-form";
+import { Controller, useFormContext } from "react-hook-form";
 import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
-import { LessonSkillManager } from "./lesson-skill-manager";
 import { GroupAccessEditor } from "../../group/forms/group-form";
+import { useTranslation } from "next-i18next";
 // import { AiTutorConsent } from "./ai-tutor-consent";
 
 export function LessonInfoEditor({ isNew }: { isNew: boolean }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	const form = useFormContext<LessonFormModel>();
 	const {
 		register,
@@ -26,34 +25,30 @@ export function LessonInfoEditor({ isNew }: { isNew: boolean }) {
 	} = form;
 
 	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
-	const permissions = useWatch({ control: form.control, name: "permissions" }) ?? [];
-	const hasFull = useResourceGuard(AccessLevel.FULL, permissions);
-	const showGroupAccessEditor = isNew || hasFull;
-
 	return (
 		<>
 			<Form.SidebarSection>
 				<Form.SidebarSectionTitle
-					title="Daten"
-					subtitle="Informationen über diese Lerneinheit"
+					title={t("common:Information")}
+					subtitle={t("Lesson_Info_Section_Subtitle")}
 				/>
 				<div className="flex flex-col gap-4">
-					<LabeledField label="Titel" error={errors.title?.message}>
+					<LabeledField label={t("common:Title")} error={errors.title?.message}>
 						<input
 							{...register("title")}
 							type="text"
 							className="textfield"
-							placeholder="Die neue Lerneinheit"
+							placeholder={t("Lesson_Title_Placeholder")}
 							onBlur={slugifyIfEmpty}
 						/>
 					</LabeledField>
 
-					<LabeledField label="Slug" error={errors.slug?.message}>
+					<LabeledField label={t("common:Slug")} error={errors.slug?.message}>
 						<InputWithButton
 							input={
 								<input
 									className="textfield"
-									placeholder="die-neue-lerneinheit"
+									placeholder={t("Lesson_Slug_Placeholder")}
 									type={"text"}
 									{...register("slug")}
 								/>
@@ -63,20 +58,17 @@ export function LessonInfoEditor({ isNew }: { isNew: boolean }) {
 									className="btn btn-tertiary"
 									type="button"
 									onClick={slugifyField}
-									title={"Slug generieren"}
+									title={t("Lesson_Generate_Slug")}
 								>
-									<span className={"text-gray-600"}>Generieren</span>
+									<span className={"text-gray-600"}>{t("common:Generate")}</span>
 								</button>
 							}
 						/>
-						<FieldHint>
-							Der <strong>slug</strong> wird in der URL angezeigt. Muss einzigartig
-							sein.
-						</FieldHint>
+						<FieldHint>{t("common:Slug Description")}</FieldHint>
 					</LabeledField>
 
 					<LabeledField
-						label="Untertitel"
+						label={t("common:Subtitle")}
 						error={errors.subtitle?.message}
 						optional={true}
 					>
@@ -88,13 +80,13 @@ export function LessonInfoEditor({ isNew }: { isNew: boolean }) {
 									content={field.value as string}
 									setValue={field.onChange}
 									inline={true}
-									placeholder="1-2 Sätze über diese Lerneinheit."
+									placeholder={t("Lesson_Subtitle_Placeholder")}
 								/>
 							)}
 						></Controller>
 					</LabeledField>
 					<LabeledField
-						label={"Beschreibung"}
+						label={t("common:Description")}
 						error={errors.description?.message}
 						optional={true}
 					>
@@ -106,14 +98,14 @@ export function LessonInfoEditor({ isNew }: { isNew: boolean }) {
 									content={field.value as string}
 									setValue={field.onChange}
 									inline={true}
-									placeholder={"1-2 Sätze welche diese Lerneinheit beschreibt."}
+									placeholder={t("Lesson_Description_Placeholder")}
 								></MarkdownField>
 							)}
 						></Controller>
 					</LabeledField>
 
 					<LabeledField
-						label={"Selbstreguliertes Lernen"}
+						label={t("Lesson_Self_Regulated_Label")}
 						error={errors.selfRegulatedQuestion?.message}
 						optional={false}
 					>
@@ -122,7 +114,7 @@ export function LessonInfoEditor({ isNew }: { isNew: boolean }) {
 							name={"lessonType"}
 							render={({ field }) => (
 								<LabeledCheckbox
-									label={"Aktivierungsfrage und sequenzielles Prüfen:"}
+									label={t("Lesson_Self_Regulated_Checkbox")}
 									checked={field.value === "SELF_REGULATED"}
 									onChange={e => {
 										field.onChange(
@@ -135,19 +127,13 @@ export function LessonInfoEditor({ isNew }: { isNew: boolean }) {
 					</LabeledField>
 				</div>
 			</Form.SidebarSection>
-			{showGroupAccessEditor && (
-				<GroupAccessEditor
-					subtitle="Gruppen, die auf diese Lerninhalt zugreifen können"
-					doUseDefaultGroup={isNew}
-				/>
-			)}
+			<GroupAccessEditor subtitle={t("Lesson_Group_Access_Subtitle")} isNew={isNew} />
 			<AuthorsForm
-				subtitle="Autoren dieser Lerneinheit."
-				emptyString="Für diese Lerneinheit sind noch keine Autoren hinterlegt."
+				subtitle={t("Lesson_Authors_Subtitle")}
+				emptyString={t("Lesson_Authors_Empty")}
 			/>
 			{/* <AiTutorConsent /> */}
 			<LicenseForm />
-			<LessonSkillManager />
 		</>
 	);
 }

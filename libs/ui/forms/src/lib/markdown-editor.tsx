@@ -6,6 +6,7 @@ import {
 	Dialog,
 	DialogActions,
 	IconTextButton,
+	MarkdownViewer,
 	OnDialogCloseFn
 } from "@self-learning/ui/common";
 import ReactMarkdown from "react-markdown";
@@ -666,17 +667,4 @@ function EditorQuickActionsCodeDropdown({ onChange }: { onChange: (value: string
 	);
 }
 
-/**
- * Client-side Markdown renderer.
- *
- * If possible, prefer server-side rendering instead of using this component.
- */
-export function MarkdownViewer({ content }: { content: string }) {
-	return (
-		<div className="prose prose-emerald">
-			<ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
-				{content ?? ""}
-			</ReactMarkdown>
-		</div>
-	);
-}
+export { MarkdownViewer };

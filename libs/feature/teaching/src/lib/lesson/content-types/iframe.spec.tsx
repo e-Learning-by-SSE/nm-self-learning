@@ -63,8 +63,8 @@ describe("IFrameInput", () => {
 			</FormWrapper>
 		);
 
-		// Upload tab is default — upload button should be visible
-		expect(screen.getByText("Upload File")).toBeDefined();
+		// Upload tab is selected by default
+		expect(screen.getByTestId("iframe-upload-tab")).toBeDefined();
 		// URL input should not be visible on upload tab
 		expect(screen.queryByRole("textbox")).toBeNull();
 	});
@@ -87,10 +87,10 @@ describe("IFrameInput", () => {
 		);
 
 		// Click the URL tab
-		fireEvent.click(screen.getByText("Externe URL"));
+		fireEvent.click(screen.getByTestId("iframe-url-tab"));
 
 		// URL input should now be visible
-		const input = screen.getByRole("textbox");
+		const input = screen.getByTestId("iframe-url-input");
 		expect(input).toBeDefined();
 	});
 
@@ -119,9 +119,9 @@ describe("IFrameInput", () => {
 		render(<Capture />);
 
 		// Switch to URL tab first
-		fireEvent.click(screen.getByText("Externe URL"));
+		fireEvent.click(screen.getByTestId("iframe-url-tab"));
 
-		const input = screen.getByRole("textbox");
+		const input = screen.getByTestId("iframe-url-input");
 		fireEvent.change(input, { target: { value: "https://h5p.org/example" } });
 
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any

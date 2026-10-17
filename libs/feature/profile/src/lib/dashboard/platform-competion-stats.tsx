@@ -13,9 +13,9 @@ import {
 	LoadingBox,
 	ProgressBar,
 	SectionCard,
-	showToast
+	showToast,
+	useTimeIntervalFormatter
 } from "@self-learning/ui/common";
-import { formatTimeIntervalToString } from "@self-learning/util/common";
 import { compareDesc, secondsToMilliseconds } from "date-fns";
 import Link from "next/link";
 import { useState } from "react";
@@ -198,6 +198,7 @@ export function PlatformStatsAchievementsSection({
 	completedLessons,
 	className
 }: PlatformStatsAchievementsSectionProps) {
+	const formatTimeInterval = useTimeIntervalFormatter();
 	const { data: achievements, isLoading } = trpc.achievement.getOwnAchievements.useQuery();
 	const { data: achievementStats } = trpc.achievement.getOverviewStats.useQuery();
 	const utils = trpc.useUtils();
@@ -459,7 +460,7 @@ export function PlatformStatsAchievementsSection({
 									<ClockIcon className="h-8 w-8 text-blue-500 flex-shrink-0" />
 									<div>
 										<div className="text-xl font-bold text-blue-900">
-											{formatTimeIntervalToString(
+											{formatTimeInterval(
 												secondsToMilliseconds(
 													stats.today.longestLearningSession
 												)

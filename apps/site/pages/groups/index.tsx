@@ -82,7 +82,6 @@ export default function GroupsPage() {
 	const canCreateGroup = useCanCreate();
 
 	const [mergeDialogOpen, setMergeDialogOpen] = useState(false);
-	const [groupSearchDialogOpen, setGroupSearchDialogOpen] = useState(false);
 
 	if (!router.isReady) {
 		return <LoadingBox />;
@@ -191,7 +190,7 @@ export default function GroupsPage() {
 
 			<MemberFilter value={allGroupMemberFilter} onChange={setAllGroupMemberFilter} />
 
-			{!myGroups ? (
+			{!allGroups ? (
 				<LoadingBox />
 			) : (
 				<GroupsPaginatedView data={allGroups} setPage={setAllGroupsPage} />
@@ -259,7 +258,11 @@ function GroupsPaginatedView({
 						</TableDataColumn>
 
 						<TableDataColumn>
-							<MemberGuard groupId={group.groupId} groupRole={GroupRole.MEMBER}>
+							<MemberGuard
+								fallback="hidden"
+								groupId={group.groupId}
+								groupRole={GroupRole.MEMBER}
+							>
 								<Link href={`/teaching/groups/${group.groupId}/edit`}>
 									<IconOnlyButton
 										icon={<PencilIcon className="h-5 w-5" />}

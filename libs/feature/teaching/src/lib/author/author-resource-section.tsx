@@ -4,11 +4,13 @@ import { AccessLevel } from "@prisma/client";
 import { trpc } from "@self-learning/api-client";
 import { greaterOrEqAccessLevel, ResourceKind, ResourceSearchEntry } from "@self-learning/types";
 import {
+	Badge,
 	IconTextButton,
 	ImageOrPlaceholder,
 	LoadingBox,
 	Paginator,
-	SectionHeader
+	SectionHeader,
+	Tooltip
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { VoidSvg } from "@self-learning/ui/static";
@@ -19,6 +21,7 @@ import { useTranslation } from "next-i18next";
 import { CourseExportType, ExportCourseDialog } from "../course/course-export/course-export-dialog";
 import { CourseDeleteOption } from "./course-delete-option";
 import { LessonDeleteOption } from "./lesson-delete-option";
+import { SkillDeleteButton } from "../skills/skill-row-delete-button";
 
 type AuthorResourceLinks = {
 	viewHref: string;
@@ -32,6 +35,8 @@ function getResourceCreateLinks(kind: ResourceKind) {
 			return "/teaching/courses/create";
 		case "lesson":
 			return "/teaching/lessons/create";
+		case "skill":
+			return "/skills";
 		default:
 			return undefined;
 	}
@@ -64,6 +69,11 @@ function getAuthorResourceLinks(resource: ResourceSearchEntry): AuthorResourceLi
 			return {
 				viewHref: `/teaching/subjects/${resource.parentId}/${resource.id}`,
 				editHref: `/teaching/subjects/${resource.parentId}/${resource.id}/edit`
+			};
+		case "skill":
+			return {
+				viewHref: `/skills/${resource.id}`,
+				editHref: `/skills/${resource.id}`
 			};
 	}
 }
@@ -179,6 +189,16 @@ function AuthorResourceRow({
 	const links = getAuthorResourceLinks(resource);
 	const canEdit = isAdmin || greaterOrEqAccessLevel(accessLevel, AccessLevel.EDIT);
 	const canManage = isAdmin || greaterOrEqAccessLevel(accessLevel, AccessLevel.FULL);
+	// Hover text for the access badge: full, edit, or view.
+	const accessTooltip =
+		accessLevel === AccessLevel.FULL
+			? t("Access_Full_Tooltip")
+			: accessLevel === AccessLevel.EDIT
+				? t("Access_Edit_Tooltip")
+				: t("Access_View_Tooltip");
+	const accessBadge = (
+		<Badge text={accessLevel} className="bg-green-100 text-green-700 border-green-300" />
+	);
 
 	return (
 		<li className="flex items-center rounded-lg border border-c-border bg-white">
@@ -191,7 +211,31 @@ function AuthorResourceRow({
 					{resource.title}
 				</Link>
 				<div className="flex flex-wrap justify-end gap-4">
-					<i className="flex items-center">{accessLevel}</i>
+					<span className="flex flex-row flex-wrap gap-1">
+						{resource.kind === "course" && (
+							// Static vs dynamic: how the course is delivered.
+							<Tooltip
+								content={
+									resource.courseType === "DYNAMIC"
+										? t("Course_Type_Dynamic_Tooltip")
+										: t("Course_Type_Static_Tooltip")
+								}
+								className="flex flex-row"
+							>
+								<Badge
+									text={
+										resource.courseType === "DYNAMIC"
+											? t("Course_Type_Dynamic")
+											: t("Course_Type_Static")
+									}
+									className="bg-green-100 text-green-700 border-green-300"
+								/>
+							</Tooltip>
+						)}
+						<Tooltip content={accessTooltip} className="flex flex-row">
+							{accessBadge}
+						</Tooltip>
+					</span>
 					{canEdit && links.editHref && (
 						<Link href={links.editHref}>
 							<IconTextButton
@@ -201,6 +245,9 @@ function AuthorResourceRow({
 								title={editTitle(resource.kind, t)}
 							/>
 						</Link>
+					)}
+					{canManage && resource.kind === "skill" && (
+						<SkillDeleteButton skillId={resource.id} variant="default" />
 					)}
 					{canManage && resource.kind === "course" && onExport && (
 						<>
@@ -241,5 +288,7 @@ function editTitle(kind: ResourceKind, t: (key: string) => string): string {
 			return t("Edit_Subject");
 		case "specialization":
 			return t("Edit_Specialization");
+		case "skill":
+			return t("Edit_Skill");
 	}
 }

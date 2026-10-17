@@ -13,6 +13,18 @@
     "IMPRINT_URL": "https://www.uni-hildesheim.de/en/impressum/",
     "IMPRINT_Label": "Imprint",
 
+	"Duration_Year_one": "{{count, number}} year",
+	"Duration_Year_other": "{{count, number}} years",
+	"Duration_Month_one": "{{count, number}} month",
+	"Duration_Month_other": "{{count, number}} months",
+	"Duration_Day_one": "{{count, number}} day",
+	"Duration_Day_other": "{{count, number}} days",
+	"Duration_Hour_one": "{{count, number}} hour",
+	"Duration_Hour_other": "{{count, number}} hours",
+	"Duration_Minute_one": "{{count, number}} minute",
+	"Duration_Minute_other": "{{count, number}} minutes",
+	"Duration_List": "{{parts, list}}",
+
 	"Author": "Author",
 	"Author_other": "Authors",
 	"Admin": "Admin",
@@ -49,8 +61,10 @@
 	"Information": "Information",
 	"Information_other": "Information",
 	"Title": "Title",
+	"Image": "Image",
 	"Subtitle": "Subtitle",
 	"Slug": "Slug",
+	"URL": "URL",
 	"Slug Description": "The <strong>slug</strong> is displayed in the URL. Must be unique.",
 	"Banner Image": "Image (Banner)",
 	"Banner Image Description": "Image displayed as a banner at the top of the page.",
@@ -88,5 +102,8 @@
 	"subjects": "Subjects",
     "Close": "Close",
     "Help": "Help",
-    "Open_Menu": "Open Menu"
+    "Open_Menu": "Open Menu",
+    "Description": "Description",
+    "Confirm": "Confirm",
+    "Warning": "Warning"
 }

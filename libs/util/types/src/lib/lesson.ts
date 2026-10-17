@@ -3,7 +3,7 @@ import { authorsRelationSchema } from "./author";
 import { lessonContentSchema } from "./lesson-content";
 import { LessonMeta } from "./lesson-meta";
 import { LessonType } from "@prisma/client";
-import { skillFormSchema } from "./skill";
+import { ResourceSkillsFormSchema } from "./skill";
 import { ResourcePermissionsFormSchema } from "./resource";
 
 export type LessonInfo = {
@@ -15,32 +15,32 @@ export type LessonInfo = {
 	performanceScore: number | null;
 };
 
-export const lessonSchema = z.object({
-	permissions: ResourcePermissionsFormSchema,
-	lessonId: z.string().nullable(),
-	slug: z.string().min(3),
-	title: z.string().min(3),
-	subtitle: z.string().nullable().optional(),
-	description: z.string().nullable().optional(),
-	imgUrl: z.string().nullable().optional(),
-	content: z.array(lessonContentSchema),
-	authors: authorsRelationSchema,
-	licenseId: z.number().nullable(),
-	requires: z.array(skillFormSchema),
-	provides: z.array(skillFormSchema),
-	lessonType: z.enum(LessonType),
-	selfRegulatedQuestion: z.string().nullable(),
-	quiz: z
-		.object({
-			questions: z.array(z.any()),
-			questionOrder: z.array(z.string()),
-			config: z.any().nullable().optional()
-		})
-		.nullable(),
-	ragEnabled: z.boolean(),
-	ragVersionHash: z.string().nullable().optional()
-	// TODO: quizContentSchema causes "Jest failed to parse a file"
-});
+export const lessonSchema = z
+	.object({
+		permissions: ResourcePermissionsFormSchema,
+		lessonId: z.string().nullable(),
+		slug: z.string().min(3),
+		title: z.string().min(3),
+		subtitle: z.string().nullable().optional(),
+		description: z.string().nullable().optional(),
+		imgUrl: z.string().nullable().optional(),
+		content: z.array(lessonContentSchema),
+		authors: authorsRelationSchema,
+		licenseId: z.number().nullable(),
+		lessonType: z.enum(LessonType),
+		selfRegulatedQuestion: z.string().nullable(),
+		quiz: z
+			.object({
+				questions: z.array(z.any()),
+				questionOrder: z.array(z.string()),
+				config: z.any().nullable().optional()
+			})
+			.nullable(),
+		ragEnabled: z.boolean(),
+		ragVersionHash: z.string().nullable().optional()
+		// TODO: quizContentSchema causes "Jest failed to parse a file"
+	})
+	.extend(ResourceSkillsFormSchema.shape);
 
 export type Lesson = z.infer<typeof lessonSchema>;
 

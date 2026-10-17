@@ -5,28 +5,37 @@ import { t } from "../trpc";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { TRPCError } from "@trpc/server";
 import { getCourseResource } from "../../permissions/course.utils";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel, CourseType } from "@prisma/client";
 import {
 	canCreate,
 	canDelete,
+	canProvideSkills,
 	preparePermissionsForCreate,
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
 
-jest.mock("@self-learning/database", () => ({
-	__esModule: true,
-	database: {
+jest.mock("@self-learning/database", () => {
+	const database = {
 		course: {
 			delete: jest.fn(),
 			create: jest.fn(),
 			update: jest.fn(),
-			findUniqueOrThrow: jest.fn()
+			findUniqueOrThrow: jest.fn(),
+			findUnique: jest.fn()
 		},
 		permission: {
 			findMany: jest.fn()
 		}
-	}
-}));
+	};
+
+	return {
+		__esModule: true,
+		database: {
+			...database,
+			$transaction: jest.fn(async callback => callback(database))
+		}
+	};
+});
 
 jest.mock("../../permissions/course.utils", () => ({
 	getCourseResource: jest.fn()
@@ -36,9 +45,28 @@ jest.mock("../../permissions/permission.service", () => ({
 	canCreate: jest.fn(),
 	canDelete: jest.fn(),
 	canEdit: jest.fn(),
+	canProvideSkills: jest.fn().mockResolvedValue(true),
+	hasEffectiveResourceAccessBatch: jest.fn().mockResolvedValue(true),
 	preparePermissionsForCreate: jest.fn(),
 	prepareResourceUpdate: jest.fn()
 }));
+
+// Avoids starting event queue processing during tests, which leads to unterminated / tests
+jest.mock("@self-learning/worker-api", () => {
+	const { graphResponseSchema } = jest.requireActual(
+		"../../../../../worker/src/lib/types/job-definitions"
+	);
+
+	return {
+		__esModule: true,
+		graphResponseSchema,
+		workerServiceClient: {
+			submitJob: { mutate: jest.fn().mockResolvedValue(undefined) },
+			jobQueue: { subscribe: jest.fn() }
+		},
+		subscribeToJobEvents: jest.fn()
+	};
+});
 
 function prepare(user: Partial<UserFromSession>) {
 	const ctx: Context & { user: UserFromSession } = {
@@ -71,7 +99,11 @@ describe("tRPC API of Course Router", () => {
 			title: "Test Course",
 			subtitle: "A course for testing",
 			description: "This is a test course",
+			type: CourseType.STATIC,
+			version: 1,
 			imgUrl: null,
+			provides: [],
+			requires: [],
 			authors: [{ username: "author1" }],
 			content: [],
 			permissions: [{ accessLevel: AccessLevel.FULL, groupId: 1, groupName: "Group 1" }]
@@ -204,6 +236,20 @@ describe("tRPC API of Course Router", () => {
 
 			(prepareResourceUpdate as jest.Mock).mockResolvedValue(undefined);
 
+			(database.course.findUnique as jest.Mock).mockResolvedValue({
+				version: defaultCourse.course.version,
+				content: defaultCourse.course.content,
+				requires: defaultCourse.course.requires,
+				provides: defaultCourse.course.provides
+			});
+
+			(database.course.update as jest.Mock).mockResolvedValue({
+				title: defaultCourse.course.title,
+				slug: defaultCourse.course.slug,
+				courseId: defaultCourse.courseId,
+				version: defaultCourse.course.version
+			});
+
 			await expect(caller.edit(defaultCourse)).resolves.toBeDefined();
 			expect(prepareResourceUpdate).toHaveBeenCalledWith(
 				expect.objectContaining({ id: "user-id" }),
@@ -221,8 +267,42 @@ describe("tRPC API of Course Router", () => {
 				upsert: []
 			});
 
+			(database.course.findUnique as jest.Mock).mockResolvedValue({
+				version: defaultCourse.course.version,
+				content: defaultCourse.course.content,
+				requires: defaultCourse.course.requires,
+				provides: defaultCourse.course.provides
+			});
+
+			(database.course.update as jest.Mock).mockResolvedValue({
+				title: defaultCourse.course.title,
+				slug: defaultCourse.course.slug,
+				courseId: defaultCourse.courseId,
+				version: defaultCourse.course.version
+			});
+
 			await expect(caller.edit(defaultCourse)).resolves.toBeDefined();
 			expect(database.course.update).toHaveBeenCalledTimes(1);
+		});
+
+		it("throws FORBIDDEN when user cannot provide newly added skills", async () => {
+			const { caller } = prepare({});
+
+			(prepareResourceUpdate as jest.Mock).mockResolvedValue(undefined);
+			(canProvideSkills as jest.Mock).mockResolvedValueOnce(false);
+			(database.course.findUnique as jest.Mock).mockResolvedValue({
+				version: 1,
+				content: [],
+				requires: [],
+				provides: [{ id: "old-skill" }]
+			});
+
+			await expect(caller.edit(defaultCourse)).rejects.toMatchObject({
+				code: "FORBIDDEN"
+			} as Partial<TRPCError>);
+			// Already provided skills are not checked again
+			expect(canProvideSkills).toHaveBeenCalledWith(expect.anything(), [], ["old-skill"]);
+			expect(database.course.update).not.toHaveBeenCalled();
 		});
 	});
 

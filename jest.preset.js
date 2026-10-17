@@ -11,6 +11,7 @@ const taskHash = process.env.NX_TASK_HASH || process.pid;
 module.exports = {
 	...nxPreset,
 	setupFiles: ["dotenv/config"],
+	setupFilesAfterEnv: [path.join(projectRoot, "jest.i18n.setup.ts")],
 	globals: {},
 	moduleNameMapper: {
 		// for Jest (transform imports)

@@ -31,7 +31,9 @@ describe("Courses Completed by Subject for Student", () => {
 				slug: "average-lesson-completion-rate-by-course-test-course",
 				subtitle: "A course to test average lesson completion rate by course metric",
 				content: {},
-				meta: {}
+				meta: {},
+				version: 1,
+				type: "STATIC"
 			}
 		});
 
@@ -76,8 +78,6 @@ describe("Courses Completed by Subject for Student", () => {
 		const result = await prisma.studentMetric_CoursesCompletedBySubject.findFirst({
 			where: { userId: users[0].id }
 		});
-
-		console.log("Average Courses Completed by Subject Result:", result);
 
 		expect(result).not.toBeNull();
 		expect(result?.userId).toBe(users[0].id);

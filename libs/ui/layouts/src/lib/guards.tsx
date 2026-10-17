@@ -14,6 +14,7 @@ import {
 import { AccessLevel, GroupRole } from "@prisma/client";
 import { useRouter } from "next/router";
 import { UserFromSession } from "@self-learning/api";
+import { trpc } from "@self-learning/api-client";
 
 /**
  * Wrapper for `useSession` from `next-auth` that redirects the user to the login page if they are not authenticated.
@@ -81,13 +82,14 @@ export function AdminGuard({
 export function MemberGuard({
 	children,
 	groupId,
-	groupRole = GroupRole.MEMBER // TODO
+	groupRole = GroupRole.MEMBER, // TODO
+	fallback
 }: {
 	groupRole: GroupRole;
 	groupId?: number;
 	children?: React.ReactNode;
+	fallback: "hidden" | "unauthorized";
 }) {
-	const error = `Um darauf zugreifen zu können, müssen Sie Mitglied einer Gruppe sein.`;
 	const session = useRequiredSession();
 	const isAdmin = session.data?.user.role === "ADMIN";
 	// const isAuthor = session.data?.user.isAuthor;
@@ -95,11 +97,19 @@ export function MemberGuard({
 	// TODO now I sacrifize expiresAt & groupRole to make it simple; const now = new Date();
 
 	if (session.status === "loading" || groupId === undefined) {
-		return <LoadingBox />;
+		return fallback === "unauthorized" ? <LoadingBox /> : null;
 	}
 
 	const hasAccess = isAdmin || userGroups.has(groupId);
-	return <AuthorizedGuard condition={hasAccess} children={children} error={error} />;
+	if (hasAccess) {
+		// eslint-disable-next-line react/jsx-no-useless-fragment
+		return <>{children}</>;
+	}
+	if (fallback === "unauthorized") {
+		const error = `Um darauf zugreifen zu können, müssen Sie Mitglied einer Gruppe mit der Rolle '${groupRole}' sein.`;
+		return <Unauthorized>{error}</Unauthorized>;
+	}
+	return null; // hide
 }
 
 export function testResourceGuard(
@@ -155,6 +165,25 @@ export function useCanCreate(): boolean {
 		if (!user) return false;
 		return user.role === "ADMIN" || (user.memberships?.length ?? 0) > 0;
 	}, [session.data?.user]);
+}
+
+/**
+ * Best access level per skill the user can reach through an active group membership.
+ * Undefined while disabled or still loading, so the tree stays visible.
+ */
+export function useMySkillPermissions(enabled: boolean) {
+	const { data: permissions } = trpc.permission.getMySkillPermissions.useQuery(undefined, {
+		enabled
+	});
+	return enabled ? permissions : undefined;
+}
+
+/** Admins always pass; others need an active group permission of at least `requiredAccess`. */
+export function useSkillGuard(skillId: string, requiredAccess: AccessLevel = AccessLevel.VIEW) {
+	const session = useRequiredSession();
+	const isAdmin = session.data?.user.role === "ADMIN";
+	const userAccess = useMySkillPermissions(!isAdmin)?.get(skillId);
+	return isAdmin || (!!userAccess && greaterOrEqAccessLevel(userAccess, requiredAccess));
 }
 
 export function ResourceGuard({

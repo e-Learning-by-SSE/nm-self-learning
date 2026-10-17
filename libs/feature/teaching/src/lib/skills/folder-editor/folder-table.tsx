@@ -1,131 +1,256 @@
-import { DialogHandler, Table, TableHeaderColumn } from "@self-learning/ui/common";
+import { useTranslation } from "next-i18next";
+import {
+	Trans,
+	CopyMoveButtonActions,
+	CopyMoveDialog,
+	DialogHandler,
+	dispatchDialog,
+	freeDialog,
+	showToast,
+	Table,
+	TableHeaderColumn
+} from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
-import { CenteredSection } from "@self-learning/ui/layouts";
+import { CenteredSection, useMySkillPermissions } from "@self-learning/ui/layouts";
 import React, { useMemo, useState } from "react";
-import { SkillRepository } from "@prisma/client";
-import { ListSkillEntryWithChildren } from "./skill-row-entry";
-import { NewSkillButton } from "./skill-taskbar";
+import { ListSkillEntryWithChildren } from "./skilltree/skill-row-entry";
 import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "./skill-display";
 import { Skill } from "@prisma/client";
+import { PlusIcon } from "@heroicons/react/24/solid";
+import { OnlyOwnSkillsCheckbox } from "../only-own-skills-checkbox";
+import { filterSkillTree } from "../filter-skill-tree";
+import { AddSkillDialog, SkillDialogResult } from "../skill-dialog/add-skill-dialog";
+import { trpc } from "@self-learning/api-client";
+import { DragDropContext, OnDragEndResponder } from "@hello-pangea/dnd";
+import { isHotkeyPressed } from "react-hotkeys-hook";
+import { SkillFormModel } from "@self-learning/types";
 
 export function SkillFolderTable({
-	repository,
 	skillDisplayData,
+	selectedSkill,
 	onSkillSelect: handleSelection,
-	updateSkillDisplay
+	updateSkillDisplay,
+	authorId
 }: {
-	repository: SkillRepository;
 	skillDisplayData: Map<string, SkillFolderVisualization>;
+	selectedSkill?: Skill;
 	onSkillSelect: SkillSelectHandler;
 	updateSkillDisplay: UpdateVisuals;
+	authorId: number;
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	const [searchTerm, setSearchTerm] = useState("");
-	const skillsToDisplay = useMemo(() => {
-		const skills = Array.from(skillDisplayData.values());
+	const [onlyOwnSkills, setOnlyOwnSkills] = useState(true);
+	// Membership, not authorship. Ancestors stay visible so a skill under someone else's area is not lost.
+	const skillPermissions = useMySkillPermissions(onlyOwnSkills);
+	const { skillsToDisplay, matchingSkillIds, autoExpandIds } = useMemo(
+		() =>
+			filterSkillTree(
+				skillDisplayData,
+				searchTerm,
+				onlyOwnSkills ? skillPermissions : undefined
+			),
+		[skillDisplayData, searchTerm, onlyOwnSkills, skillPermissions]
+	);
+	const [openNewSkillDialog, setOpenNewSkillDialog] = useState(false);
+	const { mutateAsync: createNewSkill } = trpc.skill.createSkill.useMutation();
+	const { mutateAsync: updateSkillParent } = trpc.skill.updateSkill.useMutation();
 
-		if (!searchTerm?.trim()) return skills;
+	async function handleAddSkillDialogClose(result?: SkillDialogResult) {
+		if (result) {
+			const created = await createNewSkill({
+				authorId: authorId,
+				skill: {
+					name: result.name,
+					description: result.description,
+					children: [],
+					permissions: result.permissions
+				}
+			});
+			if (result.parents.length) {
+				await updateSkillParent({
+					skill: {
+						id: created.id,
+						name: created.name,
+						description: created.description,
+						authorId: created.authorId,
+						children: created.children.map(child => child.id),
+						parents: result.parents,
+						permissions: result.permissions
+					}
+				});
+				updateSkillDisplay(
+					result.parents.map(id => ({
+						id,
+						shortHighlight: true,
+						isExpanded: true
+					}))
+				);
+			}
+		}
+		setOpenNewSkillDialog(false);
+	}
 
-		const normalizedSearchTerm = searchTerm.toLowerCase().trim();
-		return skills.filter(
-			skill =>
-				skill.skill.name.toLowerCase().includes(normalizedSearchTerm) ||
-				skill.displayName?.toLowerCase().includes(normalizedSearchTerm)
+	const updateSourceSkillParents = (
+		sourceSkill: SkillFormModel,
+		sourceParentId: string | undefined,
+		destinationSkill: SkillFormModel,
+		isMoving: boolean
+	) => {
+		if (isMoving) {
+			sourceSkill.parents = sourceSkill.parents.filter(parent => parent !== sourceParentId);
+		}
+
+		sourceSkill.parents.push(destinationSkill.id);
+
+		// Permissions are omitted, the server keeps them unchanged
+		updateSkillParent({ skill: sourceSkill }).catch((error: Error) =>
+			showToast({ type: "error", title: t("Skills_Save_Failed"), subtitle: error.message })
 		);
-	}, [skillDisplayData, searchTerm]);
+	};
 
-	const setShortHighlight = (skill: Skill) =>
-		updateSkillDisplay([{ id: skill.id, shortHighlight: true }]);
+	const onDragEnd: OnDragEndResponder = result => {
+		const { source, destination } = result;
+		if (!destination) return;
+
+		const sourceNodeId = DecodeNodeId(source.droppableId, "Node");
+		const sourceParentId = DecodeNodeId(source.droppableId, "Parent");
+		const destinationNodeId = DecodeNodeId(destination.droppableId, "Node");
+
+		if (source.droppableId === destination.droppableId) return;
+		if (!sourceNodeId || !destinationNodeId) return;
+
+		console.log(`Source is ${destination.droppableId}`);
+		console.log(`destination is ${source.droppableId}`);
+
+		const sourceSkill = skillDisplayData.get(sourceNodeId)?.skill;
+		const destinationSkill = skillDisplayData.get(destinationNodeId)?.skill;
+
+		if (!sourceSkill || !destinationSkill) return;
+
+		const hasParent = (skill: SkillFormModel): boolean => {
+			if (!skill.parents) {
+				return false;
+			}
+			return skill.parents.length > 0;
+		};
+
+		if (!sourceSkill.parents.includes(destinationSkill.id)) {
+			if (isHotkeyPressed("ctrl") || isHotkeyPressed("alt")) {
+				updateSourceSkillParents(
+					sourceSkill,
+					sourceParentId,
+					destinationSkill,
+					isHotkeyPressed("alt")
+				);
+			} else {
+				dispatchDialog(
+					<CopyMoveDialog
+						name={t("common:Warning")}
+						onClose={async (type: CopyMoveButtonActions) => {
+							if (type !== CopyMoveButtonActions.CANCEL) {
+								updateSourceSkillParents(
+									sourceSkill,
+									sourceParentId,
+									destinationSkill,
+									type === CopyMoveButtonActions.MOVE
+								);
+								freeDialog("copyMoveDialog");
+							}
+							freeDialog("copyMoveDialog");
+						}}
+						hasParent={hasParent(sourceSkill)}
+					>
+						<div className="">
+							<Trans
+								namespace="feature-teaching"
+								i18nKey="Skills_Drop_Message"
+								values={{
+									source: sourceSkill.name,
+									destination: destinationSkill.name
+								}}
+								components={{
+									source: <span className="text-secondary" />,
+									destination: <span className="text-secondary" />
+								}}
+							/>
+						</div>
+						{hasParent(sourceSkill) ? (
+							<div className="text-sm mt-2">
+								{t("Skills_Drop_Replace_Parent", { name: destinationSkill.name })}
+							</div>
+						) : (
+							<div className="text-sm mt-2">
+								{t("Skills_Drop_Add_Parent", { name: destinationSkill.name })}
+							</div>
+						)}
+					</CopyMoveDialog>,
+					"copyMoveDialog"
+				);
+			}
+		}
+	};
+
+	const skills = Array.from(skillDisplayData.values()).map(skillDisplay => skillDisplay.skill);
 
 	return (
 		<div>
 			<CenteredSection>
 				<div className="mb-16 flex items-center justify-between gap-4">
-					<RepositoryInfo repository={repository} />
-					<NewSkillButton repoId={repository.id} onSuccess={setShortHighlight} />
+					<button className="btn-primary" onClick={() => setOpenNewSkillDialog(true)}>
+						<PlusIcon className="icon h-5" />
+						<span>{selectedSkill ? t("Skills_Add") : t("Skills_Add_Repository")}</span>
+					</button>
+					{openNewSkillDialog && (
+						<AddSkillDialog
+							skills={skills ?? []}
+							selectedSkill={selectedSkill}
+							onClose={handleAddSkillDialogClose}
+						/>
+					)}
 				</div>
 
 				<SearchField
-					placeholder="Suche nach Skills"
+					placeholder={t("Skills_Search")}
 					onChange={e => {
 						setSearchTerm(e.target.value);
 					}}
 				/>
+				<OnlyOwnSkillsCheckbox checked={onlyOwnSkills} onChange={setOnlyOwnSkills} />
 
 				<DialogHandler id={"alert"} />
-				<div className="pt-4" />
-				<Table
-					head={
-						<>
-							<th
-								className={
-									"font-semi-bold border-y border-c-border py-4 text-center text-sm"
-								}
-							>
-								<input
-									className="secondary form-checkbox rounded text-c-primary focus:ring-c-primary"
-									type="checkbox"
-									onChange={() => {}}
-									checked={false}
-								/>
-							</th>
-							<TableHeaderColumn>Bezeichnung</TableHeaderColumn>
-							<TableHeaderColumn>Fremd-Skill</TableHeaderColumn>
-						</>
-					}
-				>
-					{skillsToDisplay
-						.sort(byChildrenLength)
-						.filter(isTopLevelSkill)
-						.map(element => (
+				<DragDropContext onDragEnd={onDragEnd} key={"element.id"}>
+					<Table head={<TableHeaderColumn>{t("common:Name")}</TableHeaderColumn>}>
+						{skillsToDisplay.map(element => (
 							<ListSkillEntryWithChildren
 								key={`${element.id}-0`}
 								skillDisplayData={element}
 								updateSkillDisplay={updateSkillDisplay}
 								handleSelection={handleSelection}
 								skillResolver={skillId => skillDisplayData.get(skillId)}
+								parentNodeId={""} // No parent for the top level - Repositories
+								authorId={authorId}
+								matchingSkillIds={matchingSkillIds}
+								autoExpandIds={searchTerm.trim() ? autoExpandIds : undefined}
 							/>
 						))}
-				</Table>
+					</Table>
+				</DragDropContext>
+				<DialogHandler id={"copyMoveDialog"} />
 			</CenteredSection>
 		</div>
 	);
 }
 
-const byChildrenLength = (a: SkillFolderVisualization, b: SkillFolderVisualization) => {
-	return (
-		b.skill.children.length - a.skill.children.length ||
-		a.skill.name.localeCompare(b.skill.name)
-	);
-};
-
-const isTopLevelSkill = (skill: SkillFolderVisualization) => {
-	return skill.skill.parents.length === 0 || (skill.isCycleMember && skill.hasNestedCycleMembers);
-};
-
-function RepositoryInfo({ repository }: { repository: SkillRepository }) {
-	const [showFullDescription, setShowFullDescription] = useState(false);
-
-	const descLength = repository.description?.length ?? 0;
-	const shouldShowMoreButton = !showFullDescription && descLength > 400;
-
-	const displayedDescription = showFullDescription
-		? repository.description
-		: repository.description?.substring(0, 250);
-
-	return (
-		<div>
-			<h1 className="text-5xl">{repository.name}</h1>
-			<div className="mt-2 text-c-text-muted" style={{ maxWidth: "700px" }}>
-				{displayedDescription}
-				{shouldShowMoreButton && (
-					<button
-						onClick={() => setShowFullDescription(true)}
-						className="pl-4 text-blue-500"
-					>
-						Mehr anzeigen
-					</button>
-				)}
-			</div>
-		</div>
-	);
+// TODO separator must be invalid symbol for ids, otherwise it overlaps
+// TODO this contract must be declared in one place or use separator as constant
+function DecodeNodeId(nodeId: string, nodeType: string): string | undefined {
+	const nodeIds: string[] = nodeId.split(":::");
+	if (nodeType === "Node") {
+		return nodeIds.pop();
+	} else if (nodeType === "Parent") {
+		nodeIds.pop();
+		return nodeIds.pop();
+	}
+	return nodeId;
 }

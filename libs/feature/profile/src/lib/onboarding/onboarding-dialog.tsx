@@ -18,7 +18,7 @@ export function OnboardingDialog({
 }) {
 	const session = useSession();
 	const user = session.data?.user;
-	const { mutateAsync: update } = trpc.me.update.useMutation();
+	const { mutateAsync: completeRegistration } = trpc.me.completeRegistration.useMutation();
 
 	const settingSuggestion = {
 		learningStatistics: true,
@@ -29,7 +29,7 @@ export function OnboardingDialog({
 
 	const handleSettingSave = async () => {
 		try {
-			await update({ user: { registrationCompleted: true } });
+			await completeRegistration(settings);
 			await onClose();
 			onSubmit?.();
 		} catch (error) {

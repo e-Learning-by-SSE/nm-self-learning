@@ -3,8 +3,10 @@ import { SectionCard } from "@self-learning/ui/common";
 import { LabeledField, Upload } from "@self-learning/ui/forms";
 import { PdfViewer } from "@self-learning/ui/lesson";
 import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
+import { useTranslation } from "next-i18next";
 
 export function PdfInput({ index }: { index: number }) {
+	const { t } = useTranslation("feature-teaching");
 	const { control } = useFormContext<{ content: PDF[] }>();
 	const { update } = useFieldArray<{ content: PDF[] }>({
 		name: "content"
@@ -16,12 +18,12 @@ export function PdfInput({ index }: { index: number }) {
 
 	return (
 		<SectionCard>
-			<h3 className="text-xl mb-2">PDF</h3>
+			<h3 className="text-xl mb-2">{t("Lesson_Content_Type_pdf")}</h3>
 
 			<div className="flex flex-col gap-8">
 				<div className="flex flex-col gap-4">
 					<div className="flex flex-col gap-4 md:flex-row">
-						<LabeledField label="URL">
+						<LabeledField label={t("common:URL")}>
 							<input
 								type={"text"}
 								className="textfield w-full"

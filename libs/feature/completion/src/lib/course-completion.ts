@@ -1,3 +1,4 @@
+import { getCourseData } from "@self-learning/course";
 import { database } from "@self-learning/database";
 import {
 	CompletedLessonsMap,
@@ -11,11 +12,9 @@ export async function getCourseCompletionOfStudent(
 	courseSlug: string,
 	username: string
 ): Promise<CourseCompletion> {
-	const course = await database.course.findUniqueOrThrow({
-		where: { slug: courseSlug }
-	});
-
-	const content = (course.content ?? []) as CourseContent;
+	const course = await getCourseData(courseSlug, username);
+	// content is already this student's outline (see getCourseData).
+	const content = (course?.content ?? []) as CourseContent;
 	const lessonIds = extractLessonIds(content);
 
 	const completedLessons = await database.completedLesson.findMany({

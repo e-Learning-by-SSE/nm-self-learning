@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useFieldArray, useFormContext, useFormState } from "react-hook-form";
 import { LessonFormModel } from "../../lesson/lesson-form-model";
 import { Form, LabeledField } from "@self-learning/ui/forms";
-import { Chip, IconTextButton } from "@self-learning/ui/common";
+import { Chip, IconTextButton, QuestionMarkTooltip } from "@self-learning/ui/common";
 import { PlusIcon } from "@heroicons/react/24/solid";
 import {
 	GroupSearchEntry,
@@ -10,9 +10,14 @@ import {
 	useDefaultGroup
 } from "../dialogs/search-group-dialog";
 import { AccessLevel } from "@prisma/client";
+import { useTranslation } from "next-i18next";
 import { GenericCombobox } from "../editors/group-members";
-import { useRequiredSession } from "@self-learning/ui/layouts";
+import { accessLevelTooltip } from "../editors/group-permission";
+import { ResourceGuard, useRequiredSession } from "@self-learning/ui/layouts";
 import { ResourcePermissionsFormType } from "@self-learning/types";
+
+type PermissionsFormValues = { permissions: ResourcePermissionsFormType };
+type GroupAccessEditorProps = { subtitle: string; isNew: boolean };
 
 /**
  * GroupAccessEditor - Sidebar form section for selecting group access and auto-filling default group.
@@ -28,17 +33,34 @@ import { ResourcePermissionsFormType } from "@self-learning/types";
  * Related: SearchGroupDialog, useDefaultGroup, LessonFormModel
  *
  * @param subtitle - Subtitle text for the sidebar section
- * @param doUseDefaultGroup - If true, auto-add the user's default group on first load when empty
+ * @param isNew - New resource: if true - auto adds default group if available
  */
-export function GroupAccessEditor({
-	subtitle,
-	doUseDefaultGroup
-}: {
-	subtitle: string;
-	doUseDefaultGroup: boolean;
-}) {
+export function GroupAccessEditor({ subtitle, isNew }: GroupAccessEditorProps) {
+	const { control } = useFormContext<PermissionsFormValues>();
+	const { defaultValues } = useFormState({ control });
+
+	const perms = (defaultValues?.permissions ?? []) as ResourcePermissionsFormType;
+
+	return (
+		<ResourceGuard
+			requiredAccess={AccessLevel.FULL}
+			// undefined = always allow
+			permittedGroups={
+				isNew || !perms.length // illegal state - permissions are empty for existing resource
+					? undefined
+					: perms
+			}
+			fallback="hidden"
+		>
+			<GroupAccessEditorForm subtitle={subtitle} isNew={isNew} />
+		</ResourceGuard>
+	);
+}
+
+function GroupAccessEditorForm({ subtitle, isNew }: GroupAccessEditorProps) {
+	const { t } = useTranslation("feature-teaching");
 	const [isGroupDialogOpen, setGroupDialogOpen] = useState(false);
-	const { control } = useFormContext<{ permissions: ResourcePermissionsFormType }>();
+	const { control, setValue } = useFormContext<PermissionsFormValues>();
 
 	// Admin can assign any group as main
 	const session = useRequiredSession();
@@ -109,18 +131,24 @@ export function GroupAccessEditor({
 	}
 
 	// If user creates a group, and has default group set - preset group parent (once)
-	const hasSetSingleGroup = useRef(false);
-	const defaultGroup = useDefaultGroup({
-		defaultGroupId: session.data?.user.defaultGroupId,
-		enabled: doUseDefaultGroup && editor.fields.length === 0
-	});
+	const { data: defaultGroup, isLoading } = useDefaultGroup(isNew && editor.fields.length === 0);
+	const isDefaultGroupApplied = useRef(false);
 	useEffect(() => {
-		if (hasSetSingleGroup.current) return;
+		// run once
+		if (isDefaultGroupApplied.current || isLoading) return;
+		isDefaultGroupApplied.current = true;
+		// guard again because values may change between renders
+		if (!isNew || editor.fields.length > 0) return;
 		if (!defaultGroup) return;
-		handleAddGroup(defaultGroup);
-
-		hasSetSingleGroup.current = true;
-	}, [defaultGroup, handleAddGroup]);
+		// Plain setValue and untouched defaults: attaching/removing default group produces no dirty state.
+		setValue("permissions", [
+			{
+				groupId: defaultGroup.groupId,
+				accessLevel: AccessLevel.FULL,
+				groupName: defaultGroup.name
+			}
+		]);
+	}, [defaultGroup, isLoading, setValue, isNew, editor.fields.length]);
 
 	return (
 		<Form.SidebarSection>
@@ -152,7 +180,20 @@ export function GroupAccessEditor({
 										<span>
 											{field.value?.groupName} {tmp && <i>(Mitglied)</i>}
 										</span>
-										<LabeledField label="Zugriffsebene auswählen">
+										<LabeledField
+											label="Zugriffsebene auswählen"
+											button={
+												field.value?.accessLevel ? (
+													// Explains the access level currently selected.
+													<QuestionMarkTooltip
+														content={accessLevelTooltip(
+															field.value.accessLevel,
+															t
+														)}
+													/>
+												) : undefined
+											}
+										>
 											<GenericCombobox
 												value={field.value?.accessLevel ?? null}
 												onChange={newLevel =>

@@ -13,7 +13,7 @@ type EditSubjectProps = {
 };
 
 export const getServerSideProps = withTranslations(
-	["common"],
+	["common", "feature-teaching"],
 	withAuth<EditSubjectProps>(async (ctx, user) => {
 		const subjectId = ctx.params?.subjectId;
 
