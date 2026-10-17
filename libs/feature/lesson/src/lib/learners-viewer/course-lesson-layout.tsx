@@ -2,6 +2,7 @@ import { trpc } from "@self-learning/api-client";
 import { useCourseCompletion } from "@self-learning/completion";
 import { CourseContent, LessonMeta } from "@self-learning/types";
 import {
+	CourseDiaryRecorder,
 	MobilePlayList,
 	Playlist,
 	PlaylistContent,
@@ -75,6 +76,7 @@ export function LessonLayout(
 function PlaylistArea({ course, lesson }: LessonLayoutProps) {
 	return (
 		<>
+			<CourseDiaryRecorder courseSlug={course.slug} lessonId={lesson.lessonId} />
 			<div className="xl:hidden">
 				{course && lesson && <MobilePlaylistArea course={course} lesson={lesson} />}
 				{/* <div className="p-5 pt-8 bg-gray-100 pb-16"> */}
