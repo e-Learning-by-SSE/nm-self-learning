@@ -4,6 +4,7 @@ import {
 	DiaryContentForm,
 	DiaryLayout,
 	getAllStrategies,
+	I18N_NAMESPACE,
 	PageChanger,
 	PagesMeta,
 	Strategy
@@ -13,7 +14,7 @@ import { withAuth } from "@self-learning/util/auth";
 import { subMilliseconds } from "date-fns";
 
 export const getServerSideProps = withTranslations(
-	["common"],
+	I18N_NAMESPACE,
 	withAuth(async (context, user) => {
 		const pageId = context.params?.pageId;
 		const pages = await allPages(user.name);
@@ -49,7 +50,8 @@ export default function DiaryPageDetail({
 }) {
 	// Identify the end date of the page, required for computations / filtering of details
 	const index = pages.findIndex(page => page.id === diaryId);
-	let endDate = index >= 0 && index < pages.length - 1 ? pages[index + 1].createdAt : new Date();
+	let endDate =
+		index >= 0 && index < pages.length - 1 ? new Date(pages[index + 1].createdAt) : new Date();
 	endDate = subMilliseconds(endDate, 1); // subtract 1 ms to avoid fetching data of the next page
 
 	return (

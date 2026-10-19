@@ -4,7 +4,11 @@ import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
 import { withTranslations } from "@self-learning/api";
 import { SmallGradeBadge } from "@self-learning/completion";
 import { database } from "@self-learning/database";
-import { LearningDiaryEntryStatusBadge, StatusBadgeInfo } from "@self-learning/diary";
+import {
+	I18N_NAMESPACE as DIARY_I18N_NAMESPACE,
+	LearningDiaryEntryStatusBadge,
+	StatusBadgeInfo
+} from "@self-learning/diary";
 import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
 import {
 	CourseEnrollmentOverview,
@@ -26,11 +30,7 @@ import {
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { handleEmailTracking } from "@self-learning/ui/notifications";
 import { withAuth } from "@self-learning/util/auth";
-import {
-	formatDateDistanceToNow,
-	formatDateStringShort,
-	IdSet
-} from "@self-learning/util/common";
+import { formatDateDistanceToNow, formatDateStringShort, IdSet } from "@self-learning/util/common";
 import { startOfToday } from "date-fns";
 import { NextComponentType, NextPageContext } from "next";
 import Link from "next/link";
@@ -439,7 +439,7 @@ function ProfilLayout(
 ProfilPage.getLayout = ProfilLayout;
 
 export const getServerSideProps = withTranslations(
-	["common"],
+	DIARY_I18N_NAMESPACE,
 	withAuth<Props>(async (context, user) => {
 		// TODO remove this check when gamification is fully enabled
 		const isParticipant = user.featureFlags.experimental;

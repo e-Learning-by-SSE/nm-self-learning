@@ -1,3 +1,4 @@
+import { I18N_NAMESPACE as UI_COMMON_I18N_NAMESPACE } from "@self-learning/ui/common";
 export { DiaryLearnedContent } from "./lib/page-viewer/page-details"; // reduce export to avoid other exports from this file which are there for testing purposes.
 export * from "./lib/page-viewer/page-form";
 export * from "./lib/page-viewer/page-sidebar";
@@ -10,4 +11,4 @@ export * from "./lib/goals/access-learning-goal";
 export * from "./lib/enable-diary-dialog";
 export * from "./lib/diary-layout";
 
-export { I18N_NAMESPACE } from "@self-learning/ui/common";
+export const I18N_NAMESPACE = [...UI_COMMON_I18N_NAMESPACE, "feature-diary"];

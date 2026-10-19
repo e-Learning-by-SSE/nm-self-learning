@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { TileLayout } from "./input-tile";
+import { useTranslation } from "next-i18next";
 
 type Technique = {
 	name: string;
@@ -41,6 +42,7 @@ export function PersonalTechniqueRatingTile({
 	onChange: (technique: Technique) => void;
 	isCompact: boolean;
 }) {
+	const { t } = useTranslation("feature-diary");
 	const [strategyDialogOpen, setStrategyDialogOpen] = useState(false);
 	const [evalTarget, setEvalTarget] = useState<Technique | null>(null);
 	const [createNewTechnique, setCreateNewTechnique] = useState<{
@@ -62,8 +64,7 @@ export function PersonalTechniqueRatingTile({
 		setEvalTarget(null);
 	};
 
-	const toolTipText =
-		"Welche Lernstrategie/-technik hast du genutzt? Und wie schätzt du den Nutzen ein?";
+	const toolTipText = t("Technique_Prompt");
 
 	return (
 		<TileLayout
@@ -71,12 +72,12 @@ export function PersonalTechniqueRatingTile({
 			onClick={handleTileClick}
 			isFilled={techniquesWithRating.length > 0}
 			tileDescription={toolTipText}
-			tileName="Genutzte Techniken"
+			tileName={t("Used_Techniques_Label")}
 		>
 			{/* Strategy List Dialog */}
 			{strategyDialogOpen && (
 				<Dialog
-					title="Lernstrategien"
+					title={t("common:Learning-Strategy_other")}
 					onClose={() => setStrategyDialogOpen(false)}
 					className="w-4/5 h-4/5 flex flex-col items-center justify-center overflow-hidden"
 				>
@@ -149,6 +150,7 @@ export function UsedTechniqueList({ techniques }: { techniques: Technique[] }) {
 }
 
 function StrategyList({ strategies, onTechniqueClick, onCreateTechniqueClick }: StrategiesProps) {
+	const { t } = useTranslation("feature-diary");
 	const [infoDialogOpen, setInfoDialogOpen] = useState<Strategy | null>(null);
 	const handleInfoClick = (strategy: Strategy) => {
 		setInfoDialogOpen(strategy);
@@ -161,7 +163,7 @@ function StrategyList({ strategies, onTechniqueClick, onCreateTechniqueClick }: 
 					<div className="flex items-center justify-between mb-4 pr-4">
 						<h2 className="font-bold text-xl mr-4">{strategy.name}</h2>
 						<button
-							title="Erweiterte Informationen"
+							title={t("More_Information_Tooltip")}
 							onClick={() => handleInfoClick(strategy)}
 						>
 							<InformationCircleIcon className="h-6 w-6 text-c-text-muted" />
@@ -188,7 +190,7 @@ function StrategyList({ strategies, onTechniqueClick, onCreateTechniqueClick }: 
 							className="flex items-center justify-between cursor-pointer mb-2 hover:text-green-500"
 							onClick={() => onCreateTechniqueClick(strategy.id)}
 						>
-							<span className="font-bold italic">Eigene Technik erstellen</span>
+							<span className="font-bold italic">{t("Create_Own_Technique")}</span>
 						</li>
 					</ul>
 				</div>
@@ -206,6 +208,7 @@ function StrategyList({ strategies, onTechniqueClick, onCreateTechniqueClick }: 
 }
 
 function StrategieInfoDialog({ strategy, onClose }: { strategy: Strategy; onClose: () => void }) {
+	const { t } = useTranslation("feature-diary");
 	const [showEditDialog, setShowEditDialog] = useState(false);
 	const session = useSession();
 	const { mutateAsync: saveStrategy } = trpc.learningDiary.updateStrategy.useMutation();
@@ -228,7 +231,7 @@ function StrategieInfoDialog({ strategy, onClose }: { strategy: Strategy; onClos
 	if (showEditDialog) {
 		return (
 			<MarkdownEditorDialog
-				title="Strategie bearbeiten"
+				title={t("Edit_Strategy")}
 				initialValue={strategy.description}
 				onClose={handleSaveStrategy}
 			/>
@@ -246,7 +249,7 @@ function StrategieInfoDialog({ strategy, onClose }: { strategy: Strategy; onClos
 				<DialogActions onClose={onClose}>
 					{isAdmin === "ADMIN" && (
 						<button className="btn-stroked" onClick={() => setShowEditDialog(true)}>
-							(Admin) Bearbeiten
+							{t("Admin_Edit")}
 						</button>
 					)}
 				</DialogActions>
@@ -264,6 +267,7 @@ function CreateOwnTechniqueDialog({
 	onClose: OnDialogCloseFn<void>;
 	onSubmit: (technique: Technique) => void;
 }) {
+	const { t } = useTranslation("feature-diary");
 	const { mutateAsync: saveNewTechnique } =
 		trpc.learningTechniqueRating.createNewTechnique.useMutation();
 	const [selectedTechnique, setSelectedTechnique] = useState<Technique>({
@@ -285,7 +289,7 @@ function CreateOwnTechniqueDialog({
 	};
 
 	return (
-		<Dialog title={`Neu Technik erstellen`} onClose={onClose} className="fixed inset-0 z-10">
+		<Dialog title={t("Create_Technique")} onClose={onClose} className="fixed inset-0 z-10">
 			<div className="flex flex-col justify-start items-start overflow-y-auto">
 				<div className="w-full max-w-md  text-l prose prose-emerald p-2">
 					<input
@@ -309,7 +313,7 @@ function CreateOwnTechniqueDialog({
 					onClick={submit}
 					disabled={!selectedTechnique.score}
 				>
-					<span>Fertig</span>
+					<span>{t("Done_Button")}</span>
 				</button>
 			</div>
 		</Dialog>
@@ -325,6 +329,7 @@ function TechniqueRatingDialog({
 	onSubmit: (updatedTechnique: Technique) => void;
 	onClose: OnDialogCloseFn<void>;
 }) {
+	const { t } = useTranslation("feature-diary");
 	const [selectedTechnique, setSelectedTechnique] = useState<Technique>(technique);
 
 	const handleTechniqueRatingChange = (score: number) => {
@@ -344,7 +349,7 @@ function TechniqueRatingDialog({
 
 	return (
 		<Dialog
-			title={`Bewertung von "${selectedTechnique.name}"`}
+			title={t("Rate_Technique", { technique: selectedTechnique.name })}
 			onClose={onClose}
 			className="fixed inset-0 z-10"
 		>
@@ -365,7 +370,7 @@ function TechniqueRatingDialog({
 					onClick={submitRating}
 					disabled={!selectedTechnique.score}
 				>
-					<span>Fertig</span>
+					<span>{t("Done_Button")}</span>
 				</button>
 			</div>
 		</Dialog>

@@ -4,6 +4,7 @@ import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import {
 	EnableLearningDiaryDialog,
+	I18N_NAMESPACE as DIARY_I18N_NAMESPACE,
 	LearningDiaryEntryStatusBadge,
 	StatusBadgeInfo
 } from "@self-learning/diary";
@@ -205,7 +206,7 @@ async function loadMostRecentLessons({
 }
 
 export const getServerSideProps = withTranslations(
-	["common", "pages-dashboard"],
+	[...DIARY_I18N_NAMESPACE, "pages-dashboard"],
 	withAuth<Props>(async (_, user) => {
 		// TODO: remove this when in case gamification is fully enabled
 		const isParticipant = user.featureFlags.experimental;

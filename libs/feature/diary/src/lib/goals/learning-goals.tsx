@@ -40,6 +40,7 @@ export function LearningGoals({
 	goals: IdSet<GoalFormModel>;
 	onStatusUpdate?: StatusUpdateCallback;
 }) {
+	const { t } = useTranslation("feature-diary");
 	const [selectedTab, setSelectedTab] = useState(0);
 	const [editTarget, setEditTarget] = useState<GoalFormModel | null>(null);
 	const [openAddDialog, setOpenAddDialog] = useState<boolean>(false);
@@ -94,8 +95,8 @@ export function LearningGoals({
 		<>
 			<div className="flex justify-between gap-4">
 				<SectionHeader
-					title="Meine Lernziele"
-					subtitle="Auflistung der erstellen Lernziele:"
+					title={t("My_Learning_Goals")}
+					subtitle={t("Learning_Goals_List_Description")}
 				/>
 
 				<div className="mt-4">
@@ -104,7 +105,7 @@ export function LearningGoals({
 						type="button"
 						onClick={() => setOpenAddDialog(true)}
 					>
-						<span>Lernziel erstellen</span>
+						<span>{t("Create_Learning_Goal")}</span>
 					</button>
 				</div>
 			</div>
@@ -119,7 +120,7 @@ export function LearningGoals({
 						<TabContent
 							selectedTab={selectedTab}
 							setSelectedTab={setSelectedTab}
-							notFoundMessage={"Derzeit ist kein Ziel erstellt worden."}
+							notFoundMessage={t("No_Goals_In_Progress")}
 							editable={true}
 							onRowClick={handleEditTarget}
 						/>
@@ -134,7 +135,7 @@ export function LearningGoals({
 						<TabContent
 							selectedTab={selectedTab}
 							setSelectedTab={setSelectedTab}
-							notFoundMessage={"Derzeit ist kein Ziel abgeschlossen."}
+							notFoundMessage={t("No_Completed_Goals")}
 							editable={false}
 							onRowClick={handleEditTarget}
 						/>
@@ -175,6 +176,7 @@ export function LearningGoalsDialog({
 	onStatusUpdate: StatusUpdateCallback;
 	description: string;
 }) {
+	const { t } = useTranslation("feature-diary");
 	const { userGoals, isLoading } = useLearningGoals();
 	return (
 		<Dialog title={description} onClose={onClose}>
@@ -184,7 +186,7 @@ export function LearningGoalsDialog({
 			</div>
 			<div className="flex justify-end">
 				<button type="button" className="btn-primary" onClick={onClose}>
-					Schließen
+					{t("common:Close")}
 				</button>
 			</div>
 		</Dialog>
@@ -253,12 +255,13 @@ function TabContent({
 	editable: boolean;
 	onRowClick: (editedGoal: GoalFormModel) => void;
 }>) {
+	const { t } = useTranslation("feature-diary");
 	return (
 		<div className="xl:grid-cols grid h-full gap-8">
 			<div>
 				<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
-					<Tab>In Bearbeitung</Tab>
-					<Tab>Abgeschlossen</Tab>
+					<Tab>{t("In_Progress_Tab")}</Tab>
+					<Tab>{t("Completed_Tab")}</Tab>
 				</Tabs>
 				<div className={"pt-4"}>
 					<GoalsOverview
@@ -290,7 +293,7 @@ function GoalRow({
 	onClick: (editedGoal: GoalFormModel) => void;
 }>) {
 	const [statusUpdateTriggered, setStatusUpdateTriggered] = useState(false); // NEW
-	const { t } = useTranslation("common");
+	const { t } = useTranslation("feature-diary");
 	const { userGoals } = useLearningGoalContext();
 
 	useEffect(() => {
@@ -304,13 +307,13 @@ function GoalRow({
 			if (!hasActiveOrInactiveSubGoals) {
 				showToast({
 					type: "info",
-					title: `Lernziel "${goal.description}" kann abgeschlossen werden.`,
-					subtitle: "Alle Feinziele erreicht."
+					title: t("Goal_Can_Be_Completed", { goal: goal.description }),
+					subtitle: t("All_Subgoals_Completed")
 				});
 				setStatusUpdateTriggered(false);
 			}
 		}
-	}, [goal, userGoals, statusUpdateTriggered]);
+	}, [goal, userGoals, statusUpdateTriggered, t]);
 
 	const { onStatusUpdate, onCreateGoal } = useLearningGoalContext();
 
@@ -385,7 +388,7 @@ function GoalRow({
 							</div>
 							<IconOnlyButton
 								icon={<PlusIcon className="h-3 w-3" />}
-								title={t("create")}
+								title={t("common:create")}
 								onClick={() => onCreateGoal?.(goal)}
 								className="btn-primary w-14 text-center flex justify-center"
 							/>
@@ -445,6 +448,7 @@ function SubGoalRow({
 	onClick: (editedGoal: GoalFormModel) => void;
 	onStatusChange?: (goalToChange: GoalFormModel) => void;
 }>) {
+	const { t } = useTranslation("feature-diary");
 	const { userGoals } = useLearningGoalContext();
 	const goal = userGoals.get(goalId);
 	if (!goal) {
@@ -477,7 +481,7 @@ function SubGoalRow({
 					)}
 					<button
 						type="button"
-						title="Priorität erhöhen"
+						title={t("Increase_Priority")}
 						className="rounded p-1 hover:bg-c-neutral"
 						onClick={moveUp}
 						hidden={!moveUp || !editable}
@@ -487,7 +491,7 @@ function SubGoalRow({
 					{(!moveUp || !editable) && <div className="p-2.5" />}
 					<button
 						type="button"
-						title="Priorität senken"
+						title={t("Decrease_Priority")}
 						className="rounded p-1 hover:bg-c-neutral"
 						onClick={moveDown}
 						hidden={!moveDown || !editable}
@@ -508,8 +512,9 @@ function SubGoalRow({
  * @returns A Button with a pencil icon.
  */
 function QuickEditButton({ onClick }: Readonly<{ onClick: () => void }>) {
+	const { t } = useTranslation("feature-diary");
 	return (
-		<button title="Bearbeiten" className="px-2 hover:text-c-primary" onClick={onClick}>
+		<button title={t("common:edit")} className="px-2 hover:text-c-primary" onClick={onClick}>
 			<PencilIcon className="h-5 text-lg" />
 		</button>
 	);
@@ -534,12 +539,16 @@ function GoalDeleteOption({
 	className?: string;
 	onDeleteSuccess?: () => void | PromiseLike<void>;
 }>) {
+	const { t } = useTranslation("feature-diary");
 	const { mutateAsync: deleteGoal } = trpc.learningGoal.deleteGoal.useMutation();
 	const onClose = async () => {
-		await withErrorHandling(async () => {
-			await deleteGoal({ goalId });
-			await onDeleteSuccess?.();
-		});
+		await withErrorHandling(
+			async () => {
+				await deleteGoal({ goalId });
+				await onDeleteSuccess?.();
+			},
+			{ success: t("Action_Succeeded"), failure: t("Action_Failed") }
+		);
 	};
 
 	/**
@@ -548,7 +557,7 @@ function GoalDeleteOption({
 	const handleDelete = () => {
 		dispatchDialog(
 			<SimpleDialog
-				name="Warnung"
+				name={t("common:Warning")}
 				onClose={async (type: ButtonActions) => {
 					if (type === ButtonActions.CANCEL) {
 						freeDialog("simpleGoalDialog");
@@ -558,7 +567,7 @@ function GoalDeleteOption({
 					freeDialog("simpleGoalDialog");
 				}}
 			>
-				Soll das Lernziel wirklich gelöscht werden?
+				{t("Delete_Goal_Confirmation")}
 			</SimpleDialog>,
 			"simpleGoalDialog"
 		);
@@ -584,19 +593,22 @@ function GoalDeleteOption({
  *
  * @param fn
  */
-const withErrorHandling = async (fn: () => Promise<void>) => {
+const withErrorHandling = async (
+	fn: () => Promise<void>,
+	messages: { success: string; failure: string }
+) => {
 	try {
 		await fn();
 		showToast({
 			type: "success",
-			title: "Aktion erfolgreich!",
+			title: messages.success,
 			subtitle: ""
 		});
 	} catch (error) {
 		if (error instanceof Error) {
 			showToast({
 				type: "error",
-				title: "Ihre Aktion konnte nicht durchgeführt werden",
+				title: messages.failure,
 				subtitle: error.message ?? ""
 			});
 		}
