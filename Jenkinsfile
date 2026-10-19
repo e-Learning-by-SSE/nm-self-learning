@@ -158,6 +158,35 @@ pipeline {
                 DATABASE_URL = "postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@db:5432/${env.POSTGRES_DB}"
             }
             parallel {
+                stage('Lint analysis') {
+                    when {
+                        beforeAgent true
+                        anyOf {
+                            branch 'master'
+                            changeRequest()
+                        }
+                    }
+                    agent {
+                        docker {
+                            image "${NODE_DOCKER_IMAGE}"
+                            args "${DOCKER_ARGS}"
+                            reuseNode true
+                        }
+                    }
+                    steps {
+                        sh 'npm run lint:report -- --report-only'
+                    }
+                    post {
+                        always {
+                            archiveArtifacts artifacts: 'output/lint/eslint.*', allowEmptyArchive: true
+                            script {
+                                if (fileExists('output/lint/eslint.xml')) {
+                                    recordIssues tools: [esLint(pattern: 'output/lint/eslint.xml', reportEncoding: 'UTF-8')], enabledForFailure: true, failOnError: true, skipPublishingChecks: true
+                                }
+                            }
+                        }
+                    }
+                }
                 stage('Master') {
                     when {
                         allOf {
