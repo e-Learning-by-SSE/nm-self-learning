@@ -73,7 +73,6 @@ export function createLesson({
 	selfRegulatedQuestion,
 	requires,
 	provides,
-	courseId,
 	lessonId,
 	permissions
 }: {
