@@ -1,73 +1,34 @@
 /**
  * @jest-environment node
  */
-import { Course, PrismaClient, User } from "@prisma/client";
-import { createUsers, deleteUsers } from "../helper";
-const prisma = new PrismaClient();
-
-let users: User[];
-let course: Course;
+import {
+	createMetricStudent,
+	createMetricCourse,
+	createMetricLearningSession,
+	studentMetricTest
+} from "./student-metric.fixture";
 
 describe("Learning Time by Course for Student", () => {
-	beforeAll(async () => {
-		users = await createUsers(["user_learning_time"]);
+	it(
+		"should return learning time by course for student",
+		studentMetricTest(async prisma => {
+			const user = await createMetricStudent(prisma);
+			const course = await createMetricCourse(prisma);
+			await createMetricLearningSession(prisma, user.name, course.courseId);
 
-		course = await prisma.course.create({
-			data: {
-				courseId: "learning-time-by-course-test-course",
-				title: "Learning Time by Course Test Course",
-				slug: "learning-time-by-course-test-course",
-				subtitle: "A course to test learning time by course metric",
-				content: {},
-				meta: {},
-				version: 1,
-				type: "STATIC"
-			}
-		});
+			const result = await prisma.studentMetric_LearningTimeByCourse.findMany({
+				where: { userId: user.id }
+			});
 
-		await prisma.eventLog.createMany({
-			data: [
+			expect(result).toEqual([
 				{
-					username: users[0].name,
-					createdAt: new Date("2024-01-01T10:00:00Z"),
-					type: "login",
-					courseId: course.courseId
-				},
-				{
-					username: users[0].name,
-					createdAt: new Date("2024-01-01T10:30:00Z"),
-					type: "logout",
-					courseId: course.courseId
+					userId: user.id,
+					username: user.name,
+					courseId: course.courseId,
+					courseTitle: course.title,
+					timeSeconds: 1800
 				}
-			]
-		});
-	});
-
-	afterAll(async () => {
-		// Clean up created data in reverse order
-		await prisma.course.deleteMany({
-			where: { courseId: course.courseId }
-		});
-		await prisma.eventLog.deleteMany({
-			where: {
-				username: users[0].name
-			}
-		});
-		await deleteUsers(users);
-
-		await prisma.$disconnect();
-	});
-
-	it("should return learning time by course for student", async () => {
-		const result = await prisma.studentMetric_LearningTimeByCourse.findFirst({
-			where: { userId: users[0].id }
-		});
-
-		expect(result).not.toBeNull();
-		expect(result?.userId).toBe(users[0].id);
-		expect(result?.username).toBe(users[0].name);
-		expect(result?.courseId).toBe(course.courseId);
-		expect(result?.courseTitle).toBe(course.title);
-		expect(result?.timeSeconds).toBe(1800); // 30 minutes in seconds
-	});
+			]);
+		})
+	);
 });

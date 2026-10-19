@@ -6,5 +6,10 @@
 		"types": ["node", "jest"]
 	},
 	"include": ["**/*.js", "**/*.jsx", "**/*.ts", "**/*.tsx", "../../../index.d.ts", "prisma/deploy-migrations.mts"],
-	"exclude": ["**/*.spec.ts", "jest.config.ts", "prisma/migrations/**"]
+	"exclude": [
+		"**/*.spec.ts",
+		"jest.config.ts",
+		"prisma/migrations/**",
+		"src/lib/access/metrics/view-tests/**"
+	]
 }
