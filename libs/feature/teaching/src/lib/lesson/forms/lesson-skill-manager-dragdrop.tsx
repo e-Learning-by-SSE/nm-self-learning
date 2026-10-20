@@ -3,7 +3,7 @@ import { Form } from "@self-learning/ui/forms";
 import { useFormContext } from "react-hook-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { LabeledFieldSelectSkillsViewDragDrop } from "../../skills/skill-dialog/select-skill-view";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "next-i18next";
 
 /**
  * Drag and Drop area to add and remove skills to a lesson
