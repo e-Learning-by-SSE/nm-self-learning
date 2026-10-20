@@ -949,7 +949,7 @@ async function getSkillContext(courseId: string) {
 		});
 	}
 
-	const lessonIds = course.context as string[]; // TODO SE: Fix type
+	const lessonIds = (course.context ?? []) as string[];
 	const lessons = lessonIds.length
 		? await database.lesson.findMany({
 				where: { lessonId: { in: lessonIds } },
