@@ -222,6 +222,8 @@
     "Lesson_Saved_Successfully": "$t(common:Lesson) saved!",
     "Lesson_Save_Failed": "Could not save the $t(common:Lesson).",
     "Lesson_Editor_Discard_Changes_Confirm": "Discard unsaved changes?",
+    "Not_Authorized": "Not authorized",
+    "Lesson_Edit_Not_Allowed": "You do not have permission to edit this $t(common:Lesson).",
     "Lesson_Editor_Tab_Basic_Info": "Basic information",
     "Lesson_Editor_Tab_Content": "Learning content",
     "Lesson_Editor_Tab_Quiz": "Quiz",

@@ -222,6 +222,8 @@
     "Lesson_Saved_Successfully": "$t(common:Lesson) gespeichert!",
     "Lesson_Save_Failed": "Die $t(common:Lesson) konnte nicht gespeichert werden.",
     "Lesson_Editor_Discard_Changes_Confirm": "Ungespeicherte Änderungen verwerfen?",
+    "Not_Authorized": "Nicht autorisiert",
+    "Lesson_Edit_Not_Allowed": "Sie haben keine Berechtigung, diese $t(common:Lesson) zu bearbeiten.",
     "Lesson_Editor_Tab_Basic_Info": "Grunddaten",
     "Lesson_Editor_Tab_Content": "Lerninhalt",
     "Lesson_Editor_Tab_Quiz": "Lernkontrolle",

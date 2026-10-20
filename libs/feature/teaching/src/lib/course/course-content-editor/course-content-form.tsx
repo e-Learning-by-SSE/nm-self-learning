@@ -175,16 +175,18 @@ export function LessonNode({
 					className="flex items-center whitespace-nowrap hover:text-c-primary"
 					onClick={() => setLessonEditorDialogOpen(true)}
 				>
-					<span className="text-sm">{data ? data.title : t("Course_Content_Loading")}</span>
-
-					{lessonEditorDialogOpen && (
-						<EditExistingLessonDialog
-							setLessonEditorDialogOpen={setLessonEditorDialogOpen}
-							lessonId={lesson.lessonId}
-							courseId={courseId}
-						/>
-					)}
+					<span className="text-sm">
+						{data ? data.title : t("Course_Content_Loading")}
+					</span>
 				</button>
+
+				{lessonEditorDialogOpen && (
+					<EditExistingLessonDialog
+						setLessonEditorDialogOpen={setLessonEditorDialogOpen}
+						lessonId={lesson.lessonId}
+						courseId={courseId}
+					/>
+				)}
 			</div>
 
 			<div className="flex gap-4">
