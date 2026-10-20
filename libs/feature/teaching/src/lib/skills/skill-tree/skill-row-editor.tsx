@@ -2,9 +2,13 @@ import { useTranslation } from "next-i18next";
 import { Tooltip } from "@self-learning/ui/common";
 import {
 	ArrowRightStartOnRectangleIcon,
-	ArrowRightEndOnRectangleIcon
+	StarIcon as TaughtGoalIcon
 } from "@heroicons/react/24/solid";
-import { LockClosedIcon, ArrowLongRightIcon } from "@heroicons/react/24/outline";
+import {
+	LockClosedIcon,
+	ArrowLongRightIcon,
+	QuestionMarkCircleIcon as UnusedSkillIcon
+} from "@heroicons/react/24/outline";
 import { CreateChildSkillButton } from "../create-child-skill-button";
 import type {
 	SkillCreateHandler,
@@ -76,6 +80,12 @@ function SkillRow({
 	const isUsedInCurrent = !!ctx?.current.has(skill.id);
 	const isCourseRequired = !!ctx?.courseRequired.has(skill.id);
 	const isCourseProvided = !!ctx?.courseProvided.has(skill.id);
+	const isSkillUsed = (skillId: string) =>
+		!!ctx &&
+		(ctx.lessonRequired.has(skillId) ||
+			ctx.lessonProvided.has(skillId) ||
+			ctx.courseRequired.has(skillId) ||
+			ctx.courseProvided.has(skillId));
 
 	const isRootItem = skill.skill.children.length > 0 && skill.skill.parents.length === 0;
 	return (
@@ -91,6 +101,8 @@ function SkillRow({
 					<ConnectedSkill
 						name={skill.displayName ?? skill.skill.name}
 						enabled={!!ctx && !isRootItem}
+						showLeftIcon={!skill.skill.children.some(isSkillUsed)}
+						showRightIcon={!skill.skill.parents.some(isSkillUsed)}
 						isLessonProvided={isProvided}
 						isLessonRequired={isRequired}
 						isCourseProvided={isCourseProvided}
@@ -117,6 +129,8 @@ function SkillRow({
 export function ConnectedSkill({
 	name,
 	enabled,
+	showLeftIcon = true,
+	showRightIcon = true,
 	isLessonProvided,
 	isLessonRequired,
 	isCourseRequired,
@@ -124,6 +138,8 @@ export function ConnectedSkill({
 }: {
 	name: string;
 	enabled: boolean;
+	showLeftIcon?: boolean;
+	showRightIcon?: boolean;
 	isLessonProvided: boolean;
 	isLessonRequired: boolean;
 	isCourseRequired: boolean;
@@ -136,7 +152,6 @@ export function ConnectedSkill({
 
 	const providesFlagRed = isCourseProvided && isLessonRequired;
 	const providesFlagGreen = isCourseProvided && isLessonProvided;
-	const ProvidesFlagIcon = ArrowRightEndOnRectangleIcon;
 
 	const baseText = isCourseRequired
 		? t("Skills_Course_Required")
@@ -161,15 +176,15 @@ export function ConnectedSkill({
 	const DISCONNECTED_COLOR = "text-red-500";
 
 	const LeftIcon = isCourseRequired ? RequiresFlagIcon : ArrowLongRightIcon;
-	const rightIconStyle = error
-		? DISCONNECTED_COLOR
-		: isCourseProvided || isLessonRequired || providesFlagGreen
-			? CONNECTED_COLOR
-			: isParticipating
+	const rightIconStyle = !isParticipating
+		? "invisible"
+		: !isCourseProvided
+			? "text-blue-500"
+			: error
 				? DISCONNECTED_COLOR
-				: "invisible";
+				: CONNECTED_COLOR;
 
-	const RightIcon = isCourseProvided ? ProvidesFlagIcon : ArrowLongRightIcon;
+	const RightIcon = isCourseProvided ? TaughtGoalIcon : UnusedSkillIcon;
 	const leftIconStyle = error
 		? DISCONNECTED_COLOR
 		: isCourseRequired || isLessonProvided || requiresFlagGreen
@@ -188,7 +203,12 @@ export function ConnectedSkill({
 				: isLessonProvided
 					? t("Skills_Lessons_Provided")
 					: t("Skills_Unassigned");
-	const text = isCourseRequired || isCourseProvided ? starText : pointText;
+	const text =
+		isParticipating && !isCourseProvided
+			? t("Skills_Unneeded_Lesson_Provided")
+			: isCourseRequired || isCourseProvided
+				? starText
+				: pointText;
 
 	if (!enabled) {
 		return (
@@ -201,9 +221,9 @@ export function ConnectedSkill({
 	return (
 		<Tooltip content={text} className="inline-flex">
 			<span className="flex">
-				<LeftIcon className={clsx(`h-5 text-lg`, leftIconStyle)} />
+				{showLeftIcon && <LeftIcon className={clsx(`h-5 text-lg`, leftIconStyle)} />}
 				<span className={middleStyle}>{name}</span>
-				<RightIcon className={clsx(`h-5 text-lg`, rightIconStyle)} />
+				{showRightIcon && <RightIcon className={clsx(`h-5 text-lg`, rightIconStyle)} />}
 			</span>
 		</Tooltip>
 	);
