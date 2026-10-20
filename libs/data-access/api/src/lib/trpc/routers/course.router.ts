@@ -937,7 +937,7 @@ async function getSkillContext(courseId: string) {
 		select: {
 			type: true,
 			courseId: true,
-			content: true,
+			context: true,
 			requires: { select: { id: true } },
 			provides: { select: { id: true } }
 		}
@@ -949,7 +949,7 @@ async function getSkillContext(courseId: string) {
 		});
 	}
 
-	const lessonIds = extractLessonIds(parseCourseContent(course.content));
+	const lessonIds = course.context as string[]; // TODO SE: Fix type
 	const lessons = lessonIds.length
 		? await database.lesson.findMany({
 				where: { lessonId: { in: lessonIds } },
