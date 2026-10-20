@@ -189,34 +189,7 @@ export function LessonContentEditor() {
 					RenderContent={RenderContentType}
 				/>
 			</div>
-			{/*
-// TODO SE: Check if this is still needed, kept from older merge
-			<SectionHeader
-				title="Inhalt"
-				subtitle="Inhalt, der zur Wissensvermittlung genutzt werden soll. Wenn mehrere Elemente
-					angelegt werden, kann der Student selber entscheiden, welches Medium angezeigt
-					werden soll."
-			/>
 
-			<div className="grid gap-4 text-sm grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-				{contentTypes.map(contentType => (
-					<AddButton
-						key={contentType}
-						contentType={contentType}
-						disabled={typesWithUsage[contentType] === true}
-						addContent={addContent}
-					/>
-				))}
-			</div>
-
-			<div className="mb-8 mt-4 flex gap-4">
-				{content.length > 0 && (
-					<Reorder.Group
-						className="w-full"
-						axis="x"
-						values={content}
-						onReorder={setContent}
-*/}
 			<div
 				className="w-full sticky bottom-0
 				max-h-[35vh] lg:max-h-none 
