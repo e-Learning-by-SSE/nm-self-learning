@@ -1,7 +1,8 @@
-import { AccessLevel, Prisma } from "@prisma/client";
+import { AccessLevel, CourseType, Prisma } from "@prisma/client";
 import { database } from "@self-learning/database";
 import {
 	allResourceKinds,
+	bestAccessLevel,
 	getResourceSearchEntryKey,
 	greaterAccessLevel,
 	ResourceKind,
@@ -32,13 +33,20 @@ type ResourceInfo = {
 	slug: string;
 	title: string;
 	imgUrl?: string | null;
+	courseType?: CourseType;
 };
 
 type TitleFilter = ReturnType<typeof getTitleFilter>;
 
 type PermissionResourceRow = {
 	accessLevel: AccessLevel;
-	course: { courseId: string; slug: string; title: string; imgUrl: string | null } | null;
+	course: {
+		courseId: string;
+		slug: string;
+		title: string;
+		imgUrl: string | null;
+		type: CourseType;
+	} | null;
 	lesson: { lessonId: string; slug: string; title: string; imgUrl: string | null } | null;
 	specialization: {
 		specializationId: string;
@@ -48,6 +56,7 @@ type PermissionResourceRow = {
 		cardImgUrl: string | null;
 	} | null;
 	subject: { subjectId: string; slug: string; title: string; cardImgUrl: string | null } | null;
+	skill: { id: string; name: string } | null;
 };
 
 type ResourceSearchConfig = {
@@ -79,7 +88,8 @@ function toResourceEntry(
 		slug: resource.slug,
 		imgUrl: resource.imgUrl,
 		accessLevel,
-		parentId
+		parentId,
+		courseType: resource.courseType
 	};
 }
 
@@ -124,14 +134,15 @@ const resourceSearch: Record<ResourceKind, ResourceSearchConfig> = {
 		findAll: async title => {
 			const courses = await database.course.findMany({
 				where: { title },
-				select: { courseId: true, slug: true, title: true, imgUrl: true }
+				select: { courseId: true, slug: true, title: true, imgUrl: true, type: true }
 			});
 			return courses.map(course =>
 				toResourceEntry("course", {
 					id: course.courseId,
 					slug: course.slug,
 					title: course.title,
-					imgUrl: course.imgUrl
+					imgUrl: course.imgUrl,
+					courseType: course.type
 				})
 			);
 		},
@@ -144,7 +155,8 @@ const resourceSearch: Record<ResourceKind, ResourceSearchConfig> = {
 							id: permission.course.courseId,
 							slug: permission.course.slug,
 							title: permission.course.title,
-							imgUrl: permission.course.imgUrl
+							imgUrl: permission.course.imgUrl,
+							courseType: permission.course.type
 						},
 						permission.accessLevel
 					)
@@ -252,6 +264,35 @@ const resourceSearch: Record<ResourceKind, ResourceSearchConfig> = {
 						permission.accessLevel
 					)
 				: null
+	},
+	// Skill has `name` and no slug. Search entries reuse id as slug and name as title.
+	skill: {
+		findAll: async title => {
+			const skills = await database.skill.findMany({
+				where: { name: title }, // TODO only root? { parents: { none: {} } }
+				select: { id: true, name: true }
+			});
+			return skills.map(skill =>
+				toResourceEntry("skill", {
+					id: skill.id,
+					slug: skill.id,
+					title: skill.name
+				})
+			);
+		},
+		permissionWhere: title => (title ? { skill: { name: title } } : { skillId: { not: null } }),
+		fromPermission: permission =>
+			permission.skill
+				? toResourceEntry(
+						"skill",
+						{
+							id: permission.skill.id,
+							slug: permission.skill.id,
+							title: permission.skill.name
+						},
+						permission.accessLevel
+					)
+				: null
 	}
 };
 
@@ -282,15 +323,13 @@ export async function searchMyResources(
 	const permissions = await database.permission.findMany({
 		where: {
 			OR: permissionFilters,
-			group: {
-				members: {
-					some: getActiveMembershipWhere(userId)
-				}
-			}
+			...reachableByMember(userId)
 		},
 		select: {
 			accessLevel: true,
-			course: { select: { courseId: true, slug: true, title: true, imgUrl: true } },
+			course: {
+				select: { courseId: true, slug: true, title: true, imgUrl: true, type: true }
+			},
 			lesson: { select: { lessonId: true, slug: true, title: true, imgUrl: true } },
 			specialization: {
 				select: {
@@ -301,7 +340,8 @@ export async function searchMyResources(
 					cardImgUrl: true
 				}
 			},
-			subject: { select: { subjectId: true, slug: true, title: true, cardImgUrl: true } }
+			subject: { select: { subjectId: true, slug: true, title: true, cardImgUrl: true } },
+			skill: { select: { id: true, name: true } } // TODO show only root skills? getParentSkillsByAuthorId was doing that
 		}
 	});
 	const resources = permissions.flatMap(permission => {
@@ -313,4 +353,26 @@ export async function searchMyResources(
 	});
 
 	return paginateResources(aggregateBestResourceAccess(resources), input);
+}
+
+/** Best access level per skill reachable through an active group membership. Same rule as getMyResources, without paging. */
+export async function getMySkillPermissions(userId: string): Promise<Map<string, AccessLevel>> {
+	const rows = await database.permission.findMany({
+		where: {
+			...resourceSearch.skill.permissionWhere(undefined),
+			...reachableByMember(userId)
+		},
+		select: { skillId: true, accessLevel: true }
+	});
+	const levels = new Map<string, AccessLevel>();
+	for (const { skillId, accessLevel } of rows) {
+		// A skill can be granted by several groups - keep the best level
+		if (!skillId) continue;
+		levels.set(skillId, bestAccessLevel(accessLevel, levels.get(skillId) ?? accessLevel));
+	}
+	return levels;
+}
+
+function reachableByMember(userId: string): Prisma.PermissionWhereInput {
+	return { group: { members: { some: getActiveMembershipWhere(userId) } } };
 }

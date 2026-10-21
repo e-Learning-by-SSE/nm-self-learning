@@ -8,9 +8,10 @@
  */
 import { JobDefinition } from "../lib/core/job-registry";
 import { pathGenerationJob } from "./path-generation.job";
-import { JobKey } from "@self-learning/worker-api";
+import type { JobKey } from "@self-learning/worker-api";
 import { ragEmbedJob } from "./rag-embed.job";
 import { ragRetrieveJob } from "./rag-retrieve.job";
+import { courseGraphAnalysisJob } from "./course-graph-analysis";
 
 export type JobRegistry = {
 	[K in JobKey]: JobDefinition<K>;
@@ -18,6 +19,7 @@ export type JobRegistry = {
 
 export const jobs: JobRegistry = {
 	pathGeneration: pathGenerationJob,
+	courseGraphAnalysis: courseGraphAnalysisJob,
 	ragEmbed: ragEmbedJob,
 	ragRetrieve: ragRetrieveJob
 };

@@ -1,8 +1,10 @@
+import { useTranslation } from "next-i18next";
 import { SkillFormModel } from "@self-learning/types";
 import { Alert, SimpleDialog } from "@self-learning/ui/common";
 import { useState } from "react";
 
 export function ShowCyclesDialog({ cycleParticipants }: { cycleParticipants: SkillFormModel[] }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	const [openExplanation, setShowDialog] = useState<boolean>(false);
 
 	if (cycleParticipants.length > 0) {
@@ -17,14 +19,7 @@ export function ShowCyclesDialog({ cycleParticipants }: { cycleParticipants: Ski
 									onClick={() => setShowDialog(true)}
 									className="text-left hover:cursor-pointer hover:text-red-700"
 								>
-									<span>
-										Warnung: In Ihrer Modellierung der Lernziele ist ein Zyklus
-										vorhanden. Aufgrund dessen kann der Algorithmus keinen
-										gültigen Lernpfad mit den im Zyklus beteiligten Lernzielen
-										finden. Die angegebenen Pfadziele sind nicht erreichbar und
-										können nur privat gespeichert werden. Die betroffenen Skills
-										können durch Klicken auf diesen Text angezeigt werden.
-									</span>
+									<span>{t("Skills_Cycles_Warning")}</span>
 								</button>
 							</div>
 						)
@@ -32,7 +27,7 @@ export function ShowCyclesDialog({ cycleParticipants }: { cycleParticipants: Ski
 				/>
 				{openExplanation && (
 					<SimpleDialog
-						name={"Zyklen - Darstellung"}
+						name={t("Skills_Cycles_Title")}
 						onClose={() => setShowDialog(false)}
 					>
 						<CycleComponents cycles={cycleParticipants} />

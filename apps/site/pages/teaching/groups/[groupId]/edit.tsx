@@ -85,7 +85,11 @@ export default function EditGroupPage({ group }: EditGroupProps) {
 	};
 
 	return (
-		<MemberGuard groupId={group.id ?? undefined} groupRole={GroupRole.MEMBER}>
+		<MemberGuard
+			fallback="unauthorized"
+			groupId={group.id ?? undefined}
+			groupRole={GroupRole.MEMBER}
+		>
 			<GroupEditor initialGroup={group} onSubmit={handleEditClose} />
 		</MemberGuard>
 	);

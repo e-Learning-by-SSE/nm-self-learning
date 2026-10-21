@@ -1,10 +1,10 @@
 import { withTranslations } from "@self-learning/api";
-import { LearningGoals, useLearningGoals } from "@self-learning/diary";
+import { I18N_NAMESPACE, LearningGoals, useLearningGoals } from "@self-learning/diary";
 import { LoadingBox } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { withAuth } from "@self-learning/util/auth";
 
-export const getServerSideProps = withAuth(withTranslations(["common"]));
+export const getServerSideProps = withAuth(withTranslations(I18N_NAMESPACE));
 
 export default function LearningGoal() {
 	const { userGoals, isLoading } = useLearningGoals();

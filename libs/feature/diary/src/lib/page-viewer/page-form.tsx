@@ -29,6 +29,7 @@ import { PersonalTechniqueRatingTile } from "./technique-rating";
 import { loadFromLocalStorage, saveToLocalStorage } from "@self-learning/local-storage";
 import { convertLearningGoal } from "../util/types";
 import z from "zod";
+import { useTranslation } from "next-i18next";
 
 function convertToLearningDiaryPageSafe(pageDetails: LearningDiaryPageDetail | undefined | null) {
 	if (!pageDetails) {
@@ -165,6 +166,7 @@ export function DiaryContentForm({
 	availableStrategies: Strategy[];
 	endDate: Date;
 }) {
+	const { t } = useTranslation("feature-diary");
 	const { data: pageDetails, isLoading } = trpc.learningDiary.get.useQuery({ id: diaryId });
 	const { mutateAsync: updateLtbPage } = trpc.learningDiary.update.useMutation();
 	const form = usePageForm({ pageDetails, onChange: updateLtbPage });
@@ -205,7 +207,7 @@ export function DiaryContentForm({
 			</div>
 			<Divider />
 			<div className="flex justify-end">
-				<Tooltip content={"Wechselt zwischen der normalen und der kompakten Ansicht."}>
+				<Tooltip content={t("Compact_View_Tooltip")}>
 					<button onClick={toggleCompactView}>
 						{isCompact ? (
 							<ArrowsPointingOutIcon className="h-6 w-6 text-c-text-muted" />
@@ -251,12 +253,10 @@ export function DiaryContentForm({
 							control={form.control}
 							render={({ field }) => (
 								<StarInputTile
-									name={"Bemühungen"}
+									name={t("Effort_Label")}
 									initialRating={field.value}
 									onChange={field.onChange}
-									description={
-										"Hier kannst du deine eigenen Bemühungen einschätzen. Dies kann dir helfen deine Lernstrategien zu optimieren."
-									}
+									description={t("Effort_Description")}
 									isCompact={isCompact}
 								/>
 							)}
@@ -266,12 +266,10 @@ export function DiaryContentForm({
 							control={form.control}
 							render={({ field }) => (
 								<StarInputTile
-									name={"Ablenkungen"}
+									name={t("Distractions_Label")}
 									initialRating={field.value}
 									onChange={field.onChange}
-									description={
-										"Wie stark waren deine Ablenkungen beim Lernen? Hier kannst du deine Ablenkungen einschätzen und das kann dir helfen deine Lernstrategien zu optimieren."
-									}
+									description={t("Distractions_Description")}
 									isCompact={isCompact}
 								/>
 							)}

@@ -2,8 +2,10 @@ import { SectionCard } from "@self-learning/ui/common";
 import { MarkdownField } from "@self-learning/ui/forms";
 import { Controller, useFormContext } from "react-hook-form";
 import { Article } from "@self-learning/types";
+import { useTranslation } from "next-i18next";
 
 export function ArticleInput({ index }: { index: number }) {
+	const { t } = useTranslation("feature-teaching");
 	const { setValue } = useFormContext<{ content: Article[] }>();
 
 	const handleChange = (value?: string) => {
@@ -24,7 +26,7 @@ export function ArticleInput({ index }: { index: number }) {
 					<MarkdownField
 						content={field.value}
 						setValue={handleChange}
-						header={"Artikel"}
+						header={t("Lesson_Content_Type_article")}
 					/>
 				)}
 			></Controller>

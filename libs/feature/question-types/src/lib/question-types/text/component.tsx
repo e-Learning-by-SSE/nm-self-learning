@@ -37,7 +37,6 @@ const VERDICT_STYLES: Record<TextVerdict, string> = {
  * if AI evaluation is not available or if an error occurs during evaluation.
  */
 export default function TextAnswer() {
-	const { t } = useTranslation("feature-question-types");
 	const { question, setAnswer, answer, evaluation, setEvaluation } = useQuestion("text");
 	const [isEvaluating, setIsEvaluating] = useState(false);
 	const typedEvaluation = evaluation as TextEvaluation | null;

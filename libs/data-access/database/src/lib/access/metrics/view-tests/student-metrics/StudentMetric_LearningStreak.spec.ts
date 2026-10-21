@@ -1,55 +1,31 @@
 /**
  * @jest-environment node
  */
-import { PrismaClient, User } from "@prisma/client";
-import { createUsers, deleteUsers } from "../helper";
-const prisma = new PrismaClient();
-
-let users: User[];
+import {
+	createMetricStudent,
+	createMetricLearningSession,
+	studentMetricTest
+} from "./student-metric.fixture";
 
 describe("Learning Streak for Student", () => {
-	beforeAll(async () => {
-		users = await createUsers(["user_learning_streak"]);
+	it(
+		"should return learning streak for student",
+		studentMetricTest(async prisma => {
+			const user = await createMetricStudent(prisma);
+			await createMetricLearningSession(prisma, user.name);
 
-		await prisma.eventLog.createMany({
-			data: [
+			const result = await prisma.studentMetric_LearningStreak.findMany({
+				where: { userId: user.id }
+			});
+
+			expect(result).toEqual([
 				{
-					username: users[0].name,
-					createdAt: new Date("2024-01-01T10:00:00Z"),
-					type: "login"
-				},
-				{
-					username: users[0].name,
-					createdAt: new Date("2024-01-01T10:30:00Z"),
-					type: "logout"
+					userId: user.id,
+					username: user.name,
+					currentStreakDays: 1,
+					longestStreakDays: 1
 				}
-			]
-		});
-	});
-
-	afterAll(async () => {
-		// Clean up created data in reverse order
-		await prisma.eventLog.deleteMany({
-			where: {
-				username: users[0].name
-			}
-		});
-		await deleteUsers(users);
-
-		await prisma.$disconnect();
-	});
-
-	it("should return learning streak for student", async () => {
-		const result = await prisma.studentMetric_LearningStreak.findUnique({
-			where: { userId: users[0].id }
-		});
-
-		console.log("Learning Streak Result:", result);
-
-		expect(result).not.toBeNull();
-		expect(result?.userId).toBe(users[0].id);
-		expect(result?.username).toBe(users[0].name);
-		expect(result?.currentStreakDays).toBe(1); // Assuming 1 day streak based on the test data
-		expect(result?.longestStreakDays).toBe(1); // Assuming 1 day longest streak based on the test data
-	});
+			]);
+		})
+	);
 });

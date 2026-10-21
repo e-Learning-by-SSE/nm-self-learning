@@ -11,6 +11,7 @@ import { IdSet } from "@self-learning/util/common";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { GoalFormModel } from "../util/types";
+import { useTranslation } from "next-i18next";
 
 export function CreateGoalDialog({
 	onClose,
@@ -21,6 +22,7 @@ export function CreateGoalDialog({
 	initialParentGoal?: GoalFormModel;
 	validParents: IdSet<GoalFormModel>;
 }) {
+	const { t } = useTranslation("feature-diary");
 	const { mutateAsync: createGoal } = trpc.learningGoal.createGoal.useMutation();
 
 	type FormData = z.infer<typeof learningGoalCreateSchema>;
@@ -50,9 +52,9 @@ export function CreateGoalDialog({
 	}
 
 	return (
-		<Dialog title="Lernziel erstellen" onClose={onClose}>
+		<Dialog title={t("Create_Learning_Goal")} onClose={onClose}>
 			<form onSubmit={handleSubmit(save)} className="flex flex-col gap-4">
-				<LabeledField label="Beschreibung" optional={false}>
+				<LabeledField label={t("common:Description")} optional={false}>
 					<textarea
 						{...register("description")}
 						className="textfield border border-c-border-strong rounded-md p-2"
@@ -62,22 +64,20 @@ export function CreateGoalDialog({
 						<span className="text-c-danger text-sm">{errors.description.message}</span>
 					)}
 				</LabeledField>
-				<LabeledField label="Übergeordnetes Ziel (optional)">
-					<span className="text-sm">
-						Durch Auswahl eines übergeordneten Ziels erstellen Sie ein neues Feinziel
-					</span>
+				<LabeledField label={t("Parent_Goal_Label")}>
+					<span className="text-sm">{t("Parent_Goal_Description")}</span>
 					<SearchableCombobox
 						items={validParents.entries()}
 						initialSelection={initialParentGoal}
 						onChange={item => setValue("parentId", item?.id)}
 						getLabel={item => item?.description ?? ""}
-						placeholder="Ein Ziel auswählen..."
+						placeholder={t("Select_Goal_Placeholder")}
 					/>
 				</LabeledField>
 
 				<DialogActions onClose={onClose}>
 					<button type="submit" className="btn-primary">
-						Speichern
+						{t("common:save")}
 					</button>
 				</DialogActions>
 			</form>
@@ -94,6 +94,7 @@ export function EditGoalDialog({
 	onClose: () => void;
 	onSubmit?: (goal: GoalFormModel) => void;
 }) {
+	const { t } = useTranslation("feature-diary");
 	const {
 		register,
 		handleSubmit,
@@ -111,9 +112,9 @@ export function EditGoalDialog({
 	}
 
 	return (
-		<Dialog title="Lernziel bearbeiten" onClose={onClose}>
+		<Dialog title={t("Edit_Learning_Goal")} onClose={onClose}>
 			<form onSubmit={handleSubmit(save)} className="flex flex-col gap-4">
-				<LabeledField label="Beschreibung" optional={false}>
+				<LabeledField label={t("common:Description")} optional={false}>
 					<textarea
 						{...register("description")}
 						className="textfield border border-c-border-strong rounded-md p-2"
@@ -126,7 +127,7 @@ export function EditGoalDialog({
 
 				<DialogActions onClose={onClose}>
 					<button type="submit" className="btn-primary">
-						Speichern
+						{t("common:save")}
 					</button>
 				</DialogActions>
 			</form>

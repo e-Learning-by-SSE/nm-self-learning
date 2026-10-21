@@ -6,10 +6,11 @@ import { TRPCError } from "@trpc/server";
 import {
 	canCreate,
 	canDelete,
+	canProvideSkills,
 	preparePermissionsForCreate,
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
-import { lessonRouter } from "./lesson.router";
+import { buildLinkedLessonQuery, lessonRouter } from "./lesson.router";
 import { AccessLevel, LessonType } from "@prisma/client";
 
 jest.mock("@self-learning/database", () => ({
@@ -22,6 +23,9 @@ jest.mock("@self-learning/database", () => ({
 			create: jest.fn(),
 			findUnique: jest.fn()
 		},
+		course: {
+			updateMany: jest.fn()
+		},
 		permission: {
 			findMany: jest.fn()
 		}
@@ -33,6 +37,8 @@ jest.mock("../../permissions/permission.service", () => ({
 	canEdit: jest.fn(),
 	canDelete: jest.fn(),
 	canCreate: jest.fn(),
+	canProvideSkills: jest.fn().mockResolvedValue(true),
+	hasEffectiveResourceAccessBatch: jest.fn().mockResolvedValue(true),
 	preparePermissionsForCreate: jest.fn(),
 	prepareResourceUpdate: jest.fn()
 }));
@@ -88,6 +94,8 @@ describe("tRPC API of Lesson Router", () => {
 			slug: "test-lessonId",
 			title: "Test Lesson",
 			description: "A lesson for testing",
+			version: 1,
+			type: "STATIC",
 			content: [],
 			meta: {},
 			authors: [{ username: "author1" }],
@@ -98,6 +106,7 @@ describe("tRPC API of Lesson Router", () => {
 					name: "Resource 1",
 					id: "res1",
 					description: "",
+					authorId: 1,
 					children: [],
 					repositoryId: "rid",
 					parents: []
@@ -109,6 +118,7 @@ describe("tRPC API of Lesson Router", () => {
 					id: "res2",
 					description: "",
 					children: [],
+					authorId: 1,
 					repositoryId: "rid",
 					parents: []
 				}
@@ -149,6 +159,17 @@ describe("tRPC API of Lesson Router", () => {
 
 			await expect(caller.create(defaultLesson.lesson)).resolves.toBeDefined();
 			expect(database.lesson.create).toHaveBeenCalled();
+		});
+
+		it("should throw FORBIDDEN if user cannot provide the skills", async () => {
+			const { caller } = prepare({});
+
+			(canProvideSkills as jest.Mock).mockResolvedValueOnce(false);
+
+			await expect(caller.create(defaultLesson.lesson)).rejects.toMatchObject({
+				code: "FORBIDDEN"
+			} as Partial<TRPCError>);
+			expect(database.lesson.create).not.toHaveBeenCalled();
 		});
 
 		it("should throw BAD_REQUEST if lesson has not FULL permission assigned to it", async () => {
@@ -224,6 +245,26 @@ describe("tRPC API of Lesson Router", () => {
 			expect(database.lesson.update).not.toHaveBeenCalled();
 		});
 
+		it("throws FORBIDDEN when user cannot provide newly added skills", async () => {
+			const { caller } = prepare({});
+
+			(canProvideSkills as jest.Mock).mockResolvedValueOnce(false);
+			(database.lesson.findUnique as jest.Mock).mockResolvedValue({
+				provides: [{ id: "old-skill" }]
+			});
+
+			await expect(caller.edit(defaultLesson)).rejects.toMatchObject({
+				code: "FORBIDDEN"
+			} as Partial<TRPCError>);
+			// Already provided skills are not checked again
+			expect(canProvideSkills).toHaveBeenCalledWith(
+				expect.anything(),
+				["res2"],
+				["old-skill"]
+			);
+			expect(database.lesson.update).not.toHaveBeenCalled();
+		});
+
 		it("updates lesson when prepareResourceUpdate succeeds", async () => {
 			const { caller } = prepare({ memberships: [1] });
 
@@ -273,6 +314,17 @@ describe("tRPC API of Lesson Router", () => {
 
 			await expect(caller.edit(defaultLesson)).resolves.toBeDefined();
 			expect(database.lesson.update).toHaveBeenCalledTimes(1);
+		});
+	});
+
+	describe("findLinkedLessonEntities", () => {
+		it("guards nested JSON content extraction against scalar values", () => {
+			const sql = buildLinkedLessonQuery("lesson-123");
+
+			expect(sql).toContain("jsonb_typeof(c.\"content\") = 'array'");
+			expect(sql).toContain("jsonb_typeof(chapter) = 'object'");
+			expect(sql).toContain("jsonb_typeof(chapter->'content') = 'array'");
+			expect(sql).toContain("lesson->>'lessonId' =");
 		});
 	});
 

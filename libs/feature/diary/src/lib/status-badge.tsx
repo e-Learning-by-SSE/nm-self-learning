@@ -3,7 +3,7 @@ import {
 	ExclamationCircleIcon,
 	EllipsisHorizontalCircleIcon
 } from "@heroicons/react/24/solid";
-import { DetailsDropdown } from "@self-learning/ui/common";
+import { DetailsDropdown, Trans } from "@self-learning/ui/common";
 
 function getIcon(hasRead: boolean, isDraft: boolean) {
 	if (isDraft) {
@@ -56,21 +56,33 @@ export function StatusBadgeInfo({
 					<LearningDiaryEntryStatusBadge hasRead={false} isDraft={true} size={4} />
 				</div>
 				<div>
-					<span className="font-medium">Neu:</span> Ein neuer Eintrag.
+					<Trans
+						namespace="feature-diary"
+						i18nKey="New_Entry_Status"
+						components={{ strong: <span className="font-medium" /> }}
+					/>
 				</div>
 
 				<div className="flex items-center justify-center ml-4">
 					<LearningDiaryEntryStatusBadge hasRead={true} isDraft={true} size={4} />
 				</div>
 				<div>
-					<span className="font-medium">Gelesen:</span> Einige Eingaben sind leer.
+					<Trans
+						namespace="feature-diary"
+						i18nKey="Read_Entry_Status"
+						components={{ strong: <span className="font-medium" /> }}
+					/>
 				</div>
 
 				<div className="flex items-center justify-center ml-4">
 					<LearningDiaryEntryStatusBadge hasRead={true} isDraft={false} size={4} />
 				</div>
 				<div>
-					<span className="font-medium">Fertig:</span> Alle Eingaben sind ausgefüllt.
+					<Trans
+						namespace="feature-diary"
+						i18nKey="Complete_Entry_Status"
+						components={{ strong: <span className="font-medium" /> }}
+					/>
 				</div>
 			</div>
 		</DetailsDropdown>

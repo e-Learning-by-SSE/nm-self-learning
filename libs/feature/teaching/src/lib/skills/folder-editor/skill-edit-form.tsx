@@ -1,8 +1,10 @@
+import { useTranslation } from "next-i18next";
 import { useEffect, useState } from "react";
 import { Form, LabeledField } from "@self-learning/ui/forms";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormProvider, useForm, useFormContext } from "react-hook-form";
-import { SkillFormModel, skillFormSchema } from "@self-learning/types";
+import { FieldErrors, FormProvider, useForm, useFormContext } from "react-hook-form";
+import { z } from "zod";
+import { skillEditSchema, SkillFormModel, toResourcePermissionsForm } from "@self-learning/types";
 import { trpc } from "@self-learning/api-client";
 import { SkillResolved } from "@self-learning/database";
 import { SkillDeleteOption } from "./skill-taskbar";
@@ -10,6 +12,9 @@ import { IconOnlyButton, showToast } from "@self-learning/ui/common";
 import { SelectSkillsView } from "../skill-dialog/select-skill-view";
 import { SkillSelectHandler } from "./skill-display";
 import { XMarkIcon } from "@heroicons/react/24/solid";
+import { GroupAccessEditor } from "../../group/forms/group-form";
+
+type SkillEditForm = z.infer<typeof skillEditSchema>;
 
 export function SelectedSkillsInfoForm({
 	skills,
@@ -25,37 +30,6 @@ export function SelectedSkillsInfoForm({
 	}
 }
 
-// export function MassSelectedInfo(
-// 	skills,
-// 	onSelectItem
-// }: {
-// 	skills: SkillFormModel[];
-// 	onSelectItem: SkillSelectHandler;
-// }) {
-// 	return (
-// 		<>
-// 			<h2 className="text-xl">Ausgewählte Skills:</h2>
-// 			<span className="pb-4 text-sm text-c-text-muted">Die rechts ausgewählten Skills</span>
-
-// 			<section className="flex h-64 flex-col overflow-auto rounded-lg border border-c-border">
-// 				<div className="flex flex-col">
-// 					{skills.map((skill, index) => (
-// 						<span
-// 							key={"span: " + skill.id + index}
-// 							className="flex items-center gap-2 pl-1"
-// 						>
-// 							{skill.name}
-// 						</span>
-// 					))}
-// 				</div>
-// 			</section>
-// 			<div className="pt-4" />
-// 			<Divider />
-// 			<SkillDeleteOption skills={skills} classname={"py-2 px-8"} onChange={() => {}} />
-// 		</>
-// 	);
-// }
-
 export function SkillInfoForm({
 	skill,
 	handleSelection
@@ -63,16 +37,21 @@ export function SkillInfoForm({
 	skill: SkillFormModel;
 	handleSelection: SkillSelectHandler;
 }) {
-	const { mutateAsync: updateSkill } = trpc.skill.updateSkill.useMutation();
+	const { t } = useTranslation(["feature-teaching", "common"]);
+	// mutate (not mutateAsync): errors go to onError instead of an unhandled rejection
+	const { mutate: updateSkill } = trpc.skill.updateSkill.useMutation({
+		onSuccess: () => showToast({ type: "success", title: t("Skills_Saved"), subtitle: "" }),
+		onError: error =>
+			showToast({ type: "error", title: t("Skills_Save_Failed"), subtitle: error.message })
+	});
 	const { data: dbSkill } = trpc.skill.getSkillById.useQuery({
 		skillId: skill.id
 	});
 
-	const onSubmit = async (data: SkillFormModel) => {
-		await updateSkill({
+	const onSubmit = (data: SkillEditForm) =>
+		updateSkill({
 			skill: {
 				...data,
-				repositoryId: skill.repositoryId,
 				id: skill.id,
 				// don't use the form values. parents|children are changed from inside the dependency info component
 				children: skill.children,
@@ -80,62 +59,79 @@ export function SkillInfoForm({
 			}
 		});
 
+	// Any validation error is shown as toast, so a failed submit is never silent
+	const onInvalid = (invalid: FieldErrors<SkillEditForm>) =>
 		showToast({
-			type: "success",
-			title: "Skill gespeichert!",
-			subtitle: ""
+			type: "error",
+			title: t("Skills_Save_Failed"),
+			subtitle: Object.values(invalid)
+				.map(error => error?.message)
+				.filter(Boolean)
+				.join(", ")
 		});
-	};
 
-	const form = useForm({
-		defaultValues: skill,
-		resolver: zodResolver(skillFormSchema)
+	const form = useForm<SkillEditForm>({
+		defaultValues: { ...skill, permissions: [] },
+		resolver: zodResolver(skillEditSchema)
 	});
 	const errors = form.formState.errors;
 	form.setValue("name", skill.name);
 	form.setValue("description", skill?.description);
+	// Permissions are loaded later. Set them as default values, since GroupAccessEditor guards by those.
+	const { reset, getValues } = form;
+	useEffect(() => {
+		if (!dbSkill) return;
+		reset({ ...getValues(), permissions: toResourcePermissionsForm(dbSkill.permissions) });
+	}, [dbSkill, reset, getValues]);
 	const resetEditTarget = () => handleSelection(undefined);
 
 	return (
 		<FormProvider {...form}>
-			<form className="flex flex-col justify-between" onSubmit={form.handleSubmit(onSubmit)}>
+			<form
+				className="flex flex-col justify-between"
+				onSubmit={form.handleSubmit(onSubmit, onInvalid)}
+			>
 				<Form.SidebarSection>
 					<div className="flex justify-between">
 						<Form.SidebarSectionTitle
-							title="Bearbeiten"
-							subtitle="Informationen über den rechts ausgewählten Skill"
+							title={t("common:edit")}
+							subtitle={t("Skills_Edit_Subtitle")}
 						/>
 
 						<IconOnlyButton
 							icon={<XMarkIcon className="h-5" />}
 							onClick={resetEditTarget}
-							title="Ansicht ohne Veränderungen schließen"
+							title={t("Skills_Close_Without_Changes")}
 							className="btn-tertiary px-4"
 						/>
 					</div>
 					<div className="flex flex-col gap-4 border-b-2 border-c-border">
-						<LabeledField label="Name" error={errors.name?.message}>
+						<LabeledField label={t("common:Name")} error={errors.name?.message}>
 							<input type="text" className="textfield" {...form.register("name")} />
 						</LabeledField>
-						<LabeledField label="Beschreibung" error={errors.description?.message}>
+						<LabeledField
+							label={t("common:Description")}
+							error={errors.description?.message}
+						>
 							<textarea {...form.register("description")} />
 						</LabeledField>
+						{dbSkill && (
+							<GroupAccessEditor
+								subtitle={t("Skills_Group_Access_Subtitle")}
+								isNew={false}
+							/>
+						)}
 						<SkillToSkillDepsInfo
 							parents={dbSkill?.parents ?? []}
 							children={dbSkill?.children ?? []}
-							repoId={skill.repositoryId}
 							skillToChange={skill}
 						/>
 					</div>
-					<div className="flex justify-between">
-						<button type="submit" className="btn-primary w-full">
-							Speichern
+					<div className="flex justify-between gap-2">
+						<button type="submit" className="btn-primary w-full" disabled={!dbSkill}>
+							{t("common:save")}
 						</button>
-						<SkillDeleteOption
-							skillIds={[skill.id]}
-							onDeleteSuccess={resetEditTarget}
-							inline={false}
-						/>
+						<SkillDeleteOption skill={skill} />
 					</div>
 				</Form.SidebarSection>
 			</form>
@@ -146,14 +142,13 @@ export function SkillInfoForm({
 function SkillToSkillDepsInfo({
 	parents,
 	children,
-	repoId,
 	skillToChange
 }: {
 	parents: SkillResolved["parents"];
 	children: SkillResolved["children"];
-	repoId: string;
 	skillToChange: SkillFormModel;
 }) {
+	const { t } = useTranslation(["feature-teaching", "common"]);
 	const [parentItems, setParentItems] = useState<SkillResolved["parents"]>(parents);
 	const [childItems, setChildItems] = useState<SkillResolved["children"]>(children);
 	const { setValue } = useFormContext<SkillFormModel>();
@@ -166,13 +161,14 @@ function SkillToSkillDepsInfo({
 		setChildItems(children);
 	}, [children]);
 
-	const removeParent = (id: string) => {
-		setParentItems(parentItems.filter(item => item.id !== id));
-		skillToChange.parents = skillToChange.parents.filter(item => item !== id);
-	};
 	const removeChild = (id: string) => {
 		setChildItems(childItems.filter(item => item.id !== id));
 		skillToChange.children = skillToChange.children.filter(item => item !== id);
+	};
+
+	const removeParent = (id: string) => {
+		setParentItems(parentItems.filter(item => item.id !== id));
+		skillToChange.parents = skillToChange.parents.filter(item => item !== id);
 	};
 
 	const addChildren = (skills: SkillFormModel[]) => {
@@ -190,9 +186,7 @@ function SkillToSkillDepsInfo({
 	return (
 		<>
 			<label>
-				<span className="text-sm font-semibold">
-					{"Beinhaltet folgende Skills (Kinder):"}
-				</span>
+				<span className="text-sm font-semibold">{t("Skills_Children_Label")}</span>
 			</label>
 			<div>
 				<SelectSkillsView
@@ -200,8 +194,7 @@ function SkillToSkillDepsInfo({
 						return {
 							...skill,
 							children: [],
-							parents: [],
-							repositoryId: repoId
+							parents: []
 						};
 					})}
 					onDeleteSkill={skill => {
@@ -211,32 +204,37 @@ function SkillToSkillDepsInfo({
 						if (!skills) return;
 						addChildren(skills);
 					}}
-					repoId={repoId}
 				/>
 			</div>
 			<label>
-				<span className="text-sm font-semibold">
-					{"Ist Teil von folgenden Skills (Eltern):"}
-				</span>
+				<span className="text-sm font-semibold">{t("Skills_Parents_Label")}</span>
 			</label>
 			<div>
 				<SelectSkillsView
+					restrictToOwnSkills
 					skills={parentItems.map(skill => {
 						return {
 							...skill,
 							children: [],
-							parents: [],
-							repositoryId: repoId
+							parents: []
 						};
 					})}
+					disabled={
+						skillToChange.children.length >= 1 && skillToChange.parents.length >= 0
+					}
 					onDeleteSkill={skill => {
 						removeParent(skill.id);
 					}}
 					onAddSkill={skills => {
 						if (!skills) return;
+						if (
+							skillToChange.children.length >= 1 &&
+							skillToChange.parents.length >= 1
+						) {
+							return;
+						}
 						addParent(skills);
 					}}
-					repoId={repoId}
 				/>
 			</div>
 		</>

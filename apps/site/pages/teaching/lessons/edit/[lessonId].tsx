@@ -2,20 +2,25 @@ import { withTranslations } from "@self-learning/api";
 import { database } from "@self-learning/database";
 import { Quiz } from "@self-learning/quiz";
 import { LessonEditor, LessonFormModel, onLessonEditorSubmit } from "@self-learning/teaching";
-import { LessonContent, resourcePermissionSelect, toResourcePermissionsForm } from "@self-learning/types";
+import {
+	LessonContent,
+	resourcePermissionSelect,
+	toResourcePermissionsForm
+} from "@self-learning/types";
 import { OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";
 import { ResourceGuard, testResourceGuard } from "@self-learning/ui/layouts";
 import { AccessLevel } from "@prisma/client";
 import { withAuth } from "@self-learning/util/auth";
+import { useTranslation } from "next-i18next";
 
 type EditLessonProps = {
 	lesson: LessonFormModel;
 };
 
 export const getServerSideProps = withTranslations(
-	["common", "feature-question-types"],
+	["common", "feature-teaching", "feature-question-types"],
 	withAuth<EditLessonProps>(async (ctx, user) => {
 		const lessonId = ctx.params?.lessonId;
 
@@ -99,10 +104,14 @@ export const getServerSideProps = withTranslations(
 );
 
 export default function EditLessonPage({ lesson }: EditLessonProps) {
+	const { t } = useTranslation("feature-teaching");
 	const { mutateAsync: editLessonAsync } = trpc.lesson.edit.useMutation();
 	const router = useRouter();
+	const { courseId: rawCourseId } = router.query;
+	const courseId = typeof rawCourseId === "string" ? rawCourseId : undefined;
 	const handleEditClose: OnDialogCloseFn<LessonFormModel> = async updatedLesson => {
 		await onLessonEditorSubmit(
+			t,
 			() => {
 				router.push("/dashboard/author");
 			},
@@ -117,7 +126,13 @@ export default function EditLessonPage({ lesson }: EditLessonProps) {
 			requiredAccess={AccessLevel.EDIT}
 			permittedGroups={lesson.permissions}
 		>
-			<LessonEditor initialLesson={lesson} onSubmit={handleEditClose} isFullScreen={true} />
+			<LessonEditor
+				courseId={courseId}
+				initialLesson={lesson}
+				onSubmit={handleEditClose}
+				onClose={() => router.back()}
+				isFullScreen={true}
+			/>
 		</ResourceGuard>
 	);
 }

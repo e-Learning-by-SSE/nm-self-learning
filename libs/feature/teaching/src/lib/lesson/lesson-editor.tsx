@@ -1,18 +1,31 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createEmptyLesson, lessonSchema } from "@self-learning/types";
-import { DialogActions, OnDialogCloseFn, showToast, Tab, Tabs } from "@self-learning/ui/common";
+import {
+	Dialog,
+	DialogActions,
+	IconOnlyButton,
+	OnDialogCloseFn,
+	showToast,
+	Tab,
+	Tabs
+} from "@self-learning/ui/common";
 import { useState } from "react";
-import { FormProvider, useForm, FieldErrors } from "react-hook-form";
+import { FormProvider, useForm, FieldErrors, useFormState, useWatch } from "react-hook-form";
 import { LessonContentEditor } from "./forms/lesson-content";
 import { LessonInfoEditor } from "./forms/lesson-info";
 import { QuizEditor } from "./forms/quiz-editor";
 import { LessonFormModel } from "./lesson-form-model";
 import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { useRequiredSession } from "@self-learning/ui/layouts";
-import { useRouter } from "next/router";
+import { SkillsEditor } from "../skills/skills-editor";
+import { ArrowsPointingInIcon, ArrowsPointingOutIcon } from "@heroicons/react/24/solid";
+import { useTranslation } from "next-i18next";
+
+type TranslationFunction = ReturnType<typeof useTranslation>["t"];
 
 export async function onLessonCreatorSubmit(
+	t: TranslationFunction,
 	onClose: () => void,
 	createLessonAsync: (lesson: LessonFormModel) => Promise<{
 		title: string;
@@ -25,7 +38,11 @@ export async function onLessonCreatorSubmit(
 		let result = null;
 		if (lesson) {
 			result = await createLessonAsync(lesson);
-			showToast({ type: "success", title: "Lernheit erstellt", subtitle: result.title });
+			showToast({
+				type: "success",
+				title: t("Lesson_Creation_Success_Title"),
+				subtitle: result.title
+			});
 		}
 		onClose();
 		return result;
@@ -33,8 +50,8 @@ export async function onLessonCreatorSubmit(
 		console.error(error);
 		showToast({
 			type: "error",
-			title: "Fehler",
-			subtitle: "Lerneinheit konnte nicht erstellt werden."
+			title: t("common:Error"),
+			subtitle: t("Lesson_Creation_Failed")
 		});
 
 		return null;
@@ -42,6 +59,7 @@ export async function onLessonCreatorSubmit(
 }
 
 export async function onLessonEditorSubmit(
+	t: TranslationFunction,
 	onClose: () => void,
 	editLessonAsync: (lesson: {
 		lesson: LessonFormModel;
@@ -57,7 +75,7 @@ export async function onLessonEditorSubmit(
 			});
 			showToast({
 				type: "success",
-				title: "Lerneinheit gespeichert!",
+				title: t("Lesson_Saved_Successfully"),
 				subtitle: result.title
 			});
 		}
@@ -65,9 +83,10 @@ export async function onLessonEditorSubmit(
 	} catch (error) {
 		showToast({
 			type: "error",
-			title: "Fehler",
-			subtitle: "Die Lerneinheit konnte nicht gespeichert werden."
+			title: t("common:Error"),
+			subtitle: t("Lesson_Save_Failed")
 		});
+		console.log(error);
 	}
 }
 
@@ -118,94 +137,155 @@ export function collectErrorMessages(errors: FieldErrors): ValidationError[] {
 	return result;
 }
 
-function showValidationErrors(errors: FieldErrors) {
-	const errorMessages = collectErrorMessages(errors);
-	const errorMsg = errorMessages
-		.map(e => {
-			switch (e.field) {
-				case "title":
-					return "🞄 Kein Titel vergeben. Geben Sie einen Titel für die Lerneinheit an.";
-				case "slug":
-					return "🞄 Keine eindeutige ID vergeben. Geben Sie einen eindeutigen Slug an, um eine URL für die Lerneinheit erzeugen zu können.";
-				case "permissions":
-					return "🞄 Es wurden keine Bearbeitungsrechte vergeben. Wählen Sie mindestens eine Bearbeitungsgruppe aus.";
-				default:
-					return `🞄 ${e.field}: ${e.message}`;
-			}
-		})
-		.join("\n");
-
-	showToast({
-		type: "error",
-		title: "Validierungsfehler",
-		subtitle: `Beim Anlegen wurden die folgenden Felder fehlerhaft ausgefüllt:\n${errorMsg}`
-	});
-}
-
 export function LessonEditor({
 	onSubmit,
-	initialLesson
+	onClose,
+	initialLesson,
+	inheritedPermissions,
+	courseId,
+	isFullScreen = true
 }: {
 	onSubmit: OnDialogCloseFn<LessonFormModel>;
+	onClose: () => void;
 	initialLesson?: LessonFormModel;
-	isFullScreen: boolean;
+	inheritedPermissions?: LessonFormModel["permissions"];
+	courseId?: string; // in context of which course lesson is edited
+	isFullScreen?: boolean;
 }) {
+	const { t } = useTranslation("feature-teaching");
 	const isNew = initialLesson === null || initialLesson === undefined;
-	const router = useRouter();
 	const session = useRequiredSession();
 	const [selectedTab, setSelectedTab] = useState(0);
+	const [expanded, setExpanded] = useState(false);
 	const form = useForm<LessonFormModel>({
 		context: undefined,
 		defaultValues: initialLesson ?? {
 			...createEmptyLesson(),
+			permissions: (inheritedPermissions ?? []).map(p => ({ ...p })),
 			// Add current user as author
 			authors: session.data?.user.isAuthor ? [{ username: session.data.user.name }] : []
 		},
 		resolver: zodResolver(lessonSchema)
 	});
+	const { isDirty } = useFormState({ control: form.control });
+	const title = useWatch({ control: form.control, name: "title" });
 
-	function onCancel() {
-		if (window.confirm("Änderungen verwerfen?")) {
-			router.back();
+	function handleClose() {
+		if (isDirty && !window.confirm(t("Lesson_Editor_Discard_Changes_Confirm"))) {
+			return;
 		}
+		onClose();
 	}
 
-	return (
-		<FormProvider {...form}>
-			<form
-				id="lessonform"
-				onSubmit={form.handleSubmit(onSubmit, showValidationErrors)}
-				className="w-full"
-			>
-				<div className="flex flex-col px-4 max-w-screen-xl mx-auto">
-					<div className="flex justify-between mb-8">
-						<div className="flex flex-col gap-2">
-							<span className="font-semibold text-2xl text-c-primary">
-								{initialLesson ? "Lerneinheit bearbeiten" : "Lerneinheit erstellen"}
-							</span>
-							<h1 className="text-4xl">{initialLesson?.title}</h1>
-						</div>
-						<div className="pointer-events-auto">
-							<DialogActions onClose={onCancel}>
-								<OpenAsJsonButton form={form} validationSchema={lessonSchema} />
-								<button type="submit" className="btn-primary pointer-events-auto">
-									{isNew ? "Erstellen" : "Speichern"}
-								</button>
-							</DialogActions>
-						</div>
+	function showValidationErrors(errors: FieldErrors) {
+		const errorMsg = collectErrorMessages(errors)
+			.map(error => {
+				switch (error.field) {
+					case "title":
+						return t("Lesson_Validation_Title_Required");
+					case "slug":
+						return t("Lesson_Validation_Slug_Required");
+					case "permissions":
+						return t("Lesson_Validation_Permissions_Required");
+					default:
+						return t("Lesson_Validation_Field_Error", {
+							field: error.field,
+							message: error.message
+						});
+				}
+			})
+			.join("\n");
+
+		showToast({
+			type: "error",
+			title: t("Lesson_Validation_Error_Title"),
+			subtitle: t("Lesson_Validation_Error_Message", { errors: errorMsg })
+		});
+	}
+
+	const body = (
+		<form
+			id="lessonform"
+			onSubmit={form.handleSubmit(onSubmit, showValidationErrors)}
+			className="w-full"
+		>
+			<div className="flex flex-col px-4 max-w-screen-xl mx-auto">
+				<div className="flex justify-between mb-8">
+					<div className="flex flex-col gap-2">
+						<span className="font-semibold text-2xl text-c-primary">
+							{t(initialLesson ? "Edit_Lesson" : "Create_Lesson")}
+						</span>
+						<h1 className="text-4xl">{title}</h1>
 					</div>
-					<div>
-						<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
-							<Tab>Grunddaten</Tab>
-							<Tab>Lerninhalt</Tab>
-							<Tab>Lernkontrolle</Tab>
-						</Tabs>
-						{selectedTab === 0 && <LessonInfoEditor isNew={isNew} />}
-						{selectedTab === 1 && <LessonContentEditor />}
-						{selectedTab === 2 && <QuizEditor />}
+					<div className="pointer-events-auto">
+						<DialogActions onClose={handleClose}>
+							<OpenAsJsonButton form={form} validationSchema={lessonSchema} />
+							<button type="submit" className="btn-primary pointer-events-auto">
+								{t(isNew ? "common:create" : "common:save")}
+							</button>
+						</DialogActions>
 					</div>
 				</div>
-			</form>
+				<div>
+					<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
+						<Tab>{t("Lesson_Editor_Tab_Basic_Info")}</Tab>
+						<Tab>{t("Skills_Title")}</Tab>
+						<Tab>{t("Lesson_Editor_Tab_Content")}</Tab>
+						<Tab>{t("Lesson_Editor_Tab_Quiz")}</Tab>
+					</Tabs>
+					{selectedTab === 0 && <LessonInfoEditor isNew={isNew} />}
+					{selectedTab === 1 && (
+						<SkillsEditor
+							target="lesson"
+							courseId={courseId}
+							lessonId={initialLesson?.lessonId ?? undefined}
+						/>
+					)}
+					{selectedTab === 2 && <LessonContentEditor />}
+					{selectedTab === 3 && <QuizEditor />}
+				</div>
+			</div>
+		</form>
+	);
+	// TODO maybe factor out this expandable dialog view
+	return (
+		<FormProvider {...form}>
+			{isFullScreen ? (
+				body
+			) : (
+				<Dialog
+					onClose={handleClose}
+					className={expanded ? "!rounded-none !p-4" : undefined}
+					style={
+						expanded
+							? {
+									height: "100vh",
+									width: "100vw",
+									maxWidth: "none",
+									maxHeight: "none"
+								}
+							: { height: "80vh", width: "80vw" }
+					}
+				>
+					<div className="absolute right-8 top-4 flex gap-4">
+						<IconOnlyButton
+							type="button"
+							title={
+								t(expanded ? "Lesson_Editor_Exit_Fullscreen" : "Lesson_Editor_Fullscreen")
+							}
+							icon={
+								expanded ? (
+									<ArrowsPointingInIcon className="h-5 w-5" />
+								) : (
+									<ArrowsPointingOutIcon className="h-5 w-5" />
+								)
+							}
+							onClick={() => setExpanded(v => !v)}
+						/>
+					</div>
+					<div className="overflow-y-auto mt-8">{body}</div>
+				</Dialog>
+			)}
 		</FormProvider>
 	);
 }

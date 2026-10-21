@@ -3,16 +3,25 @@ import { TextEncoder, TextDecoder } from "web-encoding";
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
 
-// Avoid warning:
-// react-i18next:: useTranslation: You will need to pass in an i18next instance by using initReactI18next { code: 'NO_I18NEXT_INSTANCE' }
-jest.mock("react-i18next", () => ({
-	useTranslation: () => ({
-		t: (key: string) => key,
-		i18n: { language: "en", changeLanguage: async () => {} }
-	}),
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	Trans: ({ i18nKey }: any) => i18nKey,
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	I18nextProvider: ({ children }: any) => children,
-	initReactI18next: { type: "3rdParty", init: () => {} }
-}));
+jest.mock("next-i18next", () => {
+	const diary = jest.requireActual<Record<string, string>>(
+		"../../../apps/site/public/locales/de/feature-diary.json"
+	);
+	const common = jest.requireActual<Record<string, string>>(
+		"../../../apps/site/public/locales/de/common.json"
+	);
+	return {
+		useTranslation: (namespace: string) => ({
+			t: (key: string, values?: Record<string, string>) => {
+				const [resourceNamespace, resourceKey] = key.includes(":")
+					? key.split(":")
+					: [namespace, key];
+				const resource = resourceNamespace === "common" ? common : diary;
+				const value: string = resource[resourceKey] ?? key;
+				return value.replace(/{{(\w+)}}/g, (_, name: string) => values?.[name] ?? "");
+			},
+			i18n: { language: "de" }
+		}),
+		Trans: ({ i18nKey }: { i18nKey: string }) => diary[i18nKey]
+	};
+});

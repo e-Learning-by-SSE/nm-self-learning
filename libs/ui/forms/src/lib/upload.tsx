@@ -12,6 +12,7 @@ import { trpc } from "@self-learning/api-client";
 import {
 	Dialog,
 	DialogActions,
+	CenteredContainer,
 	LoadingBox,
 	OnDialogCloseFn,
 	Paginator,
@@ -29,7 +30,6 @@ import { inferRouterOutputs } from "@trpc/server";
 import { ReactElement, useEffect, useId, useMemo, useState } from "react";
 import { SearchField } from "./searchfield";
 import { UploadProgressDialog } from "./upload-progress-dialog";
-import { CenteredContainer } from "@self-learning/ui/layouts";
 import io, { Socket } from "socket.io-client";
 import { Subtitle, SubtitleSrc, subtitleSrcSchema } from "@self-learning/types";
 import { useTranslation } from "next-i18next";

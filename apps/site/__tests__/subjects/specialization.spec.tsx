@@ -72,7 +72,7 @@ describe("public specialization server props", () => {
 	it("returns 404 for a missing specialization", async () => {
 		(database.specialization.findUnique as jest.Mock).mockResolvedValue(null);
 		expect(await getServerSideProps(context)).toEqual({ notFound: true });
-		expect(getServerSession).not.toHaveBeenCalled();
+		expect(testResourceGuard).not.toHaveBeenCalled();
 	});
 
 	it("rejects an invalid specialization slug", async () => {

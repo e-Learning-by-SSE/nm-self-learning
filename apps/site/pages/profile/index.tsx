@@ -4,7 +4,11 @@ import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
 import { withTranslations } from "@self-learning/api";
 import { SmallGradeBadge } from "@self-learning/completion";
 import { database } from "@self-learning/database";
-import { LearningDiaryEntryStatusBadge, StatusBadgeInfo } from "@self-learning/diary";
+import {
+	I18N_NAMESPACE as DIARY_I18N_NAMESPACE,
+	LearningDiaryEntryStatusBadge,
+	StatusBadgeInfo
+} from "@self-learning/diary";
 import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
 import {
 	CourseEnrollmentOverview,
@@ -20,17 +24,13 @@ import {
 	ImageCardBadge,
 	ImageOrPlaceholder,
 	ProgressBar,
-	Tooltip
+	Tooltip,
+	useTimeIntervalFormatter
 } from "@self-learning/ui/common";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { handleEmailTracking } from "@self-learning/ui/notifications";
 import { withAuth } from "@self-learning/util/auth";
-import {
-	formatDateDistanceToNow,
-	formatDateStringShort,
-	formatTimeIntervalToString,
-	IdSet
-} from "@self-learning/util/common";
+import { formatDateDistanceToNow, formatDateStringShort, IdSet } from "@self-learning/util/common";
 import { startOfToday } from "date-fns";
 import { NextComponentType, NextPageContext } from "next";
 import Link from "next/link";
@@ -439,7 +439,7 @@ function ProfilLayout(
 ProfilPage.getLayout = ProfilLayout;
 
 export const getServerSideProps = withTranslations(
-	["common"],
+	DIARY_I18N_NAMESPACE,
 	withAuth<Props>(async (context, user) => {
 		// TODO remove this check when gamification is fully enabled
 		const isParticipant = user.featureFlags.experimental;
@@ -688,6 +688,7 @@ function ProfileCard({
 	openSettings: () => void;
 	setStreakInfoOpen: (open: boolean) => void;
 }) {
+	const formatTimeInterval = useTimeIntervalFormatter();
 	const { user, _count: completionCount, enrollments, completedLessons } = student;
 	const gamificationProfile = user.gamificationProfile;
 	const longestStreak =
@@ -768,7 +769,7 @@ function ProfileCard({
 					<div className="flex items-center justify-between">
 						<span className="text-sm text-c-text-muted">Insgesamt Zeit gelernt</span>
 						<span className="text-sm font-semibold text-c-primary-strong">
-							{formatTimeIntervalToString(totalLearningTime)}
+							{formatTimeInterval(totalLearningTime)}
 						</span>
 					</div>
 
@@ -797,6 +798,7 @@ function ProfileCard({
 }
 
 function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys"] }) {
+	const formatTimeInterval = useTimeIntervalFormatter();
 	return (
 		<>
 			{pages.length == 0 ? (
@@ -828,7 +830,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 												</span>
 												<span className="text-xs text-c-text-muted truncate block max-w-full">
 													Verbrachte Zeit:{" "}
-													{formatTimeIntervalToString(
+													{formatTimeInterval(
 														page.totalDurationLearnedMs ?? 0
 													)}
 												</span>

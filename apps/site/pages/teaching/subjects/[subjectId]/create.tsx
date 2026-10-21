@@ -15,11 +15,7 @@ import {
 	Upload,
 	useSlugify
 } from "@self-learning/ui/forms";
-import {
-	SidebarEditorLayout,
-	testResourceGuard,
-	useResourceGuard
-} from "@self-learning/ui/layouts";
+import { SidebarEditorLayout, testResourceGuard } from "@self-learning/ui/layouts";
 import { TRPCClientError } from "@trpc/client";
 import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { useRouter } from "next/router";
@@ -87,9 +83,6 @@ export function SpecializationEditor({
 	});
 
 	const isNew = initialSpecialization.specializationId === "";
-	const hasFull = useResourceGuard(AccessLevel.FULL, initialSpecialization.permissions);
-	const showGroupAccessEditor = isNew || hasFull;
-
 	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "title", "slug");
 	const cardImgUrl = useWatch({ name: "cardImgUrl", control: form.control });
 	const imgUrlBanner = useWatch({ name: "imgUrlBanner", control: form.control });
@@ -175,12 +168,10 @@ export function SpecializationEditor({
 										</FieldHint>
 									</LabeledField>
 								</div>
-								{showGroupAccessEditor && (
-									<GroupAccessEditor
-										subtitle="Gruppen, die auf diese Spezialisierung zugreifen können"
-										doUseDefaultGroup={isNew}
-									/>
-								)}
+								<GroupAccessEditor
+									subtitle="Gruppen, die auf diese Spezialisierung zugreifen können"
+									isNew={isNew}
+								/>
 							</Form.SidebarSection>
 						</>
 					}
@@ -227,7 +218,7 @@ export function SpecializationEditor({
 }
 
 export const getServerSideProps = withTranslations(
-	["common"],
+	["common", "feature-teaching"],
 	withAuth<CreateSpecializationProps>(async (ctx, user) => {
 		const subjectId = ctx.params?.subjectId;
 

@@ -61,6 +61,7 @@ Before adding a key:
 
 Search existing translation files for a suitable key.
 Reuse shared terms from `common.json` where appropriate.
+Especially, terms like skill / competence (common:skill), course (common:course), and lesson (common:lesson) should be reused from `common.json`.
 Follow the naming and nesting conventions of nearby translations.
 
 When moving translations between namespaces, update all usages and I18N_NAMESPACE exports.

@@ -40,6 +40,7 @@ import {
 	canCreate,
 	canDelete,
 	canEdit,
+	canProvideSkills,
 	canRead,
 	preparePermissionsForCreate,
 	preparePermissionsForUpdate,
@@ -163,6 +164,17 @@ describe("permission.service", () => {
 
 			const ok = await hasResourceAccessBatch("u1", [
 				{ specializationId: "sp1", accessLevel: AccessLevel.EDIT }
+			]);
+			expect(ok).toBe(false);
+		});
+
+		it("should not mix skill id with subject permission row", async () => {
+			(database.permission.findMany as jest.Mock).mockResolvedValue([
+				{ accessLevel: AccessLevel.FULL, subjectId: "sk1" }
+			]);
+
+			const ok = await hasResourceAccessBatch("u1", [
+				{ skillId: "sk1", accessLevel: AccessLevel.EDIT }
 			]);
 			expect(ok).toBe(false);
 		});
@@ -338,6 +350,38 @@ describe("permission.service", () => {
 
 			const ok = await hasEffectiveResourceAccessBatch(user, checks);
 			expect(ok).toBe(true);
+		});
+	});
+
+	describe("canProvideSkills", () => {
+		const user = { role: "USER", id: "u1" } as UserFromSession;
+
+		it("requires EDIT access for newly added skills", async () => {
+			(database.permission.findMany as jest.Mock).mockResolvedValue([
+				{ accessLevel: AccessLevel.VIEW, skillId: "s1" }
+			]);
+
+			expect(await canProvideSkills(user, ["s1"])).toBe(false);
+
+			(database.permission.findMany as jest.Mock).mockResolvedValue([
+				{ accessLevel: AccessLevel.EDIT, skillId: "s1" }
+			]);
+
+			expect(await canProvideSkills(user, ["s1"])).toBe(true);
+		});
+
+		it("does not check skills which are already provided", async () => {
+			(database.permission.findMany as jest.Mock).mockResolvedValue([]);
+
+			expect(await canProvideSkills(user, ["s1", "s2"], ["s1", "s2"])).toBe(true);
+		});
+
+		it("checks only the added skills", async () => {
+			(database.permission.findMany as jest.Mock).mockResolvedValue([
+				{ accessLevel: AccessLevel.EDIT, skillId: "s2" }
+			]);
+
+			expect(await canProvideSkills(user, ["s1", "s2"], ["s1"])).toBe(true);
 		});
 	});
 
@@ -585,6 +629,20 @@ describe("permission.service", () => {
 				groupId_subjectId: { groupId: 2, subjectId: "sb1" }
 			});
 		});
+
+		it("returns update payload for skillId", async () => {
+			(database.permission.findMany as jest.Mock).mockResolvedValue([
+				{ groupId: 2, accessLevel: AccessLevel.VIEW }
+			]);
+
+			const result = await preparePermissionsForUpdate({ skillId: "sk1" }, [
+				{ groupId: 2, accessLevel: AccessLevel.FULL }
+			]);
+
+			expect(result?.upsert[0].where).toEqual({
+				groupId_skillId: { groupId: 2, skillId: "sk1" }
+			});
+		});
 	});
 
 	describe("prepareResourceUpdate", () => {
@@ -811,6 +869,13 @@ describe("permission.service", () => {
 									none: { accessLevel: AccessLevel.FULL, NOT: { groupId: 1 } }
 								}
 							}
+						},
+						{
+							skill: {
+								permissions: {
+									none: { accessLevel: AccessLevel.FULL, NOT: { groupId: 1 } }
+								}
+							}
 						}
 					]
 				},
@@ -820,10 +885,11 @@ describe("permission.service", () => {
 					specialization: {
 						select: { title: true, specializationId: true, slug: true, subjectId: true }
 					},
-					subject: { select: { title: true, subjectId: true, slug: true } }
+					subject: { select: { title: true, subjectId: true, slug: true } },
+					skill: { select: { id: true, name: true } }
 				}
 			});
-			expect(result).toEqual(mockResult);
+			expect(result).toEqual(mockResult.map(row => ({ ...row, skill: null })));
 		});
 
 		it("returns empty array when no owned resources", async () => {

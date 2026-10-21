@@ -4,6 +4,7 @@ import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import {
 	EnableLearningDiaryDialog,
+	I18N_NAMESPACE as DIARY_I18N_NAMESPACE,
 	LearningDiaryEntryStatusBadge,
 	StatusBadgeInfo
 } from "@self-learning/diary";
@@ -14,16 +15,13 @@ import {
 	ImageCardBadge,
 	ImageOrPlaceholder,
 	Trans,
-	Toggle
+	Toggle,
+	useTimeIntervalFormatter
 } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { MarketingSvg, OverviewSvg, TargetSvg } from "@self-learning/ui/static";
 import { withAuth } from "@self-learning/util/auth";
-import {
-	formatDateDistanceToNow,
-	formatDateStringShort,
-	formatTimeIntervalToString
-} from "@self-learning/util/common";
+import { formatDateDistanceToNow, formatDateStringShort } from "@self-learning/util/common";
 import Link from "next/link";
 import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router";
@@ -208,7 +206,7 @@ async function loadMostRecentLessons({
 }
 
 export const getServerSideProps = withTranslations(
-	["common", "pages-dashboard"],
+	[...DIARY_I18N_NAMESPACE, "pages-dashboard"],
 	withAuth<Props>(async (_, user) => {
 		// TODO: remove this when in case gamification is fully enabled
 		const isParticipant = user.featureFlags.experimental;
@@ -413,6 +411,7 @@ function DashboardPage(props: Props) {
 
 function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys"] }) {
 	const { t } = useTranslation("pages-dashboard");
+	const formatTimeInterval = useTimeIntervalFormatter();
 	return (
 		<>
 			{pages.length == 0 ? (
@@ -442,7 +441,7 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 												</span>
 												<span className="text-xs text-gray-400 truncate block max-w-full">
 													{t("Time_Spent")}:{" "}
-													{formatTimeIntervalToString(
+													{formatTimeInterval(
 														page.totalDurationLearnedMs ?? 0
 													)}
 												</span>

@@ -164,6 +164,17 @@ function GroupDeleteDialog({
 											</Link>
 										</div>
 									)}
+									{resource.skill && (
+										<div className="flex items-center gap-2">
+											<span className="font-semibold">{p.type}</span>
+											<Link
+												href={`/skills/${resource.skill.skillId}`}
+												className="text-c-primary hover:underline"
+											>
+												{p.title}
+											</Link>
+										</div>
+									)}
 								</div>
 							);
 						})}

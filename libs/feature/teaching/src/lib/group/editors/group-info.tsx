@@ -24,7 +24,9 @@ import { ArrowsUpDownIcon } from "@heroicons/react/24/solid";
 export function GroupInfoEditor({ fillInSingleGroup }: { fillInSingleGroup: boolean }) {
 	const form = useFormContext<GroupFormModel>();
 	const {
+		getValues,
 		register,
+		resetField,
 		control,
 		formState: { errors }
 	} = form;
@@ -35,19 +37,23 @@ export function GroupInfoEditor({ fillInSingleGroup }: { fillInSingleGroup: bool
 
 	const { slugifyField, slugifyIfEmpty } = useSlugify(form, "name", "slug");
 
-	// If user creates a group, and has default group set - preset group parent (once)
-	const hasSetSingleGroup = useRef(false);
-	const defaultGroup = useDefaultGroup({
-		defaultGroupId: session.data?.user.defaultGroupId,
-		enabled: fillInSingleGroup && !form.getValues("parent")
-	});
+	// if user creates a group, and has default group set - preset group parent (once)
+	const { data: defaultGroup, isLoading } = useDefaultGroup(
+		fillInSingleGroup && !form.getValues("parent")
+	);
+	const isDefaultGroupApplied = useRef(false);
 	useEffect(() => {
-		if (hasSetSingleGroup.current) return;
+		// run once
+		if (isDefaultGroupApplied.current || isLoading) return;
+		isDefaultGroupApplied.current = true;
+		// guard again because values may change between renders
+		if (!fillInSingleGroup || !!getValues("parent")) return;
 		if (!defaultGroup) return;
-
-		form.setValue("parent", { id: defaultGroup.groupId, name: defaultGroup.name });
-		hasSetSingleGroup.current = true;
-	}, [defaultGroup, form]);
+		// keeps form clean
+		resetField("parent", {
+			defaultValue: { id: defaultGroup.groupId, name: defaultGroup.name }
+		});
+	}, [defaultGroup, isLoading, resetField, getValues, fillInSingleGroup]);
 
 	return (
 		<CenteredSection>

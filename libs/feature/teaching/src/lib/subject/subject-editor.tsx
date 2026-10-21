@@ -10,12 +10,11 @@ import {
 	Upload,
 	useSlugify
 } from "@self-learning/ui/forms";
-import { SidebarEditorLayout, useResourceGuard } from "@self-learning/ui/layouts";
+import { SidebarEditorLayout } from "@self-learning/ui/layouts";
 import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { FormProvider, useForm } from "react-hook-form";
 import { Trans, useTranslation } from "next-i18next";
 import { GroupAccessEditor } from "../group/forms/group-form";
-import { AccessLevel } from "@prisma/client";
 
 export function SubjectEditor({
 	initialSubject,
@@ -41,9 +40,6 @@ export function SubjectEditor({
 		register,
 		formState: { errors }
 	} = form;
-
-	const hasFull = useResourceGuard(AccessLevel.FULL, initialSubject.permissions);
-	const showGroupAccessEditor = isNew || hasFull;
 
 	return (
 		<FormProvider {...form}>
@@ -129,12 +125,10 @@ export function SubjectEditor({
 									</LabeledField>
 								</div>
 
-								{showGroupAccessEditor && (
 								<GroupAccessEditor
 									subtitle="Gruppen, die auf dieses Fachgebiet zugreifen können"
-									doUseDefaultGroup={isNew}
+									isNew={isNew}
 								/>
-								)}
 							</Form.SidebarSection>
 						</>
 					}

@@ -17,7 +17,8 @@ describe("ResourceInputSchema", () => {
 		[{ courseId: "c1" }, { courseId: "c1" }],
 		[{ lessonId: "l1" }, { lessonId: "l1" }],
 		[{ specializationId: "sp1" }, { specializationId: "sp1" }],
-		[{ subjectId: "sb1" }, { subjectId: "sb1" }]
+		[{ subjectId: "sb1" }, { subjectId: "sb1" }],
+		[{ skillId: "sk1" }, { skillId: "sk1" }]
 	])("accepts exactly one resource id %#", (input, expected) => {
 		expect(ResourceInputSchema.parse(input)).toEqual(expected);
 	});
@@ -73,7 +74,8 @@ describe("resource form helpers", () => {
 		["course", "c1", "course-slug", "Course"],
 		["lesson", "l1", "lesson-slug", "Lesson"],
 		["specialization", "sp1", "sp-slug", "Spec"],
-		["subject", "sb1", "sb-slug", "Subject"]
+		["subject", "sb1", "sb-slug", "Subject"],
+		["skill", "sk1", "sk1", "Skill"]
 	] as const)(
 		"toResourceAccessForm and stripFormResourceAccess round-trip for %s",
 		(kind, id, slug, title) => {
@@ -90,7 +92,8 @@ describe("resource form helpers", () => {
 				...(kind === "course" && { courseId: id }),
 				...(kind === "lesson" && { lessonId: id }),
 				...(kind === "specialization" && { specializationId: id }),
-				...(kind === "subject" && { subjectId: id })
+				...(kind === "subject" && { subjectId: id }),
+				...(kind === "skill" && { skillId: id })
 			});
 			const normalized = normalizeFormResourceAccess(form);
 			expect(normalized.kind).toBe(kind);

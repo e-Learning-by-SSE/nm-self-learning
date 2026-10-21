@@ -63,6 +63,12 @@ export async function createUsers() {
 		];
 
 		await prisma.user.createMany({ data: userData });
+		await prisma.features.createMany({
+			data: userData.map(user => ({
+				userId: user.id,
+				username: user.name
+			}))
+		});
 
 		console.log(" - %s\x1b[32m ✔\x1b[0m", "Users");
 

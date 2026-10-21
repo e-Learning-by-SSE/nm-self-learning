@@ -14,6 +14,7 @@ async function loadFullCourse(slug: string) {
 			subtitle: true,
 			description: true,
 			content: true,
+			version: true,
 			meta: true,
 			authors: {
 				select: {

@@ -10,6 +10,7 @@ import { LearningGoalsDialog } from "../goals/learning-goals";
 import { GoalStatusCheckbox } from "../goals/status-checkbox";
 import { StatusUpdateCallback } from "../util/types";
 import { XMarkIcon } from "@heroicons/react/24/solid";
+import { useTranslation } from "next-i18next";
 
 export function Tile({
 	onClick,
@@ -128,6 +129,7 @@ export function LocationInputTile({
 	onChange?: (location: Location) => void;
 	isCompact: boolean;
 }) {
+	const { t } = useTranslation("feature-diary");
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 	const { data: learningLocations } = trpc.learningLocation.findMany.useQuery();
 
@@ -140,8 +142,7 @@ export function LocationInputTile({
 		onChange && onChange(location);
 	};
 
-	const description =
-		"Notiere deinen Lernort! Wenn du deinen Lernort einträgst, kannst du später leicht herausfinden, wo du am besten lernst.";
+	const description = t("Learning_Location_Description");
 
 	return (
 		<TileLayout
@@ -149,7 +150,7 @@ export function LocationInputTile({
 			onClick={setDialogOpen}
 			isFilled={!!initialSelection}
 			tileDescription={description}
-			tileName={"Lernort"}
+			tileName={t("Learning_Location_Label")}
 		>
 			<div className="flex items-center p-4 min-h-40 xl:min-h-0">
 				{initialSelection ? (
@@ -161,7 +162,7 @@ export function LocationInputTile({
 						)}
 					</div>
 				) : (
-					<p>Keine Lernort ausgewählt</p>
+					<p>{t("No_Learning_Location")}</p>
 				)}
 				{dialogOpen && (
 					<LocationChooseDialog
@@ -187,6 +188,7 @@ export function LocationChooseDialog({
 	onSubmit: (location: Location) => void;
 	description: string;
 }) {
+	const { t } = useTranslation("feature-diary");
 	const { mutateAsync: createLearningLocationAsync } = trpc.learningLocation.create.useMutation();
 	const { mutateAsync: deleteLearningLocationAsync } = trpc.learningLocation.delete.useMutation();
 
@@ -210,7 +212,7 @@ export function LocationChooseDialog({
 	};
 
 	return (
-		<Dialog title={"Lernort:"} onClose={onClose} className={"max-w-md"}>
+		<Dialog title={t("Learning_Location_Label")} onClose={onClose} className={"max-w-md"}>
 			<div className="space-y-4 max-h-96 overflow-y-auto pr-2">
 				<span>{description}</span>
 
@@ -247,7 +249,7 @@ export function LocationChooseDialog({
 							ref={newLocationInputRef}
 							type="text"
 							className="w-full rounded border border-c-border-strong p-4 shadow-sm"
-							placeholder="Neuen Lernort hinzufügen... Drücke Enter zum Speichern"
+							placeholder={t("New_Learning_Location_Placeholder")}
 							// Erstellung ohne Buttons ermöglichen: Enter, oder verlassen des Feldes (onBlur)
 							onBlur={e => createNewLocation(e.target.value)}
 							onKeyDown={async e => {
@@ -307,6 +309,7 @@ export function MarkDownInputTile({
 	onSubmit: (note: string) => void;
 	isCompact: boolean;
 }) {
+	const { t } = useTranslation("feature-diary");
 	const [displayedNotes, setDisplayedNotes] = useState<string | null>(initialNote ?? null);
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
@@ -323,12 +326,12 @@ export function MarkDownInputTile({
 			isCompact={isCompact}
 			onClick={setDialogOpen}
 			isFilled={false}
-			tileDescription={"Platz für persönliche Anmerkungen."}
-			tileName={"Notizen"}
+			tileDescription={t("Notes_Description")}
+			tileName={t("Notes_Label")}
 		>
 			<div className="flex flex-grow min-h-40 overflow-auto">
 				{initialNote === "" ? (
-					<span className="m-auto">Bisher wurden noch keine Notizen erstellt.</span>
+					<span className="m-auto">{t("No_Notes")}</span>
 				) : (
 					<div className="whitespace-nowrap m-auto">
 						<MarkdownViewer content={displayedNotes ? displayedNotes : ""} />
@@ -338,7 +341,7 @@ export function MarkDownInputTile({
 
 			{dialogOpen && (
 				<MarkdownEditorDialog
-					title={"Notizen"}
+					title={t("Notes_Label")}
 					initialValue={displayedNotes ? displayedNotes : ""}
 					onClose={onClose}
 				/>
@@ -356,6 +359,7 @@ export function LearningGoalInputTile({
 	onChange: (goal: LearningGoal[]) => void; // don'use IdSet here, because it is not serializable and will cause zod validation error
 	isCompact: boolean;
 }) {
+	const { t } = useTranslation("feature-diary");
 	const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
 	const onClose = () => {
@@ -379,8 +383,7 @@ export function LearningGoalInputTile({
 		}
 	});
 
-	const description =
-		"Ziele helfen dir eine Richtung zu finden, die du einschlagen möchtest, und bietet dir eine Checkliste, um deine Fortschritte zu überprüfen.";
+	const description = t("Learning_Goals_Description");
 
 	return (
 		<TileLayout
@@ -388,11 +391,11 @@ export function LearningGoalInputTile({
 			onClick={setDialogOpen}
 			isFilled={goals.size > 0}
 			tileDescription={description}
-			tileName={"Lernziele"}
+			tileName={t("Learning_Goals_Label")}
 		>
 			<div>
 				<div className="flex flex-wrap justify-center items-center p-4 min-h-40 xl:min-h-0">
-					{goals.size === 0 && <span>Keine Lernziele vorhanden</span>}
+					{goals.size === 0 && <span>{t("No_Learning_Goals")}</span>}
 					{goals.entries().map(goal => (
 						<div
 							key={goal.id}
@@ -410,7 +413,7 @@ export function LearningGoalInputTile({
 			{dialogOpen && (
 				<LearningGoalsDialog
 					onClose={onClose}
-					description={"Lernziele bearbeiten"}
+					description={t("Edit_Learning_Goals")}
 					onStatusUpdate={handleGoalStatusUpdate}
 				/>
 			)}

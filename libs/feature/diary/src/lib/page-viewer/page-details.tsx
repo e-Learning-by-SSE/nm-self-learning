@@ -1,16 +1,18 @@
 "use client";
 import { useState } from "react";
 import { LearningDiaryPageDetail } from "../access-learning-diary";
+import { duplicateRemover, isTruthy } from "@self-learning/util/common";
 import {
-	duplicateRemover,
-	formatDateStringFull,
-	formatTimeIntervalToString,
-	isTruthy
-} from "@self-learning/util/common";
-import { Table, TableDataColumn, TableHeaderColumn } from "@self-learning/ui/common";
+	Table,
+	TableDataColumn,
+	TableHeaderColumn,
+	useTimeIntervalFormatter
+} from "@self-learning/ui/common";
 import Link from "next/link";
 import { trpc } from "@self-learning/api-client";
 import { hintsUsed, isEventType, quizAttempts } from "libs/feature/analysis/src/lib/metrics";
+import { useTranslation } from "next-i18next";
+import { formatDiaryDate } from "../util/format-diary-date";
 
 export function DiaryLearnedContent({
 	page,
@@ -19,34 +21,36 @@ export function DiaryLearnedContent({
 	page: LearningDiaryPageDetail;
 	endDate: Date;
 }) {
+	const { t, i18n } = useTranslation("feature-diary");
 	const [showMore, setShowMore] = useState(false);
+	const formatTimeInterval = useTimeIntervalFormatter();
 	return (
 		<div className="flex w-full flex-col space-y-2 py-4">
 			<div className="flex w-full flex-wrap gap-2">
 				<DetailRow
-					label="Datum"
-					value={formatDateStringFull(page.createdAt)}
+					label={t("Date_Label")}
+					value={formatDiaryDate(page.createdAt, i18n.language)}
 					className="w-full sm:className-1/6"
 				/>
 				<DetailRow
-					label="Kurs"
+					label={t("common:Course")}
 					value={page.course.title}
 					className="w-full sm:className-2/6"
 				/>
 				<DetailRow
-					label="Dauer"
-					value={formatTimeIntervalToString(page.totalDurationLearnedMs ?? 0)}
+					label={t("Duration_Label")}
+					value={formatTimeInterval(page.totalDurationLearnedMs ?? 0)}
 					className="w-full sm:className-2/6"
 				/>
 				<DetailRow
-					label="Lerneinheiten"
+					label={t("common:Lesson_other")}
 					value={`${page.lessonsLearned.length}`}
 					className="w-full sm:className-1/6"
 				/>
 			</div>
 			{showMore && <MoreDetails page={page} endDate={endDate} />}
 			<button onClick={() => setShowMore(!showMore)} className="self-start btn btn-info">
-				{showMore ? "Weniger anzeigen" : "Mehr anzeigen"}
+				{showMore ? t("Show_Less_Button") : t("Show_More_Button")}
 			</button>
 		</div>
 	);
@@ -152,16 +156,16 @@ export function useLessonDetails({
 	};
 }
 
-function toPercentage(value: number) {
-	let percentage = (value * 100).toFixed(2);
-	// Remove trailing zeros
-	percentage = percentage.replace(/\.?0+$/, "");
-	// German formatting (replace . with ,)
-	return percentage.replace(".", ",") + " %";
+function toPercentage(value: number, locale: string) {
+	return new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 2 }).format(
+		value
+	);
 }
 
 function MoreDetails({ page, endDate }: { page: LearningDiaryPageDetail; endDate: Date }) {
+	const { t, i18n } = useTranslation("feature-diary");
 	const { lessonDetails } = useLessonDetails({ page, endDate });
+	const formatTimeInterval = useTimeIntervalFormatter();
 
 	return (
 		<div className="flex w-full flex-col space-y-4 mt-4">
@@ -169,11 +173,11 @@ function MoreDetails({ page, endDate }: { page: LearningDiaryPageDetail; endDate
 				<Table
 					head={
 						<>
-							<TableHeaderColumn>Titel</TableHeaderColumn>
-							<TableHeaderColumn>Dauer</TableHeaderColumn>
-							<TableHeaderColumn>Aufgaben gelöst</TableHeaderColumn>
-							<TableHeaderColumn>Erfolgsrate</TableHeaderColumn>
-							<TableHeaderColumn>Hinweise verwendet</TableHeaderColumn>
+							<TableHeaderColumn>{t("common:Title")}</TableHeaderColumn>
+							<TableHeaderColumn>{t("Duration_Label")}</TableHeaderColumn>
+							<TableHeaderColumn>{t("Tasks_Solved_Label")}</TableHeaderColumn>
+							<TableHeaderColumn>{t("Success_Rate_Label")}</TableHeaderColumn>
+							<TableHeaderColumn>{t("Hints_Used_Label")}</TableHeaderColumn>
 						</>
 					}
 				>
@@ -188,14 +192,14 @@ function MoreDetails({ page, endDate }: { page: LearningDiaryPageDetail; endDate
 								</Link>
 							</TableDataColumn>
 							<TableDataColumn>
-								{formatTimeIntervalToString(lessonDetail.duration)}
+								{formatTimeInterval(lessonDetail.duration)}
 							</TableDataColumn>
 							<TableDataColumn>
 								{lessonDetail.tasksSolved}/{lessonDetail.tasks.length}
 							</TableDataColumn>
 							<TableDataColumn>
 								{" "}
-								{toPercentage(lessonDetail.successRate)}
+								{toPercentage(lessonDetail.successRate, i18n.language)}
 							</TableDataColumn>
 							<TableDataColumn>{lessonDetail.hintsUsed}</TableDataColumn>
 						</tr>
@@ -206,21 +210,22 @@ function MoreDetails({ page, endDate }: { page: LearningDiaryPageDetail; endDate
 				{lessonDetails.map((lessonDetail, index) => (
 					<div key={index} className="border rounded-lg p-4 mb-4">
 						<div className="mb-2">
-							<strong>Titel:</strong> {lessonDetail.title}
+							<strong>{t("common:Title")}:</strong> {lessonDetail.title}
 						</div>
 						<div className="mb-2">
-							<strong>Dauer:</strong>{" "}
-							{formatTimeIntervalToString(lessonDetail.duration)}
+							<strong>{t("Duration_Label")}:</strong>{" "}
+							{formatTimeInterval(lessonDetail.duration)}
 						</div>
 						<div className="mb-2">
-							<strong>Aufgaben gelöst:</strong> {lessonDetail.tasksSolved}/
+							<strong>{t("Tasks_Solved_Label")}:</strong> {lessonDetail.tasksSolved}/
 							{lessonDetail.tasks.length}
 						</div>
 						<div className="mb-2">
-							<strong>Erfolgsrate:</strong> {toPercentage(lessonDetail.successRate)}
+							<strong>{t("Success_Rate_Label")}:</strong>{" "}
+							{toPercentage(lessonDetail.successRate, i18n.language)}
 						</div>
 						<div className="mb-2">
-							<strong>Hinweise verwendet:</strong> {lessonDetail.hintsUsed}
+							<strong>{t("Hints_Used_Label")}:</strong> {lessonDetail.hintsUsed}
 						</div>
 					</div>
 				))}

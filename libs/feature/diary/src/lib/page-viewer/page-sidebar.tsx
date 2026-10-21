@@ -1,20 +1,26 @@
 import { useDiaryPage, useDiaryPageRouter } from "@self-learning/diary";
 import { MobileSidebarNavigation } from "@self-learning/ui/layouts";
-import { formatDateString, formatDateStringFull } from "@self-learning/util/common";
-import { format, isThisMonth, isThisWeek, isToday, parse } from "date-fns";
+import { formatDateString } from "@self-learning/util/common";
+import { isThisMonth, isThisWeek, isToday, parse } from "date-fns";
+import { useTranslation } from "next-i18next";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { PagesMeta } from "../access-learning-diary";
 import { LearningDiaryEntryStatusBadge, StatusBadgeInfo } from "../status-badge";
+import { formatDiaryDate } from "../util/format-diary-date";
 
-function categorizePagesIntoGroups(pages: PagesMeta) {
+function categorizePagesIntoGroups(
+	pages: PagesMeta,
+	locale: string,
+	labels: [string, string, string]
+) {
 	const fromToday: PagesMeta = [];
 	const fromThisWeek: PagesMeta = [];
 	const fromThisMonth: PagesMeta = [];
 	let fromOlderMonths: Record<string, PagesMeta> = {};
 
 	pages.forEach(page => {
-		const createdAt = page.createdAt;
+		const createdAt = new Date(page.createdAt);
 
 		if (isToday(createdAt)) {
 			fromToday.push(page);
@@ -43,15 +49,18 @@ function categorizePagesIntoGroups(pages: PagesMeta) {
 	fromOlderMonths = Object.fromEntries(
 		Object.entries(fromOlderMonths).map(([key, value]) => {
 			const date = parse(key, "yyyy MM", new Date());
-			const newKey = format(date, "MMMM yyyy");
+			const newKey = new Intl.DateTimeFormat(locale, {
+				month: "long",
+				year: "numeric"
+			}).format(date);
 			return [newKey, value];
 		})
 	);
 
 	return {
-		"Von Heute": fromToday,
-		"Von dieser Woche": fromThisWeek,
-		"Diesen Monat": fromThisMonth,
+		[labels[0]]: fromToday,
+		[labels[1]]: fromThisWeek,
+		[labels[2]]: fromThisMonth,
 		...fromOlderMonths
 	};
 }
@@ -92,8 +101,13 @@ function SidebarContentMobile({
 	selectedPageId: string;
 	onSelect: () => void;
 }) {
+	const { t, i18n } = useTranslation("feature-diary");
 	const { changePage } = useDiaryPageRouter();
-	const categorizedPages = categorizePagesIntoGroups(pages);
+	const categorizedPages = categorizePagesIntoGroups(pages, i18n.language, [
+		t("Today_Group"),
+		t("This_Week_Group"),
+		t("This_Month_Group")
+	]);
 	const myElementRef = useRef<HTMLLIElement>(null);
 
 	useEffect(() => {
@@ -142,7 +156,12 @@ function SidebarContentMobile({
 												</span>
 											</div>
 											<span className="block p-1 rounded overflow-hidden text-ellipsis whitespace-nowrap text-sm text-c-text-muted">
-												Begonnen am: {formatDateStringFull(page.createdAt)}
+												{t("Started_At", {
+													date: formatDiaryDate(
+														page.createdAt,
+														i18n.language
+													)
+												})}
 											</span>
 										</Link>
 									</li>
@@ -157,7 +176,12 @@ function SidebarContentMobile({
 }
 
 export function Sidebar({ pages, selectedPageId }: { pages: PagesMeta; selectedPageId: string }) {
-	const categorizedPages = categorizePagesIntoGroups(pages);
+	const { t, i18n } = useTranslation("feature-diary");
+	const categorizedPages = categorizePagesIntoGroups(pages, i18n.language, [
+		t("Today_Group"),
+		t("This_Week_Group"),
+		t("This_Month_Group")
+	]);
 
 	const renderSection = (label: string, renderPages: PagesMeta) => (
 		<div className="mb-4" key={label}>
@@ -189,7 +213,11 @@ export function Sidebar({ pages, selectedPageId }: { pages: PagesMeta; selectedP
         w-full border-t border-r-c-border
         xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4"
 		>
-			<StatusBadgeInfo header="Einträge" className="mb-2" headerStyles="font-bold text-2xl" />
+			<StatusBadgeInfo
+				header={t("Entries_Label")}
+				className="mb-2"
+				headerStyles="font-bold text-2xl"
+			/>
 
 			<div className="max-h-full overflow-y-auto">
 				{Object.entries(categorizedPages).map(([label, pages]) => {
@@ -210,6 +238,7 @@ function SideBarContent({
 	index: number;
 	selected: boolean;
 }) {
+	const { t, i18n } = useTranslation("feature-diary");
 	const { changePage } = useDiaryPageRouter();
 	return (
 		<li className={`mb-1 rounded hover:bg-c-neutral-muted ${selected ? "bg-c-surface-2" : ""}`}>
@@ -221,7 +250,7 @@ function SideBarContent({
 					</span>
 				</div>
 				<span className="block p-1 rounded overflow-hidden text-ellipsis whitespace-nowrap text-sm text-c-text-muted">
-					Begonnen am: {formatDateStringFull(page.createdAt)}
+					{t("Started_At", { date: formatDiaryDate(page.createdAt, i18n.language) })}
 				</span>
 			</Link>
 		</li>

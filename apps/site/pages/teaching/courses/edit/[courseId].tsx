@@ -3,13 +3,18 @@ import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database";
 import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
-import { CourseContent, extractLessonIds, resourcePermissionSelect, toResourcePermissionsForm } from "@self-learning/types";
+import {
+	CourseContent,
+	extractLessonIds,
+	resourcePermissionSelect,
+	toResourcePermissionsForm
+} from "@self-learning/types";
 import { showToast } from "@self-learning/ui/common";
-import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { ResourceGuard, testResourceGuard } from "@self-learning/ui/layouts";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { withAuth } from "@self-learning/util/auth";
+import { CourseSaveResult } from "../create";
 
 type EditCourseProps = {
 	course: CourseFormModel;
@@ -17,10 +22,16 @@ type EditCourseProps = {
 };
 
 export const getServerSideProps = withTranslations(
-	["pages-course-info", "common", "feature-question-types"],
+	["feature-teaching", "common", "feature-question-types", "kee"],
 	withAuth<EditCourseProps>(async (ctx, user) => {
 		const courseId = ctx.params?.courseId as string;
 		const { locale } = ctx;
+
+		if (!courseId) {
+			return {
+				notFound: true
+			};
+		}
 
 		const course = await database.course.findUnique({
 			where: { courseId },
@@ -33,6 +44,26 @@ export const getServerSideProps = withTranslations(
 				specializations: {
 					select: {
 						specializationId: true
+					}
+				},
+				provides: {
+					select: {
+						id: true,
+						name: true,
+						description: true,
+						children: true,
+						parents: true,
+						authorId: true
+					}
+				},
+				requires: {
+					select: {
+						id: true,
+						name: true,
+						description: true,
+						children: true,
+						parents: true,
+						authorId: true
 					}
 				},
 				subject: {
@@ -53,6 +84,18 @@ export const getServerSideProps = withTranslations(
 			};
 		}
 
+		const teachingGoals = course.provides.map(goal => ({
+			...goal,
+			children: goal.children.map(child => child.id),
+			parents: goal.parents.map(parent => parent.id)
+		}));
+
+		const requirements = course.requires.map(goal => ({
+			...goal,
+			children: goal.children.map(child => child.id),
+			parents: goal.parents.map(parent => parent.id)
+		}));
+
 		const permissions = toResourcePermissionsForm(course.permissions);
 		const hasAccess = testResourceGuard(user, AccessLevel.EDIT, permissions);
 		if (!hasAccess) {
@@ -64,9 +107,21 @@ export const getServerSideProps = withTranslations(
 			};
 		}
 
-		const content = course.content as CourseContent;
+		const context =
+			course.type === "DYNAMIC"
+				? Array.isArray(course.context)
+					? course.context.filter(
+							(lessonId): lessonId is string => typeof lessonId === "string"
+						)
+					: extractLessonIds(course.content as CourseContent)
+				: [];
+		const content =
+			course.type === "DYNAMIC"
+				? [{ title: "", content: context.map(lessonId => ({ lessonId })) }]
+				: (course.content as CourseContent);
 
-		const lessonIds = extractLessonIds(content);
+		const lessonIds =
+			course.type === "DYNAMIC" ? context : extractLessonIds(content);
 
 		const lessons = await database.lesson.findMany({
 			where: { lessonId: { in: lessonIds } },
@@ -85,6 +140,8 @@ export const getServerSideProps = withTranslations(
 		}
 
 		const courseFormModel: CourseFormModel = {
+			type: course.type,
+			version: course.version,
 			title: course.title,
 			courseId: course.courseId,
 			description: course.description,
@@ -94,6 +151,9 @@ export const getServerSideProps = withTranslations(
 			subjectId: course.subject?.subjectId ?? null,
 			authors: course.authors.map(author => ({ username: author.username })),
 			content: content,
+			context: course.type === "DYNAMIC" ? context : null,
+			requires: requirements,
+			provides: teachingGoals,
 			permissions
 		};
 
@@ -108,10 +168,10 @@ export const getServerSideProps = withTranslations(
 	})
 );
 
-export default function EditCoursePage({ course, lessons }: EditCourseProps) {
+export default function EditCoursePage1({ course, lessons }: EditCourseProps) {
 	const { mutateAsync: updateCourse } = trpc.course.edit.useMutation();
-	const router = useRouter();
 	const trpcContext = trpc.useUtils();
+
 	// do it once
 	useEffect(() => {
 		// Populate query cache with existing lessons
@@ -120,25 +180,22 @@ export default function EditCoursePage({ course, lessons }: EditCourseProps) {
 		}
 	}, [lessons, trpcContext]);
 
-	function onConfirm(updatedCourse: CourseFormModel) {
-		async function update() {
-			try {
-				const { title } = await updateCourse({
-					courseId: course.courseId as string,
-					course: updatedCourse
-				});
-				showToast({ type: "success", title: "Änderung gespeichert!", subtitle: title });
-				router.replace(router.asPath, undefined, { scroll: false });
-			} catch (error) {
-				showToast({
-					type: "error",
-					title: "Fehler",
-					subtitle: JSON.stringify(error, null, 2)
-				});
-			}
+	async function onSubmit(updatedCourse: CourseFormModel): Promise<CourseSaveResult> {
+		try {
+			const saved = await updateCourse({
+				courseId: course.courseId as string,
+				course: updatedCourse
+			});
+			showToast({ type: "success", title: "Änderung gespeichert!", subtitle: saved.title });
+			return saved;
+		} catch (error) {
+			showToast({
+				type: "error",
+				title: "Fehler",
+				subtitle: JSON.stringify(error, null, 2)
+			});
+			throw error;
 		}
-
-		update();
 	}
 
 	return (
@@ -147,7 +204,7 @@ export default function EditCoursePage({ course, lessons }: EditCourseProps) {
 			requiredAccess={AccessLevel.EDIT}
 			permittedGroups={course.permissions}
 		>
-			<CourseEditor course={course} onConfirm={onConfirm} />
+			<CourseEditor course={course} onSubmit={onSubmit} />
 		</ResourceGuard>
 	);
 }

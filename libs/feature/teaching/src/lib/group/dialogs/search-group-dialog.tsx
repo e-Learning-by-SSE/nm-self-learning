@@ -10,6 +10,7 @@ import {
 	OnDialogCloseFn,
 	Paginator
 } from "@self-learning/ui/common";
+import { useRequiredSession } from "@self-learning/ui/layouts";
 import { keepPreviousData } from "@tanstack/react-query";
 import { useTranslation } from "next-i18next";
 import { Fragment, useState } from "react";
@@ -159,37 +160,61 @@ export function SearchGroupDialog({
 }
 
 /**
- * useDefaultGroup - Hook to fetch a single group by ID, typically for pre-selecting a user's default group.
- *
- * Usage: Used in group creation forms to auto-fill the parent group field based on the current user's
- * defaultGroupId setting. Fetches only when enabled and returns null until data loads.
- *
- * @param defaultGroupId - The group ID to fetch (e.g., from session.user.defaultGroupId)
- * @param enabled - If false, the query doesn't run; set true when the form is ready
- * @returns GroupSearchEntry or null if not found or not enabled
+ * useDefaultGroup - Hook to fetch the current user's default group
+ * @param enabled - If false, the query doesn't run
+ * @returns default group of current user as GroupSearchEntry or null if user has no default group
  */
-export function useDefaultGroup({
-	defaultGroupId,
-	enabled: shouldFetch = false
-}: {
-	defaultGroupId?: number;
-	enabled?: boolean;
-}): GroupSearchEntry | null {
-	const enabled = defaultGroupId !== undefined && shouldFetch;
-	const query = trpc.permission.getGroup.useQuery({ id: defaultGroupId ?? 0 }, { enabled });
-
-	return enabled && query.data
-		? {
-				groupId: query.data.id,
-				name: query.data.name,
-				members: query.data.members.map(m => m.user.displayName),
-				slug: query.data.slug
-			}
-		: null;
+export function useDefaultGroup(enabled: boolean) {
+	const session = useRequiredSession();
+	const defaultGroupId = session.data?.user.defaultGroupId;
+	const shouldFetch = enabled && defaultGroupId !== undefined;
+	return trpc.permission.getGroup.useQuery(
+		{ id: defaultGroupId ?? 0 },
+		{
+			enabled: shouldFetch,
+			select: (data): GroupSearchEntry | null =>
+				data && {
+					groupId: data.id,
+					name: data.name,
+					members: data.members.map(m => m.user.displayName),
+					slug: data.slug
+				}
+		}
+	);
 }
 
 /**
- * MemberFilter - Chip-based filter component for selecting multiple users to filter groups by members.
+ * useGroup - Hook to fetch a single group by ID
+ *
+ * @param groupId - The group ID to fetch
+ * @param enabled - If false, the query doesn't run; set true when the form is ready
+ * @returns GroupSearchEntry or null if not found or not enabled
+ */
+export function useGroup({
+	groupId,
+	enabled: shouldFetch = false
+}: {
+	groupId?: number;
+	enabled?: boolean;
+}) {
+	const enabled = groupId !== undefined && shouldFetch;
+	return trpc.permission.getGroup.useQuery(
+		{ id: groupId ?? 0 },
+		{
+			enabled,
+			select: (data): GroupSearchEntry | null =>
+				data && {
+					groupId: data.id,
+					name: data.name,
+					members: data.members.map(m => m.user.displayName),
+					slug: data.slug
+				}
+		}
+	);
+}
+
+/**
+ * MemberFilter - Chip-based multi user picker.
  *
  * Usage: Displays selected users as removable chips with an "Add member" button. Opens SearchUserDialog
  * to add users. Used in group search dialogs and filter sections to narrow group results by membership.

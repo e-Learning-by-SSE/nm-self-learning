@@ -3,6 +3,7 @@ import { trpc } from "@self-learning/api-client";
 import { DropdownDialog, Paginator } from "@self-learning/ui/common";
 import { Fragment, useState } from "react";
 import { keepPreviousData } from "@tanstack/react-query";
+import { useTranslation } from "next-i18next";
 
 export function LessonSelector({
 	open,
@@ -11,6 +12,7 @@ export function LessonSelector({
 	open: boolean;
 	onClose: (lesson?: LessonSummary) => void;
 }) {
+	const { t } = useTranslation("feature-teaching");
 	const [title, setTitle] = useState("");
 	const [page, setPage] = useState(1);
 	const { data } = trpc.lesson.findMany.useQuery(
@@ -30,7 +32,7 @@ export function LessonSelector({
 						setTitle(value);
 						setPage(1);
 					}}
-					placeholder="Suche nach Titel"
+					placeholder={t("common:Search_By_Title_Placeholder")}
 				/>
 
 				<DropdownDialog.PaginationContainer>
@@ -54,7 +56,7 @@ export function LessonSelector({
 											focus ? "text-white" : "text-c-text-muted"
 										}`}
 									>
-										von {lesson.authors.map(a => a.displayName).join(", ")}
+										{t("common:By")} {lesson.authors.map(a => a.displayName).join(", ")}
 									</span>
 								</button>
 							)}

@@ -7,11 +7,11 @@ import {
 	TableDataColumn,
 	TableHeaderColumn,
 	TableVisibilityDropdown,
-	SectionHeader
+	SectionHeader,
+	useTimeIntervalFormatter
 } from "@self-learning/ui/common";
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
 import { withAuth } from "@self-learning/util/auth";
-import { formatTimeIntervalToString } from "@self-learning/util/common";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
@@ -152,7 +152,11 @@ const sortableColumns = {
 	}
 };
 
-function getFilterFunction(learningDiaryEntry: LearningDiaryPageOverview, query: string): boolean {
+function getFilterFunction(
+	learningDiaryEntry: LearningDiaryPageOverview,
+	query: string,
+	formatTimeInterval: (ms: number) => string
+): boolean {
 	if (query === "") {
 		return true;
 	}
@@ -172,7 +176,7 @@ function getFilterFunction(learningDiaryEntry: LearningDiaryPageOverview, query:
 		learningDiaryEntry.learningLocation?.name.toLowerCase() ?? "",
 		learningDiaryEntry.scope.toString().toLowerCase(),
 		...techniqueNames,
-		formatTimeIntervalToString(learningDiaryEntry.totalDurationLearnedMs ?? 0).toLowerCase()
+		formatTimeInterval(learningDiaryEntry.totalDurationLearnedMs ?? 0).toLowerCase()
 	];
 
 	return stringsToCheck.some(str => str.includes(lowercasedQuery));
@@ -186,6 +190,7 @@ function SortedTable({
 	searchQuarry: string;
 }) {
 	const router = useRouter();
+	const formatTimeInterval = useTimeIntervalFormatter();
 
 	const [chevronMenu, setChevronMenu] = useState<boolean>(false);
 	const [columns, setColumns] = useState(sortableColumns);
@@ -262,7 +267,7 @@ function SortedTable({
 					<tbody className="divide-y divide-c-border">
 						{learningDiaryEntries
 							.slice()
-							.filter(entry => getFilterFunction(entry, searchQuarry))
+							.filter(entry => getFilterFunction(entry, searchQuarry, formatTimeInterval))
 							.sort(sortColumnFunc())
 							.map(learningDiaryEntry => (
 								<tr
@@ -296,7 +301,7 @@ function SortedTable({
 													)}
 
 													{key === "duration" &&
-														formatTimeIntervalToString(
+													formatTimeInterval(
 															learningDiaryEntry.totalDurationLearnedMs ??
 																0
 														)}

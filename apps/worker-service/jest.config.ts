@@ -6,6 +6,13 @@ const tsConfigPath = path.join(__dirname, "../../tsconfig.base.json");
 const { config } = ts.readConfigFile(tsConfigPath, ts.sys.readFile);
 const { compilerOptions } = config;
 
+// SE: Minio is not tested, but configuration read from environment during test
+process.env.MINIO_ENDPOINT = "localhost";
+process.env.MINIO_PORT = "9000";
+process.env.MINIO_ACCESS_KEY = "test-access-key";
+process.env.MINIO_SECRET_KEY = "test-secret-key";
+process.env.MINIO_BUCKET_NAME = "test-bucket";
+
 /* eslint-disable */
 module.exports = {
 	displayName: "worker-service",

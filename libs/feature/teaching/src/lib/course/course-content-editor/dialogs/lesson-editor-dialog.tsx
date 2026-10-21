@@ -1,62 +1,50 @@
 import { AccessLevel } from "@prisma/client";
 import { LessonEditor, LessonFormModel } from "@self-learning/teaching";
-import { Dialog, OnDialogCloseFn } from "@self-learning/ui/common";
-import { ResourceGuard } from "@self-learning/ui/layouts";
-import Link from "next/link";
+import { Dialog, DialogActions, OnDialogCloseFn } from "@self-learning/ui/common";
+import { useRequiredSession, useResourceGuard } from "@self-learning/ui/layouts";
+import { useTranslation } from "next-i18next";
 
 export function LessonEditorDialogWithGuard({
 	onClose,
-	initialLesson
+	initialLesson,
+	courseId,
+	inheritedPermissions
 }: {
 	onClose: OnDialogCloseFn<LessonFormModel>;
 	initialLesson?: LessonFormModel;
+	courseId?: string;
+	inheritedPermissions?: LessonFormModel["permissions"];
 }) {
+	const session = useRequiredSession();
+	const hasAccess = useResourceGuard(AccessLevel.EDIT, initialLesson?.permissions);
+
+	if (session.status === "loading") {
+		return null;
+	}
+
+	if (!hasAccess) {
+		return <UnauthorizedDialog onClose={() => onClose(undefined)} />;
+	}
+
 	return (
-		<ResourceGuard
-			fallback="unauthorized"
-			requiredAccess={AccessLevel.EDIT}
-			permittedGroups={initialLesson?.permissions}
-		>
-			<LessonEditorDialog initialLesson={initialLesson} onClose={onClose} />
-		</ResourceGuard>
+		<LessonEditor
+			courseId={courseId}
+			initialLesson={initialLesson}
+			onClose={() => onClose(undefined)}
+			onSubmit={onClose}
+			isFullScreen={false}
+			inheritedPermissions={inheritedPermissions}
+		/>
 	);
 }
 
-function LessonEditorDialog({
-	onClose,
-	initialLesson
-}: {
-	onClose: OnDialogCloseFn<LessonFormModel>;
-	initialLesson?: LessonFormModel;
-}) {
+function UnauthorizedDialog({ onClose }: { onClose: () => void }) {
+	const { t } = useTranslation("feature-teaching");
+
 	return (
-		<Dialog
-			title={!initialLesson ? "Lerneinheit erstellen" : "Lerneinheit bearbeiten"}
-			onClose={() => window.confirm("Änderungen verwerfen?") && onClose(undefined)}
-			style={{ height: "80vh", width: "80vw" }}
-		>
-			<div className="absolute right-8 top-8 flex gap-4">
-				<Link
-					className="btn-stroked focus:primary hover:bg-c-neutral-muted focus:outline-none focus:ring-2 focus:ring-offset-2"
-					target="_blank"
-					rel="noreferrer"
-					href={
-						initialLesson
-							? `/teaching/lessons/edit/${initialLesson?.lessonId}`
-							: `/teaching/lessons/create`
-					}
-					title="Formular in einem neuen Tab öffnen. Änderungen werden nicht übernommen."
-				>
-					Im separaten Editor öffnen
-				</Link>
-			</div>
-			<div className={"overflow-y-auto"}>
-				<LessonEditor
-					onSubmit={onClose}
-					initialLesson={initialLesson}
-					isFullScreen={false}
-				/>
-			</div>
+		<Dialog title={t("Not_Authorized")} onClose={onClose}>
+			<p>{t("Lesson_Edit_Not_Allowed")}</p>
+			<DialogActions abortLabel="Close" onClose={onClose} />
 		</Dialog>
 	);
 }

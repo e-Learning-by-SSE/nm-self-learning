@@ -1,8 +1,9 @@
+import { EnrollmentStatus } from "@prisma/client";
 import { getCourseCompletionOfStudent } from "@self-learning/completion";
-import { database } from "@self-learning/database";
 import { CourseEnrollment, ResolvedValue } from "@self-learning/types";
+import { AlreadyExists, NotFound } from "@self-learning/util/http";
+import { database } from "@self-learning/database";
 import { createEventLogEntry } from "@self-learning/util/eventlog";
-import { AlreadyExists } from "@self-learning/util/http";
 
 export async function getEnrollmentDetails(username: string) {
 	const enrollments = await database.enrollment.findMany({
@@ -63,24 +64,27 @@ export async function getEnrollmentsOfUser(username: string): Promise<CourseEnro
 }
 
 export async function enrollUser({ courseId, username }: { courseId: string; username: string }) {
-	const course = await database.course.findUniqueOrThrow({
+	const course = await database.course.findUnique({
 		where: { courseId },
 		select: {
 			courseId: true,
 			enrollments: {
-				select: {
-					createdAt: true
-				},
+				select: { createdAt: true },
 				where: { username }
 			}
 		}
 	});
+
+	if (!course) {
+		throw NotFound({ courseId });
+	}
 
 	if (course.enrollments[0]) {
 		throw AlreadyExists(
 			`${username} is already enrolled in ${courseId} (since: ${course.enrollments[0].createdAt.toLocaleString()}).`
 		);
 	}
+
 	const enrollment = await database.enrollment.create({
 		select: {
 			createdAt: true,
@@ -94,11 +98,7 @@ export async function enrollUser({ courseId, username }: { courseId: string; use
 			},
 			username: true
 		},
-		data: {
-			courseId: course.courseId,
-			username: username,
-			status: "ACTIVE"
-		}
+		data: { courseId, username, status: EnrollmentStatus.ACTIVE }
 	});
 
 	await createEventLogEntry({

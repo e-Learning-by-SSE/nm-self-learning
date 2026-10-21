@@ -11,7 +11,6 @@ import {
 	OnDialogCloseFn,
 	SectionHeader,
 	showToast,
-	IconTextButton,
 	Toggle,
 	IconOnlyButton
 } from "@self-learning/ui/common";
@@ -151,7 +150,6 @@ export default function ArrangeForm({ index }: { index: number }) {
 					{categoryOrder
 						.filter(containerId => containerId !== "_init" && items[containerId])
 						.map(containerId => (
-							// eslint-disable-next-line react/jsx-no-useless-fragment
 							<Fragment key={containerId}>
 								{containerId === "_init" ? null : (
 									<div className="flex min-w-fit flex-col gap-4 rounded-lg bg-c-surface-3 p-4">

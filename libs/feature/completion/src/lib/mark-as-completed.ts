@@ -1,3 +1,4 @@
+import { getCourseData } from "@self-learning/course";
 import { database } from "@self-learning/database";
 import { CourseContent, extractLessonIds } from "@self-learning/types";
 import { createEventLogEntry } from "@self-learning/util/eventlog";
@@ -13,15 +14,9 @@ export async function markAsCompleted({
 	username: string;
 	performanceScore: number;
 }) {
-	const course = courseSlug
-		? await database.course.findUniqueOrThrow({
-				where: { slug: courseSlug },
-				select: {
-					courseId: true,
-					content: true
-				}
-			})
-		: null;
+	const course = courseSlug ? await getCourseData(courseSlug, username) : null;
+	// content is already this student's outline (see getCourseData).
+	const content = (course?.content ?? []) as CourseContent;
 
 	const result = await database.completedLesson.create({
 		data: {
@@ -44,7 +39,9 @@ export async function markAsCompleted({
 		}
 	});
 
-	// TODO remove since it is depricated
+	await addEarnedSkillsToUser(lessonId, username);
+
+	// TODO remove since it is deprecated
 	await createEventLogEntry({
 		username,
 		type: "LESSON_COMPLETE",
@@ -56,7 +53,7 @@ export async function markAsCompleted({
 	});
 
 	if (course) {
-		await updateCourseProgress(course.courseId, course.content as CourseContent, username);
+		await updateCourseProgress(course.courseId, content, username);
 	}
 
 	return result;
@@ -75,8 +72,8 @@ async function updateCourseProgress(courseId: string, content: CourseContent, us
 	const progress = Math.floor((completedIds.size / lessons.size) * 100);
 	// CompletedLesson is the source of truth for individual lessons. Persist the
 	// derived course completion on Enrollment, which is what analytics queries.
-	const completedAt = progress === 100 ? new Date() : null;
 
+	let completedAt = null;
 	if (progress === 100) {
 		await createEventLogEntry({
 			username,
@@ -85,6 +82,9 @@ async function updateCourseProgress(courseId: string, content: CourseContent, us
 			courseId,
 			payload: undefined
 		});
+		// CompletedLesson is the source of truth for individual lessons. Persist the
+		// derived course completion on Enrollment, which is what analytics queries.
+		completedAt = progress === 100 ? new Date() : null;
 	}
 
 	await database.enrollment.upsert({
@@ -106,5 +106,31 @@ async function updateCourseProgress(courseId: string, content: CourseContent, us
 				completedAt
 			})
 		}
+	});
+}
+
+async function addEarnedSkillsToUser(lessonId: string, username: string) {
+	return await database.$transaction(async tx => {
+		const lesson = await tx.lesson.findUniqueOrThrow({
+			where: {
+				lessonId
+			},
+			select: {
+				provides: {
+					select: {
+						id: true
+					}
+				}
+			}
+		});
+
+		await tx.student.update({
+			where: { username },
+			data: {
+				received: {
+					connect: lesson.provides.map(skill => ({ id: skill.id }))
+				}
+			}
+		});
 	});
 }
