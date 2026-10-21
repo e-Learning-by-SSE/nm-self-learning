@@ -150,7 +150,7 @@ function AuthorDashboardPage({ author }: Props) {
 						kind="skill"
 						title={t("My_Skills")}
 						subtitle={t("Author_Skills_Subtitle")}
-						createLabel={"Skills bearbeiten"}
+						createLabel={t("Edit_Skill_Card")}
 						searchPlaceholder={t("Search_Skills")}
 						emptyMessage={t("No_Accessible_Skills")}
 						isAdmin={isAdmin}
