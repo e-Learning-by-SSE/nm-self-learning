@@ -1,4 +1,5 @@
 import { CenteredContainer, DialogWithReactNodeTitle, ProgressBar } from "@self-learning/ui/common";
+import { useTranslation } from "next-i18next";
 
 /**
  * Dialog that indicates the progress of a file upload.
@@ -9,6 +10,12 @@ import { CenteredContainer, DialogWithReactNodeTitle, ProgressBar } from "@self-
  * @returns A dialog visualizing the progress of the file upload
  */
 export function UploadProgressDialog({ name, progress }: { name: string; progress: number }) {
+	const { i18n } = useTranslation();
+	const formattedProgress = new Intl.NumberFormat(i18n.language, {
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2
+	}).format(progress);
+
 	return (
 		<CenteredContainer>
 			<DialogWithReactNodeTitle
@@ -17,7 +24,7 @@ export function UploadProgressDialog({ name, progress }: { name: string; progres
 				// This makes the dialog modal (i.e. the user cannot click outside of the dialog to close it)
 				onClose={() => {}}
 			>
-				<ProgressBar text={`${progress}%`} progressPercentage={progress} />
+				<ProgressBar text={`${formattedProgress}%`} progressPercentage={progress} />
 			</DialogWithReactNodeTitle>
 		</CenteredContainer>
 	);
