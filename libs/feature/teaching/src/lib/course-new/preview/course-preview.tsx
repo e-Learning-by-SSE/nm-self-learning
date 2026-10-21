@@ -150,9 +150,12 @@ function Course({ course }: { course: CoursePreviewModel }) {
 						{hasContent && hasTeachingGoal && (
 							<ul className="absolute bottom-0 grid w-full grid-cols-3 divide-x divide-secondary rounded-b-lg border border-light-border border-t-transparent bg-white bg-opacity-80 p-2 text-center">
 								{[
-					[t("Course_Preview_Lessons_Label"), summary.lessons],
-					[t("Course_Preview_Chapters_Label"), summary.chapters],
-					[t("Course_Preview_Duration_Label"), formatSeconds(summary.duration)]
+									[t("Course_Preview_Lessons_Label"), summary.lessons],
+									[t("Course_Preview_Chapters_Label"), summary.chapters],
+									[
+										t("Course_Preview_Duration_Label"),
+										formatSeconds(summary.duration)
+									]
 								].map(([label, value]) => (
 									<li key={label} className="flex flex-col">
 										<span className="font-semibold text-secondary">
@@ -191,11 +194,11 @@ function LessonPath({
 	}[];
 	slug: string;
 }) {
-	const { t } = useTranslation("kee");
+	const { t } = useTranslation(["kee", "feature-teaching"]);
 
 	return (
 		<section className="flex flex-col gap-8">
-			<h2 className="mb-4 text-4xl">{t("Course_Content_Title")}</h2>
+			<h2 className="mb-4 text-4xl">{t("feature-teaching:Course_Content_Title")}</h2>
 			<ul className="flex flex-col gap-16">
 				{content.map((chapter, index) => (
 					<li key={index} className="flex flex-col rounded-lg bg-gray-100 p-8">
