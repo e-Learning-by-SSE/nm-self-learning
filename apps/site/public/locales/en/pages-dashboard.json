@@ -39,6 +39,7 @@
     "Search_Lessons": "Search $t(common:Lesson_other)",
     "No_Accessible_Lessons": "You currently have no $t(common:Lesson_other) you can access",
     "My_Skill_Cards": "My $t(common:Skill_one) cards",
+    "Edit_Skill_Card": "Edit $t(common:Skill_one) card",
     "Author_Skill_Cards_Subtitle": "$t(common:Author) of the following $t(common:Skill_one) cards:",
     "Create_Skill_Card": "Create $t(common:Skill_one) card",
     "Participation_Overview": "Participation overview",
