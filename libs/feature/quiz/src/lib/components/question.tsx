@@ -81,8 +81,8 @@ export function Question({
 			[question.questionId]: e
 		}));
 
-		// no event on "Reset" click
-		if (e) {
+		// Count only finished evaluations, not resets or asynchronous placeholders.
+		if (e && !e.isInProgress) {
 			setAttempts(prev => {
 				const attempts = prev[question.questionId];
 				const newAttempts = attempts + 1;
@@ -92,7 +92,7 @@ export function Question({
 					courseId: courseId,
 					payload: {
 						questionId: question.questionId,
-						totalQuestionPool: 1, // ATTENTION: for data anlaysis, it is currently unknown how many questions were available at the moment of submission
+						totalQuestionPool: 1, // ATTENTION: for data analysis, it is currently unknown how many questions were available at the moment of submission
 						questionPoolIndex: 1,
 						type: question.type,
 						hintsUsed: question.hints?.map(hint => hint.hintId) ?? "",
@@ -173,7 +173,7 @@ function CheckResult({
 	setEvaluation,
 	nextQuestionStep
 }: {
-	setEvaluation: (ev: { isCorrect: boolean } | null) => void;
+	setEvaluation: (ev: BaseEvaluation | null) => void;
 	nextQuestionStep: () => void;
 }) {
 	// We only use "multiple-choice" to get better types ... works for all question types
@@ -190,11 +190,13 @@ function CheckResult({
 		<span className="text-c-danger">No question state found for this question.</span>;
 	}
 
-	const canGoToNextQuestion = !!currentEvaluation;
+	const isEvaluating = currentEvaluation?.isInProgress === true;
+	const canGoToNextQuestion = !!currentEvaluation && !isEvaluating;
 
 	const renderInProgressButton = () => (
 		<button
 			className="btn-primary"
+			disabled={isEvaluating}
 			onClick={canGoToNextQuestion ? nextQuestionStep : checkResult}
 		>
 			{canGoToNextQuestion ? "Nächste Frage" : "Überprüfen"}
