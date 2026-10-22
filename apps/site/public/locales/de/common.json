@@ -66,7 +66,7 @@
 	"Subtitle": "Untertitel",
 	"Slug": "Slug",
 	"URL": "URL",
-	"Slug Description": "Der <strong>slug</strong> wird in der URL angezeigt. Muss einzigartig sein.",
+	"Slug_Description": "Der <strong>slug</strong> wird in der URL angezeigt. Muss einzigartig sein.",
 	"Banner Image": "Bild (Banner)",
 	"Banner Image Description": "Bild, das als Banner am Seitenbeginn angezeigt wird.",
 	"Tile Image": "Bild (Kachel)",
