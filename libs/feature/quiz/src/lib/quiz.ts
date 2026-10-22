@@ -26,11 +26,15 @@ export const configSchema = z.object({
 	showSolution: z.boolean()
 });
 
-export const quizSchema = z.object({
-	questions: z.array(quizContentSchema),
-	questionOrder: z.array(z.string()),
-	config: configSchema.nullable().optional()
-});
+export const quizSchema = z
+	.object({
+		questions: z.array(quizContentSchema),
+		questionOrder: z.array(z.string()).default([]),
+		config: configSchema.nullable().optional()
+	})
+	.refine(quiz => quiz.questions.length === 0 || quiz.questionOrder.length > 0, {
+		path: ["questionOrder"]
+	});
 
 export type QuizConfig = z.infer<typeof configSchema>;
 export type Quiz = z.infer<typeof quizSchema>;

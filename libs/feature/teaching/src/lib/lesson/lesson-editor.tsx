@@ -21,6 +21,7 @@ import { useRequiredSession } from "@self-learning/ui/layouts";
 import { SkillsEditor } from "../skills/skills-editor";
 import { ArrowsPointingInIcon, ArrowsPointingOutIcon } from "@heroicons/react/24/solid";
 import { useTranslation } from "next-i18next";
+import type { z } from "zod";
 
 type TranslationFunction = ReturnType<typeof useTranslation>["t"];
 
@@ -157,7 +158,7 @@ export function LessonEditor({
 	const session = useRequiredSession();
 	const [selectedTab, setSelectedTab] = useState(0);
 	const [expanded, setExpanded] = useState(false);
-	const form = useForm<LessonFormModel>({
+	const form = useForm<z.input<typeof lessonSchema>, unknown, LessonFormModel>({
 		context: undefined,
 		defaultValues: initialLesson ?? {
 			...createEmptyLesson(),

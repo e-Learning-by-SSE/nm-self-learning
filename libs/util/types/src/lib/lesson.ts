@@ -32,8 +32,11 @@ export const lessonSchema = z
 		quiz: z
 			.object({
 				questions: z.array(z.any()),
-				questionOrder: z.array(z.string()),
+				questionOrder: z.array(z.string()).default([]),
 				config: z.any().nullable().optional()
+			})
+			.refine(quiz => quiz.questions.length === 0 || quiz.questionOrder.length > 0, {
+				path: ["questionOrder"]
 			})
 			.nullable(),
 		ragEnabled: z.boolean(),

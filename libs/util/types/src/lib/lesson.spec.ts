@@ -24,56 +24,130 @@ const minValidLesson: Lesson = {
 };
 
 describe("lessonSchema", () => {
+	describe("quiz question order", () => {
+		it("accepts an empty quiz without a question order and normalizes it", () => {
+			//Setup
+			// Exercise
+			const result = lessonSchema.parse({
+				...minValidLesson,
+				quiz: { questions: [] }
+			});
+
+			// Verify
+			expect(result.quiz).toEqual({ questions: [], questionOrder: [] });
+		});
+
+		it("accepts an empty quiz with an empty question order", () => {
+			//Setup
+			// Exercise
+			const result = lessonSchema.safeParse({
+				...minValidLesson,
+				quiz: { questions: [], questionOrder: [] }
+			});
+
+			// Verify
+			expect(result.success).toBe(true);
+		});
+
+		it.each([undefined, []])("rejects a nonempty quiz with questionOrder %j", questionOrder => {
+			//Setup
+			// Exercise
+			const result = lessonSchema.safeParse({
+				...minValidLesson,
+				quiz: { questions: [{ questionId: "q1" }], questionOrder }
+			});
+
+			// Verify
+			expect(result.success).toBe(false);
+			expect(result.error?.issues).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({ path: ["quiz", "questionOrder"] })
+				])
+			);
+		});
+
+		it.each([null, "q1", [1]])(
+			"rejects malformed questionOrder %j even without questions",
+			questionOrder => {
+				//Setup
+				// Exercise
+				const result = lessonSchema.safeParse({
+					...minValidLesson,
+					quiz: { questions: [], questionOrder }
+				});
+
+				// Verify
+				expect(result.success).toBe(false);
+			}
+		);
+	});
+
 	describe("Invalid", () => {
 		it("null", () => {
+			// Exercise
 			const result = lessonSchema.safeParse(null);
+			// Verify
 			expect(result.success).toBeDefined();
 		});
 
 		it("{}", () => {
+			// Exercise
 			const result = lessonSchema.safeParse({});
+			// Verify
 			expect(result.success).toBeFalsy();
 		});
 
 		it("Missing title", () => {
+			//Setup
 			const lesson: Partial<Lesson> = {
 				...minValidLesson,
 				title: undefined
 			};
 
+			// Exercise
 			const result = lessonSchema.safeParse(lesson);
+			// Verify
 			expect(result.success).toBeFalsy();
 		});
 
 		it("Missing lesson type", () => {
+			//Setup
 			const lesson: Partial<Lesson> = {
 				...minValidLesson,
 				lessonType: undefined
 			};
 
+			// Exercise
 			const result = lessonSchema.safeParse(lesson);
+			// Verify
 			expect(result.success).toBeFalsy();
 		});
 
 		it("Title with empty string", () => {
+			//Setup
 			const lesson: Partial<Lesson> = {
 				...minValidLesson,
 				title: ""
 			};
 
+			// Exercise
 			const result = lessonSchema.safeParse(lesson);
+			// Verify
 			expect(result.success).toBeFalsy();
 		});
 
 		it("Invalid content", () => {
+			//Setup
 			const lesson: Partial<Lesson> = {
 				...minValidLesson,
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				content: null as any
 			};
 
+			// Exercise
 			const result = lessonSchema.safeParse(lesson);
 
+			// Verify
 			expect(result).toMatchInlineSnapshot(`
 			Object {
 			  "error": [ZodError: [
@@ -94,7 +168,9 @@ describe("lessonSchema", () => {
 
 	describe("Valid", () => {
 		it("Minimal valid lesson", () => {
+			// Exercise
 			const result = lessonSchema.safeParse(minValidLesson);
+			// Verify
 			expect(result.success).toEqual(true);
 			expect(result).toMatchInlineSnapshot(`
 			Object {
@@ -125,6 +201,7 @@ describe("lessonSchema", () => {
 		});
 
 		it("With content", () => {
+			//Setup
 			const lesson: Partial<Lesson> = {
 				...minValidLesson,
 				content: [
@@ -149,11 +226,14 @@ describe("lessonSchema", () => {
 				]
 			};
 
+			// Exercise
 			const result = lessonSchema.safeParse(lesson);
+			// Verify
 			expect(result.success).toEqual(true);
 		});
 
 		it("With quiz", () => {
+			//Setup
 			const lesson: Partial<Lesson> = {
 				...minValidLesson,
 				quiz: {
@@ -190,7 +270,9 @@ describe("lessonSchema", () => {
 				}
 			};
 
+			// Exercise
 			const result = lessonSchema.safeParse(lesson);
+			// Verify
 			expect(result.success).toEqual(true);
 		});
 	});
