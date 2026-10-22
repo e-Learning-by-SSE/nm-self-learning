@@ -66,7 +66,7 @@
 	"Subtitle": "Untertitel",
 	"Slug": "Slug",
 	"URL": "URL",
-	"Slug Description": "Der <strong>slug</strong> wird in der URL angezeigt. Muss einzigartig sein.",
+	"Slug_Description": "Der <strong>slug</strong> wird in der URL angezeigt. Muss einzigartig sein.",
 	"Banner Image": "Bild (Banner)",
 	"Banner Image Description": "Bild, das als Banner am Seitenbeginn angezeigt wird.",
 	"Tile Image": "Bild (Kachel)",
@@ -106,5 +106,8 @@
     "Open_Menu": "Menü öffnen",
     "Description": "Beschreibung",
     "Confirm": "Bestätigen",
-    "Warning": "Warnung"
+    "Warning": "Warnung",
+
+    "Code_Group_Label": "Codebeispiele",
+	"Code_Group_Compare": "Nebeneinander anzeigen"
 }

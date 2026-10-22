@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
 import ReactMarkdown from "react-markdown";
 import { rehypePlugins, remarkPlugins } from "./markdown";
+import { markdownComponents } from "./code-group-container";
 import { MinorScaleFadeIn } from "@self-learning/ui/common";
 
 /**
@@ -71,6 +72,7 @@ export function MarkdownListboxMenu({
 						<div className={"justify-start"}>
 							<div className="prose prose-sm max-w-none">
 								<ReactMarkdown
+									components={markdownComponents}
 									remarkPlugins={remarkPlugins}
 									rehypePlugins={rehypePlugins}
 								>
@@ -131,6 +133,7 @@ export function MarkdownListboxMenu({
 										}`}
 									>
 										<ReactMarkdown
+											components={markdownComponents}
 											remarkPlugins={remarkPlugins}
 											rehypePlugins={rehypePlugins}
 										>

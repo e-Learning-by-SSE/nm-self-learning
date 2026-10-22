@@ -1,6 +1,6 @@
 "use client";
 import { ChevronDownIcon, ItalicIcon, PencilIcon } from "@heroicons/react/24/solid";
-import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
+import { markdownComponents, rehypePlugins, remarkPlugins } from "@self-learning/markdown";
 import {
 	ButtonVariant,
 	Dialog,
@@ -151,6 +151,7 @@ export function MarkdownEditorDialog({
 					<div className="relative flex w-full grow overflow-auto border border-c-border bg-white p-4">
 						<div className="prose prose-emerald w-full">
 							<ReactMarkdown
+								components={markdownComponents}
 								remarkPlugins={remarkPlugins}
 								rehypePlugins={rehypePlugins}
 							>

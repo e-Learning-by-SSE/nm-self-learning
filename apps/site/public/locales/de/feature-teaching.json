@@ -233,6 +233,7 @@
     "Lesson_Validation_Title_Required": "🞄 Kein Titel vergeben. Geben Sie einen Titel für die $t(common:Lesson) an.",
     "Lesson_Validation_Slug_Required": "🞄 Keine eindeutige ID vergeben. Geben Sie einen eindeutigen Slug an, um eine URL für die $t(common:Lesson) erzeugen zu können.",
     "Lesson_Validation_Permissions_Required": "🞄 Es wurden keine Bearbeitungsrechte vergeben. Wählen Sie mindestens eine Bearbeitungsgruppe aus.",
+    "Lesson_Validation_Question_Order_Required": "Wenn Fragen vorhanden sind, ist eine Fragenreihenfolge erforderlich.",
     "Lesson_Validation_Field_Error": "🞄 {{field}}: {{message}}",
     "Lesson_Validation_Error_Title": "Validierungsfehler",
     "Lesson_Validation_Error_Message": "Bitte korrigieren Sie die folgenden Felder:\n{{errors}}",

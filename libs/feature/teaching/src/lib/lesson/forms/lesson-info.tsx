@@ -64,7 +64,7 @@ export function LessonInfoEditor({ isNew }: { isNew: boolean }) {
 								</button>
 							}
 						/>
-						<FieldHint>{t("common:Slug Description")}</FieldHint>
+						<FieldHint>{t("common:Slug_Description")}</FieldHint>
 					</LabeledField>
 
 					<LabeledField

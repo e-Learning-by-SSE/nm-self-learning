@@ -3,7 +3,7 @@ import { useQuestion } from "@self-learning/question-types";
 import { Divider } from "@self-learning/ui/common";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { motion } from "framer-motion";
-import { MDXRemote } from "next-mdx-remote";
+import { MarkdownRemote as MDXRemote } from "@self-learning/markdown";
 import { useQuiz } from "./quiz-context";
 
 export function Hints() {

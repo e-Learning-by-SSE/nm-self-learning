@@ -82,7 +82,7 @@ export function buildLinkedLessonQuery(lessonId: string) {
  *
  * 2. The prepared content (base64 PDF buffers + plain text strings) is
  *    submitted to the worker-service as a ragEmbed job via submitJob.mutate().
- *    We await this call so the mutation fails visibly if job submission fails.
+ *    RAG failures are logged without failing the already completed lesson save.
  *
  * 3. Once submitted, job progress is tracked asynchronously via subscribeToRagJobEvents
  *    (fire-and-forget — the lesson mutation has already returned to the client).
@@ -711,15 +711,22 @@ async function callRagJob(
 		ragEnabled: boolean;
 	}
 ): Promise<void> {
-	if (newLesson.ragEnabled && newLesson.ragVersionHash) {
-		const hashChanged = oldLesson?.ragVersionHash !== newLesson.ragVersionHash;
-		if (hashChanged) {
-			// Worker will handle deletion of old embeddings internally
-			await enqueueRagEmbedJob(newLesson.lessonId, newLesson.title, newLesson.content);
+	try {
+		if (newLesson.ragEnabled && newLesson.ragVersionHash) {
+			const hashChanged = oldLesson?.ragVersionHash !== newLesson.ragVersionHash;
+			if (hashChanged) {
+				// Worker will handle deletion of old embeddings internally
+				await enqueueRagEmbedJob(newLesson.lessonId, newLesson.title, newLesson.content);
+			}
+		} else if (!newLesson.ragEnabled && oldLesson?.ragEnabled) {
+			// Only delete when transitioning enabled → disabled
+			await deleteEmbedding(newLesson.lessonId);
 		}
-	} else if (!newLesson.ragEnabled && oldLesson?.ragEnabled) {
-		// Only delete when transitioning enabled → disabled
-		await deleteEmbedding(newLesson.lessonId);
+	} catch (error) {
+		console.error("[LessonRouter] RAG processing failed after saving lesson", {
+			lessonId: newLesson.lessonId,
+			error
+		});
 	}
 }
 
@@ -733,61 +740,53 @@ async function enqueueRagEmbedJob(
 	lessonTitle: string,
 	lessonContent: LessonContentType[]
 ): Promise<string> {
-	try {
-		const preparedContent = await prepareRagContent(lessonContent, {
+	const preparedContent = await prepareRagContent(lessonContent, {
+		lessonId,
+		lessonTitle
+	});
+	const jobId = crypto.randomUUID();
+	subscribeToJobEvents({
+		jobId,
+		jobType: "ragEmbed",
+		onFinish: async () => {
+			console.log("[LessonRouter] RAG job completed", {
+				jobId,
+				lessonId
+			});
+		},
+		onAbort: async (cause: string) => {
+			console.error(
+				"[LessonRouter] RAG job aborted",
+				{
+					lessonId,
+					error: new Error(cause)
+				},
+				{ jobId }
+			);
+		},
+		onError: async (errorMsg: string) => {
+			console.error(
+				"[LessonRouter] RAG job error",
+				{
+					lessonId,
+					error: errorMsg
+				},
+				{ jobId }
+			);
+		}
+	});
+	await workerServiceClient.submitJob.mutate({
+		jobId,
+		jobType: "ragEmbed",
+		payload: {
 			lessonId,
-			lessonTitle
-		});
-		const jobId = crypto.randomUUID();
-		subscribeToJobEvents({
-			jobId,
-			jobType: "ragEmbed",
-			onFinish: async () => {
-				console.log("[LessonRouter] RAG job completed", {
-					jobId,
-					lessonId
-				});
-			},
-			onAbort: async (cause: string) => {
-				console.error(
-					"[LessonRouter] RAG job aborted",
-					{
-						lessonId,
-						error: new Error(cause)
-					},
-					{ jobId }
-				);
-			},
-			onError: async (errorMsg: string) => {
-				console.error(
-					"[LessonRouter] RAG job error",
-					{
-						lessonId,
-						error: errorMsg
-					},
-					{ jobId }
-				);
-			}
-		});
-		await workerServiceClient.submitJob.mutate({
-			jobId,
-			jobType: "ragEmbed",
-			payload: {
-				lessonId,
-				lessonTitle,
-				pdfBuffers: preparedContent.pdfBuffers,
-				articleTexts: preparedContent.articleTexts,
-				transcriptTexts: preparedContent.transcriptTexts,
-				htmlPages: preparedContent.htmlPages,
-				h5pSources: preparedContent.h5pSources
-			}
-		});
-		return jobId;
-	} catch (error) {
-		console.error("[LessonRouter] Failed to enqueue RAG job", {
-			lessonId,
-			error: error instanceof Error ? error.message : String(error)
-		});
-		throw error;
-	}
+			lessonTitle,
+			pdfBuffers: preparedContent.pdfBuffers,
+			articleTexts: preparedContent.articleTexts,
+			transcriptTexts: preparedContent.transcriptTexts,
+			htmlPages: preparedContent.htmlPages,
+			h5pSources: preparedContent.h5pSources
+		}
+	});
+	return jobId;
 }

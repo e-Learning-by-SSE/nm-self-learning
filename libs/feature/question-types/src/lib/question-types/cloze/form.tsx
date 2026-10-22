@@ -6,7 +6,7 @@ import { createCloze } from "./cloze-parser";
 import { RenderGapType } from "./component";
 import { Cloze } from "./schema";
 import ReactMarkdown from "react-markdown";
-import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
+import { markdownComponents, rehypePlugins, remarkPlugins } from "@self-learning/markdown";
 
 export default function ClozeForm({ index }: { question: { type: Cloze["type"] }; index: number }) {
 	const { control } = useFormContext<QuestionTypeForm<Cloze["question"]>>();
@@ -51,6 +51,7 @@ export default function ClozeForm({ index }: { question: { type: Cloze["type"] }
 									remarkPlugins={remarkPlugins}
 									rehypePlugins={rehypePlugins}
 									components={{
+										...markdownComponents,
 										p(props: React.ComponentProps<"p">) {
 											const { ...rest } = props;
 											return <span {...rest} />;

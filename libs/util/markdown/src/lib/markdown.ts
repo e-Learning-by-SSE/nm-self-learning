@@ -1,6 +1,5 @@
 import { serialize } from "next-mdx-remote/serialize";
 import rehypeExternalLinks from "rehype-external-links";
-import { invalidLanguageFilter } from "./invalid-language-filter";
 import { rehypeImageAttributes } from "./rehype-image-attributes";
 // Rehype packages
 import rehypeKatex from "rehype-katex";
@@ -9,12 +8,14 @@ import rehypePrismPlus from "rehype-prism-plus";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import { Pluggable } from "unified";
+import { remarkCodeGroups } from "./remark-code-groups";
 
-export const remarkPlugins = [remarkGfm, remarkMath];
+export const remarkPlugins = [remarkGfm, remarkMath, remarkCodeGroups];
 export const rehypePlugins = [
 	rehypeKatex,
-	invalidLanguageFilter,
-	rehypePrismPlus,
+	// Validate languages in Prism's own registry. A separate refractor instance can
+	// lose its language registrations in the browser bundle and strip valid languages.
+	[rehypePrismPlus, { ignoreMissing: true }] as Pluggable,
 	rehypeImageAttributes,
 	[rehypeExternalLinks, { target: "_blank" }] as Pluggable
 ];

@@ -66,7 +66,7 @@
 	"Subtitle": "Subtitle",
 	"Slug": "Slug",
 	"URL": "URL",
-	"Slug Description": "The <strong>slug</strong> is displayed in the URL. Must be unique.",
+	"Slug_Description": "The <strong>slug</strong> is displayed in the URL. Must be unique.",
 	"Banner Image": "Image (Banner)",
 	"Banner Image Description": "Image displayed as a banner at the top of the page.",
 	"Tile Image": "Image (Tile)",
@@ -106,5 +106,8 @@
     "Open_Menu": "Open Menu",
     "Description": "Description",
     "Confirm": "Confirm",
-    "Warning": "Warning"
+    "Warning": "Warning",
+
+    "Code_Group_Label": "Code examples",
+	"Code_Group_Compare": "Show side by side"
 }

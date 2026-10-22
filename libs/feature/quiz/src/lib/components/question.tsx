@@ -10,7 +10,7 @@ import {
 	useQuestion
 } from "@self-learning/question-types";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
-import { MDXRemote } from "next-mdx-remote";
+import { MarkdownRemote as MDXRemote } from "@self-learning/markdown";
 import { Hints } from "./hints";
 import { useQuiz } from "./quiz-context";
 import { LessonLayoutProps } from "@self-learning/lesson";

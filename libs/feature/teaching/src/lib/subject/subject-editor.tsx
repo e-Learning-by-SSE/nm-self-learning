@@ -106,7 +106,7 @@ export function SubjectEditor({
 										<FieldHint>
 											<Trans
 												t={t_common}
-												i18nKey="Slug Description"
+												i18nKey="Slug_Description"
 												components={{ strong: <strong /> }}
 											/>
 										</FieldHint>

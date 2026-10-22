@@ -1,5 +1,5 @@
 import ReactMarkdown from "react-markdown";
-import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
+import { markdownComponents, rehypePlugins, remarkPlugins } from "@self-learning/markdown";
 import { Session } from "next-auth";
 import { useEffect, useRef } from "react";
 
@@ -59,6 +59,7 @@ export function AiTutorMessages({
 							}`}
 						>
 							<ReactMarkdown
+								components={markdownComponents}
 								remarkPlugins={remarkPlugins}
 								rehypePlugins={rehypePlugins}
 							>
