@@ -46,7 +46,7 @@ import { PdfViewer, VideoPlayer } from "@self-learning/ui/lesson";
 import { useEventLog } from "@self-learning/util/eventlog";
 import { useAttemptSubmission } from "libs/feature/quiz/src/lib/quiz-submit-attempt";
 import { Session } from "next-auth";
-import { MDXRemote } from "next-mdx-remote";
+import { MarkdownRemote as MDXRemote } from "@self-learning/markdown";
 import Link from "next/link";
 import { useTranslation } from "next-i18next";
 import { usePathname, useSearchParams } from "next/navigation";

@@ -9,7 +9,7 @@
 			"executor": "@nx/eslint:lint",
 			"outputs": ["{options.outputFile}"],
 			"options": {
-				"lintFilePatterns": ["libs/util/markdown/**/*.ts"]
+				"lintFilePatterns": ["libs/util/markdown/**/*.{ts,tsx}"]
 			}
 		},
 		"test": {

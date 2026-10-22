@@ -29,7 +29,7 @@ import { authOptions } from "@self-learning/util/auth/server";
 import { formatDateDistanceToNow, formatSeconds } from "@self-learning/util/common";
 import { getServerSession } from "next-auth";
 import { useSession } from "next-auth/react";
-import { MDXRemote } from "next-mdx-remote";
+import { MarkdownRemote as MDXRemote } from "@self-learning/markdown";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";

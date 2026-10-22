@@ -1,6 +1,6 @@
 import { useQuiz } from "@self-learning/quiz";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
-import { MDXRemote } from "next-mdx-remote";
+import { MarkdownRemote as MDXRemote } from "@self-learning/markdown";
 import { PropsWithChildren } from "react";
 import { Feedback } from "../../feedback";
 import { useQuestion } from "../../use-question-hook";

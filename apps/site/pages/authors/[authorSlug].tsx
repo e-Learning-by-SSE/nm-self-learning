@@ -3,7 +3,7 @@ import { CompiledMarkdown } from "@self-learning/markdown";
 import { ResolvedValue } from "@self-learning/types";
 import { ImageCard } from "@self-learning/ui/common";
 import { CenteredSection, ItemCardGrid } from "@self-learning/ui/layouts";
-import { MDXRemote } from "next-mdx-remote";
+import { MarkdownRemote as MDXRemote } from "@self-learning/markdown";
 import Image from "next/image";
 import Link from "next/link";
 import { withTranslations } from "@self-learning/api";

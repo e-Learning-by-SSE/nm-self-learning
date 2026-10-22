@@ -1,4 +1,4 @@
-import { rehypePlugins, remarkPlugins } from "@self-learning/markdown";
+import { markdownComponents, rehypePlugins, remarkPlugins } from "@self-learning/markdown";
 import ReactMarkdown from "react-markdown";
 
 /**
@@ -9,7 +9,11 @@ import ReactMarkdown from "react-markdown";
 export function MarkdownViewer({ content }: { content: string }) {
 	return (
 		<div className="prose prose-emerald">
-			<ReactMarkdown remarkPlugins={remarkPlugins} rehypePlugins={rehypePlugins}>
+			<ReactMarkdown
+				components={markdownComponents}
+				remarkPlugins={remarkPlugins}
+				rehypePlugins={rehypePlugins}
+			>
 				{content ?? ""}
 			</ReactMarkdown>
 		</div>

@@ -106,5 +106,8 @@
     "Open_Menu": "Open Menu",
     "Description": "Description",
     "Confirm": "Confirm",
-    "Warning": "Warning"
+    "Warning": "Warning",
+
+    "Code_Group_Label": "Code examples",
+	"Code_Group_Compare": "Show side by side"
 }
