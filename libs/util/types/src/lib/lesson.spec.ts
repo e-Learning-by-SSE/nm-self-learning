@@ -61,7 +61,10 @@ describe("lessonSchema", () => {
 			expect(result.success).toBe(false);
 			expect(result.error?.issues).toEqual(
 				expect.arrayContaining([
-					expect.objectContaining({ path: ["quiz", "questionOrder"] })
+					expect.objectContaining({
+						path: ["quiz", "questionOrder"],
+						message: "A question order is required when questions are present"
+					})
 				])
 			);
 		});

@@ -33,7 +33,8 @@ export const quizSchema = z
 		config: configSchema.nullable().optional()
 	})
 	.refine(quiz => quiz.questions.length === 0 || quiz.questionOrder.length > 0, {
-		path: ["questionOrder"]
+		path: ["questionOrder"],
+		message: "A question order is required when questions are present"
 	});
 
 export type QuizConfig = z.infer<typeof configSchema>;

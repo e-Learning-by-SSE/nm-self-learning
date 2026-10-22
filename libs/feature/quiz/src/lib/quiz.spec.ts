@@ -31,7 +31,12 @@ describe("quizSchema question order", () => {
 		// Verify
 		expect(result.success).toBe(false);
 		expect(result.error?.issues).toEqual(
-			expect.arrayContaining([expect.objectContaining({ path: ["questionOrder"] })])
+			expect.arrayContaining([
+				expect.objectContaining({
+					path: ["questionOrder"],
+					message: "A question order is required when questions are present"
+				})
+			])
 		);
 	});
 

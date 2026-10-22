@@ -233,6 +233,7 @@
     "Lesson_Validation_Title_Required": "🞄 No title provided. Enter a title for the $t(common:Lesson).",
     "Lesson_Validation_Slug_Required": "🞄 No unique ID provided. Enter a unique slug to create a URL for the $t(common:Lesson).",
     "Lesson_Validation_Permissions_Required": "🞄 No edit permissions provided. Select at least one editing group.",
+    "Lesson_Validation_Question_Order_Required": "A question order is required when questions are present",
     "Lesson_Validation_Field_Error": "🞄 {{field}}: {{message}}",
     "Lesson_Validation_Error_Title": "Validation error",
     "Lesson_Validation_Error_Message": "Please correct the following fields:\n{{errors}}",

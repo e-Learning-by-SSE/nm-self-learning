@@ -138,6 +138,31 @@ export function collectErrorMessages(errors: FieldErrors): ValidationError[] {
 	return result;
 }
 
+export function formatLessonValidationErrors(errors: FieldErrors, t: TranslationFunction): string {
+	return collectErrorMessages(errors)
+		.map(error => {
+			const message =
+				error.field === "quiz.questionOrder" && error.type === "custom"
+					? t("Lesson_Validation_Question_Order_Required")
+					: error.message;
+
+			switch (error.field) {
+				case "title":
+					return t("Lesson_Validation_Title_Required");
+				case "slug":
+					return t("Lesson_Validation_Slug_Required");
+				case "permissions":
+					return t("Lesson_Validation_Permissions_Required");
+				default:
+					return t("Lesson_Validation_Field_Error", {
+						field: error.field,
+						message
+					});
+			}
+		})
+		.join("\n");
+}
+
 export function LessonEditor({
 	onSubmit,
 	onClose,
@@ -179,23 +204,7 @@ export function LessonEditor({
 	}
 
 	function showValidationErrors(errors: FieldErrors) {
-		const errorMsg = collectErrorMessages(errors)
-			.map(error => {
-				switch (error.field) {
-					case "title":
-						return t("Lesson_Validation_Title_Required");
-					case "slug":
-						return t("Lesson_Validation_Slug_Required");
-					case "permissions":
-						return t("Lesson_Validation_Permissions_Required");
-					default:
-						return t("Lesson_Validation_Field_Error", {
-							field: error.field,
-							message: error.message
-						});
-				}
-			})
-			.join("\n");
+		const errorMsg = formatLessonValidationErrors(errors, t);
 
 		showToast({
 			type: "error",

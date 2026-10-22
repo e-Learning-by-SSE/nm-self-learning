@@ -36,7 +36,8 @@ export const lessonSchema = z
 				config: z.any().nullable().optional()
 			})
 			.refine(quiz => quiz.questions.length === 0 || quiz.questionOrder.length > 0, {
-				path: ["questionOrder"]
+				path: ["questionOrder"],
+				message: "A question order is required when questions are present"
 			})
 			.nullable(),
 		ragEnabled: z.boolean(),
