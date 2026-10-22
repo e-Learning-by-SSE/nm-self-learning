@@ -12,6 +12,8 @@ import {
 } from "../../permissions/permission.service";
 import { buildLinkedLessonQuery, lessonRouter } from "./lesson.router";
 import { AccessLevel, LessonType } from "@prisma/client";
+import { deleteEmbedding, prepareRagContent } from "@self-learning/rag-processing";
+import { workerServiceClient } from "@self-learning/worker-api";
 
 jest.mock("@self-learning/database", () => ({
 	__esModule: true,
@@ -44,6 +46,7 @@ jest.mock("../../permissions/permission.service", () => ({
 }));
 
 jest.mock("@self-learning/worker-api", () => ({
+	subscribeToJobEvents: jest.fn().mockResolvedValue(undefined),
 	workerServiceClient: {
 		submitJob: { mutate: jest.fn().mockResolvedValue(undefined) },
 		jobQueue: { subscribe: jest.fn() }
@@ -314,6 +317,125 @@ describe("tRPC API of Lesson Router", () => {
 
 			await expect(caller.edit(defaultLesson)).resolves.toBeDefined();
 			expect(database.lesson.update).toHaveBeenCalledTimes(1);
+		});
+	});
+
+	describe("RAG processing after saving", () => {
+		const lesson = {
+			...defaultLesson.lesson,
+			ragEnabled: true,
+			content: [
+				{
+					type: "article" as const,
+					value: { content: "Lesson content" },
+					meta: { estimatedDuration: 1 }
+				}
+			]
+		};
+		const savedLesson = {
+			lessonId: lesson.lessonId,
+			title: lesson.title,
+			slug: lesson.slug,
+			ragEnabled: true,
+			ragVersionHash: "mock-hash"
+		};
+		let errorLog: jest.SpyInstance;
+
+		beforeEach(() => {
+			jest.clearAllMocks();
+			errorLog = jest.spyOn(console, "error").mockImplementation(() => {});
+			(canCreate as jest.Mock).mockResolvedValue(true);
+			(preparePermissionsForCreate as jest.Mock).mockResolvedValue({});
+			(prepareResourceUpdate as jest.Mock).mockResolvedValue({});
+			(database.lesson.create as jest.Mock).mockResolvedValue(savedLesson);
+			(database.lesson.update as jest.Mock).mockResolvedValue(savedLesson);
+			(database.lesson.findUnique as jest.Mock).mockResolvedValue({
+				provides: [],
+				ragEnabled: true,
+				ragVersionHash: "old-hash"
+			});
+			(database.$transaction as jest.Mock).mockImplementation(operations =>
+				Promise.all(operations)
+			);
+		});
+
+		afterEach(() => {
+			errorLog.mockRestore();
+		});
+
+		it.each([
+			["create", "preparation"],
+			["create", "submission"],
+			["edit", "preparation"],
+			["edit", "submission"]
+		] as const)(
+			"returns the saved lesson on %s when RAG %s fails",
+			async (operation, stage) => {
+				const { caller } = prepare({});
+				const error = new Error("fetch failed");
+				if (stage === "preparation") {
+					(prepareRagContent as jest.Mock).mockRejectedValueOnce(error);
+				} else {
+					(workerServiceClient.submitJob.mutate as jest.Mock).mockRejectedValueOnce(
+						error
+					);
+				}
+
+				const result =
+					operation === "create"
+						? caller.create(lesson)
+						: caller.edit({ lessonId: lesson.lessonId, lesson });
+
+				await expect(result).resolves.toEqual(savedLesson);
+				expect(
+					database.lesson[operation === "create" ? "create" : "update"]
+				).toHaveBeenCalledTimes(1);
+				expect(prepareRagContent).toHaveBeenCalledTimes(1);
+				expect(workerServiceClient.submitJob.mutate).toHaveBeenCalledTimes(
+					stage === "preparation" ? 0 : 1
+				);
+				expect(errorLog).toHaveBeenCalledWith(
+					"[LessonRouter] RAG processing failed after saving lesson",
+					{ lessonId: lesson.lessonId, error }
+				);
+			}
+		);
+
+		it("returns the saved lesson when deleting embeddings on disable fails", async () => {
+			const { caller } = prepare({});
+			const disabledLesson = { ...savedLesson, ragEnabled: false, ragVersionHash: null };
+			(database.lesson.update as jest.Mock).mockResolvedValue(disabledLesson);
+			(deleteEmbedding as jest.Mock).mockRejectedValueOnce(new Error("ChromaDB unavailable"));
+
+			await expect(
+				caller.edit({ lessonId: lesson.lessonId, lesson: { ...lesson, ragEnabled: false } })
+			).resolves.toEqual(disabledLesson);
+			expect(deleteEmbedding).toHaveBeenCalledWith(lesson.lessonId);
+			expect(errorLog).toHaveBeenCalled();
+		});
+
+		it("still submits the embedding job when RAG is available", async () => {
+			const { caller } = prepare({});
+
+			await expect(caller.create(lesson)).resolves.toEqual(savedLesson);
+			expect(workerServiceClient.submitJob.mutate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					jobType: "ragEmbed",
+					payload: expect.objectContaining({ lessonId: lesson.lessonId })
+				})
+			);
+			expect(errorLog).not.toHaveBeenCalled();
+		});
+
+		it("still rejects database errors before RAG processing", async () => {
+			const { caller } = prepare({});
+			(database.lesson.create as jest.Mock).mockRejectedValueOnce(
+				new Error("Database unavailable")
+			);
+
+			await expect(caller.create(lesson)).rejects.toThrow("Database unavailable");
+			expect(prepareRagContent).not.toHaveBeenCalled();
+			expect(workerServiceClient.submitJob.mutate).not.toHaveBeenCalled();
 		});
 	});
 
