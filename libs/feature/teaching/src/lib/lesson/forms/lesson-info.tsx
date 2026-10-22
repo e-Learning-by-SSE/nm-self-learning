@@ -12,8 +12,8 @@ import { Controller, useFormContext } from "react-hook-form";
 import { AuthorsForm } from "../../author/authors-form";
 import { LessonFormModel } from "../lesson-form-model";
 import { GroupAccessEditor } from "../../group/forms/group-form";
+import { Trans } from "@self-learning/ui/common";
 import { useTranslation } from "next-i18next";
-// import { AiTutorConsent } from "./ai-tutor-consent";
 
 export function LessonInfoEditor({ isNew }: { isNew: boolean }) {
 	const { t } = useTranslation(["feature-teaching", "common"]);
@@ -64,7 +64,9 @@ export function LessonInfoEditor({ isNew }: { isNew: boolean }) {
 								</button>
 							}
 						/>
-						<FieldHint>{t("common:Slug_Description")}</FieldHint>
+						<FieldHint>
+							<Trans namespace="common" i18nKey="Slug_Description" />
+						</FieldHint>
 					</LabeledField>
 
 					<LabeledField
