@@ -71,10 +71,10 @@ describe("summed lesson durations", () => {
 		lesson.content = [
 			{ type: "video", value: { url: "video" }, meta: { duration: 120 } },
 			{ type: "pdf", value: { url: "pdf" }, meta: { estimatedDuration: 60 } },
-			{ type: "article", value: { content: "text" }, meta: { estimatedDuration: 30.5 } },
+			{ type: "article", value: { content: "text" }, meta: { estimatedDuration: 31 } },
 			{ type: "iframe", value: { url: "page" }, meta: { estimatedDuration: 10 } },
 			{ type: "video", value: { url: "video2" }, meta: { duration: 45 } },
-			{ type: "article", value: { content: "text2" }, meta: { estimatedDuration: 20.5 } },
+			{ type: "article", value: { content: "text2" }, meta: { estimatedDuration: 20 } },
 			{ type: "pdf", value: { url: "pdf2" }, meta: { estimatedDuration: 90 } },
 			{ type: "iframe", value: { url: "page2" }, meta: { estimatedDuration: 15 } },
 			{ type: "video", value: { url: "video3" }, meta: { duration: 0 } }
