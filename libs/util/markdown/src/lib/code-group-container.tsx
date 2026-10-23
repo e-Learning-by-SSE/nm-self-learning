@@ -18,7 +18,6 @@ import type { ComponentPropsWithoutRef, ReactElement, ReactNode } from "react";
 type MarkdownDivProps = ComponentPropsWithoutRef<"div"> & {
 	"data-code-group"?: string;
 	"data-code-title"?: string;
-	"data-compare"?: string;
 	// react-markdown supplies its HAST node, which must not become a DOM attribute.
 	node?: unknown;
 };
@@ -26,20 +25,16 @@ type MarkdownDivProps = ComponentPropsWithoutRef<"div"> & {
 export function MarkdownDiv({ node: _node, ...props }: MarkdownDivProps) {
 	if (props["data-code-group"] === "true") {
 		return (
-			<CodeGroupContainer compare={props["data-compare"] === "true"}>
-				{props.children}
-			</CodeGroupContainer>
+			<CodeGroupContainer>{props.children}</CodeGroupContainer>
 		);
 	}
 	return <div {...props} />;
 }
 
 export function CodeGroupContainer({
-	children,
-	compare = false
+	children
 }: {
 	children?: ReactNode;
-	compare?: boolean;
 }) {
 	const { t } = useTranslation("common");
 	const [open, setOpen] = useState(false);
@@ -69,18 +64,16 @@ export function CodeGroupContainer({
 							</Tab>
 						))}
 					</TabList>
-					{compare && (
-						<button
-							type="button"
-							onClick={() => setOpen(true)}
-							className="flex shrink-0 items-center gap-2 rounded px-3 py-2 text-sm hover:bg-c-neutral-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-c-primary"
-							title={t("Code_Group_Compare")}
-							aria-label={t("Code_Group_Compare")}
-						>
-							<ArrowsPointingOutIcon className="h-5 w-5" aria-hidden="true" />
-							<span className="hidden sm:inline">{t("Code_Group_Compare")}</span>
-						</button>
-					)}
+					<button
+						type="button"
+						onClick={() => setOpen(true)}
+						className="flex shrink-0 items-center gap-2 rounded px-3 py-2 text-sm hover:bg-c-neutral-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-c-primary"
+						title={t("Code_Group_Compare")}
+						aria-label={t("Code_Group_Compare")}
+					>
+						<ArrowsPointingOutIcon className="h-5 w-5" aria-hidden="true" />
+						<span className="hidden sm:inline">{t("Code_Group_Compare")}</span>
+					</button>
 				</div>
 				<TabPanels>
 					{snippets.map((snippet, index) => (

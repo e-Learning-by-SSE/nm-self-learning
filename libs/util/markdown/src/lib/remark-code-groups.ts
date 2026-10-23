@@ -24,9 +24,7 @@ export const remarkCodeGroups: Plugin<[], Root> = () => tree => {
 		if (!("children" in parent)) return;
 		const nodes = parent.children;
 		for (let start = 0; start < nodes.length; start++) {
-			const opening = paragraphText(nodes[start])?.match(
-				/^:::\s*code-group(?:\s+(compare))?$/
-			);
+			const opening = paragraphText(nodes[start])?.match(/^:::\s*code-group(?:\s+compare)?$/);
 			if (!opening) continue;
 			let end = start + 1;
 			while (end < nodes.length && nodes[end].type === "code") end++;
@@ -54,7 +52,7 @@ export const remarkCodeGroups: Plugin<[], Root> = () => tree => {
 				type: "blockquote",
 				data: {
 					hName: "div",
-					hProperties: { "data-code-group": "true", "data-compare": String(!!opening[1]) }
+					hProperties: { "data-code-group": "true" }
 				},
 				children: snippets.map((code, index) => ({
 					type: "blockquote",

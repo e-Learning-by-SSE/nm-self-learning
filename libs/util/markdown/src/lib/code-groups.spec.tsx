@@ -129,7 +129,7 @@ describe("Markdown code groups", () => {
 		expect(screen.getByRole("dialog")).toHaveTextContent('const greeting = "Hallo";');
 	});
 
-	it("makes comparison opt-in, supports the compact directive, and preserves following prose", () => {
+	it("offers comparison without an opt-in, supports the compact directive, and preserves following prose", () => {
 		render(
 			<Preview
 				content={
@@ -139,9 +139,7 @@ describe("Markdown code groups", () => {
 			/>
 		);
 		expect(screen.getAllByRole("tab")).toHaveLength(2);
-		expect(
-			screen.queryByRole("button", { name: "Code_Group_Compare" })
-		).not.toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Code_Group_Compare" })).toBeInTheDocument();
 		expect(screen.getByText("text").tagName).toBe("STRONG");
 	});
 

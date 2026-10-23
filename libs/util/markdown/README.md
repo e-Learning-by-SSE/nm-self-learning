@@ -4,11 +4,11 @@ This library was generated with [Nx](https://nx.dev).
 
 ## Code groups
 
-Wrap fenced code blocks in `::: code-group` and `:::` to display them in tabs.
-Add `compare` to enable a fullscreen dialog showing all snippets side by side:
+Wrap fenced code blocks in `::: code-group` and `:::` to display them in tabs with
+a fullscreen dialog for viewing all snippets side by side:
 
 ````markdown
-::: code-group compare
+::: code-group
 
 ```typescript title="hello.ts"
 const greeting = "Hallo";
