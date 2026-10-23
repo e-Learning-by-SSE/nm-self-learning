@@ -33,6 +33,12 @@ const selectStatement = {
 			accessLevel: true,
 			groupId: true
 		}
+	},
+	provides: {
+		select: {
+			id: true,
+			description: true
+		}
 	}
 };
 
