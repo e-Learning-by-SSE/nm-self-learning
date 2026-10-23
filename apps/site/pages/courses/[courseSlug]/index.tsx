@@ -33,6 +33,7 @@ import { MarkdownRemote as MDXRemote } from "@self-learning/markdown";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useTranslation } from "next-i18next";
 import { useEffect, useMemo, useState } from "react";
 import {
 	useAiTutor,
@@ -61,7 +62,7 @@ function mapToTocContent(
 						lessonId: "removed",
 						slug: "removed",
 						meta: { hasQuiz: false, mediaTypes: {} },
-						title: "Removed",
+						title: "",
 						lessonType: LessonType.TRADITIONAL,
 						performanceScore: null,
 						lessonNr: -1
@@ -140,7 +141,7 @@ type CourseProps = {
 };
 
 export const getServerSideProps = withTranslations(
-	Array.from(new Set(["common", ...NS_AI_TUTOR])),
+	Array.from(new Set(["common", "pages-course", ...NS_AI_TUTOR])),
 	withAuth(async context => {
 		const { req, res, params } = context;
 		const courseSlug = params?.courseSlug as string | undefined;
@@ -245,6 +246,7 @@ function CourseHeader({
 	summary: CourseProps["summary"];
 	content: CourseProps["content"];
 }) {
+	const { t } = useTranslation("pages-course");
 	const { withAuth, isAuthenticated } = useAuthentication();
 
 	const isDynamic = course.type === CourseType.DYNAMIC;
@@ -321,8 +323,8 @@ function CourseHeader({
 					<div className="flex flex-col gap-4">
 						<AuthorsList authors={course.authors} />
 						<CreatedUpdatedDates
-							createdAt={formatDateDistanceToNow(course.createdAt)}
-							updatedAt={formatDateDistanceToNow(course.updatedAt)}
+							createdAt={course.createdAt}
+							updatedAt={course.updatedAt}
 						/>
 					</div>
 				</div>
@@ -346,15 +348,17 @@ function CourseHeader({
 							} divide-x divide-c-primary rounded-b-lg border border-c-border border-t-transparent bg-white bg-opacity-80 p-2 text-center`}
 						>
 							<li className="flex flex-col">
-								<span className="font-semibold text-c-primary">Lerneinheiten</span>
+								<span className="font-semibold text-c-primary">
+									{t("common:Lesson_other")}
+								</span>
 								<span className="text-c-text-muted">{summary.lessons}</span>
 							</li>
 							<li className="flex flex-col">
-								<span className="font-semibold text-c-primary">Kapitel</span>
+								<span className="font-semibold text-c-primary">{t("Chapters")}</span>
 								<span className="text-c-text-muted">{summary.chapters}</span>
 							</li>
 							<li className="flex flex-col">
-								<span className="font-semibold text-c-primary">Dauer</span>
+								<span className="font-semibold text-c-primary">{t("Duration")}</span>
 								<span className="text-c-text-muted">
 									{formatSeconds(summary.duration)}
 								</span>
@@ -362,14 +366,14 @@ function CourseHeader({
 							{isParticipant && (
 								<li className="flex flex-col items-center">
 									<span className="font-semibold text-c-primary">
-										Mein Score{" "}
+										{t("Score")}{" "}
 									</span>
 									{avgScore != null ? (
 										<div className="flex justify-center">
 											<SmallGradeBadge rating={avgScore} />
 										</div>
 									) : (
-										<span>Keine</span>
+										<span>{t("No_Score")}</span>
 									)}
 								</li>
 							)}
@@ -390,9 +394,9 @@ function CourseHeader({
 							<span>
 								{nextLessonSlug
 									? lessonCompletionCount === 0
-										? "Starten"
-										: "Fortfahren"
-									: "Öffnen"}
+										? t("Start_Course")
+										: t("Continue_Course")
+									: t("Open_Course")}
 							</span>
 							<PlayIcon className="h-5" />
 						</Link>
@@ -414,11 +418,11 @@ function CourseHeader({
 								>
 									{isAuthenticated ? (
 										<>
-											<span>Zum Lernplan hinzufügen</span>
+											<span>{t("Add_To_Learning_Plan")}</span>
 											<PlusCircleIcon className="h-5" />
 										</>
 									) : (
-										<span>Lernplan nach Login verfügbar</span>
+										<span>{t("Learning_Plan_Available_After_Login")}</span>
 									)}
 								</button>
 							)}
@@ -437,6 +441,7 @@ function TableOfContents({
 	course: CourseData;
 	isGenerated: boolean;
 }) {
+	const { t } = useTranslation("pages-course");
 	const completion = useCourseCompletion(course.slug);
 	const hasContent = content.some(chapter => chapter.content.length > 0);
 
@@ -444,10 +449,10 @@ function TableOfContents({
 		return (
 			<div className="flex flex-col gap-4 p-8 rounded-lg bg-c-surface-2">
 				<h3 className="heading flex gap-4 text-2xl">
-					<span className="text-c-primary">Kein Inhalt verfügbar</span>
+					<span className="text-c-primary">{t("No_Content_Available")}</span>
 				</h3>
 				<span className="mt-4 text-c-text-muted">
-					Du hast dir noch keinen Kurspfad generiert. Bitte wähle einen Kurspfad aus.
+					{t("No_Course_Path_Generated")}
 				</span>
 			</div>
 		);
@@ -456,10 +461,9 @@ function TableOfContents({
 	if (isGenerated && !hasContent) {
 		return (
 			<div className="flex flex-col gap-4 p-8 rounded-lg bg-gray-100">
-				<span className="text-secondary">Keine Inhalte verfügbar</span>
+				<span className="text-secondary">{t("No_Contents_Available")}</span>
 				<span className="mt-4 text-light">
-					Du hast entweder alle Skills schon erreicht oder es sind keine Lerninhalte
-					verfügbar.
+					{t("No_Learning_Content_Remaining")}
 				</span>
 			</div>
 		);
@@ -467,7 +471,7 @@ function TableOfContents({
 
 	return (
 		<section className="flex flex-col gap-8">
-			<h2 className="mb-4 text-4xl">Inhalt</h2>
+			<h2 className="mb-4 text-4xl">{t("Content")}</h2>
 			<ul className="flex flex-col gap-16">
 				{content.map((chapter, index) => (
 					<li key={index} className="flex flex-col rounded-lg bg-c-surface-2 p-8">
@@ -531,17 +535,18 @@ function Lesson({
 }
 
 function LessonEntry({ lesson }: { lesson: ToC.Content[0]["content"][0] }) {
+	const { t } = useTranslation("pages-course");
 	return (
 		<span className="flex items-center justify-between w-full">
 			<span className="flex items-center">
 				<span className="w-8 shrink-0 self-center font-medium text-c-primary">
 					{lesson.lessonNr}
 				</span>
-				<span>{lesson.title}</span>
+				<span>{lesson.lessonId === "removed" ? t("Removed_Lesson") : lesson.title}</span>
 			</span>
 			{/* Grade badge - klein und konsistent mit GradeDisplay */}
 			{lesson.performanceScore != null && (
-				<Tooltip content="Deine bisherige beste Bewertung für dieses Nanomodul.">
+				<Tooltip content={t("Best_Previous_Rating_Tooltip")}>
 					<SmallGradeBadge rating={lesson.performanceScore} />
 				</Tooltip>
 			)}
@@ -549,15 +554,19 @@ function LessonEntry({ lesson }: { lesson: ToC.Content[0]["content"][0] }) {
 	);
 }
 
-function CreatedUpdatedDates({ createdAt, updatedAt }: { createdAt: string; updatedAt: string }) {
+function CreatedUpdatedDates({ createdAt, updatedAt }: { createdAt: Date; updatedAt: Date }) {
+	const { t, i18n } = useTranslation("pages-course");
+	const locale = i18n.language.startsWith("de") ? "de" : "en";
 	return (
 		<div className="flex flex-wrap gap-2 text-xs text-c-text-muted">
 			<span>
-				Erstellt: <span suppressHydrationWarning>{createdAt}</span>
+				{t("Created")}:{" "}
+				<span suppressHydrationWarning>{formatDateDistanceToNow(createdAt, locale)}</span>
 			</span>
 			<span>|</span>
 			<span>
-				Letzte Änderung: <span suppressHydrationWarning>{updatedAt}</span>
+				{t("Last_Changed")}:{" "}
+				<span suppressHydrationWarning>{formatDateDistanceToNow(updatedAt, locale)}</span>
 			</span>
 		</div>
 	);
@@ -572,26 +581,27 @@ function Description({ content }: { content: CompiledMarkdown }) {
 }
 
 function RefreshGeneratedCourse({ onClick }: { onClick: () => void }) {
+	const { t } = useTranslation("pages-course");
 	return (
 		<div className="flex flex-col gap-4 p-8 rounded-lg bg-gray-100">
 			<h3 className="heading flex gap-4 text-2xl">
-				<span className="text-secondary">Kurs aktualisieren</span>
+				<span className="text-secondary">{t("Refresh_Course_Title")}</span>
 			</h3>
 			<span className="mt-4 text-light">
-				Der Kurs wurde aktualisiert. Du kannst den Kurs jetzt starten und dein Wissen
-				erweitern.
+				{t("Refresh_Course_Description")}
 			</span>
 			<button
 				className="btn-primary mt-4 w-full text-white p-3 rounded-lg flex items-center justify-center font-semibold"
 				onClick={onClick}
 			>
-				Kurs aktualisieren
+				{t("Refresh_Course_Button")}
 			</button>
 		</div>
 	);
 }
 
 function CoursePath({ course, isStale }: { course: CourseData; isStale: boolean }) {
+	const { t } = useTranslation("pages-course");
 	const { mutateAsync } = trpc.course.createLessonPath.useMutation();
 	const router = useRouter();
 	const [jobId, setJobId] = useState<string | null>(null);
@@ -621,11 +631,11 @@ function CoursePath({ course, isStale }: { course: CourseData; isStale: boolean 
 		if (isFailed) {
 			showToast({
 				type: "error",
-				title: "Fehler",
-				subtitle: "Der Kurs konnte nicht generiert werden."
+				title: t("common:Error"),
+				subtitle: t("Course_Generation_Failed")
 			});
 		}
-	}, [isFailed]);
+	}, [isFailed, t]);
 
 	const generateDynamicCourse = async () => {
 		try {
@@ -642,8 +652,8 @@ function CoursePath({ course, isStale }: { course: CourseData; isStale: boolean 
 
 				showToast({
 					type: "error",
-					title: "Fehler",
-					subtitle: "Der Kurs konnte nicht generiert werden."
+					title: t("common:Error"),
+					subtitle: t("Course_Generation_Failed")
 				});
 
 				return;
@@ -657,8 +667,8 @@ function CoursePath({ course, isStale }: { course: CourseData; isStale: boolean 
 
 			showToast({
 				type: "error",
-				title: "Fehler",
-				subtitle: "Der Kurs konnte nicht generiert werden."
+				title: t("common:Error"),
+				subtitle: t("Course_Generation_Failed")
 			});
 		}
 	};
@@ -690,13 +700,13 @@ function CoursePath({ course, isStale }: { course: CourseData; isStale: boolean 
 	return (
 		<div>
 			{generationDialog}
-			<h3 className="font-semibold text-lg">Kurspfad generieren</h3>
+			<h3 className="font-semibold text-lg">{t("Generate_Course_Path")}</h3>
 			<button
 				className="btn-primary mt-4 w-full text-white p-3 rounded-lg flex items-center justify-center font-semibold"
 				onClick={generateDynamicCourse}
 				disabled={isDialogOpen}
 			>
-				Generieren
+				{t("common:Generate")}
 			</button>
 		</div>
 	);
@@ -709,8 +719,9 @@ function GeneratingCourseDialog({
 	onClose: OnDialogCloseFn<string>;
 	isComplete: boolean;
 }) {
+	const { t } = useTranslation("pages-course");
 	return (
-		<Dialog title="Kurspfad wird erstellt" onClose={onClose} style={{ minWidth: 480 }}>
+		<Dialog title={t("Generating_Course_Path_Title")} onClose={onClose} style={{ minWidth: 480 }}>
 			<div className="flex flex-col items-center justify-center py-4">
 				{!isComplete ? (
 					<>
@@ -723,11 +734,10 @@ function GeneratingCourseDialog({
 							</div>
 						</div>
 						<p className="text-center text-lg font-medium">
-							Dein individueller Kurspfad wird generiert...
+							{t("Generating_Course_Path")}
 						</p>
 						<p className="text-center text-sm text-light mt-2">
-							KI erstellt deinen personalisierten Lerninhalt. Dies kann einen Moment
-							dauern.
+							{t("Generating_Course_Path_Description")}
 						</p>
 					</>
 				) : (
@@ -747,16 +757,16 @@ function GeneratingCourseDialog({
 							</svg>
 						</div>
 						<p className="text-center text-lg font-medium">
-							Dein Kurspfad wurde erfolgreich erstellt!
+							{t("Course_Path_Generated_Successfully")}
 						</p>
 						<p className="text-center text-sm text-light mt-2">
-							Klicke auf Schließen, um mit dem Kurs zu beginnen.
+							{t("Close_To_Start_Course")}
 						</p>
 						<button
 							className="btn-primary mt-6 px-8 py-2"
 							onClick={() => onClose(ButtonActions.OK)}
 						>
-							Schließen
+							{t("common:Close")}
 						</button>
 					</>
 				)}
