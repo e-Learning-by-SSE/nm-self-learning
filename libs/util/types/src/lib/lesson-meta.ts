@@ -15,12 +15,13 @@ export function createLessonMeta(lesson: Lesson): LessonMeta {
 	for (const item of lesson.content ?? []) {
 		if (item.type === "video") {
 			mediaTypes.video = {
-				duration: (mediaTypes.video?.duration ?? 0) + item.meta.duration
+				duration: (mediaTypes.video?.duration ?? 0) + Math.trunc(item.meta.duration)
 			};
 		} else {
 			mediaTypes[item.type] = {
 				estimatedDuration:
-					(mediaTypes[item.type]?.estimatedDuration ?? 0) + item.meta.estimatedDuration
+					(mediaTypes[item.type]?.estimatedDuration ?? 0) +
+					Math.trunc(item.meta.estimatedDuration)
 			};
 		}
 	}
@@ -34,7 +35,7 @@ export function createLessonMeta(lesson: Lesson): LessonMeta {
 /** Returns the total duration of all media types in seconds. */
 export function getLessonDuration(meta: LessonMeta | null | undefined): number {
 	const mediaTypes = meta?.mediaTypes;
-	return (
+	return Math.trunc(
 		(mediaTypes?.video?.duration ?? 0) +
 		(mediaTypes?.article?.estimatedDuration ?? 0) +
 		(mediaTypes?.pdf?.estimatedDuration ?? 0) +

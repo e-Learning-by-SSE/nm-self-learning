@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+const durationInSecondsSchema = z.number().transform(Math.trunc);
+
 export const videoSchema = z.object({
 	type: z.literal("video"),
 	value: z.object({
@@ -13,7 +15,7 @@ export const videoSchema = z.object({
 			.optional()
 	}),
 	meta: z.object({
-		duration: z.number()
+		duration: durationInSecondsSchema
 	})
 });
 
@@ -23,7 +25,7 @@ export const articleSchema = z.object({
 		content: z.string()
 	}),
 	meta: z.object({
-		estimatedDuration: z.number()
+		estimatedDuration: durationInSecondsSchema
 	})
 });
 
@@ -33,7 +35,7 @@ export const pdfSchema = z.object({
 		url: z.string()
 	}),
 	meta: z.object({
-		estimatedDuration: z.number()
+		estimatedDuration: durationInSecondsSchema
 	})
 });
 
@@ -49,7 +51,7 @@ export const iframeSchema = z.object({
 		folderObjectName: z.string().optional()  // MinIO folder prefix for cleanup
 	}),
 	meta: z.object({
-		estimatedDuration: z.number()
+		estimatedDuration: durationInSecondsSchema
 	})
 });
 
