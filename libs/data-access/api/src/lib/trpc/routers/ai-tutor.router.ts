@@ -50,7 +50,9 @@ export const aiTutorRouter = t.router({
 				const messages = injectSystemPrompt(input.messages, systemPrompt);
 
 				// Step 7: Send request to LLM
-				const rawResponse = await sendChatRequest(messages, llmConfig);
+				const rawResponse = await sendChatRequest(messages, llmConfig, {
+					reasoning_budget_tokens: 400
+				});
 
 				// Step 8: Clean and format response
 				const cleanedResponse = cleanResponse(rawResponse);

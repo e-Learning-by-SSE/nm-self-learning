@@ -68,7 +68,10 @@ export const textEvaluationRouter = t.router({
 			// Step 4: Send request to LLM server and get raw response
 			let rawContent: string;
 			try {
-				rawContent = await sendChatRequest(messages, llmConfig, { temperature: 0 });
+				rawContent = await sendChatRequest(messages, llmConfig, {
+					temperature: 0,
+					reasoning_budget_tokens: 400
+				});
 			} catch (error) {
 				console.warn("[LLM Text evaluation] Error communicating with LLM server", error);
 				return { ok: false as const };
