@@ -1,4 +1,4 @@
-FROM node:22-slim AS build
+FROM node:26-slim AS build
 
 WORKDIR /app
 
@@ -24,7 +24,7 @@ RUN npm run prisma generate
 # Allow runnig prisma commands, based on: https://stackoverflow.com/a/72602624
 # RUN chown nextjs:nodejs -R node_modules/.prisma
 
-FROM node:22-slim
+FROM node:26-slim
 # org image node:alpine - temporary fix https://github.com/vercel/next.js/discussions/69326
 
 COPY --from=build /app /app
