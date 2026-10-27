@@ -59,7 +59,10 @@ export class WorkerHost implements JobRunner {
 		});
 
 		worker.on("message", message => this.handleWorkerMessage(worker, message));
-		worker.on("error", err => this.handleWorkerError(worker, err));
+		worker.on("error", err => {
+			const error = err instanceof Error ? err : new Error(String(err));
+			this.handleWorkerError(worker, error);
+		});
 		worker.on("exit", code => this.handleWorkerExit(worker, code));
 
 		this.workers.push(worker);
