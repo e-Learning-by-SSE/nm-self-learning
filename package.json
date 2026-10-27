@@ -115,7 +115,7 @@
 		"unzipper": "^0.12.3",
 		"web-encoding": "^1.1.5",
 		"ws": "^8.21.0",
-		"zod": "4.4.3"
+		"zod": "^4.6.7"
 	},
 	"devDependencies": {
 		"@babel/core": "7.29.7",
