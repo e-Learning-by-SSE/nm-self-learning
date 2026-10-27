@@ -15,6 +15,7 @@
 		"skipDefaultLibCheck": true,
 		"baseUrl": ".",
 		"paths": {
+			"monaco-editor": ["node_modules/monaco-editor/esm/vs/index"],
 			"@self-learning/achievements": ["libs/feature/achievements/src/index.ts"],
 			"@self-learning/admin": ["libs/feature/admin/src/index.ts"],
 			"@self-learning/ai-tutor": ["libs/feature/ai-tutor/src/index.ts"],
