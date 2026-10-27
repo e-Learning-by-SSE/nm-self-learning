@@ -9,59 +9,46 @@ import type { Plugin } from "unified";
 export const rehypeImageAttributes: Plugin = () => {
 	return tree => {
 		visit(tree, "element", (node: Element) => {
-			if (node.tagName === "img" && node.properties && node.properties.alt) {
+			if (node.tagName === "img" && node.properties.alt) {
 				const alt = String(node.properties.alt);
 
 				// Look for attribute pattern in alt text: {width=300} or {width=300 height=200}
 				const attributeMatch = alt.match(/\{([^}]+)\}/);
 
-				if (attributeMatch && node.properties) {
+				if (attributeMatch) {
 					const attributeString = attributeMatch[1];
 					const cleanAlt = alt.replace(/\{[^}]+\}/, "").trim();
 
 					const attributes = attributeString
 						.split(/\s+/)
-						.filter(attr => attr.includes("="));
+						.filter(attr => attr.includes("=") || attr.startsWith("."));
 
 					attributes.forEach(attr => {
 						const [key, value] = attr.split("=");
-						if (key && value && node.properties) {
-							
+
+						if (key?.startsWith(".")) {
+							node.properties.className = [
+								...(node.properties.className ?? []),
+								key.slice(1)
+							];
+						} else if (key && value) {
 							if (key === "width" || key === "height") {
-								// If value is just a number, add 'px'
 								const cleanValue = value.replace(/['"]/g, "");
-								if (/^\d+$/.test(cleanValue)) {
-									node.properties[key] = cleanValue + "px";
-								} else {
-									node.properties[key] = cleanValue;
-								}
-							} else if (key === "class" || key.startsWith(".")) {
-								// Handle CSS classes
-								const className = key.startsWith(".")
-									? key.slice(1)
-									: value.replace(/['"]/g, "");
-								if (node.properties.className) {
-									node.properties.className += " " + className;
-								} else {
-									node.properties.className = className;
-								}
+								node.properties[key] = /^\d+$/.test(cleanValue)
+									? Number(cleanValue)
+									: cleanValue;
+							} else if (key === "class") {
+								node.properties.className = [
+									...(node.properties.className ?? []),
+									...value.replace(/['"]/g, "").split(/\s+/)
+								];
 							} else {
-								// Handle other attributes
 								node.properties[key] = value.replace(/['"]/g, "");
-							}
-						} else if (key.startsWith(".") && node.properties) {
-							const className = key.slice(1);
-							if (node.properties.className) {
-								node.properties.className += " " + className;
-							} else {
-								node.properties.className = className;
 							}
 						}
 					});
 
-					if (node.properties) {
-						node.properties.alt = cleanAlt;
-					}
+					node.properties.alt = cleanAlt;
 				}
 			}
 		});
