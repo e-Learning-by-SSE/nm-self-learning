@@ -205,9 +205,9 @@
 		"typescript-eslint": "^8.60.0",
 		"url-loader": "^4.1.1"
 	},
-    "overrides": {
-        "monaco-editor": {
-            "dompurify": "3.4.17"
-        }
-    }
+	"overrides": {
+		"monaco-editor": {
+			"dompurify": "3.4.17"
+		}
+	}
 }
