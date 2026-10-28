@@ -1,0 +1,22 @@
+{
+	"Question_Type": {
+		"multiple-choice": "Multiple-Choice",
+		"exact": "Exakte Antwort",
+		"text": "Freitext",
+		"programming": "Programmierung",
+		"cloze": "Lückentext",
+		"arrange": "Ordnen",
+		"language-tree": "Baumstruktur-Aufgabe"
+	},
+	"Reset": "Zurücksetzen",
+	"Missing_Question_Content": "Fehler: Kein Frageinhalt gefunden.",
+	"Next_Question": "Nächste Frage",
+	"Check_Answer": "Überprüfen",
+	"Retry": "Erneut probieren",
+	"Question_Tab": "Aufgabe {{number}}",
+	"No_Hints_Available": "Keine Hinweise verfügbar",
+	"Use_Hint": "Ich benötige einen Hinweis ({{used}} / {{total}})",
+	"Hints_Remaining_one": "Du hast noch {{count}} Hinweis für diese Lernkontrolle zur Verfügung.",
+	"Hints_Remaining_other": "Du hast noch {{count}} Hinweise für diese Lernkontrolle zur Verfügung.",
+	"No_Hints_Remaining": "Du hast keine Hinweise für diese Lernkontrolle zur Verfügung."
+}

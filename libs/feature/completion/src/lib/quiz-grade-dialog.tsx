@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "next-i18next";
 import { PlayIcon, TrophyIcon } from "@heroicons/react/24/solid";
 import { AchievementList, useAchievementRedemption } from "@self-learning/achievements";
 import { trpc } from "@self-learning/api-client";
@@ -9,7 +10,8 @@ import {
 	ConfettiRain,
 	DialogActions,
 	GameifyDialog,
-	OnDialogCloseFn
+	OnDialogCloseFn,
+	Trans
 } from "@self-learning/ui/common";
 import { IdSet } from "@self-learning/util/common";
 import { intervalToDuration } from "date-fns";
@@ -29,6 +31,7 @@ function GradeDisplay({
 	totalAttempts: number;
 	learnedSeconds: number;
 }) {
+	const { t } = useTranslation("feature-completion");
 	const duration = intervalToDuration({ start: 0, end: learnedSeconds * 1000 });
 	const durationFormatted = `${duration.minutes ?? "00"}:${String(duration.seconds ?? "00").padStart(2, "0")}`;
 
@@ -37,12 +40,15 @@ function GradeDisplay({
 			{/* Header - wie in deiner Zeichnung */}
 			<div className="text-center">
 				<h2 className="text-2xl font-semibold text-c-text-strong mb-2">
-					Gratulation toll gemacht!
+					{t("Grade_Congratulations")}
 				</h2>
 				<p className="text-gray-600">
-					Du hast eine{" "}
-					<span className="font-semibold">{Math.round(averageScore * 100)} / 100</span>{" "}
-					Bewertung erreicht
+					<Trans
+						namespace="feature-completion"
+						i18nKey="Grade_Score"
+						values={{ score: Math.round(averageScore * 100) }}
+						components={{ strong: <span className="font-semibold" /> }}
+					/>
 				</p>
 			</div>
 
@@ -53,7 +59,7 @@ function GradeDisplay({
 					<div className="text-xl font-mono text-c-text font-semibold">
 						{durationFormatted}
 					</div>
-					<div className="text-xs text-c-text-muted mt-1">Zeit</div>
+					<div className="text-xs text-c-text-muted mt-1">{t("Grade_Time")}</div>
 				</div>
 
 				<GradeBadge rating={averageScore} />
@@ -61,19 +67,17 @@ function GradeDisplay({
 
 			{/* Zusätzliche Info */}
 			<div className="text-center text-sm text-gray-600">
-				<p>Versuch: {totalAttempts}</p>
+				<p>{t("Grade_Attempts", { count: totalAttempts })}</p>
 				{grade === "PERFECT" && (
 					<p className="text-purple-600 font-medium mt-1">
-						Fehlerfrei!{" "}
-						<span role="img" aria-label="Konfetti">
+						{t("Grade_Perfect")}{" "}
+						<span role="img" aria-label={t("Confetti")}>
 							🎉
 						</span>
 					</p>
 				)}
 				{grade !== "PERFECT" && (
-					<p className="mt-2 text-c-info-strong">
-						Du kannst es noch einmal versuchen, um eine bessere Note zu erhalten!
-					</p>
+					<p className="mt-2 text-c-info-strong">{t("Grade_Retry_Message")}</p>
 				)}
 			</div>
 		</div>
@@ -95,6 +99,7 @@ export function QuizGradeDialog({
 	course,
 	nextLesson
 }: QuizGradeDialogProps) {
+	const { t } = useTranslation("feature-completion");
 	const { attempts, answers, lessonAttemptId: attemptIdControl, reload } = useQuiz();
 	const { mutateAsync: earnAchievements } = trpc.achievement.earnAchievements.useMutation();
 	const [achievements, setAchievements] = useState<IdSet<AchievementWithProgress>>(new IdSet());
@@ -162,7 +167,9 @@ export function QuizGradeDialog({
 					<div className="text-center">
 						<h2 className="text-xl font-semibold mb-2">{course.title}</h2>
 						<p className="text-sm text-gray-600">
-							von {lesson.authors.map(a => a.displayName).join(", ")}
+							{t("Authors", {
+								authors: lesson.authors.map(a => a.displayName).join(", ")
+							})}
 						</p>
 					</div>
 
@@ -177,7 +184,7 @@ export function QuizGradeDialog({
 					{/* Achievements Section */}
 					{achievements.size > 0 && (
 						<GradeAchievementSection
-							title="Errungenschaften"
+							title={t("Achievements")}
 							achievements={achievements}
 							onRedeem={handleRedeemWithStateUpdate}
 						/>
@@ -186,33 +193,43 @@ export function QuizGradeDialog({
 					{/* Lesson completion text */}
 					<div className="flex flex-col text-sm text-c-text-muted">
 						<p>
-							Du hast die Lerneinheit{" "}
-							<span className="font-semibold text-c-primary">{lesson.title}</span>{" "}
-							erfolgreich abgeschlossen.
+							<Trans
+								namespace="feature-completion"
+								i18nKey="Success_Message"
+								values={{ lesson: lesson.title }}
+								components={{
+									strong: <span className="font-semibold text-c-primary" />
+								}}
+							/>
 						</p>
 
 						{nextLesson ? (
 							<div className="flex flex-col">
-								<p>Die nächste Lerneinheit ist ...</p>
+								<p>{t("Next_Lesson_Intro")}</p>
 								<span className="mt-4 self-center rounded-lg bg-c-surface-2 px-12 py-4 text-xl font-semibold tracking-tighter text-c-primary">
 									{nextLesson.title}
 								</span>
 							</div>
 						) : (
 							<p>
-								Der Kurs{" "}
-								<span className="font-semibold text-c-primary">{course.title}</span>{" "}
-								enthält keine weiteren Lerneinheiten für dich.
+								<Trans
+									namespace="feature-completion"
+									i18nKey="No_More_Lessons"
+									values={{ course: course.title }}
+									components={{
+										strong: <span className="font-semibold text-c-primary" />
+									}}
+								/>
 							</p>
 						)}
 					</div>
 				</div>
 
 				{/* Action buttons - wie in deiner Zeichnung */}
-				<DialogActions abortLabel="Close" onClose={onClose}>
+				<DialogActions abortLabel={t("common:Close")} onClose={onClose}>
 					{grade !== "PERFECT" && (
 						<button onClick={reload} className="btn-stroked">
-							Erneut versuchen
+							{t("Retry")}
 						</button>
 					)}
 					{nextLesson && (
@@ -278,9 +295,10 @@ function NextLessonButton({
 	courseSlug: string;
 	nextLessonSlug: string;
 }) {
+	const { t } = useTranslation("feature-completion");
 	return (
 		<Link href={`/courses/${courseSlug}/${nextLessonSlug}`} className="btn-primary">
-			<span>Zur nächsten Lerneinheit</span>
+			<span>{t("Go_To_Next_Lesson")}</span>
 			<PlayIcon className="h-5 shrink-0" />
 		</Link>
 	);

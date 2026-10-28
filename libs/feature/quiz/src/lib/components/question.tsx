@@ -4,7 +4,6 @@ import {
 	AnswerContextProvider,
 	BaseEvaluation,
 	EVALUATION_FUNCTIONS,
-	QUESTION_TYPE_DISPLAY_NAMES,
 	QuestionAnswerRenderer,
 	QuestionType,
 	useQuestion
@@ -21,6 +20,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useEventLog } from "@self-learning/util/eventlog";
 import { useEffect } from "react";
+import { useTranslation } from "next-i18next";
 
 export type QuizSavedAnswers = { answers: unknown; lessonSlug: string };
 
@@ -49,6 +49,7 @@ export function Question({
 		setAttempts,
 		lessonAttemptId
 	} = useQuiz();
+	const { t } = useTranslation("feature-quiz");
 	const { newEvent } = useEventLog();
 	const answer = answers[question.questionId];
 	const evaluation = evaluations[question.questionId];
@@ -133,14 +134,14 @@ export function Question({
 				<div>
 					<div className="flex items-center justify-between">
 						<span className="font-semibold text-c-primary" data-testid="questionType">
-							{QUESTION_TYPE_DISPLAY_NAMES[question.type]}
+							{t(`Question_Type.${question.type}`)}
 						</span>
 						<div className="flex gap-4">
 							<button
 								className="btn-stroked h-fit"
 								onClick={() => setEvaluation(null)}
 							>
-								Reset
+								{t("Reset")}
 							</button>
 							<CheckResult
 								setEvaluation={setEvaluation}
@@ -153,7 +154,7 @@ export function Question({
 							<MDXRemote {...markdown.questionsMd[question.questionId]} />
 						</MarkdownContainer>
 					) : (
-						<span className="text-c-danger">Error: No markdown content found.</span>
+						<span className="text-c-danger">{t("Missing_Question_Content")}</span>
 					)}
 				</div>
 
@@ -176,6 +177,7 @@ function CheckResult({
 	setEvaluation: (ev: BaseEvaluation | null) => void;
 	nextQuestionStep: () => void;
 }) {
+	const { t } = useTranslation("feature-quiz");
 	// We only use "multiple-choice" to get better types ... works for all question types
 	const { question, answer, evaluation: currentEvaluation } = useQuestion("multiple-choice");
 	const { completionState, reload } = useQuiz();
@@ -199,13 +201,13 @@ function CheckResult({
 			disabled={isEvaluating}
 			onClick={canGoToNextQuestion ? nextQuestionStep : checkResult}
 		>
-			{canGoToNextQuestion ? "Nächste Frage" : "Überprüfen"}
+			{canGoToNextQuestion ? t("Next_Question") : t("Check_Answer")}
 		</button>
 	);
 
 	const renderFailedButton = () => (
 		<button className="btn bg-c-danger" onClick={reload}>
-			<span>Erneut probieren</span>
+			<span>{t("Retry")}</span>
 			<ArrowPathIcon className="h-5" />
 		</button>
 	);
@@ -222,6 +224,7 @@ export function QuestionTab(props: {
 	evaluation: { isCorrect: boolean; isInProgress?: boolean } | null;
 	index: number;
 }) {
+	const { t } = useTranslation("feature-quiz");
 	const isCorrect = props.evaluation?.isCorrect === true;
 	const isIncorrect = props.evaluation?.isCorrect === false;
 	const isInProgress = props.evaluation?.isInProgress === true;
@@ -245,7 +248,7 @@ export function QuestionTab(props: {
 					<CheckCircleIconOutline className="h-5 text-gray-400" />
 				</QuestionTabIcon>
 			)}
-			<span data-testid="questionTab">Aufgabe {props.index + 1}</span>
+			<span data-testid="questionTab">{t("Question_Tab", { number: props.index + 1 })}</span>
 		</span>
 	);
 }
