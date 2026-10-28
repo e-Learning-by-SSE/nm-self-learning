@@ -1,0 +1,7 @@
+{
+	"Lessons_Completed_one": "{{completed}} / {{count}} lesson completed",
+	"Lessons_Completed_other": "{{completed}} / {{count}} lessons completed",
+	"No_Content": "No content",
+	"Go_To_Content": "Go to lesson content",
+	"Go_To_Quiz": "Go to quiz"
+}

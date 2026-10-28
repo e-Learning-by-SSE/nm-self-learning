@@ -11,7 +11,6 @@ import { useLessonOutlineContext } from "@self-learning/lesson";
 import {
 	CourseCompletion,
 	extractLessonIds,
-	getContentTypeDisplayName,
 	LessonContentType,
 	LessonMeta
 } from "@self-learning/types";
@@ -19,6 +18,7 @@ import { Divider, ProgressBar } from "@self-learning/ui/common";
 import { NavigableContentOutline } from "@self-learning/ui/layouts";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useTranslation } from "next-i18next";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 export type PlaylistChapter = {
@@ -220,6 +220,7 @@ export function MobilePlayList({
 	completion,
 	onSelect
 }: PlaylistProps & { onSelect: () => void }) {
+	const { t } = useTranslation("feature-ui-lesson");
 	const contentWithCompletion = useContentWithCompletion(content, completion);
 	const courseCompletion = completion?.courseCompletion;
 	const completionPercentage = courseCompletion?.completionPercentage ?? 0;
@@ -235,8 +236,10 @@ export function MobilePlayList({
 					{course.title}
 				</Link>
 				<span className="text-sm text-c-text-muted">
-					{courseCompletion?.completedLessonCount ?? 0} /{" "}
-					{extractLessonIds(content).length} Lerneinheiten abgeschlossen
+					{t("Lessons_Completed", {
+						completed: courseCompletion?.completedLessonCount ?? 0,
+						count: extractLessonIds(content).length
+					})}
 				</span>
 			</div>
 
@@ -351,6 +354,7 @@ function ContentTabItem({
 	select?: () => void;
 	active?: boolean;
 }) {
+	const { t } = useTranslation(["feature-ui-lesson", "common"]);
 	return (
 		<>
 			{item && (
@@ -359,16 +363,19 @@ function ContentTabItem({
 						className={`w-full ${active ? "text-c-primary" : "text-c-text-muted"}`}
 						onClick={select}
 					>
-						{getContentTypeDisplayName(item.type)}
+						{t(
+							`common:Lesson_Content_Type_${{ video: "Video", article: "Article", pdf: "PDF", iframe: "Webpage" }[item.type]}`
+						)}
 					</span>
 				</div>
 			)}
-			{!item && "Kein Inhalt"}
+			{!item && t("No_Content")}
 		</>
 	);
 }
 
 function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) {
+	const { t } = useTranslation("feature-ui-lesson");
 	const courseCompletion = completion?.courseCompletion;
 	const completionPercentage = courseCompletion?.completionPercentage ?? 0;
 
@@ -383,8 +390,10 @@ function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) 
 					{course.title}
 				</Link>
 				<span className="text-sm text-c-text-muted">
-					{courseCompletion?.completedLessonCount ?? 0} /{" "}
-					{extractLessonIds(content).length} Lerneinheiten abgeschlossen
+					{t("Lessons_Completed", {
+						completed: courseCompletion?.completedLessonCount ?? 0,
+						count: extractLessonIds(content).length
+					})}
 				</span>
 			</div>
 
@@ -445,6 +454,7 @@ export function useLessonNavigation({ lesson, content, course }: PlaylistProps) 
 }
 
 function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
+	const { t } = useTranslation(["feature-ui-lesson", "feature-lesson"]);
 	const router = useRouter();
 	const { navigateToNextLesson, navigateToPreviousLesson, currentChapter, previous, next } =
 		useLessonNavigation({ lesson, content, course });
@@ -470,7 +480,7 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 						className="btn-primary text-sm"
 						data-testid="quizLink"
 					>
-						{router.pathname.endsWith("quiz") ? "Zum Lerninhalt" : "Zur Lernkontrolle"}
+						{router.pathname.endsWith("quiz") ? t("Go_To_Content") : t("Go_To_Quiz")}
 					</Link>
 				)}
 				<span className="flex gap-2">
@@ -478,7 +488,7 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 						onClick={() => navigateToPreviousLesson()}
 						disabled={!previous}
 						className="rounded-lg border border-c-border p-2 disabled:text-gray-300"
-						title="Vorherige Lerneinheit"
+						title={t("feature-lesson:previous_lesson")}
 						data-testid="previousLessonButton"
 					>
 						<ChevronDoubleLeftIcon className="h-5" />
@@ -487,7 +497,7 @@ function CurrentlyPlaying({ lesson, content, course }: PlaylistProps) {
 						onClick={() => navigateToNextLesson()}
 						disabled={!next}
 						className="rounded-lg border border-c-border p-2 disabled:text-gray-300"
-						title="Nächste Lerneinheit"
+						title={t("feature-lesson:next_lesson")}
 						data-testid="nextLessonButton"
 					>
 						<ChevronDoubleRightIcon className="h-5" />

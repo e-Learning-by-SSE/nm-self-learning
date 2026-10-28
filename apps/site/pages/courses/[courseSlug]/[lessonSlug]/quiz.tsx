@@ -11,6 +11,7 @@ import {
 	QuizLearnersView
 } from "@self-learning/quiz";
 import { withAuth } from "@self-learning/util/auth";
+import { I18N_NAMESPACE as uiLessonNamespaces } from "@self-learning/ui/lesson";
 
 // Collect dependency namespaces here: combining them in the quiz library triggers a circular
 // dependency and can access a namespace before it has been initialized.
@@ -20,7 +21,8 @@ export const getServerSideProps = withTranslations(
 			...quizNamespaces,
 			...completionNamespaces,
 			...lessonNamespaces,
-			...questionTypeNamespaces
+			...questionTypeNamespaces,
+			...uiLessonNamespaces
 		])
 	],
 	withAuth<QuestionProps>(async ({ params }) => {

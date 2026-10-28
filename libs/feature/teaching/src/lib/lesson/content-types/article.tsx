@@ -26,7 +26,7 @@ export function ArticleInput({ index }: { index: number }) {
 					<MarkdownField
 						content={field.value}
 						setValue={handleChange}
-						header={t("Lesson_Content_Type_article")}
+						header={t("common:Lesson_Content_Type_Article")}
 					/>
 				)}
 			></Controller>
