@@ -5,8 +5,10 @@ import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { motion } from "framer-motion";
 import { MarkdownRemote as MDXRemote } from "@self-learning/markdown";
 import { useQuiz } from "./quiz-context";
+import { useTranslation } from "next-i18next";
 
 export function Hints() {
+	const { t } = useTranslation("feature-quiz");
 	const { config, usedHints, setUsedHints } = useQuiz();
 	const { question, markdown } = useQuestion("exact");
 
@@ -63,25 +65,23 @@ export function Hints() {
 				>
 					<LightBulbIcon className="icon h-5" />
 					{hintsCurrentQuestion.length === 0 ? (
-						<span>Keine Hinweise verfügbar</span>
+						<span>{t("No_Hints_Available")}</span>
 					) : (
 						<span>
-							Ich benötige einen Hinweis ({usedHintsCurrent.length} /{" "}
-							{hintsCurrentQuestion.length})
+							{t("Use_Hint", {
+								used: usedHintsCurrent.length,
+								total: hintsCurrentQuestion.length
+							})}
 						</span>
 					)}
 				</button>
 
 				{hintsRemainingTotal > 0 ? (
 					<span className="text-sm text-c-text-muted">
-						Du hast noch {hintsRemainingTotal}{" "}
-						{hintsRemainingTotal === 1 ? "Hinweis" : "Hinweise"} für diese Lernkontrolle
-						zur Verfügung.
+						{t("Hints_Remaining", { count: hintsRemainingTotal })}
 					</span>
 				) : (
-					<span className="text-sm opacity-25">
-						Du hast keine Hinweise für diese Lernkontrolle zur Verfügung.
-					</span>
+					<span className="text-sm opacity-25">{t("No_Hints_Remaining")}</span>
 				)}
 			</div>
 		</>

@@ -1,0 +1,7 @@
+{
+	"Lessons_Completed_one": "{{completed}} / {{count}} Lerneinheit abgeschlossen",
+	"Lessons_Completed_other": "{{completed}} / {{count}} Lerneinheiten abgeschlossen",
+	"No_Content": "Kein Inhalt",
+	"Go_To_Content": "Zum Lerninhalt",
+	"Go_To_Quiz": "Zur Lernkontrolle"
+}

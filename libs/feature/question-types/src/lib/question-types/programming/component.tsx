@@ -1,3 +1,4 @@
+import { useTranslation } from "next-i18next";
 import { CheckCircleIcon, QuestionMarkCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { EditorField, LabeledField } from "@self-learning/ui/forms";
@@ -68,6 +69,7 @@ const EXTENSION: Record<string, string> = {
 };
 
 export default function ProgrammingAnswer() {
+	const { t } = useTranslation("feature-question-types");
 	const { setAnswer, answer, question, evaluation, setEvaluation } = useQuestion("programming");
 	const [output, setOutput] = useState({
 		isLoading: false,
@@ -129,7 +131,7 @@ export default function ProgrammingAnswer() {
 		const executeRequest: ExecuteRequest = { language, version, files };
 
 		console.log("Executing code: ", executeRequest);
-		setOutput({ isError: false, signal: null, text: "Executing...", isLoading: true });
+		setOutput({ isError: false, signal: null, text: t("Executing"), isLoading: true });
 
 		try {
 			const data = await execute(executeRequest);
@@ -171,7 +173,7 @@ export default function ProgrammingAnswer() {
 				setOutput({
 					isError: true,
 					signal: null,
-					text: "UNEXPECTED SERVER ERROR",
+					text: t("Unexpected_Server_Error"),
 					isLoading: false
 				});
 			}
@@ -184,12 +186,12 @@ export default function ProgrammingAnswer() {
 		<div>
 			<div className="flex items-center justify-between rounded-t-lg bg-c-surface-3 p-4">
 				<span className="text-xs text-c-text-muted">
-					{question.language} ({version ?? "not installed"}) (mode: {question.custom.mode}
-					)
+					{question.language} ({version ?? t("Not_Installed")}) (mode:{" "}
+					{question.custom.mode})
 				</span>
 
 				<button className="btn-primary" onClick={runCode} disabled={output.isLoading}>
-					Ausführen
+					{t("Run_Code")}
 				</button>
 			</div>
 			<div className="flex flex-wrap gap-2">
@@ -214,7 +216,7 @@ export default function ProgrammingAnswer() {
 				{<TestCaseResult evaluation={evaluation} isExecuting={output.isLoading} />}
 
 				{output.isError && (
-					<LabeledField label="Ausgabe">
+					<LabeledField label={t("Output")}>
 						<div className="flex h-fit max-h-[400px] w-full shrink-0 flex-col gap-4 rounded-lg border border-c-border bg-white">
 							<div className="playlist-scroll h-full overflow-auto p-4">
 								{output.text !== "" ? (
@@ -227,10 +229,10 @@ export default function ProgrammingAnswer() {
 									</pre>
 								) : (
 									<span className="flex flex-col gap-2 text-c-text-muted">
-										<span>Keine Ausgabe.</span>
+										<span>{t("No_Output")}</span>
 										{output.signal && (
 											<span className="text-xs text-c-danger">
-												Prozess wurde mit &quot;{output.signal}&quot; beendet.
+												{t("Process_Ended_With", { signal: output.signal })}
 											</span>
 										)}
 									</span>
@@ -251,6 +253,7 @@ function TestCaseResult({
 	evaluation: Programming["evaluation"] | null;
 	isExecuting: boolean;
 }) {
+	const { t } = useTranslation("feature-question-types");
 	const failedCases = [];
 	const successCases = [];
 
@@ -280,7 +283,7 @@ function TestCaseResult({
 				) : (
 					<CheckCircleIcon className="h-6 text-c-primary" />
 				)}
-				<span>Testfälle:</span>
+				<span>{t("Test_Cases")}</span>
 				<span>
 					{successCases.length} / {evaluation?.testCases.length ?? "?"}
 				</span>
@@ -289,12 +292,17 @@ function TestCaseResult({
 			{firstFailedTest && (
 				<>
 					<span className="font-semibold">
-						<p className="text-c-danger">Test #{firstFailedTestIndex + 1}</p>
+						<p className="text-c-danger">
+							{t("Test_Number", { number: firstFailedTestIndex + 1 })}
+						</p>
 					</span>
 
-					<ProgramOutput label="Eingabe" output={firstFailedTest.title} />
-					<ProgramOutput label="Erwartet" output={firstFailedTest.expected.join("\n")} />
-					<ProgramOutput label="Ausgabe" output={firstFailedTest.actual.join("\n")} />
+					<ProgramOutput label={t("Input")} output={firstFailedTest.title} />
+					<ProgramOutput
+						label={t("Expected")}
+						output={firstFailedTest.expected.join("\n")}
+					/>
+					<ProgramOutput label={t("Output")} output={firstFailedTest.actual.join("\n")} />
 				</>
 			)}
 		</section>

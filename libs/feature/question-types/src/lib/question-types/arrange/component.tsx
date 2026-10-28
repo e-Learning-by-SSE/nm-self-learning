@@ -1,3 +1,4 @@
+import { useTranslation } from "next-i18next";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import { MarkdownViewer } from "@self-learning/ui/forms";
 import { Fragment } from "react";
@@ -5,6 +6,7 @@ import { Feedback } from "../../feedback";
 import { useQuestion } from "../../use-question-hook";
 
 export default function ArrangeQuestion() {
+	const { t } = useTranslation("feature-question-types");
 	const { answer, setAnswer, evaluation, question } = useQuestion("arrange");
 	const order = question.categoryOrder;
 
@@ -81,7 +83,7 @@ export default function ArrangeQuestion() {
 				</div>
 
 				<div className="flex min-h-[128px] flex-col gap-4 rounded-lg bg-c-surface-3 p-4">
-					<span className="font-semibold">Nicht zugeordnet</span>
+					<span className="font-semibold">{t("Unassigned")}</span>
 
 					<Droppable
 						droppableId={"_init"}
@@ -131,10 +133,10 @@ export default function ArrangeQuestion() {
 									<>
 										<span className="font-semibold">{containerId}:</span>
 										<span className="pl-4">
-											Fehlende Elemente: {feedback.missing.length}
+											{t("Missing_Items", { count: feedback.missing.length })}
 										</span>
 										<span className="pl-4">
-											Falsche Elemente: {feedback.extra.length}
+											{t("Extra_Items", { count: feedback.extra.length })}
 										</span>
 									</>
 								)}

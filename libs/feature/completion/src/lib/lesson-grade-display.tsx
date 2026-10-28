@@ -1,3 +1,4 @@
+import { useTranslation } from "next-i18next";
 import { scoreToPerformanceGrade } from "./lesson-grading";
 import { useRequiredSession } from "@self-learning/ui/layouts";
 import { PerformanceGrade } from "@self-learning/types";
@@ -75,6 +76,7 @@ export function GradeBadge({
 	rating: Rating;
 	sizeClassName?: string;
 }) {
+	const { t } = useTranslation("feature-completion");
 	const session = useRequiredSession();
 	if (!session.data?.user.featureFlags.experimental) return null;
 
@@ -85,37 +87,37 @@ export function GradeBadge({
 			case "PERFECT":
 				return {
 					color: "text-purple-700 bg-gradient-to-br from-purple-100 to-amber-100 border-2 border-purple-300",
-					text: "Perfekt",
+					text: t("Grade_Perfect_Label"),
 					display: "1+"
 				};
 			case "VERY_GOOD":
 				return {
 					color: "text-green-700 bg-green-100 border-2 border-green-300",
-					text: "Sehr gut",
+					text: t("Grade_Very_Good"),
 					display: "1"
 				};
 			case "GOOD":
 				return {
 					color: "text-blue-700 bg-blue-100 border-2 border-blue-300",
-					text: "Gut",
+					text: t("Grade_Good"),
 					display: "2"
 				};
 			case "SATISFACTORY":
 				return {
 					color: "text-orange-700 bg-orange-100 border-2 border-orange-300",
-					text: "Befriedigend",
+					text: t("Grade_Satisfactory"),
 					display: "3"
 				};
 			case "SUFFICIENT":
 				return {
 					color: "text-red-700 bg-red-100 border-2 border-red-300",
-					text: "Ausreichend",
+					text: t("Grade_Sufficient"),
 					display: "4"
 				};
 			default:
 				return {
 					color: "text-gray-700 bg-c-surface-2 border-2 border-c-border-strong",
-					text: "Unbekannt",
+					text: t("Grade_Unknown"),
 					display: "?"
 				};
 		}

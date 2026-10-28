@@ -128,44 +128,34 @@ pipeline {
             }
         }
 
-        stage('Test') {
+        stage('Quality Assurance') {
+            // Apply all quality assurance checks in parallel, except for a new release (expected to have passed in a previous build)
             when {
+                beforeAgent true
                 expression {
                     return params.RELEASE_LATEST_VERSION == ''
                 }
             }
-            environment {
-                POSTGRES_DB = 'SelfLearningDb'
-                POSTGRES_USER = 'username'
-                POSTGRES_PASSWORD = 'password'
-                DATABASE_URL = "postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@db:5432/${env.POSTGRES_DB}"
-            }
-            steps {
-                script {
-                    withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
-                        .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
-                            sh 'npm run seed'
-                            fullTest()
-                    }
-                }
-            }
-        }
-        stage('Pipeline') {
-            environment {
-                POSTGRES_DB = 'SelfLearningDb'
-                POSTGRES_USER = 'username'
-                POSTGRES_PASSWORD = 'password'
-                DATABASE_URL = "postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@db:5432/${env.POSTGRES_DB}"
-            }
             parallel {
-                stage('Lint analysis') {
-                    when {
-                        beforeAgent true
-                        anyOf {
-                            branch 'master'
-                            changeRequest()
+                stage('Test') {
+                    environment {
+                        POSTGRES_DB = 'SelfLearningDb'
+                        POSTGRES_USER = 'username'
+                        POSTGRES_PASSWORD = 'password'
+                        DATABASE_URL = "postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@db:5432/${env.POSTGRES_DB}"
+                    }
+                    steps {
+                        script {
+                            withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
+                                .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
+                                    sh 'npm run seed'
+                                    fullTest()
+                            }
                         }
                     }
+                }
+
+                stage('Lint analysis') {
                     agent {
                         docker {
                             image "${NODE_DOCKER_IMAGE}"
@@ -187,6 +177,16 @@ pipeline {
                         }
                     }
                 }
+            }
+        }
+        stage('Pipeline') {
+            environment {
+                POSTGRES_DB = 'SelfLearningDb'
+                POSTGRES_USER = 'username'
+                POSTGRES_PASSWORD = 'password'
+                DATABASE_URL = "postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@db:5432/${env.POSTGRES_DB}"
+            }
+            parallel {
                 stage('Master') {
                     when {
                         allOf {

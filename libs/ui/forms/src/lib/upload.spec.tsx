@@ -46,33 +46,21 @@ jest.mock("@self-learning/api-client", () => ({
 
 describe("Upload", () => {
 	it("renders the upload button", () => {
-		// ARRANGE
+		// Exercise
 		render(
-			<Upload
-				mediaType="zip"
-				onUploadCompleted={jest.fn()}
-				preview={<div>preview</div>}
-			/>
+			<Upload mediaType="zip" onUploadCompleted={jest.fn()} preview={<div>preview</div>} />
 		);
 
-		// ASSERT
-		expect(screen.getByText("Upload File")).toBeDefined();
+		// Verify
+		expect(screen.getByText("Upload_File")).toBeDefined();
 	});
 
 	it("file input accepts zip and h5p and html files for zip mediaType", () => {
-		// ARRANGE
-		render(
-			<Upload
-				mediaType="zip"
-				onUploadCompleted={jest.fn()}
-				preview={<div />}
-			/>
-		);
+		// Exercise
+		render(<Upload mediaType="zip" onUploadCompleted={jest.fn()} preview={<div />} />);
 
-		// ACT
+		// Verify
 		const input = document.querySelector("input[type='file']");
-
-		// ASSERT
 		expect(input).not.toBeNull();
 		expect(input?.getAttribute("accept")).toContain(".zip");
 		expect(input?.getAttribute("accept")).toContain(".h5p");
@@ -80,19 +68,11 @@ describe("Upload", () => {
 	});
 
 	it("file input accepts only pdf files for pdf mediaType", () => {
-		// ARRANGE
-		render(
-			<Upload
-				mediaType="pdf"
-				onUploadCompleted={jest.fn()}
-				preview={<div />}
-			/>
-		);
+		// Exercise
+		render(<Upload mediaType="pdf" onUploadCompleted={jest.fn()} preview={<div />} />);
 
-		// ACT
+		// Verify
 		const input = document.querySelector("input[type='file']");
-
-		// ASSERT
 		expect(input).not.toBeNull();
 		expect(input?.getAttribute("accept")).toBe("application/pdf");
 	});
@@ -103,13 +83,7 @@ describe("Upload", () => {
 		// so it can detect .html vs .zip vs .h5p without relying on the URL.
 		const onUploadCompleted = jest.fn();
 
-		render(
-			<Upload
-				mediaType="zip"
-				onUploadCompleted={onUploadCompleted}
-				preview={<div />}
-			/>
-		);
+		render(<Upload mediaType="zip" onUploadCompleted={onUploadCompleted} preview={<div />} />);
 
 		// Simulate what Upload calls internally after a successful upload
 		// by calling the mock directly with the expected signature

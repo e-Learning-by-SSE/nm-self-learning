@@ -1,3 +1,4 @@
+import { useTranslation } from "next-i18next";
 import { useQuestion } from "../../use-question-hook";
 import { TreeEditor } from "./TreeEditor";
 import { TreeVisualization } from "./tree-visualization";
@@ -6,6 +7,7 @@ import { parseTree } from "./tree-parser";
 import { Feedback } from "../../feedback";
 
 export default function LanguageTreeAnswer() {
+	const { t } = useTranslation("feature-question-types");
 	const { question, setAnswer, evaluation } = useQuestion("language-tree");
 	const [input, setInput] = useState(question.initialTree);
 	const [error, setError] = useState<string | null>(null);
@@ -47,14 +49,13 @@ export default function LanguageTreeAnswer() {
 			)}
 			<div className="space-y-2 mt-4">
 				<div>
-					Syntax Baum Struktur
+					{t("Tree_Syntax")}
 					<span className="block text-sm text-muted-foreground">
-						Dies ist eine schreibgeschützte Ansicht der Baumstruktur in Klammernotation.
-						Verwenden Sie den Baum-Editor oben, um Änderungen vorzunehmen.
+						{t("Tree_Read_Only_Description")}
 					</span>
 				</div>
 				<textarea
-					aria-label="tree input"
+					aria-label={t("Tree_Input")}
 					id="tree-input"
 					value={input}
 					readOnly
@@ -67,7 +68,7 @@ export default function LanguageTreeAnswer() {
 
 			{evaluation && (
 				<Feedback isCorrect={evaluation.isCorrect}>
-					<div className="flex flex-col gap-2">Richtig</div>
+					<div className="flex flex-col gap-2">{t("Correct")}</div>
 				</Feedback>
 			)}
 		</section>

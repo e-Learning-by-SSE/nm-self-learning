@@ -12,19 +12,18 @@ const defaultUseQuizReturn = {
 };
 
 jest.mock("@self-learning/util/eventlog");
-jest.mock("@self-learning/quiz", () => {
-	const actual = jest.requireActual("@self-learning/quiz");
-	return {
-		...actual,
-		useQuiz: jest.fn(() => defaultUseQuizReturn),
-
-		QuestionTab: ({ children, ...props }: any) => (
-			<div data-testid="question-tab-mock" {...props}>
-				{children}
-			</div>
-		)
-	};
-});
+// useQuiz is internally imported inside of @self-learning/quiz -> use path for mocking
+jest.mock("../../../libs/feature/quiz/src/lib/components/quiz-context", () => ({
+	useQuiz: jest.fn(() => defaultUseQuizReturn)
+}));
+jest.mock("@self-learning/quiz", () => ({
+	...jest.requireActual("@self-learning/quiz"),
+	QuestionTab: ({ children, ...props }: any) => (
+		<div data-testid="question-tab-mock" {...props}>
+			{children}
+		</div>
+	)
+}));
 jest.mock("@self-learning/lesson");
 jest.mock("@self-learning/api", () => ({
 	withAuth: jest.fn()
@@ -42,7 +41,7 @@ const mockLesson = {
 	slug: "lesson-1",
 	title: "Lesson 1",
 	lessonType: "SELF_REGULATED"
-} as any; // didnt mock the whole lesson object. Just the necessary parts. It is a whitebox test now, but isn't worth the hustle.
+} as any; // didn't mock the whole lesson object. Just the necessary parts. It is a whitebox test now, but isn't worth the hustle.
 
 const mockCourse = {
 	slug: "course-1"

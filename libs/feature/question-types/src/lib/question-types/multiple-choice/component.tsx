@@ -1,3 +1,4 @@
+import { useTranslation } from "next-i18next";
 import { useQuiz } from "@self-learning/quiz";
 import { MarkdownContainer } from "@self-learning/ui/layouts";
 import { MarkdownRemote as MDXRemote } from "@self-learning/markdown";
@@ -8,6 +9,7 @@ import { LessonLayoutProps } from "@self-learning/lesson";
 import { LessonType } from "@prisma/client";
 
 export default function MultipleChoiceAnswer({ lesson }: { lesson: LessonLayoutProps["lesson"] }) {
+	const { t } = useTranslation("feature-question-types");
 	const { question, setAnswer, answer, markdown, evaluation } = useQuestion("multiple-choice");
 	const { config } = useQuiz();
 	const isJustified = lesson.lessonType === LessonType.SELF_REGULATED;
@@ -42,7 +44,7 @@ export default function MultipleChoiceAnswer({ lesson }: { lesson: LessonLayoutP
 								<MDXRemote {...markdown.answersMd[answerId]} />
 							</MarkdownContainer>
 						) : (
-							<span className="text-c-danger">Error: No markdown content found.</span>
+							<span className="text-c-danger">{t("Missing_Answer_Content")}</span>
 						)}
 					</MultipleChoiceOption>
 				))}
@@ -70,6 +72,7 @@ export function MultipleChoiceOption({
 	justified: boolean;
 	onToggle: () => void;
 }>) {
+	const { t } = useTranslation("feature-question-types");
 	let className = "bg-white";
 
 	if (showResult) {
@@ -101,8 +104,11 @@ export function MultipleChoiceOption({
 			</button>
 			{justified && (
 				<div className="rounded-b-lg py-2 px-8">
-					<div className="py-1">Bitte Begründe deine Antwort:</div>
-					<textarea className="w-full" placeholder="Begründung..."></textarea>
+					<div className="py-1">{t("Justify_Answer")}</div>
+					<textarea
+						className="w-full"
+						placeholder={t("Justification_Placeholder")}
+					></textarea>
 				</div>
 			)}
 		</div>

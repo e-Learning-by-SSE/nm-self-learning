@@ -1,3 +1,4 @@
+import { useTranslation } from "next-i18next";
 import { useQuiz } from "@self-learning/quiz";
 import { motion } from "framer-motion";
 import { useQuestion } from "./use-question-hook";
@@ -31,6 +32,7 @@ export function Feedback({
 	/** The `children` can render additional feedback. They are only displayed if the answer was wrong and quiz has `showSolutions` enabled. */
 	children?: React.ReactNode;
 }) {
+	const { t } = useTranslation("feature-question-types");
 	const { config } = useQuiz();
 	const { evaluation } = useQuestion("text"); // question type is irrelevant here
 
@@ -46,10 +48,10 @@ export function Feedback({
 			}`}
 		>
 			{isCorrect ? (
-				<span className="font-medium">Deine Antwort ist richtig!</span>
+				<span className="font-medium">{t("Feedback_Correct")}</span>
 			) : (
 				<div className="flex flex-col gap-2">
-					<span className="font-medium">Deine Antwort ist leider nicht korrekt.</span>
+					<span className="font-medium">{t("Feedback_Incorrect")}</span>
 				</div>
 			)}
 			{evaluation && !evaluation.isCorrect && config.showSolution && children}

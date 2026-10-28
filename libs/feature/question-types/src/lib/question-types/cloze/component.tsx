@@ -1,3 +1,4 @@
+import { useTranslation } from "next-i18next";
 import React, { Fragment, useCallback, useMemo } from "react";
 import { Feedback } from "../../feedback";
 import { useQuestion } from "../../use-question-hook";
@@ -11,6 +12,7 @@ import {
 } from "@self-learning/markdown";
 
 export default function ClozeAnswer() {
+	const { t } = useTranslation("feature-question-types");
 	const { question, answer, setAnswer, evaluation } = useQuestion("cloze");
 
 	const cloze = useMemo(() => createCloze(question.clozeText), [question.clozeText]);
@@ -62,10 +64,16 @@ export default function ClozeAnswer() {
 					<ul className="flex flex-col gap-2">
 						{evaluation.incorrectAnswers.map(ans => (
 							<li key={ans.index} className="flex flex-col">
-								<span className="font-medium">Lücke {ans.index + 1}:</span>
-								<span className="pl-4">Antwort: {ans.studentAnswer}</span>
+								<span className="font-medium">
+									{t("Gap_Number", { number: ans.index + 1 })}
+								</span>
 								<span className="pl-4">
-									Erwartet: {ans.intendedAnswers.join(" | ")}
+									{t("Student_Answer", { answer: ans.studentAnswer })}
+								</span>
+								<span className="pl-4">
+									{t("Expected_Answer", {
+										answer: ans.intendedAnswers.join(" | ")
+									})}
 								</span>
 							</li>
 						))}
@@ -89,6 +97,7 @@ export function RenderGapType({
 	setAnswer: (index: number, value: string) => void;
 	disabled: boolean;
 }) {
+	const { t } = useTranslation("feature-question-types");
 	if (gap.type === "C") {
 		return (
 			<MarkdownListboxMenu
@@ -116,5 +125,5 @@ export function RenderGapType({
 		);
 	}
 
-	return <span className="text-c-danger">Unknown gap type: {gap.type}</span>;
+	return <span className="text-c-danger">{t("Unknown_Gap_Type", { type: gap.type })}</span>;
 }

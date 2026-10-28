@@ -1,0 +1,22 @@
+{
+	"Question_Type": {
+		"multiple-choice": "Multiple choice",
+		"exact": "Exact answer",
+		"text": "Free text",
+		"programming": "Programming",
+		"cloze": "Fill in the blanks",
+		"arrange": "Ordering",
+		"language-tree": "Tree structure question"
+	},
+	"Reset": "Reset",
+	"Missing_Question_Content": "Error: No question content found.",
+	"Next_Question": "Next question",
+	"Check_Answer": "Check answer",
+	"Retry": "Try again",
+	"Question_Tab": "Question {{number}}",
+	"No_Hints_Available": "No hints available",
+	"Use_Hint": "I need a hint ({{used}} / {{total}})",
+	"Hints_Remaining_one": "You have {{count}} hint remaining for this quiz.",
+	"Hints_Remaining_other": "You have {{count}} hints remaining for this quiz.",
+	"No_Hints_Remaining": "You have no hints remaining for this quiz."
+}

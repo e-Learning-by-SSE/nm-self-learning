@@ -15,15 +15,11 @@ import {
 } from "@self-learning/lesson";
 import { MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuizContent } from "@self-learning/question-types";
-import {
-	compileQuizMarkdown,
-	defaultQuizConfig,
-	Question,
-	QuestionTab,
-	Quiz,
-	QuizProvider,
-	useQuiz
-} from "@self-learning/quiz";
+import { compileQuizMarkdown } from "../quiz-markdown";
+import { defaultQuizConfig } from "../quiz";
+import type { Quiz } from "../quiz";
+import { Question, QuestionTab } from "./question";
+import { QuizProvider, useQuiz } from "./quiz-context";
 import { LoadingBox, Tab, Tabs, useIsFirstRender } from "@self-learning/ui/common";
 import { useEventLog } from "@self-learning/util/eventlog";
 import Link from "next/link";

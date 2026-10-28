@@ -6,3 +6,5 @@ export * from "./lib/use-mark-as-completed";
 export * from "./lib/quiz-completion-dialog";
 export * from "./lib/lesson-grading";
 export * from "./lib/lesson-grade-display";
+
+export const I18N_NAMESPACE = ["common", "feature-completion"];

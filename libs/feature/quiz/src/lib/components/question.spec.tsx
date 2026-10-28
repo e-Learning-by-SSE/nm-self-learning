@@ -103,7 +103,7 @@ describe("asynchronous free-text evaluation", () => {
 			// Exercise
 			fireEvent.change(screen.getByRole("textbox"), { target: { value: "Meine Antwort" } });
 			fireEvent.blur(screen.getByRole("textbox"));
-			fireEvent.click(screen.getByRole("button", { name: "Überprüfen" }));
+			fireEvent.click(screen.getByRole("button", { name: "Check_Answer" }));
 
 			// Verify
 			expect(mockEvaluate).toHaveBeenCalledTimes(1);
@@ -111,11 +111,11 @@ describe("asynchronous free-text evaluation", () => {
 				expect.objectContaining({ studentAnswer: "Meine Antwort" })
 			);
 			expect(screen.getByRole("status")).toHaveTextContent("in-progress, attempts: 0");
-			expect(screen.getByRole("button", { name: "Überprüfen" })).toBeDisabled();
+			expect(screen.getByRole("button", { name: "Check_Answer" })).toBeDisabled();
 			expect(
-				screen.queryByRole("button", { name: "Erneut probieren" })
+				screen.queryByRole("button", { name: "Retry" })
 			).not.toBeInTheDocument();
-			expect(screen.queryByRole("button", { name: "Nächste Frage" })).not.toBeInTheDocument();
+			expect(screen.queryByRole("button", { name: "Next_Question" })).not.toBeInTheDocument();
 			expect(mockNewEvent).not.toHaveBeenCalled();
 
 			// Exercise
@@ -134,7 +134,7 @@ describe("asynchronous free-text evaluation", () => {
 				})
 			);
 			if (!solved) {
-				expect(screen.getByRole("button", { name: "Erneut probieren" })).toBeEnabled();
+				expect(screen.getByRole("button", { name: "Retry" })).toBeEnabled();
 			}
 		}
 	);
@@ -150,17 +150,17 @@ describe("asynchronous free-text evaluation", () => {
 		renderQuestion(true);
 
 		// Exercise
-		fireEvent.click(screen.getByRole("button", { name: "Überprüfen" }));
+		fireEvent.click(screen.getByRole("button", { name: "Check_Answer" }));
 
 		// Verify
-		expect(screen.getByRole("button", { name: "Überprüfen" })).toBeDisabled();
-		expect(screen.queryByRole("button", { name: "Nächste Frage" })).not.toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Check_Answer" })).toBeDisabled();
+		expect(screen.queryByRole("button", { name: "Next_Question" })).not.toBeInTheDocument();
 
 		// Exercise
 		await act(async () => resolve({ ok: true, verdict: "correct", feedback: "Richtig" }));
 
 		// Verify
-		expect(screen.getByRole("button", { name: "Nächste Frage" })).toBeEnabled();
+		expect(screen.getByRole("button", { name: "Next_Question" })).toBeEnabled();
 		expect(screen.getByRole("status")).toHaveTextContent("in-progress, attempts: 1");
 	});
 });

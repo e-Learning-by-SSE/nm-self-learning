@@ -18,7 +18,7 @@ export function PdfInput({ index }: { index: number }) {
 
 	return (
 		<SectionCard>
-			<h3 className="text-xl mb-2">{t("Lesson_Content_Type_pdf")}</h3>
+			<h3 className="text-xl mb-2">{t("common:Lesson_Content_Type_pdf")}</h3>
 
 			<div className="flex flex-col gap-8">
 				<div className="flex flex-col gap-4">
