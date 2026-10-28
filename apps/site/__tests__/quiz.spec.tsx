@@ -42,7 +42,7 @@ const mockLesson = {
 	slug: "lesson-1",
 	title: "Lesson 1",
 	lessonType: "SELF_REGULATED"
-} as any; // didnt mock the whole lesson object. Just the necessary parts. It is a whitebox test now, but isn't worth the hustle.
+} as any; // didn't mock the whole lesson object. Just the necessary parts. It is a whitebox test now, but isn't worth the hustle.
 
 const mockCourse = {
 	slug: "course-1"

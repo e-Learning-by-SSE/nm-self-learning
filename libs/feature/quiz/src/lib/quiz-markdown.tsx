@@ -1,5 +1,5 @@
 import { compileMarkdown, MdLookup, MdLookupArray } from "@self-learning/markdown";
-import { Quiz } from "@self-learning/quiz";
+import type { Quiz } from "./quiz";
 
 type QuizMarkdownData = {
 	questionsMd: MdLookup;
