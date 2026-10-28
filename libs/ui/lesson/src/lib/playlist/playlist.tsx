@@ -363,9 +363,7 @@ function ContentTabItem({
 						className={`w-full ${active ? "text-c-primary" : "text-c-text-muted"}`}
 						onClick={select}
 					>
-						{t(
-							`common:Lesson_Content_Type_${{ video: "Video", article: "Article", pdf: "PDF", iframe: "Webpage" }[item.type]}`
-						)}
+						{t(`common:Lesson_Content_Type_${item.type}`)}
 					</span>
 				</div>
 			)}

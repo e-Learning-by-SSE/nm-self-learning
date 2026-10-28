@@ -149,9 +149,7 @@ function ContentOutlineTab({
 						className={`w-full ${active ? "text-c-primary" : "text-c-text-muted"}`}
 						onClick={select}
 					>
-						{t(
-							`common:Lesson_Content_Type_${{ video: "Video", article: "Article", pdf: "PDF", iframe: "Webpage" }[item.type]}`
-						)}
+						{t(`common:Lesson_Content_Type_${item.type}`)}
 					</span>
 					{remove && (
 						<IconOnlyButton
@@ -230,9 +228,7 @@ export function LessonContentEditor() {
 									className={"w-full text-left px-3 py-1"}
 									onClick={() => addContent(contentType)}
 								>
-									{t(
-										`common:Lesson_Content_Type_${{ video: "Video", article: "Article", pdf: "PDF", iframe: "Webpage" }[contentType]}`
-									)}
+									{t(`common:Lesson_Content_Type_${contentType}`)}
 								</Button>
 							))}
 						</DropdownMenu>

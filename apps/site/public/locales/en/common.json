@@ -71,7 +71,6 @@
     "Tile Image Description": "Image displayed in tiles on the overview page.",
     "Upload Video": "Upload Video",
     "Upload Image": "Upload Image",
-    "Upload File": "Upload File",
     "Edit as JSON": "Edit as JSON",
     "Abort Changes": "Discard Changes",
     "User Menu": "User Menu",
@@ -107,8 +106,9 @@
     "Warning": "Warning",
     "Code_Group_Label": "Code examples",
     "Code_Group_Compare": "Show side by side",
-    "Lesson_Content_Type_Video": "Video",
-    "Lesson_Content_Type_Article": "Article",
-    "Lesson_Content_Type_PDF": "PDF",
-    "Lesson_Content_Type_Webpage": "Web page"
+    "Lesson_Content_Type_video": "Video",
+    "Lesson_Content_Type_article": "Article",
+    "Lesson_Content_Type_pdf": "PDF",
+    "Lesson_Content_Type_iframe": "Web page",
+    "Upload_File": "Upload File"
 }

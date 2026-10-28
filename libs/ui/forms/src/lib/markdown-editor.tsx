@@ -21,6 +21,7 @@ import {
 	LinkIcon
 } from "@heroicons/react/24/outline";
 import { useCallback, useRef, useState } from "react";
+import { useTranslation } from "next-i18next";
 
 export function MarkdownField({
 	content,
@@ -37,6 +38,7 @@ export function MarkdownField({
 	compact?: boolean;
 	header?: string | { text: string; sz: string; btn_variant?: ButtonVariant };
 }) {
+	const { t } = useTranslation("common");
 	const [openEditor, setOpenEditor] = useState(false);
 
 	if (typeof header === "string") {
@@ -53,9 +55,9 @@ export function MarkdownField({
 							<IconTextButton
 								icon={<PencilIcon className="h-5 w-5" />}
 								className={`btn-${header.btn_variant || "stroked"}`}
-								text="Bearbeiten"
+								text={t("edit")}
 								onClick={() => setOpenEditor(true)}
-								title="Beschreibung bearbeiten"
+								title={t("edit")}
 							/>
 						)}
 					</div>
@@ -83,7 +85,7 @@ export function MarkdownField({
 				{openEditor && (
 					<MarkdownEditorDialog
 						initialValue={content ?? ""}
-						title="Bearbeiten"
+						title={t("edit")}
 						onClose={changes => {
 							setOpenEditor(false);
 							if (changes !== undefined) {
@@ -99,9 +101,9 @@ export function MarkdownField({
 					<IconTextButton
 						icon={<PencilIcon className="h-5 w-5" />}
 						className="btn-stroked"
-						text="Bearbeiten"
+						text={t("edit")}
 						onClick={() => setOpenEditor(true)}
-						title="Beschreibung bearbeiten"
+						title={t("edit")}
 					/>
 				</div>
 			)}

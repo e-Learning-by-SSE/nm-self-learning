@@ -57,7 +57,7 @@ export function IFrameInput({ index }: { index: number }) {
 
 	return (
 		<SectionCard>
-			<h3 className="text-xl mb-2">{t("common:Lesson_Content_Type_Webpage")}</h3>
+			<h3 className="text-xl mb-2">{t("common:Lesson_Content_Type_iframe")}</h3>
 
 			{/* Tab switcher */}
 			<div className="flex gap-2 mb-4 border-b border-light-border">
@@ -71,7 +71,7 @@ export function IFrameInput({ index }: { index: number }) {
 							: "border-transparent text-c-text-muted hover:text-c-text"
 					}`}
 				>
-					{t("common:Upload File")}
+					{t("common:Upload_File")}
 				</button>
 				<button
 					type="button"

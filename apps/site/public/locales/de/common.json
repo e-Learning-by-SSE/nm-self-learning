@@ -71,7 +71,6 @@
     "Tile Image Description": "Bild, das in Kacheln auf der Übersichtsseite angezeigt wird.",
     "Upload Video": "Video hochladen",
     "Upload Image": "Bild hochladen",
-    "Upload File": "Datei hochladen",
     "Edit as JSON": "Als JSON bearbeiten",
     "Abort Changes": "Änderungen verwerfen",
     "User Menu": "Benutzermenü",
@@ -107,8 +106,9 @@
     "Warning": "Warnung",
     "Code_Group_Label": "Codebeispiele",
     "Code_Group_Compare": "Nebeneinander anzeigen",
-    "Lesson_Content_Type_Video": "Video",
-    "Lesson_Content_Type_Article": "Artikel",
-    "Lesson_Content_Type_PDF": "PDF",
-    "Lesson_Content_Type_Webpage": "Webseite"
+    "Lesson_Content_Type_video": "Video",
+    "Lesson_Content_Type_article": "Artikel",
+    "Lesson_Content_Type_pdf": "PDF",
+    "Lesson_Content_Type_iframe": "Webseite",
+    "Upload_File": "Datei hochladen"
 }

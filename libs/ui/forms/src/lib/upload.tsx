@@ -173,13 +173,15 @@ export function Upload({
 						? t("Upload Video")
 						: mediaType === "image"
 							? t("Upload Image")
-							: t("Upload File")}
+							: t("Upload_File")}
 				</label>
 
 				{!hideAssetPicker && (
 					<AssetPickerButton
 						mediaType={mediaType}
-						onClose={(url, fileName) => url && onUploadCompleted(url, undefined, fileName)}
+						onClose={(url, fileName) =>
+							url && onUploadCompleted(url, undefined, fileName)
+						}
 					/>
 				)}
 			</div>
@@ -667,7 +669,10 @@ function AssetPickerDialog({
 																});
 															}
 
-															onClose(asset.publicUrl, asset.fileName);
+															onClose(
+																asset.publicUrl,
+																asset.fileName
+															);
 														}}
 													>
 														{copyToClipboard
