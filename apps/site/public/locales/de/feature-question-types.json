@@ -53,5 +53,6 @@
     "Test_Cases": "Testfälle:",
     "Test_Number": "Test #{{number}}",
     "Input": "Eingabe",
-    "Expected": "Erwartet"
+    "Expected": "Erwartet",
+    "Process_Ended_With": "Prozess wurde mit „{{signal}}“ beendet."
 }

@@ -53,5 +53,6 @@
     "Test_Cases": "Test cases:",
     "Test_Number": "Test #{{number}}",
     "Input": "Input",
-    "Expected": "Expected"
+    "Expected": "Expected",
+    "Process_Ended_With": "Process ended with “{{signal}}”."
 }

@@ -232,8 +232,7 @@ export default function ProgrammingAnswer() {
 										<span>{t("No_Output")}</span>
 										{output.signal && (
 											<span className="text-xs text-c-danger">
-												Prozess wurde mit &quot;{output.signal}&quot;
-												beendet.
+												{t("Process_Ended_With", { signal: output.signal })}
 											</span>
 										)}
 									</span>
