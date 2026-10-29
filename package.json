@@ -178,7 +178,7 @@
 		"jest": "^30.4.2",
 		"jest-environment-jsdom": "^30.4.1",
 		"jest-environment-node": "^30.4.1",
-		"jest-junit": "^16.0.0",
+		"jest-junit": "17.0.0",
 		"jest-svg-transformer": "^1.0.0",
 		"jest-util": "^30.4.1",
 		"jsonc-eslint-parser": "^2.4.2",
@@ -208,6 +208,11 @@
 	"overrides": {
 		"monaco-editor": {
 			"dompurify": "3.4.17"
+		},
+		"webpack-dev-server": {
+			"sockjs": {
+				"uuid": "11.1.1"
+			}
 		}
 	}
 }
