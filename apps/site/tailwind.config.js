@@ -19,6 +19,8 @@ module.exports = {
 						code: {
 							color: theme("colors.emerald.500")
 						},
+						"code::before": { content: "none" },
+						"code::after": { content: "none" },
 						img: {
 							borderRadius: theme("borderRadius.lg")
 						},
