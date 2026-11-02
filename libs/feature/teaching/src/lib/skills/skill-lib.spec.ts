@@ -1,3 +1,10 @@
+import { jest } from "@jest/globals";
+
+jest.unstable_mockModule("@self-learning/database/server", () => ({
+	prisma: {}
+}));
+
+// eslint-disable-next-line import/first
 import {
 	And,
 	CompositeUnit,
@@ -10,11 +17,12 @@ import {
 	Unit,
 	Variable
 } from "@e-learning-by-sse/nm-skill-lib";
+// eslint-disable-next-line import/first
 import {
 	skills as SkillDb,
 	unitsOfExample1A as UnitsDbA,
 	unitsOfExample1B as UnitsDbB
-} from "@self-learning/database";
+} from "../../../../../data-access/database/src/lib/demo/skill-based-modelling";
 
 describe("Skill-Lib", () => {
 	// All skills of the platform, may be filtered if there is a good strategy

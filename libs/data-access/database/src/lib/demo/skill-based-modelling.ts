@@ -1,8 +1,6 @@
-import { createPrismaClient } from "../prisma-client";
-import { Prisma, PrismaClient } from "../../generated/prisma/client";
+import { database as prisma } from "@self-learning/database/server";
+import { Prisma } from "../../generated/prisma/client";
 import { slugify } from "@self-learning/util/common";
-
-const prisma = createPrismaClient();
 
 type SkillOfRepository = {
 	id: string;

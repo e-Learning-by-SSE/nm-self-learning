@@ -1,3 +1,5 @@
+import { jest } from "@jest/globals";
+
 // Keep component tests independent of translation resources and avoid the
 // react-i18next warning when no i18next instance is configured.
 jest.mock("react-i18next", () => ({

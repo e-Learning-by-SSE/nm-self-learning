@@ -1,8 +1,4 @@
 import { createPrismaClient } from "../../../../prisma-client";
-/**
- * @jest-environment node
- */
-import { PrismaClient } from "../../../../../generated/prisma/client";
 import { createAuthorMetricFixture, AuthorMetricFixture } from "./author-metrics.fixture";
 
 const prisma = createPrismaClient();

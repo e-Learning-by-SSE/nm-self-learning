@@ -1,12 +1,6 @@
 import { createPrismaClient } from "../prisma-client";
 import { faker } from "@faker-js/faker";
-import {
-	AccessLevel,
-	CourseType,
-	GroupRole,
-	Prisma,
-	PrismaClient
-} from "../../generated/prisma/client";
+import { AccessLevel, CourseType, GroupRole, Prisma } from "../../generated/prisma/client";
 import { QuizContent } from "@self-learning/question-types";
 import {
 	createCourseContent,

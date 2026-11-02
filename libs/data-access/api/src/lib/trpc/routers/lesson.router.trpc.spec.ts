@@ -17,6 +17,9 @@ import { workerServiceClient } from "@self-learning/worker-api";
 
 jest.mock("@self-learning/database/server", () => ({
 	__esModule: true,
+	Prisma: {
+		JsonNull: {}
+	},
 	database: {
 		$transaction: jest.fn(),
 		lesson: {
