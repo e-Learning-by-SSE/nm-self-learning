@@ -1,7 +1,7 @@
-import { database } from "@self-learning/database/server";
+import { AccessLevel, GroupRole } from "@self-learning/database";
+import { database, Prisma } from "@self-learning/database/server";
 import { permissionRouter } from "./permission.router";
 import { TRPCError } from "@trpc/server";
-import { AccessLevel, GroupRole, Prisma } from "@self-learning/database/server";
 import { t } from "../trpc";
 import { Context, UserFromSession } from "../context";
 import {

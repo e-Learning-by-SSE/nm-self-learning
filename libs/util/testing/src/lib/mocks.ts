@@ -4,7 +4,8 @@ import {
 	CourseModel,
 	GroupModel,
 	LessonModel,
-	PermissionModel
+	PermissionModel,
+	CourseType
 } from "@self-learning/database";
 import { Prisma, Skill } from "@self-learning/database/server";
 import { Quiz } from "@self-learning/quiz";
@@ -156,7 +157,7 @@ export function createExampleLessonsFromContent(
 
 export function createExampleLesson(
 	lessonId: string,
-	overwrites?: Partial<Lesson>
+	overwrites?: Partial<LessonModel>
 ): Prisma.LessonCreateManyInput {
 	const lesson: Prisma.LessonCreateManyInput = {
 		lessonId: overwrites?.lessonId ?? lessonId,

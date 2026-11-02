@@ -1,4 +1,4 @@
-import { EventLog } from "@self-learning/database/server";
+import { EventLogModel } from "@self-learning/database";
 import { differenceInMilliseconds } from "date-fns";
 
 /**
@@ -12,7 +12,7 @@ import { differenceInMilliseconds } from "date-fns";
  * @param events Filtered user events for which the total duration (without pauses) should be computed.
  * @returns The total duration in milliseconds (without pauses between resource changes).
  */
-export function computeTotalDuration(events: Pick<EventLog, "createdAt" | "resourceId">[]) {
+export function computeTotalDuration(events: Pick<EventLogModel, "createdAt" | "resourceId">[]) {
 	let totalDuration = 0;
 	if (events.length < 2) return totalDuration;
 
