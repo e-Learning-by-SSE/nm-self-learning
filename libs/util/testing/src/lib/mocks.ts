@@ -1,14 +1,12 @@
 import {
 	AccessLevel,
-	Author,
-	Course,
-	CourseType,
-	Group,
-	Lesson,
-	Permission,
-	Prisma,
-	Skill
-} from "@self-learning/database/server";
+	AuthorModel,
+	CourseModel,
+	GroupModel,
+	LessonModel,
+	PermissionModel
+} from "@self-learning/database";
+import { Prisma, Skill } from "@self-learning/database/server";
 import { Quiz } from "@self-learning/quiz";
 import {
 	CourseContent,
@@ -47,7 +45,7 @@ type ContentMockDefinition = {
 	lessons: string[];
 }[];
 
-type PermissionMock = Partial<Permission> & { group: Partial<Group> };
+type PermissionMock = Partial<PermissionModel> & { group: Partial<GroupModel> };
 
 type SkillMock = Skill & { parents: Skill[] };
 
@@ -73,7 +71,9 @@ export function createCourseMock({
 	meta?: CourseMeta;
 	requires?: SkillMock[];
 	provides?: SkillMock[];
-}): Partial<Course> & { authors: Pick<Author, "username">[] } & { content: CourseContent } & {
+}): Partial<CourseModel> & { authors: Pick<AuthorModel, "username">[] } & {
+	content: CourseContent;
+} & {
 	permissions: PermissionMock[];
 } & { requires: SkillMock[] } & { provides: SkillMock[] } {
 	return {
@@ -110,11 +110,11 @@ export function createLessonMock({
 	title?: string;
 	requires?: Skill[];
 	provides?: Skill[];
-}): Partial<Lesson> &
-	Pick<Lesson, "lessonId"> & { authors: Pick<Author, "username">[] } & {
+}): Partial<LessonModel> &
+	Pick<LessonModel, "lessonId"> & { authors: Pick<AuthorModel, "username">[] } & {
 		requires: Skill[];
 	} & { provides: Skill[] } & {
-		permissions: (Partial<Permission> & { group: Partial<Group> })[];
+		permissions: (Partial<PermissionModel> & { group: Partial<GroupModel> })[];
 	} {
 	const defaultSkill: Skill = {
 		authorId: 1,

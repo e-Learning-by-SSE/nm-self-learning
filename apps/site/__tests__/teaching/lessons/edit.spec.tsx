@@ -20,6 +20,12 @@ jest.mock("@self-learning/database/server", () => ({
 	}
 }));
 
+// Mock Minio client which is loaded by the database
+jest.mock("@self-learning/api", () => ({
+	minioClient: {},
+	withTranslations: jest.fn((_namespaces, getServerSideProps) => getServerSideProps)
+}));
+
 jest.mock("@self-learning/ui/layouts", () => ({
 	testResourceGuard: jest.fn()
 }));

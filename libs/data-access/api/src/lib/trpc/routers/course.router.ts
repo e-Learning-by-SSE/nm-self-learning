@@ -1,5 +1,5 @@
-import { AccessLevel, CourseType, Prisma } from "@self-learning/database/server";
-import { database } from "@self-learning/database/server";
+import { AccessLevel, CourseType } from "@self-learning/database";
+import { database, Prisma } from "@self-learning/database/server";
 import {
 	courseFormSchema,
 	mapCourseFormToInsert,
