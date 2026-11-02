@@ -1,4 +1,4 @@
-import { ContextHandler, restApiHandler, UserFromSession, API_PATH } from "@self-learning/api";
+import type { ContextHandler, UserFromSession } from "@self-learning/api";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import { createRequest, createResponse } from "node-mocks-http";
@@ -26,6 +26,7 @@ export async function callOpenApi({
 	headers = {},
 	user
 }: CallArgs) {
+	const { restApiHandler, API_PATH } = await import("@self-learning/api");
 	const base = API_PATH;
 	const pathNoSlash = path.replace(/^\/+/, ""); // "courses" | "courses/123"
 	const trpcSegments = pathNoSlash.split("/"); // ["courses"] | ["courses","123"]

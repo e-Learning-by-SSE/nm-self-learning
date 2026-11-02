@@ -1,9 +1,12 @@
-import { Prisma } from "@self-learning/database/server";
-import { database } from "@self-learning/database/server";
+import { database, Prisma } from "@self-learning/database/server";
 import { createTestUser, createLicense } from "@self-learning/util/testing";
 import { checkLessonCompletion, getCompletedLessonsThisWeek } from "./lesson-completion";
 
 const username = "mustermann";
+
+afterAll(async () => {
+	await database.$disconnect();
+});
 
 describe("checkLessonCompletion", () => {
 	const createLesson = (index: number): Prisma.LessonCreateManyInput => ({

@@ -1,3 +1,4 @@
+/* eslint-disable import/first */
 jest.mock("@self-learning/database/server", () => ({
 	database: {
 		lesson: { findUnique: jest.fn() },
