@@ -429,9 +429,37 @@ function LessonNavigation({
 	lesson: LessonLearnersViewProps["lesson"];
 	course: LessonLearnersViewProps["course"];
 }) {
+	if (!course) {
+		const hasQuiz = (lesson.meta as LessonMeta).hasQuiz;
+
+		return (
+			<div className="grid w-full grid-cols-3 items-center gap-2 mt-auto pt-4">
+				<div />
+				<div className="flex justify-center">
+					{hasQuiz && <LinkToQuiz url={`lessons/${lesson.slug}`} />}
+				</div>
+				<div />
+			</div>
+		);
+	}
+
+	return <CourseLessonNavigation content={content} lesson={lesson} course={course} />;
+}
+
+function CourseLessonNavigation({
+	content,
+	lesson,
+	course
+}: {
+	content: LessonNavigationData;
+	lesson: LessonLearnersViewProps["lesson"];
+	course: NonNullable<LessonLearnersViewProps["course"]>;
+}) {
 	const { t } = useTranslation("feature-lesson");
 	const hasQuiz = (lesson.meta as LessonMeta).hasQuiz;
-	const urlToQuiz = course && lesson ? "courses/" + course.slug + "/" + lesson.slug : "";
+	const urlToQuiz = "courses/" + course.slug + "/" + lesson.slug;
+	const completion = useCourseCompletion(course.slug);
+	const isCompletedLesson = !!completion?.completedLessons[lesson.lessonId];
 
 	const router = useRouter();
 	const { previous, next } = useMemo(() => {
@@ -447,10 +475,6 @@ function LessonNavigation({
 		if (course) {
 			router.push(`/courses/${course.slug}/${lesson.slug}`);
 		}
-	}
-
-	if (!course) {
-		return <span></span>;
 	}
 
 	return (
@@ -469,19 +493,25 @@ function LessonNavigation({
 				)}
 			</div>
 			<div className="flex justify-center">
-				{hasQuiz && urlToQuiz && <LinkToQuiz url={urlToQuiz} />}
+				{hasQuiz && isCompletedLesson && <LinkToQuiz url={urlToQuiz} />}
 			</div>
 			<div className="flex justify-end">
-				<button
-					onClick={() => next && navigateToLesson(next)}
-					disabled={!next}
-					className="rounded-lg bg-white hidden lg:flex items-center gap-4 border border-c-border px-4 py-2 disabled:text-gray-300"
-					title={t("next_lesson")}
-					data-testid="nextLessonButton"
-				>
-					{t("next_lesson")}
-					<ChevronDoubleRightIcon className="h-5" />
-				</button>
+				{hasQuiz && !isCompletedLesson ? (
+					<LinkToQuiz url={urlToQuiz} navigateToNextUnit={true} />
+				) : (
+					isCompletedLesson && (
+						<button
+							onClick={() => next && navigateToLesson(next)}
+							disabled={!next}
+							className="rounded-lg bg-white hidden lg:flex items-center gap-4 border border-c-border px-4 py-2 disabled:text-gray-300"
+							title={t("next_lesson")}
+							data-testid="nextLessonButton"
+						>
+							{t("next_lesson")}
+							<ChevronDoubleRightIcon className="h-5" />
+						</button>
+					)
+				)}
 			</div>
 		</div>
 	);
@@ -681,8 +711,15 @@ function StandaloneLessonControls({ lesson }: { lesson: LessonLearnersViewProps[
 	);
 }
 
-function LinkToQuiz({ url }: { url: string }) {
+function LinkToQuiz({
+	url,
+	navigateToNextUnit = false
+}: {
+	url: string;
+	navigateToNextUnit?: boolean;
+}) {
 	const { t } = useTranslation("feature-lesson");
+	const Icon = navigateToNextUnit ? ChevronDoubleRightIcon : QuestionMarkCircleIcon;
 
 	return (
 		<div className="flex flex-wrap gap-2 xl:flex-row">
@@ -692,7 +729,7 @@ function LinkToQuiz({ url }: { url: string }) {
 				data-testid="quizLink"
 			>
 				<span>{t("quiz_link")}</span>
-				<QuestionMarkCircleIcon className="h-6 shrink-0" />
+				<Icon className="h-6 shrink-0" />
 			</Link>
 		</div>
 	);
