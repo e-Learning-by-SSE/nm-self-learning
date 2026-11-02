@@ -566,7 +566,7 @@ describe("permission.service", () => {
 
 		it("throws BAD_REQUEST when resource input is invalid", async () => {
 			await expect(
-				preparePermissionsForUpdate({} as any, [
+				preparePermissionsForUpdate({} as unknown as ResourceInput, [
 					{ groupId: 1, accessLevel: AccessLevel.FULL }
 				])
 			).rejects.toMatchObject({ code: "BAD_REQUEST" });

@@ -45,7 +45,7 @@ export function getActiveMembershipWhere(userId: string): Prisma.MemberWhereInpu
  * @param resource - defined resource following ResourceInputSchema
  * @returns `true` if can read specified resource
  */
-export async function canRead(user: UserFromSession, resource: ResourceInput): Promise<boolean> {
+export async function canRead(_user: UserFromSession, _resource: ResourceInput): Promise<boolean> {
 	return true;
 	// return hasEffectiveResourceAccess(user, resource, AccessLevel.VIEW );
 }

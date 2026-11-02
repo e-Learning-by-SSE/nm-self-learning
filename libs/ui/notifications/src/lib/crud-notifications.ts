@@ -1,6 +1,6 @@
 import {
 	NotificationChannel,
-	NotificationModel,
+	Notification,
 	NotificationType,
 	Prisma,
 	PrismaClient,
@@ -14,7 +14,7 @@ import {
 } from "./notification-types";
 
 type DbInputNotification = Partial<
-	Omit<NotificationModel, "id" | "createdAt" | "updatedAt" | "component" | "props">
+	Omit<Notification, "id" | "createdAt" | "updatedAt" | "component" | "props">
 >;
 
 export async function createNotification<K extends keyof NotificationPropsMap>(
