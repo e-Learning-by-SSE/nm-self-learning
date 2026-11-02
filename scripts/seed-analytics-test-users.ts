@@ -1,7 +1,7 @@
-import { EnrollmentStatus, PrismaClient, UserRole } from "@prisma/client";
+import { createPrismaClient, EnrollmentStatus, UserRole } from "@self-learning/database/server";
 import { CourseContent, extractLessonIds } from "@self-learning/types";
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient();
 const prefix = "analytics-test-";
 
 type TestCourse = {
@@ -18,7 +18,10 @@ function lessonIds(course: TestCourse) {
 
 function partialLessonCount(course: TestCourse, ratio: number) {
 	const count = lessonIds(course).length;
-	if (count < 2) throw new Error(`Course '${course.title}' needs at least two lessons for partial progress.`);
+	if (count < 2)
+		throw new Error(
+			`Course '${course.title}' needs at least two lessons for partial progress.`
+		);
 	return Math.min(count - 1, Math.max(1, Math.round(count * ratio)));
 }
 
@@ -49,7 +52,12 @@ async function createUser({
 			},
 			student: { create: { username } },
 			featureFlags: {
-				create: { username, learningStatistics: true, learningDiary: false, experimental: false }
+				create: {
+					username,
+					learningStatistics: true,
+					learningDiary: false,
+					experimental: false
+				}
 			},
 			...(authorCourseIds.length > 0 && {
 				author: {
@@ -146,7 +154,9 @@ async function createLearningSession({
 
 async function main() {
 	if (process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE !== "true") {
-		throw new Error("This fixture requires NEXT_PUBLIC_IS_DEMO_INSTANCE=true for username-only login.");
+		throw new Error(
+			"This fixture requires NEXT_PUBLIC_IS_DEMO_INSTANCE=true for username-only login."
+		);
 	}
 
 	// EventLog stores usernames without a foreign-key relation to User, so it is
@@ -163,7 +173,8 @@ async function main() {
 
 	const courses = candidates.filter(course => lessonIds(course).length > 0);
 	const primary = courses.find(course => course.slug === "didaktik-der-geometrie") ?? courses[0];
-	if (!primary?.subject) throw new Error("No seeded course with lessons and a subject was found.");
+	if (!primary?.subject)
+		throw new Error("No seeded course with lessons and a subject was found.");
 
 	const secondary = courses.find(
 		course =>
@@ -171,12 +182,15 @@ async function main() {
 			course.subject?.subjectId === primary.subject?.subjectId
 	);
 	if (!secondary) {
-		throw new Error(`A second course with lessons is required in subject '${primary.subject.title}' for the 50% case.`);
+		throw new Error(
+			`A second course with lessons is required in subject '${primary.subject.title}' for the 50% case.`
+		);
 	}
 
 	const differentSubject = courses.find(
 		course =>
-			lessonIds(course).length >= 2 && course.subject?.subjectId !== primary.subject?.subjectId
+			lessonIds(course).length >= 2 &&
+			course.subject?.subjectId !== primary.subject?.subjectId
 	);
 	if (!differentSubject?.subject) {
 		throw new Error("A course with at least two lessons from a different subject is required.");
@@ -295,11 +309,7 @@ async function main() {
 	const enrolledTeacher = `${prefix}teacher-enrolled`;
 	await createUser({ username: enrolledTeacher, authorCourseIds: authoredCourseIds });
 	await enroll(enrolledTeacher, secondary, 0);
-	await enroll(
-		enrolledTeacher,
-		differentSubject,
-		partialLessonCount(differentSubject, 0.25)
-	);
+	await enroll(enrolledTeacher, differentSubject, partialLessonCount(differentSubject, 0.25));
 
 	const admin = `${prefix}admin`;
 	await createUser({ username: admin, role: UserRole.ADMIN, authorCourseIds: authoredCourseIds });
@@ -409,7 +419,9 @@ async function main() {
 		})
 	);
 
-	console.log("Log in through Demo-Account using any username printed above; no password is required.");
+	console.log(
+		"Log in through Demo-Account using any username printed above; no password is required."
+	);
 }
 
 main()

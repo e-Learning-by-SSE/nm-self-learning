@@ -1,5 +1,5 @@
 import { SparklesIcon } from "@heroicons/react/24/solid";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { ResolvedValue } from "@self-learning/types";
 import { ImageCard } from "@self-learning/ui/common";
 import { ItemCardGrid } from "@self-learning/ui/layouts";

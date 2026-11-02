@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { ContextPayload, LessonWithoutCourseContextPayload, PageContext, Message } from "./types";
 
 /**

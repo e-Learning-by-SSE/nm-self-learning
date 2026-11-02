@@ -11,7 +11,7 @@ import {
 	seedCaseStudy
 } from "../seed-functions";
 import { seedJavaDemoSkills } from "./seed-java-demo-skills";
-import { GroupRole } from "@prisma/client";
+import { GroupRole } from "../../generated/prisma/client";
 import { softwareentwicklungDemoGroup } from "../seedSpecializations";
 import { AuthorUser } from "./seed-admin-user";
 

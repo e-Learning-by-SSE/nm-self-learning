@@ -1,6 +1,6 @@
 import { authorProcedure, t } from "../trpc";
 import * as z from "zod";
-import { database, getSkillById } from "@self-learning/database";
+import { database, getSkillById } from "@self-learning/database/server";
 import {
 	ResourceAccess,
 	skillCreateSchema,
@@ -9,7 +9,7 @@ import {
 	toResourcePermissionsForm
 } from "@self-learning/types";
 import { TRPCError } from "@trpc/server";
-import { AccessLevel, Prisma } from "@prisma/client";
+import { AccessLevel, Prisma } from "@self-learning/database/server";
 import {
 	canCreate,
 	canEdit,

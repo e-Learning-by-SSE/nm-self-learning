@@ -42,7 +42,7 @@ import { evaluateProgramming } from "./question-types/programming/evaluate";
 import { Programming, programmingQuestionSchema } from "./question-types/programming/schema";
 import { Text, textQuestionSchema } from "./question-types/text/schema";
 import { evaluateTextSync } from "./question-types/text/evaluate";
-import { LessonLayoutProps } from "@self-learning/lesson";
+import type { LessonLayoutProps } from "@self-learning/lesson/server";
 import { LanguageTree, languageTreeQuestionSchema } from "./question-types/tree/schema";
 import { evaluateLanguageTreeAnswer } from "./question-types/tree/evaluate";
 
@@ -78,13 +78,7 @@ const LanguageTextAnswer = dynamic(() => import("./question-types/tree/component
 });
 
 export type QuestionTypeUnion =
-	| MultipleChoice
-	| Exact
-	| Text
-	| Programming
-	| Cloze
-	| Arrange
-	| LanguageTree;
+	MultipleChoice | Exact | Text | Programming | Cloze | Arrange | LanguageTree;
 
 export const quizContentSchema = z.discriminatedUnion("type", [
 	multipleChoiceQuestionSchema,

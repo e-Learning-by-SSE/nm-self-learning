@@ -1,4 +1,4 @@
-import { LearningGoalStatus } from "@prisma/client";
+import { LearningGoalStatus } from "@self-learning/database";
 import { z } from "zod";
 
 export const techniqueRatingSchema = z.object({

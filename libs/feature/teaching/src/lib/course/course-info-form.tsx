@@ -10,7 +10,7 @@ import {
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { CourseFormModel } from "./course-form-model";
 import { useTranslation } from "next-i18next";
-import { CourseType } from "@prisma/client";
+import { CourseType } from "@self-learning/database";
 import { GroupAccessEditor } from "../group/forms/group-form";
 import { AuthorsForm } from "../author/authors-form";
 

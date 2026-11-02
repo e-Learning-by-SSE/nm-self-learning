@@ -14,7 +14,7 @@ import {
 	skills as SkillDb,
 	unitsOfExample1A as UnitsDbA,
 	unitsOfExample1B as UnitsDbB
-} from "../../../../../data-access/database/src/lib/demo/skill-based-modelling";
+} from "@self-learning/database";
 
 describe("Skill-Lib", () => {
 	// All skills of the platform, may be filtered if there is a good strategy

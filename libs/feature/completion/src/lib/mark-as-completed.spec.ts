@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { createChapter, createCourseContent, createLesson } from "@self-learning/types";
 import {
 	createExampleLesson,

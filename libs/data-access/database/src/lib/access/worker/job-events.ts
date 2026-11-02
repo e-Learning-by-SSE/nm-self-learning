@@ -1,5 +1,5 @@
-import { database } from "@self-learning/database";
-import { JobStatus } from "@prisma/client";
+import { database } from "@self-learning/database/server";
+import { JobStatus } from "../../../generated/prisma/client";
 import type { JobEvent } from "@self-learning/worker-api";
 
 // Mapping of JobEvent types to Prisma JobEvent types

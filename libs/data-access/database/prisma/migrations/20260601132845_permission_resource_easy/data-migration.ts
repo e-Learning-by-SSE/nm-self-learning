@@ -1,3 +1,4 @@
+import { createPrismaClient } from "../../../src/lib/prisma-client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
 	AccessLevel,
@@ -6,9 +7,9 @@ import {
 	NotificationType,
 	Prisma,
 	PrismaClient
-} from "@prisma/client";
+} from "../../../src/generated/prisma/client";
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient();
 
 /**
  * **Permission Resource Migration Script.**

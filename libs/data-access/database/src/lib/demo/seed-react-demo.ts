@@ -1,5 +1,12 @@
+import { createPrismaClient } from "../prisma-client";
 import { faker } from "@faker-js/faker";
-import { AccessLevel, CourseType, GroupRole, Prisma, PrismaClient } from "@prisma/client";
+import {
+	AccessLevel,
+	CourseType,
+	GroupRole,
+	Prisma,
+	PrismaClient
+} from "../../generated/prisma/client";
 import { QuizContent } from "@self-learning/question-types";
 import {
 	createCourseContent,
@@ -23,7 +30,7 @@ faker.seed(1);
 
 const courseId = faker.string.alphanumeric(8);
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient();
 
 export const reactDemoQuestions: QuizContent = [
 	{

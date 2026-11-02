@@ -1,4 +1,5 @@
-import { CourseType, Prisma } from "@prisma/client";
+import { CourseType, DbNull } from "@self-learning/database";
+import type { Prisma } from "@self-learning/database/server";
 import {
 	authorsRelationSchema,
 	courseContentSchema,
@@ -98,7 +99,7 @@ export function mapCourseFormToUpdate(
 		title,
 		subtitle,
 		content: type === CourseType.DYNAMIC ? undefined : content,
-		context: type === CourseType.DYNAMIC ? (context ?? Prisma.DbNull) : undefined,
+		context: type === CourseType.DYNAMIC ? (context ?? DbNull) : undefined,
 		version: version ?? 1, // always overwrite? TODO
 		imgUrl: stringOrNull(imgUrl),
 		description: stringOrNull(description),

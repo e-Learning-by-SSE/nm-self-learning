@@ -1,6 +1,7 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { createPrismaClient } from "../../../src/lib/prisma-client";
+import { Prisma } from "../../../src/generated/prisma/client";
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient();
 
 export async function migrateAuthorsAddDefaultGroup(tx: Prisma.TransactionClient): Promise<void> {
 	// for each user which has 1 membership, set default group to that group

@@ -10,52 +10,12 @@ import {
 	useLessonNavigation
 } from "@self-learning/ui/lesson";
 import { NextComponentType, NextPageContext } from "next";
-import type { ParsedUrlQuery } from "querystring";
-import { LessonData } from "../lesson-data-access";
 import { BaseLessonLayout } from "./base-layout";
-import { getSspStandaloneLessonLayout } from "./standalone-lesson-layout";
 import { useMemo } from "react";
 import { MobileSidebarNavigation } from "@self-learning/ui/layouts";
 import Head from "next/head";
-import { database } from "@self-learning/database";
 
-export type LessonLayoutProps = {
-	lesson: LessonData;
-	course: {
-		courseId: string;
-		title: string;
-		slug: string;
-	};
-};
-
-export async function getSSpLessonCourseLayout(
-	params?: ParsedUrlQuery | undefined
-): Promise<LessonLayoutProps | { notFound: true }> {
-	const standaloneProps = await getSspStandaloneLessonLayout(params);
-	if ("notFound" in standaloneProps) {
-		return { notFound: true };
-	}
-
-	const courseSlug = params?.["courseSlug"] as string;
-	if (!courseSlug) {
-		throw new Error("No course/lesson slug provided.");
-	}
-
-	const course = await database.course.findFirst({
-		where: { slug: courseSlug },
-		select: {
-			courseId: true,
-			title: true,
-			slug: true
-		}
-	});
-
-	if (!course) {
-		return { notFound: true };
-	}
-
-	return { ...standaloneProps, course };
-}
+import type { LessonLayoutProps } from "@self-learning/lesson/server";
 
 export function LessonLayout(
 	Component: NextComponentType<NextPageContext, unknown, LessonLayoutProps>,
@@ -67,7 +27,12 @@ export function LessonLayout(
 
 	const playlistArea = pageProps.course ? <PlaylistArea {...pageProps} /> : null;
 	return (
-		<BaseLessonLayout key={pageProps.lesson.lessonId} title={pageProps.lesson.title} playlistArea={playlistArea} {...pageProps}>
+		<BaseLessonLayout
+			key={pageProps.lesson.lessonId}
+			title={pageProps.lesson.title}
+			playlistArea={playlistArea}
+			{...pageProps}
+		>
 			<Component {...pageProps} />
 		</BaseLessonLayout>
 	);

@@ -1,5 +1,5 @@
 import { deleteUserAndDependentData } from "./delete-user";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { createTestUser } from "@self-learning/util/testing";
 
 describe("deleteUserAndDependentData Integration Test", () => {

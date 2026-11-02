@@ -1,8 +1,15 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 import { TRPCError } from "@trpc/server";
-import { AccessLevel, Group, GroupRole, Member, Permission, Prisma } from "@prisma/client";
+import {
+	AccessLevel,
+	Group,
+	GroupRole,
+	Member,
+	Permission,
+	Prisma
+} from "@self-learning/database/server";
 import { paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import {
 	GroupFormSchema,

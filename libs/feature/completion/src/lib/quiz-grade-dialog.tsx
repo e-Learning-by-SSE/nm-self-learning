@@ -3,7 +3,8 @@ import { useTranslation } from "next-i18next";
 import { PlayIcon, TrophyIcon } from "@heroicons/react/24/solid";
 import { AchievementList, useAchievementRedemption } from "@self-learning/achievements";
 import { trpc } from "@self-learning/api-client";
-import { LessonLayoutProps, loadLessonSessionSafe } from "@self-learning/lesson";
+import { loadLessonSessionSafe } from "@self-learning/lesson";
+import type { LessonLayoutProps } from "@self-learning/lesson/server";
 import { useQuiz } from "@self-learning/quiz";
 import { AchievementWithProgress, PerformanceGrade } from "@self-learning/types";
 import {

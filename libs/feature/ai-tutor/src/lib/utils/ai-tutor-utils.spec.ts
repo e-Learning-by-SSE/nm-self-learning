@@ -1,4 +1,4 @@
-jest.mock("@self-learning/database", () => ({
+jest.mock("@self-learning/database/server", () => ({
 	database: {
 		lesson: { findUnique: jest.fn() },
 		course: { findUnique: jest.fn() }
@@ -16,7 +16,7 @@ jest.mock("@trpc/server", () => ({
 	}
 }));
 
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { TRPCError } from "@trpc/server";
 import {
 	fetchContextPayload,

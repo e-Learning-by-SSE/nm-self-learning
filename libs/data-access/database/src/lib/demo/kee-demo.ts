@@ -1,10 +1,11 @@
-import { AccessLevel, PrismaClient } from "@prisma/client";
+import { createPrismaClient } from "../prisma-client";
+import { AccessLevel, PrismaClient } from "../../generated/prisma/client";
 import { slugify } from "@self-learning/util/common";
 import { softwareentwicklungDemoGroup } from "../seedSpecializations";
 import { CourseContent, createCourseMeta } from "@self-learning/types";
 import { createLesson } from "../seed-functions";
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient();
 
 type Skill = {
 	id: string;

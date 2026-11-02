@@ -4,7 +4,7 @@ import { Table, TableDataColumn, TableHeaderColumn, SortIndicator } from "@self-
 import { getSemester } from "./aggregation-functions";
 import Link from "next/link";
 import { useState } from "react";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 
 type Course = { slug: string; title: string; courseId: string };
 

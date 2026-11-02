@@ -1,6 +1,12 @@
-import { NotificationChannel, NotificationType, Prisma, PrismaClient } from "@prisma/client";
+import { createPrismaClient } from "../../../src/lib/prisma-client";
+import {
+	NotificationChannel,
+	NotificationType,
+	Prisma,
+	PrismaClient
+} from "../../../src/generated/prisma/client";
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient();
 
 export async function seedAchievements(tx: Prisma.TransactionClient): Promise<void> {
 	const achievements = [

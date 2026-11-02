@@ -1,5 +1,5 @@
-import { AccessLevel, Course, Prisma } from "@prisma/client";
-import { database, save_subtitle_for_lesson } from "@self-learning/database";
+import { AccessLevel, Course, Prisma } from "@self-learning/database/server";
+import { database, save_subtitle_for_lesson } from "@self-learning/database/server";
 import {
 	createLessonMeta,
 	EventTypeMap,

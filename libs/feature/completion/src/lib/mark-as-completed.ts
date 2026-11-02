@@ -1,7 +1,7 @@
 import { getCourseData } from "@self-learning/course";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { CourseContent, extractLessonIds } from "@self-learning/types";
-import { createEventLogEntry } from "@self-learning/util/eventlog";
+import { createEventLogEntry } from "@self-learning/util/eventlog/server";
 
 export async function markAsCompleted({
 	lessonId,

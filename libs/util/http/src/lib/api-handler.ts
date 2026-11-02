@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@self-learning/database/server";
 import { NextApiRequest, NextApiResponse } from "next";
 import { ZodError } from "zod";
 import {

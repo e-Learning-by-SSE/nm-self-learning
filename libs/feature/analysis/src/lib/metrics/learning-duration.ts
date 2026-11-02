@@ -1,4 +1,4 @@
-import { EventLog } from "@prisma/client";
+import { EventLog } from "@self-learning/database/server";
 import { differenceInMilliseconds } from "date-fns";
 
 /**

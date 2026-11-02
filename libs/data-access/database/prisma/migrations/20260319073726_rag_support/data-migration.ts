@@ -1,3 +1,4 @@
+import { createPrismaClient } from "../../../src/lib/prisma-client";
 // Data migration: embed all existing lessons into the vector store.
 //
 // Runs at deploy time (before the app starts), alongside `prisma migrate deploy`.
@@ -6,14 +7,14 @@
 
 // use this command to run: npx tsx --tsconfig tsconfig.base.json libs/data-access/database/prisma/migrations/20260319073726_rag_support/data-migration.ts
 
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PrismaClient, Prisma } from "../../../src/generated/prisma/client";
 import {
 	prepareRagContent,
 	getRagVersionHash,
 	processRagEmbedLesson
 } from "@self-learning/rag-processing";
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient();
 
 async function main() {
 	try {

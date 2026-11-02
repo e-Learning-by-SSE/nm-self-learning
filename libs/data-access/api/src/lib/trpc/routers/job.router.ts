@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 
 export const jobEventRouter = t.router({
 	getStatus: authProcedure

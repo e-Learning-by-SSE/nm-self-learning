@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { z } from "zod";
 import { adminProcedure, authProcedure, t } from "../trpc";
 import {
@@ -9,7 +9,7 @@ import {
 	learningStrategySchema,
 	learningTechniqueCreateSchema
 } from "@self-learning/types";
-import { getDiaryPage, getUserLocations } from "@self-learning/diary";
+import { getDiaryPage, getUserLocations } from "@self-learning/diary/server";
 
 export const learningLocationRouter = t.router({
 	create: authProcedure.input(learningLocationSchema).mutation(async ({ input, ctx }) => {

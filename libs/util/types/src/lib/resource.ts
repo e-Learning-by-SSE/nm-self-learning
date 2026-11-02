@@ -1,4 +1,4 @@
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 import { z } from "zod";
 import { AccessLevelEnum, PrismaResourcePermission } from "./permissions";
 
@@ -128,13 +128,7 @@ export function toResourcePermissionsForm(
 
 // ===
 
-export const ResourceKindEnum = z.enum([
-	"course",
-	"lesson",
-	"specialization",
-	"subject",
-	"skill"
-]);
+export const ResourceKindEnum = z.enum(["course", "lesson", "specialization", "subject", "skill"]);
 export type ResourceKind = z.infer<typeof ResourceKindEnum>;
 
 export const allResourceKinds: ResourceKind[] = [

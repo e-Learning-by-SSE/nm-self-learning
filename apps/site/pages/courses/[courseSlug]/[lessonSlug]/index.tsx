@@ -1,14 +1,13 @@
 import { withTranslations } from "@self-learning/api";
 import {
 	I18N_NAMESPACE as NS_LESSON,
-	getSspLearnersView,
-	getSSpLessonCourseLayout,
 	LessonLayout,
 	LessonLearnersView,
 	LessonLearnersViewProps
 } from "@self-learning/lesson";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 import { I18N_NAMESPACE as NS_UI_LESSON } from "@self-learning/ui/lesson";
+import { getSspLearnersView, getSSpLessonCourseLayout } from "@self-learning/lesson/server";
 
 export const getServerSideProps = withTranslations(
 	[...new Set([...NS_LESSON, ...NS_UI_LESSON])],

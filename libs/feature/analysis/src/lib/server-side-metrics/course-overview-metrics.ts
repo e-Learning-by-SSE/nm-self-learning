@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 
 async function _courseParticipation({
 	courseIds,

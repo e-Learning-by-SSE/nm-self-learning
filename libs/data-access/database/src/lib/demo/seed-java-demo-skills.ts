@@ -1,4 +1,5 @@
-import { AccessLevel, Prisma, PrismaClient } from "@prisma/client";
+import { createPrismaClient } from "../prisma-client";
+import { AccessLevel, Prisma, PrismaClient } from "../../generated/prisma/client";
 import { createSkillGroups, createSkills } from "../seed-functions";
 
 const skills = [
@@ -192,7 +193,7 @@ const skillGroups = [
 	}
 ];
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient();
 
 export async function seedJavaDemoSkills(adminId: number, group: Prisma.GroupCreateInput | null) {
 	await createSkills(adminId, skills);

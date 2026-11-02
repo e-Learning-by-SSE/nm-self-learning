@@ -1,5 +1,3 @@
-export * from "./lib/author/update-author";
-export * from "./lib/author/is-author";
 export * from "./lib/search-resource-dialog";
 export * from "./lib/search-course-dialog";
 export * from "./lib/search-lesson-dialog";

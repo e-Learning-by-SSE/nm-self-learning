@@ -1,7 +1,8 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { createPrismaClient } from "../prisma-client";
+import { Prisma, PrismaClient } from "../../generated/prisma/client";
 import { slugify } from "@self-learning/util/common";
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient();
 
 type SkillOfRepository = {
 	id: string;

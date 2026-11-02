@@ -1,5 +1,5 @@
-import { AccessLevel, CourseType, Prisma } from "@prisma/client";
-import { database } from "@self-learning/database";
+import { AccessLevel, CourseType, Prisma } from "@self-learning/database/server";
+import { database } from "@self-learning/database/server";
 import {
 	allResourceKinds,
 	bestAccessLevel,

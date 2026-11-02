@@ -1,11 +1,11 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { Context, UserFromSession } from "../context";
 import { courseRouter } from "./course.router";
 import { t } from "../trpc";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 import { TRPCError } from "@trpc/server";
 import { getCourseResource } from "../../permissions/course.utils";
-import { AccessLevel, CourseType } from "@prisma/client";
+import { AccessLevel, CourseType } from "@self-learning/database";
 import {
 	canCreate,
 	canDelete,
@@ -14,7 +14,7 @@ import {
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
 
-jest.mock("@self-learning/database", () => {
+jest.mock("@self-learning/database/server", () => {
 	const database = {
 		course: {
 			delete: jest.fn(),

@@ -1,4 +1,4 @@
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 import { testResourceGuard } from "./guards";
 import type { UserFromSession } from "@self-learning/api";
 
@@ -27,9 +27,9 @@ describe("testResourceGuard", () => {
 	});
 
 	it("allows any user when permittedGroups is undefined", () => {
-		expect(testResourceGuard(sessionUser({ memberships: [] }), AccessLevel.EDIT, undefined)).toBe(
-			true
-		);
+		expect(
+			testResourceGuard(sessionUser({ memberships: [] }), AccessLevel.EDIT, undefined)
+		).toBe(true);
 	});
 
 	it("denies user without memberships", () => {
@@ -62,14 +62,11 @@ describe("testResourceGuard", () => {
 		[AccessLevel.EDIT, AccessLevel.EDIT, true],
 		[AccessLevel.FULL, AccessLevel.EDIT, false],
 		[AccessLevel.FULL, AccessLevel.FULL, true]
-	])(
-		"required %s with held %s → %s",
-		(required, held, expected) => {
-			expect(
-				testResourceGuard(sessionUser({ memberships: [1] }), required, [
-					{ groupId: 1, accessLevel: held }
-				])
-			).toBe(expected);
-		}
-	);
+	])("required %s with held %s → %s", (required, held, expected) => {
+		expect(
+			testResourceGuard(sessionUser({ memberships: [1] }), required, [
+				{ groupId: 1, accessLevel: held }
+			])
+		).toBe(expected);
+	});
 });

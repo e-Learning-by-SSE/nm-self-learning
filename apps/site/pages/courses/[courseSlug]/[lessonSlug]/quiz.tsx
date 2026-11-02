@@ -2,7 +2,8 @@ import { withTranslations } from "@self-learning/api";
 import { I18N_NAMESPACE as completionNamespaces } from "@self-learning/completion";
 import { I18N_NAMESPACE as lessonNamespaces } from "@self-learning/lesson";
 import { I18N_NAMESPACE as questionTypeNamespaces } from "@self-learning/question-types";
-import { getSSpLessonCourseLayout, LessonLayout } from "@self-learning/lesson";
+import { LessonLayout } from "@self-learning/lesson";
+import { getSSpLessonCourseLayout } from "@self-learning/lesson/server";
 import {
 	getSspQuizLearnersView,
 	I18N_NAMESPACE as quizNamespaces,
@@ -10,7 +11,7 @@ import {
 	Quiz,
 	QuizLearnersView
 } from "@self-learning/quiz";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 import { I18N_NAMESPACE as uiLessonNamespaces } from "@self-learning/ui/lesson";
 
 // Collect dependency namespaces here: combining them in the quiz library triggers a circular

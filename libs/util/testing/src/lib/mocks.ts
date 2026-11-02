@@ -8,7 +8,7 @@ import {
 	Permission,
 	Prisma,
 	Skill
-} from "@prisma/client";
+} from "@self-learning/database/server";
 import { Quiz } from "@self-learning/quiz";
 import {
 	CourseContent,

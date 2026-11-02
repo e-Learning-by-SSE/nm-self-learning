@@ -1,5 +1,5 @@
 import z from "zod";
-import { SkillResolved } from "@self-learning/database";
+import { SkillResolved } from "@self-learning/database/server";
 import { ResourcePermissionsFormSchema } from "./resource";
 
 // Tree node. Lessons and courses embed this, so it has no group list.

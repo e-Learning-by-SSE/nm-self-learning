@@ -1,6 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import { createPrismaClient } from "../../../src/lib/prisma-client";
+import { PrismaClient } from "../../../src/generated/prisma/client";
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient();
 
 export type LearningStrategyCategory = {
 	strategyName: string;

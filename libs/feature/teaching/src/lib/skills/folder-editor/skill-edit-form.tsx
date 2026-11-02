@@ -6,7 +6,7 @@ import { FieldErrors, FormProvider, useForm, useFormContext } from "react-hook-f
 import { z } from "zod";
 import { skillEditSchema, SkillFormModel, toResourcePermissionsForm } from "@self-learning/types";
 import { trpc } from "@self-learning/api-client";
-import { SkillResolved } from "@self-learning/database";
+import { SkillResolved } from "@self-learning/database/server";
 import { SkillDeleteOption } from "./skill-taskbar";
 import { IconOnlyButton, showToast } from "@self-learning/ui/common";
 import { SelectSkillsView } from "../skill-dialog/select-skill-view";

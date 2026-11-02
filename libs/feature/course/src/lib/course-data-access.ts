@@ -1,5 +1,5 @@
-import { CourseType } from "@prisma/client";
-import { database } from "@self-learning/database";
+import { CourseType } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { ResolvedValue } from "@self-learning/types";
 
 export type CourseData = ResolvedValue<typeof getCourseData>;

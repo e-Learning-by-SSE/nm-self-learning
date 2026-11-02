@@ -1,6 +1,6 @@
 "use client";
 import { ArrowDownTrayIcon, PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 import { trpc } from "@self-learning/api-client";
 import { greaterOrEqAccessLevel, ResourceKind, ResourceSearchEntry } from "@self-learning/types";
 import {

@@ -1,6 +1,7 @@
-import { PrismaClient, CourseType } from "@prisma/client";
+import { createPrismaClient } from "../../prisma-client";
+import { PrismaClient, CourseType } from "../../../generated/prisma/client";
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient();
 
 export async function createCourses() {
 	try {

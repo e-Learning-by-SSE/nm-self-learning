@@ -1,5 +1,5 @@
-import { database } from "@self-learning/database";
-import { getLearningGoals } from "@self-learning/diary";
+import { database } from "@self-learning/database/server";
+import { getLearningGoals } from "@self-learning/diary/server";
 import { learningGoalCreateSchema, learningGoalSchema } from "@self-learning/types";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";

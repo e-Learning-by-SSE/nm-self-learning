@@ -12,10 +12,10 @@ import {
 	SectionHeader
 } from "@self-learning/ui/common";
 import { UniversalSearchBar } from "@self-learning/ui/layouts";
-import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
+import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment/server";
 import { formatDateDistanceToNow } from "@self-learning/util/common";
 import { withTranslations } from "@self-learning/api";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 import { useTranslation } from "next-i18next";
 
 interface CourseOverviewProps {
@@ -283,7 +283,9 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 										/>
 									) : (
 										<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-c-surface-2">
-											<span className="text-c-text-muted">{t("No_Image")}</span>
+											<span className="text-c-text-muted">
+												{t("No_Image")}
+											</span>
 										</div>
 									)}
 									<div>

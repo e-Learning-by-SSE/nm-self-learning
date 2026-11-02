@@ -1,5 +1,5 @@
 import { authProcedure, t } from "../trpc";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { z } from "zod";
 import { Message } from "@self-learning/ai-tutor";
 import { sendChatRequest, LlmConfig } from "../../llm/openai_api_handler";

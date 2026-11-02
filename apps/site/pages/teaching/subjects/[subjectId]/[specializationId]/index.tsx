@@ -21,7 +21,7 @@ import {
 } from "@self-learning/ui/common";
 import { SearchField } from "@self-learning/ui/forms";
 import { CenteredContainerXL, useCanCreate, useResourceGuard } from "@self-learning/ui/layouts";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 import { TRPCClientError } from "@trpc/client";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -211,14 +211,16 @@ export default function SpecializationManagementPage() {
 									<TableDataColumn>
 										{canEdit && (
 											<div className="flex justify-end">
-									<IconOnlyButton
-											icon={<PencilIcon className="h-5 w-5" />}
-											className="btn-stroked"
-											title={"Kurs bearbeiten"}
-											onClick={() =>
-												router.push(`/teaching/courses/edit/${course.courseId}`)
-											}
-										/>
+												<IconOnlyButton
+													icon={<PencilIcon className="h-5 w-5" />}
+													className="btn-stroked"
+													title={"Kurs bearbeiten"}
+													onClick={() =>
+														router.push(
+															`/teaching/courses/edit/${course.courseId}`
+														)
+													}
+												/>
 												<IconOnlyButton
 													icon={<LinkSlashIcon className="h-5 w-5" />}
 													title={t("Remove_From_Specialization")}

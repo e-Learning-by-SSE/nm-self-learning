@@ -1,9 +1,10 @@
-import { Author, GroupRole, Prisma, PrismaClient, User } from "@prisma/client";
+import { createPrismaClient } from "../prisma-client";
+import { Author, GroupRole, Prisma, PrismaClient, User } from "../../generated/prisma/client";
 import { softwareentwicklungDemoGroup } from "../seedSpecializations";
 import { getDefaultNotificationData } from "../seed-functions";
 import { LoginStreak } from "@self-learning/types";
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient();
 
 const adminUserInput: Prisma.UserCreateInput = {
 	name: "dumbledore",

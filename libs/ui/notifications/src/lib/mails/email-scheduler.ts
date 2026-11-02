@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { differenceInDays, subDays } from "date-fns";
 import { sendCourseReminder } from "./email-service";
 import { checkStreakRisks } from "./reminders/streak-risk";

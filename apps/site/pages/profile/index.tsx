@@ -3,13 +3,13 @@ import { BookOpenIcon, ChartBarIcon, LinkIcon } from "@heroicons/react/24/outlin
 import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
 import { withTranslations } from "@self-learning/api";
 import { SmallGradeBadge } from "@self-learning/completion";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import {
 	I18N_NAMESPACE as DIARY_I18N_NAMESPACE,
 	LearningDiaryEntryStatusBadge,
 	StatusBadgeInfo
 } from "@self-learning/diary";
-import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment";
+import { EnrollmentDetails, getEnrollmentDetails } from "@self-learning/enrollment/server";
 import {
 	CourseEnrollmentOverview,
 	PlatformStats,
@@ -28,8 +28,8 @@ import {
 	useTimeIntervalFormatter
 } from "@self-learning/ui/common";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
-import { handleEmailTracking } from "@self-learning/ui/notifications";
-import { withAuth } from "@self-learning/util/auth";
+import { handleEmailTracking } from "@self-learning/ui/notifications/server";
+import { withAuth } from "@self-learning/util/auth/server";
 import { formatDateDistanceToNow, formatDateStringShort, IdSet } from "@self-learning/util/common";
 import { startOfToday } from "date-fns";
 import { NextComponentType, NextPageContext } from "next";

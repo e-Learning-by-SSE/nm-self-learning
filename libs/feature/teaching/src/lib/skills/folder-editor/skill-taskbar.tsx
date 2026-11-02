@@ -6,7 +6,7 @@ import { CreateChildSkillButton } from "../create-child-skill-button";
 import { SkillDeleteButton } from "../skill-row-delete-button";
 import { SkillSelectHandler, UpdateVisuals } from "./skill-display";
 import { trpc } from "@self-learning/api-client";
-import { AccessLevel, Skill } from "@prisma/client";
+import { SkillModel, AccessLevel } from "@self-learning/database";
 import { useDefaultGroup } from "../../group/dialogs/search-group-dialog";
 import { useMemo } from "react";
 
@@ -42,7 +42,7 @@ export function AddChildButton({
 	childrenNumber: number;
 	updateSkillDisplay: UpdateVisuals;
 	handleSelection: SkillSelectHandler;
-	skillDefaults?: Partial<Skill>;
+	skillDefaults?: Partial<SkillModel>;
 	authorId: number;
 }) {
 	const { t } = useTranslation(["feature-teaching", "common"]);
@@ -110,8 +110,8 @@ export function NewSkillButton({
 	skillDefaults
 }: {
 	authorId: number;
-	onSuccess?: (skill: Skill) => void | Promise<void>;
-	skillDefaults?: Partial<Skill>;
+	onSuccess?: (skill: SkillModel) => void | Promise<void>;
+	skillDefaults?: Partial<SkillModel>;
 }) {
 	const { t, i18n } = useTranslation(["feature-teaching", "common"]);
 	const { mutateAsync: createNewSkill } = trpc.skill.createSkill.useMutation();

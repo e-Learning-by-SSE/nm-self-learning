@@ -1,7 +1,7 @@
-import { disenrollUser, enrollUser, getEnrollmentsOfUser } from "@self-learning/enrollment";
+import { disenrollUser, enrollUser, getEnrollmentsOfUser } from "@self-learning/enrollment/server";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 
 export const enrollmentRouter = t.router({
 	getEnrollments: authProcedure.query(async ({ ctx }) => {

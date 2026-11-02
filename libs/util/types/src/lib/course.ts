@@ -1,4 +1,4 @@
-import type { EnrollmentStatus } from "@prisma/client";
+import type { EnrollmentStatus } from "@self-learning/database/server";
 import { z } from "zod";
 
 export type Completion = {

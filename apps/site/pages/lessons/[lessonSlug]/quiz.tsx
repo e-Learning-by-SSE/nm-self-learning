@@ -1,8 +1,8 @@
 import { withTranslations } from "@self-learning/api";
 import { I18N_NAMESPACE as completionNamespaces } from "@self-learning/completion";
-import { I18N_NAMESPACE as lessonNamespaces } from "@self-learning/lesson";
+import { I18N_NAMESPACE as lessonNamespaces, StandaloneLessonLayout } from "@self-learning/lesson";
 import { I18N_NAMESPACE as questionTypeNamespaces } from "@self-learning/question-types";
-import { getSspStandaloneLessonLayout, StandaloneLessonLayout } from "@self-learning/lesson";
+import { getSspStandaloneLessonLayout } from "@self-learning/lesson/server";
 import {
 	getSspQuizLearnersView,
 	I18N_NAMESPACE as quizNamespaces,
@@ -10,7 +10,7 @@ import {
 	Quiz,
 	QuizLearnersView
 } from "@self-learning/quiz";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 
 // Collect dependency namespaces here: combining them in the quiz library triggers a circular
 // dependency and can access a namespace before it has been initialized.

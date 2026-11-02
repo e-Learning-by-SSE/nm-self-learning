@@ -1,16 +1,8 @@
 import { withTranslations } from "@self-learning/api";
-import {
-	allPages,
-	DiaryContentForm,
-	DiaryLayout,
-	getAllStrategies,
-	I18N_NAMESPACE,
-	PageChanger,
-	PagesMeta,
-	Strategy
-} from "@self-learning/diary";
+import { DiaryContentForm, DiaryLayout, I18N_NAMESPACE, PageChanger } from "@self-learning/diary";
+import { allPages, getAllStrategies, PagesMeta, Strategy } from "@self-learning/diary/server";
 import { Divider } from "@self-learning/ui/common";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 import { subMilliseconds } from "date-fns";
 
 export const getServerSideProps = withTranslations(

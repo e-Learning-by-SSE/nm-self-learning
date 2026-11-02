@@ -1,5 +1,5 @@
-import { database } from "@self-learning/database";
-import { AccessLevel, Group, GroupRole, Prisma, User } from "@prisma/client";
+import { database } from "@self-learning/database/server";
+import { AccessLevel, Group, GroupRole, Prisma, User } from "@self-learning/database/server";
 import { add } from "date-fns";
 import { UserFromSession } from "../trpc/context";
 import { TRPCError } from "@trpc/server";
