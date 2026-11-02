@@ -3,6 +3,7 @@ const nxPreset = require("@nx/jest/preset").default;
 const path = require("path");
 
 const projectRoot = path.resolve(__dirname, "./");
+process.env.DOTENV_CONFIG_PATH ||= path.join(projectRoot, ".env");
 process.env.TZ = "Europe/Berlin";
 
 const project = process.env.NX_TASK_TARGET_PROJECT || "unknown";

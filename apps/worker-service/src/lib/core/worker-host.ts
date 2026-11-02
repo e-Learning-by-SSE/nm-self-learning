@@ -234,8 +234,9 @@ export class WorkerHost implements JobRunner {
 			return { filePath: nearMain, execArgv: undefined, env: undefined };
 		}
 
-		// Fallback for execution in dist (i.e., Jest/ts-node)
-		const distWorker = path.resolve(process.cwd(), "dist/apps/worker-service/worker-runner.js");
+		// Jest may set cwd to the project root; resolve the Nx output from the workspace root.
+		const workspaceRoot = this.findWorkspaceRoot();
+		const distWorker = path.resolve(workspaceRoot, "dist/apps/worker-service/worker-runner.js");
 		if (existsSync(distWorker)) {
 			return { filePath: distWorker, execArgv: undefined, env: undefined };
 		}
@@ -243,6 +244,22 @@ export class WorkerHost implements JobRunner {
 		throw new Error(
 			`worker-runner.js not found. Tried:\n- ${nearMain}\n- ${distWorker}\nDid you run "nx build worker-service"?`
 		);
+	}
+
+	private findWorkspaceRoot() {
+		let directory = process.cwd();
+
+		while (true) {
+			if (existsSync(path.join(directory, "nx.json"))) {
+				return directory;
+			}
+
+			const parent = path.dirname(directory);
+			if (parent === directory) {
+				return process.cwd();
+			}
+			directory = parent;
+		}
 	}
 
 	public async shutdown(): Promise<void> {
