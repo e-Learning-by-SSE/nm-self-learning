@@ -16,7 +16,9 @@ module.exports = {
 	moduleNameMapper: {
 		// for Jest (transform imports)
 		// @huggingface/transformers is ESM-only and causes a __dirname redeclaration error
-		"^@huggingface/transformers$": "libs/util/testing/src/lib/transformers.mock.ts"
+		"^@huggingface/transformers$": "libs/util/testing/src/lib/transformers.mock.ts",
+		"^@prisma/client/runtime/query_compiler_fast_bg\\.postgresql\\.wasm-base64\\.mjs$": "@prisma/client/runtime/query_compiler_fast_bg.postgresql.wasm-base64.js",
+		"^@prisma/client/runtime/query_compiler_fast_bg\\.postgresql\\.mjs$": "@prisma/client/runtime/query_compiler_fast_bg.postgresql.js"
 	},
 	/* TODO: Update to latest Jest snapshotFormat
 	 * By default Nx has kept the older style of Jest Snapshot formats

@@ -1,5 +1,5 @@
-import { database } from "@self-learning/database/server";
 import { AccessLevel } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import {
 	getMySkillPermissions,
 	searchAllResources,
@@ -8,6 +8,7 @@ import {
 
 jest.mock("@self-learning/database/server", () => ({
 	__esModule: true,
+	...jest.requireActual("@self-learning/database/server"),
 	database: {
 		course: { findMany: jest.fn() },
 		lesson: { findMany: jest.fn() },

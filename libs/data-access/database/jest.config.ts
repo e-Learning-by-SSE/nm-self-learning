@@ -5,6 +5,8 @@ const config: Config = {
 	coverageDirectory: "../../coverage/libs/database",
 	setupFiles: ["<rootDir>/jest.setup.ts"],
 	preset: "../../../jest.preset.js",
+	// Keep Jest globals and hoisted mocks available to database specs.
+	extensionsToTreatAsEsm: [],
 
 	transform: {
 		"^.+\\.[cm]?[jt]sx?$": [

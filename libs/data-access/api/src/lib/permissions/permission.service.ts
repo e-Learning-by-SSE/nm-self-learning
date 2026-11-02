@@ -1,5 +1,5 @@
-import { database } from "@self-learning/database/server";
-import { AccessLevel, Group, GroupRole, Prisma, User } from "@self-learning/database/server";
+import { AccessLevel, GroupModel, GroupRole, UserModel } from "@self-learning/database";
+import { database, Prisma } from "@self-learning/database/server";
 import { add } from "date-fns";
 import { UserFromSession } from "../trpc/context";
 import { TRPCError } from "@trpc/server";
@@ -392,8 +392,8 @@ export async function getEffectiveResourceAccesses(input: ResourceInput) {
 		{
 			permissionId: string;
 			accessLevel: AccessLevel;
-			user: Partial<User>;
-			group: Partial<Group> & { members: Partial<User>[] };
+			user: Partial<UserModel>;
+			group: Partial<GroupModel> & { members: Partial<UserModel>[] };
 		}
 	> = {};
 

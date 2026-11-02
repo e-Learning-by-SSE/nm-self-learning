@@ -13,6 +13,7 @@ import {
 
 jest.mock("@self-learning/database/server", () => ({
 	__esModule: true,
+	...jest.requireActual("@self-learning/database/server"),
 	database: {
 		specialization: {
 			findUniqueOrThrow: jest.fn(),

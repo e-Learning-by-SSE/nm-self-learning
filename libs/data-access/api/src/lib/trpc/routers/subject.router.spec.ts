@@ -1,5 +1,5 @@
-import { database } from "@self-learning/database/server";
 import { AccessLevel } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { TRPCError } from "@trpc/server";
 import { Context, UserFromSession } from "../context";
 import { subjectRouter } from "./subject.router";
@@ -11,6 +11,7 @@ import {
 
 jest.mock("@self-learning/database/server", () => ({
 	__esModule: true,
+	...jest.requireActual("@self-learning/database/server"),
 	database: {
 		subject: {
 			findMany: jest.fn(),

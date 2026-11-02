@@ -5,6 +5,7 @@ import type { ResourceInput, ResourcePermission } from "@self-learning/types";
 
 jest.mock("@self-learning/database/server", () => ({
 	__esModule: true,
+	...jest.requireActual("@self-learning/database/server"),
 	database: {
 		permission: {
 			findMany: jest.fn(),
