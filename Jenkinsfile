@@ -45,39 +45,35 @@ def buildSphinxDocs(Map cfg = [:]) {
     sh "rm -rf ${ws}/docs/sphinx/build"
 }
 
-def fullTest(Map cfg = [:]) {
-    def resultDir = cfg.get('resultDir', 'output/test')
+finally {
+    junit(
+        testResults: "${resultDir}/junit*.xml",
+        allowEmptyResults: true,
+        skipPublishingChecks: true,
+        skipMarkingBuildUnstable: true
+    )
 
-    sh """
-        set -e
-        rm -f ${resultDir}/junit-*.xml || true
-        rm -rf coverage
-        find apps libs -name lcov.info -type f -delete
-    """
+    // Remove empty reports
+    sh 'find coverage apps libs -name lcov.info -type f -empty -delete'
 
-    try {
-        sh 'npm run test:ci -- --codeCoverage'
-    } finally {
-        junit(
-            testResults: "${resultDir}/junit*.xml",
-            allowEmptyResults: true,
-            skipPublishingChecks: true,
-            skipMarkingBuildUnstable: true
-        )
+    // Merge reports
+    sh '''
+        mkdir -p output/test/coverage-merged
+        find coverage apps libs -name lcov.info -type f ! -empty \
+            -exec sh -c 'for f do cp "$f" "output/test/coverage-merged/$(echo "$f" | tr / _)"; done' sh {} +
+    '''
 
-        sh 'find coverage apps libs -name lcov.info -type f -empty -delete'
-        
-        recordCoverage(
-            tools: [
-                [parser: 'LCOV', pattern: 'coverage/**/lcov.info'],
-                [parser: 'LCOV', pattern: 'libs/coverage/**/lcov.info'],
-                [parser: 'LCOV', pattern: 'libs/**/output/test/coverage/lcov.info']
-            ],
-            enabledForFailure: true,
-            failOnError: true,
-            skipPublishingChecks: true
-        )
-    }
+    // Coverage veröffentlichen
+    recordCoverage(
+        tools: [[
+            parser: 'LCOV',
+            pattern: 'output/test/coverage-merged/*'
+        ]],
+        sourceCodeRetention: 'EVERY_BUILD',
+        enabledForFailure: true,
+        failOnError: true,
+        skipPublishingChecks: true
+    )
 }
 
 
