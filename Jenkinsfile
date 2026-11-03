@@ -65,11 +65,14 @@ def fullTest(Map cfg = [:]) {
             skipMarkingBuildUnstable: true
         )
 
+        sh 'find coverage apps libs -name lcov.info -type f -empty -delete'
+        
         recordCoverage(
-            tools: [[
-                parser: 'LCOV',
-                pattern: '**/lcov.info'
-            ]],
+            tools: [
+                [parser: 'LCOV', pattern: 'coverage/**/lcov.info'],
+                [parser: 'LCOV', pattern: 'libs/coverage/**/lcov.info'],
+                [parser: 'LCOV', pattern: 'libs/**/output/test/coverage/lcov.info']
+            ],
             enabledForFailure: true,
             failOnError: true,
             skipPublishingChecks: true
