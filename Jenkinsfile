@@ -68,7 +68,7 @@ def fullTest(Map cfg = [:]) {
         recordCoverage(
             tools: [[
                 parser: 'LCOV',
-                pattern: 'coverage/**/lcov.info,apps/**/lcov.info,libs/**/lcov.info'
+                pattern: '**/lcov.info'
             ]],
             enabledForFailure: true,
             failOnError: true,
