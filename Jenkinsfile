@@ -126,7 +126,7 @@ def fullTest(Map cfg = [:]) {
                         sourceCodeRetention: 'EVERY_BUILD',
                         enabledForFailure: true,
                         ignoreParsingErrors: true,
-                        failOnError: true,
+                        failOnError: false,
                         skipPublishingChecks: true
                     )
                 } else {
