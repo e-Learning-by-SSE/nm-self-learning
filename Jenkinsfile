@@ -78,9 +78,10 @@ def fullTest(Map cfg = [:]) {
         // Coverage veröffentlichen
         recordCoverage(
             tools: [[
-                parser: 'LCOV',
-                pattern: 'output/test/coverage-merged/*'
+                parser: 'COBERTURA',
+                pattern: 'output/test/coverage-merged/*.xml'
             ]],
+            sourceDirectories: [[path: '.']],
             sourceCodeRetention: 'EVERY_BUILD',
             enabledForFailure: true,
             failOnError: true,
