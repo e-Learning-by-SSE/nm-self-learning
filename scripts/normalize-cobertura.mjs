@@ -2,100 +2,53 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import console from "node:console";
-import { XMLParser, XMLBuilder } from "fast-xml-parser";
+import { XMLValidator } from "fast-xml-parser";
 
-const parser = new XMLParser({
-	ignoreAttributes: false,
-	attributeNamePrefix: "@_",
-	preserveOrder: false
-});
+let errors = 0;
 
-const builder = new XMLBuilder({
-	ignoreAttributes: false,
-	attributeNamePrefix: "@_",
-	format: true,
-	suppressEmptyNode: false
-});
+for (const file of process.argv.slice(2)) {
+	try {
+		const name = path.basename(file);
+		let project;
 
-const asArray = value => (value == null ? [] : Array.isArray(value) ? value : [value]);
-
-function getProjectName(filename) {
-	const parts = filename.replaceAll("\\", "/").split("/");
-
-	if (parts[0] === "apps" && parts.length >= 2) {
-		return parts[1];
-	}
-
-	if (parts[0] === "libs" && parts.length >= 3) {
-		return `${parts[1]}-${parts[2]}`;
-	}
-
-	return null;
-}
-
-function getProjectNameFromReport(reportPath) {
-	const name = path.basename(reportPath);
-
-	const match = name.match(/^(apps|libs)_(.+?)_(?:coverage|output|test)_/);
-
-	if (!match) {
-		return null;
-	}
-
-	const [, type, projectPath] = match;
-	const parts = projectPath.split("_");
-
-	if (type === "apps") {
-		return parts[0];
-	}
-
-	return parts.join("-");
-}
-
-for (const reportPath of process.argv.slice(2)) {
-	const xml = fs.readFileSync(reportPath, "utf8");
-	const data = parser.parse(xml);
-
-	const packages = asArray(data.coverage?.packages?.package);
-	const grouped = new Map();
-
-	for (const pkg of packages) {
-		for (const cls of asArray(pkg.classes?.class)) {
-			const filename = cls["@_filename"] ?? "";
-			const project =
-				getProjectName(filename) ??
-				getProjectNameFromReport(reportPath) ??
-				pkg["@_name"] ??
-				"unknown";
-
-			if (!grouped.has(project)) {
-				grouped.set(project, {
-					...pkg,
-					"@_name": project,
-					classes: { class: [] }
-				});
+		if (name.startsWith("libs_coverage_libs_database_")) {
+			project = "data-access-database";
+		} else if (name.startsWith("libs_util_markdown_")) {
+			project = "util-markdown";
+		} else {
+			const match = name.match(/^(?:coverage_)?(apps|libs)_(.+?)_cobertura-coverage\.xml$/);
+			if (match) {
+				const parts = match[2].split("_");
+				project = (match[1] === "apps" ? parts.slice(0, 1) : parts.slice(0, 2)).join("-");
 			}
-
-			grouped.get(project).classes.class.push(cls);
 		}
+
+		if (!project) {
+			throw new Error(`Cannot determine project: ${name}`);
+		}
+
+		const xml = fs.readFileSync(file, "utf8");
+		const original = XMLValidator.validate(xml);
+		if (original !== true) {
+			throw new Error(`Invalid original XML: ${JSON.stringify(original.err)}`);
+		}
+
+		const normalized = xml.replace(
+			/(<package\b[^>]*\bname=")[^"]*(")/g,
+			(_, prefix, suffix) => `${prefix}${project}${suffix}`
+		);
+
+		const result = XMLValidator.validate(normalized);
+		if (result !== true) {
+			throw new Error(`Invalid normalized XML: ${JSON.stringify(result.err)}`);
+		}
+
+		fs.writeFileSync(file, normalized);
+		console.log(`Normalized ${name}: ${project}`);
+	} catch (error) {
+		console.error(`ERROR in ${file}: ${error.message}`);
+		errors++;
 	}
-
-	if (grouped.size === 0) {
-		console.warn(`No projects found in ${reportPath}`);
-		continue;
-	}
-
-	data.coverage.packages.package = [...grouped.values()];
-
-	delete data["?xml"];
-	delete data["!DOCTYPE"];
-
-	const normalizedXml =
-		'<?xml version="1.0" encoding="UTF-8"?>\n' +
-		'<!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">\n' +
-		builder.build(data);
-
-	fs.writeFileSync(reportPath, normalizedXml);
-
-	console.log(`Normalized ${path.basename(reportPath)}: ` + [...grouped.keys()].join(", "));
 }
+
+if (errors > 0) process.exitCode = 1;

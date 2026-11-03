@@ -113,22 +113,28 @@ def fullTest(Map cfg = [:]) {
                 returnStatus: true
             ) == 0
 
-            if (hasCoverage) {
-                // Publish coverage reports
-                recordCoverage(
-                    tools: [[
-                        parser: 'COBERTURA',
-                        pattern: "${coverageDir}/*.xml"
-                    ]],
-                    sourceDirectories: [[path: '.']],
-                    sourceCodeRetention: 'EVERY_BUILD',
-                    enabledForFailure: true,
-                    ignoreParsingErrors: true,
-                    failOnError: true,
-                    skipPublishingChecks: true
-                )
-            } else {
-                echo 'No Cobertura reports available; skipping coverage publication.'
+            catchError(
+                buildResult: 'UNSTABLE',
+                stageResult: 'FAILURE',
+                catchInterruptions: false
+            ) {
+                if (hasCoverage) {
+                    // Publish coverage reports
+                    recordCoverage(
+                        tools: [[
+                            parser: 'COBERTURA',
+                            pattern: "${coverageDir}/*.xml"
+                        ]],
+                        sourceDirectories: [[path: '.']],
+                        sourceCodeRetention: 'EVERY_BUILD',
+                        enabledForFailure: true,
+                        ignoreParsingErrors: false,
+                        failOnError: true,
+                        skipPublishingChecks: true
+                    )
+                } else {
+                    error('No Cobertura reports available.')
+                }
             }
         }
     }
