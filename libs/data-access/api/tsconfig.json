@@ -12,8 +12,8 @@
 		"noImplicitReturns": true,
 		"noFallthroughCasesInSwitch": true
 	},
-	"files": [],
-	"include": [],
+	"files": ["../../../index.d.ts"],
+	"include": ["src/**/*"],
 	"references": [
 		{
 			"path": "./tsconfig.lib.json"
