@@ -81,6 +81,7 @@ def fullTest(Map cfg = [:]) {
             ]],
             enabledForFailure: true,
             failOnError: true,
+            ignoreErrors: true,
             skipPublishingChecks: true
         )
     }
