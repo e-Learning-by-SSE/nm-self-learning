@@ -2,5 +2,5 @@ const { getJestProjectsAsync } = require("@nx/jest");
 
 module.exports = async () => ({
 	projects: await getJestProjectsAsync(),
-	coverageReporters: ["lcov", "cobertura", "text", "html"]
+	coverageReporters: ["lcov", "cobertura"]
 });

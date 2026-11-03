@@ -47,11 +47,12 @@ def buildSphinxDocs(Map cfg = [:]) {
 
 def fullTest(Map cfg = [:]) {
     def resultDir = cfg.get('resultDir', 'output/test')
+    def coverageDir = "${resultDir}/coverage-merged"
 
     sh """
         set -e
-        rm -f ${resultDir}/junit-*.xml || true
-        rm -rf coverage output/test/coverage-merged
+        rm -f "${resultDir}/junit-"*.xml || true
+        rm -rf coverage "${coverageDir}"
         find apps libs -name cobertura-coverage.xml -type f -delete
     """
 
@@ -65,23 +66,32 @@ def fullTest(Map cfg = [:]) {
             skipMarkingBuildUnstable: true
         )
 
-        // Remove empty reports
-        sh 'find coverage apps libs -name cobertura-coverage.xml -type f -empty -delete'
+        // Collect only Cobertura reports with coverage data
+        sh """
+            mkdir -p "${coverageDir}"
+            rm -f "${coverageDir}/"*.xml
 
-        // Collect reports
-        sh '''
-            mkdir -p output/test/coverage-merged
-            find coverage apps libs -name cobertura-coverage.xml -type f ! -empty \
-                -exec sh -c 'for f do
-                    cp "$f" "output/test/coverage-merged/$(echo "$f" | tr / _)"
-                done' sh {} +
-        '''
+            find coverage apps libs -name cobertura-coverage.xml -type f ! -empty \\
+                -exec sh -c '
+                    for f do
+                        if grep -Eq "<class([[:space:]>])" "\$f"; then
+                            name=\$(printf "%s" "\$f" | tr / _)
+                            cp "\$f" "${coverageDir}/\$name"
+                        else
+                            echo "Skipping Cobertura report without coverage data: \$f"
+                        fi
+                    done
+                ' sh {} +
+
+            echo "Collected Cobertura reports:"
+            find "${coverageDir}" -name '*.xml' -type f
+        """
 
         // Publish coverage
         recordCoverage(
             tools: [[
                 parser: 'COBERTURA',
-                pattern: 'output/test/coverage-merged/*.xml'
+                pattern: "${coverageDir}/*.xml"
             ]],
             sourceDirectories: [[path: '.']],
             sourceCodeRetention: 'EVERY_BUILD',

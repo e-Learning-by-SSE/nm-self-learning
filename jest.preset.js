@@ -38,7 +38,7 @@ module.exports = {
 		"libs/**/*.{js,jsx,ts,tsx}",
 		"!<rootDir>/node_modules/"
 	],
-	coverageReporters: ["lcov", "cobertura", "text", "html"],
+	coverageReporters: ["lcov", "cobertura"],
 	coverageDirectory: "output/test/coverage",
 	reporters: [
 		"default",
