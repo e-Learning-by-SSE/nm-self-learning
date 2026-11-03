@@ -58,11 +58,11 @@ def fullTest(Map cfg = [:]) {
         find apps libs -name cobertura-coverage.xml -type f -delete
     """
 
-    catchError(
-        buildResult: 'SUCCESS',
-        stageResult: 'SUCCESS',
-        catchInterruptions: false
-    ) {
+        catchError(
+            buildResult: 'UNSTABLE',
+            stageResult: 'FAILURE',
+            catchInterruptions: false
+        ) {
         try {
             // Run tests with coverage
             sh 'npm run test:ci -- --codeCoverage'
@@ -121,10 +121,7 @@ def fullTest(Map cfg = [:]) {
                 if (hasCoverage) {
                     // Publish coverage reports
                     recordCoverage(
-                        tools: [[
-                            parser: 'COBERTURA',
-                            pattern: "${coverageDir}/*.xml"
-                        ]],
+                        tools: [[parser: 'COBERTURA', pattern: "${coverageDir}/*.xml"]],
                         sourceDirectories: [[path: '.']],
                         sourceCodeRetention: 'EVERY_BUILD',
                         enabledForFailure: true,
