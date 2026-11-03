@@ -29,6 +29,7 @@ export function extractFrontMatter(markdown: string): MarkdownDocument {
 	// @ts-ignore
 	const { data, content, excerpt } = matter(markdown, {
 		// Typing from matter is wrong, see https://github.com/jonschlinkert/gray-matter/issues/125
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		excerpt: excerptFn as any,
 		excerpt_separator: separator
 	});
