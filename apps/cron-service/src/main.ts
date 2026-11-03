@@ -11,6 +11,7 @@ import { embedLesson } from "./rag";
 
 const API_SECRET = process.env.SCHEDULER_SECRET;
 const API_URL = process.env.NEXT_PUBLIC_SITE_BASE_URL;
+const TRANSCRIPTION_SERVICE_URL = process.env.NEXT_PUBLIC_TRANSCRIPTION_SERVICE_URL;
 
 if (!API_URL) {
 	console.error("NEXT_PUBLIC_SITE_BASE_URL is missing in cron-service environment");
@@ -20,7 +21,7 @@ if (!API_URL) {
 async function generateSubtitlesForExistingVideos() {
 	if (
 		process.env.NEXT_PUBLIC_TRANSCRIPTION_MIGRATE_EXISTING_VIDEO_CONTENT === "true" &&
-		process.env.NEXT_PUBLIC_TRANSCRIPTION_SERVICE_URL
+		TRANSCRIPTION_SERVICE_URL
 	) {
 		console.log("Starting migration of existing video content to add subtitles...");
 		function isVideoContent(content: LessonContentType): content is Video {
@@ -76,7 +77,7 @@ async function generateSubtitlesForExistingVideos() {
 		}
 
 		// Trigger migration
-		const socket = io(process.env.TRANSCRIPTION_SERVICE_INTERNAL_URL, {
+		const socket = io(TRANSCRIPTION_SERVICE_URL, {
 			transports: ["websocket"]
 		});
 		let currentIndex = 0;
