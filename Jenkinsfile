@@ -114,8 +114,8 @@ def fullTest(Map cfg = [:]) {
             ) == 0
 
             catchError(
-                buildResult: 'STABLE',
-                stageResult: 'STABLE',
+                buildResult: 'SUCCESS',
+                stageResult: 'SUCCESS',
                 catchInterruptions: false
             ) {
                 if (hasCoverage) {
