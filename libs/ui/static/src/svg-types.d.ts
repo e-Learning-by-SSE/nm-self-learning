@@ -1,0 +1,3 @@
+import "./svg";
+
+export {};

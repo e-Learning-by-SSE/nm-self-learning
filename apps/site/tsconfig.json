@@ -29,7 +29,6 @@
     "**/*.js",
     "**/*.jsx",
     "next-env.d.ts",
-    "index.d.ts",
     "_features.tsx",
     ".next/types/**/*.ts"
   ],
