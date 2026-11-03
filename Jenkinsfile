@@ -56,8 +56,33 @@ def fullTest(Map cfg = [:]) {
     try {
         sh 'npm run test:ci -- --codeCoverage'
     } finally {
-        junit testResults: "${resultDir}/junit*.xml", allowEmptyResults: true, skipPublishingChecks: true, skipMarkingBuildUnstable : true
-        recordCoverage tools: [[parser: 'COBERTURA', pattern: 'coverage/**/cobertura-coverage.xml,apps/**/cobertura-coverage.xml,libs/**/cobertura-coverage.xml']], enabledForFailure: true, failOnError: true, skipPublishingChecks: true
+        junit testResults: "${resultDir}/junit*.xml",
+            allowEmptyResults: true,
+            skipPublishingChecks: true,
+            skipMarkingBuildUnstable: true
+
+        // Remove Cobertura reports without coverage data
+        sh '''
+            find coverage apps libs -name 'cobertura-coverage.xml' -type f \
+                -exec sh -c '
+                    for file do
+                        if grep -q "lines-valid=\\"0\\"" "$file"; then
+                            echo "Removing empty coverage report: $file"
+                            rm "$file"
+                        fi
+                    done
+                ' sh {} +
+        '''
+
+        recordCoverage(
+            tools: [[
+                parser: 'COBERTURA',
+                pattern: 'coverage/**/cobertura-coverage.xml,apps/**/cobertura-coverage.xml,libs/**/cobertura-coverage.xml'
+            ]],
+            enabledForFailure: true,
+            failOnError: true,
+            skipPublishingChecks: true
+        )
     }
 }
 
