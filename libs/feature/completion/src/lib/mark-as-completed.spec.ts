@@ -49,6 +49,10 @@ beforeAll(async () => {
 	await createLicense(1);
 });
 
+afterAll(async () => {
+	await database.$disconnect();
+});
+
 describe("markAsCompleted", () => {
 	describe("With lessons in course", () => {
 		const courseId = "mark-as-completed-course";
