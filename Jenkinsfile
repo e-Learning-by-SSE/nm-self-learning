@@ -59,7 +59,7 @@ def fullTest(Map cfg = [:]) {
     """
 
     catchError(
-        buildResult: 'SUCCESS',
+        buildResult: 'UNSTABLE',
         stageResult: 'FAILURE',
         catchInterruptions: false
     ) {
@@ -72,7 +72,7 @@ def fullTest(Map cfg = [:]) {
                 testResults: "${resultDir}/junit*.xml",
                 allowEmptyResults: true,
                 skipPublishingChecks: true,
-                skipMarkingBuildUnstable: true
+                skipMarkingBuildUnstable: false
             )
 
             // Collect and normalize Cobertura reports
