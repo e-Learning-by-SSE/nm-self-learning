@@ -47,45 +47,36 @@ def buildSphinxDocs(Map cfg = [:]) {
 
 def fullTest(Map cfg = [:]) {
     def resultDir = cfg.get('resultDir', 'output/test')
+
     sh """
         set -e
         rm -f ${resultDir}/junit-*.xml || true
         rm -rf coverage
-        find apps libs -name cobertura-coverage.xml -type f -delete
+        find apps libs -name lcov.info -type f -delete
     """
+
     try {
         sh 'npm run test:ci -- --codeCoverage'
     } finally {
-        junit testResults: "${resultDir}/junit*.xml",
+        junit(
+            testResults: "${resultDir}/junit*.xml",
             allowEmptyResults: true,
             skipPublishingChecks: true,
             skipMarkingBuildUnstable: true
-
-        // Remove Cobertura reports without coverage data
-        sh '''
-            find coverage apps libs -name 'cobertura-coverage.xml' -type f \
-                -exec sh -c '
-                    for file do
-                        if grep -q "lines-valid=\\"0\\"" "$file"; then
-                            echo "Removing empty coverage report: $file"
-                            rm "$file"
-                        fi
-                    done
-                ' sh {} +
-        '''
+        )
 
         recordCoverage(
             tools: [[
-                parser: 'COBERTURA',
-                pattern: 'coverage/**/cobertura-coverage.xml,apps/**/cobertura-coverage.xml,libs/**/cobertura-coverage.xml'
+                parser: 'LCOV',
+                pattern: 'coverage/**/lcov.info,apps/**/lcov.info,libs/**/lcov.info'
             ]],
             enabledForFailure: true,
             failOnError: true,
-            ignoreErrors: true,
             skipPublishingChecks: true
         )
     }
 }
+
 
 pipeline {
     agent { label 'docker' }

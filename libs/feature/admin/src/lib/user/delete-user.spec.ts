@@ -5,6 +5,10 @@ import { createTestUser } from "@self-learning/util/testing";
 describe("deleteUserAndDependentData Integration Test", () => {
 	const testUsername = "testUser";
 
+	afterAll(async () => {
+		await database.$disconnect();
+	});
+
 	beforeAll(async () => {
 		const user = await createTestUser(testUsername);
 		await database.student.upsert({
