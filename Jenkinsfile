@@ -56,50 +56,57 @@ def fullTest(Map cfg = [:]) {
         find apps libs -name cobertura-coverage.xml -type f -delete
     """
 
-    try {
-        sh 'npm run test:ci -- --codeCoverage'
-    } finally {
-        junit(
-            testResults: "${resultDir}/junit*.xml",
-            allowEmptyResults: true,
-            skipPublishingChecks: true,
-            skipMarkingBuildUnstable: true
-        )
+    catchError(
+        buildResult: 'FAILURE',
+        stageResult: 'FAILURE',
+        catchInterruptions: false
+    ) {
+        try {
+            sh 'npm run test:ci -- --codeCoverage'
+        } finally {
+            // Publish JUnit test results
+            junit(
+                testResults: "${resultDir}/junit*.xml",
+                allowEmptyResults: true,
+                skipPublishingChecks: true,
+                skipMarkingBuildUnstable: true
+            )
 
-        // Collect only Cobertura reports with coverage data
-        sh """
-            mkdir -p "${coverageDir}"
-            rm -f "${coverageDir}/"*.xml
+            // Collect only Cobertura reports with coverage data
+            sh """
+                mkdir -p "${coverageDir}"
+                rm -f "${coverageDir}/"*.xml
 
-            find coverage apps libs -name cobertura-coverage.xml -type f ! -empty \\
-                -exec sh -c '
-                    for f do
-                        if grep -Eq "<class([[:space:]>])" "\$f"; then
-                            name=\$(printf "%s" "\$f" | tr / _)
-                            cp "\$f" "${coverageDir}/\$name"
-                        else
-                            echo "Skipping Cobertura report without coverage data: \$f"
-                        fi
-                    done
-                ' sh {} +
+                find coverage apps libs -name cobertura-coverage.xml -type f ! -empty \\
+                    -exec sh -c '
+                        for f do
+                            if grep -Eq "<class([[:space:]>])" "\$f"; then
+                                name=\$(printf "%s" "\$f" | tr / _)
+                                cp "\$f" "${coverageDir}/\$name"
+                            else
+                                echo "Skipping Cobertura report without coverage data: \$f"
+                            fi
+                        done
+                    ' sh {} +
 
-            echo "Collected Cobertura reports:"
-            find "${coverageDir}" -name '*.xml' -type f
-        """
+                echo "Collected Cobertura reports:"
+                find "${coverageDir}" -name '*.xml' -type f
+            """
 
-        // Publish coverage
-        recordCoverage(
-            tools: [[
-                parser: 'COBERTURA',
-                pattern: "${coverageDir}/*.xml"
-            ]],
-            sourceDirectories: [[path: '.']],
-            sourceCodeRetention: 'EVERY_BUILD',
-            enabledForFailure: true,
-            ignoreErrors: true,
-            failOnError: true,
-            skipPublishingChecks: true
-        )
+            // Publish coverage
+            recordCoverage(
+                tools: [[
+                    parser: 'COBERTURA',
+                    pattern: "${coverageDir}/*.xml"
+                ]],
+                sourceDirectories: [[path: '.']],
+                sourceCodeRetention: 'EVERY_BUILD',
+                enabledForFailure: true,
+                ignoreParsingErrors: true,
+                failOnError: true,
+                skipPublishingChecks: true
+            )
+        }
     }
 }
 
