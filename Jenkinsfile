@@ -51,8 +51,8 @@ def fullTest(Map cfg = [:]) {
     sh """
         set -e
         rm -f ${resultDir}/junit-*.xml || true
-        rm -rf coverage
-        find apps libs -name lcov.info -type f -delete
+        rm -rf coverage output/test/coverage-merged
+        find apps libs -name cobertura-coverage.xml -type f -delete
     """
 
     try {
@@ -66,16 +66,18 @@ def fullTest(Map cfg = [:]) {
         )
 
         // Remove empty reports
-        sh 'find coverage apps libs -name lcov.info -type f -empty -delete'
+        sh 'find coverage apps libs -name cobertura-coverage.xml -type f -empty -delete'
 
-        // Merge reports
+        // Collect reports
         sh '''
             mkdir -p output/test/coverage-merged
-            find coverage apps libs -name lcov.info -type f ! -empty \
-                -exec sh -c 'for f do cp "$f" "output/test/coverage-merged/$(echo "$f" | tr / _)"; done' sh {} +
+            find coverage apps libs -name cobertura-coverage.xml -type f ! -empty \
+                -exec sh -c 'for f do
+                    cp "$f" "output/test/coverage-merged/$(echo "$f" | tr / _)"
+                done' sh {} +
         '''
 
-        // Coverage veröffentlichen
+        // Publish coverage
         recordCoverage(
             tools: [[
                 parser: 'COBERTURA',
@@ -89,7 +91,6 @@ def fullTest(Map cfg = [:]) {
         )
     }
 }
-
 
 pipeline {
     agent { label 'docker' }
