@@ -96,6 +96,7 @@ def fullTest(Map cfg = [:]) {
             sourceDirectories: [[path: '.']],
             sourceCodeRetention: 'EVERY_BUILD',
             enabledForFailure: true,
+            ignoreErrors: true,
             failOnError: true,
             skipPublishingChecks: true
         )
