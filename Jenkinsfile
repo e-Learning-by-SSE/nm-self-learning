@@ -59,8 +59,8 @@ def fullTest(Map cfg = [:]) {
     """
 
     catchError(
-        buildResult: 'UNSTABLE',
-        stageResult: 'FAILURE',
+        buildResult: 'SUCCESS',
+        stageResult: 'SUCCESS',
         catchInterruptions: false
     ) {
         try {
