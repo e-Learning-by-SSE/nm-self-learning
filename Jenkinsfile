@@ -50,9 +50,15 @@ def fullTest(Map cfg = [:]) {
     sh """
         set -e
         rm -f ${resultDir}/junit-*.xml || true
-        npm run test:ci
+        rm -rf coverage
+        find apps libs -name cobertura-coverage.xml -type f -delete
     """
-    junit testResults: "${resultDir}/junit*.xml", allowEmptyResults: true, skipPublishingChecks: true, skipMarkingBuildUnstable : true
+    try {
+        sh 'npm run test:ci -- --codeCoverage'
+    } finally {
+        junit testResults: "${resultDir}/junit*.xml", allowEmptyResults: true, skipPublishingChecks: true, skipMarkingBuildUnstable : true
+        recordCoverage tools: [[parser: 'COBERTURA', pattern: 'coverage/**/cobertura-coverage.xml,apps/**/cobertura-coverage.xml,libs/**/cobertura-coverage.xml']], enabledForFailure: true, failOnError: true, skipPublishingChecks: true
+    }
 }
 
 pipeline {
