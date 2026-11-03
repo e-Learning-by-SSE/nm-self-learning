@@ -33,6 +33,25 @@ function getProjectName(filename) {
 	return null;
 }
 
+function getProjectNameFromReport(reportPath) {
+	const name = path.basename(reportPath);
+
+	const match = name.match(/^(apps|libs)_(.+?)_(?:coverage|output|test)_/);
+
+	if (!match) {
+		return null;
+	}
+
+	const [, type, projectPath] = match;
+	const parts = projectPath.split("_");
+
+	if (type === "apps") {
+		return parts[0];
+	}
+
+	return parts.join("-");
+}
+
 for (const reportPath of process.argv.slice(2)) {
 	const xml = fs.readFileSync(reportPath, "utf8");
 	const data = parser.parse(xml);
@@ -43,12 +62,11 @@ for (const reportPath of process.argv.slice(2)) {
 	for (const pkg of packages) {
 		for (const cls of asArray(pkg.classes?.class)) {
 			const filename = cls["@_filename"] ?? "";
-			const project = getProjectName(filename);
-
-			if (!project) {
-				console.warn(`Unknown project for ${filename}`);
-				continue;
-			}
+			const project =
+				getProjectName(filename) ??
+				getProjectNameFromReport(reportPath) ??
+				pkg["@_name"] ??
+				"unknown";
 
 			if (!grouped.has(project)) {
 				grouped.set(project, {
@@ -68,6 +86,9 @@ for (const reportPath of process.argv.slice(2)) {
 	}
 
 	data.coverage.packages.package = [...grouped.values()];
+
+	delete data["?xml"];
+	delete data["!DOCTYPE"];
 
 	const normalizedXml =
 		'<?xml version="1.0" encoding="UTF-8"?>\n' +
