@@ -1,4 +1,5 @@
 import { authProcedure, t } from "../trpc";
+import { z } from "zod";
 import {
 	getStudentMetric_LearningTime,
 	getStudentMetric_DailyLearningTime,
@@ -12,6 +13,7 @@ import {
 	getAuthorMetric_AverageCompletionRate,
 	getAuthorMetric_AverageSubjectCompletionRate,
 	getAuthorMetric_AverageCourseCompletionRate,
+	getAuthorCourseLessonActivity,
 	getAuthorMetric_AverageLessonCompletionRate,
 	getAuthorMetric_AverageLessonCompletionRateByCourse,
 	getSubjects
@@ -50,6 +52,9 @@ export const MetricsRouter = t.router({
 	getAuthorMetric_AverageCourseCompletionRate: metricsQuery(
 		getAuthorMetric_AverageCourseCompletionRate
 	),
+	getAuthorCourseLessonActivity: authProcedure
+		.input(z.object({ courseId: z.string().min(1) }))
+		.query(({ ctx, input }) => getAuthorCourseLessonActivity(ctx.user.id, input.courseId)),
 	getAuthorMetric_AverageLessonCompletionRate: metricsQuery(
 		getAuthorMetric_AverageLessonCompletionRate
 	),

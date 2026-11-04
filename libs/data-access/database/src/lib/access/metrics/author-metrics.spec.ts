@@ -5,7 +5,8 @@ import {
 	getAuthorMetric_AverageSubjectCompletionRate,
 	getAuthorMetric_AverageCourseCompletionRate,
 	getAuthorMetric_AverageLessonCompletionRate,
-	getAuthorMetric_AverageLessonCompletionRateByCourse
+	getAuthorMetric_AverageLessonCompletionRateByCourse,
+	getAuthorCourseLessonActivity
 } from "./author-metrics";
 
 jest.mock("../../prisma", () => ({
@@ -13,6 +14,8 @@ jest.mock("../../prisma", () => ({
 		authorMetric_AverageCompletionRate: { findUnique: jest.fn() },
 		authorMetric_AverageSubjectCompletionRate: { findMany: jest.fn() },
 		author: { findFirst: jest.fn() },
+		course: { findFirst: jest.fn() },
+		lesson: { findMany: jest.fn() },
 		authorMetric_AverageLessonCompletionRate: { findMany: jest.fn() },
 		authorMetric_DailyAverageLessonCompletionRate: { findMany: jest.fn() },
 		authorMetric_AverageLessonCompletionRateByCourse: { findMany: jest.fn() },
@@ -202,6 +205,107 @@ describe("KPI Database Access Functions", () => {
 	it("returns no course metrics when the user is not an author", async () => {
 		(database.author.findFirst as jest.Mock).mockResolvedValue(null);
 		expect(await getAuthorMetric_AverageCourseCompletionRate(userId)).toEqual([]);
+	});
+
+	it("counts first completions by two-week period in course order, excluding course authors", async () => {
+		jest.useFakeTimers().setSystemTime(new Date("2026-04-20T12:00:00Z"));
+		try {
+			(database.course.findFirst as jest.Mock).mockResolvedValue({
+				content: [
+					{
+						title: "Chapter",
+						content: [{ lessonId: "b" }, { lessonId: "a" }]
+					},
+					{ title: "Second chapter", content: [{ lessonId: "b" }] }
+				],
+				authors: [{ username: "teacher" }, { username: "coauthor" }],
+				enrollments: [
+					{ username: "student", createdAt: new Date("2026-03-01T00:00:00Z") },
+					{ username: "other", createdAt: new Date("2026-03-01T00:00:00Z") },
+					{ username: "coauthor", createdAt: new Date("2026-03-01T00:00:00Z") }
+				],
+				completions: [
+					{
+						username: "student",
+						lessonId: "b",
+						createdAt: new Date("2026-04-02T12:00:00Z")
+					},
+					{
+						username: "student",
+						lessonId: "b",
+						createdAt: new Date("2026-04-08T12:00:00Z")
+					},
+					{
+						username: "other",
+						lessonId: "b",
+						createdAt: new Date("2026-04-15T00:00:00Z")
+					},
+					{
+						username: "coauthor",
+						lessonId: "b",
+						createdAt: new Date("2026-04-02T12:00:00Z")
+					}
+				]
+			});
+			(database.lesson.findMany as jest.Mock).mockResolvedValue([
+				{ lessonId: "a", title: "A" },
+				{ lessonId: "b", title: "B" }
+			]);
+			const result = await getAuthorCourseLessonActivity(userId, "course-1");
+			expect(database.course.findFirst).toHaveBeenCalledWith(
+				expect.objectContaining({
+					where: { courseId: "course-1", authors: { some: { user: { id: userId } } } }
+				})
+			);
+			expect(result?.periods).toEqual([
+				{ start: "2026-04-01", end: "2026-04-15" },
+				{ start: "2026-04-15", end: "2026-04-29" }
+			]);
+			expect(
+				result?.chapters.map(chapter => [
+					chapter.title,
+					chapter.lessons.map(lesson => lesson.title)
+				])
+			).toEqual([
+				["Chapter", ["B", "A"]],
+				["Second chapter", ["B"]]
+			]);
+			expect(result?.chapters[0].lessons[0].totalCompletions).toBe(2);
+			expect(result?.chapters[0].lessons[0].periodCompletions).toEqual([1, 2]);
+			jest.setSystemTime(new Date("2026-04-14T21:59:59Z"));
+			expect((await getAuthorCourseLessonActivity(userId, "course-1"))?.periods).toHaveLength(
+				1
+			);
+			jest.setSystemTime(new Date("2026-04-14T22:00:00Z"));
+			expect((await getAuthorCourseLessonActivity(userId, "course-1"))?.periods).toHaveLength(
+				2
+			);
+		} finally {
+			jest.useRealTimers();
+		}
+	});
+
+	it("does not return lesson activity for a course the user does not author", async () => {
+		(database.course.findFirst as jest.Mock).mockResolvedValue(null);
+		expect(await getAuthorCourseLessonActivity(userId, "other-course")).toBeNull();
+		expect(database.lesson.findMany).not.toHaveBeenCalled();
+	});
+
+	it("uses the winter semester across the year boundary", async () => {
+		jest.useFakeTimers().setSystemTime(new Date("2027-03-31T12:00:00Z"));
+		try {
+			(database.course.findFirst as jest.Mock).mockResolvedValue({
+				content: [],
+				authors: [],
+				completions: []
+			});
+			(database.lesson.findMany as jest.Mock).mockResolvedValue([]);
+			const result = await getAuthorCourseLessonActivity(userId, "course-1");
+			expect(result?.periods[0].start).toBe("2026-10-01");
+			expect(result?.periods.at(-1)?.end).toBe("2027-04-01");
+		} finally {
+			jest.useRealTimers();
+		}
 	});
 
 	it("getAuthorMetric_AverageLessonCompletionRate calls Prisma with correct where clause", async () => {

@@ -8,6 +8,7 @@ import { useTranslation } from "next-i18next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { CourseMetricsTable, type CourseMetricsItem } from "./CourseMetricsTable";
+import { LessonSemesterTable } from "./LessonSemesterTable";
 
 const pct = (n?: number) =>
 	n === undefined || n === null || !Number.isFinite(n) ? "—" : `${Number(n).toFixed(1)}%`;
@@ -194,44 +195,49 @@ function AnalyticsDashboard({ data, courseId }: { data: DashboardData; courseId?
 						{t("Back_To_Courses")}
 					</Link>
 					{activeCourse ? (
-						<section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-							<ChartCard
-								title={t("lessonCompletionRateTitleActive", {
-									courseLabel: activeCourse.label
-								})}
-								data={lessonBars}
-							/>
-							<div
-								id="AnalysisCard"
-								className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5"
-							>
-								<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center gap-2">
-									<h3 className="text-lg font-semibold">{t("analysisTitle")}</h3>
+						<>
+							<section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+								<ChartCard
+									title={t("lessonCompletionRateTitleActive", {
+										courseLabel: activeCourse.label
+									})}
+									data={lessonBars}
+								/>
+								<div
+									id="AnalysisCard"
+									className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5"
+								>
+									<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center gap-2">
+										<h3 className="text-lg font-semibold">
+											{t("analysisTitle")}
+										</h3>
+									</div>
+									<div className="p-5 text-sm leading-6 space-y-2">
+										<p>
+											<b>{t("avgLessonCompletion")}</b>:{" "}
+											{pct(stats.avgCourseRate)}
+										</p>
+										<p>
+											<b>{t("numberOfStudents")}</b>:{" "}
+											{stats.numberOfStudents ?? "—"}
+										</p>
+										<p>
+											<b>{t("highestCompletion")}</b>:{" "}
+											{stats.highestLessonName
+												? `${stats.highestLessonName} – ${pct(stats.highestLessonRate)}`
+												: "—"}
+										</p>
+										<p>
+											<b>{t("lowestCompletion")}</b>:{" "}
+											{stats.lowestLessonName
+												? `${stats.lowestLessonName} – ${pct(stats.lowestLessonRate)}`
+												: "—"}
+										</p>
+									</div>
 								</div>
-								<div className="p-5 text-sm leading-6 space-y-2">
-									<p>
-										<b>{t("avgLessonCompletion")}</b>:{" "}
-										{pct(stats.avgCourseRate)}
-									</p>
-									<p>
-										<b>{t("numberOfStudents")}</b>:{" "}
-										{stats.numberOfStudents ?? "—"}
-									</p>
-									<p>
-										<b>{t("highestCompletion")}</b>:{" "}
-										{stats.highestLessonName
-											? `${stats.highestLessonName} – ${pct(stats.highestLessonRate)}`
-											: "—"}
-									</p>
-									<p>
-										<b>{t("lowestCompletion")}</b>:{" "}
-										{stats.lowestLessonName
-											? `${stats.lowestLessonName} – ${pct(stats.lowestLessonRate)}`
-											: "—"}
-									</p>
-								</div>
-							</div>
-						</section>
+							</section>
+							<LessonSemesterTable courseId={activeCourse.courseId} />
+						</>
 					) : (
 						<p className="mt-6">{t("Course_Not_Found")}</p>
 					)}

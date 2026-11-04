@@ -11,6 +11,7 @@ jest.mock("next-auth/react", () => ({
 }));
 jest.mock("next-i18next", () => ({
 	useTranslation: () => ({
+		i18n: { language: "de" },
 		t: (key: string, options?: { courseLabel?: string }) =>
 			options?.courseLabel ? `${key}: ${options.courseLabel}` : key
 	})
@@ -22,6 +23,38 @@ jest.mock("chart.js/auto", () => ({
 jest.mock("@self-learning/api-client", () => ({
 	trpc: {
 		metrics: {
+			getAuthorCourseLessonActivity: {
+				useQuery: () => ({
+					data: {
+						periods: [{ start: "2026-04-01", end: "2026-04-15" }],
+						chapters: [
+							{
+								title: "Chapter One",
+								lessons: [
+									{
+										lessonId: "one",
+										title: "Weekly Unit",
+										periodCompletions: [2],
+										totalCompletions: 2
+									}
+								]
+							},
+							{
+								title: "Chapter Two",
+								lessons: [
+									{
+										lessonId: "two",
+										title: "Another Unit",
+										periodCompletions: [1],
+										totalCompletions: 1
+									}
+								]
+							}
+						]
+					},
+					isLoading: false
+				})
+			},
 			getAuthorMetric_AverageCourseCompletionRate: {
 				useQuery: () => ({
 					data: [
@@ -122,6 +155,17 @@ describe("creator analytics navigation", () => {
 		).toBeTruthy();
 		expect(screen.getAllByText(/Unit Two/)).toBeTruthy();
 		expect(screen.queryByText(/Unit One/)).toBeNull();
+		const weeklyTable = screen.getByRole("table");
+		expect(within(weeklyTable).getByText("Weekly Unit")).toBeTruthy();
+		const rows = within(weeklyTable).getAllByRole("row");
+		expect(rows.slice(1).map(row => row.querySelector("th")?.textContent)).toEqual([
+			"Chapter One",
+			"Weekly Unit",
+			"Chapter Two",
+			"Another Unit"
+		]);
+		expect(within(weeklyTable).getAllByText("2")).toHaveLength(2);
+		expect(screen.getByText("Lesson_Semester_Note")).toBeTruthy();
 		expect(screen.getByRole("link", { name: "Back_To_Courses" }).getAttribute("href")).toBe(
 			"/learning-analytics"
 		);
