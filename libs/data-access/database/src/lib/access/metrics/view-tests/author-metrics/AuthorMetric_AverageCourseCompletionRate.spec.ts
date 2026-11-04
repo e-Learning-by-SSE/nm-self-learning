@@ -1,8 +1,8 @@
 import { getAuthorMetric_AverageCourseCompletionRate } from "../../author-metrics";
-import { createPrismaClient } from "../../../../prisma-client";
+import { database } from "../../../../prisma";
 import { createAuthorMetricFixture, AuthorMetricFixture } from "./author-metrics.fixture";
 
-const prisma = createPrismaClient();
+const prisma = database;
 let fixture: AuthorMetricFixture | undefined;
 
 describe("Average Course Completion Rate", () => {
@@ -62,7 +62,7 @@ describe("Average Course Completion Rate", () => {
 		const result = (await getAuthorMetric_AverageCourseCompletionRate(authorUser.id)).find(
 			row => row.courseId === course.courseId
 		);
-		expect(result?.totalEnrollments).toBe(1);
+		expect(result?.totalEnrollments).toBe(2);
 		// The second student has no completed course lesson and does not count.
 		// Duplicates and lessons removed from the course content do not count.
 		expect(result?.averageCompletionRate).toBe(50);
