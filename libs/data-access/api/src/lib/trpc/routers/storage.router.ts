@@ -159,7 +159,7 @@ export const storageRouter = t.router({
 			const { objectName, kind } = input;
 
 			try {
-				// Download archive from MinIO as a stream
+				// Download archive from object storage as a stream
 				const { Body: archiveStream } = await s3Client.send(
 					new GetObjectCommand({
 						Bucket: s3Config.bucketName,
