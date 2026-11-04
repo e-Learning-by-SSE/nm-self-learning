@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { CreatorAnalytics } from "@self-learning/analysis";
+import { CreatorAnalytics, TeacherView } from "@self-learning/analysis";
 
 const mockLessons = jest.fn();
 const mockPush = jest.fn();
@@ -126,5 +126,17 @@ describe("creator analytics navigation", () => {
 			"/learning-analytics"
 		);
 		expect(mockLessons).toHaveBeenLastCalledWith(undefined, { enabled: true });
+	});
+
+	it("shows the same course metrics and completion note in the author dashboard", () => {
+		render(<TeacherView />);
+		const rows = within(screen.getByRole("table")).getAllByRole("row");
+		expect(rows).toHaveLength(3);
+		expect(within(rows[1]).getByRole("link", { name: "Course One" }).getAttribute("href")).toBe(
+			"/learning-analytics/courses/course-1"
+		);
+		expect(rows[1].textContent).toContain("25.0%");
+		expect(rows[1].textContent).toContain("50.0%");
+		expect(screen.getByText("Courses_Table_Completion_Note")).toBeTruthy();
 	});
 });

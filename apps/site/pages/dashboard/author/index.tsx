@@ -1,5 +1,5 @@
 import { PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
-import { TeacherView } from "@self-learning/analysis";
+import { I18N_NAMESPACE as NS_ANALYSIS, TeacherView } from "@self-learning/analysis";
 import { withTranslations } from "@self-learning/api";
 import { database } from "@self-learning/database/server";
 import {
@@ -73,7 +73,15 @@ function getAuthor(username: string) {
 }
 
 export const getServerSideProps = withTranslations(
-	Array.from(new Set(["common", "pages-dashboard", ...NS_UI_COMMON, ...NS_FEATURE_TEACHING])),
+	Array.from(
+		new Set([
+			"common",
+			"pages-dashboard",
+			...NS_UI_COMMON,
+			...NS_FEATURE_TEACHING,
+			...NS_ANALYSIS
+		])
+	),
 	withAuth<Props>(async (context, user) => {
 		if (user.isAuthor) {
 			return { props: { author: await getAuthor(user.name) } };
@@ -161,10 +169,7 @@ function AuthorDashboardPage({ author }: Props) {
 
 					<section>
 						<div className="flex justify-between gap-4">
-							<SectionHeader
-								title={t("Participation_Overview")}
-								subtitle={t("Participation_Overview_Subtitle")}
-							/>
+							<SectionHeader title={t("Participation_Overview")} />
 						</div>
 						<TeacherView />
 						<div className="mb-4" />

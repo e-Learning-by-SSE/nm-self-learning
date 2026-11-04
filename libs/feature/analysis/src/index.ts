@@ -5,4 +5,5 @@ export * from "./lib/teacher-view";
 export * from "./lib/metrics/learning-duration";
 export * from "./lib/components/student/StudentAnalytics";
 export * from "./lib/components/creator/CreatorAnalytics";
+export * from "./lib/components/creator/CourseMetricsTable";
 export const I18N_NAMESPACE = ["student-analytics"];

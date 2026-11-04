@@ -1,123 +1,27 @@
 "use client";
+
 import { trpc } from "@self-learning/api-client";
-import { Table, TableDataColumn, TableHeaderColumn, SortIndicator } from "@self-learning/ui/common";
-import { getSemester } from "./aggregation-functions";
-import Link from "next/link";
-import { useState } from "react";
-import { AccessLevel } from "@self-learning/database";
-
-type Course = { slug: string; title: string; courseId: string };
-
-type ParticipationData = Course & {
-	participants?: number | null | undefined;
-	participantsTotal?: number | null | undefined;
-};
-
-function SortedTable({ participationData }: { participationData: ParticipationData[] }) {
-	const [data, setData] = useState(participationData);
-	const [sortConfig, setSortConfig] = useState<{
-		key: keyof ParticipationData | null;
-		direction: "ascending" | "descending";
-	}>({ key: null, direction: "ascending" });
-
-	// Sorting function
-	const sortData = (key: keyof ParticipationData) => {
-		const sortedData = [...data];
-		let direction: "ascending" | "descending" = "ascending";
-
-		if (sortConfig.key === key && sortConfig.direction === "ascending") {
-			direction = "descending";
-		}
-
-		sortedData.sort((a, b) => {
-			if ((a[key] ?? 0) < (b[key] ?? 0)) {
-				return direction === "ascending" ? -1 : 1;
-			}
-			if ((a[key] ?? 0) > (b[key] ?? 0)) {
-				return direction === "ascending" ? 1 : -1;
-			}
-			return 0;
-		});
-
-		setData(sortedData);
-		setSortConfig({ key, direction });
-	};
-
-	return (
-		<>
-			<Table
-				head={
-					<>
-						<TableHeaderColumn onClick={() => sortData("title")}>
-							Kurs <SortIndicator columnId="title" sortConfig={sortConfig} />
-						</TableHeaderColumn>
-						<TableHeaderColumn onClick={() => sortData("participants")}>
-							Aktuelles Semester{" "}
-							<SortIndicator columnId="participants" sortConfig={sortConfig} />
-						</TableHeaderColumn>
-						<TableHeaderColumn onClick={() => sortData("participantsTotal")}>
-							Insgesamt{" "}
-							<SortIndicator columnId="participantsTotal" sortConfig={sortConfig} />
-						</TableHeaderColumn>
-					</>
-				}
-			>
-				{data.map(course => (
-					<tr key={course.slug}>
-						<TableDataColumn>
-							<Link href={`/courses/${course.slug}`}>{course.title}</Link>
-						</TableDataColumn>
-						<TableDataColumn>{course.participants ?? "*"}</TableDataColumn>
-						<TableDataColumn>{course.participantsTotal ?? "*"}</TableDataColumn>
-					</tr>
-				))}
-			</Table>
-		</>
-	);
-}
-
-function CourseParticipation({
-	courses,
-	semester
-}: {
-	courses: Course[];
-	semester: { start: Date; end: Date };
-}) {
-	const { data, isLoading } = trpc.author.courseParticipation.useQuery(
-		{ courseId: courses.map(c => c.courseId), start: semester.start, end: semester.end },
-		{ enabled: courses.length > 0 }
-	);
-
-	if (isLoading) {
-		return <p>Loading...</p>;
-	}
-	if (!data) {
-		return <p>Keine Daten vorhanden.</p>;
-	}
-
-	const merged = courses.map(course => {
-		const participationData = data.find(p => p.courseId === course.courseId);
-		return { ...course, ...(participationData || {}) };
-	});
-
-	return <SortedTable participationData={merged} />;
-}
+import { useTranslation } from "next-i18next";
+import { CourseMetricsTable } from "./components/creator/CourseMetricsTable";
 
 export function TeacherView() {
-	const today = new Date();
-	const semester = getSemester(today);
-	const { data, isLoading } = trpc.author.getAdministratedCourses.useQuery();
+	const { t } = useTranslation("student-analytics");
+	const { data, isLoading, isError } =
+		trpc.metrics.getAuthorMetric_AverageCourseCompletionRate.useQuery(undefined);
 
-	if (isLoading) {
-		return <p>Loading...</p>;
-	}
+	if (isLoading) return <p>{t("loadingDashboard")}</p>;
+	if (isError || !data) return <p>{t("noDataAvailable")}</p>;
 
-	if (!data) {
-		return <p>Keine administrierten Kurse vorhanden.</p>;
-	}
-	const adrministratedCourses = data
-		.filter((p): p is typeof p & { course: Course } => p.course !== null)
-		.map(p => p.course);
+	const courses = data
+		.map(row => ({
+			courseId: row.courseId,
+			label: row.courseTitle,
+			rate: row.averageCompletionRate,
+			enrollments: row.totalEnrollments,
+			recentEnrollments: row.enrollmentsLastSixMonths,
+			recentRate: row.averageCompletionRateLastSixMonths
+		}))
+		.sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
 
-	return <CourseParticipation courses={adrministratedCourses} semester={semester} />;
+	return <CourseMetricsTable courses={courses} />;
 }
