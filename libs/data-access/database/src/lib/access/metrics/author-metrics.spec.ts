@@ -124,14 +124,14 @@ describe("KPI Database Access Functions", () => {
 				courseId: "course-1",
 				averageCompletionRate: 50,
 				averageCompletionRateLastSixMonths: 50,
-				enrollmentsLastSixMonths: 1,
-				totalEnrollments: 1,
-				completedEnrollments: 0
+				enrollmentsLastSixMonths: 2,
+				totalEnrollments: 2,
+				completedEnrollments: 1
 			}),
 			expect.objectContaining({
 				courseId: "empty",
 				averageCompletionRate: 0,
-				totalEnrollments: 0
+				totalEnrollments: 1
 			}),
 			expect.objectContaining({ courseId: "no-students", averageCompletionRate: 0 })
 		]);
@@ -172,6 +172,12 @@ describe("KPI Database Access Functions", () => {
 							status: "ACTIVE",
 							completedAt: null,
 							createdAt: subMonths(new Date(), 1)
+						},
+						{
+							username: "recent-without-progress",
+							status: "ACTIVE",
+							completedAt: null,
+							createdAt: subMonths(new Date(), 1)
 						}
 					],
 					completions: [
@@ -185,8 +191,8 @@ describe("KPI Database Access Functions", () => {
 
 		expect(await getAuthorMetric_AverageCourseCompletionRate(userId)).toEqual([
 			expect.objectContaining({
-				totalEnrollments: 2,
-				enrollmentsLastSixMonths: 1,
+				totalEnrollments: 3,
+				enrollmentsLastSixMonths: 2,
 				averageCompletionRate: 75,
 				averageCompletionRateLastSixMonths: 50
 			})

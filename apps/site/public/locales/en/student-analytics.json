@@ -36,6 +36,7 @@
   "Courses_Table_Enrollments_Total": "Enrollments (overall)",
   "Courses_Table_Completion_6_Months": "Completion rate (6 months)",
   "Courses_Table_Completion_Total": "Completion rate (overall)",
+  "Courses_Table_Completion_Note": "The completion rate only includes learners who have completed at least one lesson in the corresponding course.",
   "analysisTitle": "Analysis",
   "avgLessonCompletion": "Average Lesson Completion",
   "numberOfStudents": "Number of Students",

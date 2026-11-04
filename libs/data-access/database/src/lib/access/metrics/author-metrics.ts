@@ -57,8 +57,7 @@ export async function getAuthorMetric_AverageCourseCompletionRate(userId: string
 			extractLessonIds(parsedContent.success ? parsedContent.data : [])
 		);
 
-		// Only learners with a completed lesson in the current course content count.
-		// Course authors are excluded from the eligible learners
+		// Course authors are excluded from enrollment counts and completion rates.
 		const courseAuthorUsernames = new Set(course.authors.map(author => author.username));
 		const learnersWithCompletion = new Set(
 			course.completions
@@ -66,21 +65,23 @@ export async function getAuthorMetric_AverageCourseCompletionRate(userId: string
 				.map(completion => completion.username)
 		);
 		const eligibleEnrollments = course.enrollments.filter(
-			enrollment =>
-				!courseAuthorUsernames.has(enrollment.username) &&
-				learnersWithCompletion.has(enrollment.username)
+			enrollment => !courseAuthorUsernames.has(enrollment.username)
 		);
 		const recentEnrollments = eligibleEnrollments.filter(
 			enrollment => enrollment.createdAt >= recentEnrollmentStart
 		);
 
 		const completionRate = (enrollments: typeof eligibleEnrollments) => {
-			const enrolledUsernames = new Set(enrollments.map(enrollment => enrollment.username));
+			// Only learners with progress in the current course content contribute to the rate.
+			const withProgress = enrollments.filter(enrollment =>
+				learnersWithCompletion.has(enrollment.username)
+			);
+			const enrolledUsernames = new Set(withProgress.map(enrollment => enrollment.username));
 			const completedCount = course.completions.filter(
 				completion =>
 					enrolledUsernames.has(completion.username) && lessonIds.has(completion.lessonId)
 			).length;
-			const possible = lessonIds.size * enrollments.length;
+			const possible = lessonIds.size * withProgress.length;
 			return possible ? Math.round((completedCount / possible) * 10000) / 100 : 0;
 		};
 

@@ -36,6 +36,7 @@
   "Courses_Table_Enrollments_Total": "Einschreibungen (gesamt)",
   "Courses_Table_Completion_6_Months": "Abschlussrate (6 Mon.)",
   "Courses_Table_Completion_Total": "Abschlussrate (gesamt)",
+  "Courses_Table_Completion_Note": "Für die Abschlussrate werden nur Lernende berücksichtigt, die mindestens eine Lerneinheit im jeweiligen Kurs abgeschlossen haben.",
   "analysisTitle": "Analyse",
   "avgLessonCompletion": "Durchschnittlicher Lektionenabschluss",
   "numberOfStudents": "Anzahl der Studierenden",

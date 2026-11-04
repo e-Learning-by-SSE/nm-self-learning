@@ -317,6 +317,9 @@ function AnalyticsDashboard({ data, courseId }: { data: DashboardData; courseId?
 							</tbody>
 						</table>
 					</section>
+					<p className="mt-3 text-sm text-neutral-600">
+						{t("Courses_Table_Completion_Note")}
+					</p>
 				</>
 			)}
 		</div>
