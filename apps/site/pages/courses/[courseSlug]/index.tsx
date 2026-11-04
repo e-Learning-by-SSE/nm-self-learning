@@ -1,9 +1,9 @@
 import { PlayIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
-import { CourseType, LessonType } from "@prisma/client";
+import { CourseType, LessonType } from "@self-learning/database";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { SmallGradeBadge, useCourseCompletion } from "@self-learning/completion";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
@@ -23,8 +23,8 @@ import {
 } from "@self-learning/ui/common";
 import * as ToC from "@self-learning/ui/course";
 import { CenteredContainer, CenteredSection, useAuthentication } from "@self-learning/ui/layouts";
-import { handleEmailTracking } from "@self-learning/ui/notifications";
-import { withAuth } from "@self-learning/util/auth";
+import { handleEmailTracking } from "@self-learning/ui/notifications/server";
+import { withAuth } from "@self-learning/util/auth/server";
 import { authOptions } from "@self-learning/util/auth/server";
 import { formatDateDistanceToNow, formatSeconds } from "@self-learning/util/common";
 import { getServerSession } from "next-auth";
@@ -354,11 +354,15 @@ function CourseHeader({
 								<span className="text-c-text-muted">{summary.lessons}</span>
 							</li>
 							<li className="flex flex-col">
-								<span className="font-semibold text-c-primary">{t("Chapters")}</span>
+								<span className="font-semibold text-c-primary">
+									{t("Chapters")}
+								</span>
 								<span className="text-c-text-muted">{summary.chapters}</span>
 							</li>
 							<li className="flex flex-col">
-								<span className="font-semibold text-c-primary">{t("Duration")}</span>
+								<span className="font-semibold text-c-primary">
+									{t("Duration")}
+								</span>
 								<span className="text-c-text-muted">
 									{formatSeconds(summary.duration)}
 								</span>
@@ -451,9 +455,7 @@ function TableOfContents({
 				<h3 className="heading flex gap-4 text-2xl">
 					<span className="text-c-primary">{t("No_Content_Available")}</span>
 				</h3>
-				<span className="mt-4 text-c-text-muted">
-					{t("No_Course_Path_Generated")}
-				</span>
+				<span className="mt-4 text-c-text-muted">{t("No_Course_Path_Generated")}</span>
 			</div>
 		);
 	}
@@ -462,9 +464,7 @@ function TableOfContents({
 		return (
 			<div className="flex flex-col gap-4 p-8 rounded-lg bg-gray-100">
 				<span className="text-secondary">{t("No_Contents_Available")}</span>
-				<span className="mt-4 text-light">
-					{t("No_Learning_Content_Remaining")}
-				</span>
+				<span className="mt-4 text-light">{t("No_Learning_Content_Remaining")}</span>
 			</div>
 		);
 	}
@@ -587,9 +587,7 @@ function RefreshGeneratedCourse({ onClick }: { onClick: () => void }) {
 			<h3 className="heading flex gap-4 text-2xl">
 				<span className="text-secondary">{t("Refresh_Course_Title")}</span>
 			</h3>
-			<span className="mt-4 text-light">
-				{t("Refresh_Course_Description")}
-			</span>
+			<span className="mt-4 text-light">{t("Refresh_Course_Description")}</span>
 			<button
 				className="btn-primary mt-4 w-full text-white p-3 rounded-lg flex items-center justify-center font-semibold"
 				onClick={onClick}
@@ -721,7 +719,11 @@ function GeneratingCourseDialog({
 }) {
 	const { t } = useTranslation("pages-course");
 	return (
-		<Dialog title={t("Generating_Course_Path_Title")} onClose={onClose} style={{ minWidth: 480 }}>
+		<Dialog
+			title={t("Generating_Course_Path_Title")}
+			onClose={onClose}
+			style={{ minWidth: 480 }}
+		>
 			<div className="flex flex-col items-center justify-center py-4">
 				{!isComplete ? (
 					<>

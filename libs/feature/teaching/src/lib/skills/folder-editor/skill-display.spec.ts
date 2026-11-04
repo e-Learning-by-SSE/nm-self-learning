@@ -12,87 +12,91 @@ const skill = {
 	description: "description",
 	parents: []
 };
-describe("switchSelectionDisplayValue", () => {
-	it("should update the display values correctly when previousSelectionId and newSelectionId are provided", () => {
-		const previousSelectionId = "previousId";
-		const newSelectionId = "newId";
+describe("skill-display", () => {
+	describe("switchSelectionDisplayValue", () => {
+		it("should update the display values correctly when previousSelectionId and newSelectionId are provided", () => {
+			const previousSelectionId = "previousId";
+			const newSelectionId = "newId";
 
-		const result = switchSelectionDisplayValue(previousSelectionId, newSelectionId);
+			const result = switchSelectionDisplayValue(previousSelectionId, newSelectionId);
 
-		expect(result).toEqual([
-			{ id: previousSelectionId, isSelected: false },
-			{ id: newSelectionId, shortHighlight: true, isSelected: true }
-		]);
-	});
+			expect(result).toEqual([
+				{ id: previousSelectionId, isSelected: false },
+				{ id: newSelectionId, shortHighlight: true, isSelected: true }
+			]);
+		});
 
-	it("should update the display values correctly when only previousSelectionId is provided", () => {
-		const previousSelectionId = "previousId";
-		const newSelectionId = undefined;
+		it("should update the display values correctly when only previousSelectionId is provided", () => {
+			const previousSelectionId = "previousId";
+			const newSelectionId = undefined;
 
-		const result = switchSelectionDisplayValue(previousSelectionId, newSelectionId);
+			const result = switchSelectionDisplayValue(previousSelectionId, newSelectionId);
 
-		expect(result).toEqual([{ id: previousSelectionId, isSelected: false }]);
-	});
+			expect(result).toEqual([{ id: previousSelectionId, isSelected: false }]);
+		});
 
-	it("should update the display values correctly when only newSelectionId is provided", () => {
-		const previousSelectionId = undefined;
-		const newSelectionId = "newId";
+		it("should update the display values correctly when only newSelectionId is provided", () => {
+			const previousSelectionId = undefined;
+			const newSelectionId = "newId";
 
-		const result = switchSelectionDisplayValue(previousSelectionId, newSelectionId);
+			const result = switchSelectionDisplayValue(previousSelectionId, newSelectionId);
 
-		expect(result).toEqual([{ id: newSelectionId, shortHighlight: true, isSelected: true }]);
-	});
+			expect(result).toEqual([
+				{ id: newSelectionId, shortHighlight: true, isSelected: true }
+			]);
+		});
 
-	it("should return an empty array when both previousSelectionId and newSelectionId are undefined", () => {
-		const previousSelectionId = undefined;
-		const newSelectionId = undefined;
+		it("should return an empty array when both previousSelectionId and newSelectionId are undefined", () => {
+			const previousSelectionId = undefined;
+			const newSelectionId = undefined;
 
-		const result = switchSelectionDisplayValue(previousSelectionId, newSelectionId);
+			const result = switchSelectionDisplayValue(previousSelectionId, newSelectionId);
 
-		expect(result).toEqual([]);
-	});
-});
-
-describe("createDisplayData", () => {
-	it("should create display data with default values when no existing data is provided", () => {
-		const skills = new Map<string, SkillFormModel>();
-		skills.set(skill.id, skill);
-
-		const result = createDisplayData(skill);
-
-		expect(result).toEqual({
-			...visualSkillDefaultValues,
-			isFolder: false,
-			numberChildren: 0,
-			children: [],
-			id: skill.id,
-			skill
+			expect(result).toEqual([]);
 		});
 	});
 
-	it("should create display data with existing data merged when existing data is provided", () => {
-		const folderSkill = {
-			...skill,
-			children: ["childId", "childId2"]
-		};
+	describe("createDisplayData", () => {
+		it("should create display data with default values when no existing data is provided", () => {
+			const skills = new Map<string, SkillFormModel>();
+			skills.set(skill.id, skill);
 
-		const existingData = {
-			displayName: "ExistingName",
-			extraProperty: "Extra"
-		};
+			const result = createDisplayData(skill);
 
-		const skills = new Map<string, SkillFormModel>();
-		skills.set(skill.id, skill);
-		const result = createDisplayData(folderSkill, existingData);
+			expect(result).toEqual({
+				...visualSkillDefaultValues,
+				isFolder: false,
+				numberChildren: 0,
+				children: [],
+				id: skill.id,
+				skill
+			});
+		});
 
-		expect(result).toEqual({
-			...visualSkillDefaultValues,
-			...existingData,
-			isFolder: true,
-			numberChildren: 2,
-			children: ["childId", "childId2"],
-			id: skill.id,
-			skill: folderSkill
+		it("should create display data with existing data merged when existing data is provided", () => {
+			const folderSkill = {
+				...skill,
+				children: ["childId", "childId2"]
+			};
+
+			const existingData = {
+				displayName: "ExistingName",
+				extraProperty: "Extra"
+			};
+
+			const skills = new Map<string, SkillFormModel>();
+			skills.set(skill.id, skill);
+			const result = createDisplayData(folderSkill, existingData);
+
+			expect(result).toEqual({
+				...visualSkillDefaultValues,
+				...existingData,
+				isFolder: true,
+				numberChildren: 2,
+				children: ["childId", "childId2"],
+				id: skill.id,
+				skill: folderSkill
+			});
 		});
 	});
 });

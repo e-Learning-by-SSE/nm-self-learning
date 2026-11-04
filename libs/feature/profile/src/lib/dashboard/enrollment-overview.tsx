@@ -1,4 +1,4 @@
-import { EnrollmentDetails } from "@self-learning/enrollment";
+import type { EnrollmentDetails } from "@self-learning/enrollment/server";
 import {
 	ProgressBar,
 	SortIndicator,

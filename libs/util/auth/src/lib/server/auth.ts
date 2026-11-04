@@ -1,7 +1,7 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { createNewProfile } from "@self-learning/achievements";
-import { database } from "@self-learning/database";
-import { createInitialNotificationSettings } from "@self-learning/ui/notifications";
+import { createNewProfile } from "@self-learning/achievements/server";
+import { database } from "@self-learning/database/server";
+import { createInitialNotificationSettings } from "@self-learning/ui/notifications/server";
 import { createHash, randomBytes } from "crypto";
 import { addDays } from "date-fns";
 import { jwtDecode } from "jwt-decode";
@@ -106,7 +106,7 @@ export function createOidcProvider({
 }
 
 const customPrismaAdapter: Adapter = {
-	...PrismaAdapter(database),
+	...PrismaAdapter(database as unknown as Parameters<typeof PrismaAdapter>[0]),
 
 	// We overwrite the linkAccount method, because some auth providers may send additional properties
 	// that do not exist in the Account model.

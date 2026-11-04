@@ -1,4 +1,4 @@
-import { UserRole } from "@prisma/client";
+import { UserRole } from "@self-learning/database";
 import { getIdpSelflearnAdminRole } from "./create-user-session";
 
 function tokenWithClaims(claims: object): string {

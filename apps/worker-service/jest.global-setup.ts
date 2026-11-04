@@ -3,13 +3,14 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 
 export default async function globalSetup() {
-	// workspace root ist bei dir /code
-	const distWorker = join(process.cwd(), "dist/apps/worker-service/worker-runner.js");
+	const workspaceRoot = join(__dirname, "../..");
+	const distWorker = join(workspaceRoot, "dist/apps/worker-service/worker-runner.js");
 
 	if (existsSync(distWorker)) return;
 
 	// Baut worker-service (inkl. additionalEntryPoints)
 	execSync("npx nx build worker-service", {
+		cwd: workspaceRoot,
 		stdio: "inherit",
 		env: { ...process.env, NODE_ENV: "test" }
 	});

@@ -1,4 +1,4 @@
-import { NotificationChannel, NotificationType } from "@prisma/client";
+import { NotificationChannel, NotificationType } from "@self-learning/database";
 import * as z from "zod";
 import { GroupEntrySchema } from "./group";
 

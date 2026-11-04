@@ -2,6 +2,7 @@ import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import nxPlugin from "@nx/eslint-plugin";
 import pluginCypress from "eslint-plugin-cypress";
+import globals from "globals";
 // import prettier from "eslint-config-prettier/flat";
 
 export default [
@@ -62,6 +63,16 @@ export default [
 			"@typescript-eslint/no-non-null-assertion": "off"
 		}
 	}, // Cypress E2E
+	{
+		files: ["jest.preset.js"],
+		languageOptions: {
+			sourceType: "commonjs",
+			globals: globals.node
+		},
+		rules: {
+			"@typescript-eslint/no-require-imports": "off"
+		}
+	},
 	{
 		files: ["apps/site-e2e/**/*.{cy,spec}.{ts,tsx,js,jsx}"],
 		plugins: { cypress: pluginCypress },

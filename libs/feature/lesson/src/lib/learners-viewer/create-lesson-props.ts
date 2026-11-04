@@ -1,4 +1,4 @@
-import { LessonType } from "@prisma/client";
+import { LessonType } from "@self-learning/database";
 import { compileMarkdown } from "@self-learning/markdown";
 import { LessonData } from "../lesson-data-access";
 

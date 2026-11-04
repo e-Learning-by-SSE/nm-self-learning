@@ -10,7 +10,10 @@ import { WorkerAppRouterType } from "./router";
 const httpUrl = process.env.WORKER_SERVICE_URL ?? "http://localhost:4510/trpc";
 const wsUrl = process.env.WORKER_SERVICE_WS_URL ?? "ws://localhost:4510/trpc";
 
-const wsClient = createWSClient({ url: wsUrl });
+const wsClient = createWSClient({
+	url: wsUrl,
+	lazy: { enabled: true, closeMs: 1000 }
+});
 
 /**
  * The tRPC client of site to communicate with the worker-service.

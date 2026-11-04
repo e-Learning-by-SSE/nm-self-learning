@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { createChapter, createCourseContent, createLesson } from "@self-learning/types";
 import {
 	createExampleLesson,
@@ -47,6 +47,10 @@ jest.mock("@trpc/client", () => {
 beforeAll(async () => {
 	await createTestUser(username);
 	await createLicense(1);
+});
+
+afterAll(async () => {
+	await database.$disconnect();
 });
 
 describe("markAsCompleted", () => {

@@ -2,7 +2,9 @@
 	"extends": "../../tsconfig.base.json",
 	"compilerOptions": {
 		"forceConsistentCasingInFileNames": true,
-        "esModuleInterop": true
+        "esModuleInterop": true,
+        "target": "ES2022",
+        "lib": ["ES2022", "DOM"]
 	},
 	"include": [],
 	"files": [],

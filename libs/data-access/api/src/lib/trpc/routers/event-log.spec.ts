@@ -1,11 +1,10 @@
 import { userEventRouter } from "./event-log.router";
 import { Context } from "../context";
 import { t } from "../trpc";
-import { createEventLogEntry, loadUserEventLogs } from "@self-learning/util/eventlog";
+import { createEventLogEntry, loadUserEventLogs } from "@self-learning/util/eventlog/server";
 import { eventDefinitions } from "@self-learning/types";
 
-jest.mock("@self-learning/database");
-jest.mock("@self-learning/util/eventlog", () => ({
+jest.mock("@self-learning/util/eventlog/server", () => ({
 	createEventLogEntry: jest.fn(),
 	loadUserEventLogs: jest.fn()
 }));
@@ -51,17 +50,6 @@ describe("userEventRouter create", () => {
 			...input,
 			payload: input.payload
 		});
-	});
-
-	// TODO Marcel: Timestamps usually created by DB, which is mocked. How was this intended to work?
-	it.skip("should create a timestamp", async () => {
-		const { caller } = prepare();
-		const input = {
-			type: "USER_LOGIN" as const,
-			payload: undefined
-		};
-		const result = await caller.create(input);
-		expect(result).toHaveProperty("createdAt");
 	});
 
 	it("should validate correct payloads", async () => {

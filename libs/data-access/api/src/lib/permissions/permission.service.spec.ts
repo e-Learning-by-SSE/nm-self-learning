@@ -1,10 +1,11 @@
-import { database } from "@self-learning/database";
-import { AccessLevel, GroupRole } from "@prisma/client";
+import { database } from "@self-learning/database/server";
+import { AccessLevel, GroupRole } from "@self-learning/database";
 import { UserFromSession } from "../trpc/context";
 import type { ResourceInput, ResourcePermission } from "@self-learning/types";
 
-jest.mock("@self-learning/database", () => ({
+jest.mock("@self-learning/database/server", () => ({
 	__esModule: true,
+	...jest.requireActual("@self-learning/database/server"),
 	database: {
 		permission: {
 			findMany: jest.fn(),
@@ -565,7 +566,7 @@ describe("permission.service", () => {
 
 		it("throws BAD_REQUEST when resource input is invalid", async () => {
 			await expect(
-				preparePermissionsForUpdate({} as any, [
+				preparePermissionsForUpdate({} as unknown as ResourceInput, [
 					{ groupId: 1, accessLevel: AccessLevel.FULL }
 				])
 			).rejects.toMatchObject({ code: "BAD_REQUEST" });

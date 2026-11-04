@@ -1,3 +1,6 @@
+// Make SVG types available to every TypeScript project importing this entry point.
+import type {} from "./svg-types";
+
 import { ReactComponent as AuthorSvg } from "./assets/svg/author.svg";
 import { ReactComponent as DiarySvg } from "./assets/svg/diary.svg";
 import { ReactComponent as StatisticSvg } from "./assets/svg/statistic.svg";

@@ -1,5 +1,5 @@
 import { getCourseData } from "@self-learning/course";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import {
 	CompletedLessonsMap,
 	Completion,

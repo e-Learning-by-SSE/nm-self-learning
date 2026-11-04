@@ -3,7 +3,7 @@ import { CreateAndViewSkills, I18N_NAMESPACE } from "@self-learning/teaching";
 import { AuthorGuard } from "@self-learning/ui/layouts";
 import { useRouter } from "next/router";
 import { SkillFormModel } from "@self-learning/types";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 
 export const getServerSideProps = withTranslations(
 	["common", ...I18N_NAMESPACE],

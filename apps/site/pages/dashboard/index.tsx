@@ -1,7 +1,7 @@
 import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import {
 	EnableLearningDiaryDialog,
 	I18N_NAMESPACE as DIARY_I18N_NAMESPACE,
@@ -20,7 +20,7 @@ import {
 } from "@self-learning/ui/common";
 import { CenteredSection } from "@self-learning/ui/layouts";
 import { MarketingSvg, OverviewSvg, TargetSvg } from "@self-learning/ui/static";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 import { formatDateDistanceToNow, formatDateStringShort } from "@self-learning/util/common";
 import Link from "next/link";
 import { useTranslation } from "next-i18next";
@@ -241,9 +241,7 @@ type LtbState = {
 };
 
 type LtbFeatureAction =
-	| { type: "TOGGLE_LTB"; enabled: boolean }
-	| { type: "OPEN_DIALOG" }
-	| { type: "CLOSE_DIALOG" };
+	{ type: "TOGGLE_LTB"; enabled: boolean } | { type: "OPEN_DIALOG" } | { type: "CLOSE_DIALOG" };
 
 function ltbReducer(state: LtbState, action: LtbFeatureAction): LtbState {
 	switch (action.type) {

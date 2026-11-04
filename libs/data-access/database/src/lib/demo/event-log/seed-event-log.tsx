@@ -1,10 +1,11 @@
-import { PrismaClient } from "@prisma/client";
-import { database } from "@self-learning/database";
+import { createPrismaClient } from "../../prisma-client";
+import { PrismaClient } from "../../../generated/prisma/client";
+import { database } from "@self-learning/database/server";
 import { getRandomItemsFromArray } from "../../seed-functions";
-import { InputJsonValue } from "@prisma/client/runtime/library";
+import { InputJsonValue } from "@prisma/client/runtime/client";
 import { faker } from "@faker-js/faker";
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient();
 
 interface LessonId {
 	lessonId: string;
@@ -236,9 +237,7 @@ async function seedQuizEvents({
 			resourceId: lessonId,
 			username,
 			createdAt,
-			payload: {
-				/* TODO add lessonAttemptId */
-			}
+			payload: {/* TODO add lessonAttemptId */}
 		}
 	});
 

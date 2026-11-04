@@ -1,13 +1,14 @@
-import { database } from "@self-learning/database";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import {
 	getMySkillPermissions,
 	searchAllResources,
 	searchMyResources
 } from "./resource-search.service";
 
-jest.mock("@self-learning/database", () => ({
+jest.mock("@self-learning/database/server", () => ({
 	__esModule: true,
+	...jest.requireActual("@self-learning/database/server"),
 	database: {
 		course: { findMany: jest.fn() },
 		lesson: { findMany: jest.fn() },

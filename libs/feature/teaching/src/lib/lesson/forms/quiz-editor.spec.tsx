@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 import { createEmptyLesson, Lesson, lessonSchema } from "@self-learning/types";
 import { act, renderHook } from "@testing-library/react";
 import { ReactNode } from "react";

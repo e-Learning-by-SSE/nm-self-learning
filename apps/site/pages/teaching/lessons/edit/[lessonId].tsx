@@ -1,5 +1,5 @@
 import { withTranslations } from "@self-learning/api";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { Quiz } from "@self-learning/quiz";
 import { LessonEditor, LessonFormModel, onLessonEditorSubmit } from "@self-learning/teaching";
 import {
@@ -11,8 +11,8 @@ import { OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { trpc } from "@self-learning/api-client";
 import { ResourceGuard, testResourceGuard } from "@self-learning/ui/layouts";
-import { AccessLevel } from "@prisma/client";
-import { withAuth } from "@self-learning/util/auth";
+import { AccessLevel } from "@self-learning/database";
+import { withAuth } from "@self-learning/util/auth/server";
 import { useTranslation } from "next-i18next";
 
 type EditLessonProps = {

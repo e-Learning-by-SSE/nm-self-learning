@@ -1,6 +1,7 @@
-import { EnrollmentStatus, PrismaClient } from "@prisma/client";
+import { createPrismaClient } from "../../prisma-client";
+import { EnrollmentStatus, PrismaClient } from "../../../generated/prisma/client";
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient();
 
 export async function createEnrollments(
 	courseIds: string[],

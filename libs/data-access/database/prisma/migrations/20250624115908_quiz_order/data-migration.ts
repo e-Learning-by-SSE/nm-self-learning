@@ -1,8 +1,9 @@
-import { Prisma, PrismaClient } from "@prisma/client";
-import { DefaultArgs } from "@prisma/client/runtime/library";
+import { createPrismaClient } from "../../../src/lib/prisma-client";
+import { Prisma, PrismaClient } from "../../../src/generated/prisma/client";
+import { DefaultArgs } from "@prisma/client/runtime/client";
 import { z } from "zod";
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient();
 
 // 2 Data Migrations for Quizzes of Lessons:
 //   1. Add "questionOrder" to Quizzes that do not have it defined.

@@ -9,7 +9,7 @@ import {
 	SearchGroupDialog,
 	useDefaultGroup
 } from "../dialogs/search-group-dialog";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 import { useTranslation } from "next-i18next";
 import { GenericCombobox } from "../editors/group-members";
 import { accessLevelTooltip } from "../editors/group-permission";

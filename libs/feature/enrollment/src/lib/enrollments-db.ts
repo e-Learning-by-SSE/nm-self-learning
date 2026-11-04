@@ -1,9 +1,9 @@
-import { EnrollmentStatus } from "@prisma/client";
-import { getCourseCompletionOfStudent } from "@self-learning/completion";
+import { EnrollmentStatus } from "@self-learning/database";
+import { getCourseCompletionOfStudent } from "@self-learning/completion/server";
 import { CourseEnrollment, ResolvedValue } from "@self-learning/types";
 import { AlreadyExists, NotFound } from "@self-learning/util/http";
-import { database } from "@self-learning/database";
-import { createEventLogEntry } from "@self-learning/util/eventlog";
+import { database } from "@self-learning/database/server";
+import { createEventLogEntry } from "@self-learning/util/eventlog/server";
 
 export async function getEnrollmentDetails(username: string) {
 	const enrollments = await database.enrollment.findMany({

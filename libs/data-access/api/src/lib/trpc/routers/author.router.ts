@@ -1,12 +1,12 @@
-import { database, getAdministratedCourses } from "@self-learning/database";
+import { database, getAdministratedCourses } from "@self-learning/database/server";
 import { authorSchema } from "@self-learning/types";
 import { z } from "zod";
 import { adminProcedure, authorProcedure, authProcedure, t } from "../trpc";
-import { updateAuthorAsAdmin } from "@self-learning/admin";
+import { updateAuthorAsAdmin } from "@self-learning/admin/server";
 import { editAuthorSchema } from "@self-learning/teaching";
 import { paginate, Paginated, paginationSchema } from "@self-learning/util/common";
-import { Prisma } from "@prisma/client";
-import { courseParticipation } from "@self-learning/analysis";
+import { Prisma } from "@self-learning/database/server";
+import { courseParticipation } from "@self-learning/analysis/server";
 
 const participantsInputSchema = z.object({
 	courseId: z.array(z.string()),

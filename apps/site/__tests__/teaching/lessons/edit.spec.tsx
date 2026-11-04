@@ -1,5 +1,5 @@
 import { getServerSideProps } from "../../../pages/teaching/lessons/edit/[lessonId]";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { getServerSession } from "next-auth";
 import { createMockContext } from "../../context-utils";
 import { createLessonMock } from "@self-learning/util/testing";
@@ -14,10 +14,16 @@ jest.mock("next-auth", () => ({
 }));
 
 // Mock the database
-jest.mock("@self-learning/database", () => ({
+jest.mock("@self-learning/database/server", () => ({
 	database: {
 		lesson: { findUnique: jest.fn() }
 	}
+}));
+
+// Mock Minio client which is loaded by the database
+jest.mock("@self-learning/api", () => ({
+	minioClient: {},
+	withTranslations: jest.fn((_namespaces, getServerSideProps) => getServerSideProps)
 }));
 
 jest.mock("@self-learning/ui/layouts", () => ({

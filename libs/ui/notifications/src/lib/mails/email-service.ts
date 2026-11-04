@@ -1,4 +1,4 @@
-import { NotificationType, UserNotificationSetting } from "@prisma/client";
+import { NotificationType, UserNotificationSettingModel } from "@self-learning/database";
 import { matches } from "@self-learning/util/common";
 import {
 	CourseReminderContext,
@@ -85,10 +85,10 @@ export async function sendStreakReminderLast(to: string, data: StreakReminderCon
 
 export function isEmailNotificationSettingEnabled(
 	type: NotificationType,
-	user: { notificationSettings: UserNotificationSetting[] }
+	user: { notificationSettings: UserNotificationSettingModel[] }
 ) {
 	return user.notificationSettings.some(
-		matches<UserNotificationSetting>({
+		matches<UserNotificationSettingModel>({
 			channel: "email",
 			type: type,
 			enabled: true

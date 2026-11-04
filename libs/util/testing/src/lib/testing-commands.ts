@@ -1,5 +1,5 @@
-import { Prisma } from "@prisma/client";
-import { database } from "@self-learning/database";
+import { Prisma } from "@self-learning/database/server";
+import { database } from "@self-learning/database/server";
 
 export const testingActionHandler = {
 	upsertLesson: async (payload: Prisma.LessonCreateInput) => {

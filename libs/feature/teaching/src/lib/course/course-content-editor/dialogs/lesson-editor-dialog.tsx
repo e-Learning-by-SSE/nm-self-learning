@@ -1,4 +1,4 @@
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 import { LessonEditor, LessonFormModel } from "@self-learning/teaching";
 import { Dialog, DialogActions, OnDialogCloseFn } from "@self-learning/ui/common";
 import { useRequiredSession, useResourceGuard } from "@self-learning/ui/layouts";

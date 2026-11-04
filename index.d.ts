@@ -31,6 +31,9 @@ declare global {
 			APP_VERSION: string;
 			SCHEDULER_SECRET: string | undefined;
 			RESEND_API_KEY: string | undefined;
+			WORKER_SERVICE_URL: string | undefined;
+			WORKER_SERVICE_WS_URL: string | undefined;
+			WORKER_SERVICE_SECRET: string | undefined;
 		}
 	}
 }
@@ -64,16 +67,4 @@ declare module "hast" {
 		className?: string | string[];
 		alt?: string;
 	}
-}
-
-declare module "*.svg" {
-	import * as React from "react";
-
-	export const ReactComponent: React.FunctionComponent<
-		React.SVGProps<SVGSVGElement> & { title?: string }
-	>;
-
-	// export default ReactComponent;
-	const src: string;
-	export default src;
 }

@@ -1,7 +1,7 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { Context, UserFromSession } from "../context";
 import { t } from "../trpc";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 import { TRPCError } from "@trpc/server";
 import {
 	canCreate,
@@ -11,12 +11,15 @@ import {
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
 import { buildLinkedLessonQuery, lessonRouter } from "./lesson.router";
-import { AccessLevel, LessonType } from "@prisma/client";
+import { AccessLevel, LessonType } from "@self-learning/database";
 import { deleteEmbedding, prepareRagContent } from "@self-learning/rag-processing";
 import { workerServiceClient } from "@self-learning/worker-api";
 
-jest.mock("@self-learning/database", () => ({
+jest.mock("@self-learning/database/server", () => ({
 	__esModule: true,
+	Prisma: {
+		JsonNull: {}
+	},
 	database: {
 		$transaction: jest.fn(),
 		lesson: {

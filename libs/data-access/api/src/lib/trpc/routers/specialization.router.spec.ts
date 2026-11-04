@@ -1,5 +1,5 @@
-import { database } from "@self-learning/database";
-import { AccessLevel } from "@prisma/client";
+import { database } from "@self-learning/database/server";
+import { AccessLevel } from "@self-learning/database";
 import { TRPCError } from "@trpc/server";
 import { Context, UserFromSession } from "../context";
 import { specializationRouter } from "./specialization.router";
@@ -11,8 +11,9 @@ import {
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
 
-jest.mock("@self-learning/database", () => ({
+jest.mock("@self-learning/database/server", () => ({
 	__esModule: true,
+	...jest.requireActual("@self-learning/database/server"),
 	database: {
 		specialization: {
 			findUniqueOrThrow: jest.fn(),

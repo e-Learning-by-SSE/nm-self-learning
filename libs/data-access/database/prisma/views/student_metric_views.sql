@@ -1,3 +1,15 @@
+-- Prisma 7 creates placeholder views with placeholder column types. Drop the
+-- placeholders first so PostgreSQL can infer the real view column types below.
+DROP VIEW IF EXISTS "StudentMetric_LearningTime";
+DROP VIEW IF EXISTS "StudentMetric_DailyLearningTime";
+DROP VIEW IF EXISTS "StudentMetric_HourlyLearningTime";
+DROP VIEW IF EXISTS "StudentMetric_LearningTimeByCourse";
+DROP VIEW IF EXISTS "StudentMetric_DailyLearningTimeByCourse";
+DROP VIEW IF EXISTS "StudentMetric_CoursesCompletedBySubject";
+DROP VIEW IF EXISTS "StudentMetric_LearningStreak";
+DROP VIEW IF EXISTS "StudentMetric_AverageQuizAnswers";
+DROP VIEW IF EXISTS "StudentMetric_HourlyAverageQuizAnswers";
+
 -- Student Learning Time
 CREATE OR REPLACE VIEW "StudentMetric_LearningTime" AS
 WITH sessionized AS (

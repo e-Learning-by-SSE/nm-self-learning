@@ -6,7 +6,7 @@ import { AppRouter } from "libs/data-access/api/src/lib/trpc/app.router";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 import { normalizeFormResourceAccess } from "@self-learning/types";
 
 type SingleOwnedResources = inferProcedureOutput<

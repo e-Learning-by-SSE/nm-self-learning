@@ -1,11 +1,11 @@
 import "@testing-library/jest-dom";
 import { AchievementWithProgress } from "@self-learning/types";
-import { database } from "@self-learning/database";
-import { AchievementTrigger } from "@prisma/client";
+import { database } from "@self-learning/database/server";
+import { AchievementTrigger } from "@self-learning/database";
 import { checkAndAwardAchievements } from "./award-achievements";
 import { faker } from "@faker-js/faker";
 
-jest.mock("@self-learning/database", () => ({
+jest.mock("@self-learning/database/server", () => ({
 	database: {
 		achievement: {
 			findMany: jest.fn()

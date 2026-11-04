@@ -1,6 +1,6 @@
 import { Combobox, ComboboxButton, ComboboxOption, ComboboxOptions } from "@headlessui/react";
 import { ArrowsUpDownIcon, TrashIcon } from "@heroicons/react/24/solid";
-import { GroupRole } from "@prisma/client";
+import { GroupRole } from "@self-learning/database";
 import { SearchUserDialog, UserSearchEntry } from "@self-learning/admin";
 import { Member } from "@self-learning/types";
 import {

@@ -1,4 +1,6 @@
 import * as trpcNext from "@trpc/server/adapters/next";
+// Load project-specific types declaration from project root
+import type {} from "../../../../../../index";
 import { getServerSession, Session } from "next-auth";
 import { getToken } from "next-auth/jwt";
 import { authOptions, createToken, incomingToLocalRole } from "@self-learning/util/auth/server";

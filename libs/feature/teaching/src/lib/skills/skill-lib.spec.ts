@@ -1,3 +1,11 @@
+import { jest } from "@jest/globals";
+
+jest.unstable_mockModule("@self-learning/database/server", () => ({
+	__esModule: true,
+	prisma: {}
+}));
+
+// eslint-disable-next-line import/first
 import {
 	And,
 	CompositeUnit,
@@ -10,6 +18,7 @@ import {
 	Unit,
 	Variable
 } from "@e-learning-by-sse/nm-skill-lib";
+// eslint-disable-next-line import/first
 import {
 	skills as SkillDb,
 	unitsOfExample1A as UnitsDbA,

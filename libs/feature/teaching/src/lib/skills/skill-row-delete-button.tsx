@@ -9,7 +9,7 @@ import {
 } from "@self-learning/ui/common";
 import { trpc } from "@self-learning/api-client";
 import { TrashIcon } from "@heroicons/react/24/outline";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 import { useState } from "react";
 import styles from "./folder-editor/folder-table.module.css";
 import { useSkillGuard } from "@self-learning/ui/layouts";

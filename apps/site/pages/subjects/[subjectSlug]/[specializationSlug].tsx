@@ -1,6 +1,6 @@
 import { PuzzlePieceIcon } from "@heroicons/react/24/solid";
-import { AccessLevel } from "@prisma/client";
-import { database } from "@self-learning/database";
+import { AccessLevel } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { CourseContent, CourseMeta, extractLessonIds, ResolvedValue } from "@self-learning/types";
 import { I18N_NAMESPACE as NS_TEACHING, SpecializationHeader } from "@self-learning/teaching";
 import { ImageCard, ImageCardBadge, Tooltip } from "@self-learning/ui/common";
@@ -11,7 +11,7 @@ import { useTranslation } from "next-i18next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@self-learning/util/auth/server";
 import { withTranslations } from "@self-learning/api";
-import { CourseType } from "@prisma/client";
+import { CourseType } from "@self-learning/database";
 
 type SpecializationPageProps = {
 	specialization: Omit<ResolvedValue<typeof getSpecialization>, "permissions">;

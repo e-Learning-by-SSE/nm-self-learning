@@ -1,7 +1,7 @@
 import { workerServiceClient } from "./worker-client"; // Critical: Must not be used in client-side barrel exports
 import type { JobKey, ReturnTypeOf } from "../types/job-definitions";
 import type { JobEvent } from "../types/events";
-import { logJobProgress } from "@self-learning/database";
+import { logJobProgress } from "@self-learning/database/server";
 
 /**
  * Subscribes the backend to job events for a specific job.

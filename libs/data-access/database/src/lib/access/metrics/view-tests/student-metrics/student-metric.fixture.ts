@@ -1,10 +1,11 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { createPrismaClient } from "../../../../prisma-client";
+import { Prisma, PrismaClient } from "../../../../../generated/prisma/client";
 import { randomUUID } from "node:crypto";
 
 /** Runs setup and assertions in one transaction, rolling back even when the test succeeds. */
 export function studentMetricTest(run: (prisma: Prisma.TransactionClient) => Promise<void>) {
 	return async () => {
-		const prisma = new PrismaClient();
+		const prisma = createPrismaClient();
 		const rollback = new Error("Roll back student metric test data");
 
 		try {

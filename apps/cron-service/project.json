@@ -12,18 +12,18 @@
 			"options": {
 				"platform": "node",
 				"outputPath": "dist/apps/cron-service",
-				"format": ["cjs"],
-				"bundle": false,
+				"format": ["esm"],
+				"bundle": true,
 				"main": "apps/cron-service/src/main.ts",
 				"tsConfig": "apps/cron-service/tsconfig.app.json",
 				"assets": ["apps/cron-service/src/assets"],
 				"generatePackageJson": true,
 				"esbuildOptions": {
-					"sourcemap": true,
-					"outExtension": {
-						".js": ".js"
-					}
-				}
+                    "sourcemap": true,
+                    "outExtension": {
+                        ".js": ".js"
+                    }
+                }
 			},
 			"configurations": {
 				"development": {},

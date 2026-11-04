@@ -16,10 +16,10 @@ export function MessagePortal({
 	const showMessage = timeLeftSeconds > 0 && !hide;
 
 	useEffect(() => {
-		if (autoDismiss) {
-			const timer = setTimeout(() => setHide(true), visibleTime);
-			return () => clearTimeout(timer);
-		}
+		if (!autoDismiss) return undefined;
+
+		const timer = setTimeout(() => setHide(true), visibleTime);
+		return () => clearTimeout(timer);
 	}, [autoDismiss, visibleTime]);
 
 	if (!showMessage) return null;

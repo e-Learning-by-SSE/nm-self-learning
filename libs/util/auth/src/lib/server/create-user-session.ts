@@ -1,5 +1,5 @@
-import { UserRole } from "@prisma/client";
-import { database } from "@self-learning/database";
+import { UserRole } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { jwtDecode } from "jwt-decode";
 import { CallbacksOptions, Session } from "next-auth";
 

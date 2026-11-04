@@ -15,7 +15,7 @@ import { CenteredSection, useMySkillPermissions } from "@self-learning/ui/layout
 import React, { useMemo, useState } from "react";
 import { ListSkillEntryWithChildren } from "./skilltree/skill-row-entry";
 import { SkillFolderVisualization, SkillSelectHandler, UpdateVisuals } from "./skill-display";
-import { Skill } from "@prisma/client";
+import { SkillModel } from "@self-learning/database";
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { OnlyOwnSkillsCheckbox } from "../only-own-skills-checkbox";
 import { filterSkillTree } from "../filter-skill-tree";
@@ -33,7 +33,7 @@ export function SkillFolderTable({
 	authorId
 }: {
 	skillDisplayData: Map<string, SkillFolderVisualization>;
-	selectedSkill?: Skill;
+	selectedSkill?: SkillModel;
 	onSkillSelect: SkillSelectHandler;
 	updateSkillDisplay: UpdateVisuals;
 	authorId: number;

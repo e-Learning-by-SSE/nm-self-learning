@@ -3,10 +3,10 @@ import { trpc } from "@self-learning/api-client";
 import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
 import { LoadingBox, showToast } from "@self-learning/ui/common";
 import { Unauthorized, useCanCreate, useRequiredSession } from "@self-learning/ui/layouts";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 import { useRouter } from "next/router";
 import { withTranslations } from "@self-learning/api";
-import { CourseType } from "@prisma/client";
+import { CourseType } from "@self-learning/database";
 
 export type CourseSaveResult = {
 	courseId: string;

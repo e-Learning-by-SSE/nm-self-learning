@@ -1,5 +1,5 @@
-import { database } from "@self-learning/database";
-import { AccessLevel, Group, GroupRole, Prisma, User } from "@prisma/client";
+import { AccessLevel, GroupModel, GroupRole, UserModel } from "@self-learning/database";
+import { database, Prisma } from "@self-learning/database/server";
 import { add } from "date-fns";
 import { UserFromSession } from "../trpc/context";
 import { TRPCError } from "@trpc/server";
@@ -45,7 +45,7 @@ export function getActiveMembershipWhere(userId: string): Prisma.MemberWhereInpu
  * @param resource - defined resource following ResourceInputSchema
  * @returns `true` if can read specified resource
  */
-export async function canRead(user: UserFromSession, resource: ResourceInput): Promise<boolean> {
+export async function canRead(_user: UserFromSession, _resource: ResourceInput): Promise<boolean> {
 	return true;
 	// return hasEffectiveResourceAccess(user, resource, AccessLevel.VIEW );
 }
@@ -392,8 +392,8 @@ export async function getEffectiveResourceAccesses(input: ResourceInput) {
 		{
 			permissionId: string;
 			accessLevel: AccessLevel;
-			user: Partial<User>;
-			group: Partial<Group> & { members: Partial<User>[] };
+			user: Partial<UserModel>;
+			group: Partial<GroupModel> & { members: Partial<UserModel>[] };
 		}
 	> = {};
 

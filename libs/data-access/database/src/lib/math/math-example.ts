@@ -1,4 +1,4 @@
-import { GroupRole } from "@prisma/client";
+import { GroupRole } from "../../generated/prisma/client";
 import { createAuthor, seedCaseStudy } from "../seed-functions";
 import * as Analysis from "./Analysis";
 import * as DidacticsOfGeometry from "./DidacticsOfGeometry";

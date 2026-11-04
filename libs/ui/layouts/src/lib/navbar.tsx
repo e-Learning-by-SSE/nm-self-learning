@@ -131,38 +131,38 @@ function NavbarNavigationLink() {
 			let newNavigation: { name: string; href: string }[] = [];
 			newNavigation.push({ name: t("Topic_other"), href: "/subjects" });
 
-			if (query.subjectSlug) {
+			if (query["subjectSlug"]) {
 				newNavigation.push({
-					name: `${query.subjectSlug}`,
-					href: `/subjects/${query.subjectSlug}`
+					name: `${query["subjectSlug"]}`,
+					href: `/subjects/${query["subjectSlug"]}`
 				});
-				if (query.specializationSlug) {
+				if (query["specializationSlug"]) {
 					newNavigation.push({
-						name: `${query.specializationSlug}`,
-						href: `/subjects/${query.subjectSlug}/${query.specializationSlug}`
+						name: `${query["specializationSlug"]}`,
+						href: `/subjects/${query["subjectSlug"]}/${query["specializationSlug"]}`
 					});
 				}
 				localStorage.setItem("navigation", JSON.stringify(newNavigation));
-			} else if (typeof query.subjectId === "string") {
+			} else if (typeof query["subjectId"] === "string") {
 				newNavigation.push({
-					name: query.subjectId,
-					href: `/teaching/subjects/${query.subjectId}`
+					name: query["subjectId"],
+					href: `/teaching/subjects/${query["subjectId"]}`
 				});
-				if (typeof query.specializationId === "string") {
+				if (typeof query["specializationId"] === "string") {
 					newNavigation.push({
-						name: query.specializationId,
-						href: `/teaching/subjects/${query.subjectId}/${query.specializationId}`
+						name: query["specializationId"],
+						href: `/teaching/subjects/${query["subjectId"]}/${query["specializationId"]}`
 					});
 				}
-			} else if (query.courseSlug) {
+			} else if (query["courseSlug"]) {
 				newNavigation = JSON.parse(localStorage.getItem("navigation") ?? "[]");
 				if (newNavigation.length < 1) {
 					newNavigation.push({ name: t("Topic_other"), href: "/subjects" });
 					return;
 				}
 				newNavigation.push({
-					name: `${query.courseSlug}`,
-					href: `/courses/${query.courseSlug}`
+					name: `${query["courseSlug"]}`,
+					href: `/courses/${query["courseSlug"]}`
 				});
 			}
 			setNavigation(newNavigation);

@@ -7,7 +7,7 @@ import {
 	Student,
 	Subject,
 	User
-} from "@prisma/client";
+} from "../../../../../generated/prisma/client";
 import { randomUUID } from "node:crypto";
 
 interface AuthorMetricFixtureOptions {

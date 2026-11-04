@@ -1,7 +1,7 @@
 import { PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { TeacherView } from "@self-learning/analysis";
 import { withTranslations } from "@self-learning/api";
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import {
 	AuthorResourceSection,
 	GroupDeleteOption,
@@ -16,16 +16,16 @@ import {
 } from "@self-learning/ui/common";
 import { CenteredSection, useRequiredSession } from "@self-learning/ui/layouts";
 import { VoidSvg } from "@self-learning/ui/static";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 import Link from "next/link";
-import { GroupRole } from "@prisma/client";
+import { GroupRole } from "@self-learning/database";
 import { useTranslation } from "next-i18next";
 
 type Author = Awaited<ReturnType<typeof getAuthor>>;
 
 type Props = { author: Author };
 
-export function getAuthor(username: string) {
+function getAuthor(username: string) {
 	return database.user.findUniqueOrThrow({
 		where: { name: username },
 		select: {

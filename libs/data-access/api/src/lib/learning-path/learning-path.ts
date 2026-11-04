@@ -1,5 +1,5 @@
-import { CourseType, Prisma } from "@prisma/client";
-import { database } from "@self-learning/database";
+import { CourseType, Prisma } from "@self-learning/database/server";
+import { database } from "@self-learning/database/server";
 import { TRPCError } from "@trpc/server";
 import { randomUUID } from "crypto";
 import { workerServiceClient, subscribeToJobEvents, ReturnTypeOf } from "@self-learning/worker-api";

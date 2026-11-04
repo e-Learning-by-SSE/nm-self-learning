@@ -163,7 +163,7 @@ export function LearningGoals({
 
 export function useLearningGoals() {
 	const { data: goals, isLoading } = trpc.learningGoal.loadLearningGoal.useQuery();
-	const userGoals = new IdSet(goals?.map(convertLearningGoal) ?? ([] as GoalFormModel[]));
+	const userGoals = new IdSet<GoalFormModel>(goals?.map(convertLearningGoal) ?? []);
 	return { userGoals, isLoading };
 }
 

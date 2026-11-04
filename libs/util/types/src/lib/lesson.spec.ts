@@ -1,4 +1,4 @@
-import { AccessLevel, LessonType } from "@prisma/client";
+import { AccessLevel, LessonType } from "@self-learning/database";
 import { Lesson, lessonSchema } from "./lesson";
 
 const minValidLesson: Lesson = {

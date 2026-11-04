@@ -1,11 +1,11 @@
 import {
-	Notification,
 	NotificationChannel,
+	Notification,
 	NotificationType,
 	Prisma,
-	PrismaClient
-} from "@prisma/client";
-import { database } from "@self-learning/database";
+	PrismaClient,
+	database
+} from "@self-learning/database/server";
 import { addBusinessDays } from "date-fns";
 import {
 	NotificationEntry,

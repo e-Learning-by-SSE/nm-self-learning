@@ -1,5 +1,6 @@
+import { createPrismaClient } from "./prisma-client";
 import { faker } from "@faker-js/faker";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../generated/prisma/client";
 import { mathExample } from "./math/math-example";
 import { psychologyExample } from "./psychology/psychology-example";
 import { seedDemos } from "./demo/demo";
@@ -9,7 +10,7 @@ import { license } from "./license";
 import { seedStrategiesAndTechniques } from "./learning-diary/learning-strategies";
 import { seedAchievements } from "./seedAchievements";
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient();
 
 async function seed(): Promise<void> {
 	const start = Date.now();

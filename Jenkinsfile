@@ -45,15 +45,98 @@ def buildSphinxDocs(Map cfg = [:]) {
     sh "rm -rf ${ws}/docs/sphinx/build"
 }
 
+
 def fullTest(Map cfg = [:]) {
     def resultDir = cfg.get('resultDir', 'output/test')
+    def coverageDir = "${resultDir}/coverage-merged"
+
+    // Remove previous test and coverage results
     sh """
         set -e
-        rm -f ${resultDir}/junit-*.xml || true
-        npm run test:ci
+        rm -f "${resultDir}/junit-"*.xml
+        rm -rf coverage "${coverageDir}"
+        find apps libs -name cobertura-coverage.xml -type f -delete
     """
-    junit testResults: "${resultDir}/junit*.xml", allowEmptyResults: true, skipPublishingChecks: true, skipMarkingBuildUnstable : true
+
+        catchError(
+            buildResult: 'UNSTABLE',
+            stageResult: 'FAILURE',
+            catchInterruptions: false
+        ) {
+        try {
+            // Run tests with coverage
+            sh 'npm run test:ci -- --codeCoverage'
+        } finally {
+            // Publish JUnit test results
+            junit(
+                testResults: "${resultDir}/junit*.xml",
+                allowEmptyResults: true,
+                skipPublishingChecks: true,
+                skipMarkingBuildUnstable: false
+            )
+
+            // Collect and normalize Cobertura reports
+            sh """
+                set -e
+
+                mkdir -p "${coverageDir}"
+                rm -f "${coverageDir}/"*.xml
+
+                find coverage apps libs -name cobertura-coverage.xml -type f ! -empty \\
+                    -exec sh -c '
+                        for f do
+                            if grep -Eq "<class([[:space:]>])" "\$f"; then
+                                name=\$(printf "%s" "\$f" | tr / _)
+                                cp "\$f" "${coverageDir}/\$name"
+                            else
+                                echo "Skipping Cobertura report without coverage data: \$f"
+                            fi
+                        done
+                    ' sh {} +
+
+                echo "Collected Cobertura reports:"
+                find "${coverageDir}" -name '*.xml' -type f
+
+                if find "${coverageDir}" -maxdepth 1 -name '*.xml' -type f | grep -q .; then
+                    node scripts/normalize-cobertura.mjs "${coverageDir}/"*.xml
+                else
+                    echo "No Cobertura reports found for normalization"
+                fi
+            """
+
+            // Check whether coverage reports are available
+            def hasCoverage = sh(
+                script: """
+                    find "${coverageDir}" -maxdepth 1 -name '*.xml' \\
+                        -type f -print -quit | grep -q .
+                """,
+                returnStatus: true
+            ) == 0
+
+            catchError(
+                buildResult: 'SUCCESS',
+                stageResult: 'SUCCESS',
+                catchInterruptions: false
+            ) {
+                if (hasCoverage) {
+                    // Publish coverage reports
+                    recordCoverage(
+                        tools: [[parser: 'COBERTURA', pattern: "${coverageDir}/*.xml"]],
+                        sourceDirectories: [[path: '.']],
+                        sourceCodeRetention: 'EVERY_BUILD',
+                        enabledForFailure: true,
+                        ignoreParsingErrors: true,
+                        failOnError: false,
+                        skipPublishingChecks: true
+                    )
+                } else {
+                    error('No Cobertura reports available.')
+                }
+            }
+        }
+    }
 }
+
 
 pipeline {
     agent { label 'docker' }

@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { resourcePermissionSelect, specializationSchema } from "@self-learning/types";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
@@ -10,7 +10,7 @@ import {
 	prepareResourceUpdate
 } from "../../permissions/permission.service";
 import { TRPCError } from "@trpc/server";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 import { UserFromSession } from "../context";
 
 const attachmentSchema = z.object({

@@ -1,8 +1,16 @@
+import { createPrismaClient } from "../../../prisma-client";
 // Helper function to create students
-import { Author, PrismaClient, Student, User, Course, Lesson } from "@prisma/client";
-import { EnrollmentStatus } from "@prisma/client";
+import {
+	Author,
+	PrismaClient,
+	Student,
+	User,
+	Course,
+	Lesson
+} from "../../../../generated/prisma/client";
+import { EnrollmentStatus } from "../../../../generated/prisma/client";
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient();
 
 export async function createUsers(usernames: string[]) {
 	const users: User[] = [];

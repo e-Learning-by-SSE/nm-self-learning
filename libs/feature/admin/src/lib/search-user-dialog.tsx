@@ -1,6 +1,6 @@
 "use client";
 import { Combobox, ComboboxOption } from "@headlessui/react";
-import { UserRole } from "@prisma/client";
+import { UserRole } from "@self-learning/database";
 import { trpc } from "@self-learning/api-client";
 import {
 	DropdownDialog,
@@ -46,7 +46,10 @@ export function SearchUserDialog({
 			<Combobox value={null}>
 				<DropdownDialog.SearchInput
 					filter={name}
-					setFilter={(value) => { setName(value); setPage(1); }}
+					setFilter={value => {
+						setName(value);
+						setPage(1);
+					}}
 					placeholder="Suche nach Nutzer"
 				/>
 

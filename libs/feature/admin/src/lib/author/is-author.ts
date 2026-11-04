@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 
 export async function isAuthor(username: string, slug: string) {
 	try {

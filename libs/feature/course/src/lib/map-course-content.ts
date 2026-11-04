@@ -1,5 +1,5 @@
-import { LessonType } from "@prisma/client";
-import { database } from "@self-learning/database";
+import { LessonType } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import {
 	getLessonDuration,
 	CourseContent,

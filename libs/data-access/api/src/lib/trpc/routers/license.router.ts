@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { t, adminProcedure } from "../trpc";
 import * as z from "zod";
 import { licenseSchema } from "@self-learning/types";

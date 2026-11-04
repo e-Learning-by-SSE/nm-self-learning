@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { ResolvedValue } from "@self-learning/types";
 import { computeTotalDuration } from "@self-learning/analysis";
 import { hoursToMilliseconds, addMilliseconds } from "date-fns";

@@ -9,9 +9,9 @@ import { OnDialogCloseFn, showToast } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { ResourceAccessFormSchema } from "@self-learning/types";
-import { GroupRole } from "@prisma/client";
+import { GroupRole } from "@self-learning/database";
 import { MemberGuard } from "@self-learning/ui/layouts";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 
 type EditGroupProps = {
 	group: GroupFormModel;

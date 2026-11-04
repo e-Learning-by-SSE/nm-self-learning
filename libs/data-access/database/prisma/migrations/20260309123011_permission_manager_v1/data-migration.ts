@@ -1,3 +1,4 @@
+import { createPrismaClient } from "../../../src/lib/prisma-client";
 import {
 	AccessLevel,
 	GroupRole,
@@ -5,9 +6,9 @@ import {
 	NotificationType,
 	Prisma,
 	PrismaClient
-} from "@prisma/client";
+} from "../../../src/generated/prisma/client";
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient();
 
 type AuthorCollab = {
 	userNames: string[];

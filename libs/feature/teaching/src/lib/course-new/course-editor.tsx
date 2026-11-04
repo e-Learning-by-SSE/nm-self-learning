@@ -6,7 +6,7 @@ import { ReactNode, useState } from "react";
 import { useTranslation } from "next-i18next";
 import { DialogActions, showToast, Tab, Tabs, Tooltip } from "@self-learning/ui/common";
 import { OpenAsJsonButton } from "@self-learning/ui/forms";
-import { CourseType } from "@prisma/client";
+import { CourseType } from "@self-learning/database";
 import { CourseContentForm } from "../course/course-content-editor/course-content-form";
 import { CourseInfoForm } from "../course/course-info-form";
 import { SkillsEditor } from "../skills/skills-editor";
@@ -69,10 +69,7 @@ export function CourseEditor({
 	}
 
 	function onClose() {
-		if (
-			form.formState.isDirty &&
-			!window.confirm(t("Course_Editor_Discard_Changes_Confirm"))
-		) {
+		if (form.formState.isDirty && !window.confirm(t("Course_Editor_Discard_Changes_Confirm"))) {
 			return;
 		}
 		router.back();
@@ -124,7 +121,10 @@ export function CourseEditor({
 				onSubmit={e => {
 					// lesson editor submit also triggers this
 					if ((e.target as HTMLFormElement).id !== "courseform") return;
-					form.handleSubmit(data => handleSave(data, true), showCourseValidationErrors)(e);
+					form.handleSubmit(
+						data => handleSave(data, true),
+						showCourseValidationErrors
+					)(e);
 				}}
 				className="w-full"
 			>

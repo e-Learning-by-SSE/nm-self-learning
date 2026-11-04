@@ -5,7 +5,6 @@ declare module "*.svg" {
 		React.SVGProps<SVGSVGElement> & { title?: string }
 	>;
 
-	// export default ReactComponent;
 	const src: string;
 	export default src;
 }

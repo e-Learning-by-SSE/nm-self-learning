@@ -8,7 +8,7 @@ import {
 } from "@self-learning/teaching";
 import { LoadingBox } from "@self-learning/ui/common";
 import { Unauthorized, useCanCreate, useRequiredSession } from "@self-learning/ui/layouts";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 import { useRouter } from "next/router";
 import { withTranslations } from "@self-learning/api";
 

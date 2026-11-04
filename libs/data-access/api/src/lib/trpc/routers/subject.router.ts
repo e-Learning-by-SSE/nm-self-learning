@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { resourcePermissionSelect, subjectSchema } from "@self-learning/types";
 import { z } from "zod";
 import { adminProcedure, authProcedure, t } from "../trpc";
@@ -11,7 +11,7 @@ import {
 } from "../../permissions/permission.service";
 import { TRPCError } from "@trpc/server";
 import { UserFromSession } from "../context";
-import { AccessLevel } from "@prisma/client";
+import { AccessLevel } from "@self-learning/database";
 
 const courseAttachmentSchema = z.object({
 	subjectId: z.string(),

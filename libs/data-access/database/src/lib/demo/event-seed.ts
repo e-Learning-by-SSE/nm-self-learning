@@ -1,7 +1,8 @@
-import { PrismaClient } from "@prisma/client";
+import { createPrismaClient } from "../prisma-client";
+import { PrismaClient } from "../../generated/prisma/client";
 import { EventLog, EventTypeKeys } from "@self-learning/types";
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient();
 
 type TmPEventLogType = Omit<EventLog<EventTypeKeys>, "createdAt" | "id" | "username"> & {
 	createdAt: string;

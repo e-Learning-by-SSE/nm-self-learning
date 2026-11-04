@@ -1,7 +1,7 @@
-import { AccessLevel, Prisma } from "@prisma/client";
+import { database, Prisma } from "@self-learning/database/server";
+import { AccessLevel } from "@self-learning/database";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
-import { database } from "@self-learning/database";
 import { CourseEditor, CourseFormModel } from "@self-learning/teaching";
 import {
 	CourseContent,
@@ -13,7 +13,7 @@ import { showToast } from "@self-learning/ui/common";
 import { useEffect } from "react";
 import { ResourceGuard, testResourceGuard } from "@self-learning/ui/layouts";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import { withAuth } from "@self-learning/util/auth";
+import { withAuth } from "@self-learning/util/auth/server";
 import { CourseSaveResult } from "../create";
 
 type EditCourseProps = {
@@ -120,8 +120,7 @@ export const getServerSideProps = withTranslations(
 				? [{ title: "", content: context.map(lessonId => ({ lessonId })) }]
 				: (course.content as CourseContent);
 
-		const lessonIds =
-			course.type === "DYNAMIC" ? context : extractLessonIds(content);
+		const lessonIds = course.type === "DYNAMIC" ? context : extractLessonIds(content);
 
 		const lessons = await database.lesson.findMany({
 			where: { lessonId: { in: lessonIds } },

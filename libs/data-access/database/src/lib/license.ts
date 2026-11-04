@@ -1,4 +1,5 @@
-import { PrismaClient, Prisma } from "@prisma/client";
+import { createPrismaClient } from "./prisma-client";
+import { PrismaClient, Prisma } from "../generated/prisma/client";
 
 export const license: Prisma.LicenseCreateManyInput[] = [
 	{
@@ -35,7 +36,7 @@ export const license: Prisma.LicenseCreateManyInput[] = [
 export const defaultLicense = license[0];
 
 export async function defaultLicenseId(): Promise<number> {
-	const prisma = new PrismaClient();
+	const prisma = createPrismaClient();
 
 	try {
 		const license = await prisma.license.findFirst({

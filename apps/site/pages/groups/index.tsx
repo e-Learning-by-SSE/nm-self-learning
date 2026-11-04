@@ -1,5 +1,5 @@
 import { ArrowsPointingInIcon, PencilIcon, PlusIcon } from "@heroicons/react/24/solid";
-import { GroupRole } from "@prisma/client";
+import { GroupRole } from "@self-learning/database";
 import { UserSearchEntry } from "@self-learning/admin";
 import { AppRouter, withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";

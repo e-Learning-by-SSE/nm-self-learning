@@ -18,7 +18,8 @@
 			"options": {
 				"jestConfig": "libs/feature/completion/jest.config.ts",
 				"passWithNoTests": true,
-				"parallel": false
+				"parallel": false,
+				"runInBand": true
 			}
 		}
 	}

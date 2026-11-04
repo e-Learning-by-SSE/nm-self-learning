@@ -1,3 +1,4 @@
+import { createPrismaClient } from "./prisma-client";
 import { faker } from "@faker-js/faker";
 import {
 	AccessLevel,
@@ -8,7 +9,7 @@ import {
 	NotificationType,
 	Prisma,
 	PrismaClient
-} from "@prisma/client";
+} from "../generated/prisma/client";
 import { QuestionType, QuizContent } from "@self-learning/question-types";
 import {
 	createCourseContent,
@@ -25,7 +26,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { defaultLicense } from "./license";
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient();
 
 export function createLessonWithRandomContentAndDemoQuestions({
 	title,

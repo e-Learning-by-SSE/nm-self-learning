@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { EventTypeMap } from "@self-learning/types";
 import { endOfDay, secondsToMinutes, startOfDay } from "date-fns";
 import { ConditionChecker } from "../achievement-registry";

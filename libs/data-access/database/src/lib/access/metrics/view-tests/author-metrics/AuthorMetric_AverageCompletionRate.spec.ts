@@ -1,10 +1,7 @@
-/**
- * @jest-environment node
- */
-import { PrismaClient } from "@prisma/client";
+import { createPrismaClient } from "../../../../prisma-client";
 import { createAuthorMetricFixture, AuthorMetricFixture } from "./author-metrics.fixture";
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient();
 let fixture: AuthorMetricFixture | undefined;
 
 describe("Average Completion Rate", () => {

@@ -1,10 +1,10 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { testResourceGuard } from "@self-learning/ui/layouts";
 import { getServerSession } from "next-auth";
 import { getServerSideProps } from "../../pages/subjects/[subjectSlug]/[specializationSlug]";
 import { createMockContext } from "../context-utils";
 
-jest.mock("@self-learning/database", () => ({
+jest.mock("@self-learning/database/server", () => ({
 	database: { specialization: { findUnique: jest.fn() } }
 }));
 jest.mock("next-auth", () => ({ getServerSession: jest.fn() }));

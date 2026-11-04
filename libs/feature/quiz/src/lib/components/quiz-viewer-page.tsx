@@ -5,14 +5,12 @@ import {
 	useMarkAsCompleted
 } from "@self-learning/completion";
 import {
-	LessonCourseData,
-	LessonLayoutProps,
 	StandaloneLessonLayoutProps,
 	useLessonSession,
 	useLessonContext,
-	ChapterName,
-	LessonData
+	ChapterName
 } from "@self-learning/lesson";
+import type { LessonCourseData, LessonData, LessonLayoutProps } from "@self-learning/lesson/server";
 import { MdLookup, MdLookupArray } from "@self-learning/markdown";
 import { QuizContent } from "@self-learning/question-types";
 import { compileQuizMarkdown } from "../quiz-markdown";
@@ -208,7 +206,7 @@ function QuizCompletionStateSubscriber({
 		setLearningTrackingState
 	]);
 
-	return <></>;
+	return null;
 }
 
 // exported for testing

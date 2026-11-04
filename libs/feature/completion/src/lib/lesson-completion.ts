@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database";
+import { database } from "@self-learning/database/server";
 import { endOfWeek, startOfWeek } from "date-fns";
 
 /**
