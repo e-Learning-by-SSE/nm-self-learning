@@ -20,9 +20,9 @@ jest.mock("@self-learning/database/server", () => ({
 	}
 }));
 
-// Mock Minio client which is loaded by the database
+// Mock s3Client which is loaded by the database
 jest.mock("@self-learning/api", () => ({
-	minioClient: {},
+	s3Client: {},
 	withTranslations: jest.fn((_namespaces, getServerSideProps) => getServerSideProps)
 }));
 

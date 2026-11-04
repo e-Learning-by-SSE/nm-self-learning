@@ -1,6 +1,6 @@
 import { downloadMultiple, downloadHtmlMultiple, downloadJsonMultiple } from "./download";
 import { LessonContent, Video, IFrame } from "@self-learning/types";
-import { getFiles, minioConfig } from "@self-learning/api/server";
+import { getFiles, s3Config } from "@self-learning/api/server";
 
 /**
  * Strip WebVTT formatting and return plain spoken text.
@@ -70,7 +70,7 @@ export async function prepareRagContent(
 
 							return htmlFiles.map(
 								objectName =>
-									`${process.env.NEXT_PUBLIC_MINIO_PUBLIC_URL}/${minioConfig.bucketName}/${objectName}`
+									`${process.env.NEXT_PUBLIC_MINIO_PUBLIC_URL}/${s3Config.bucketName}/${objectName}`
 							);
 						}
 					}

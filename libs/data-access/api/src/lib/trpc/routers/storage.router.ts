@@ -1,3 +1,11 @@
+import {
+	DeleteObjectCommand,
+	DeleteObjectsCommand,
+	GetObjectCommand,
+	PutObjectCommand
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { Readable } from "node:stream";
 import { Prisma } from "@self-learning/database/server";
 import { database } from "@self-learning/database/server";
 import { uploadedAssetSchema } from "@self-learning/types";
@@ -7,7 +15,7 @@ import * as unzipper from "unzipper";
 import { z } from "zod";
 import { adminProcedure, authProcedure, t } from "../trpc";
 import { hoursToSeconds } from "date-fns";
-import { minioClient, minioConfig, publicMinioClient } from "../../minio/minio";
+import { listObjectNames, s3Client, s3Config, publicS3Client } from "../../s3/s3client";
 
 /**
  * Time in seconds after which the presigned URL expires.
@@ -151,11 +159,15 @@ export const storageRouter = t.router({
 			const { objectName, kind } = input;
 
 			try {
-				// Download archive from MinIO as a stream
-				const archiveStream = await minioClient.getObject(
-					minioConfig.bucketName,
-					objectName
+				// Download archive from object storage as a stream
+				const { Body: archiveStream } = await s3Client.send(
+					new GetObjectCommand({
+						Bucket: s3Config.bucketName,
+						Key: objectName
+					})
 				);
+				if (!(archiveStream instanceof Readable))
+					throw new Error("Archive stream is unavailable.");
 
 				// Generate a unique folder prefix for this content
 				const folderPrefix = `content/${getRandomId()}`;
@@ -233,12 +245,13 @@ export const storageRouter = t.router({
 								}
 
 								const targetObjectName = `${folderPrefix}/${entryPath}`;
-								await minioClient.putObject(
-									minioConfig.bucketName,
-									targetObjectName,
-									entryBuffer,
-									entryBuffer.length,
-									{ "Content-Type": getMimeType(entryPath) }
+								await s3Client.send(
+									new PutObjectCommand({
+										Bucket: s3Config.bucketName,
+										Key: targetObjectName,
+										Body: entryBuffer,
+										ContentType: getMimeType(entryPath)
+									})
 								);
 							})();
 
@@ -291,16 +304,18 @@ export const storageRouter = t.router({
 						message: "NEXT_PUBLIC_MINIO_PUBLIC_URL is not configured."
 					});
 				}
-				const folderUrl = `${publicUrl}/${minioConfig.bucketName}/${folderPrefix}`;
+				const folderUrl = `${publicUrl}/${s3Config.bucketName}/${folderPrefix}`;
 
 				// Delete the original archive now that it's been unpacked
-				await minioClient.removeObject(minioConfig.bucketName, objectName);
+				await s3Client.send(
+					new DeleteObjectCommand({ Bucket: s3Config.bucketName, Key: objectName })
+				);
 
 				// For zip: store full viewer URL including entry point
 				// For h5p: store folder URL (h5p-standalone handles the rest)
 				const viewerUrl = kind === "zip" ? `${folderUrl}/${entryPoint}` : folderUrl;
 
-				const originalPublicUrl = `${process.env.NEXT_PUBLIC_MINIO_PUBLIC_URL}/${minioConfig.bucketName}/${objectName}`;
+				const originalPublicUrl = `${process.env.NEXT_PUBLIC_MINIO_PUBLIC_URL}/${s3Config.bucketName}/${objectName}`;
 				await database.uploadedAssets.updateMany({
 					where: { publicUrl: originalPublicUrl },
 					data: {
@@ -326,25 +341,16 @@ export const storageRouter = t.router({
 		})
 });
 
-/** Uses the `minio` SDK to request a presigned URL that users can upload files to. */
+/** Generates a presigned URL that users can upload files to. */
 async function getPresignedUrl(filename: string): Promise<string> {
-	try {
-		return await publicMinioClient.presignedPutObject(
-			minioConfig.bucketName,
-			filename,
-			uploadTimeOut
-		);
-	} catch (error) {
-		const errMsg = (error as Error).message;
-		if (errMsg.startsWith("Unable to get bucket region for  ")) {
-			await checkMinioServer();
-		}
-		throw new TRPCError({
-			code: "INTERNAL_SERVER_ERROR",
-			message: `Minio Access Error: ${errMsg}`,
-			cause: (error as Error).cause
-		});
-	}
+	return getSignedUrl(
+		publicS3Client,
+		new PutObjectCommand({
+			Bucket: s3Config.bucketName,
+			Key: filename
+		}),
+		{ expiresIn: uploadTimeOut }
+	);
 }
 
 async function removeFile(objectName: string) {
@@ -369,48 +375,29 @@ async function removeFile(objectName: string) {
 	});
 }
 
-function _removeFileFromStorageServer(filename: string): Promise<void> {
-	// Unpacked zip/h5p content is stored as multiple objects under a
-	// `content/<id>/...` prefix. The UploadedAssets record stores the
-	// folder prefix itself (e.g. `content/abc123`) as objectName, so we
-	// need to remove all objects under that prefix, not just one key.
+async function _removeFileFromStorageServer(filename: string): Promise<void> {
 	if (filename.startsWith("content/")) {
-		return new Promise<void>((resolve, reject) => {
-			const objectsToDelete: string[] = [];
-			const stream = minioClient.listObjectsV2(minioConfig.bucketName, `${filename}/`, true);
-
-			stream.on("data", obj => {
-				if (obj.name) objectsToDelete.push(obj.name);
-			});
-			stream.on("error", reject);
-			stream.on("end", () => {
-				if (objectsToDelete.length === 0) {
-					return resolve();
-				}
-				minioClient
-					.removeObjects(minioConfig.bucketName, objectsToDelete)
-					.then(() => resolve())
-					.catch(reject);
-			});
-		});
+		const names = await listObjectNames(`${filename}/`);
+		// S3 accepts at most 1000 keys per delete request.
+		for (let i = 0; i < names.length; i += 1000) {
+			const result = await s3Client.send(
+				new DeleteObjectsCommand({
+					Bucket: s3Config.bucketName,
+					Delete: { Objects: names.slice(i, i + 1000).map(Key => ({ Key })) }
+				})
+			);
+			if (result.Errors?.length) {
+				throw new Error(
+					`Failed to delete objects: ${result.Errors.map(error => error.Key).join(", ")}`
+				);
+			}
+		}
+		return;
 	}
 
-	return minioClient.removeObject(minioConfig.bucketName, filename);
-}
-
-/**
- * Checks if the Minio server is reachable and returns an error if not.
- */
-async function checkMinioServer() {
-	try {
-		// Calls a function that requires few configuration (e.g., no access key, bucket, ...)
-		await minioClient.listBuckets();
-	} catch (_error) {
-		throw new TRPCError({
-			code: "INTERNAL_SERVER_ERROR",
-			message: `Minio Server not reachable at ${minioConfig.endPoint}:${minioConfig.port}`
-		});
-	}
+	await s3Client.send(
+		new DeleteObjectCommand({ Bucket: s3Config.bucketName, Key: filename })
+	);
 }
 
 /** Returns a basic MIME type based on file extension for MinIO metadata */

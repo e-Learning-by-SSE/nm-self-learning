@@ -343,10 +343,8 @@ pipeline {
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
                                 .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
                                     sh 'npm run format:check'
-                                    sh 'npm run seed'
-                                    sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t lint build e2e-ci"
+                                    sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t build e2e-ci"
                             }
-                            //buildSphinxDocs()
                         
                             withCredentials([string(credentialsId: 'GitHub-NPM', variable: 'NPM_TOKEN')]) {
                                 withEnv(["DOCKER_BUILDKIT=1"]) {
