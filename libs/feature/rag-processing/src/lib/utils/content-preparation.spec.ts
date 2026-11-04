@@ -8,7 +8,7 @@ jest.mock("./download", () => ({
 
 jest.mock("@self-learning/api/server", () => ({
 	getFiles: jest.fn(),
-	minioConfig: {
+	s3Config: {
 		bucketName: "test-bucket"
 	}
 }));

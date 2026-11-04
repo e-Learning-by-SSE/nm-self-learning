@@ -73,7 +73,6 @@
 		"jwt-decode": "^4.0.0",
 		"katex": "^0.19.1",
 		"lucide-react": "^0.546.0",
-		"minio": "^8.0.7",
 		"monaco-editor": "0.57.0",
 		"next": "16.4.3",
 		"next-auth": "^4.24.14",
@@ -118,7 +117,9 @@
 		"unzipper": "^0.12.3",
 		"web-encoding": "^1.1.5",
 		"ws": "^8.21.0",
-		"zod": "^4.6.7"
+		"zod": "^4.6.7",
+		"@aws-sdk/client-s3": "^3.900.0",
+		"@aws-sdk/s3-request-presigner": "^3.900.0"
 	},
 	"devDependencies": {
 		"@babel/core": "7.29.7",
@@ -218,11 +219,6 @@
 				"uuid": "11.1.1"
 			}
 		},
-        "katex": "$katex",
-        "minio": {
-            "query-string": {
-                "decode-uri-component": "0.5.1"
-            }
-        }
+		"katex": "$katex"
 	}
 }

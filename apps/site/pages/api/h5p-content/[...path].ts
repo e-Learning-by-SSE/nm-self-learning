@@ -1,5 +1,7 @@
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { Readable } from "node:stream";
 import { NextApiRequest, NextApiResponse } from "next";
-import { minioClient, minioConfig } from "@self-learning/api/server";
+import { s3Client, s3Config } from "@self-learning/api/server";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 	const pathSegments = Array.isArray(req.query.path) ? (req.query.path as string[]) : [];
@@ -20,7 +22,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 	}
 
 	try {
-		const stream = await minioClient.getObject(minioConfig.bucketName, objectName);
+		const { Body: stream } = await s3Client.send(
+			new GetObjectCommand({
+				Bucket: s3Config.bucketName,
+				Key: objectName
+			})
+		);
+		if (!(stream instanceof Readable)) throw new Error("Object stream is unavailable.");
 
 		stream.on("error", err => {
 			console.error("[h5p-content] stream error:", err);
