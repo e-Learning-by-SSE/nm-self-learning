@@ -5,6 +5,8 @@ import { trpc } from "@self-learning/api-client";
 import { useSession } from "next-auth/react";
 import type { Chart as ChartJS } from "chart.js";
 import { useTranslation } from "next-i18next";
+import Link from "next/link";
+import { useRouter } from "next/router";
 
 const pct = (n?: number) =>
 	n === undefined || n === null || !Number.isFinite(n) ? "—" : `${Number(n).toFixed(1)}%`;
@@ -24,6 +26,8 @@ type CourseItem = {
 	label: string;
 	rate: number;
 	enrollments: number;
+	recentEnrollments: number;
+	recentRate: number;
 };
 
 type PerCourseStats = {
@@ -40,17 +44,18 @@ type DashboardData = {
 	courses: CourseItem[];
 	lessonsByCourse: Record<string, LessonItem[]>;
 	perCourseStats: Record<string, PerCourseStats>;
-	overallAverageCompletionPct?: number;
 };
 
 function ChartCard({
 	title,
 	data = [],
-	extraAction
+	onSelect,
+	courseLinks
 }: {
 	title: string;
 	data?: { label: string; value: number }[];
-	extraAction?: React.ReactNode;
+	onSelect?: (index: number) => void;
+	courseLinks?: { label: string; href: string }[];
 }) {
 	const { t } = useTranslation("student-analytics");
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -125,7 +130,7 @@ function ChartCard({
 			mounted = false;
 			chartRef.current?.destroy();
 		};
-	}, [data]);
+	}, [data, onSelect]);
 
 	const empty = !data.length;
 
@@ -133,11 +138,38 @@ function ChartCard({
 		<div className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5">
 			<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-start justify-between">
 				<h2 className="text-lg font-semibold">{title}</h2>
-				{extraAction ? <div>{extraAction}</div> : null}
 			</div>
 
 			<div className="relative p-5" style={{ height: 380 }}>
-				<canvas ref={canvasRef} />
+				<canvas
+					ref={canvasRef}
+					className={onSelect ? "cursor-pointer" : undefined}
+					onClick={event => {
+						const chart = chartRef.current;
+						if (!onSelect || !chart) return;
+						const bounds = event.currentTarget.getBoundingClientRect();
+						const x = ((event.clientX - bounds.left) * chart.width) / bounds.width;
+						const y = ((event.clientY - bounds.top) * chart.height) / bounds.height;
+						const axis = chart.scales["y"];
+						if (
+							!axis ||
+							x < axis.left ||
+							x > chart.chartArea.right ||
+							y < chart.chartArea.top ||
+							y > chart.chartArea.bottom
+						)
+							return;
+						const index = axis.getValueForPixel(y);
+						if (index !== undefined && index >= 0 && index < data.length)
+							onSelect(index);
+					}}
+				>
+					{courseLinks?.map(course => (
+						<a key={course.href} href={course.href}>
+							{course.label}
+						</a>
+					))}
+				</canvas>
 				{empty && (
 					<div className="absolute inset-0 flex items-center justify-center text-neutral-500 text-sm">
 						{t("noDataAvailable")}
@@ -150,119 +182,156 @@ function ChartCard({
 
 /* ---------- Dashboard ---------- */
 
-function AnalyticsDashboard({ data }: { data?: DashboardData }) {
+function AnalyticsDashboard({ data, courseId }: { data: DashboardData; courseId?: string }) {
 	const { t } = useTranslation("student-analytics");
-	const [coursePos, setCoursePos] = useState(0);
-
-	const courses = data?.courses ?? [];
-	const activeCourse = courses[coursePos];
-
-	const activeCourseId = activeCourse?.courseId ?? "";
-	const activeLessons = (data?.lessonsByCourse?.[activeCourseId] ?? []) as LessonItem[];
-	const stats = (data?.perCourseStats?.[activeCourseId] ?? {}) as PerCourseStats;
-
-	const lessonBars = activeLessons.map(lesson => ({
-		label: lesson.label,
-		value: lesson.rate
-	}));
-
-	const courseBars = courses.map(c => ({
-		label: c.label,
-		value: c.rate
-	}));
-
-	const goNextCourse = () => {
-		if (!courses.length) return;
-		setCoursePos(i => (i + 1) % courses.length);
-	};
-
-	const lessonChartTitle = activeCourse
-		? t("lessonCompletionRateTitleActive", { courseLabel: activeCourse.label })
-		: t("lessonCompletionRateTitleGeneric");
+	const router = useRouter();
+	const courses = data.courses;
+	const activeCourse = courses.find(course => course.courseId === courseId);
+	const stats = activeCourse ? (data.perCourseStats[activeCourse.courseId] ?? {}) : {};
+	const lessonBars = (
+		activeCourse ? (data.lessonsByCourse[activeCourse.courseId] ?? []) : []
+	).map(lesson => ({ label: lesson.label, value: lesson.rate }));
+	const courseBars = courses.map(course => ({ label: course.label, value: course.rate }));
+	const courseHref = (id: string) => `/learning-analytics/courses/${encodeURIComponent(id)}`;
 
 	return (
 		<div className="max-w-7xl mx-auto p-6 md:p-8">
-			<h1 id="author-analytics-title" className="text-3xl font-bold mb-6">
-				{t("welcomeBackTitle", { name: data?.teacherName ?? "—" })}
-			</h1>
-
-			<section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-				<ChartCard
-					title={lessonChartTitle}
-					data={lessonBars}
-					extraAction={
-						courses.length > 1 && (
-							<button
-								onClick={goNextCourse}
-								className="text-neutral-600 text-lg hover:text-neutral-800 transition"
-								aria-label={t("nextCourse")}
-								title={t("nextCourse")}
+			{courseId ? (
+				<>
+					<Link href="/learning-analytics" className="text-blue-700 underline">
+						{t("Back_To_Courses")}
+					</Link>
+					{activeCourse ? (
+						<section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+							<ChartCard
+								title={t("lessonCompletionRateTitleActive", {
+									courseLabel: activeCourse.label
+								})}
+								data={lessonBars}
+							/>
+							<div
+								id="AnalysisCard"
+								className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5"
 							>
-								→
-							</button>
-						)
-					}
-				/>
-
-				<ChartCard title={t("courseCompletionRateTitle")} data={courseBars} />
-			</section>
-
-			<section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-				<div
-					id="AnalysisCard"
-					className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5"
-				>
-					<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center gap-2">
-						<h3 className="text-lg font-semibold">{t("analysisTitle")}</h3>
-					</div>
-					<div className="p-5 text-sm leading-6 space-y-2">
-						<p>
-							<b>{t("avgLessonCompletion")}</b>: {pct(stats.avgCourseRate)}
-						</p>
-						<p>
-							<b>{t("numberOfStudents")}</b>: {stats.numberOfStudents ?? "—"}
-						</p>
-						<p>
-							<b>{t("highestCompletion")}</b>:{" "}
-							{stats.highestLessonName
-								? `${stats.highestLessonName} – ${pct(stats.highestLessonRate)}`
-								: "—"}
-						</p>
-						<p>
-							<b>{t("lowestCompletion")}</b>:{" "}
-							{stats.lowestLessonName
-								? `${stats.lowestLessonName} – ${pct(stats.lowestLessonRate)}`
-								: "—"}
-						</p>
-					</div>
-				</div>
-
-				<div
-					id="OverviewCard"
-					className="bg-white rounded-2xl shadow-sm ring-1 ring-black/5"
-				>
-					<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center gap-2">
-						<h3 className="text-lg font-semibold">{t("overviewTitle")}</h3>
-					</div>
-					<div className="p-5 text-sm leading-6 space-y-2">
-						<p>
-							<b>{t("overallAvgCompletion")}</b>:{" "}
-							{pct(data?.overallAverageCompletionPct)}
-						</p>
-					</div>
-				</div>
-			</section>
+								<div className="px-5 pt-4 pb-2 border-b border-neutral-200 flex items-center gap-2">
+									<h3 className="text-lg font-semibold">{t("analysisTitle")}</h3>
+								</div>
+								<div className="p-5 text-sm leading-6 space-y-2">
+									<p>
+										<b>{t("avgLessonCompletion")}</b>:{" "}
+										{pct(stats.avgCourseRate)}
+									</p>
+									<p>
+										<b>{t("numberOfStudents")}</b>:{" "}
+										{stats.numberOfStudents ?? "—"}
+									</p>
+									<p>
+										<b>{t("highestCompletion")}</b>:{" "}
+										{stats.highestLessonName
+											? `${stats.highestLessonName} – ${pct(stats.highestLessonRate)}`
+											: "—"}
+									</p>
+									<p>
+										<b>{t("lowestCompletion")}</b>:{" "}
+										{stats.lowestLessonName
+											? `${stats.lowestLessonName} – ${pct(stats.lowestLessonRate)}`
+											: "—"}
+									</p>
+								</div>
+							</div>
+						</section>
+					) : (
+						<p className="mt-6">{t("Course_Not_Found")}</p>
+					)}
+				</>
+			) : (
+				<>
+					<h1 id="author-analytics-title" className="text-3xl font-bold mb-6">
+						{t("welcomeBackTitle", { name: data.teacherName })}
+					</h1>
+					<section className="mb-6">
+						<ChartCard
+							title={t("courseCompletionRateTitle")}
+							data={courseBars}
+							courseLinks={courses.map(course => ({
+								label: course.label,
+								href: courseHref(course.courseId)
+							}))}
+							onSelect={index => {
+								const course = courses[index];
+								if (course) void router.push(courseHref(course.courseId));
+							}}
+						/>
+					</section>
+					<section className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+						<table className="w-full min-w-[760px] text-left text-sm">
+							<thead className="border-b border-neutral-200 bg-neutral-50">
+								<tr>
+									<th scope="col" className="px-5 py-4 font-semibold">
+										{t("Courses_Table_Course")}
+									</th>
+									<th scope="col" className="px-5 py-4 font-semibold">
+										{t("Courses_Table_Enrollments_6_Months")}
+									</th>
+									<th scope="col" className="px-5 py-4 font-semibold">
+										{t("Courses_Table_Enrollments_Total")}
+									</th>
+									<th scope="col" className="px-5 py-4 font-semibold">
+										{t("Courses_Table_Completion_6_Months")}
+									</th>
+									<th scope="col" className="px-5 py-4 font-semibold">
+										{t("Courses_Table_Completion_Total")}
+									</th>
+								</tr>
+							</thead>
+							<tbody>
+								{courses.map(course => (
+									<tr
+										key={course.courseId}
+										className="border-b border-neutral-100 last:border-0"
+									>
+										<th scope="row" className="px-5 py-4 font-medium">
+											<Link
+												href={courseHref(course.courseId)}
+												className="text-blue-700 underline"
+											>
+												{course.label}
+											</Link>
+										</th>
+										<td className="px-5 py-4">{course.recentEnrollments}</td>
+										<td className="px-5 py-4">{course.enrollments}</td>
+										<td className="px-5 py-4">{pct(course.recentRate)}</td>
+										<td className="px-5 py-4">{pct(course.rate)}</td>
+									</tr>
+								))}
+								{courses.length === 0 && (
+									<tr>
+										<td
+											colSpan={5}
+											className="px-5 py-6 text-center text-neutral-500"
+										>
+											{t("noDataAvailable")}
+										</td>
+									</tr>
+								)}
+							</tbody>
+						</table>
+					</section>
+				</>
+			)}
 		</div>
 	);
 }
 
-export function CreatorAnalytics() {
+export function CreatorAnalytics({ courseId }: { courseId?: string }) {
 	const { t } = useTranslation("student-analytics");
 	const { data: session, status } = useSession();
 	const { data: avgCourse, isLoading: isLoadingAvgCourse } =
 		trpc.metrics.getAuthorMetric_AverageCourseCompletionRate.useQuery(undefined);
 	const { data: avgLessonRows, isLoading: isLoadingAvgLessonRows } =
-		trpc.metrics.getAuthorMetric_AverageLessonCompletionRate.useQuery(undefined);
+		trpc.metrics.getAuthorMetric_AverageLessonCompletionRate.useQuery(undefined, {
+			enabled: !!courseId
+		});
 
 	const [isClient, setIsClient] = useState(false);
 	useEffect(() => {
@@ -273,18 +342,22 @@ export function CreatorAnalytics() {
 		return <div className="p-10 text-neutral-600">{t("loadingDashboard")}</div>;
 	}
 
-	if (status === "loading" || isLoadingAvgCourse || isLoadingAvgLessonRows) {
+	if (status === "loading" || isLoadingAvgCourse || (!!courseId && isLoadingAvgLessonRows)) {
 		return <div className="p-10 text-neutral-600">{t("loadingSession")}</div>;
 	}
 
 	let courses: CourseItem[] = [];
 	if (avgCourse) {
-		courses = avgCourse.map(row => ({
-			courseId: row.courseId,
-			label: row.courseTitle,
-			rate: row.averageCompletionRate,
-			enrollments: row.totalEnrollments
-		}));
+		courses = avgCourse
+			.map(row => ({
+				courseId: row.courseId,
+				label: row.courseTitle,
+				rate: row.averageCompletionRate,
+				enrollments: row.totalEnrollments,
+				recentEnrollments: row.enrollmentsLastSixMonths,
+				recentRate: row.averageCompletionRateLastSixMonths
+			}))
+			.sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
 	}
 
 	const lessonsByCourse: Record<string, LessonItem[]> = {};
@@ -345,33 +418,18 @@ export function CreatorAnalytics() {
 		};
 	}
 
-	let overallAverageCompletionPct: number | undefined = undefined;
-
-	if (courses.length > 0) {
-		const usable = courses.filter(c => Number.isFinite(c.rate) && c.rate > 0);
-		if (usable.length > 0) {
-			const sum = usable.reduce((acc, c) => acc + c.rate, 0);
-			overallAverageCompletionPct = sum / usable.length;
-		} else {
-			overallAverageCompletionPct = 0;
-		}
-	}
-
 	const teacherNameGuess = session?.user.name ?? t("defaultName");
 
-	const dashboardData: DashboardData | undefined = courses.length
-		? {
-				teacherName: teacherNameGuess,
-				courses,
-				lessonsByCourse,
-				perCourseStats,
-				overallAverageCompletionPct
-			}
-		: undefined;
+	const dashboardData: DashboardData = {
+		teacherName: teacherNameGuess,
+		courses,
+		lessonsByCourse,
+		perCourseStats
+	};
 
 	return (
 		<div className="bg-neutral-50 min-h-screen relative">
-			<AnalyticsDashboard data={dashboardData} />
+			<AnalyticsDashboard data={dashboardData} courseId={courseId} />
 		</div>
 	);
 }

@@ -248,11 +248,6 @@ export type AuthorMetric_AverageCompletionRate = Prisma.AuthorMetric_AverageComp
  */
 export type AuthorMetric_AverageSubjectCompletionRate = Prisma.AuthorMetric_AverageSubjectCompletionRateModel
 /**
- * Model AuthorMetric_AverageCourseCompletionRate
- * 
- */
-export type AuthorMetric_AverageCourseCompletionRate = Prisma.AuthorMetric_AverageCourseCompletionRateModel
-/**
  * Model AuthorMetric_AverageLessonCompletionRate
  * 
  */

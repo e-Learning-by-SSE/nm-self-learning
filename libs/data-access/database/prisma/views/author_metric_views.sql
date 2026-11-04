@@ -54,29 +54,6 @@ LEFT JOIN "Enrollment" e ON e."courseId" = c."courseId"
 GROUP BY u.id, a.username, s."subjectId", s.title
 ORDER BY a.username, s.title;
 
---- Average Course Completion Rate
-CREATE OR REPLACE VIEW "AuthorMetric_AverageCourseCompletionRate" AS
-SELECT
-    u.id AS "authorId",
-    a.username AS "authorUsername",
-    c."courseId",
-    COALESCE(c.title, 'N/A') AS "courseTitle",
-    COUNT(e.username) AS "totalEnrollments",
-    SUM(CASE WHEN e."status" = 'COMPLETED' OR e."completedAt" IS NOT NULL THEN 1 ELSE 0 END) AS "completedEnrollments",
-    COALESCE(
-        ROUND(
-            (SUM(CASE WHEN e."status" = 'COMPLETED' OR e."completedAt" IS NOT NULL THEN 1 ELSE 0 END)::decimal
-             / NULLIF(COUNT(e.username), 0)) * 100,
-        2),
-        0
-    ) AS "averageCompletionRate"
-FROM "_AuthorToCourse" ac
-JOIN "Author" a ON a.id = ac."A"
-JOIN "Course" c ON c."courseId" = ac."B"
-JOIN "User" u ON u."name" = a."username"
-LEFT JOIN "Enrollment" e ON e."courseId" = c."courseId"
-GROUP BY a.username, u.id, c."courseId", c.title;
-
 --- Average Lesson Completion Rate by Course
 CREATE OR REPLACE VIEW "AuthorMetric_AverageLessonCompletionRate" AS
 -- 1. Amount of Lessons that where started

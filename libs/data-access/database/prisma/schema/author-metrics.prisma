@@ -16,18 +16,6 @@ view AuthorMetric_AverageSubjectCompletionRate {
     @@unique([authorId, subjectId])
 }
 
-view AuthorMetric_AverageCourseCompletionRate {
-    authorId              String
-    authorUsername        String
-    courseId              String
-    courseTitle           String
-    totalEnrollments      Int
-    completedEnrollments  Int
-    averageCompletionRate Float
-
-    @@unique([authorId, courseId])
-}
-
 view AuthorMetric_AverageLessonCompletionRate {
     authorId              String
     authorUsername        String
