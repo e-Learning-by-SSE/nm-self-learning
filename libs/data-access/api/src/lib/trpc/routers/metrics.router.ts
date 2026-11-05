@@ -1,5 +1,6 @@
 import { authProcedure, t } from "../trpc";
 import { z } from "zod";
+import { getCurrentLecturePeriod } from "./university-semester";
 import {
 	getStudentMetric_LearningTime,
 	getStudentMetric_DailyLearningTime,
@@ -29,6 +30,7 @@ function metricsQuery<T>(handler: (userId: string) => Promise<T>) {
 }
 
 export const MetricsRouter = t.router({
+	getCurrentLecturePeriod: authProcedure.query(() => getCurrentLecturePeriod()),
 	getStudentMetric_LearningTime: metricsQuery(getStudentMetric_LearningTime),
 	getStudentMetric_DailyLearningTime: metricsQuery(getStudentMetric_DailyLearningTime),
 	getStudentMetric_HourlyLearningTime: metricsQuery(getStudentMetric_HourlyLearningTime),

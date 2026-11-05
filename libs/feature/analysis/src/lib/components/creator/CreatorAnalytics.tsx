@@ -396,7 +396,19 @@ function AnalyticsDashboard({
 export function CreatorAnalytics({ courseId }: { courseId?: string }) {
 	const { t } = useTranslation("student-analytics");
 	const { data: session, status } = useSession();
-	const [dateRange, setDateRange] = useState(getCurrentSemesterRange);
+	const [fallbackDateRange] = useState(getCurrentSemesterRange);
+	const [selectedDateRange, setDateRange] = useState<{
+		startDate: string;
+		endDate: string;
+	} | null>(null);
+	const { data: lecturePeriod, isLoading: isLoadingLecturePeriod } =
+		trpc.metrics.getCurrentLecturePeriod.useQuery(undefined, {
+			enabled: !!courseId,
+			retry: false,
+			staleTime: 60 * 60 * 1000,
+			refetchOnWindowFocus: false
+		});
+	const dateRange = selectedDateRange ?? lecturePeriod ?? fallbackDateRange;
 	const { data: avgCourse, isLoading: isLoadingAvgCourse } =
 		trpc.metrics.getAuthorMetric_AverageCourseCompletionRate.useQuery(undefined);
 	const { data: avgLessonRows, isLoading: isLoadingAvgLessonRows } =
@@ -409,7 +421,7 @@ export function CreatorAnalytics({ courseId }: { courseId?: string }) {
 		isError: isLessonActivityError
 	} = trpc.metrics.getAuthorCourseLessonActivity.useQuery(
 		{ courseId: courseId ?? "", startDate: dateRange.startDate, endDate: dateRange.endDate },
-		{ enabled: !!courseId }
+		{ enabled: !!courseId && !isLoadingLecturePeriod }
 	);
 
 	const [isClient, setIsClient] = useState(false);
@@ -421,7 +433,11 @@ export function CreatorAnalytics({ courseId }: { courseId?: string }) {
 		return <div className="p-10 text-neutral-600">{t("loadingDashboard")}</div>;
 	}
 
-	if (status === "loading" || isLoadingAvgCourse || (!!courseId && isLoadingAvgLessonRows)) {
+	if (
+		status === "loading" ||
+		isLoadingAvgCourse ||
+		(!!courseId && (isLoadingAvgLessonRows || isLoadingLecturePeriod))
+	) {
 		return <div className="p-10 text-neutral-600">{t("loadingSession")}</div>;
 	}
 

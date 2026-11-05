@@ -2,6 +2,8 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { CreatorAnalytics, TeacherView } from "@self-learning/analysis";
 
 const mockLessons = jest.fn();
+const mockLecturePeriod = jest.fn();
+const mockActivity = jest.fn();
 const mockPush = jest.fn();
 const mockChart = jest.fn();
 
@@ -18,42 +20,59 @@ jest.mock("next-i18next", () => ({
 }));
 jest.mock("chart.js/auto", () => ({
 	__esModule: true,
-	default: jest.fn().mockImplementation(() => mockChart())
+	default: jest.fn().mockImplementation((...args: unknown[]) => mockChart(...args))
 }));
 jest.mock("@self-learning/api-client", () => ({
 	trpc: {
 		metrics: {
+			getCurrentLecturePeriod: {
+				useQuery: (...args: unknown[]) => mockLecturePeriod(...args)
+			},
 			getAuthorCourseLessonActivity: {
-				useQuery: () => ({
-					data: {
-						periods: [{ start: "2026-04-01", end: "2026-04-15" }],
-						chapters: [
-							{
-								title: "Chapter One",
-								lessons: [
-									{
-										lessonId: "one",
-										title: "Weekly Unit",
-										periodCompletions: [2],
-										totalCompletions: 2
-									}
-								]
+				useQuery: (...args: unknown[]) => {
+					mockActivity(...args);
+					return {
+						data: {
+							analytics: {
+								period: {
+									enrollments: 2,
+									completedLessons: { min: 1, max: 2, avg: 1.5 }
+								},
+								total: {
+									enrollments: 3,
+									completedLessons: { min: 1, max: 3, avg: 2 }
+								}
 							},
-							{
-								title: "Chapter Two",
-								lessons: [
-									{
-										lessonId: "two",
-										title: "Another Unit",
-										periodCompletions: [1],
-										totalCompletions: 1
-									}
-								]
-							}
-						]
-					},
-					isLoading: false
-				})
+							periods: [{ start: "2026-04-01", end: "2026-04-15" }],
+							chapters: [
+								{
+									title: "Chapter One",
+									lessons: [
+										{
+											lessonId: "one",
+											title: "Weekly Unit",
+											periodCompletions: [2],
+											totalCompletions: 2
+										}
+									]
+								},
+								{
+									title: "Chapter Two",
+									lessons: [
+										{
+											lessonId: "two",
+											title: "Another Unit",
+											periodCompletions: [1],
+											totalCompletions: 1
+										}
+									]
+								}
+							]
+						},
+						isLoading: false,
+						isError: false
+					};
+				}
 			},
 			getAuthorMetric_AverageCourseCompletionRate: {
 				useQuery: () => ({
@@ -88,6 +107,9 @@ jest.mock("@self-learning/api-client", () => ({
 describe("creator analytics navigation", () => {
 	beforeEach(() => {
 		mockPush.mockClear();
+		mockChart.mockClear();
+		mockActivity.mockClear();
+		mockLecturePeriod.mockReturnValue({ data: null, isLoading: false });
 		mockChart.mockReturnValue({
 			destroy: jest.fn(),
 			width: 400,
@@ -153,9 +175,9 @@ describe("creator analytics navigation", () => {
 				name: "lessonCompletionRateTitleActive: Course Two"
 			})
 		).toBeTruthy();
-		expect(screen.getAllByText(/Unit Two/)).toBeTruthy();
-		expect(screen.queryByText(/Unit One/)).toBeNull();
-		const weeklyTable = screen.getByRole("table");
+		await waitFor(() => expect(mockChart).toHaveBeenCalled());
+		expect(mockChart.mock.lastCall?.[1].data.labels).toEqual(["Unit Two"]);
+		const weeklyTable = screen.getAllByRole("table")[1];
 		expect(within(weeklyTable).getByText("Weekly Unit")).toBeTruthy();
 		const rows = within(weeklyTable).getAllByRole("row");
 		expect(rows.slice(1).map(row => row.querySelector("th")?.textContent)).toEqual([
@@ -170,6 +192,54 @@ describe("creator analytics navigation", () => {
 			"/learning-analytics"
 		);
 		expect(mockLessons).toHaveBeenLastCalledWith(undefined, { enabled: true });
+	});
+
+	it("uses lecture dates as defaults and preserves a manually selected range", () => {
+		mockLecturePeriod.mockReturnValue({
+			data: { startDate: "2026-10-19", endDate: "2027-02-05" },
+			isLoading: false
+		});
+		const { rerender } = render(<CreatorAnalytics courseId="course-2" />);
+		const start = screen.getByLabelText("Date_Range_From") as HTMLInputElement;
+		const end = screen.getByLabelText("Date_Range_To") as HTMLInputElement;
+		expect(start.value).toBe("2026-10-19");
+		expect(end.value).toBe("2027-02-05");
+		fireEvent.change(start, { target: { value: "2026-10-01" } });
+		mockLecturePeriod.mockReturnValue({
+			data: { startDate: "2026-10-20", endDate: "2027-02-06" },
+			isLoading: false
+		});
+		rerender(<CreatorAnalytics courseId="course-2" />);
+		expect(start.value).toBe("2026-10-01");
+		expect(end.value).toBe("2027-02-05");
+		expect(mockActivity).toHaveBeenLastCalledWith(
+			{ courseId: "course-2", startDate: "2026-10-01", endDate: "2027-02-05" },
+			{ enabled: true }
+		);
+	});
+
+	it("waits for the lookup and falls back to the calendar semester", () => {
+		jest.useFakeTimers().setSystemTime(new Date("2027-01-15T12:00:00Z"));
+		try {
+			mockLecturePeriod.mockReturnValue({ data: undefined, isLoading: true });
+			const { rerender } = render(<CreatorAnalytics courseId="course-2" />);
+			expect(screen.getByText("loadingSession")).toBeTruthy();
+			expect(mockActivity).toHaveBeenLastCalledWith(expect.anything(), { enabled: false });
+			mockLecturePeriod.mockReturnValue({ data: null, isLoading: false });
+			rerender(<CreatorAnalytics courseId="course-2" />);
+			expect((screen.getByLabelText("Date_Range_From") as HTMLInputElement).value).toBe(
+				"2026-10-01"
+			);
+			expect((screen.getByLabelText("Date_Range_To") as HTMLInputElement).value).toBe(
+				"2027-03-31"
+			);
+			expect(mockActivity).toHaveBeenLastCalledWith(
+				{ courseId: "course-2", startDate: "2026-10-01", endDate: "2027-03-31" },
+				{ enabled: true }
+			);
+		} finally {
+			jest.useRealTimers();
+		}
 	});
 
 	it("shows the same course metrics and completion note in the author dashboard", () => {
