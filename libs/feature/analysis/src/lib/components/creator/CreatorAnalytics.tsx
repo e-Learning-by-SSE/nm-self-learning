@@ -124,7 +124,7 @@ function ChartCard({
 			mounted = false;
 			chartRef.current?.destroy();
 		};
-	}, [data, onSelect]);
+	}, [data]);
 
 	const empty = !data.length;
 
