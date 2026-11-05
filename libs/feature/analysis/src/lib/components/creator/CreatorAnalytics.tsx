@@ -39,6 +39,25 @@ type DashboardData = {
 	perCourseStats: Record<string, PerCourseStats>;
 };
 
+function getCurrentSemesterRange() {
+	const parts = new Intl.DateTimeFormat("en-CA", {
+		timeZone: "Europe/Berlin",
+		year: "numeric",
+		month: "2-digit"
+	}).formatToParts(new Date());
+	const year = Number(parts.find(part => part.type === "year")?.value);
+	const month = Number(parts.find(part => part.type === "month")?.value);
+	const winterSemester = month < 4 || month >= 10;
+	const startYear = month < 4 ? year - 1 : year;
+	const endYear = winterSemester && month >= 10 ? year + 1 : year;
+	const start = new Date(Date.UTC(startYear, winterSemester ? 9 : 3, 1));
+	const end = new Date(Date.UTC(endYear, winterSemester ? 3 : 9, 0));
+	return {
+		startDate: start.toISOString().slice(0, 10),
+		endDate: end.toISOString().slice(0, 10)
+	};
+}
+
 function ChartCard({
 	title,
 	data = [],
@@ -175,7 +194,19 @@ function ChartCard({
 
 /* ---------- Dashboard ---------- */
 
-function AnalyticsDashboard({ data, courseId }: { data: DashboardData; courseId?: string }) {
+function AnalyticsDashboard({
+	data,
+	courseId,
+	startDate,
+	endDate,
+	onDateRangeChange
+}: {
+	data: DashboardData;
+	courseId?: string;
+	startDate: string;
+	endDate: string;
+	onDateRangeChange: (range: { startDate: string; endDate: string }) => void;
+}) {
 	const { t } = useTranslation("student-analytics");
 	const router = useRouter();
 	const courses = data.courses;
@@ -191,9 +222,45 @@ function AnalyticsDashboard({ data, courseId }: { data: DashboardData; courseId?
 		<div className="max-w-7xl mx-auto p-6 md:p-8">
 			{courseId ? (
 				<>
-					<Link href="/learning-analytics" className="text-blue-700 underline">
-						{t("Back_To_Courses")}
-					</Link>
+					<div className="flex flex-wrap items-end justify-between gap-4">
+						<Link href="/learning-analytics" className="text-blue-700 underline">
+							{t("Back_To_Courses")}
+						</Link>
+						<div className="flex flex-wrap items-end gap-3">
+							<label className="flex flex-col gap-1 text-sm">
+								<span>{t("Date_Range_From")}</span>
+								<input
+									type="date"
+									value={startDate}
+									max={endDate}
+									onChange={event => {
+										if (event.target.value)
+											onDateRangeChange({
+												startDate: event.target.value,
+												endDate
+											});
+									}}
+									className="rounded-md border border-neutral-300 bg-white px-3 py-2"
+								/>
+							</label>
+							<label className="flex flex-col gap-1 text-sm">
+								<span>{t("Date_Range_To")}</span>
+								<input
+									type="date"
+									value={endDate}
+									min={startDate}
+									onChange={event => {
+										if (event.target.value)
+											onDateRangeChange({
+												startDate,
+												endDate: event.target.value
+											});
+									}}
+									className="rounded-md border border-neutral-300 bg-white px-3 py-2"
+								/>
+							</label>
+						</div>
+					</div>
 					{activeCourse ? (
 						<>
 							<section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
@@ -236,7 +303,11 @@ function AnalyticsDashboard({ data, courseId }: { data: DashboardData; courseId?
 									</div>
 								</div>
 							</section>
-							<LessonSemesterTable courseId={activeCourse.courseId} />
+							<LessonSemesterTable
+								courseId={activeCourse.courseId}
+								startDate={startDate}
+								endDate={endDate}
+							/>
 						</>
 					) : (
 						<p className="mt-6">{t("Course_Not_Found")}</p>
@@ -271,6 +342,7 @@ function AnalyticsDashboard({ data, courseId }: { data: DashboardData; courseId?
 export function CreatorAnalytics({ courseId }: { courseId?: string }) {
 	const { t } = useTranslation("student-analytics");
 	const { data: session, status } = useSession();
+	const [dateRange, setDateRange] = useState(getCurrentSemesterRange);
 	const { data: avgCourse, isLoading: isLoadingAvgCourse } =
 		trpc.metrics.getAuthorMetric_AverageCourseCompletionRate.useQuery(undefined);
 	const { data: avgLessonRows, isLoading: isLoadingAvgLessonRows } =
@@ -374,7 +446,13 @@ export function CreatorAnalytics({ courseId }: { courseId?: string }) {
 
 	return (
 		<div className="bg-neutral-50 min-h-screen relative">
-			<AnalyticsDashboard data={dashboardData} courseId={courseId} />
+			<AnalyticsDashboard
+				data={dashboardData}
+				courseId={courseId}
+				startDate={dateRange.startDate}
+				endDate={dateRange.endDate}
+				onDateRangeChange={setDateRange}
+			/>
 		</div>
 	);
 }

@@ -53,8 +53,21 @@ export const MetricsRouter = t.router({
 		getAuthorMetric_AverageCourseCompletionRate
 	),
 	getAuthorCourseLessonActivity: authProcedure
-		.input(z.object({ courseId: z.string().min(1) }))
-		.query(({ ctx, input }) => getAuthorCourseLessonActivity(ctx.user.id, input.courseId)),
+		.input(
+			z.object({
+				courseId: z.string().min(1),
+				startDate: z.iso.date(),
+				endDate: z.iso.date()
+			})
+		)
+		.query(({ ctx, input }) =>
+			getAuthorCourseLessonActivity(
+				ctx.user.id,
+				input.courseId,
+				input.startDate,
+				input.endDate
+			)
+		),
 	getAuthorMetric_AverageLessonCompletionRate: metricsQuery(
 		getAuthorMetric_AverageLessonCompletionRate
 	),

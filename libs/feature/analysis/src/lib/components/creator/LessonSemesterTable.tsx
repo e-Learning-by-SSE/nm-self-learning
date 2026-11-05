@@ -3,10 +3,20 @@
 import { trpc } from "@self-learning/api-client";
 import { useTranslation } from "next-i18next";
 
-export function LessonSemesterTable({ courseId }: { courseId: string }) {
+export function LessonSemesterTable({
+	courseId,
+	startDate,
+	endDate
+}: {
+	courseId: string;
+	startDate: string;
+	endDate: string;
+}) {
 	const { t, i18n } = useTranslation("student-analytics");
 	const { data, isLoading, isError } = trpc.metrics.getAuthorCourseLessonActivity.useQuery({
-		courseId
+		courseId,
+		startDate,
+		endDate
 	});
 	if (isLoading) return <p>{t("loadingDashboard")}</p>;
 	if (isError || !data) return <p>{t("noDataAvailable")}</p>;

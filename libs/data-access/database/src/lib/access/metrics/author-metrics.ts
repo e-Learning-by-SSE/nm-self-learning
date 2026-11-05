@@ -120,8 +120,13 @@ export async function getAuthorMetric_AverageLessonCompletionRateByCourse(userId
 	});
 }
 
-/** Fortnightly lesson completions for the current semester, restricted to course authors. */
-export async function getAuthorCourseLessonActivity(userId: string, courseId: string) {
+/** Weekly lesson completion snapshots for a date range, restricted to course authors. */
+export async function getAuthorCourseLessonActivity(
+	userId: string,
+	courseId: string,
+	startDate?: string,
+	endDate?: string
+) {
 	const course = await database.course.findFirst({
 		where: { courseId, authors: { some: { user: { id: userId } } } },
 		select: {
@@ -144,20 +149,37 @@ export async function getAuthorCourseLessonActivity(userId: string, courseId: st
 	const localNow = toZonedTime(now, "Europe/Berlin");
 	const year = localNow.getFullYear();
 	const month = localNow.getMonth();
-	const semesterStart = new Date(
+	const currentSemesterStart = new Date(
 		Date.UTC(month < 3 ? year - 1 : year, month >= 3 && month < 9 ? 3 : 9, 1)
 	);
-	const semesterEnd = new Date(
+	const currentSemesterEnd = new Date(
 		Date.UTC(month < 3 ? year : month < 9 ? year : year + 1, month >= 3 && month < 9 ? 9 : 3, 1)
 	);
+	const rangeStart = startDate ? new Date(`${startDate}T00:00:00Z`) : currentSemesterStart;
+	const rangeEnd = endDate
+		? new Date(`${endDate}T00:00:00Z`)
+		: new Date(currentSemesterEnd.getTime() - 86400000);
+	const rangeEndExclusive = new Date(rangeEnd.getTime() + 86400000);
 	const periods: { start: string; end: string; endTime: number }[] = [];
-	for (let start = semesterStart; start < semesterEnd;) {
-		const end = new Date(Math.min(start.getTime() + 14 * 86400000, semesterEnd.getTime()));
-		const startDate = start.toISOString().slice(0, 10);
+	const tomorrowInBerlin = new Date(
+		Date.UTC(localNow.getFullYear(), localNow.getMonth(), localNow.getDate() + 1)
+	)
+		.toISOString()
+		.slice(0, 10);
+	const effectiveEndExclusive = new Date(
+		Math.min(
+			rangeEndExclusive.getTime(),
+			fromZonedTime(tomorrowInBerlin, "Europe/Berlin").getTime()
+		)
+	);
+	for (let start = rangeStart; start < effectiveEndExclusive;) {
+		const end = new Date(
+			Math.min(start.getTime() + 7 * 86400000, effectiveEndExclusive.getTime())
+		);
+		const periodStart = start.toISOString().slice(0, 10);
 		const endDate = end.toISOString().slice(0, 10);
-		if (fromZonedTime(startDate, "Europe/Berlin").getTime() > now.getTime()) break;
 		periods.push({
-			start: startDate,
+			start: periodStart,
 			end: endDate,
 			endTime: fromZonedTime(endDate, "Europe/Berlin").getTime()
 		});
