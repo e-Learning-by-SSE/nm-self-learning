@@ -8,6 +8,7 @@ import { useTranslation } from "next-i18next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { CourseMetricsTable, type CourseMetricsItem } from "./CourseMetricsTable";
+import { LessonActivityChart } from "./LessonActivityChart";
 import { LessonSemesterTable, type LessonActivityResult } from "./LessonSemesterTable";
 
 const colorGreen = "#7fb89b";
@@ -15,15 +16,9 @@ const colorYellow = "#eae282";
 const colorRed = "#e57368";
 const colorAxis = "#525252";
 
-type LessonItem = {
-	label: string;
-	rate: number;
-};
-
 type DashboardData = {
 	teacherName: string;
 	courses: CourseMetricsItem[];
-	lessonsByCourse: Record<string, LessonItem[]>;
 };
 
 function getCurrentSemesterRange() {
@@ -204,9 +199,6 @@ function AnalyticsDashboard({
 	const router = useRouter();
 	const courses = data.courses;
 	const activeCourse = courses.find(course => course.courseId === courseId);
-	const lessonBars = (
-		activeCourse ? (data.lessonsByCourse[activeCourse.courseId] ?? []) : []
-	).map(lesson => ({ label: lesson.label, value: lesson.rate }));
 	const courseBars = courses.map(course => ({ label: course.label, value: course.rate }));
 	const courseHref = (id: string) => `/learning-analytics/courses/${encodeURIComponent(id)}`;
 	const formatCount = (value?: number | null) =>
@@ -272,11 +264,11 @@ function AnalyticsDashboard({
 					{activeCourse ? (
 						<>
 							<section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-								<ChartCard
-									title={t("lessonCompletionRateTitleActive", {
-										courseLabel: activeCourse.label
-									})}
-									data={lessonBars}
+								<LessonActivityChart
+									courseLabel={activeCourse.label}
+									data={lessonActivity}
+									isLoading={isLoadingLessonActivity}
+									isError={isLessonActivityError}
 								/>
 								<div
 									id="AnalysisCard"
@@ -411,10 +403,6 @@ export function CreatorAnalytics({ courseId }: { courseId?: string }) {
 	const dateRange = selectedDateRange ?? lecturePeriod ?? fallbackDateRange;
 	const { data: avgCourse, isLoading: isLoadingAvgCourse } =
 		trpc.metrics.getAuthorMetric_AverageCourseCompletionRate.useQuery(undefined);
-	const { data: avgLessonRows, isLoading: isLoadingAvgLessonRows } =
-		trpc.metrics.getAuthorMetric_AverageLessonCompletionRate.useQuery(undefined, {
-			enabled: !!courseId
-		});
 	const {
 		data: lessonActivity,
 		isLoading: isLoadingLessonActivity,
@@ -433,11 +421,7 @@ export function CreatorAnalytics({ courseId }: { courseId?: string }) {
 		return <div className="p-10 text-neutral-600">{t("loadingDashboard")}</div>;
 	}
 
-	if (
-		status === "loading" ||
-		isLoadingAvgCourse ||
-		(!!courseId && (isLoadingAvgLessonRows || isLoadingLecturePeriod))
-	) {
+	if (status === "loading" || isLoadingAvgCourse || (!!courseId && isLoadingLecturePeriod)) {
 		return <div className="p-10 text-neutral-600">{t("loadingSession")}</div>;
 	}
 
@@ -455,27 +439,11 @@ export function CreatorAnalytics({ courseId }: { courseId?: string }) {
 			.sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
 	}
 
-	const lessonsByCourse: Record<string, LessonItem[]> = {};
-
-	if (avgLessonRows) {
-		for (const row of avgLessonRows) {
-			const cId = row.courseId;
-			const lessonName = row.lessonTitle;
-			const lessonRate = row.averageCompletionRate;
-
-			(lessonsByCourse[cId] ??= []).push({
-				label: lessonName,
-				rate: lessonRate
-			});
-		}
-	}
-
 	const teacherNameGuess = session?.user.name ?? t("defaultName");
 
 	const dashboardData: DashboardData = {
 		teacherName: teacherNameGuess,
-		courses,
-		lessonsByCourse
+		courses
 	};
 
 	return (

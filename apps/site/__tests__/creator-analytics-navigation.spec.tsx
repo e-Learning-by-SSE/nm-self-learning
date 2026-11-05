@@ -1,7 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { CreatorAnalytics, TeacherView } from "@self-learning/analysis";
 
-const mockLessons = jest.fn();
 const mockLecturePeriod = jest.fn();
 const mockActivity = jest.fn();
 const mockPush = jest.fn();
@@ -33,6 +32,36 @@ jest.mock("@self-learning/api-client", () => ({
 					mockActivity(...args);
 					return {
 						data: {
+							lessonChart: {
+								period: [
+									{
+										lessonId: "one",
+										title: "Weekly Unit",
+										completionRate: 50,
+										averageScore: 75
+									},
+									{
+										lessonId: "two",
+										title: "Another Unit",
+										completionRate: 100,
+										averageScore: 80
+									}
+								],
+								total: [
+									{
+										lessonId: "one",
+										title: "Weekly Unit",
+										completionRate: 80,
+										averageScore: 90
+									},
+									{
+										lessonId: "two",
+										title: "Another Unit",
+										completionRate: 60,
+										averageScore: 70
+									}
+								]
+							},
 							analytics: {
 								period: {
 									enrollments: 2,
@@ -96,9 +125,6 @@ jest.mock("@self-learning/api-client", () => ({
 					],
 					isLoading: false
 				})
-			},
-			getAuthorMetric_AverageLessonCompletionRate: {
-				useQuery: (...args: unknown[]) => mockLessons(...args)
 			}
 		}
 	}
@@ -116,23 +142,6 @@ describe("creator analytics navigation", () => {
 			height: 380,
 			chartArea: { top: 20, bottom: 350, right: 390 },
 			scales: { y: { left: 0, getValueForPixel: (y: number) => (y < 180 ? 0 : 1) } }
-		});
-		mockLessons.mockReturnValue({
-			data: [
-				{
-					courseId: "course-1",
-					lessonTitle: "Unit One",
-					averageCompletionRate: 50,
-					usersStarted: 2
-				},
-				{
-					courseId: "course-2",
-					lessonTitle: "Unit Two",
-					averageCompletionRate: 80,
-					usersStarted: 3
-				}
-			],
-			isLoading: false
 		});
 	});
 
@@ -165,18 +174,21 @@ describe("creator analytics navigation", () => {
 		fireEvent.click(canvas, { clientX: 20, clientY: 220 });
 		expect(mockPush).toHaveBeenCalledWith("/learning-analytics/courses/course-2");
 		expect(screen.queryByText(/lessonCompletionRateTitleActive/)).toBeNull();
-		expect(mockLessons).toHaveBeenLastCalledWith(undefined, { enabled: false });
 	});
 
 	it("shows the selected course's units and a return link", async () => {
 		render(<CreatorAnalytics courseId="course-2" />);
 		expect(
 			await screen.findByRole("heading", {
-				name: "lessonCompletionRateTitleActive: Course Two"
+				name: "Lesson_Chart_Title: Course Two"
 			})
 		).toBeTruthy();
 		await waitFor(() => expect(mockChart).toHaveBeenCalled());
-		expect(mockChart.mock.lastCall?.[1].data.labels).toEqual(["Unit Two"]);
+		const chartOptions = mockChart.mock.lastCall?.[1];
+		expect(chartOptions.data.labels).toEqual(["1", "2"]);
+		expect(chartOptions.options.plugins.tooltip.callbacks.title([{ dataIndex: 1 }])).toBe(
+			"Another Unit"
+		);
 		const weeklyTable = screen.getAllByRole("table")[1];
 		expect(within(weeklyTable).getByText("Weekly Unit")).toBeTruthy();
 		const rows = within(weeklyTable).getAllByRole("row");
@@ -191,7 +203,35 @@ describe("creator analytics navigation", () => {
 		expect(screen.getByRole("link", { name: "Back_To_Courses" }).getAttribute("href")).toBe(
 			"/learning-analytics"
 		);
-		expect(mockLessons).toHaveBeenLastCalledWith(undefined, { enabled: true });
+	});
+
+	it("switches the two lesson curves between the selected period and total", async () => {
+		render(<CreatorAnalytics courseId="course-2" />);
+		const periodButton = screen.getByRole("button", { name: "Analysis_Period" });
+		const totalButton = screen.getByRole("button", { name: "Analysis_Total" });
+		expect(periodButton.getAttribute("aria-pressed")).toBe("true");
+		await waitFor(() =>
+			expect(
+				mockChart.mock.lastCall?.[1].data.datasets.map(
+					(dataset: { data: number[] }) => dataset.data
+				)
+			).toEqual([
+				[50, 100],
+				[75, 80]
+			])
+		);
+		fireEvent.click(totalButton);
+		expect(totalButton.getAttribute("aria-pressed")).toBe("true");
+		await waitFor(() =>
+			expect(
+				mockChart.mock.lastCall?.[1].data.datasets.map(
+					(dataset: { data: number[] }) => dataset.data
+				)
+			).toEqual([
+				[80, 60],
+				[90, 70]
+			])
+		);
 	});
 
 	it("uses lecture dates as defaults and preserves a manually selected range", () => {

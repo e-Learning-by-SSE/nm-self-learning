@@ -289,6 +289,67 @@ describe("KPI Database Access Functions", () => {
 		expect(database.lesson.findMany).not.toHaveBeenCalled();
 	});
 
+	it("calculates chart rates for enrolled non-authors with completions in each view", async () => {
+		const completion = (
+			username: string,
+			lessonId: string,
+			date: string,
+			performanceScore: number
+		) => ({
+			username,
+			lessonId,
+			createdAt: new Date(date),
+			performanceScore
+		});
+		(database.course.findFirst as jest.Mock).mockResolvedValue({
+			content: [{ title: "Chapter", content: [{ lessonId: "b" }, { lessonId: "a" }] }],
+			authors: [{ username: "author" }],
+			enrollments: ["s1", "s2", "s3", "s4", "author"].map(username => ({
+				username,
+				createdAt: new Date("2026-01-01T00:00:00Z")
+			})),
+			completions: [
+				completion("s1", "b", "2026-03-30T12:00:00Z", 0.9),
+				completion("s1", "b", "2026-04-02T12:00:00Z", 0.5),
+				completion("s1", "b", "2026-04-04T12:00:00Z", 0.8),
+				completion("s1", "a", "2026-04-04T12:00:00Z", 0.6),
+				completion("s2", "b", "2026-04-05T12:00:00Z", 0.4),
+				completion("s4", "a", "2026-03-15T12:00:00Z", 0.9),
+				completion("author", "a", "2026-04-05T12:00:00Z", 1),
+				completion("outsider", "a", "2026-04-05T12:00:00Z", 1),
+				completion("s3", "removed", "2026-04-05T12:00:00Z", 1)
+			]
+		});
+		(database.lesson.findMany as jest.Mock).mockResolvedValue([
+			{ lessonId: "a", title: "A" },
+			{ lessonId: "b", title: "B" }
+		]);
+		const result = await getAuthorCourseLessonActivity(
+			userId,
+			"course-1",
+			"2026-04-01",
+			"2026-04-30"
+		);
+		expect(result?.lessonChart.period).toEqual([
+			{ lessonId: "b", title: "B", completionRate: 100, averageScore: expect.closeTo(60) },
+			{ lessonId: "a", title: "A", completionRate: 50, averageScore: 60 }
+		]);
+		expect(result?.lessonChart.total[0].completionRate).toBeCloseTo(200 / 3);
+		expect(result?.lessonChart.total[0].averageScore).toBeCloseTo(65);
+		expect(result?.lessonChart.total[1].completionRate).toBeCloseTo(200 / 3);
+		expect(result?.lessonChart.total[1].averageScore).toBeCloseTo(75);
+		const empty = await getAuthorCourseLessonActivity(
+			userId,
+			"course-1",
+			"2025-01-01",
+			"2025-01-31"
+		);
+		expect(empty?.lessonChart.period).toEqual([
+			{ lessonId: "b", title: "B", completionRate: null, averageScore: null },
+			{ lessonId: "a", title: "A", completionRate: null, averageScore: null }
+		]);
+	});
+
 	it("uses the winter semester across the year boundary", async () => {
 		jest.useFakeTimers().setSystemTime(new Date("2027-03-31T12:00:00Z"));
 		try {

@@ -133,7 +133,9 @@ export async function getAuthorCourseLessonActivity(
 			content: true,
 			authors: { select: { username: true } },
 			enrollments: { select: { username: true, createdAt: true } },
-			completions: { select: { username: true, lessonId: true, createdAt: true } }
+			completions: {
+				select: { username: true, lessonId: true, createdAt: true, performanceScore: true }
+			}
 		}
 	});
 	if (!course) return null;
@@ -207,6 +209,56 @@ export async function getAuthorCourseLessonActivity(
 		`${periodEndExclusiveDate.toISOString().slice(0, 10)}T00:00:00`,
 		"Europe/Berlin"
 	).getTime();
+	const enrolledUsers = new Set(eligibleEnrollments.map(enrollment => enrollment.username));
+	const currentLessons = new Set(lessonIds);
+	const lessonChartForRange = (range?: { start: number; end: number }) => {
+		const learners = new Set<string>();
+		const scoresByLesson = new Map<string, Map<string, number | null>>();
+		for (const completion of course.completions) {
+			const timestamp = completion.createdAt.getTime();
+			if (
+				!enrolledUsers.has(completion.username) ||
+				!currentLessons.has(completion.lessonId) ||
+				(range && (timestamp < range.start || timestamp >= range.end))
+			)
+				continue;
+			learners.add(completion.username);
+			const scores =
+				scoresByLesson.get(completion.lessonId) ?? new Map<string, number | null>();
+			const score = completion.performanceScore;
+			const validScore = Number.isFinite(score) && score >= 0 && score <= 1 ? score : null;
+			const previous = scores.get(completion.username);
+			scores.set(
+				completion.username,
+				validScore === null ? (previous ?? null) : Math.max(previous ?? 0, validScore)
+			);
+			scoresByLesson.set(completion.lessonId, scores);
+		}
+		return lessonIds.flatMap(lessonId => {
+			const title = titles.get(lessonId);
+			if (title === undefined) return [];
+			const completions = scoresByLesson.get(lessonId);
+			const scores = [...(completions?.values() ?? [])].filter(
+				(score): score is number => score !== null
+			);
+			return [
+				{
+					lessonId,
+					title,
+					completionRate: learners.size
+						? ((completions?.size ?? 0) / learners.size) * 100
+						: null,
+					averageScore: scores.length
+						? (scores.reduce((sum, score) => sum + score, 0) / scores.length) * 100
+						: null
+				}
+			];
+		});
+	};
+	const lessonChart = {
+		period: lessonChartForRange({ start: periodStartTime, end: periodEndTime }),
+		total: lessonChartForRange()
+	};
 	const summarizeCompletedLessons = (range?: { start: number; end: number }) => {
 		const completedByUser = new Map<string, Set<string>>();
 		for (const completion of course.completions) {
@@ -279,6 +331,7 @@ export async function getAuthorCourseLessonActivity(
 	return {
 		periods: periods.map(({ start, end }) => ({ start, end })),
 		analytics,
+		lessonChart,
 		chapters: (parsed.success ? parsed.data : []).map(chapter => ({
 			title: chapter.title,
 			lessons: chapter.content.flatMap(({ lessonId }) => {
