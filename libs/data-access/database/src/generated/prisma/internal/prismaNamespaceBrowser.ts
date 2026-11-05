@@ -95,10 +95,6 @@ export const ModelName = {
   Group: 'Group',
   Permission: 'Permission',
   Features: 'Features',
-  AuthorMetric_AverageCompletionRate: 'AuthorMetric_AverageCompletionRate',
-  AuthorMetric_AverageSubjectCompletionRate: 'AuthorMetric_AverageSubjectCompletionRate',
-  AuthorMetric_AverageLessonCompletionRate: 'AuthorMetric_AverageLessonCompletionRate',
-  AuthorMetric_AverageLessonCompletionRateByCourse: 'AuthorMetric_AverageLessonCompletionRateByCourse',
   StudentMetric_LearningTime: 'StudentMetric_LearningTime',
   StudentMetric_DailyLearningTime: 'StudentMetric_DailyLearningTime',
   StudentMetric_HourlyLearningTime: 'StudentMetric_HourlyLearningTime',
@@ -679,57 +675,6 @@ export const FeaturesScalarFieldEnum = {
 } as const
 
 export type FeaturesScalarFieldEnum = (typeof FeaturesScalarFieldEnum)[keyof typeof FeaturesScalarFieldEnum]
-
-
-export const AuthorMetric_AverageCompletionRateScalarFieldEnum = {
-  authorId: 'authorId',
-  authorUsername: 'authorUsername',
-  averageCompletionRate: 'averageCompletionRate'
-} as const
-
-export type AuthorMetric_AverageCompletionRateScalarFieldEnum = (typeof AuthorMetric_AverageCompletionRateScalarFieldEnum)[keyof typeof AuthorMetric_AverageCompletionRateScalarFieldEnum]
-
-
-export const AuthorMetric_AverageSubjectCompletionRateScalarFieldEnum = {
-  authorId: 'authorId',
-  authorUsername: 'authorUsername',
-  subjectId: 'subjectId',
-  subjectTitle: 'subjectTitle',
-  totalEnrollments: 'totalEnrollments',
-  completedEnrollments: 'completedEnrollments',
-  averageCompletionRate: 'averageCompletionRate'
-} as const
-
-export type AuthorMetric_AverageSubjectCompletionRateScalarFieldEnum = (typeof AuthorMetric_AverageSubjectCompletionRateScalarFieldEnum)[keyof typeof AuthorMetric_AverageSubjectCompletionRateScalarFieldEnum]
-
-
-export const AuthorMetric_AverageLessonCompletionRateScalarFieldEnum = {
-  authorId: 'authorId',
-  authorUsername: 'authorUsername',
-  courseId: 'courseId',
-  courseTitle: 'courseTitle',
-  lessonId: 'lessonId',
-  lessonTitle: 'lessonTitle',
-  usersStarted: 'usersStarted',
-  usersFinished: 'usersFinished',
-  averageCompletionRate: 'averageCompletionRate'
-} as const
-
-export type AuthorMetric_AverageLessonCompletionRateScalarFieldEnum = (typeof AuthorMetric_AverageLessonCompletionRateScalarFieldEnum)[keyof typeof AuthorMetric_AverageLessonCompletionRateScalarFieldEnum]
-
-
-export const AuthorMetric_AverageLessonCompletionRateByCourseScalarFieldEnum = {
-  authorId: 'authorId',
-  authorUsername: 'authorUsername',
-  courseId: 'courseId',
-  courseTitle: 'courseTitle',
-  numLessons: 'numLessons',
-  totalLessonsStarted: 'totalLessonsStarted',
-  totalLessonsFinished: 'totalLessonsFinished',
-  averageCourseCompletionRate: 'averageCourseCompletionRate'
-} as const
-
-export type AuthorMetric_AverageLessonCompletionRateByCourseScalarFieldEnum = (typeof AuthorMetric_AverageLessonCompletionRateByCourseScalarFieldEnum)[keyof typeof AuthorMetric_AverageLessonCompletionRateByCourseScalarFieldEnum]
 
 
 export const StudentMetric_LearningTimeScalarFieldEnum = {

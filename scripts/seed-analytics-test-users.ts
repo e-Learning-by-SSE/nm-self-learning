@@ -378,18 +378,6 @@ async function main() {
 		select: { id: true }
 	});
 	console.table(await getAuthorMetric_AverageCourseCompletionRate(teacherUser.id));
-	console.table(
-		await prisma.authorMetric_AverageLessonCompletionRateByCourse.findMany({
-			where: { authorUsername: teacher },
-			select: {
-				courseTitle: true,
-				numLessons: true,
-				totalLessonsStarted: true,
-				totalLessonsFinished: true,
-				averageCourseCompletionRate: true
-			}
-		})
-	);
 
 	console.log("\nActivity analytics generated for analytics-test-student-activity:");
 	console.log(

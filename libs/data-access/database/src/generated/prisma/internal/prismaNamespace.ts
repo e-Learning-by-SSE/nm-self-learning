@@ -441,10 +441,6 @@ export const ModelName = {
   Group: 'Group',
   Permission: 'Permission',
   Features: 'Features',
-  AuthorMetric_AverageCompletionRate: 'AuthorMetric_AverageCompletionRate',
-  AuthorMetric_AverageSubjectCompletionRate: 'AuthorMetric_AverageSubjectCompletionRate',
-  AuthorMetric_AverageLessonCompletionRate: 'AuthorMetric_AverageLessonCompletionRate',
-  AuthorMetric_AverageLessonCompletionRateByCourse: 'AuthorMetric_AverageLessonCompletionRateByCourse',
   StudentMetric_LearningTime: 'StudentMetric_LearningTime',
   StudentMetric_DailyLearningTime: 'StudentMetric_DailyLearningTime',
   StudentMetric_HourlyLearningTime: 'StudentMetric_HourlyLearningTime',
@@ -469,7 +465,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "gamificationProfile" | "achievement" | "achievementProgress" | "learningDiaryPage" | "learningLocation" | "learningStrategy" | "learningTechnique" | "techniqueRating" | "learningDiaryLearnedLessons" | "learningGoal" | "uploadedAssets" | "license" | "skill" | "eventLog" | "notification" | "notificationUser" | "userNotificationSetting" | "reminderLog" | "llmConfiguration" | "aiTutorProfile" | "jobQueue" | "student" | "author" | "subjectAdmin" | "specializationAdmin" | "team" | "subject" | "specialization" | "course" | "generatedLessonPath" | "enrollment" | "lesson" | "startedLesson" | "completedLesson" | "quizAttempt" | "quizAnswer" | "account" | "session" | "user" | "verificationToken" | "member" | "group" | "permission" | "features" | "authorMetric_AverageCompletionRate" | "authorMetric_AverageSubjectCompletionRate" | "authorMetric_AverageLessonCompletionRate" | "authorMetric_AverageLessonCompletionRateByCourse" | "studentMetric_LearningTime" | "studentMetric_DailyLearningTime" | "studentMetric_HourlyLearningTime" | "studentMetric_LearningTimeByCourse" | "studentMetric_DailyLearningTimeByCourse" | "studentMetric_CoursesCompletedBySubject" | "studentMetric_LearningStreak" | "studentMetric_AverageQuizAnswers" | "studentMetric_HourlyAverageQuizAnswers"
+    modelProps: "gamificationProfile" | "achievement" | "achievementProgress" | "learningDiaryPage" | "learningLocation" | "learningStrategy" | "learningTechnique" | "techniqueRating" | "learningDiaryLearnedLessons" | "learningGoal" | "uploadedAssets" | "license" | "skill" | "eventLog" | "notification" | "notificationUser" | "userNotificationSetting" | "reminderLog" | "llmConfiguration" | "aiTutorProfile" | "jobQueue" | "student" | "author" | "subjectAdmin" | "specializationAdmin" | "team" | "subject" | "specialization" | "course" | "generatedLessonPath" | "enrollment" | "lesson" | "startedLesson" | "completedLesson" | "quizAttempt" | "quizAnswer" | "account" | "session" | "user" | "verificationToken" | "member" | "group" | "permission" | "features" | "studentMetric_LearningTime" | "studentMetric_DailyLearningTime" | "studentMetric_HourlyLearningTime" | "studentMetric_LearningTimeByCourse" | "studentMetric_DailyLearningTimeByCourse" | "studentMetric_CoursesCompletedBySubject" | "studentMetric_LearningStreak" | "studentMetric_AverageQuizAnswers" | "studentMetric_HourlyAverageQuizAnswers"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3729,158 +3725,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
-    AuthorMetric_AverageCompletionRate: {
-      payload: Prisma.$AuthorMetric_AverageCompletionRatePayload<ExtArgs>
-      fields: Prisma.AuthorMetric_AverageCompletionRateFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.AuthorMetric_AverageCompletionRateFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthorMetric_AverageCompletionRatePayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.AuthorMetric_AverageCompletionRateFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthorMetric_AverageCompletionRatePayload>
-        }
-        findFirst: {
-          args: Prisma.AuthorMetric_AverageCompletionRateFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthorMetric_AverageCompletionRatePayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.AuthorMetric_AverageCompletionRateFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthorMetric_AverageCompletionRatePayload>
-        }
-        findMany: {
-          args: Prisma.AuthorMetric_AverageCompletionRateFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthorMetric_AverageCompletionRatePayload>[]
-        }
-        aggregate: {
-          args: Prisma.AuthorMetric_AverageCompletionRateAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateAuthorMetric_AverageCompletionRate>
-        }
-        groupBy: {
-          args: Prisma.AuthorMetric_AverageCompletionRateGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AuthorMetric_AverageCompletionRateGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.AuthorMetric_AverageCompletionRateCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AuthorMetric_AverageCompletionRateCountAggregateOutputType> | number
-        }
-      }
-    }
-    AuthorMetric_AverageSubjectCompletionRate: {
-      payload: Prisma.$AuthorMetric_AverageSubjectCompletionRatePayload<ExtArgs>
-      fields: Prisma.AuthorMetric_AverageSubjectCompletionRateFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.AuthorMetric_AverageSubjectCompletionRateFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthorMetric_AverageSubjectCompletionRatePayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.AuthorMetric_AverageSubjectCompletionRateFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthorMetric_AverageSubjectCompletionRatePayload>
-        }
-        findFirst: {
-          args: Prisma.AuthorMetric_AverageSubjectCompletionRateFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthorMetric_AverageSubjectCompletionRatePayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.AuthorMetric_AverageSubjectCompletionRateFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthorMetric_AverageSubjectCompletionRatePayload>
-        }
-        findMany: {
-          args: Prisma.AuthorMetric_AverageSubjectCompletionRateFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthorMetric_AverageSubjectCompletionRatePayload>[]
-        }
-        aggregate: {
-          args: Prisma.AuthorMetric_AverageSubjectCompletionRateAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateAuthorMetric_AverageSubjectCompletionRate>
-        }
-        groupBy: {
-          args: Prisma.AuthorMetric_AverageSubjectCompletionRateGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AuthorMetric_AverageSubjectCompletionRateGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.AuthorMetric_AverageSubjectCompletionRateCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AuthorMetric_AverageSubjectCompletionRateCountAggregateOutputType> | number
-        }
-      }
-    }
-    AuthorMetric_AverageLessonCompletionRate: {
-      payload: Prisma.$AuthorMetric_AverageLessonCompletionRatePayload<ExtArgs>
-      fields: Prisma.AuthorMetric_AverageLessonCompletionRateFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.AuthorMetric_AverageLessonCompletionRateFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthorMetric_AverageLessonCompletionRatePayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.AuthorMetric_AverageLessonCompletionRateFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthorMetric_AverageLessonCompletionRatePayload>
-        }
-        findFirst: {
-          args: Prisma.AuthorMetric_AverageLessonCompletionRateFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthorMetric_AverageLessonCompletionRatePayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.AuthorMetric_AverageLessonCompletionRateFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthorMetric_AverageLessonCompletionRatePayload>
-        }
-        findMany: {
-          args: Prisma.AuthorMetric_AverageLessonCompletionRateFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthorMetric_AverageLessonCompletionRatePayload>[]
-        }
-        aggregate: {
-          args: Prisma.AuthorMetric_AverageLessonCompletionRateAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateAuthorMetric_AverageLessonCompletionRate>
-        }
-        groupBy: {
-          args: Prisma.AuthorMetric_AverageLessonCompletionRateGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AuthorMetric_AverageLessonCompletionRateGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.AuthorMetric_AverageLessonCompletionRateCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AuthorMetric_AverageLessonCompletionRateCountAggregateOutputType> | number
-        }
-      }
-    }
-    AuthorMetric_AverageLessonCompletionRateByCourse: {
-      payload: Prisma.$AuthorMetric_AverageLessonCompletionRateByCoursePayload<ExtArgs>
-      fields: Prisma.AuthorMetric_AverageLessonCompletionRateByCourseFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.AuthorMetric_AverageLessonCompletionRateByCourseFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthorMetric_AverageLessonCompletionRateByCoursePayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.AuthorMetric_AverageLessonCompletionRateByCourseFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthorMetric_AverageLessonCompletionRateByCoursePayload>
-        }
-        findFirst: {
-          args: Prisma.AuthorMetric_AverageLessonCompletionRateByCourseFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthorMetric_AverageLessonCompletionRateByCoursePayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.AuthorMetric_AverageLessonCompletionRateByCourseFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthorMetric_AverageLessonCompletionRateByCoursePayload>
-        }
-        findMany: {
-          args: Prisma.AuthorMetric_AverageLessonCompletionRateByCourseFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthorMetric_AverageLessonCompletionRateByCoursePayload>[]
-        }
-        aggregate: {
-          args: Prisma.AuthorMetric_AverageLessonCompletionRateByCourseAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateAuthorMetric_AverageLessonCompletionRateByCourse>
-        }
-        groupBy: {
-          args: Prisma.AuthorMetric_AverageLessonCompletionRateByCourseGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AuthorMetric_AverageLessonCompletionRateByCourseGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.AuthorMetric_AverageLessonCompletionRateByCourseCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AuthorMetric_AverageLessonCompletionRateByCourseCountAggregateOutputType> | number
-        }
-      }
-    }
     StudentMetric_LearningTime: {
       payload: Prisma.$StudentMetric_LearningTimePayload<ExtArgs>
       fields: Prisma.StudentMetric_LearningTimeFieldRefs
@@ -4817,57 +4661,6 @@ export const FeaturesScalarFieldEnum = {
 export type FeaturesScalarFieldEnum = (typeof FeaturesScalarFieldEnum)[keyof typeof FeaturesScalarFieldEnum]
 
 
-export const AuthorMetric_AverageCompletionRateScalarFieldEnum = {
-  authorId: 'authorId',
-  authorUsername: 'authorUsername',
-  averageCompletionRate: 'averageCompletionRate'
-} as const
-
-export type AuthorMetric_AverageCompletionRateScalarFieldEnum = (typeof AuthorMetric_AverageCompletionRateScalarFieldEnum)[keyof typeof AuthorMetric_AverageCompletionRateScalarFieldEnum]
-
-
-export const AuthorMetric_AverageSubjectCompletionRateScalarFieldEnum = {
-  authorId: 'authorId',
-  authorUsername: 'authorUsername',
-  subjectId: 'subjectId',
-  subjectTitle: 'subjectTitle',
-  totalEnrollments: 'totalEnrollments',
-  completedEnrollments: 'completedEnrollments',
-  averageCompletionRate: 'averageCompletionRate'
-} as const
-
-export type AuthorMetric_AverageSubjectCompletionRateScalarFieldEnum = (typeof AuthorMetric_AverageSubjectCompletionRateScalarFieldEnum)[keyof typeof AuthorMetric_AverageSubjectCompletionRateScalarFieldEnum]
-
-
-export const AuthorMetric_AverageLessonCompletionRateScalarFieldEnum = {
-  authorId: 'authorId',
-  authorUsername: 'authorUsername',
-  courseId: 'courseId',
-  courseTitle: 'courseTitle',
-  lessonId: 'lessonId',
-  lessonTitle: 'lessonTitle',
-  usersStarted: 'usersStarted',
-  usersFinished: 'usersFinished',
-  averageCompletionRate: 'averageCompletionRate'
-} as const
-
-export type AuthorMetric_AverageLessonCompletionRateScalarFieldEnum = (typeof AuthorMetric_AverageLessonCompletionRateScalarFieldEnum)[keyof typeof AuthorMetric_AverageLessonCompletionRateScalarFieldEnum]
-
-
-export const AuthorMetric_AverageLessonCompletionRateByCourseScalarFieldEnum = {
-  authorId: 'authorId',
-  authorUsername: 'authorUsername',
-  courseId: 'courseId',
-  courseTitle: 'courseTitle',
-  numLessons: 'numLessons',
-  totalLessonsStarted: 'totalLessonsStarted',
-  totalLessonsFinished: 'totalLessonsFinished',
-  averageCourseCompletionRate: 'averageCourseCompletionRate'
-} as const
-
-export type AuthorMetric_AverageLessonCompletionRateByCourseScalarFieldEnum = (typeof AuthorMetric_AverageLessonCompletionRateByCourseScalarFieldEnum)[keyof typeof AuthorMetric_AverageLessonCompletionRateByCourseScalarFieldEnum]
-
-
 export const StudentMetric_LearningTimeScalarFieldEnum = {
   userId: 'userId',
   username: 'username',
@@ -5480,10 +5273,6 @@ export type GlobalOmitConfig = {
   group?: Prisma.GroupOmit
   permission?: Prisma.PermissionOmit
   features?: Prisma.FeaturesOmit
-  authorMetric_AverageCompletionRate?: Prisma.AuthorMetric_AverageCompletionRateOmit
-  authorMetric_AverageSubjectCompletionRate?: Prisma.AuthorMetric_AverageSubjectCompletionRateOmit
-  authorMetric_AverageLessonCompletionRate?: Prisma.AuthorMetric_AverageLessonCompletionRateOmit
-  authorMetric_AverageLessonCompletionRateByCourse?: Prisma.AuthorMetric_AverageLessonCompletionRateByCourseOmit
   studentMetric_LearningTime?: Prisma.StudentMetric_LearningTimeOmit
   studentMetric_DailyLearningTime?: Prisma.StudentMetric_DailyLearningTimeOmit
   studentMetric_HourlyLearningTime?: Prisma.StudentMetric_HourlyLearningTimeOmit

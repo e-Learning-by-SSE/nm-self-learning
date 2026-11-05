@@ -11,12 +11,8 @@ import {
 	getStudentMetric_LearningStreak,
 	getStudentMetric_AverageQuizAnswers,
 	getStudentMetric_HourlyAverageQuizAnswers,
-	getAuthorMetric_AverageCompletionRate,
-	getAuthorMetric_AverageSubjectCompletionRate,
 	getAuthorMetric_AverageCourseCompletionRate,
 	getAuthorCourseLessonActivity,
-	getAuthorMetric_AverageLessonCompletionRate,
-	getAuthorMetric_AverageLessonCompletionRateByCourse,
 	getSubjects
 } from "@self-learning/database/server";
 
@@ -47,10 +43,6 @@ export const MetricsRouter = t.router({
 		getStudentMetric_HourlyAverageQuizAnswers
 	),
 
-	getAuthorMetric_AverageCompletionRate: metricsQuery(getAuthorMetric_AverageCompletionRate),
-	getAuthorMetric_AverageSubjectCompletionRate: metricsQuery(
-		getAuthorMetric_AverageSubjectCompletionRate
-	),
 	getAuthorMetric_AverageCourseCompletionRate: metricsQuery(
 		getAuthorMetric_AverageCourseCompletionRate
 	),
@@ -70,12 +62,6 @@ export const MetricsRouter = t.router({
 				input.endDate
 			)
 		),
-	getAuthorMetric_AverageLessonCompletionRate: metricsQuery(
-		getAuthorMetric_AverageLessonCompletionRate
-	),
-	getAuthorMetric_AverageLessonCompletionRateByCourse: metricsQuery(
-		getAuthorMetric_AverageLessonCompletionRateByCourse
-	),
 	getSubjects: authProcedure.query(async ({ ctx }) => {
 		return getSubjects(ctx.user.name);
 	})
