@@ -1,7 +1,19 @@
 import { createPrismaClient } from "../../prisma-client";
-import { PrismaClient, CourseType } from "../../../generated/prisma/client";
+import { CourseType } from "../../../generated/prisma/client";
+import { createCourseMeta, type CourseContent } from "@self-learning/types";
+import lessonsRaw from "./data/lesson.json";
 
 const prisma = createPrismaClient();
+
+function getCourseContent(courseId: string, title: string) {
+	const source = lessonsRaw.find(course => course.courseId === courseId);
+	if (!source) throw new Error(`No lesson seed data found for course '${courseId}'.`);
+
+	const content: CourseContent = [
+		{ title, content: source.content.map(lesson => ({ lessonId: lesson.lessonId })) }
+	];
+	return { content, meta: createCourseMeta({ content }) };
+}
 
 export async function createCourses() {
 	try {
@@ -11,8 +23,7 @@ export async function createCourses() {
 				slug: "fundamentals-of-wizardry",
 				title: "Fundamentals of Wizardry",
 				subtitle: "An Introduction to Magic and Spellcasting",
-				content: [],
-				meta: {},
+				...getCourseContent("magical-test-course", "Fundamentals of Wizardry"),
 				subjectId: "wizardry",
 				version: 1,
 				type: CourseType.STATIC
@@ -22,8 +33,7 @@ export async function createCourses() {
 				slug: "advanced-magical-theory",
 				title: "Advanced Magical Theory",
 				subtitle: "Exploring the Depths of Magic",
-				content: [],
-				meta: {},
+				...getCourseContent("advanced-magical-theory", "Advanced Magical Theory"),
 				subjectId: "wizardry",
 				version: 1,
 				type: CourseType.STATIC
@@ -33,8 +43,7 @@ export async function createCourses() {
 				slug: "magical-creatures",
 				title: "Magical Creatures",
 				subtitle: "Understanding the Beasts of the Wizarding World",
-				content: [],
-				meta: {},
+				...getCourseContent("magical-creatures", "Magical Creatures"),
 				subjectId: "wizardry",
 				version: 1,
 				type: CourseType.STATIC
@@ -44,8 +53,7 @@ export async function createCourses() {
 				slug: "potions-and-elixirs",
 				title: "Potions and Elixirs",
 				subtitle: "The Art and Science of Potion Making",
-				content: [],
-				meta: {},
+				...getCourseContent("potions-and-elixirs", "Potions and Elixirs"),
 				subjectId: "wizardry",
 				version: 1,
 				type: CourseType.STATIC
@@ -55,8 +63,10 @@ export async function createCourses() {
 				slug: "defense-against-the-dark-arts",
 				title: "Defense Against the Dark Arts",
 				subtitle: "Protecting Yourself from Dark Magic",
-				content: [],
-				meta: {},
+				...getCourseContent(
+					"defense-against-the-dark-arts",
+					"Defense Against the Dark Arts"
+				),
 				subjectId: "wizardry",
 				version: 1,
 				type: CourseType.STATIC

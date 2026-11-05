@@ -26,6 +26,7 @@
 		"posttest:pr": "echo 'If this fails, run the failed task to see errors.'",
 		"test:migrate": "prisma db execute --file=scripts/reset.sql && npm run migrate && npm run prisma:views",
 		"prisma": "prisma",
+		"prisma:studio": "prisma studio --config ./prisma.config.ts --port 5555",
 		"seed": "prisma generate && prisma db push --force-reset --accept-data-loss && npm run prisma:views && prisma db seed",
 		"migrate": "tsx libs/data-access/database/prisma/deploy-migrations.ts",
 		"seed:analytics-test": "tsx --tsconfig tsconfig.base.json scripts/seed-analytics-test-users.ts",

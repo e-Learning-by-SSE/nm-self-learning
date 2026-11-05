@@ -65,9 +65,7 @@ describe("Learning analytics fixture flows", () => {
 		cy.contains("#MyLearningPathCard span", "Didaktik der Geometrie")
 			.parent()
 			.should("contain.text", "100%");
-		cy.contains("#MyLearningPathCard span", "Analysis")
-			.parent()
-			.should("contain.text", "0%");
+		cy.contains("#MyLearningPathCard span", "Analysis").parent().should("contain.text", "0%");
 	});
 
 	it("shows creator analytics directly for a teacher without enrollments", () => {
@@ -75,9 +73,10 @@ describe("Learning analytics fixture flows", () => {
 
 		cy.get("h1").should("contain.text", "analytics-test-teacher");
 		cy.contains("Creator Analytics").should("not.exist");
-		cy.contains(/Overall Average Completion Rate|Durchschnittliche Abschlussrate \(insgesamt\)/)
-			.parent()
-			.should("contain.text", "49.3%");
+		cy.contains(
+			/Average Completion Rate – Courses|Durchschnittliche Abschlussrate – Kurse/
+		).should("exist");
+		cy.get("#OverviewCard").should("not.exist");
 	});
 
 	it("shows creator and learner tabs for an enrolled teacher", () => {

@@ -1,4 +1,6 @@
 import { authProcedure, t } from "../trpc";
+import { z } from "zod";
+import { getCurrentLecturePeriod } from "./university-semester";
 import {
 	getStudentMetric_LearningTime,
 	getStudentMetric_DailyLearningTime,
@@ -9,11 +11,8 @@ import {
 	getStudentMetric_LearningStreak,
 	getStudentMetric_AverageQuizAnswers,
 	getStudentMetric_HourlyAverageQuizAnswers,
-	getAuthorMetric_AverageCompletionRate,
-	getAuthorMetric_AverageSubjectCompletionRate,
 	getAuthorMetric_AverageCourseCompletionRate,
-	getAuthorMetric_AverageLessonCompletionRate,
-	getAuthorMetric_AverageLessonCompletionRateByCourse,
+	getAuthorCourseLessonActivity,
 	getSubjects
 } from "@self-learning/database/server";
 
@@ -27,6 +26,7 @@ function metricsQuery<T>(handler: (userId: string) => Promise<T>) {
 }
 
 export const MetricsRouter = t.router({
+	getCurrentLecturePeriod: authProcedure.query(() => getCurrentLecturePeriod()),
 	getStudentMetric_LearningTime: metricsQuery(getStudentMetric_LearningTime),
 	getStudentMetric_DailyLearningTime: metricsQuery(getStudentMetric_DailyLearningTime),
 	getStudentMetric_HourlyLearningTime: metricsQuery(getStudentMetric_HourlyLearningTime),
@@ -43,19 +43,25 @@ export const MetricsRouter = t.router({
 		getStudentMetric_HourlyAverageQuizAnswers
 	),
 
-	getAuthorMetric_AverageCompletionRate: metricsQuery(getAuthorMetric_AverageCompletionRate),
-	getAuthorMetric_AverageSubjectCompletionRate: metricsQuery(
-		getAuthorMetric_AverageSubjectCompletionRate
-	),
 	getAuthorMetric_AverageCourseCompletionRate: metricsQuery(
 		getAuthorMetric_AverageCourseCompletionRate
 	),
-	getAuthorMetric_AverageLessonCompletionRate: metricsQuery(
-		getAuthorMetric_AverageLessonCompletionRate
-	),
-	getAuthorMetric_AverageLessonCompletionRateByCourse: metricsQuery(
-		getAuthorMetric_AverageLessonCompletionRateByCourse
-	),
+	getAuthorCourseLessonActivity: authProcedure
+		.input(
+			z.object({
+				courseId: z.string().min(1),
+				startDate: z.iso.date(),
+				endDate: z.iso.date()
+			})
+		)
+		.query(({ ctx, input }) =>
+			getAuthorCourseLessonActivity(
+				ctx.user.id,
+				input.courseId,
+				input.startDate,
+				input.endDate
+			)
+		),
 	getSubjects: authProcedure.query(async ({ ctx }) => {
 		return getSubjects(ctx.user.name);
 	})

@@ -262,31 +262,6 @@ export type Permission = Prisma.PermissionModel
  */
 export type Features = Prisma.FeaturesModel
 /**
- * Model AuthorMetric_AverageCompletionRate
- * 
- */
-export type AuthorMetric_AverageCompletionRate = Prisma.AuthorMetric_AverageCompletionRateModel
-/**
- * Model AuthorMetric_AverageSubjectCompletionRate
- * 
- */
-export type AuthorMetric_AverageSubjectCompletionRate = Prisma.AuthorMetric_AverageSubjectCompletionRateModel
-/**
- * Model AuthorMetric_AverageCourseCompletionRate
- * 
- */
-export type AuthorMetric_AverageCourseCompletionRate = Prisma.AuthorMetric_AverageCourseCompletionRateModel
-/**
- * Model AuthorMetric_AverageLessonCompletionRate
- * 
- */
-export type AuthorMetric_AverageLessonCompletionRate = Prisma.AuthorMetric_AverageLessonCompletionRateModel
-/**
- * Model AuthorMetric_AverageLessonCompletionRateByCourse
- * 
- */
-export type AuthorMetric_AverageLessonCompletionRateByCourse = Prisma.AuthorMetric_AverageLessonCompletionRateByCourseModel
-/**
  * Model StudentMetric_LearningTime
  * 
  */

@@ -1,4 +1,9 @@
-import { createPrismaClient, EnrollmentStatus, UserRole } from "@self-learning/database/server";
+import {
+	createPrismaClient,
+	EnrollmentStatus,
+	UserRole,
+	getAuthorMetric_AverageCourseCompletionRate
+} from "@self-learning/database/server";
 import { CourseContent, extractLessonIds } from "@self-learning/types";
 
 const prisma = createPrismaClient();
@@ -368,29 +373,11 @@ async function main() {
 	]);
 
 	console.log("\nCreator analytics generated for analytics-test-teacher:");
-	console.table(
-		await prisma.authorMetric_AverageCourseCompletionRate.findMany({
-			where: { authorUsername: teacher },
-			select: {
-				courseTitle: true,
-				totalEnrollments: true,
-				completedEnrollments: true,
-				averageCompletionRate: true
-			}
-		})
-	);
-	console.table(
-		await prisma.authorMetric_AverageLessonCompletionRateByCourse.findMany({
-			where: { authorUsername: teacher },
-			select: {
-				courseTitle: true,
-				numLessons: true,
-				totalLessonsStarted: true,
-				totalLessonsFinished: true,
-				averageCourseCompletionRate: true
-			}
-		})
-	);
+	const teacherUser = await prisma.user.findUniqueOrThrow({
+		where: { name: teacher },
+		select: { id: true }
+	});
+	console.table(await getAuthorMetric_AverageCourseCompletionRate(teacherUser.id));
 
 	console.log("\nActivity analytics generated for analytics-test-student-activity:");
 	console.log(
