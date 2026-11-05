@@ -1,23 +1,23 @@
 "use client";
 
-import { trpc } from "@self-learning/api-client";
+import type { AppRouter } from "@self-learning/api";
+import type { inferRouterOutputs } from "@trpc/server";
 import { useTranslation } from "next-i18next";
 
+export type LessonActivityResult = NonNullable<
+	inferRouterOutputs<AppRouter>["metrics"]["getAuthorCourseLessonActivity"]
+>;
+
 export function LessonSemesterTable({
-	courseId,
-	startDate,
-	endDate
+	data,
+	isLoading,
+	isError
 }: {
-	courseId: string;
-	startDate: string;
-	endDate: string;
+	data?: LessonActivityResult | null;
+	isLoading: boolean;
+	isError: boolean;
 }) {
 	const { t, i18n } = useTranslation("student-analytics");
-	const { data, isLoading, isError } = trpc.metrics.getAuthorCourseLessonActivity.useQuery({
-		courseId,
-		startDate,
-		endDate
-	});
 	if (isLoading) return <p>{t("loadingDashboard")}</p>;
 	if (isError || !data) return <p>{t("noDataAvailable")}</p>;
 

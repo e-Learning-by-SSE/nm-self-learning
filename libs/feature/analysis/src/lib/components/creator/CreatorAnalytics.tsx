@@ -8,10 +8,7 @@ import { useTranslation } from "next-i18next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { CourseMetricsTable, type CourseMetricsItem } from "./CourseMetricsTable";
-import { LessonSemesterTable } from "./LessonSemesterTable";
-
-const pct = (n?: number) =>
-	n === undefined || n === null || !Number.isFinite(n) ? "—" : `${Number(n).toFixed(1)}%`;
+import { LessonSemesterTable, type LessonActivityResult } from "./LessonSemesterTable";
 
 const colorGreen = "#7fb89b";
 const colorYellow = "#eae282";
@@ -23,20 +20,10 @@ type LessonItem = {
 	rate: number;
 };
 
-type PerCourseStats = {
-	avgCourseRate?: number;
-	numberOfStudents?: number;
-	highestLessonName?: string;
-	highestLessonRate?: number;
-	lowestLessonName?: string;
-	lowestLessonRate?: number;
-};
-
 type DashboardData = {
 	teacherName: string;
 	courses: CourseMetricsItem[];
 	lessonsByCourse: Record<string, LessonItem[]>;
-	perCourseStats: Record<string, PerCourseStats>;
 };
 
 function getCurrentSemesterRange() {
@@ -199,24 +186,45 @@ function AnalyticsDashboard({
 	courseId,
 	startDate,
 	endDate,
-	onDateRangeChange
+	onDateRangeChange,
+	lessonActivity,
+	isLoadingLessonActivity,
+	isLessonActivityError
 }: {
 	data: DashboardData;
 	courseId?: string;
 	startDate: string;
 	endDate: string;
 	onDateRangeChange: (range: { startDate: string; endDate: string }) => void;
+	lessonActivity?: LessonActivityResult | null;
+	isLoadingLessonActivity: boolean;
+	isLessonActivityError: boolean;
 }) {
-	const { t } = useTranslation("student-analytics");
+	const { t, i18n } = useTranslation("student-analytics");
 	const router = useRouter();
 	const courses = data.courses;
 	const activeCourse = courses.find(course => course.courseId === courseId);
-	const stats = activeCourse ? (data.perCourseStats[activeCourse.courseId] ?? {}) : {};
 	const lessonBars = (
 		activeCourse ? (data.lessonsByCourse[activeCourse.courseId] ?? []) : []
 	).map(lesson => ({ label: lesson.label, value: lesson.rate }));
 	const courseBars = courses.map(course => ({ label: course.label, value: course.rate }));
 	const courseHref = (id: string) => `/learning-analytics/courses/${encodeURIComponent(id)}`;
+	const formatCount = (value?: number | null) =>
+		value == null
+			? "—"
+			: new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 }).format(value);
+	const formatAverage = (value?: number | null) =>
+		value == null
+			? "—"
+			: new Intl.NumberFormat(i18n.language, {
+					maximumFractionDigits: 1,
+					minimumFractionDigits: 1
+				}).format(value);
+	const completedLessonStats = [
+		{ key: "min", label: t("Analysis_Minimum"), format: formatCount },
+		{ key: "max", label: t("Analysis_Maximum"), format: formatCount },
+		{ key: "avg", label: t("Analysis_Average"), format: formatAverage }
+	] as const;
 
 	return (
 		<div className="max-w-7xl mx-auto p-6 md:p-8">
@@ -279,34 +287,80 @@ function AnalyticsDashboard({
 											{t("analysisTitle")}
 										</h3>
 									</div>
-									<div className="p-5 text-sm leading-6 space-y-2">
-										<p>
-											<b>{t("avgLessonCompletion")}</b>:{" "}
-											{pct(stats.avgCourseRate)}
-										</p>
-										<p>
-											<b>{t("numberOfStudents")}</b>:{" "}
-											{stats.numberOfStudents ?? "—"}
-										</p>
-										<p>
-											<b>{t("highestCompletion")}</b>:{" "}
-											{stats.highestLessonName
-												? `${stats.highestLessonName} – ${pct(stats.highestLessonRate)}`
-												: "—"}
-										</p>
-										<p>
-											<b>{t("lowestCompletion")}</b>:{" "}
-											{stats.lowestLessonName
-												? `${stats.lowestLessonName} – ${pct(stats.lowestLessonRate)}`
-												: "—"}
-										</p>
+									<div className="overflow-x-auto p-5">
+										<table className="w-full text-sm">
+											<thead>
+												<tr className="text-left">
+													<th className="pb-3 pr-3 font-medium" />
+													<th className="pb-3 px-2 font-semibold">
+														{t("Analysis_Period")}
+													</th>
+													<th className="pb-3 px-2 font-semibold">
+														{t("Analysis_Total")}
+													</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr className="border-t border-neutral-100">
+													<th className="py-2 pr-3 text-left font-medium">
+														{t("Analysis_Enrollments")}
+													</th>
+													<td className="px-2 py-2">
+														{formatCount(
+															lessonActivity?.analytics.period
+																.enrollments
+														)}
+													</td>
+													<td className="px-2 py-2">
+														{formatCount(
+															lessonActivity?.analytics.total
+																.enrollments
+														)}
+													</td>
+												</tr>
+												{completedLessonStats.map(row => (
+													<tr
+														key={row.key}
+														className="border-t border-neutral-100"
+													>
+														<th className="py-2 pr-3 text-left font-medium">
+															{t("Analysis_Completed_Lessons", {
+																stat: row.label
+															})}
+														</th>
+														<td className="px-2 py-2">
+															{row.format(
+																lessonActivity?.analytics.period
+																	.completedLessons[row.key]
+															)}
+														</td>
+														<td className="px-2 py-2">
+															{row.format(
+																lessonActivity?.analytics.total
+																	.completedLessons[row.key]
+															)}
+														</td>
+													</tr>
+												))}
+											</tbody>
+										</table>
+										{isLoadingLessonActivity && (
+											<p className="pt-2 text-xs text-neutral-500">
+												{t("loadingDashboard")}
+											</p>
+										)}
+										{isLessonActivityError && (
+											<p className="pt-2 text-xs text-red-600">
+												{t("noDataAvailable")}
+											</p>
+										)}
 									</div>
 								</div>
 							</section>
 							<LessonSemesterTable
-								courseId={activeCourse.courseId}
-								startDate={startDate}
-								endDate={endDate}
+								data={lessonActivity}
+								isLoading={isLoadingLessonActivity}
+								isError={isLessonActivityError}
 							/>
 						</>
 					) : (
@@ -349,6 +403,14 @@ export function CreatorAnalytics({ courseId }: { courseId?: string }) {
 		trpc.metrics.getAuthorMetric_AverageLessonCompletionRate.useQuery(undefined, {
 			enabled: !!courseId
 		});
+	const {
+		data: lessonActivity,
+		isLoading: isLoadingLessonActivity,
+		isError: isLessonActivityError
+	} = trpc.metrics.getAuthorCourseLessonActivity.useQuery(
+		{ courseId: courseId ?? "", startDate: dateRange.startDate, endDate: dateRange.endDate },
+		{ enabled: !!courseId }
+	);
 
 	const [isClient, setIsClient] = useState(false);
 	useEffect(() => {
@@ -378,11 +440,6 @@ export function CreatorAnalytics({ courseId }: { courseId?: string }) {
 	}
 
 	const lessonsByCourse: Record<string, LessonItem[]> = {};
-	const perCourseHiLo: Record<string, { max?: LessonItem; min?: LessonItem }> = {};
-	const perCourseAgg: Record<
-		string,
-		{ sum: number; count: number; students?: number; avgCourseCompletionFromRow?: number }
-	> = {};
 
 	if (avgLessonRows) {
 		for (const row of avgLessonRows) {
@@ -394,45 +451,7 @@ export function CreatorAnalytics({ courseId }: { courseId?: string }) {
 				label: lessonName,
 				rate: lessonRate
 			});
-
-			const current = perCourseHiLo[cId] ?? {};
-			if (!current.max || lessonRate > current.max.rate) {
-				current.max = { label: lessonName, rate: lessonRate };
-			}
-			if (!current.min || lessonRate < current.min.rate) {
-				current.min = { label: lessonName, rate: lessonRate };
-			}
-			perCourseHiLo[cId] = current;
-
-			const agg = perCourseAgg[cId] ?? { sum: 0, count: 0 };
-			agg.sum += lessonRate;
-			agg.count += 1;
-			agg.students = row.usersStarted;
-			perCourseAgg[cId] = agg;
 		}
-	}
-
-	const perCourseStats: Record<string, PerCourseStats> = {};
-
-	for (const cId of Object.keys(perCourseAgg)) {
-		const agg = perCourseAgg[cId];
-		const fallbackAvg = agg.count > 0 ? agg.sum / agg.count : undefined;
-
-		perCourseStats[cId] = {
-			avgCourseRate: fallbackAvg,
-			numberOfStudents: agg.students
-		};
-	}
-
-	for (const cId of Object.keys(perCourseHiLo)) {
-		const hiLo = perCourseHiLo[cId];
-		perCourseStats[cId] = {
-			...(perCourseStats[cId] ?? {}),
-			highestLessonName: hiLo.max?.label,
-			highestLessonRate: hiLo.max?.rate,
-			lowestLessonName: hiLo.min?.label,
-			lowestLessonRate: hiLo.min?.rate
-		};
 	}
 
 	const teacherNameGuess = session?.user.name ?? t("defaultName");
@@ -440,8 +459,7 @@ export function CreatorAnalytics({ courseId }: { courseId?: string }) {
 	const dashboardData: DashboardData = {
 		teacherName: teacherNameGuess,
 		courses,
-		lessonsByCourse,
-		perCourseStats
+		lessonsByCourse
 	};
 
 	return (
@@ -452,6 +470,9 @@ export function CreatorAnalytics({ courseId }: { courseId?: string }) {
 				startDate={dateRange.startDate}
 				endDate={dateRange.endDate}
 				onDateRangeChange={setDateRange}
+				lessonActivity={lessonActivity}
+				isLoadingLessonActivity={isLoadingLessonActivity}
+				isLessonActivityError={isLessonActivityError}
 			/>
 		</div>
 	);

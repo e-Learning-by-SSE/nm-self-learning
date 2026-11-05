@@ -132,6 +132,7 @@ export async function getAuthorCourseLessonActivity(
 		select: {
 			content: true,
 			authors: { select: { username: true } },
+			enrollments: { select: { username: true, createdAt: true } },
 			completions: { select: { username: true, lessonId: true, createdAt: true } }
 		}
 	});
@@ -155,11 +156,13 @@ export async function getAuthorCourseLessonActivity(
 	const currentSemesterEnd = new Date(
 		Date.UTC(month < 3 ? year : month < 9 ? year : year + 1, month >= 3 && month < 9 ? 9 : 3, 1)
 	);
-	const rangeStart = startDate ? new Date(`${startDate}T00:00:00Z`) : currentSemesterStart;
-	const rangeEnd = endDate
-		? new Date(`${endDate}T00:00:00Z`)
-		: new Date(currentSemesterEnd.getTime() - 86400000);
-	const rangeEndExclusive = new Date(rangeEnd.getTime() + 86400000);
+	const rangeStartDate = startDate ?? currentSemesterStart.toISOString().slice(0, 10);
+	const rangeEndDate =
+		endDate ?? new Date(currentSemesterEnd.getTime() - 86400000).toISOString().slice(0, 10);
+	const rangeStart = new Date(`${rangeStartDate}T00:00:00Z`);
+	const rangeEndExclusiveUtc = new Date(`${rangeEndDate}T00:00:00Z`);
+	rangeEndExclusiveUtc.setUTCDate(rangeEndExclusiveUtc.getUTCDate() + 1);
+	const rangeEndExclusive = rangeEndExclusiveUtc;
 	const periods: { start: string; end: string; endTime: number }[] = [];
 	const tomorrowInBerlin = new Date(
 		Date.UTC(localNow.getFullYear(), localNow.getMonth(), localNow.getDate() + 1)
@@ -194,6 +197,63 @@ export async function getAuthorCourseLessonActivity(
 			byUser.set(completion.username, completion.createdAt);
 		firstCompletions.set(completion.lessonId, byUser);
 	}
+	const eligibleEnrollments = (course.enrollments ?? []).filter(
+		enrollment => !authors.has(enrollment.username)
+	);
+	const periodStartTime = fromZonedTime(`${rangeStartDate}T00:00:00`, "Europe/Berlin").getTime();
+	const periodEndExclusiveDate = new Date(`${rangeEndDate}T00:00:00Z`);
+	periodEndExclusiveDate.setUTCDate(periodEndExclusiveDate.getUTCDate() + 1);
+	const periodEndTime = fromZonedTime(
+		`${periodEndExclusiveDate.toISOString().slice(0, 10)}T00:00:00`,
+		"Europe/Berlin"
+	).getTime();
+	const summarizeCompletedLessons = (range?: { start: number; end: number }) => {
+		const completedByUser = new Map<string, Set<string>>();
+		for (const completion of course.completions) {
+			if (
+				authors.has(completion.username) ||
+				!lessonIds.includes(completion.lessonId) ||
+				(range &&
+					(completion.createdAt.getTime() < range.start ||
+						completion.createdAt.getTime() >= range.end))
+			)
+				continue;
+			const completedForUser = completedByUser.get(completion.username) ?? new Set<string>();
+			completedForUser.add(completion.lessonId);
+			completedByUser.set(completion.username, completedForUser);
+		}
+		const counts = [...completedByUser.values()].map(completed => completed.size);
+		const summary = counts.reduce(
+			(result, count) => ({
+				min: Math.min(result.min, count),
+				max: Math.max(result.max, count),
+				sum: result.sum + count
+			}),
+			{ min: Number.POSITIVE_INFINITY, max: 0, sum: 0 }
+		);
+		return {
+			min: counts.length ? summary.min : null,
+			max: counts.length ? summary.max : null,
+			avg: counts.length ? Math.round((summary.sum / counts.length) * 10) / 10 : null
+		};
+	};
+	const analytics = {
+		period: {
+			enrollments: eligibleEnrollments.filter(
+				enrollment =>
+					enrollment.createdAt.getTime() >= periodStartTime &&
+					enrollment.createdAt.getTime() < periodEndTime
+			).length,
+			completedLessons: summarizeCompletedLessons({
+				start: periodStartTime,
+				end: periodEndTime
+			})
+		},
+		total: {
+			enrollments: eligibleEnrollments.length,
+			completedLessons: summarizeCompletedLessons()
+		}
+	};
 	const metricsByLesson = new Map(
 		lessonIds.flatMap(lessonId => {
 			const title = titles.get(lessonId);
@@ -218,6 +278,7 @@ export async function getAuthorCourseLessonActivity(
 	);
 	return {
 		periods: periods.map(({ start, end }) => ({ start, end })),
+		analytics,
 		chapters: (parsed.success ? parsed.data : []).map(chapter => ({
 			title: chapter.title,
 			lessons: chapter.content.flatMap(({ lessonId }) => {
