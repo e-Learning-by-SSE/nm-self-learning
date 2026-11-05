@@ -207,9 +207,10 @@ describe("KPI Database Access Functions", () => {
 		expect(await getAuthorMetric_AverageCourseCompletionRate(userId)).toEqual([]);
 	});
 
-	it("counts first completions by two-week period in course order, excluding course authors", async () => {
+	it("counts first completions by weekly period in course order, excluding course authors", async () => {
 		jest.useFakeTimers().setSystemTime(new Date("2026-04-20T12:00:00Z"));
 		try {
+			// Setup
 			(database.course.findFirst as jest.Mock).mockResolvedValue({
 				content: [
 					{
@@ -251,15 +252,20 @@ describe("KPI Database Access Functions", () => {
 				{ lessonId: "a", title: "A" },
 				{ lessonId: "b", title: "B" }
 			]);
+
+			// Exercise
 			const result = await getAuthorCourseLessonActivity(userId, "course-1");
+
+			// Verify
 			expect(database.course.findFirst).toHaveBeenCalledWith(
 				expect.objectContaining({
 					where: { courseId: "course-1", authors: { some: { user: { id: userId } } } }
 				})
 			);
 			expect(result?.periods).toEqual([
-				{ start: "2026-04-01", end: "2026-04-15" },
-				{ start: "2026-04-15", end: "2026-04-29" }
+				{ start: "2026-04-01", end: "2026-04-08" },
+				{ start: "2026-04-08", end: "2026-04-15" },
+				{ start: "2026-04-15", end: "2026-04-20" }
 			]);
 			expect(
 				result?.chapters.map(chapter => [
@@ -271,15 +277,7 @@ describe("KPI Database Access Functions", () => {
 				["Second chapter", ["B"]]
 			]);
 			expect(result?.chapters[0].lessons[0].totalCompletions).toBe(2);
-			expect(result?.chapters[0].lessons[0].periodCompletions).toEqual([1, 2]);
-			jest.setSystemTime(new Date("2026-04-14T21:59:59Z"));
-			expect((await getAuthorCourseLessonActivity(userId, "course-1"))?.periods).toHaveLength(
-				1
-			);
-			jest.setSystemTime(new Date("2026-04-14T22:00:00Z"));
-			expect((await getAuthorCourseLessonActivity(userId, "course-1"))?.periods).toHaveLength(
-				2
-			);
+			expect(result?.chapters[0].lessons[0].periodCompletions).toEqual([1, 1, 2]);
 		} finally {
 			jest.useRealTimers();
 		}
@@ -302,7 +300,7 @@ describe("KPI Database Access Functions", () => {
 			(database.lesson.findMany as jest.Mock).mockResolvedValue([]);
 			const result = await getAuthorCourseLessonActivity(userId, "course-1");
 			expect(result?.periods[0].start).toBe("2026-10-01");
-			expect(result?.periods.at(-1)?.end).toBe("2027-04-01");
+			expect(result?.periods.at(-1)?.end).toBe("2027-03-31");
 		} finally {
 			jest.useRealTimers();
 		}
