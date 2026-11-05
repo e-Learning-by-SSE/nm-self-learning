@@ -2,6 +2,7 @@
 
 import type { AppRouter } from "@self-learning/api";
 import type { inferRouterOutputs } from "@trpc/server";
+import Link from "next/link";
 import { useTranslation } from "next-i18next";
 
 export type LessonActivityResult = NonNullable<
@@ -72,7 +73,11 @@ export function LessonSemesterTable({
 									className="border-b border-neutral-100 last:border-0"
 								>
 									<th scope="row" className="min-w-48 px-5 py-4 font-medium">
-										{lesson.title}
+										<Link
+											href={`/courses/${encodeURIComponent(data.courseSlug)}/${encodeURIComponent(lesson.slug)}`}
+										>
+											{lesson.title}
+										</Link>
 									</th>
 									{lesson.periodCompletions.map((count, index) => (
 										<td key={data.periods[index].start} className="px-4 py-4">

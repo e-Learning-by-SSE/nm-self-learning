@@ -94,6 +94,7 @@ export async function getAuthorCourseLessonActivity(
 	const course = await database.course.findFirst({
 		where: { courseId, authors: { some: { user: { id: userId } } } },
 		select: {
+			slug: true,
 			content: true,
 			authors: { select: { username: true } },
 			enrollments: { select: { username: true, createdAt: true } },
@@ -108,9 +109,9 @@ export async function getAuthorCourseLessonActivity(
 	const lessonIds = [...new Set(extractLessonIds(parsed.success ? parsed.data : []))];
 	const lessons = await database.lesson.findMany({
 		where: { lessonId: { in: lessonIds } },
-		select: { lessonId: true, title: true }
+		select: { lessonId: true, title: true, slug: true }
 	});
-	const titles = new Map(lessons.map(lesson => [lesson.lessonId, lesson.title]));
+	const lessonsById = new Map(lessons.map(lesson => [lesson.lessonId, lesson]));
 	const authors = new Set(course.authors.map(author => author.username));
 	const now = new Date();
 	const localNow = toZonedTime(now, "Europe/Berlin");
@@ -199,8 +200,8 @@ export async function getAuthorCourseLessonActivity(
 			scoresByLesson.set(completion.lessonId, scores);
 		}
 		return lessonIds.flatMap(lessonId => {
-			const title = titles.get(lessonId);
-			if (title === undefined) return [];
+			const lesson = lessonsById.get(lessonId);
+			if (!lesson) return [];
 			const completions = scoresByLesson.get(lessonId);
 			const scores = [...(completions?.values() ?? [])].filter(
 				(score): score is number => score !== null
@@ -208,7 +209,7 @@ export async function getAuthorCourseLessonActivity(
 			return [
 				{
 					lessonId,
-					title,
+					title: lesson.title,
 					completionRate: learners.size
 						? ((completions?.size ?? 0) / learners.size) * 100
 						: null,
@@ -272,15 +273,16 @@ export async function getAuthorCourseLessonActivity(
 	};
 	const metricsByLesson = new Map(
 		lessonIds.flatMap(lessonId => {
-			const title = titles.get(lessonId);
-			if (title === undefined) return [];
+			const lesson = lessonsById.get(lessonId);
+			if (!lesson) return [];
 			const completions = firstCompletions.get(lessonId) ?? new Map<string, Date>();
 			return [
 				[
 					lessonId,
 					{
 						lessonId,
-						title,
+						title: lesson.title,
+						slug: lesson.slug,
 						totalCompletions: completions.size,
 						periodCompletions: periods.map(period => {
 							const cutoff = Math.min(period.endTime, now.getTime() + 1);
@@ -293,6 +295,7 @@ export async function getAuthorCourseLessonActivity(
 		})
 	);
 	return {
+		courseSlug: course.slug,
 		periods: periods.map(({ start, end }) => ({ start, end })),
 		analytics,
 		lessonChart,

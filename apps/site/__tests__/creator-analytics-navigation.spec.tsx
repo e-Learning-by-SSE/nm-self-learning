@@ -32,6 +32,7 @@ jest.mock("@self-learning/api-client", () => ({
 					mockActivity(...args);
 					return {
 						data: {
+							courseSlug: "course-two",
 							lessonChart: {
 								period: [
 									{
@@ -80,6 +81,7 @@ jest.mock("@self-learning/api-client", () => ({
 										{
 											lessonId: "one",
 											title: "Weekly Unit",
+											slug: "weekly-unit",
 											periodCompletions: [2],
 											totalCompletions: 2
 										}
@@ -91,6 +93,7 @@ jest.mock("@self-learning/api-client", () => ({
 										{
 											lessonId: "two",
 											title: "Another Unit",
+											slug: "another-unit",
 											periodCompletions: [1],
 											totalCompletions: 1
 										}
