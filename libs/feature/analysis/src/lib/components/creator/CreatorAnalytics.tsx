@@ -159,7 +159,9 @@ function ChartCard({
 					}}
 				>
 					{courseLinks?.map(course => (
-						<span key={course.href}>{course.label}</span>
+						<a key={course.href} href={course.href}>
+							{course.label}
+						</a>
 					))}
 				</canvas>
 				{empty && (
