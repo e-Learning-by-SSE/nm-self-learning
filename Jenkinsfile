@@ -250,6 +250,7 @@ pipeline {
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
                                 .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
                                     sh 'rm -rf output/cypress'
+                                    sh 'apt-get update && apt-get install -y --no-install-recommends xvfb && rm -rf /var/lib/apt/lists/*'
                                     sh 'npm run seed'
                                     sh "env TZ=${env.TZ} npx nx run-many -t e2e --all --skip-nx-cache"
                             }
