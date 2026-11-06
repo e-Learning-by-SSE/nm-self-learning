@@ -65,7 +65,6 @@ def fullTest(Map cfg = [:]) {
         ) {
         try {
             // Run tests with coverage
-            sh 'npm run seed'
             sh 'npm run test:ci -- --codeCoverage'
         } finally {
             // Publish JUnit test results
@@ -177,7 +176,7 @@ pipeline {
         NX_BRANCH = env.BRANCH_NAME.replace('PR-', '')
         NX_REJECT_UNKNOWN_LOCAL_CACHE = 0
 
-        NODE_DOCKER_IMAGE = 'ghcr.io/e-learning-by-sse/dev-env-javascript:node26'
+        NODE_DOCKER_IMAGE = 'node:26-trixie'
         TARGET_PREFIX = 'ghcr.io/e-learning-by-sse/nm-self-learning'
         // we need the .npm and .cache folders in a separate volume to avoid permission issues during npm install
         DOCKER_ARGS = "--tmpfs /.npm -v ${env.WORKSPACE}/build-caches/npm:${env.WORKSPACE}/.npm -v $HOME/build-caches/cache:/.cache -v $HOME/build-caches/nx:${env.WORKSPACE}/.nx"
@@ -220,42 +219,21 @@ pipeline {
                     return params.RELEASE_LATEST_VERSION == ''
                 }
             }
-            environment {
-                POSTGRES_DB = 'SelfLearningDb'
-                POSTGRES_USER = 'username'
-                POSTGRES_PASSWORD = 'password'
-                DATABASE_URL = "postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@db:5432/${env.POSTGRES_DB}"
-            }
             parallel {
                 stage('Test') {
+                    environment {
+                        POSTGRES_DB = 'SelfLearningDb'
+                        POSTGRES_USER = 'username'
+                        POSTGRES_PASSWORD = 'password'
+                        DATABASE_URL = "postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@db:5432/${env.POSTGRES_DB}"
+                    }
                     steps {
                         script {
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
                                 .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
+                                    sh 'npm run seed'
                                     fullTest()
                             }
-                        }
-                    }
-                }
-
-                stage('E2E') {
-                    steps {
-                        script {
-                            withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
-                                .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
-                                    sh 'rm -rf output/cypress'
-                                    sh 'npm run seed'
-                                    sh "env -u DISPLAY TZ=${env.TZ} npx nx run-many -t e2e --all --skip-nx-cache"
-                            }
-                        }
-                    }
-                    post {
-                        always {
-                            junit(
-                                testResults: 'output/cypress/junit-*.xml',
-                                allowEmptyResults: true,
-                                skipPublishingChecks: true
-                            )
                         }
                     }
                 }
@@ -312,7 +290,8 @@ pipeline {
                             ).trim()
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
                                 .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
-                                    sh "env TZ=${env.TZ} npx nx run-many -t lint build --all --skip-nx-cache"
+                                    sh 'npm run seed' // this can be changed in the future to "npx prisma migrate reset" to test the migration files
+                                    sh "env TZ=${env.TZ} npx nx run-many -t lint build e2e-ci --all --skip-nx-cache"
                                 }
                             buildSphinxDocs(dockerTag: 'unstable')
                         
@@ -364,7 +343,7 @@ pipeline {
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
                                 .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
                                     sh 'npm run format:check'
-                                    sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t build"
+                                    sh "env TZ=${env.TZ} npx nx affected --base origin/${env.CHANGE_TARGET} -t build e2e-ci"
                             }
                         
                             withCredentials([string(credentialsId: 'GitHub-NPM', variable: 'NPM_TOKEN')]) {
@@ -412,6 +391,7 @@ pipeline {
                         script {
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
                              .insideSidecar("${NODE_DOCKER_IMAGE}", "${DOCKER_ARGS}") {
+                                sh 'npm run seed'
                                 sh "env TZ=${env.TZ} npx nx run-many --target=build  --all --skip-nx-cache"
                             }
                             if (params.PUBLISH) {
