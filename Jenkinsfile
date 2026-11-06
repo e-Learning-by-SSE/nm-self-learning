@@ -178,7 +178,7 @@ pipeline {
         NX_REJECT_UNKNOWN_LOCAL_CACHE = 0
 
         NODE_DOCKER_IMAGE = 'node:26-trixie'
-        E2E_DOCKER_IMAGE = 'selflearn-e2e:ci'
+        E2E_DOCKER_IMAGE = 'ghcr.io/e-learning-by-sse/dev-env-javascript:node26'
         TARGET_PREFIX = 'ghcr.io/e-learning-by-sse/nm-self-learning'
         // we need the .npm and .cache folders in a separate volume to avoid permission issues during npm install
         DOCKER_ARGS = "--tmpfs /.npm -v ${env.WORKSPACE}/build-caches/npm:${env.WORKSPACE}/.npm -v $HOME/build-caches/cache:/.cache -v $HOME/build-caches/nx:${env.WORKSPACE}/.nx"
@@ -213,20 +213,6 @@ pipeline {
             }
         }
 
-        stage('Build E2E image') {
-            when {
-                beforeAgent true
-                expression {
-                    return params.RELEASE_LATEST_VERSION == ''
-                }
-            }
-            steps {
-                script {
-                    docker.build(env.E2E_DOCKER_IMAGE, '-f docker/Dockerfile.e2e .')
-                }
-            }
-        }
-
         stage('Quality Assurance') {
             // Apply all quality assurance checks in parallel, except for a new release (expected to have passed in a previous build)
             when {
@@ -235,14 +221,14 @@ pipeline {
                     return params.RELEASE_LATEST_VERSION == ''
                 }
             }
+            environment {
+                POSTGRES_DB = 'SelfLearningDb'
+                POSTGRES_USER = 'username'
+                POSTGRES_PASSWORD = 'password'
+                DATABASE_URL = "postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@db:5432/${env.POSTGRES_DB}"
+            }
             parallel {
                 stage('Test') {
-                    environment {
-                        POSTGRES_DB = 'SelfLearningDb'
-                        POSTGRES_USER = 'username'
-                        POSTGRES_PASSWORD = 'password'
-                        DATABASE_URL = "postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@db:5432/${env.POSTGRES_DB}"
-                    }
                     steps {
                         script {
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
@@ -254,12 +240,6 @@ pipeline {
                 }
 
                 stage('E2E') {
-                    environment {
-                        POSTGRES_DB = 'SelfLearningDb'
-                        POSTGRES_USER = 'username'
-                        POSTGRES_PASSWORD = 'password'
-                        DATABASE_URL = "postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@db:5432/${env.POSTGRES_DB}"
-                    }
                     steps {
                         script {
                             withPostgres([dbUser: env.POSTGRES_USER, dbPassword: env.POSTGRES_PASSWORD, dbName: env.POSTGRES_DB])
