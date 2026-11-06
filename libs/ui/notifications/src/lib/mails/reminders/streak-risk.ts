@@ -186,7 +186,7 @@ export async function sendStreakReminderToUser(
 ): Promise<void> {
 	try {
 		const { url, trackingId } = buildTrackingUrl(
-			`${process.env.NEXT_PUBLIC_SITE_BASE_URL}/profile`
+			`${process.env.SITE_BASE_URL}/profile`
 		);
 
 		// Prepare email context

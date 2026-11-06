@@ -46,8 +46,8 @@ describe("streak-risk", () => {
 				errors: 0
 			};
 			// Required by sendStreakReminderToUser to build tracking URLs
-			if (process.env.NEXT_PUBLIC_SITE_BASE_URL === undefined) {
-				process.env.NEXT_PUBLIC_SITE_BASE_URL = "https://example.com";
+			if (process.env.SITE_BASE_URL === undefined) {
+				process.env.SITE_BASE_URL = "https://example.com";
 			}
 		});
 
