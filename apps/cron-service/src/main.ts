@@ -10,17 +10,17 @@ import io from "socket.io-client";
 import { embedLesson } from "./rag";
 
 const API_SECRET = process.env.SCHEDULER_SECRET;
-const API_URL = process.env.NEXT_PUBLIC_SITE_BASE_URL;
+const API_URL = process.env.SITE_BASE_URL;
 const TRANSCRIPTION_SERVICE_URL = process.env.NEXT_PUBLIC_TRANSCRIPTION_SERVICE_URL;
 
 if (!API_URL) {
-	console.error("NEXT_PUBLIC_SITE_BASE_URL is missing in cron-service environment");
+	console.error("SITE_BASE_URL is missing in cron-service environment");
 	process.exit(1);
 }
 
 async function generateSubtitlesForExistingVideos() {
 	if (
-		process.env.NEXT_PUBLIC_TRANSCRIPTION_MIGRATE_EXISTING_VIDEO_CONTENT === "true" &&
+		process.env.TRANSCRIPTION_MIGRATE_EXISTING_VIDEO_CONTENT === "true" &&
 		TRANSCRIPTION_SERVICE_URL
 	) {
 		console.log("Starting migration of existing video content to add subtitles...");
