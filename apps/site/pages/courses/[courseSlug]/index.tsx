@@ -5,6 +5,7 @@ import { trpc } from "@self-learning/api-client";
 import { SmallGradeBadge, useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database/server";
 import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
+import { LearningGoals } from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
 	getLessonDuration,
@@ -41,7 +42,7 @@ import {
 	FloatingTutorButton,
 	I18N_NAMESPACE as NS_AI_TUTOR
 } from "@self-learning/ai-tutor";
-import { CourseData, getCourseData } from "@self-learning/course";
+import { CourseData, getCourseData, getCourseLearningGoals } from "@self-learning/course";
 
 function mapToTocContent(
 	content: CourseContent,
@@ -137,6 +138,7 @@ type CourseProps = {
 	course: CourseData;
 	summary: Summary;
 	content: ToC.Content;
+	learningGoals: string[];
 	markdownDescription: CompiledMarkdown | null;
 };
 
@@ -168,6 +170,7 @@ export const getServerSideProps = withTranslations(
 		}
 		// content, isGenerated and isStale are resolved in getCourseData.
 		const content = await mapCourseContent((course.content ?? []) as CourseContent);
+		const learningGoals = await getCourseLearningGoals(course);
 		let markdownDescription = null;
 
 		if (course.description && course.description.length > 0) {
@@ -184,6 +187,7 @@ export const getServerSideProps = withTranslations(
 				course,
 				summary,
 				content,
+				learningGoals,
 				markdownDescription
 			}
 		};
@@ -195,6 +199,7 @@ export default function Course({
 	course,
 	summary,
 	content,
+	learningGoals,
 	markdownDescription,
 	isGenerated
 }: CourseProps) {
@@ -217,6 +222,12 @@ export default function Course({
 						<Description content={markdownDescription} />
 					</CenteredContainer>
 				</section>
+			)}
+
+			{learningGoals.length > 0 && (
+				<CenteredSection>
+					<LearningGoals scope="course" goals={learningGoals} />
+				</CenteredSection>
 			)}
 
 			<CenteredSection>
