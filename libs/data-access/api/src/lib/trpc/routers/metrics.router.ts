@@ -43,8 +43,8 @@ export const MetricsRouter = t.router({
 		getStudentMetric_HourlyAverageQuizAnswers
 	),
 
-	getAuthorMetric_AverageCourseCompletionRate: metricsQuery(
-		getAuthorMetric_AverageCourseCompletionRate
+	getAuthorMetric_AverageCourseCompletionRate: authProcedure.query(async ({ ctx }) =>
+		getAuthorMetric_AverageCourseCompletionRate(ctx.user.id, await getCurrentLecturePeriod())
 	),
 	getAuthorCourseLessonActivity: authProcedure
 		.input(
