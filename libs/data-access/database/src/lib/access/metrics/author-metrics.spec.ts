@@ -8,6 +8,7 @@ import {
 jest.mock("../../prisma", () => ({
 	database: {
 		author: { findFirst: jest.fn() },
+		completedLesson: { groupBy: jest.fn() },
 		course: { findFirst: jest.fn() },
 		lesson: { findMany: jest.fn() }
 	}
@@ -16,6 +17,26 @@ jest.mock("../../prisma", () => ({
 describe("KPI Database Access Functions", () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
+		(database.completedLesson.groupBy as jest.Mock).mockImplementation(async ({ where }) => {
+			const author = await (database.author.findFirst as jest.Mock).mock.results.at(-1)
+				?.value;
+			const rows = (author?.courses ?? []).flatMap((course: any) =>
+				course.completions.map((completion: any) => ({
+					...completion,
+					courseId: course.courseId
+				}))
+			);
+			const distinct = new Map();
+			for (const row of rows) {
+				if (
+					where.createdAt &&
+					!(row.createdAt >= where.createdAt.gte && row.createdAt < where.createdAt.lt)
+				)
+					continue;
+				distinct.set(JSON.stringify([row.courseId, row.username, row.lessonId]), row);
+			}
+			return [...distinct.values()];
+		});
 	});
 
 	const userId = "user-123";
@@ -196,6 +217,7 @@ describe("KPI Database Access Functions", () => {
 						completions: [
 							completion("old", "one", "2026-01-01"),
 							completion("old", "one", "2026-06-01"),
+							completion("old", "one", "2027-01-01"),
 							completion("old", "two", "2026-06-02"),
 							completion("recent", "one", "2026-05-10T12:00:00Z"),
 							completion("teacher", "one", "2026-06-01"),
@@ -212,6 +234,16 @@ describe("KPI Database Access Functions", () => {
 					averageCompletionRate: 75
 				})
 			]);
+			expect(database.completedLesson.groupBy).toHaveBeenCalledWith({
+				by: ["courseId", "username", "lessonId"],
+				where: {
+					courseId: { in: ["course"] },
+					createdAt: {
+						gte: subMonths(new Date("2026-11-10T12:00:00Z"), 6),
+						lt: new Date("2026-11-10T12:00:00.001Z")
+					}
+				}
+			});
 		} finally {
 			jest.useRealTimers();
 		}

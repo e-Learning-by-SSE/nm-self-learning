@@ -33,17 +33,38 @@ export async function getAuthorMetric_AverageCourseCompletionRate(
 					authors: { select: { username: true } },
 					enrollments: {
 						select: { username: true, status: true, completedAt: true, createdAt: true }
-					},
-					completions: {
-						select: { username: true, lessonId: true, createdAt: true }
 					}
 				}
 			}
 		}
 	});
 	if (!authorsCourses) return [];
+	const courseIds = authorsCourses.courses.map(course => course.courseId);
+	const [completions, recentCompletions] = await Promise.all([
+		database.completedLesson.groupBy({
+			by: ["courseId", "username", "lessonId"],
+			where: { courseId: { in: courseIds } }
+		}),
+		database.completedLesson.groupBy({
+			by: ["courseId", "username", "lessonId"],
+			where: { courseId: { in: courseIds }, createdAt: { gte: periodStart, lt: periodEnd } }
+		})
+	]);
+	const byCourse = (rows: typeof completions) => {
+		const result = new Map<string, typeof completions>();
+		for (const row of rows) {
+			if (!row.courseId) continue;
+			const courseRows = result.get(row.courseId) ?? [];
+			courseRows.push(row);
+			result.set(row.courseId, courseRows);
+		}
+		return result;
+	};
+	const completionsByCourse = byCourse(completions);
+	const recentCompletionsByCourse = byCourse(recentCompletions);
 
 	return authorsCourses.courses.map(course => {
+		const courseCompletions = completionsByCourse.get(course.courseId) ?? [];
 		// Fetch lessons of course
 		const parsedContent = courseContentSchema.safeParse(course.content);
 		const lessonIds = new Set(
@@ -53,7 +74,7 @@ export async function getAuthorMetric_AverageCourseCompletionRate(
 		// Course authors are excluded from enrollment counts and completion rates.
 		const courseAuthorUsernames = new Set(course.authors.map(author => author.username));
 		const learnersWithCompletion = new Set(
-			course.completions
+			courseCompletions
 				.filter(completion => lessonIds.has(completion.lessonId))
 				.map(completion => completion.username)
 		);
@@ -69,11 +90,13 @@ export async function getAuthorMetric_AverageCourseCompletionRate(
 		);
 		const participation = new Set<string>();
 		const recentParticipation = new Set<string>();
-		for (const completion of course.completions) {
+		for (const completion of courseCompletions) {
 			if (!eligibleUsernames.has(completion.username) || !lessonIds.has(completion.lessonId))
 				continue;
 			participation.add(completion.username);
-			if (completion.createdAt >= periodStart && completion.createdAt < periodEnd)
+		}
+		for (const completion of recentCompletionsByCourse.get(course.courseId) ?? []) {
+			if (eligibleUsernames.has(completion.username) && lessonIds.has(completion.lessonId))
 				recentParticipation.add(completion.username);
 		}
 
@@ -84,7 +107,7 @@ export async function getAuthorMetric_AverageCourseCompletionRate(
 			);
 			const enrolledUsernames = new Set(withProgress.map(enrollment => enrollment.username));
 			const completedByUser = new Map<string, Set<string>>();
-			for (const completion of course.completions) {
+			for (const completion of courseCompletions) {
 				if (
 					!enrolledUsernames.has(completion.username) ||
 					!lessonIds.has(completion.lessonId)
