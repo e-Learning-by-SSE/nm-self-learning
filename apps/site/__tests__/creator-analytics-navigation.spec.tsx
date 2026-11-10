@@ -117,7 +117,9 @@ jest.mock("@self-learning/api-client", () => ({
 							averageCompletionRate: 80,
 							averageCompletionRateSemester: 60,
 							enrollmentsSemester: 2,
-							totalEnrollments: 3
+							totalEnrollments: 3,
+							totalParticipation: 2,
+							participationSemester: 1
 						},
 						{
 							courseId: "course-1",
@@ -125,7 +127,9 @@ jest.mock("@self-learning/api-client", () => ({
 							averageCompletionRate: 50,
 							averageCompletionRateSemester: 25,
 							enrollmentsSemester: 1,
-							totalEnrollments: 2
+							totalEnrollments: 2,
+							totalParticipation: 1,
+							participationSemester: 1
 						}
 					],
 					isLoading: false
