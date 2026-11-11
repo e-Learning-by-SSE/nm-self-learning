@@ -20,8 +20,8 @@ describe("KPI Database Access Functions", () => {
 		(database.completedLesson.groupBy as jest.Mock).mockImplementation(async ({ where }) => {
 			const author = await (database.author.findFirst as jest.Mock).mock.results.at(-1)
 				?.value;
-			const rows = (author?.courses ?? []).flatMap((course: any) =>
-				course.completions.map((completion: any) => ({
+			const rows = (author?.courses ?? []).flatMap(course =>
+				course.completions.map(completion => ({
 					...completion,
 					courseId: course.courseId
 				}))
