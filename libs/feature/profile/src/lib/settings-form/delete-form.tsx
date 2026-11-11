@@ -42,7 +42,7 @@ export function DeleteMeForm() {
 	return (
 		<>
 			<p className="mt-2 text-sm">
-				<span role="img" aria-label="Warning">
+				<span role="img" aria-label={t("Warning")}>
 					⚠️
 				</span>{" "}
 				{t("Be Careful! This changes cannot be undone.")}
@@ -341,7 +341,7 @@ function AuthorDeleteDialog({ onClose }: { onClose: () => void }) {
 					minHeight: "150px",
 					minWidth: "300px"
 				}}
-				title={"Daten löschen"}
+				title={t("Author_Delete_Dialog_Title")}
 				onClose={onClose}
 			>
 				<CenteredContainer>

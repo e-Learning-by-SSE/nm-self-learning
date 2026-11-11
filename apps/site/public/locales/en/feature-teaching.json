@@ -1,4 +1,6 @@
 {
+    "Select_Group": "Select a group...",
+    "No_Group_Selected": "No group selected",
     "Create Topic": "Create $t(common:Topic)",
     "Edit Topic": "Edit $t(common:Topic)",
     "New Topic": "New $t(common:Topic)",
