@@ -1,5 +1,5 @@
 import { createPrismaClient } from "./prisma-client";
-import { PrismaClient, Prisma } from "../generated/prisma/client";
+import { Prisma } from "../generated/prisma/client";
 
 export const license: Prisma.LicenseCreateManyInput[] = [
 	{
