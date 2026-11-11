@@ -6,6 +6,7 @@ import { InputWithButton, LabeledField, useSlugify } from "@self-learning/ui/for
 import { SearchGroupDialog, useDefaultGroup } from "../dialogs/search-group-dialog";
 import { useEffect, useRef, useState } from "react";
 import { ArrowsUpDownIcon } from "@heroicons/react/24/solid";
+import { useTranslation } from "next-i18next";
 
 /**
  * GroupInfoEditor - Form section for editing basic group information (name, slug, parent).
@@ -22,6 +23,7 @@ import { ArrowsUpDownIcon } from "@heroicons/react/24/solid";
  * @param fillInSingleGroup - If true, auto-select user's default group as parent (one-time only)
  */
 export function GroupInfoEditor({ fillInSingleGroup }: { fillInSingleGroup: boolean }) {
+	const { t } = useTranslation("feature-teaching");
 	const form = useFormContext<GroupFormModel>();
 	const {
 		getValues,
@@ -57,17 +59,20 @@ export function GroupInfoEditor({ fillInSingleGroup }: { fillInSingleGroup: bool
 
 	return (
 		<CenteredSection>
-			<SectionHeader title="Grunddaten" subtitle="Grunddaten dieser Gruppe." />
+			<SectionHeader
+				title={t("Group_Basic_Info_Tab")}
+				subtitle={t("Group_Basic_Info_Subtitle")}
+			/>
 			<div className="flex flex-col gap-4">
-				<LabeledField label="Name" error={errors.name?.message}>
+				<LabeledField label={t("Group_Name_Label")} error={errors.name?.message}>
 					<input
 						{...register("name")}
 						type="text"
 						className="textfield"
-						placeholder="Name der neuen Gruppe"
+						placeholder={t("New_Group_Name_Placeholder")}
 					/>
 				</LabeledField>
-				<LabeledField label="Slug" error={errors.slug?.message}>
+				<LabeledField label={t("Group_Slug_Label")} error={errors.slug?.message}>
 					<InputWithButton
 						input={
 							<input
@@ -80,14 +85,14 @@ export function GroupInfoEditor({ fillInSingleGroup }: { fillInSingleGroup: bool
 						}
 						button={
 							<button type="button" className="btn-stroked" onClick={slugifyField}>
-								Generieren
+								{t("Generate_Slug")}
 							</button>
 						}
 					/>
 				</LabeledField>
-				<LabeledField label="Hauptgruppe auswählen">
+				<LabeledField label={t("Select_Parent_Group")}>
 					<IconTextButton
-						text="Auswählen"
+						text={t("Select_Action")}
 						icon={<ArrowsUpDownIcon className="icon h-5" />}
 						className="btn-secondary"
 						onClick={() => setGroupDialogOpen(true)}
@@ -111,7 +116,7 @@ export function GroupInfoEditor({ fillInSingleGroup }: { fillInSingleGroup: bool
 									)}
 									{!field.value && (
 										<p className="text-sm text-light">
-											Keine Hauptgruppe gewählt
+											{t("No_Parent_Group_Selected")}
 										</p>
 									)}
 									{isGroupDialogOpen && (

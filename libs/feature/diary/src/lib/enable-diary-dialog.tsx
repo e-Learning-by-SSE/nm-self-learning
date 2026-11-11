@@ -48,7 +48,7 @@ export function EnableLearningDiaryDialog({
 				<FeatureSettingsForm featureSettings={settingSuggestion} onChange={updateSetting} />
 			</div>
 			<DialogActions onClose={onClose}>
-				<button className="btn-primary" onClick={save}>
+				<button className="btn-primary" onClick={save} data-testid="save-and-enable">
 					{t("Save_And_Enable")}
 				</button>
 			</DialogActions>

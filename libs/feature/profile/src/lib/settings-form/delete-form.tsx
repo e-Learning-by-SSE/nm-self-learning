@@ -331,6 +331,7 @@ function StudentDeleteInfoDialog({ onClose }: { onClose: (confirm: boolean) => v
 }
 
 function AuthorDeleteDialog({ onClose }: { onClose: () => void }) {
+	const { t } = useTranslation("feature-settings");
 	const { t: t_common } = useTranslation("common");
 	return (
 		<CenteredContainer>
