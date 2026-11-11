@@ -18,6 +18,7 @@ import { withTranslations } from "@self-learning/api";
 import {
 	AddAuthorDialog,
 	GroupChipList,
+	I18N_NAMESPACE as NS_TEACHING,
 	GroupMembershipChip,
 	PromoteRequest
 } from "@self-learning/teaching";
@@ -163,4 +164,6 @@ export default function AuthorsPage() {
 	);
 }
 
-export const getServerSideProps = withTranslations(["common"]);
+export const getServerSideProps = withTranslations(
+	Array.from(new Set(["common", ...NS_TEACHING]))
+);

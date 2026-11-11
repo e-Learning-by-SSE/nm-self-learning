@@ -1,4 +1,9 @@
 {
+    "Diary_Settings_Title": "Settings",
+    "Diary_Settings_Required_Notice": "The learning diary requires these settings. If you do not want to enable them, click Cancel.",
+    "Enable_Learning_Diary_Title": "Enable learning diary",
+    "Enable_Learning_Diary_Description": "Using the learning diary enables the platform features below. By doing so, you agree to the applicable terms.",
+    "Save_And_Enable": "Save and enable",
 	"Date_Label": "Date",
 	"Duration_Label": "Duration",
 	"Entries_Label": "Entries",

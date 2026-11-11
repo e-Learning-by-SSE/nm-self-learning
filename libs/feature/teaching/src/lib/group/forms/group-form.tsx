@@ -59,6 +59,7 @@ export function GroupAccessEditor({ subtitle, isNew }: GroupAccessEditorProps) {
 
 function GroupAccessEditorForm({ subtitle, isNew }: GroupAccessEditorProps) {
 	const { t } = useTranslation("feature-teaching");
+	const { t: t_common } = useTranslation("common");
 	const [isGroupDialogOpen, setGroupDialogOpen] = useState(false);
 	const { control, setValue } = useFormContext<PermissionsFormValues>();
 
@@ -80,9 +81,9 @@ function GroupAccessEditorForm({ subtitle, isNew }: GroupAccessEditorProps) {
 	const error = errors.permissions?.message;
 
 	const accessLevelOptions = [
-		{ label: "Full", value: AccessLevel.FULL },
-		{ label: "Edit", value: AccessLevel.EDIT },
-		{ label: "View", value: AccessLevel.VIEW }
+		{ label: t_common("Access_FULL"), value: AccessLevel.FULL },
+		{ label: t_common("Access_EDIT"), value: AccessLevel.EDIT },
+		{ label: t_common("Access_VIEW"), value: AccessLevel.VIEW }
 	];
 
 	const handleAddGroup = useCallback(
@@ -122,9 +123,7 @@ function GroupAccessEditorForm({ subtitle, isNew }: GroupAccessEditorProps) {
 		if (
 			mmbrCnt === 1 &&
 			mmbrSet.has(value.groupId) &&
-			!window.confirm(
-				"Durch das Entfernen dieses Gruppenzugriffs verlieren Sie Ihren Zugriff. Fortfahren?"
-			)
+			!window.confirm(t("Removing_this_group_access_will_remove_your_access_Confirm"))
 		)
 			return;
 		editor.remove(index);
@@ -152,16 +151,16 @@ function GroupAccessEditorForm({ subtitle, isNew }: GroupAccessEditorProps) {
 
 	return (
 		<Form.SidebarSection>
-			<Form.SidebarSectionTitle title="Gruppe & Zugriff" subtitle={subtitle}>
+			<Form.SidebarSectionTitle title={t("Group_And_Access_Title")} subtitle={subtitle}>
 				<IconTextButton
-					text={"Hinzufügen"}
+					text={t("Add_Action")}
 					icon={<PlusIcon className="icon h-5" />}
 					className="btn-secondary"
 					onClick={() => setGroupDialogOpen(true)}
 				/>
 			</Form.SidebarSectionTitle>
 
-			{isEmpty && <p className="text-sm text-light">Keine Gruppen</p>}
+			{isEmpty && <p className="text-sm text-light">{t("No_Groups_Selected")}</p>}
 
 			<div className="flex flex-col gap-2 mt-2">
 				{editor.fields.map((field, index) => (
@@ -178,10 +177,11 @@ function GroupAccessEditorForm({ subtitle, isNew }: GroupAccessEditorProps) {
 								>
 									<div className="flex flex-col gap-1 py-2">
 										<span>
-											{field.value?.groupName} {tmp && <i>(Mitglied)</i>}
+											{field.value?.groupName}{" "}
+											{tmp && <i>({t("Group_Member_Label")})</i>}
 										</span>
 										<LabeledField
-											label="Zugriffsebene auswählen"
+											label={t("Select_Access_Level")}
 											button={
 												field.value?.accessLevel ? (
 													// Explains the access level currently selected.
@@ -203,7 +203,7 @@ function GroupAccessEditorForm({ subtitle, isNew }: GroupAccessEditorProps) {
 													})
 												}
 												options={accessLevelOptions}
-												label="Auswählen"
+												label={t("Select_Action")}
 											/>
 										</LabeledField>
 									</div>

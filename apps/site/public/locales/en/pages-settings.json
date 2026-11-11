@@ -3,5 +3,15 @@
     "Feature_other": "Features",
     "Permissions": "Permissions",
     "Critical Area": "Critical Area",
-	"Developer Options": "Developer Options"
+	"Developer Options": "Developer Options",
+	"Settings_Updated": "Settings updated",
+	"Settings_Require_Relogin": "Some settings will take effect after you log in again.",
+	"Log_In_Again": "Log in again",
+	"Settings_May_Require_Relogin": "Some settings may take effect only after you log in again.",
+	"Notifications": "Notifications",
+	"Study_Participation": "Study participation",
+	"Beta_Feature_Study_Participation": "Participate in the beta feature study (gamification)",
+	"Action_Not_Possible": "Action not possible",
+	"Cannot_Disable_While_Participating": "This setting cannot be disabled while you are participating in a study.",
+	"Empty_Value": "Empty"
 }

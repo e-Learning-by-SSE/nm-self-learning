@@ -18,6 +18,7 @@ import {
 import { useTranslation } from "next-i18next";
 import { GenericCombobox } from "./group-members";
 import { ArrayDiffStatus, TableDiffColumn } from "../misc/use-array-diff";
+import { resourceKindTranslationKey } from "../resource-i18n";
 
 /** Hover text for FULL, EDIT, and VIEW. Keys live in feature-teaching. */
 export function accessLevelTooltip(level: AccessLevel, t: (key: string) => string): string {
@@ -34,9 +35,9 @@ export function accessLevelTooltip(level: AccessLevel, t: (key: string) => strin
 export type PermissionFormModel = ResourceAccessFormType;
 
 const accessLevelOptions = [
-	{ label: "Full", value: AccessLevel.FULL },
-	{ label: "Edit", value: AccessLevel.EDIT },
-	{ label: "View", value: AccessLevel.VIEW }
+	{ value: AccessLevel.FULL },
+	{ value: AccessLevel.EDIT },
+	{ value: AccessLevel.VIEW }
 ];
 
 /**
@@ -99,13 +100,18 @@ export function GroupPermissionRowEditor({
 	onDelete?: OnDialogCloseFn<PermissionFormModel>;
 }) {
 	const { t } = useTranslation("feature-teaching");
+	const { t: t_common } = useTranslation("common");
 	const { setLevel } = usePermissionEditor(onChange, permission);
 	const p = normalizeFormResourceAccess(permission);
+	const localizedAccessLevelOptions = accessLevelOptions.map(option => ({
+		value: option.value,
+		label: t_common(`Access_${option.value}`)
+	}));
 
 	return (
 		<tr>
 			<TableDiffColumn status={diffStatus}>
-				<span className="text-light">{p.type}</span>
+				<span className="text-light">{t_common(resourceKindTranslationKey(p.kind))}</span>
 			</TableDiffColumn>
 
 			<TableDataColumn>
@@ -120,8 +126,8 @@ export function GroupPermissionRowEditor({
 					<GenericCombobox
 						value={permission?.accessLevel ?? null}
 						onChange={setLevel}
-						options={accessLevelOptions}
-						label={"Auswählen"}
+						options={localizedAccessLevelOptions}
+						label={t("Select_Action")}
 					/>
 					{permission?.accessLevel && (
 						<QuestionMarkTooltip
@@ -134,6 +140,7 @@ export function GroupPermissionRowEditor({
 				<IconOnlyButton
 					icon={<TrashIcon className="h-4 w-4" />}
 					className="btn-x-mark"
+					title={t("Remove_Group_Permission")}
 					onClick={() => onDelete && onDelete(permission)}
 				/>
 			</TableDataColumn>
@@ -154,14 +161,16 @@ export function GroupPermissionRowEditor({
  * @param children - Array of row elements (GroupPermissionRow or GroupPermissionRowEditor)
  */
 export function GroupPermissionTable({ children }: { children: React.ReactNode[] }) {
+	const { t } = useTranslation("feature-teaching");
+	const { t: t_common } = useTranslation("common");
 	return (
 		<Table
 			head={
 				<>
-					<TableHeaderColumn>Ressource</TableHeaderColumn>
-					<TableHeaderColumn>Titel</TableHeaderColumn>
-					<TableHeaderColumn>Slug</TableHeaderColumn>
-					<TableHeaderColumn>Zugriffsebene</TableHeaderColumn>
+					<TableHeaderColumn>{t("Resource_Column")}</TableHeaderColumn>
+					<TableHeaderColumn>{t("Title_Column")}</TableHeaderColumn>
+					<TableHeaderColumn>{t_common("Slug")}</TableHeaderColumn>
+					<TableHeaderColumn>{t("Access_Level_Column")}</TableHeaderColumn>
 					<TableHeaderColumn></TableHeaderColumn>
 				</>
 			}
@@ -200,12 +209,13 @@ export function GroupPermissionRow({
 	onRelations?: OnDialogCloseFn<PermissionFormModel>;
 }) {
 	const { t } = useTranslation("feature-teaching");
+	const { t: t_common } = useTranslation("common");
 	const p = normalizeFormResourceAccess(ResourceAccessFormSchema.parse(permission));
 
 	return (
 		<tr>
 			<TableDiffColumn status={diffStatus}>
-				<span className="text-light">{p.type}</span>
+				<span className="text-light">{t_common(resourceKindTranslationKey(p.kind))}</span>
 			</TableDiffColumn>
 
 			<TableDataColumn>
@@ -216,7 +226,7 @@ export function GroupPermissionRow({
 			</TableDataColumn>
 			<TableDataColumn>
 				<Tooltip content={accessLevelTooltip(p.accessLevel, t)}>
-					<span className="text-light">{p.accessLevel}</span>
+					<span className="text-light">{t_common(`Access_${p.accessLevel}`)}</span>
 				</Tooltip>
 			</TableDataColumn>
 			<TableDataColumn className="p-2 flex">
@@ -224,7 +234,7 @@ export function GroupPermissionRow({
 					icon={<UsersIcon className="h-4 w-4" />}
 					className="btn-with-icon"
 					onClick={() => onRelations && onRelations(permission)}
-					title={"Wer hat Zugriff auf diese Ressource?"}
+					title={t("Who_Has_Access_To_Resource")}
 				/>
 				{/* <IconOnlyButton TODO not in this PR
 					icon={<PencilIcon className="h-4 w-4" />}

@@ -145,16 +145,16 @@ export function FeatureSettingsForm({
 // Gruppierung der NotificationTypes zu benutzerfreundlichen Settings
 const notificationSettingsGroups: Record<
 	string, // group key wie "streakReminder", "courseReminder"
-	{ title: string; text: string; correspondingNotifications: NotificationType[] }
+	{ titleKey: string; descriptionKey: string; correspondingNotifications: NotificationType[] }
 > = {
 	courseReminder: {
-		title: "Kurs-Erinnerungen",
-		text: "Erhalte eine Erinnerung, wenn du einen Kurs begonnen hast, aber noch nicht abgeschlossen hast",
+		titleKey: "Course_Reminders",
+		descriptionKey: "Course_Reminders_Description",
 		correspondingNotifications: ["courseReminder"]
 	},
 	streakReminder: {
-		title: "Streak-Erinnerungen",
-		text: "Erhalte eine Erinnerung, wenn du deine Lernziele für einen Tag nicht erreicht hast",
+		titleKey: "Streak_Reminders",
+		descriptionKey: "Streak_Reminders_Description",
 		correspondingNotifications: ["streakReminderFirst", "streakReminderLast"]
 	}
 };
@@ -182,6 +182,7 @@ export function NotificationSettingsForm({
 	notificationSettings: UserNotificationSetting[];
 	onChange: OnDialogCloseFn<UserNotificationSetting[]>;
 }) {
+	const { t } = useTranslation("feature-settings");
 	const supportedChannels: NotificationChannel[] = ["email"]; // später auch "push"
 
 	const handleGroupToggle = function (
@@ -211,8 +212,11 @@ export function NotificationSettingsForm({
 			{Object.entries(notificationSettingsGroups).map(([groupKey, group]) => (
 				<div key={groupKey} className="space-y-3">
 					<div className="space-y-2">
-						<h3 className="font-medium">{group.title}</h3>
-						<SettingsSection hoover={group.title} text={group.text} />
+						<h3 className="font-medium">{t(group.titleKey)}</h3>
+						<SettingsSection
+							hoover={t(group.titleKey)}
+							text={t(group.descriptionKey)}
+						/>
 					</div>
 
 					{/* Pro Channel ein Toggle */}
@@ -233,7 +237,9 @@ export function NotificationSettingsForm({
 								channel,
 								notificationSettings
 							);
-							const channelLabel = channel === "email" ? "E-Mail" : "Push";
+							const channelLabel = t(
+								channel === "email" ? "Email_Channel" : "Push_Channel"
+							);
 
 							return (
 								<ToggleSetting
@@ -242,7 +248,10 @@ export function NotificationSettingsForm({
 									onChange={(value: boolean) =>
 										handleGroupToggle(groupKey, channel, value)
 									}
-									label={`${group.title} ${channelLabel}`}
+									label={t("Notification_Channel_Label", {
+										group: t(group.titleKey),
+										channel: channelLabel
+									})}
 								/>
 							);
 						})}
@@ -262,6 +271,7 @@ export function PermissionsSettingsForm({
 	isAdmin: boolean;
 	onSubmit: OnDialogCloseFn<EditPermissionsSettings>;
 }) {
+	const { t: t_settings } = useTranslation("feature-settings");
 	const form = useForm({
 		defaultValues: { defaultGroup: personalSettings.defaultGroup },
 		resolver: zodResolver(editPermissionsSettingsSchema),
@@ -276,8 +286,8 @@ export function PermissionsSettingsForm({
 				name="defaultGroup"
 				render={({ field }) => (
 					<GroupPicker
-						header="Standardgruppe"
-						description="Wenn ausgewählt, werden alle neuen Kurse und Lektionen, die Sie erstellen, dieser Gruppe zugewiesen, sofern nicht anders angegeben."
+						header={t_settings("Default_Group_Title")}
+						description={t_settings("Default_Group_Description")}
 						value={field.value}
 						onChange={group => {
 							// avoid form cancellation as null option
@@ -289,7 +299,7 @@ export function PermissionsSettingsForm({
 				)}
 			/>
 			<button className="btn-primary" disabled={!isDirty || !isValid}>
-				Profil speichern
+				{t_settings("Save_Settings")}
 			</button>
 		</form>
 	);

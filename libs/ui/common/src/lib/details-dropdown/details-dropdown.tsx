@@ -26,13 +26,11 @@ export function DetailsDropdown({
 				<h2 className={`${headerStyles ?? "text-xl"} flex items-center`}>{header}</h2>
 				<IconOnlyButton
 					icon={
-						<>
-							{!isExpanded ? (
-								<InformationCircleIconOutline className="h-6 w-6 text-c-text-muted transition-colors duration-200" />
-							) : (
-								<InformationCircleIcon className="h-6 w-6 text-c-primary transition-colors duration-200" />
-							)}
-						</>
+						!isExpanded ? (
+							<InformationCircleIconOutline className="h-6 w-6 text-c-text-muted transition-colors duration-200" />
+						) : (
+							<InformationCircleIcon className="h-6 w-6 text-c-primary transition-colors duration-200" />
+						)
 					}
 					className=""
 					onClick={toggleExpanded}
