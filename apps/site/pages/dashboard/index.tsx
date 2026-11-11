@@ -467,13 +467,14 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 	const { t } = useTranslation("pages-dashboard");
 	const { locale } = useRouter();
+	const linkableLessons = lessons.filter(lesson => lesson.courseSlug && lesson.slug);
 	return (
 		<>
-			{lessons.length === 0 ? (
+			{linkableLessons.length === 0 ? (
 				<span className="text-sm text-c-text-muted">{t("No_Recent_Lessons")}</span>
 			) : (
 				<ul className="flex max-h-80 flex-col gap-2 overflow-auto overflow-x-hidden p-3">
-					{lessons.map((lesson, index) => (
+					{linkableLessons.map((lesson, index) => (
 						<Link
 							className="text-sm font-medium"
 							href={`/courses/${lesson.courseSlug}/${lesson.slug}`}
