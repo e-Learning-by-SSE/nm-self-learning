@@ -1,5 +1,5 @@
 import { createPrismaClient } from "../../../../prisma-client";
-import { Prisma, PrismaClient } from "../../../../../generated/prisma/client";
+import { Prisma } from "../../../../../generated/prisma/client";
 import { randomUUID } from "node:crypto";
 
 /** Runs setup and assertions in one transaction, rolling back even when the test succeeds. */
