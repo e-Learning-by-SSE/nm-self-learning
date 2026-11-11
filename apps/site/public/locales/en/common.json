@@ -57,6 +57,7 @@
     "Quiz": "Quiz",
     "Quiz_other": "Quizzes",
     "Error": "Error",
+    "Enrollment_Failed": "Could not add this course to your learning plan. Please try again.",
     "Information": "Information",
     "Information_other": "Information",
     "Title": "Title",

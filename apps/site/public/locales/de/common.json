@@ -57,6 +57,7 @@
     "Quiz": "Lernzielkontrolle",
     "Quiz_other": "Lernzielkontrollen",
     "Error": "Fehler",
+    "Enrollment_Failed": "Der Kurs konnte nicht zu deinem Lernplan hinzugefügt werden. Bitte versuche es erneut.",
     "Information": "Information",
     "Information_other": "Informationen",
     "Title": "Titel",

@@ -1,4 +1,9 @@
-import { disenrollUser, enrollUser, getEnrollmentsOfUser } from "@self-learning/enrollment/server";
+import {
+	disenrollUser,
+	enrollUser,
+	ensureEnrolledUser,
+	getEnrollmentsOfUser
+} from "@self-learning/enrollment/server";
 import { z } from "zod";
 import { authProcedure, t } from "../trpc";
 import { database } from "@self-learning/database/server";
@@ -22,6 +27,18 @@ export const enrollmentRouter = t.router({
 		)
 		.mutation(({ ctx, input }) => {
 			return enrollUser({
+				courseId: input.courseId,
+				username: ctx.user.name
+			});
+		}),
+	ensureEnrolled: authProcedure
+		.input(
+			z.object({
+				courseId: z.string()
+			})
+		)
+		.mutation(({ ctx, input }) => {
+			return ensureEnrolledUser({
 				courseId: input.courseId,
 				username: ctx.user.name
 			});
