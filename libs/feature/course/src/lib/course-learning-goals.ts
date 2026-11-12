@@ -47,7 +47,7 @@ async function getDynamicCourseLearningGoals(courseId: string): Promise<string[]
 	if (rootIds.length === 0) return [];
 
 	const skills = await loadSkillGoalTree(rootIds);
-	return collectSkillDescriptions(rootIds, skills, true);
+	return collectSkillDescriptions(rootIds, skills);
 }
 
 async function getStaticCourseLearningGoals(content: CourseContent): Promise<string[]> {
@@ -79,7 +79,8 @@ async function getStaticCourseLearningGoals(content: CourseContent): Promise<str
 		}
 	}
 
-	return collectSkillDescriptions(rootIds, skills, false);
+	// children are not loaded: static courses only list the skills taught by the lessons
+	return collectSkillDescriptions(rootIds, skills);
 }
 
 /**

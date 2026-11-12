@@ -38,7 +38,8 @@ const selectStatement = {
 		select: {
 			id: true,
 			description: true
-		}
+		},
+		orderBy: { name: "asc" as const }
 	}
 };
 

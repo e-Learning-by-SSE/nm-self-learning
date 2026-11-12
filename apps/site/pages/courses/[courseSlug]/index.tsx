@@ -204,8 +204,9 @@ export default function Course({
 	isGenerated
 }: CourseProps) {
 	const tutorState = useAiTutor();
-	return (
-		<div className="pb-32">
+
+	const courseContent = (
+		<>
 			<CenteredSection>
 				<CourseHeader
 					course={course}
@@ -224,15 +225,28 @@ export default function Course({
 				</section>
 			)}
 
-			{learningGoals.length > 0 && (
-				<CenteredSection>
-					<LearningGoals scope="course" goals={learningGoals} />
-				</CenteredSection>
-			)}
-
 			<CenteredSection>
 				<TableOfContents content={content} course={course} isGenerated={isGenerated} />
 			</CenteredSection>
+		</>
+	);
+
+	return (
+		<div className="pb-32">
+			{learningGoals.length > 0 ? (
+				// same sidebar layout as the lesson outline (see BaseLessonLayout)
+				<div className="mx-auto flex w-full max-w-[1920px] flex-col gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
+					<aside className="playlist-scroll top-[61px] w-full overflow-auto border-t border-r-c-border pb-8 xl:sticky xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4">
+						{/* pt-16 = padding of CenteredSection, aligns the card with the course title */}
+						<div className="pt-16">
+							<LearningGoals scope="course" variant="card" goals={learningGoals} />
+						</div>
+					</aside>
+					<div className="min-w-0">{courseContent}</div>
+				</div>
+			) : (
+				courseContent
+			)}
 			<FloatingTutorButton
 				onToggle={tutorState.toggleTutor}
 				disabled={tutorState.isAnimating}

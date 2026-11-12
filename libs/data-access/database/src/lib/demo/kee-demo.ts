@@ -10,7 +10,7 @@ const prisma = createPrismaClient();
 type Skill = {
 	id: string;
 	name: string;
-	// groups have no description on purpose -> children are used as course goals
+	// optional: if a course goal has no description, its children are shown instead (see Writing, Research)
 	description?: string;
 	parents?: string[];
 };

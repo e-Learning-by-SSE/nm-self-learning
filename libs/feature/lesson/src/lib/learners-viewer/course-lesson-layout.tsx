@@ -11,6 +11,7 @@ import {
 } from "@self-learning/ui/lesson";
 import { NextComponentType, NextPageContext } from "next";
 import { BaseLessonLayout } from "./base-layout";
+import { LearningGoals } from "./learning-goals";
 import { useMemo } from "react";
 import { MobileSidebarNavigation } from "@self-learning/ui/layouts";
 import Head from "next/head";
@@ -53,6 +54,10 @@ function PlaylistArea({ course, lesson }: LessonLayoutProps) {
 			</div>
 		</>
 	);
+}
+
+function LessonGoals({ lesson }: Pick<LessonLayoutProps, "lesson">) {
+	return <LearningGoals scope="lesson" goals={lesson.provides.map(skill => skill.description)} />;
 }
 
 type LessonInfo = { lessonId: string; slug: string; title: string; meta: LessonMeta };
@@ -103,6 +108,7 @@ function BigScreenPlaylistArea({ course, lesson }: LessonLayoutProps) {
 					course={course}
 					lesson={{ ...lesson, meta: lesson.meta as LessonMeta }}
 					completion={completion}
+					lessonInfo={<LessonGoals lesson={lesson} />}
 				/>
 			) : (
 				<div className="h-full pt-8">
@@ -145,6 +151,7 @@ function MobilePlaylistArea(pageProps: LessonLayoutProps) {
 						{...pageProps}
 						lesson={{ ...pageProps.lesson, meta: pageProps.lesson.meta as LessonMeta }}
 						content={playlistContent}
+						lessonInfo={<LessonGoals lesson={pageProps.lesson} />}
 						onSelect={onSelect}
 					/>
 				)}

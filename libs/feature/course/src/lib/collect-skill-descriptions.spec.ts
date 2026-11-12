@@ -11,7 +11,7 @@ describe("collectSkillDescriptions", () => {
 			{ id: "b", description: "Structure a paper", childIds: [] }
 		]);
 
-		expect(collectSkillDescriptions(["a", "b"], skills, true)).toEqual([
+		expect(collectSkillDescriptions(["a", "b"], skills)).toEqual([
 			"Search literature",
 			"Structure a paper"
 		]);
@@ -26,11 +26,7 @@ describe("collectSkillDescriptions", () => {
 			{ id: "leaf3", description: "Leaf 3", childIds: [] }
 		]);
 
-		expect(collectSkillDescriptions(["root"], skills, true)).toEqual([
-			"Leaf 2",
-			"Leaf 3",
-			"Leaf 1"
-		]);
+		expect(collectSkillDescriptions(["root"], skills)).toEqual(["Leaf 2", "Leaf 3", "Leaf 1"]);
 	});
 
 	it("does not descend into children of skills that have a description", () => {
@@ -39,16 +35,16 @@ describe("collectSkillDescriptions", () => {
 			{ id: "child", description: "Child goal", childIds: [] }
 		]);
 
-		expect(collectSkillDescriptions(["root"], skills, true)).toEqual(["Root goal"]);
+		expect(collectSkillDescriptions(["root"], skills)).toEqual(["Root goal"]);
 	});
 
-	it("does not descend into children if expandChildren is false", () => {
+	it("ignores skills without description and without children", () => {
 		const skills = skillMap([
-			{ id: "root", description: null, childIds: ["child"] },
-			{ id: "child", description: "Child goal", childIds: [] }
+			{ id: "a", description: null, childIds: [] },
+			{ id: "b", description: "B", childIds: [] }
 		]);
 
-		expect(collectSkillDescriptions(["root"], skills, false)).toEqual([]);
+		expect(collectSkillDescriptions(["a", "b"], skills)).toEqual(["B"]);
 	});
 
 	it("removes duplicate skills and duplicate descriptions", () => {
@@ -59,7 +55,7 @@ describe("collectSkillDescriptions", () => {
 			{ id: "c", description: " Shared goal ", childIds: [] }
 		]);
 
-		expect(collectSkillDescriptions(["a", "b", "c"], skills, true)).toEqual(["Shared goal"]);
+		expect(collectSkillDescriptions(["a", "b", "c"], skills)).toEqual(["Shared goal"]);
 	});
 
 	it("terminates on cyclic skill graphs", () => {
@@ -69,10 +65,10 @@ describe("collectSkillDescriptions", () => {
 			{ id: "c", description: "C", childIds: [] }
 		]);
 
-		expect(collectSkillDescriptions(["a"], skills, true)).toEqual(["C"]);
+		expect(collectSkillDescriptions(["a"], skills)).toEqual(["C"]);
 	});
 
 	it("ignores unknown skill ids", () => {
-		expect(collectSkillDescriptions(["missing"], skillMap([]), true)).toEqual([]);
+		expect(collectSkillDescriptions(["missing"], skillMap([]))).toEqual([]);
 	});
 });

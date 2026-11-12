@@ -1,4 +1,3 @@
-import { LearningGoals } from "./learning-goals";
 import { H5PViewer } from "./h5p-viewer";
 import { Button } from "@headlessui/react";
 import {
@@ -321,7 +320,6 @@ export function LessonLearnersView({ lesson, course, markdown }: LessonLearnersV
 				mdDescription={markdown.description}
 				mdSubtitle={markdown.subtitle}
 			/>
-			<LearningGoals scope="lesson" goals={lesson.provides.map(skill => skill.description)} />
 
 			{/* TODO can be replaced with NavigableContentSelector, make Inhalt default and immutable */}
 			<MediaSelector

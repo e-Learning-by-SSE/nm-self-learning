@@ -10,13 +10,12 @@ export function normalizeDescription(description: string | null | undefined): st
 }
 
 /**
- * Returns the distinct descriptions of the given skills. With expandChildren, skills without
- * a description are replaced by the descriptions of their children (recursive, cycle-safe).
+ * Returns the distinct descriptions of the given skills. Skills without a description are
+ * replaced by the descriptions of their children (recursive, cycle-safe).
  */
 export function collectSkillDescriptions(
 	rootIds: string[],
-	skills: ReadonlyMap<string, SkillGoalNode>,
-	expandChildren: boolean
+	skills: ReadonlyMap<string, SkillGoalNode>
 ): string[] {
 	const visited = new Set<string>();
 	const goals = new Set<string>();
@@ -31,7 +30,7 @@ export function collectSkillDescriptions(
 		const description = normalizeDescription(skill.description);
 		if (description) {
 			goals.add(description);
-		} else if (expandChildren) {
+		} else {
 			skill.childIds.forEach(visit);
 		}
 	};
