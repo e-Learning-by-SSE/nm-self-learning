@@ -53,7 +53,7 @@ export function AddChildButton({
 			number: childrenNumber + 1,
 			name: parentSkill.name
 		}),
-		description: t("Skills_Default_Description"),
+		description: null,
 		children: [],
 		parents: [parentSkill.id],
 		...skillDefaults
@@ -140,7 +140,7 @@ export function NewSkillButton({
 				second: "2-digit"
 			})
 		}),
-		description: t("Skills_Default_Description"),
+		description: null,
 		children: [],
 		...skillDefaults
 	};

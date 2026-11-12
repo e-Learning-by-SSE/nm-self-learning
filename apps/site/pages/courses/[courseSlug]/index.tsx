@@ -9,6 +9,7 @@ import {
 	useEnrollments,
 	useEnsureCourseEnrollment
 } from "@self-learning/enrollment";
+import { LearningGoals } from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
 	getLessonDuration,
@@ -45,7 +46,7 @@ import {
 	FloatingTutorButton,
 	I18N_NAMESPACE as NS_AI_TUTOR
 } from "@self-learning/ai-tutor";
-import { CourseData, getCourseData } from "@self-learning/course";
+import { CourseData, getCourseData, getCourseLearningGoals } from "@self-learning/course";
 
 function mapToTocContent(
 	content: CourseContent,
@@ -141,6 +142,7 @@ type CourseProps = {
 	course: CourseData;
 	summary: Summary;
 	content: ToC.Content;
+	learningGoals: string[];
 	markdownDescription: CompiledMarkdown | null;
 };
 
@@ -172,6 +174,7 @@ export const getServerSideProps = withTranslations(
 		}
 		// content, isGenerated and isStale are resolved in getCourseData.
 		const content = await mapCourseContent((course.content ?? []) as CourseContent);
+		const learningGoals = await getCourseLearningGoals(course);
 		let markdownDescription = null;
 
 		if (course.description && course.description.length > 0) {
@@ -188,6 +191,7 @@ export const getServerSideProps = withTranslations(
 				course,
 				summary,
 				content,
+				learningGoals,
 				markdownDescription
 			}
 		};
@@ -199,12 +203,14 @@ export default function Course({
 	course,
 	summary,
 	content,
+	learningGoals,
 	markdownDescription,
 	isGenerated
 }: CourseProps) {
 	const tutorState = useAiTutor();
-	return (
-		<div className="pb-32">
+
+	const courseContent = (
+		<>
 			<CenteredSection>
 				<CourseHeader
 					course={course}
@@ -226,6 +232,25 @@ export default function Course({
 			<CenteredSection>
 				<TableOfContents content={content} course={course} isGenerated={isGenerated} />
 			</CenteredSection>
+		</>
+	);
+
+	return (
+		<div className="pb-32">
+			{learningGoals.length > 0 ? (
+				// same sidebar layout as the lesson outline (see BaseLessonLayout)
+				<div className="mx-auto flex w-full max-w-[1920px] flex-col gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
+					<aside className="playlist-scroll top-[61px] w-full overflow-auto border-t border-r-c-border pb-8 xl:sticky xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4">
+						{/* pt-16 = padding of CenteredSection, aligns the card with the course title */}
+						<div className="pt-16">
+							<LearningGoals scope="course" variant="card" goals={learningGoals} />
+						</div>
+					</aside>
+					<div className="min-w-0">{courseContent}</div>
+				</div>
+			) : (
+				courseContent
+			)}
 			<FloatingTutorButton
 				onToggle={tutorState.toggleTutor}
 				disabled={tutorState.isAnimating}

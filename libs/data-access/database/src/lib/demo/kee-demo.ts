@@ -10,6 +10,8 @@ const prisma = createPrismaClient();
 type Skill = {
 	id: string;
 	name: string;
+	// optional: if a course goal has no description, its children are shown instead (see Writing, Research)
+	description?: string;
 	parents?: string[];
 };
 
@@ -40,16 +42,19 @@ const skills: Skill[] = [
 	{
 		id: "SK::PW::Writing::Structure",
 		name: "Structure",
+		description: "Structure a scientific paper into a coherent outline.",
 		parents: ["SK::PW::Writing"]
 	},
 	{
 		id: "SK::PW::Writing::Evidence",
 		name: "Evidence",
+		description: "Build a consistent chain of evidence for their arguments.",
 		parents: ["SK::PW::Writing"]
 	},
 	{
 		id: "SK::PW::Writing::Citations",
 		name: "Foundation of Citing",
+		description: "Explain why, when, and how sources must be cited.",
 		parents: ["SK::PW::Writing"]
 	},
 	{
@@ -60,16 +65,19 @@ const skills: Skill[] = [
 	{
 		id: "SK::PW::Research::Search",
 		name: "Searching",
+		description: "Search scientific databases systematically for relevant literature.",
 		parents: ["SK::PW::Research"]
 	},
 	{
 		id: "SK::PW::Research::Reading",
 		name: "Reading",
+		description: "Read and assess research papers efficiently.",
 		parents: ["SK::PW::Research"]
 	},
 	{
 		id: "SK::PW::Presenting",
 		name: "Presenting",
+		description: "Present the results of their paper to an audience.",
 		parents: ["SK::PW"]
 	},
 	{
@@ -79,11 +87,15 @@ const skills: Skill[] = [
 	{
 		id: "SK::Citing::CS",
 		name: "Citing in Computer Science",
+		description:
+			"Cite sources according to common citation styles in computer science (e.g., IEEE, ACM).",
 		parents: ["SK::Citing"]
 	},
 	{
 		id: "SK::Citing::Economics",
 		name: "Citing in Economics",
+		description:
+			"Cite sources according to common citation styles in economics (e.g., APA, Harvard).",
 		parents: ["SK::Citing"]
 	}
 ];
@@ -157,25 +169,32 @@ export async function seedSkillbasedSeminars() {
 
 	console.log(" - %s\x1b[32m ✔\x1b[0m", "Authors");
 
-	for (const skill of skills) {
-		await prisma.skill.create({
-			data: {
-				id: skill.id,
-				name: skill.name,
-				author: { connect: { username: "dumbledore" } },
-				parents: {
-					connect: skill.parents?.map(id => ({ id })) || []
-				}
-			}
-		});
-	}
-	console.log(" - %s\x1b[32m ✔\x1b[0m", "Skills");
-
 	const group = await prisma.group.findUniqueOrThrow({
 		where: {
 			name: softwareentwicklungDemoGroup.name
 		}
 	});
+
+	for (const skill of skills) {
+		await prisma.skill.create({
+			data: {
+				id: skill.id,
+				name: skill.name,
+				description: skill.description ?? null,
+				author: { connect: { username: "dumbledore" } },
+				parents: {
+					connect: skill.parents?.map(id => ({ id })) || []
+				},
+				permissions: {
+					create: {
+						group: { connect: { id: group.id } },
+						accessLevel: AccessLevel.FULL
+					}
+				}
+			}
+		});
+	}
+	console.log(" - %s\x1b[32m ✔\x1b[0m", "Skills");
 
 	for (const unit of units) {
 		const lesson = createLesson({
