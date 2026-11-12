@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AccessLevel } from "@self-learning/database";
 import { normalizeFormResourceAccess } from "@self-learning/types";
+import { useTranslation } from "next-i18next";
+import { resourceKindTranslationKey } from "../resource-i18n";
 
 type SingleOwnedResources = inferProcedureOutput<
 	AppRouter["permission"]["getSingleOwnedResources"]
@@ -18,6 +20,7 @@ export function GroupDeleteOption({
 }: {
 	group: { id: number; name: string; children: { id: number; name: string }[] };
 }) {
+	const { t } = useTranslation("feature-teaching");
 	const router = useRouter();
 	const query = trpc.permission.getSingleOwnedResources.useQuery(
 		{ groupId: group.id },
@@ -29,16 +32,16 @@ export function GroupDeleteOption({
 		onSuccess: () => {
 			showToast({
 				type: "success",
-				title: "Gruppe gelöscht",
-				subtitle: `Sie haben die Gruppe ${group.name} gelöscht.`
+				title: t("Group_Deleted"),
+				subtitle: t("Group_Deleted_Message", { group: group.name })
 			});
 			router.back();
 		},
 		onError: () => {
 			showToast({
 				type: "error",
-				title: "Fehler",
-				subtitle: `Die Gruppe ${group.name} konnte nicht gelöscht werden`
+				title: t("Group_Delete_Error_Title"),
+				subtitle: t("Group_Delete_Error_Message", { group: group.name })
 			});
 		}
 	});
@@ -66,6 +69,7 @@ export function GroupDeleteOption({
 			<IconOnlyButton
 				icon={<TrashIcon className="h-5 w-5" />}
 				className="btn-danger"
+				title={t("Delete_Group")}
 				onClick={handleClick}
 			/>
 			{showConfirmation && (
@@ -84,10 +88,12 @@ function GroupDeleteDialog({
 	data: SingleOwnedResources | undefined;
 	onClose: (isDelete?: boolean) => void;
 }) {
+	const { t } = useTranslation("feature-teaching");
+	const { t: t_common } = useTranslation("common");
 	if (group.children && group.children.length > 0) {
 		return (
-			<Dialog title={"Löschen nicht möglich"} onClose={onClose}>
-				Die Gruppe wird in folgenden Gruppen als Hauptgruppe aufgeführt:
+			<Dialog title={t("Delete_Not_Possible_Title")} onClose={onClose}>
+				{t("Group_Is_Parent_Of_These_Groups")}
 				{group.children.map(child => (
 					<Link
 						key={child.id}
@@ -103,11 +109,9 @@ function GroupDeleteDialog({
 	}
 	if (data && data.length > 0) {
 		return (
-			<Dialog title="Löschen nicht möglich" onClose={onClose}>
+			<Dialog title={t("Delete_Not_Possible_Title")} onClose={onClose}>
 				<div className="overflow-auto">
-					<p className="mb-4">
-						Die Gruppe hat exklusiven Zugriff auf die folgenden Ressourcen:
-					</p>
+					<p className="mb-4">{t("Group_Has_Exclusive_Access_To_Resources")}</p>
 
 					<div className="flex flex-col gap-2">
 						{data?.map((resource, idx) => {
@@ -122,7 +126,9 @@ function GroupDeleteDialog({
 								>
 									{resource.lesson && (
 										<div className="flex items-center gap-2">
-											<span className="font-semibold">{p.type}</span>
+											<span className="font-semibold">
+												{t_common(resourceKindTranslationKey(p.kind))}
+											</span>
 											<Link
 												href={`/teaching/lessons/edit/${resource.lesson.lessonId}`}
 												className="text-c-primary hover:underline"
@@ -133,7 +139,9 @@ function GroupDeleteDialog({
 									)}
 									{resource.course && (
 										<div className="flex items-center gap-2">
-											<span className="font-semibold">{p.type}</span>
+											<span className="font-semibold">
+												{t_common(resourceKindTranslationKey(p.kind))}
+											</span>
 											<Link
 												href={`/teaching/courses/edit/${resource.course.courseId}`}
 												className="text-c-primary hover:underline"
@@ -144,7 +152,9 @@ function GroupDeleteDialog({
 									)}
 									{resource.specialization && (
 										<div className="flex items-center gap-2">
-											<span className="font-semibold">{p.type}</span>
+											<span className="font-semibold">
+												{t_common(resourceKindTranslationKey(p.kind))}
+											</span>
 											<Link
 												href={`/teaching/subjects/${resource.specialization.subjectId}/${resource.specialization.specializationId}/edit`}
 												className="text-c-primary hover:underline"
@@ -155,7 +165,9 @@ function GroupDeleteDialog({
 									)}
 									{resource.subject && (
 										<div className="flex items-center gap-2">
-											<span className="font-semibold">{p.type}</span>
+											<span className="font-semibold">
+												{t_common(resourceKindTranslationKey(p.kind))}
+											</span>
 											<Link
 												href={`/teaching/subjects/${resource.subject.subjectId}/edit`}
 												className="text-c-primary hover:underline"
@@ -166,7 +178,9 @@ function GroupDeleteDialog({
 									)}
 									{resource.skill && (
 										<div className="flex items-center gap-2">
-											<span className="font-semibold">{p.type}</span>
+											<span className="font-semibold">
+												{t_common(resourceKindTranslationKey(p.kind))}
+											</span>
 											<Link
 												href={`/skills/${resource.skill.skillId}`}
 												className="text-c-primary hover:underline"
@@ -187,11 +201,11 @@ function GroupDeleteDialog({
 	}
 
 	return (
-		<Dialog title={"Löschen"} onClose={onClose}>
-			Möchten Sie diese Gruppe wirklich löschen?
+		<Dialog title={t("Delete_Action")} onClose={onClose}>
+			{t("Confirm_Delete_Group")}
 			<DialogActions onClose={onClose}>
 				<button className="btn-primary hover:bg-c-danger" onClick={() => onClose(true)}>
-					Löschen
+					{t("Delete_Action")}
 				</button>
 			</DialogActions>
 		</Dialog>

@@ -59,6 +59,7 @@
     "Quiz": "Quiz",
     "Quiz_other": "Quizzes",
     "Error": "Error",
+    "Enrollment_Failed": "Could not add this course to your learning plan. Please try again.",
     "Information": "Information",
     "Information_other": "Information",
     "Title": "Title",
@@ -112,5 +113,15 @@
     "Lesson_Content_Type_article": "Article",
     "Lesson_Content_Type_pdf": "PDF",
     "Lesson_Content_Type_iframe": "Web page",
-    "Upload_File": "Upload File"
+    "Upload_File": "Upload File",
+    "Search_User_Placeholder": "Search for user",
+    "Search_Resource_Placeholder": "Search for resource",
+    "Resource_Kind_Course": "Course",
+    "Resource_Kind_Lesson": "Lesson",
+    "Resource_Kind_Specialization": "Specialization",
+    "Resource_Kind_Subject": "Subject",
+    "Resource_Kind_Skill": "Skill",
+    "Access_FULL": "Full",
+    "Access_EDIT": "Edit",
+    "Access_VIEW": "View"
 }

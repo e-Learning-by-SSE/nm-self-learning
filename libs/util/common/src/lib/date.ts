@@ -70,8 +70,8 @@ export function getDifferenceInGermanDays(laterDate: Date, earlierDate: Date): n
 
 	return differenceInDays(startOfDay(laterGerman), startOfDay(earlierGerman));
 }
-export function formatDateStringShort(date: Date): string {
-	return formatInTimeZone(date, DISPLAY_TIMEZONE, "dd.MM.yyyy", { locale: de });
+export function formatDateStringShort(date: Date, locale: "de" | "en" = "de"): string {
+	return formatInTimeZone(date, DISPLAY_TIMEZONE, "P", { locale: locale === "de" ? de : enUS });
 }
 
 export function formatDateString(date: Date, format: string): string {

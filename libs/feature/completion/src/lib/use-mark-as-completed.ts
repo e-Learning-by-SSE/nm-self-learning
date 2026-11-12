@@ -6,7 +6,7 @@ import { useCallback } from "react";
 
 type MarkAsCompletedInput = inferRouterInputs<AppRouter>["completion"]["markAsCompleted"];
 
-export function useMarkAsCompleted<T extends Record<string, unknown>>(onSettled?: () => void) {
+export function useMarkAsCompleted(onSettled?: () => void) {
 	const session = useSession();
 
 	const { mutate } = trpc.completion.markAsCompleted.useMutation({

@@ -1,13 +1,6 @@
 import { createPrismaClient } from "../../../prisma-client";
 // Helper function to create students
-import {
-	Author,
-	PrismaClient,
-	Student,
-	User,
-	Course,
-	Lesson
-} from "../../../../generated/prisma/client";
+import { Author, Student, User, Course, Lesson } from "../../../../generated/prisma/client";
 import { EnrollmentStatus } from "../../../../generated/prisma/client";
 
 const prisma = createPrismaClient();

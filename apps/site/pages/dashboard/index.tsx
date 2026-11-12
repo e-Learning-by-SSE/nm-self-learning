@@ -2,6 +2,7 @@ import { CheckIcon, CogIcon } from "@heroicons/react/24/solid";
 import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { database } from "@self-learning/database/server";
+import { I18N_NAMESPACE as PROFILE_I18N_NAMESPACE } from "@self-learning/profile";
 import {
 	EnableLearningDiaryDialog,
 	I18N_NAMESPACE as DIARY_I18N_NAMESPACE,
@@ -30,7 +31,7 @@ import { useReducer } from "react";
 type Student = Awaited<ReturnType<typeof getStudent>>;
 
 type RecentLesson = {
-	title: string;
+	title: string | null;
 	slug: string;
 	courseSlug: string;
 	courseImgUrl?: string | null;
@@ -160,7 +161,7 @@ function getRecentLessonsFromDiary({
 		const completedLesson = completedLessonsMap.get(diaryLesson.lessonId);
 
 		return {
-			title: completedLesson?.lesson.title || "HALLO",
+			title: completedLesson?.lesson.title ?? null,
 			slug: completedLesson?.lesson.slug || "",
 			courseSlug: diaryLesson.courseSlug,
 			courseImgUrl: diaryLesson.courseImgUrl,
@@ -206,7 +207,7 @@ async function loadMostRecentLessons({
 }
 
 export const getServerSideProps = withTranslations(
-	[...DIARY_I18N_NAMESPACE, "pages-dashboard"],
+	[...DIARY_I18N_NAMESPACE, ...PROFILE_I18N_NAMESPACE, "pages-dashboard"],
 	withAuth<Props>(async (_, user) => {
 		// TODO: remove this when in case gamification is fully enabled
 		const isParticipant = user.featureFlags.experimental;
@@ -410,6 +411,7 @@ function DashboardPage(props: Props) {
 function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys"] }) {
 	const { t } = useTranslation("pages-dashboard");
 	const formatTimeInterval = useTimeIntervalFormatter();
+	const { locale } = useRouter();
 	return (
 		<>
 			{pages.length == 0 ? (
@@ -446,7 +448,10 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 											</div>
 										</div>
 										<span className="hidden text-xs text-c-text-muted md:block">
-											{formatDateStringShort(page.createdAt)}
+											{formatDateStringShort(
+												page.createdAt,
+												locale === "en" ? "en" : "de"
+											)}
 										</span>
 									</div>
 								</li>
@@ -461,13 +466,15 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 
 function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 	const { t } = useTranslation("pages-dashboard");
+	const { locale } = useRouter();
+	const linkableLessons = lessons.filter(lesson => lesson.courseSlug && lesson.slug);
 	return (
 		<>
-			{lessons.length === 0 ? (
+			{linkableLessons.length === 0 ? (
 				<span className="text-sm text-c-text-muted">{t("No_Recent_Lessons")}</span>
 			) : (
 				<ul className="flex max-h-80 flex-col gap-2 overflow-auto overflow-x-hidden p-3">
-					{lessons.map((lesson, index) => (
+					{linkableLessons.map((lesson, index) => (
 						<Link
 							className="text-sm font-medium"
 							href={`/courses/${lesson.courseSlug}/${lesson.slug}`}
@@ -483,7 +490,11 @@ function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 								/>
 								<div className="flex w-full grid-rows-2 justify-between gap-2 px-4">
 									<span className="flex gap-3 ">
-										<span className="truncate max-w-xs">{lesson.title}</span>
+										{lesson.title && (
+											<span className="truncate max-w-xs">
+												{lesson.title}
+											</span>
+										)}
 
 										{lesson.completed && (
 											<CheckIcon className="icon h-5 text-green-500" />
@@ -496,7 +507,10 @@ function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 										suppressHydrationWarning
 										className="hidden text-xs text-c-text-muted md:block"
 									>
-										{formatDateDistanceToNow(lesson.touchedAt)}
+										{formatDateDistanceToNow(
+											lesson.touchedAt,
+											locale === "en" ? "en" : "de"
+										)}
 									</span>
 								</div>
 							</li>

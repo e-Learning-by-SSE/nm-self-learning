@@ -4,7 +4,11 @@ import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { SmallGradeBadge, useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database/server";
-import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
+import {
+	useEnrollmentMutations,
+	useEnrollments,
+	useEnsureCourseEnrollment
+} from "@self-learning/enrollment";
 import { LearningGoals } from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
@@ -35,7 +39,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
 	useAiTutor,
 	AiTutor,
@@ -316,6 +320,9 @@ function CourseHeader({
 	const lessonCompletionCount = completion?.courseCompletion.completedLessonCount ?? 0;
 
 	const shouldShowStartButton = isEnrolled && !!firstLessonFromChapter;
+	const startLessonHref = firstLessonFromChapter
+		? `/courses/${course.slug}/${nextLessonSlug ?? firstLessonFromChapter.slug}`
+		: `/courses/${course.slug}`;
 
 	const avgScore = useMemo(() => {
 		const scores = content
@@ -410,14 +417,9 @@ function CourseHeader({
 					</div>
 
 					{shouldShowStartButton && (
-						<Link
-							href={
-								firstLessonFromChapter
-									? `/courses/${course.slug}/${
-											nextLessonSlug ?? firstLessonFromChapter.slug
-										}`
-									: `/courses/${course.slug}`
-							}
+						<LessonStartLink
+							href={startLessonHref}
+							courseId={course.courseId}
 							className="btn-primary"
 						>
 							<span>
@@ -428,7 +430,7 @@ function CourseHeader({
 									: t("Open_Course")}
 							</span>
 							<PlayIcon className="h-5" />
-						</Link>
+						</LessonStartLink>
 					)}
 
 					{isDynamic
@@ -517,6 +519,7 @@ function TableOfContents({
 								<Lesson
 									key={lesson.lessonId}
 									href={`/courses/${course.slug}/${lesson.slug}`}
+									courseId={course.courseId}
 									lesson={lesson}
 									isCompleted={!!completion?.completedLessons[lesson.lessonId]}
 								/>
@@ -532,15 +535,17 @@ function TableOfContents({
 function Lesson({
 	lesson,
 	href,
+	courseId,
 	isCompleted
 }: {
 	lesson: ToC.Content[0]["content"][0];
 	href: string;
+	courseId: string;
 	isCompleted: boolean;
 }) {
 	const { isAuthenticated } = useAuthentication();
 
-	if (!isAuthenticated) {
+	if (!isAuthenticated || lesson.lessonId === "removed") {
 		return (
 			<div className="flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm border-c-border-strong">
 				<LessonEntry lesson={lesson} />
@@ -548,13 +553,72 @@ function Lesson({
 		);
 	}
 	return (
-		<Link
+		<LessonStartLink
 			href={href}
+			courseId={courseId}
 			className={`flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm ${
 				isCompleted ? "border-c-primary" : "border-c-border-strong"
 			}`}
 		>
 			<LessonEntry lesson={lesson} />
+		</LessonStartLink>
+	);
+}
+
+function LessonStartLink({
+	href,
+	courseId,
+	className,
+	children
+}: {
+	href: string;
+	courseId: string;
+	className: string;
+	children: React.ReactNode;
+}) {
+	const { ensureEnrolled, isEnrolling } = useEnsureCourseEnrollment();
+	const router = useRouter();
+	const { t } = useTranslation("common");
+	const isStartingRef = useRef(false);
+
+	const handleClick = async (event: React.MouseEvent<HTMLAnchorElement>) => {
+		// Preserve the browser's normal behavior for modified clicks and new tabs.
+		if (
+			event.button !== 0 ||
+			event.metaKey ||
+			event.ctrlKey ||
+			event.shiftKey ||
+			event.altKey
+		) {
+			return;
+		}
+
+		event.preventDefault();
+		if (isEnrolling || isStartingRef.current) return;
+
+		isStartingRef.current = true;
+		try {
+			await ensureEnrolled({ courseId });
+			await router.push(href);
+		} catch {
+			showToast({
+				type: "error",
+				title: t("Error"),
+				subtitle: t("Enrollment_Failed")
+			});
+		} finally {
+			isStartingRef.current = false;
+		}
+	};
+
+	return (
+		<Link
+			href={href}
+			className={`${className} ${isEnrolling ? "pointer-events-none opacity-50" : ""}`}
+			onClick={event => void handleClick(event)}
+			aria-disabled={isEnrolling}
+		>
+			{children}
 		</Link>
 	);
 }

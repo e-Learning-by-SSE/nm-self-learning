@@ -307,7 +307,7 @@ describe("tRPC API of Course Router", () => {
 	});
 
 	describe("deleteCourse", () => {
-		function assertWhereClause(slug: string, author: string) {
+		function assertWhereClause(slug: string) {
 			expect(database.course.delete).toHaveBeenCalledTimes(1);
 
 			const whereClause = (database.course.delete as jest.Mock).mock.calls[0][0];
@@ -336,7 +336,7 @@ describe("tRPC API of Course Router", () => {
 		});
 
 		it("deletes course when canDelete returns true", async () => {
-			const { caller, ctx } = prepare({
+			const { caller } = prepare({
 				memberships: [1]
 			});
 			const input = { slug: "test-course" };
@@ -345,11 +345,11 @@ describe("tRPC API of Course Router", () => {
 			(canDelete as jest.Mock).mockResolvedValue(true);
 
 			await expect(caller.deleteCourse(input)).resolves.not.toThrow();
-			assertWhereClause(input.slug, ctx.user.name);
+			assertWhereClause(input.slug);
 		});
 
 		it("throws FORBIDDEN when canDelete returns false", async () => {
-			const { caller, ctx } = prepare({});
+			const { caller } = prepare({});
 			const input = { slug: "test-course" };
 
 			(getCourseResource as jest.Mock).mockResolvedValue({ courseId: "test-course" });
@@ -359,7 +359,7 @@ describe("tRPC API of Course Router", () => {
 		});
 
 		it("should throw error if course does not exist", async () => {
-			const { caller, ctx } = prepare({
+			const { caller } = prepare({
 				isAuthor: true,
 				name: "author1"
 			});

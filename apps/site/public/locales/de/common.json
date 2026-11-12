@@ -59,6 +59,7 @@
     "Quiz": "Lernzielkontrolle",
     "Quiz_other": "Lernzielkontrollen",
     "Error": "Fehler",
+    "Enrollment_Failed": "Der Kurs konnte nicht zu deinem Lernplan hinzugefügt werden. Bitte versuche es erneut.",
     "Information": "Information",
     "Information_other": "Informationen",
     "Title": "Titel",
@@ -112,5 +113,15 @@
     "Lesson_Content_Type_article": "Artikel",
     "Lesson_Content_Type_pdf": "PDF",
     "Lesson_Content_Type_iframe": "Webseite",
-    "Upload_File": "Datei hochladen"
+    "Upload_File": "Datei hochladen",
+    "Search_User_Placeholder": "Nach Nutzer*in suchen",
+    "Search_Resource_Placeholder": "Nach Ressource suchen",
+    "Resource_Kind_Course": "Kurs",
+    "Resource_Kind_Lesson": "Lerneinheit",
+    "Resource_Kind_Specialization": "Spezialisierung",
+    "Resource_Kind_Subject": "Fachgebiet",
+    "Resource_Kind_Skill": "Kompetenz",
+    "Access_FULL": "Vollzugriff",
+    "Access_EDIT": "Bearbeiten",
+    "Access_VIEW": "Ansehen"
 }

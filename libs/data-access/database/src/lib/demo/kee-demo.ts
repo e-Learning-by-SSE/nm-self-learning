@@ -1,5 +1,5 @@
 import { createPrismaClient } from "../prisma-client";
-import { AccessLevel, PrismaClient } from "../../generated/prisma/client";
+import { AccessLevel } from "../../generated/prisma/client";
 import { slugify } from "@self-learning/util/common";
 import { softwareentwicklungDemoGroup } from "../seedSpecializations";
 import { CourseContent, createCourseMeta } from "@self-learning/types";

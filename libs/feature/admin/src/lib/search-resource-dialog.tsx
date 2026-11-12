@@ -1,7 +1,7 @@
 "use client";
 import { Combobox, ComboboxOption } from "@headlessui/react";
 import { trpc } from "@self-learning/api-client";
-import { resourceLabels, ResourceKind, ResourceSearchEntry } from "@self-learning/types";
+import { ResourceKind, ResourceSearchEntry } from "@self-learning/types";
 import {
 	DropdownDialog,
 	ImageOrPlaceholder,
@@ -10,6 +10,7 @@ import {
 } from "@self-learning/ui/common";
 import { keepPreviousData } from "@tanstack/react-query";
 import { Fragment, useState } from "react";
+import { useTranslation } from "next-i18next";
 
 export function SearchResourceDialog({
 	open,
@@ -24,6 +25,7 @@ export function SearchResourceDialog({
 }) {
 	const [title, setTitle] = useState("");
 	const [page, setPage] = useState(1);
+	const { t } = useTranslation("common");
 	const queryInput = { page, title, kinds };
 	const allResources = trpc.permission.searchResources.useQuery(queryInput, {
 		enabled: scope === "all",
@@ -46,7 +48,7 @@ export function SearchResourceDialog({
 						setTitle(value);
 						setPage(1);
 					}}
-					placeholder="Suche nach Ressource"
+					placeholder={t("Search_Resource_Placeholder")}
 				/>
 
 				<DropdownDialog.PaginationContainer>
@@ -80,9 +82,11 @@ export function SearchResourceDialog({
 												focus ? "text-white" : "text-c-text-muted"
 											}`}
 										>
-											{resourceLabels[resource.kind]}
+											{t(
+												`Resource_Kind_${resource.kind[0].toUpperCase()}${resource.kind.slice(1)}`
+											)}
 											{resource.accessLevel
-												? ` (${resource.accessLevel})`
+												? ` (${t(`Access_${resource.accessLevel}`)})`
 												: ""}
 										</span>
 									</div>

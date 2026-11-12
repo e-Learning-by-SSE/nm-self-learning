@@ -14,11 +14,13 @@ import { InputWithButton, LabeledField, useSlugify } from "@self-learning/ui/for
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { MergeGroupsSchema, MergeGroupsType, MergeStrategy } from "@self-learning/types";
+import { useTranslation } from "next-i18next";
+import { z } from "zod";
 
-export const MergeStrategyLabels: Record<MergeStrategy, string> = {
-	[MergeStrategy.First]: "Erste Berechtigung behalten",
-	[MergeStrategy.Highest]: "Höchste Berechtigung behalten",
-	[MergeStrategy.Lowest]: "Niedrigste Berechtigung behalten"
+export const MergeStrategyLabelKeys: Record<MergeStrategy, string> = {
+	[MergeStrategy.First]: "Merge_Strategy_First",
+	[MergeStrategy.Highest]: "Merge_Strategy_Highest",
+	[MergeStrategy.Lowest]: "Merge_Strategy_Lowest"
 };
 
 /**
@@ -46,10 +48,16 @@ export function MergeGroupsDialog({
 	isGlobal: boolean;
 	onClose: OnDialogCloseFn<MergeGroupsType>;
 }) {
+	const { t } = useTranslation("feature-teaching");
 	const [isGroupDialogOpen, setGroupDialogOpen] = useState(false);
+	const localizedSchema = MergeGroupsSchema.extend({
+		name: z.string().min(3, t("Validation_Group_Name_Min")),
+		slug: z.string().min(3, t("Validation_Group_Slug_Min")),
+		groups: MergeGroupsSchema.shape.groups.min(2, t("Validation_Merge_Requires_Two_Groups"))
+	});
 
 	const form = useForm<MergeGroupsType>({
-		resolver: zodResolver(MergeGroupsSchema),
+		resolver: zodResolver(localizedSchema),
 		defaultValues: {
 			strategy: MergeStrategy.First
 		}
@@ -72,13 +80,13 @@ export function MergeGroupsDialog({
 
 	const mergeStrategyOptions = Object.values(MergeStrategy).map(s => ({
 		value: s,
-		label: MergeStrategyLabels[s]
+		label: t(MergeStrategyLabelKeys[s])
 	}));
 
 	return (
 		<Dialog open={isOpen} onClose={onClose} className="w-[90vw] flex-col lg:w-[800px]">
 			<DetailsDropdown
-				header="Gruppen zusammenführen"
+				header={t("Merge_Groups_Title")}
 				headerStyles="text-2xl"
 				className="mb-4"
 			>
@@ -88,15 +96,21 @@ export function MergeGroupsDialog({
 				onSubmit={form.handleSubmit(onClose, console.log)}
 				className="flex flex-col gap-4 overflow-auto"
 			>
-				<LabeledField label="Name" error={form.formState.errors.name?.message}>
+				<LabeledField
+					label={t("Group_Name_Label")}
+					error={form.formState.errors.name?.message}
+				>
 					<input
 						{...form.register("name")}
 						type="text"
 						className="textfield"
-						placeholder="Name der neuen Gruppe"
+						placeholder={t("New_Group_Name_Placeholder")}
 					/>
 				</LabeledField>
-				<LabeledField label="Slug" error={form.formState.errors.slug?.message}>
+				<LabeledField
+					label={t("Group_Slug_Label")}
+					error={form.formState.errors.slug?.message}
+				>
 					<InputWithButton
 						input={
 							<input
@@ -109,13 +123,13 @@ export function MergeGroupsDialog({
 						}
 						button={
 							<button type="button" className="btn-stroked" onClick={slugifyField}>
-								Generieren
+								{t("Generate_Slug")}
 							</button>
 						}
 					/>
 				</LabeledField>
 				<LabeledField
-					label="Merge-Strategie"
+					label={t("Merge_Strategy_Label")}
 					error={form.formState.errors.strategy?.message}
 				>
 					<Controller
@@ -126,13 +140,13 @@ export function MergeGroupsDialog({
 								value={field.value}
 								onChange={field.onChange}
 								options={mergeStrategyOptions}
-								label="Auswählen"
+								label={t("Select_Action")}
 							/>
 						)}
 					/>
 				</LabeledField>
 				<LabeledField
-					label="Gruppen zum Zusammenführen"
+					label={t("Groups_To_Merge_Label")}
 					error={form.formState.errors.groups?.root?.message}
 				>
 					<div className="flex gap-2 flex-wrap">
@@ -161,9 +175,9 @@ export function MergeGroupsDialog({
 						))}
 						<IconTextButton
 							icon={<PlusIcon className="icon h-5" />}
-							text={"Add group to merge list"}
+							text={t("Add_Group_To_Merge_List")}
 							className="btn-primary"
-							title="Add group to merge list1"
+							title={t("Add_Group_To_Merge_List")}
 							onClick={() => setGroupDialogOpen(true)}
 						/>
 					</div>
@@ -177,7 +191,7 @@ export function MergeGroupsDialog({
 					)}
 				</LabeledField>
 				<DialogActions onClose={onClose}>
-					<button className="btn-primary">Zusammenführen</button>
+					<button className="btn-primary">{t("Merge_Groups_Action")}</button>
 				</DialogActions>
 			</form>
 		</Dialog>
@@ -185,37 +199,18 @@ export function MergeGroupsDialog({
 }
 
 function MergeStrategyInfo() {
+	const { t } = useTranslation("feature-teaching");
 	return (
 		<div className="mt-2 flex items-start gap-2 px-4 text-sm text-gray-700">
 			<div className="flex-1 space-y-1">
-				<p>
-					Ein neuer Gruppen-Eintrag wird erstellt. Die alten Gruppen müssen{" "}
-					<strong>manuell</strong> gelöscht werden, falls sie nicht mehr benötigt werden.
-					So können Sie die Änderungen vor dem endgültigen Löschen prüfen.
-				</p>
-				<p>
-					Hier können Sie die Merge-Strategie auswählen. Die Optionen haben folgende
-					Bedeutung:
-				</p>
+				<p>{t("Merge_Strategy_Intro")}</p>
+				<p>{t("Merge_Strategy_Explanation")}</p>
 				<ul className="list-disc list-inside space-y-1">
-					<li>
-						<strong>Erste Gruppe behalten:</strong> Mitglieder erhalten die
-						Berechtigungen, wie sie in der angegebenen Gruppenreihenfolge erscheinen.
-					</li>
-					<li>
-						<strong>Gruppe mit höchstem Level behalten:</strong> Mitglieder erhalten die
-						jeweils höchste Berechtigung, die sie in den ausgewählten Gruppen haben.
-					</li>
-					<li>
-						<strong>Gruppe mit niedrigstem Level behalten:</strong> Mitglieder erhalten
-						die jeweils niedrigste Berechtigung, die sie in den ausgewählten Gruppen
-						haben.
-					</li>
+					<li>{t("Merge_Strategy_First_Description")}</li>
+					<li>{t("Merge_Strategy_Highest_Description")}</li>
+					<li>{t("Merge_Strategy_Lowest_Description")}</li>
 				</ul>
-				<p className="font-semibold text-red-600">
-					Sie müssen in allen ausgewählten Gruppen die Rolle <strong>ADMIN</strong>{" "}
-					besitzen, um einen Merge durchführen zu können.
-				</p>
+				<p className="font-semibold text-red-600">{t("Merge_Requires_Admin_Role")}</p>
 			</div>
 		</div>
 	);

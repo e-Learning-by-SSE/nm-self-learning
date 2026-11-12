@@ -2,7 +2,7 @@ import { EnrollmentStatus } from "@self-learning/database";
 import { getCourseCompletionOfStudent } from "@self-learning/completion/server";
 import { CourseEnrollment, ResolvedValue } from "@self-learning/types";
 import { AlreadyExists, NotFound } from "@self-learning/util/http";
-import { database } from "@self-learning/database/server";
+import { database, Prisma } from "@self-learning/database/server";
 import { createEventLogEntry } from "@self-learning/util/eventlog/server";
 
 export async function getEnrollmentDetails(username: string) {
@@ -109,6 +109,79 @@ export async function enrollUser({ courseId, username }: { courseId: string; use
 	});
 
 	return enrollment;
+}
+
+/** Ensures a user is enrolled, returning the existing enrollment when present. */
+export async function ensureEnrolledUser({
+	courseId,
+	username
+}: {
+	courseId: string;
+	username: string;
+}) {
+	const course = await database.course.findUnique({
+		where: { courseId },
+		select: { courseId: true }
+	});
+
+	if (!course) {
+		throw NotFound({ courseId });
+	}
+
+	const select = {
+		createdAt: true,
+		status: true,
+		course: {
+			select: {
+				title: true,
+				slug: true,
+				courseId: true
+			}
+		},
+		username: true
+	} as const;
+
+	const existingEnrollment = await database.enrollment.findUnique({
+		where: { courseId_username: { courseId, username } },
+		select
+	});
+
+	if (existingEnrollment) {
+		return existingEnrollment;
+	}
+
+	const result = await database.enrollment
+		.create({
+			select,
+			data: { courseId, username, status: EnrollmentStatus.ACTIVE }
+		})
+		.then(enrollment => ({ enrollment, created: true as const }))
+		.catch(async error => {
+			// Another request may have created the enrollment after the lookup above.
+			if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+				const concurrentEnrollment = await database.enrollment.findUnique({
+					where: { courseId_username: { courseId, username } },
+					select
+				});
+
+				if (concurrentEnrollment) {
+					return { enrollment: concurrentEnrollment, created: false as const };
+				}
+			}
+
+			throw error;
+		});
+
+	if (result.created) {
+		await createEventLogEntry({
+			username,
+			type: "COURSE_ENROLL",
+			resourceId: courseId,
+			payload: undefined
+		});
+	}
+
+	return result.enrollment;
 }
 
 export async function disenrollUser({

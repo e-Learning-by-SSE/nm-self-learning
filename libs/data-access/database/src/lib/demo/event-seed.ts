@@ -1,5 +1,4 @@
 import { createPrismaClient } from "../prisma-client";
-import { PrismaClient } from "../../generated/prisma/client";
 import { EventLog, EventTypeKeys } from "@self-learning/types";
 
 const prisma = createPrismaClient();

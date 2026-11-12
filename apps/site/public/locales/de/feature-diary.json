@@ -1,4 +1,9 @@
 {
+    "Diary_Settings_Title": "Einstellungen",
+    "Diary_Settings_Required_Notice": "Für das Lerntagebuch müssen diese Einstellungen aktiviert sein. Wenn du sie nicht aktivieren möchtest, klicke auf Abbrechen.",
+    "Enable_Learning_Diary_Title": "Lerntagebuch aktivieren",
+    "Enable_Learning_Diary_Description": "Wenn du das Lerntagebuch nutzt, werden die unten aufgeführten Plattformfunktionen aktiviert. Dabei stimmst du den jeweiligen Bedingungen zu.",
+    "Save_And_Enable": "Speichern und aktivieren",
 	"Date_Label": "Datum",
 	"Duration_Label": "Dauer",
 	"Entries_Label": "Einträge",

@@ -6,6 +6,8 @@ import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { OpenAsJsonButton } from "@self-learning/ui/forms";
 import { useRouter } from "next/router";
+import { useTranslation } from "next-i18next";
+import { z } from "zod";
 import { GroupMembersEditor } from "./forms/members-form";
 import { GroupPermissionsEditor } from "./forms/group-permissions";
 import { GroupInfoEditor } from "./editors/group-info";
@@ -18,13 +20,14 @@ export async function onGroupCreatorSubmit(
 		name: string;
 		id: number;
 	}>,
-	group?: GroupFormModel
+	group: GroupFormModel | undefined,
+	t: (key: string) => string
 ) {
 	try {
 		let result = null;
 		if (group) {
 			result = await createGroupAsync(group);
-			showToast({ type: "success", title: "Gruppe erstellt", subtitle: result.name });
+			showToast({ type: "success", title: t("Group_Created"), subtitle: result.name });
 		}
 		onClose();
 		return result;
@@ -32,8 +35,8 @@ export async function onGroupCreatorSubmit(
 		console.error(error);
 		showToast({
 			type: "error",
-			title: "Fehler",
-			subtitle: "Gruppe konnte nicht erstellt werden."
+			title: t("Group_Save_Error_Title"),
+			subtitle: t("Group_Create_Error_Message")
 		});
 
 		return null;
@@ -46,7 +49,8 @@ export async function onGroupEditorSubmit(
 		group: GroupFormModel;
 		groupId: number;
 	}) => Promise<{ title: string }>,
-	group?: GroupFormModel
+	group: GroupFormModel | undefined,
+	t: (key: string) => string
 ) {
 	try {
 		if (group) {
@@ -56,7 +60,7 @@ export async function onGroupEditorSubmit(
 			});
 			showToast({
 				type: "success",
-				title: "Lerneinheit gespeichert!",
+				title: t("Group_Saved"),
 				subtitle: result.title
 			});
 		}
@@ -64,8 +68,8 @@ export async function onGroupEditorSubmit(
 	} catch {
 		showToast({
 			type: "error",
-			title: "Fehler",
-			subtitle: "Die Gruppe konnte nicht gespeichert werden."
+			title: t("Group_Save_Error_Title"),
+			subtitle: t("Group_Save_Error_Message")
 		});
 	}
 }
@@ -79,17 +83,32 @@ export function GroupEditor({
 }) {
 	const isNew = !initialGroup?.id;
 	const router = useRouter();
+	const { t } = useTranslation("feature-teaching");
 	const [selectedTab, setSelectedTab] = useState(0);
+	const localizedSchema = GroupFormSchema.extend({
+		name: z.string().min(3, t("Validation_Group_Name_Min")),
+		slug: z.string().min(3, t("Validation_Group_Slug_Min")),
+		members: GroupFormSchema.shape.members.element
+			.extend({
+				expiresAt: z.coerce
+					.date()
+					.nullable()
+					.refine(date => !date || date > new Date(), {
+						message: t("Validation_Membership_Expiration_Future")
+					}) as z.ZodNullable<z.ZodDate>
+			})
+			.array()
+	});
 	const form = useForm<GroupFormModel>({
 		context: undefined,
 		defaultValues: initialGroup ?? {
 			...createEmptyGroup()
 		},
-		resolver: zodResolver(GroupFormSchema)
+		resolver: zodResolver(localizedSchema)
 	});
 
 	function onCancel() {
-		if (window.confirm("Änderungen verwerfen?")) {
+		if (window.confirm(t("Group_Discard_Changes_Confirm"))) {
 			router.back();
 		}
 	}
@@ -105,7 +124,7 @@ export function GroupEditor({
 					<div className="flex justify-between mb-8">
 						<div className="flex flex-col gap-2">
 							<span className="font-semibold text-2xl text-secondary">
-								{initialGroup ? "Gruppe bearbeiten" : "Gruppe erstellen"}
+								{initialGroup ? t("Edit_Group") : t("Create_Group")}
 							</span>
 							<h1 className="text-4xl">{initialGroup?.name}</h1>
 						</div>
@@ -113,16 +132,16 @@ export function GroupEditor({
 							<DialogActions onClose={onCancel}>
 								<OpenAsJsonButton form={form} validationSchema={GroupFormSchema} />
 								<button type="submit" className="btn-primary pointer-events-auto">
-									{isNew ? "Erstellen" : "Speichern"}
+									{isNew ? t("Create_Action") : t("Save_Action")}
 								</button>
 							</DialogActions>
 						</div>
 					</div>
 					<div>
 						<Tabs selectedIndex={selectedTab} onChange={v => setSelectedTab(v)}>
-							<Tab>Grunddaten</Tab>
-							<Tab>Mitglieder</Tab>
-							<Tab>Berechtigungen</Tab>
+							<Tab>{t("Group_Basic_Info_Tab")}</Tab>
+							<Tab>{t("Group_Members_Tab")}</Tab>
+							<Tab>{t("Group_Permissions_Tab")}</Tab>
 						</Tabs>
 						{/* I use hidden here to prevent useArrayDiff from losing diff data*/}
 						<div className={selectedTab !== 0 ? "hidden" : undefined}>
