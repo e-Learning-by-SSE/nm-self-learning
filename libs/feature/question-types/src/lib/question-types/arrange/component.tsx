@@ -62,7 +62,7 @@ export default function ArrangeQuestion() {
 																		ref={provided.innerRef}
 																		{...provided.draggableProps}
 																		{...provided.dragHandleProps}
-													className="h-fit w-full min-w-0 max-w-[50ch] break-words [overflow-wrap:anywhere] rounded-lg bg-white p-4 shadow-lg"
+																		className="h-fit w-full min-w-0 max-w-[50ch] [overflow-wrap:anywhere] rounded-lg bg-white p-4 shadow-lg"
 																	>
 																		<MarkdownViewer
 																			content={item.content}
