@@ -27,7 +27,7 @@ export default function ArrangeQuestion() {
 					});
 				}}
 			>
-				<div className="grid auto-rows-fr gap-4 grid-flow-row xl:grid-flow-col">
+				<div className="grid min-w-0 auto-rows-fr gap-4 grid-flow-row xl:grid-flow-col">
 					{order
 						.filter(containerId => containerId !== "_init")
 						.map(containerId => (
@@ -35,7 +35,7 @@ export default function ArrangeQuestion() {
 								{containerId === "_init" ? null : (
 									<ul
 										key={containerId}
-										className="flex min-w-[256px] flex-col gap-4 rounded-lg bg-c-surface-3 p-4"
+										className="flex min-w-0 flex-col gap-4 rounded-lg bg-c-surface-3 p-4 xl:min-w-[256px]"
 									>
 										<span className="font-semibold">{containerId}</span>
 
@@ -47,7 +47,7 @@ export default function ArrangeQuestion() {
 												<ul
 													ref={provided.innerRef}
 													{...provided.droppableProps}
-													className="flex min-w-fit flex-col gap-4 rounded-lg bg-c-surface-2 p-4"
+													className="flex w-full min-w-0 flex-col gap-4 rounded-lg bg-c-surface-2 p-4"
 												>
 													{answer.value[containerId]?.map(
 														(item, index) => (
@@ -62,7 +62,7 @@ export default function ArrangeQuestion() {
 																		ref={provided.innerRef}
 																		{...provided.draggableProps}
 																		{...provided.dragHandleProps}
-																		className="h-fit w-fit max-w-[50ch] rounded-lg bg-white p-4 shadow-lg"
+													className="h-fit w-full min-w-0 max-w-[50ch] break-words [overflow-wrap:anywhere] rounded-lg bg-white p-4 shadow-lg"
 																	>
 																		<MarkdownViewer
 																			content={item.content}
@@ -108,7 +108,7 @@ export default function ArrangeQuestion() {
 												ref={provided.innerRef}
 												{...provided.draggableProps}
 												{...provided.dragHandleProps}
-												className="h-fit w-fit max-w-[50ch] rounded-lg bg-white p-4 shadow-lg"
+												className="h-fit w-fit min-w-0 max-w-[50ch] break-words [overflow-wrap:anywhere] rounded-lg bg-white p-4 shadow-lg"
 											>
 												<MarkdownViewer content={item.content} />
 											</li>
