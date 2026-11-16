@@ -602,7 +602,9 @@ function LessonControls({
 	const { logStartAttempt } = useAttemptSubmission({ lessonId, courseId });
 	const { lessonAttemptId } = useLessonSession({ lessonId });
 
-	logStartAttempt();
+	useEffect(() => {
+		void logStartAttempt();
+	}, [logStartAttempt]);
 
 	useEffect(() => {
 		if (!lessonAttemptId) return;
@@ -612,7 +614,7 @@ function LessonControls({
 			courseId: course.courseId,
 			payload: { lessonAttemptId }
 		});
-	}, [newEvent, lesson.lessonId, course.courseId, lessonAttemptId, logStartAttempt]);
+	}, [newEvent, lesson.lessonId, course.courseId, lessonAttemptId]);
 
 	const handleLessonExit = useCallback(async () => {
 		if (!lessonAttemptId) return;
