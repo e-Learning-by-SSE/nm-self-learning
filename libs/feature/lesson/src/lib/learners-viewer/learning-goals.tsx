@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { useTranslation } from "next-i18next";
 
 type LearningGoalsProps = {
@@ -8,6 +9,7 @@ type LearningGoalsProps = {
 };
 
 export function LearningGoals({ goals, scope, variant = "list" }: LearningGoalsProps) {
+	const instanceId = useId();
 	const { t } = useTranslation("common");
 	const uniqueGoals = Array.from(
 		new Set(
@@ -22,7 +24,7 @@ export function LearningGoals({ goals, scope, variant = "list" }: LearningGoalsP
 
 	if (uniqueGoals.length === 0) return null;
 
-	const headingId = `learning-goals-${scope}`;
+	const headingId = `learning-goals-${scope}-${instanceId}`;
 	const heading = t(scope === "lesson" ? "Learning_Goals_Lesson" : "Learning_Goals_Course");
 
 	if (variant === "card") {
