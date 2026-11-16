@@ -436,6 +436,10 @@ function CourseLessonNavigation({
 		}
 	}
 
+	function navigateToNextLesson() {
+		if (next) navigateToLesson(next);
+	}
+
 	return (
 		<div className="grid w-full grid-cols-3 items-center gap-2 mt-auto pt-4">
 			<div className="flex justify-start">
@@ -457,6 +461,12 @@ function CourseLessonNavigation({
 			<div className="flex justify-end">
 				{hasQuiz && !isCompletedLesson ? (
 					<LinkToQuiz url={urlToQuiz} navigateToNextUnit={true} />
+				) : !hasQuiz && !isCompletedLesson ? (
+					<MarkLessonAsCompletedButton
+						course={course}
+						lesson={lesson}
+						onSuccess={navigateToNextLesson}
+					/>
 				) : (
 					isCompletedLesson && (
 						<button
@@ -586,15 +596,10 @@ function LessonControls({
 	course: Exclude<LessonLearnersViewProps["course"], null | undefined>;
 	lesson: LessonLearnersViewProps["lesson"];
 }) {
-	const { t } = useTranslation("feature-lesson");
 	const { lessonId } = lesson;
 	const { courseId } = course;
-	const markAsCompleted = useMarkAsCompleted();
-	const completion = useCourseCompletion(course.slug);
-	const isCompletedLesson = !!completion?.completedLessons[lesson.lessonId];
-	const hasQuiz = (lesson.meta as LessonMeta).hasQuiz;
 	const { newEvent } = useEventLog();
-	const { logAttemptSubmit, logStartAttempt } = useAttemptSubmission({ lessonId, courseId });
+	const { logStartAttempt } = useAttemptSubmission({ lessonId, courseId });
 	const { lessonAttemptId } = useLessonSession({ lessonId });
 
 	logStartAttempt();
@@ -630,6 +635,29 @@ function LessonControls({
 		return () => window.removeEventListener("beforeunload", handleBeforeUnload);
 	}, [handleLessonExit]);
 
+	return (
+		<div className="flex w-full flex-wrap gap-2 xl:w-fit xl:flex-row">
+			<AuthorEditButton lesson={lesson} />
+		</div>
+	);
+}
+
+function MarkLessonAsCompletedButton({
+	course,
+	lesson,
+	onSuccess
+}: {
+	course: NonNullable<LessonLearnersViewProps["course"]>;
+	lesson: LessonLearnersViewProps["lesson"];
+	onSuccess: () => void;
+}) {
+	const { t } = useTranslation("feature-lesson");
+	const markAsCompleted = useMarkAsCompleted(onSuccess);
+	const { logAttemptSubmit } = useAttemptSubmission({
+		lessonId: lesson.lessonId,
+		courseId: course.courseId
+	});
+
 	const handleMarkCompleted = useCallback(async () => {
 		const finalSession = loadLessonSessionSafe(lesson.lessonId);
 		if (!finalSession) return;
@@ -643,19 +671,13 @@ function LessonControls({
 	}, [lesson.lessonId, logAttemptSubmit, markAsCompleted, course.slug]);
 
 	return (
-		<div className="flex w-full flex-wrap gap-2 xl:w-fit xl:flex-row">
-			<AuthorEditButton lesson={lesson} />
-
-			{!hasQuiz && !isCompletedLesson && (
-				<button
-					className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
-					onClick={handleMarkCompleted}
-				>
-					<span>{t("mark_as_completed")}</span>
-					<CheckCircleIcon className="h-6 shrink-0" />
-				</button>
-			)}
-		</div>
+		<button
+			className="btn-primary flex h-fit w-full flex-wrap-reverse text-sm xl:w-fit"
+			onClick={handleMarkCompleted}
+		>
+			<span>{t("mark_as_completed")}</span>
+			<CheckCircleIcon className="h-6 shrink-0" />
+		</button>
 	);
 }
 
