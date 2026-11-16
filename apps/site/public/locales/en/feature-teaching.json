@@ -107,6 +107,7 @@
     "Skills_Create_Failed": "Could not create $t(common:Skill_one)",
     "Skills_Default_Group_Missing": "Set a default group first.",
     "Skills_Group_Access_Subtitle": "Groups that can access this $t(common:Skill_one)",
+    "Skills_Description_Label": "After acquiring this $t(common:Skill_one), learners will be able to ...",
     "Skills_Create": "Create $t(common:Skill_one)",
     "Skills_Default_Description": "Add here",
     "Skills_Edit_Subtitle": "Information about the $t(common:Skill_one) selected on the right",

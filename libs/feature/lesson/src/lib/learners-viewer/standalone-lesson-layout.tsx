@@ -1,6 +1,7 @@
 import { NextComponentType, NextPageContext } from "next";
 import { LessonData } from "../lesson-data-access";
 import { BaseLessonLayout } from "./base-layout";
+import { LearningGoals } from "./learning-goals";
 
 export type StandaloneLessonLayoutProps = {
 	lesson: LessonData;
@@ -27,7 +28,12 @@ export function StandaloneLessonLayout(
 function StandaloneLessonPlaylistArea({ lesson }: StandaloneLessonLayoutProps) {
 	return (
 		<aside className="playlist-scroll sticky top-[61px] w-full overflow-auto border-t border-r-c-border pb-8 xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4">
-			{/** to be implemented */}
+			<div className="pt-8">
+				<LearningGoals
+					scope="lesson"
+					goals={lesson.provides.map(skill => skill.description)}
+				/>
+			</div>
 		</aside>
 	);
 }
