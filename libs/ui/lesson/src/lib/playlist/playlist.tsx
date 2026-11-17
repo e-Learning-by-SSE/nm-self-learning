@@ -50,6 +50,8 @@ type PlaylistProps = {
 		slug: string;
 	};
 	completion?: CourseCompletion;
+	/** Rendered below the current lesson and its navigation buttons, e.g., the learning goals */
+	lessonInfo?: React.ReactNode;
 };
 
 type CourseDiaryRecording = {
@@ -188,7 +190,7 @@ function useContentWithCompletion(content: PlaylistContent, completion?: CourseC
 	return contentWithCompletion;
 }
 
-export function Playlist({ content, course, lesson, completion }: PlaylistProps) {
+export function Playlist({ content, course, lesson, completion, lessonInfo }: PlaylistProps) {
 	const contentWithCompletion = useContentWithCompletion(content, completion);
 
 	return (
@@ -198,6 +200,7 @@ export function Playlist({ content, course, lesson, completion }: PlaylistProps)
 				course={course}
 				lesson={lesson}
 				completion={completion}
+				lessonInfo={lessonInfo}
 			/>
 			<div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto py-4 xl:gap-12">
 				{contentWithCompletion.map((chapter, index) => (
@@ -218,6 +221,7 @@ export function MobilePlayList({
 	course,
 	lesson,
 	completion,
+	lessonInfo,
 	onSelect
 }: PlaylistProps & { onSelect: () => void }) {
 	const { t } = useTranslation("feature-ui-lesson");
@@ -244,6 +248,7 @@ export function MobilePlayList({
 			</div>
 
 			<ProgressBar progressPercentage={completionPercentage} />
+			{lessonInfo}
 			<div className="flex flex-col gap-3 xl:gap-12 py-4" onClick={onSelect}>
 				{contentWithCompletion.map((chapter, index) => (
 					<Chapter
@@ -372,7 +377,7 @@ function ContentTabItem({
 	);
 }
 
-function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) {
+function PlaylistHeader({ content, course, lesson, completion, lessonInfo }: PlaylistProps) {
 	const { t } = useTranslation("feature-ui-lesson");
 	const courseCompletion = completion?.courseCompletion;
 	const completionPercentage = courseCompletion?.completionPercentage ?? 0;
@@ -403,6 +408,8 @@ function PlaylistHeader({ content, course, lesson, completion }: PlaylistProps) 
 			<Divider />
 
 			<CurrentlyPlaying lesson={lesson} content={content} course={course} />
+
+			{lessonInfo}
 
 			<Divider />
 		</div>
