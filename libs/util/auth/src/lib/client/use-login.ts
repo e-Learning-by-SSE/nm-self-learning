@@ -4,7 +4,7 @@ import { useCallback } from "react";
 
 export function useLoginRedirect() {
 	const router = useRouter();
-	const basePath = router.basePath || process.env.NEXT_PUBLIC_BASE_PATH || "";
+	const basePath = router.basePath;
 
 	const loginRedirect = useCallback(
 		async (callback = "/profile") => {
@@ -21,12 +21,15 @@ export function useLoginRedirect() {
 		[basePath, router.asPath]
 	);
 
-	const logoutRedirect = useCallback((callback = "/") => {
-		const callbackUrl = `${basePath}${callback ?? router.asPath}`;
-		signOut({
-			callbackUrl: callbackUrl.startsWith("/") ? callbackUrl : `/${callbackUrl}`
-		});
-	}, []);
+	const logoutRedirect = useCallback(
+		(callback = "/") => {
+			const callbackUrl = `${basePath}${callback ?? router.asPath}`;
+			signOut({
+				callbackUrl: callbackUrl.startsWith("/") ? callbackUrl : `/${callbackUrl}`
+			});
+		},
+		[basePath, router.asPath]
+	);
 
 	return { loginRedirect, logoutRedirect };
 }

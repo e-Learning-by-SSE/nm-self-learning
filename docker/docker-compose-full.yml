@@ -58,7 +58,7 @@ services:
             - SITE_IS_DEMO_INSTANCE=false
             - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@nm-self-learn-db:5432/SelfLearningDb
             - NEXT_ASSET_PREFIX=${ASSET_PREFIX}
-            - NEXT_PUBLIC_BASE_PATH=${ASSET_PREFIX}
+            - SITE_BASE_PATH=${ASSET_PREFIX}
             - MINIO_BUCKET_NAME=upload
             - MINIO_ENDPOINT=minio
             - MINIO_PORT=9010

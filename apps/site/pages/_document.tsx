@@ -1,7 +1,7 @@
 import { Head, Html, Main, NextScript } from "next/document";
 
 export default function Document() {
-	const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+	const basePath = process.env.SITE_BASE_PATH ?? "";
 
 	return (
 		<Html>

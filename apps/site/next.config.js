@@ -31,7 +31,7 @@ const nextConfig = {
 	images: { remotePatterns: [{ protocol: "https", hostname: "**" }] },
 	nx: {},
 	i18n,
-	basePath: process.env.NEXT_PUBLIC_BASE_PATH ?? "",
+	basePath: process.env.SITE_BASE_PATH ?? "",
 	assetPrefix: process.env.NEXT_ASSET_PREFIX ?? "",
 	trailingSlash: process.env.NEXT_TRAILING_SLASH ?? false,
 	reactStrictMode: process.env.NODE_ENV === "development",

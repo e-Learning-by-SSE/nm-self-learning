@@ -1,4 +1,5 @@
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 import { AiTutorHeader } from "./ai-tutor-header";
 import { AiTutorMessages } from "./ai-tutor-messages";
 import { AiTutorInput } from "./ai-tutor-input";
@@ -28,7 +29,7 @@ export function AiTutor({ tutorState }: { tutorState: UseAiTutorReturn }) {
 
 	const session = useSession();
 	const user = session.data?.user;
-	const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+	const { basePath } = useRouter();
 	const { t } = useTranslation("feature-ai-tutor");
 
 	if (!config) {

@@ -7,6 +7,7 @@
 	"targets": {
 		"build": {
 			"executor": "@nx/next:build",
+			"inputs": ["production", "^production", { "env": "SITE_BASE_PATH" }],
 			"outputs": ["{options.outputPath}"],
 			"defaultConfiguration": "production",
 			"options": {

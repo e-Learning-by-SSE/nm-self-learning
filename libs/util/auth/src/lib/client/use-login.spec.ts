@@ -1,10 +1,11 @@
 /** @jest-environment jsdom */
 import { renderHook } from "@testing-library/react";
-import { getProviders, signIn } from "next-auth/react";
+import { getProviders, signIn, signOut } from "next-auth/react";
 import { useLoginRedirect } from "./use-login";
 
+const mockRouter = { basePath: "", asPath: "/" };
 jest.mock("next/router", () => ({
-	useRouter: () => ({ basePath: "", asPath: "/" })
+	useRouter: () => mockRouter
 }));
 jest.mock("next-auth/react", () => ({
 	getProviders: jest.fn(),
@@ -15,6 +16,18 @@ jest.mock("next-auth/react", () => ({
 describe("useLoginRedirect", () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
+		mockRouter.basePath = "";
+		mockRouter.asPath = "/";
+	});
+
+	it("prefixes login and logout callbacks with the router base path", async () => {
+		mockRouter.basePath = "/learning";
+		jest.mocked(getProviders).mockResolvedValue(null);
+		const { result } = renderHook(() => useLoginRedirect());
+		await result.current.loginRedirect("/courses");
+		result.current.logoutRedirect("/courses");
+		expect(signIn).toHaveBeenCalledWith(undefined, { callbackUrl: "/learning/courses" });
+		expect(signOut).toHaveBeenCalledWith({ callbackUrl: "/learning/courses" });
 	});
 
 	it("redirects directly to a single OIDC provider", async () => {

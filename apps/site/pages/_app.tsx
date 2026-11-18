@@ -10,6 +10,7 @@ import nextI18NextConfig from "../next-i18next.config";
 import PlausibleProvider from "next-plausible";
 import { AppProps } from "next/app";
 import Head from "next/head";
+import Router, { useRouter } from "next/router";
 import Script from "next/script";
 import { PropsWithChildren } from "react";
 import superjson from "superjson";
@@ -27,7 +28,7 @@ export default withTRPC<AppRouter>({
 						(opts.direction === "down" && opts.result instanceof Error)
 				}),
 				httpBatchLink({
-					url: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/trpc`,
+					url: `${typeof window === "undefined" ? "" : Router.basePath}/api/trpc`,
 					transformer: superjson
 				})
 			],
@@ -50,7 +51,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 			(Component as any).getLayout(Component, pageProps)
 		: null;
 
-	const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+	const { basePath } = useRouter();
 
 	return (
 		<>
