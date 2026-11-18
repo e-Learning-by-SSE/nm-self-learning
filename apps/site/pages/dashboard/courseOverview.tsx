@@ -17,6 +17,7 @@ import { formatDateDistanceToNow } from "@self-learning/util/common";
 import { withTranslations } from "@self-learning/api";
 import { withAuth } from "@self-learning/util/auth/server";
 import { useTranslation } from "next-i18next";
+import { useRouter } from "next/router";
 
 interface CourseOverviewProps {
 	enrollments: EnrollmentDetails[] | null;
@@ -185,6 +186,7 @@ function TabContent({
 
 function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 	const { t } = useTranslation("pages-dashboard");
+	const { locale } = useRouter();
 	const [sortConfig, setSortConfig] = useState<{
 		key: string;
 		direction: "ascending" | "descending";
@@ -312,7 +314,10 @@ function SortedTable({ enrollments }: { enrollments: EnrollmentDetails[] }) {
 							/>
 						</TableDataColumn>
 						<TableDataColumn>
-							{formatDateDistanceToNow(enrollment.lastProgressUpdate)}
+							{formatDateDistanceToNow(
+								enrollment.lastProgressUpdate,
+								locale === "en" ? "en" : "de"
+							)}
 						</TableDataColumn>
 					</tr>
 				))}

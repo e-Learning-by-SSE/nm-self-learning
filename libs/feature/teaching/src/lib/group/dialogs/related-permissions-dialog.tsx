@@ -13,6 +13,8 @@ import {
 } from "@self-learning/ui/common";
 import { TrashIcon } from "@heroicons/react/24/solid";
 import { normalizeFormResourceAccess, stripFormResourceAccess } from "@self-learning/types";
+import { useTranslation } from "next-i18next";
+import { resourceKindTranslationKey } from "../resource-i18n";
 
 type EffectiveAccessType = inferProcedureOutput<
 	AppRouter["permission"]["getEffectiveResourceAccesses"]
@@ -42,6 +44,8 @@ export function GroupPermissionRelationsDialog({
 	isOpen: boolean;
 	onClose: () => void;
 }) {
+	const { t } = useTranslation("feature-teaching");
+	const { t: t_common } = useTranslation("common");
 	const q = stripFormResourceAccess(permission);
 	const query = trpc.permission.getEffectiveResourceAccesses.useQuery(q, {
 		enabled: isOpen
@@ -65,67 +69,72 @@ export function GroupPermissionRelationsDialog({
 		onSuccess: () => {
 			showToast({
 				type: "success",
-				title: "Berechtigung entfernt",
-				subtitle: `Die Gruppenberechtigung für „${revokeCandidate?.group.name}“ wurde erfolgreich entfernt.`
+				title: t("Group_Permission_Removed"),
+				subtitle: t("Group_Permission_Removed_Message", {
+					group: revokeCandidate?.group.name ?? ""
+				})
 			});
 		},
 		onError: () => {
 			showToast({
 				type: "error",
-				title: "Fehler beim Entfernen",
-				subtitle: `Die Berechtigung der Gruppe „${revokeCandidate?.group.name}“ konnte nicht entfernt werden.`
+				title: t("Group_Permission_Remove_Error"),
+				subtitle: t("Group_Permission_Remove_Error_Message", {
+					group: revokeCandidate?.group.name ?? ""
+				})
 			});
 		}
 	});
 	const perm = normalizeFormResourceAccess(permission);
 
 	return (
-		<Dialog title={"Effektive Berechtigungen"} onClose={onClose}>
+		<Dialog title={t("Effective_Permissions_Title")} onClose={onClose}>
 			<div className="flex flex-col gap-4 overflow-auto">
 				<p>
-					Folgende Benutzer haben Zugriff auf{" "}
-					<span className="font-semibold">
-						{perm.type} "{perm.title}"
-					</span>
-					:
+					{t("Users_With_Access_To", {
+						resourceType: t_common(resourceKindTranslationKey(perm.kind)),
+						title: perm.title
+					})}
 				</p>
 				{query.isLoading && <LoadingBox />}
-				{query.data?.length === 0 && <p>Keine Benutzer gefunden</p>}
+				{query.data?.length === 0 && <p>{t("No_Users_Found")}</p>}
 				{query.data?.map(entry => (
 					<Chip key={entry.user.id} displayImage={true} imgUrl={entry.user.image}>
 						<div className="flex gap-1 justify-between">
-							{entry.user.name} ({entry.accessLevel} über {entry.group.name})
+							{t("User_Access_Through_Group", {
+								name: entry.user.name,
+								accessLevel: t_common(`Access_${entry.accessLevel}`),
+								group: entry.group.name
+							})}
 							<IconOnlyButton
 								icon={<TrashIcon className="h-4 w-4" />}
 								className="btn-x-mark"
+								title={t("Remove_Permission")}
 								onClick={() => setRevokeCandidate(entry)}
 							/>
 						</div>
 					</Chip>
 				))}
 				{query.error && (
-					<span className="text-red-500">Insufficient permissions to view</span>
+					<span className="text-red-500">{t("Insufficient_Permissions_To_View")}</span>
 				)}
-				<DialogActions onClose={onClose} abortLabel="OK" />
+				<DialogActions onClose={onClose} abortLabel={t("OK_Action")} />
 			</div>
 			{revokeCandidate && (
-				<Dialog title={"Berechtigung entfernen?"} onClose={onRevokePermission}>
+				<Dialog title={t("Remove_Permission_Confirm_Title")} onClose={onRevokePermission}>
 					<div className="flex flex-col gap-2 overflow-auto">
 						<span>
-							Möchten Sie die Berechtigung für{" "}
-							<span className="font-semibold">
-								{perm.type} "{perm.title}"
-							</span>{" "}
-							wirklich entfernen?
+							{t("Remove_Permission_Confirm_Message", {
+								resourceType: t_common(resourceKindTranslationKey(perm.kind)),
+								title: perm.title
+							})}
 						</span>
 						<span className="text-red-500">
-							Hinweis: Alle Benutzer der Gruppe{" "}
-							<span className="font-semibold">{revokeCandidate.group.name}</span>{" "}
-							verlieren ihren Zugriff für{" "}
-							<span className="font-semibold">
-								{perm.type} "{perm.title}"
-							</span>
-							:
+							{t("Remove_Permission_Impact_Message", {
+								group: revokeCandidate.group.name,
+								resourceType: t_common(resourceKindTranslationKey(perm.kind)),
+								title: perm.title
+							})}
 						</span>
 						{revokeCandidate.group.members.map(m => (
 							<Chip key={m.id} displayImage={true} imgUrl={m.image}>
@@ -137,7 +146,7 @@ export function GroupPermissionRelationsDialog({
 								className="btn-primary hover:bg-c-danger"
 								onClick={() => onRevokePermission(true)}
 							>
-								Löschen
+								{t("Delete_Action")}
 							</button>
 						</DialogActions>
 					</div>

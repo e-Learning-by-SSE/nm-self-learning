@@ -8,7 +8,6 @@ import { SearchResourceDialog } from "@self-learning/admin";
 import {
 	allResourceKinds,
 	getResourceAccessFormKey,
-	resourceLabels,
 	ResourceKind,
 	ResourceSearchEntry,
 	toResourceAccessForm
@@ -20,6 +19,8 @@ import {
 } from "../editors/group-permission";
 import { useArrayDiff } from "../misc/use-array-diff";
 import { Button } from "@headlessui/react";
+import { resourceKindTranslationKey } from "../resource-i18n";
+import { useTranslation } from "next-i18next";
 
 /**
  * GroupPermissionsEditor - Section for editing a group's resource permissions.
@@ -34,6 +35,8 @@ import { Button } from "@headlessui/react";
  * Related: GroupPermissionTable, GroupPermissionRowEditor, SearchResourceDialog
  */
 export function GroupPermissionsEditor() {
+	const { t } = useTranslation("feature-teaching");
+	const { t: t_common } = useTranslation("common");
 	const { control } = useFormContext<{ permissions: GroupFormModel["permissions"] }>();
 	const editor = useFieldArray({
 		name: "permissions",
@@ -95,7 +98,7 @@ export function GroupPermissionsEditor() {
 							className="w-full px-3 py-2 text-left"
 							onClick={() => openSearchResourceDialog()}
 						>
-							Alle Ressourcen
+							{t("All_Resources")}
 						</Button>
 						{allResourceKinds.map(kind => (
 							<Button
@@ -104,7 +107,7 @@ export function GroupPermissionsEditor() {
 								className="w-full px-3 py-2 text-left"
 								onClick={() => openSearchResourceDialog([kind])}
 							>
-								{resourceLabels[kind]}
+								{t_common(resourceKindTranslationKey(kind))}
 							</Button>
 						))}
 					</DropdownMenu>

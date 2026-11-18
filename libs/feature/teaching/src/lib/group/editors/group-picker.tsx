@@ -3,6 +3,7 @@ import { DetailsDropdown, IconTextButton, Chip, OnDialogCloseFn } from "@self-le
 import { SearchGroupDialog } from "@self-learning/teaching";
 import { ArrowsUpDownIcon } from "@heroicons/react/24/solid";
 import { GroupEntry } from "@self-learning/types";
+import { useTranslation } from "next-i18next";
 
 /**
  * GroupPicker - Compact UI for selecting a single group with a dialog picker.
@@ -34,6 +35,7 @@ export function GroupPicker({
 	isAdmin: boolean;
 }) {
 	const [isPickerOpen, setIsPickerOpen] = useState(false);
+	const { t } = useTranslation("feature-teaching");
 
 	return (
 		<>
@@ -43,7 +45,7 @@ export function GroupPicker({
 			<IconTextButton
 				icon={<ArrowsUpDownIcon className="icon h-5" />}
 				className="btn-secondary"
-				text="Eine Gruppe auswählen..."
+				text={t("Select_Group")}
 				onClick={() => setIsPickerOpen(true)}
 			/>
 
@@ -55,7 +57,7 @@ export function GroupPicker({
 					</div>
 				</Chip>
 			) : (
-				<p className="text-sm text-light">Keine Gruppe ausgewählt</p>
+				<p className="text-sm text-light">{t("No_Group_Selected")}</p>
 			)}
 
 			{isPickerOpen && (

@@ -8,6 +8,7 @@ import {
 jest.mock("../../prisma", () => ({
 	database: {
 		author: { findFirst: jest.fn() },
+		completedLesson: { groupBy: jest.fn() },
 		course: { findFirst: jest.fn() },
 		lesson: { findMany: jest.fn() }
 	}
@@ -16,6 +17,26 @@ jest.mock("../../prisma", () => ({
 describe("KPI Database Access Functions", () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
+		(database.completedLesson.groupBy as jest.Mock).mockImplementation(async ({ where }) => {
+			const author = await (database.author.findFirst as jest.Mock).mock.results.at(-1)
+				?.value;
+			const rows = (author?.courses ?? []).flatMap(course =>
+				course.completions.map(completion => ({
+					...completion,
+					courseId: course.courseId
+				}))
+			);
+			const distinct = new Map();
+			for (const row of rows) {
+				if (
+					where.createdAt &&
+					!(row.createdAt >= where.createdAt.gte && row.createdAt < where.createdAt.lt)
+				)
+					continue;
+				distinct.set(JSON.stringify([row.courseId, row.username, row.lessonId]), row);
+			}
+			return [...distinct.values()];
+		});
 	});
 
 	const userId = "user-123";
@@ -90,8 +111,8 @@ describe("KPI Database Access Functions", () => {
 			expect.objectContaining({
 				courseId: "course-1",
 				averageCompletionRate: 50,
-				averageCompletionRateLastSixMonths: 50,
-				enrollmentsLastSixMonths: 2,
+				averageCompletionRateSemester: 50,
+				enrollmentsSemester: 2,
 				totalEnrollments: 2,
 				completedEnrollments: 1
 			}),
@@ -159,11 +180,140 @@ describe("KPI Database Access Functions", () => {
 		expect(await getAuthorMetric_AverageCourseCompletionRate(userId)).toEqual([
 			expect.objectContaining({
 				totalEnrollments: 3,
-				enrollmentsLastSixMonths: 2,
+				enrollmentsSemester: 2,
 				averageCompletionRate: 75,
-				averageCompletionRateLastSixMonths: 50
+				averageCompletionRateSemester: 50
 			})
 		]);
+	});
+
+	it("counts distinct participating learners by completion date", async () => {
+		jest.useFakeTimers().setSystemTime(new Date("2026-11-10T12:00:00Z"));
+		try {
+			const completion = (username: string, lessonId: string, date: string) => ({
+				username,
+				lessonId,
+				createdAt: new Date(date)
+			});
+			(database.author.findFirst as jest.Mock).mockResolvedValue({
+				username: "teacher",
+				courses: [
+					{
+						courseId: "course",
+						title: "Course",
+						content: [
+							{
+								title: "Chapter",
+								content: [{ lessonId: "one" }, { lessonId: "two" }]
+							}
+						],
+						authors: [{ username: "teacher" }],
+						enrollments: ["old", "recent", "inactive", "teacher"].map(username => ({
+							username,
+							status: "ACTIVE",
+							completedAt: null,
+							createdAt: new Date("2025-01-01")
+						})),
+						completions: [
+							completion("old", "one", "2026-01-01"),
+							completion("old", "one", "2026-06-01"),
+							completion("old", "one", "2027-01-01"),
+							completion("old", "two", "2026-06-02"),
+							completion("recent", "one", "2026-05-10T12:00:00Z"),
+							completion("teacher", "one", "2026-06-01"),
+							completion("outsider", "one", "2026-06-01"),
+							completion("inactive", "removed", "2026-06-01")
+						]
+					}
+				]
+			});
+			expect(await getAuthorMetric_AverageCourseCompletionRate(userId)).toEqual([
+				expect.objectContaining({
+					totalParticipation: 2,
+					participationSemester: 2,
+					averageCompletionRate: 75
+				})
+			]);
+			expect(database.completedLesson.groupBy).toHaveBeenCalledWith({
+				by: ["courseId", "username", "lessonId"],
+				where: {
+					courseId: { in: ["course"] },
+					createdAt: {
+						gte: subMonths(new Date("2026-11-10T12:00:00Z"), 6),
+						lt: new Date("2026-11-10T12:00:00.001Z")
+					}
+				}
+			});
+		} finally {
+			jest.useRealTimers();
+		}
+	});
+
+	it("uses Berlin lecture-period boundaries for enrollment and participation", async () => {
+		jest.useFakeTimers().setSystemTime(new Date("2026-11-10T12:00:00Z"));
+		try {
+			const completion = (username: string, date: string) => ({
+				username,
+				lessonId: "one",
+				createdAt: new Date(date)
+			});
+			(database.author.findFirst as jest.Mock).mockResolvedValue({
+				username: "teacher",
+				courses: [
+					{
+						courseId: "course",
+						title: "Course",
+						authors: [{ username: "teacher" }],
+						content: [{ title: "Chapter", content: [{ lessonId: "one" }] }],
+						enrollments: [
+							{
+								username: "before",
+								createdAt: new Date("2026-10-11T21:59:59Z"),
+								status: "ACTIVE",
+								completedAt: null
+							},
+							{
+								username: "start",
+								createdAt: new Date("2026-10-11T22:00:00Z"),
+								status: "ACTIVE",
+								completedAt: null
+							},
+							{
+								username: "end",
+								createdAt: new Date("2027-02-05T22:59:59Z"),
+								status: "ACTIVE",
+								completedAt: null
+							},
+							{
+								username: "after",
+								createdAt: new Date("2027-02-05T23:00:00Z"),
+								status: "ACTIVE",
+								completedAt: null
+							}
+						],
+						completions: [
+							completion("before", "2026-10-11T21:59:59Z"),
+							completion("start", "2026-10-11T22:00:00Z"),
+							completion("end", "2027-02-05T22:59:59Z"),
+							completion("after", "2027-02-05T23:00:00Z")
+						]
+					}
+				]
+			});
+			const result = await getAuthorMetric_AverageCourseCompletionRate(userId, {
+				startDate: "2026-10-12",
+				endDate: "2027-02-05"
+			});
+			expect(result[0]).toEqual(
+				expect.objectContaining({
+					enrollmentsSemester: 2,
+					participationSemester: 2,
+					averageCompletionRateSemester: 100
+				})
+			);
+		} finally {
+			jest.useRealTimers();
+		}
 	});
 
 	it("returns no course metrics when the user is not an author", async () => {
@@ -294,6 +444,8 @@ describe("KPI Database Access Functions", () => {
 			"2026-04-01",
 			"2026-04-30"
 		);
+		expect(result?.analytics.period.participation).toBe(2);
+		expect(result?.analytics.total.participation).toBe(3);
 		expect(result?.lessonChart.period).toEqual([
 			{ lessonId: "b", title: "B", completionRate: 100, averageScore: expect.closeTo(60) },
 			{ lessonId: "a", title: "A", completionRate: 50, averageScore: 60 }
@@ -308,6 +460,7 @@ describe("KPI Database Access Functions", () => {
 			"2025-01-01",
 			"2025-01-31"
 		);
+		expect(empty?.analytics.period.participation).toBe(0);
 		expect(empty?.lessonChart.period).toEqual([
 			{ lessonId: "b", title: "B", completionRate: null, averageScore: null },
 			{ lessonId: "a", title: "A", completionRate: null, averageScore: null }

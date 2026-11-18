@@ -10,6 +10,7 @@ import {
 } from "@self-learning/ui/common";
 import { Fragment, useState } from "react";
 import { keepPreviousData } from "@tanstack/react-query";
+import { useTranslation } from "next-i18next";
 
 export type UserSearchEntry = {
 	id: string;
@@ -30,6 +31,7 @@ export function SearchUserDialog({
 }) {
 	const [name, setName] = useState("");
 	const [page, setPage] = useState(1);
+	const { t } = useTranslation("common");
 	const { data: users } = trpc.admin.findUsers.useQuery(
 		{
 			page,
@@ -50,7 +52,7 @@ export function SearchUserDialog({
 						setName(value);
 						setPage(1);
 					}}
-					placeholder="Suche nach Nutzer"
+					placeholder={t("Search_User_Placeholder")}
 				/>
 
 				<DropdownDialog.PaginationContainer>

@@ -18,24 +18,26 @@ import { useEffect, useMemo, useState } from "react";
 import { add } from "date-fns";
 import { formatDateDistanceToNow, isInThePast } from "@self-learning/util/common";
 import { ArrayDiffStatus, TableDiffColumn } from "../misc/use-array-diff";
+import { useTranslation } from "next-i18next";
+import { useRouter } from "next/router";
 
 type DurationId = "inf" | "1m" | "3m" | "6m" | "1y" | "custom";
 export type MemberFormModel = Member & {
 	durationId?: DurationId;
 };
 
-const membershipOptions: { label: string; value: { id: DurationId; months: number } }[] = [
-	{ label: "1 Monat", value: { id: "1m", months: 1 } },
-	{ label: "3 Monate", value: { id: "3m", months: 3 } },
-	{ label: "6 Monate", value: { id: "6m", months: 6 } },
-	{ label: "1 Jahr", value: { id: "1y", months: 12 } },
-	{ label: "Unbefristet", value: { id: "inf", months: 0 } },
-	{ label: "Datum", value: { id: "custom", months: 0 } }
+const membershipOptions: { labelKey: string; value: { id: DurationId; months: number } }[] = [
+	{ labelKey: "Membership_One_Month", value: { id: "1m", months: 1 } },
+	{ labelKey: "Membership_Three_Months", value: { id: "3m", months: 3 } },
+	{ labelKey: "Membership_Six_Months", value: { id: "6m", months: 6 } },
+	{ labelKey: "Membership_One_Year", value: { id: "1y", months: 12 } },
+	{ labelKey: "Membership_Indefinite", value: { id: "inf", months: 0 } },
+	{ labelKey: "Membership_Custom_Date", value: { id: "custom", months: 0 } }
 ];
 
 const groupRoleOptions = [
-	{ label: "Administrator", value: GroupRole.ADMIN },
-	{ label: "Mitglied", value: GroupRole.MEMBER }
+	{ labelKey: "Group_Role_Admin", value: GroupRole.ADMIN },
+	{ labelKey: "Group_Role_Member", value: GroupRole.MEMBER }
 ];
 
 function formatDate(d: Date) {
@@ -88,6 +90,7 @@ export function useMemberEditor(
 	onChange: OnDialogCloseFn<MemberFormModel>,
 	onlyAdmin?: boolean
 ) {
+	const { t } = useTranslation("feature-teaching");
 	const update = (patch: Partial<MemberFormModel>) => onChange({ ...member, ...patch });
 
 	// when onlyAdmin changes - selected option also must change
@@ -127,19 +130,27 @@ export function useMemberEditor(
 	// derived values
 	const durationOpt = getDurationOpt(member);
 	const customDate = member.expiresAt ? formatDate(member.expiresAt) : "";
+	const localizedRoleOptions = groupRoleOptions.map(option => ({
+		...option,
+		label: t(option.labelKey)
+	}));
 	const roleOptions = onlyAdmin
-		? groupRoleOptions.filter(o => o.value === GroupRole.ADMIN)
-		: groupRoleOptions;
+		? localizedRoleOptions.filter(o => o.value === GroupRole.ADMIN)
+		: localizedRoleOptions;
 	const durationOptions =
 		member.role === GroupRole.ADMIN
 			? membershipOptions.filter(o => o.value.id === "inf")
 			: membershipOptions;
+	const localizedDurationOptions = durationOptions.map(option => ({
+		value: option.value,
+		label: t(option.labelKey)
+	}));
 
 	return {
 		customDate,
 		durationOpt,
 		roleOptions,
-		durationOptions,
+		durationOptions: localizedDurationOptions,
 		setUser,
 		setRole,
 		setDuration,
@@ -245,6 +256,7 @@ export function GroupMemberEditor({
 	canEditUser?: boolean;
 	onlyAdmin?: boolean;
 }) {
+	const { t } = useTranslation("feature-teaching");
 	const [selectUserActive, setSelectUserActive] = useState(false);
 	const {
 		durationOpt,
@@ -278,7 +290,7 @@ export function GroupMemberEditor({
 			{canEditUser && (
 				<div className="flex items-center justify-between gap-4">
 					<IconTextButton
-						text="Mitglieder*in auswählen"
+						text={t("Select_Group_Member")}
 						className="btn-secondary"
 						icon={<ArrowsUpDownIcon className="icon h-5" />}
 						onClick={() => setSelectUserActive(true)}
@@ -290,24 +302,24 @@ export function GroupMemberEditor({
 			)}
 			{member.user.displayName && (
 				<Chip displayImage={false}>
-					<span>{member?.user.displayName ?? "N/A"}</span>
+					<span>{member?.user.displayName ?? t("Group_Member_Not_Available")}</span>
 					<span className="text-sm text-light">{member?.user.email}</span>
 				</Chip>
 			)}
-			<LabeledField label="Rolle auswählen">
+			<LabeledField label={t("Select_Group_Role")}>
 				<GenericCombobox
 					value={member?.role ?? null}
 					onChange={setRole}
 					options={roleOptions}
-					label={"Auswählen"}
+					label={t("Select_Action")}
 				/>
 			</LabeledField>
-			<LabeledField label="Mitgliedschaftsdauer auswählen">
+			<LabeledField label={t("Select_Membership_Duration")}>
 				<GenericCombobox
 					value={durationOpt}
 					onChange={setDuration}
 					options={durationOptions}
-					label={"Auswählen"}
+					label={t("Select_Action")}
 					compare={(a, b) => a?.id === b?.id}
 				/>
 				{durationOpt.id === "custom" && (
@@ -324,7 +336,7 @@ export function GroupMemberEditor({
 			{onSubmit && (
 				<DialogActions onClose={onCancel}>
 					<button className="btn-primary" type="submit">
-						Speichern
+						{t("Save_Action")}
 					</button>
 				</DialogActions>
 			)}
@@ -345,13 +357,14 @@ export function GroupMemberEditor({
  * @param children - Array of row elements (GroupMemberRow or GroupMemberRowEditor)
  */
 export function GroupMemberTable({ children }: { children: React.ReactNode[] }) {
+	const { t } = useTranslation("feature-teaching");
 	return (
 		<Table
 			head={
 				<>
-					<TableHeaderColumn>Name</TableHeaderColumn>
-					<TableHeaderColumn>Rolle</TableHeaderColumn>
-					<TableHeaderColumn>Dauer</TableHeaderColumn>
+					<TableHeaderColumn>{t("Group_Member_Name_Column")}</TableHeaderColumn>
+					<TableHeaderColumn>{t("Group_Role_Column")}</TableHeaderColumn>
+					<TableHeaderColumn>{t("Membership_Duration_Column")}</TableHeaderColumn>
 					<TableHeaderColumn></TableHeaderColumn>
 				</>
 			}
@@ -388,6 +401,7 @@ export function GroupMemberRowEditor({
 	onChange: OnDialogCloseFn<MemberFormModel>;
 	onDelete?: OnDialogCloseFn<MemberFormModel>;
 }) {
+	const { t } = useTranslation("feature-teaching");
 	const {
 		durationOpt,
 		customDate,
@@ -414,7 +428,7 @@ export function GroupMemberRowEditor({
 					value={member?.role ?? null}
 					onChange={setRole}
 					options={roleOptions}
-					label={"Auswählen"}
+					label={t("Select_Action")}
 				/>
 			</TableDataColumn>
 			<TableDataColumn className="flex py-2 gap-2">
@@ -422,7 +436,7 @@ export function GroupMemberRowEditor({
 					value={durationOpt}
 					onChange={setDuration}
 					options={durationOptions}
-					label={"Auswählen"}
+					label={t("Select_Action")}
 					compare={(a, b) => a?.id === b?.id}
 				/>
 				{durationOpt.id === "custom" && (
@@ -440,6 +454,7 @@ export function GroupMemberRowEditor({
 				<IconOnlyButton
 					icon={<TrashIcon className="h-4 w-4" />}
 					className="btn-x-mark"
+					title={t("Remove_Group_Member")}
 					onClick={() => onDelete && onDelete(member)}
 				/>
 			</TableDataColumn>
@@ -473,6 +488,8 @@ export function GroupMemberRow({
 	onEdit?: OnDialogCloseFn<MemberFormModel>;
 	onDelete?: OnDialogCloseFn<MemberFormModel>;
 }) {
+	const { t } = useTranslation("feature-teaching");
+	const { locale } = useRouter();
 	return (
 		<tr key={member.user.id}>
 			<TableDiffColumn status={diffStatus}>
@@ -480,18 +497,20 @@ export function GroupMemberRow({
 			</TableDiffColumn>
 
 			<TableDataColumn>
-				<span className="text-light">{member.role}</span>
+				<span className="text-light">
+					{t(member.role === GroupRole.ADMIN ? "Group_Role_Admin" : "Group_Role_Member")}
+				</span>
 			</TableDataColumn>
 			<TableDataColumn>
 				<span className="text-light">
 					{member.expiresAt ? (
 						isInThePast(member.expiresAt) ? (
-							<span className="text-red-500">Abgelaufen</span>
+							<span className="text-red-500">{t("Membership_Expired")}</span>
 						) : (
-							formatDateDistanceToNow(member.expiresAt)
+							formatDateDistanceToNow(member.expiresAt, locale === "en" ? "en" : "de")
 						)
 					) : (
-						"Unbefristet"
+						t("Membership_Indefinite")
 					)}
 				</span>
 			</TableDataColumn>

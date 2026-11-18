@@ -345,7 +345,7 @@ describe("REST API of Course Router", () => {
 			});
 
 			// Mock canEdit - true for authors, false for non-authors (including admin non-author)
-			(canEdit as jest.Mock).mockImplementation(async (user, resource) => {
+			(canEdit as jest.Mock).mockImplementation(async user => {
 				const courseAuthors = ["teacher1", "teacher2"];
 				return (
 					courseAuthors.includes(user.name) ||

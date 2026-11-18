@@ -1,4 +1,5 @@
 import { I18N_NAMESPACE as UI_COMMON_I18N_NAMESPACE } from "@self-learning/ui/common";
+import { I18N_NAMESPACE as TEACHING_I18N_NAMESPACE } from "@self-learning/teaching";
 
 export * from "./lib/settings-form/settings-form";
 export * from "./lib/settings-form/delete-form";
@@ -13,4 +14,9 @@ export * from "./lib/dashboard/platform-competion-stats";
 export * from "./lib/experiment/experiment-settings-info";
 export * from "./lib/experiment/experiment-meta";
 
-export const I18N_NAMESPACE = [...UI_COMMON_I18N_NAMESPACE, "terms-of-use", "feature-settings"];
+export const I18N_NAMESPACE = [
+	...UI_COMMON_I18N_NAMESPACE,
+	...TEACHING_I18N_NAMESPACE,
+	"terms-of-use",
+	"feature-settings"
+];

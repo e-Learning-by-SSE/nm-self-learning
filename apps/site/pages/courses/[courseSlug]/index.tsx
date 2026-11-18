@@ -4,7 +4,12 @@ import { withTranslations } from "@self-learning/api";
 import { trpc } from "@self-learning/api-client";
 import { SmallGradeBadge, useCourseCompletion } from "@self-learning/completion";
 import { database } from "@self-learning/database/server";
-import { useEnrollmentMutations, useEnrollments } from "@self-learning/enrollment";
+import {
+	useEnrollmentMutations,
+	useEnrollments,
+	useEnsureCourseEnrollment
+} from "@self-learning/enrollment";
+import { LearningGoals } from "@self-learning/lesson";
 import { CompiledMarkdown, compileMarkdown } from "@self-learning/markdown";
 import {
 	getLessonDuration,
@@ -34,14 +39,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
 	useAiTutor,
 	AiTutor,
 	FloatingTutorButton,
 	I18N_NAMESPACE as NS_AI_TUTOR
 } from "@self-learning/ai-tutor";
-import { CourseData, getCourseData } from "@self-learning/course";
+import { CourseData, getCourseData, getCourseLearningGoals } from "@self-learning/course";
 
 function mapToTocContent(
 	content: CourseContent,
@@ -137,6 +142,7 @@ type CourseProps = {
 	course: CourseData;
 	summary: Summary;
 	content: ToC.Content;
+	learningGoals: string[];
 	markdownDescription: CompiledMarkdown | null;
 };
 
@@ -168,6 +174,7 @@ export const getServerSideProps = withTranslations(
 		}
 		// content, isGenerated and isStale are resolved in getCourseData.
 		const content = await mapCourseContent((course.content ?? []) as CourseContent);
+		const learningGoals = await getCourseLearningGoals(course);
 		let markdownDescription = null;
 
 		if (course.description && course.description.length > 0) {
@@ -184,6 +191,7 @@ export const getServerSideProps = withTranslations(
 				course,
 				summary,
 				content,
+				learningGoals,
 				markdownDescription
 			}
 		};
@@ -195,12 +203,14 @@ export default function Course({
 	course,
 	summary,
 	content,
+	learningGoals,
 	markdownDescription,
 	isGenerated
 }: CourseProps) {
 	const tutorState = useAiTutor();
-	return (
-		<div className="pb-32">
+
+	const courseContent = (
+		<>
 			<CenteredSection>
 				<CourseHeader
 					course={course}
@@ -222,6 +232,25 @@ export default function Course({
 			<CenteredSection>
 				<TableOfContents content={content} course={course} isGenerated={isGenerated} />
 			</CenteredSection>
+		</>
+	);
+
+	return (
+		<div className="pb-32">
+			{learningGoals.length > 0 ? (
+				// same sidebar layout as the lesson outline (see BaseLessonLayout)
+				<div className="mx-auto flex w-full max-w-[1920px] flex-col gap-8 px-4 xl:grid xl:grid-cols-[400px_1fr]">
+					<aside className="playlist-scroll top-[61px] w-full overflow-auto border-t border-r-c-border pb-8 xl:sticky xl:h-[calc(100vh-61px)] xl:border-t-0 xl:border-r xl:pr-4">
+						{/* pt-16 = padding of CenteredSection, aligns the card with the course title */}
+						<div className="pt-16">
+							<LearningGoals scope="course" variant="card" goals={learningGoals} />
+						</div>
+					</aside>
+					<div className="min-w-0">{courseContent}</div>
+				</div>
+			) : (
+				courseContent
+			)}
 			<FloatingTutorButton
 				onToggle={tutorState.toggleTutor}
 				disabled={tutorState.isAnimating}
@@ -291,6 +320,9 @@ function CourseHeader({
 	const lessonCompletionCount = completion?.courseCompletion.completedLessonCount ?? 0;
 
 	const shouldShowStartButton = isEnrolled && !!firstLessonFromChapter;
+	const startLessonHref = firstLessonFromChapter
+		? `/courses/${course.slug}/${nextLessonSlug ?? firstLessonFromChapter.slug}`
+		: `/courses/${course.slug}`;
 
 	const avgScore = useMemo(() => {
 		const scores = content
@@ -385,14 +417,9 @@ function CourseHeader({
 					</div>
 
 					{shouldShowStartButton && (
-						<Link
-							href={
-								firstLessonFromChapter
-									? `/courses/${course.slug}/${
-											nextLessonSlug ?? firstLessonFromChapter.slug
-										}`
-									: `/courses/${course.slug}`
-							}
+						<LessonStartLink
+							href={startLessonHref}
+							courseId={course.courseId}
 							className="btn-primary"
 						>
 							<span>
@@ -403,7 +430,7 @@ function CourseHeader({
 									: t("Open_Course")}
 							</span>
 							<PlayIcon className="h-5" />
-						</Link>
+						</LessonStartLink>
 					)}
 
 					{isDynamic
@@ -492,6 +519,7 @@ function TableOfContents({
 								<Lesson
 									key={lesson.lessonId}
 									href={`/courses/${course.slug}/${lesson.slug}`}
+									courseId={course.courseId}
 									lesson={lesson}
 									isCompleted={!!completion?.completedLessons[lesson.lessonId]}
 								/>
@@ -507,15 +535,17 @@ function TableOfContents({
 function Lesson({
 	lesson,
 	href,
+	courseId,
 	isCompleted
 }: {
 	lesson: ToC.Content[0]["content"][0];
 	href: string;
+	courseId: string;
 	isCompleted: boolean;
 }) {
 	const { isAuthenticated } = useAuthentication();
 
-	if (!isAuthenticated) {
+	if (!isAuthenticated || lesson.lessonId === "removed") {
 		return (
 			<div className="flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm border-c-border-strong">
 				<LessonEntry lesson={lesson} />
@@ -523,13 +553,72 @@ function Lesson({
 		);
 	}
 	return (
-		<Link
+		<LessonStartLink
 			href={href}
+			courseId={courseId}
 			className={`flex gap-2 rounded-r-lg border-l-4 bg-white px-4 py-2 text-sm ${
 				isCompleted ? "border-c-primary" : "border-c-border-strong"
 			}`}
 		>
 			<LessonEntry lesson={lesson} />
+		</LessonStartLink>
+	);
+}
+
+function LessonStartLink({
+	href,
+	courseId,
+	className,
+	children
+}: {
+	href: string;
+	courseId: string;
+	className: string;
+	children: React.ReactNode;
+}) {
+	const { ensureEnrolled, isEnrolling } = useEnsureCourseEnrollment();
+	const router = useRouter();
+	const { t } = useTranslation("common");
+	const isStartingRef = useRef(false);
+
+	const handleClick = async (event: React.MouseEvent<HTMLAnchorElement>) => {
+		// Preserve the browser's normal behavior for modified clicks and new tabs.
+		if (
+			event.button !== 0 ||
+			event.metaKey ||
+			event.ctrlKey ||
+			event.shiftKey ||
+			event.altKey
+		) {
+			return;
+		}
+
+		event.preventDefault();
+		if (isEnrolling || isStartingRef.current) return;
+
+		isStartingRef.current = true;
+		try {
+			await ensureEnrolled({ courseId });
+			await router.push(href);
+		} catch {
+			showToast({
+				type: "error",
+				title: t("Error"),
+				subtitle: t("Enrollment_Failed")
+			});
+		} finally {
+			isStartingRef.current = false;
+		}
+	};
+
+	return (
+		<Link
+			href={href}
+			className={`${className} ${isEnrolling ? "pointer-events-none opacity-50" : ""}`}
+			onClick={event => void handleClick(event)}
+			aria-disabled={isEnrolling}
+		>
+			{children}
 		</Link>
 	);
 }

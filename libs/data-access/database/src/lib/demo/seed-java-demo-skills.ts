@@ -1,5 +1,5 @@
 import { createPrismaClient } from "../prisma-client";
-import { AccessLevel, Prisma, PrismaClient } from "../../generated/prisma/client";
+import { AccessLevel, Prisma } from "../../generated/prisma/client";
 import { createSkillGroups, createSkills } from "../seed-functions";
 
 const skills = [

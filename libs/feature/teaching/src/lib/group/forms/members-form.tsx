@@ -13,6 +13,7 @@ import {
 } from "../editors/group-members";
 import { SearchUserDialog, UserSearchEntry } from "@self-learning/admin";
 import { useArrayDiff } from "../misc/use-array-diff";
+import { useTranslation } from "next-i18next";
 
 /**
  * GroupMembersEditor - Section for managing group members in a form.
@@ -26,6 +27,7 @@ import { useArrayDiff } from "../misc/use-array-diff";
  * Related: GroupMemberTable, GroupMemberRowEditor, SearchUserDialog
  */
 export function GroupMembersEditor() {
+	const { t } = useTranslation("feature-teaching");
 	const { control } = useFormContext<{ members: GroupFormModel["members"] }>();
 	const editor = useFieldArray({
 		name: "members",
@@ -71,11 +73,11 @@ export function GroupMembersEditor() {
 	return (
 		<CenteredSection>
 			<SectionHeader
-				title="Mitglieder*innen"
-				subtitle="Alle Mitglieder*innen dieser Gruppe."
+				title={t("Group_Members_Tab")}
+				subtitle={t("Group_Members_Subtitle")}
 				button={
 					<IconTextButton
-						text="Mitglieder*in hinzufügen"
+						text={t("Add_Group_Member")}
 						icon={<PlusIcon className="icon w-5" />}
 						onClick={() => setSearchUserActive(true)}
 					/>

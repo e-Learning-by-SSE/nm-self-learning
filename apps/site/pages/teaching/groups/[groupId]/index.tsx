@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { withTranslations } from "@self-learning/api";
+import { useTranslation } from "next-i18next";
 import { getResourceAccessFormKey, ResourceAccessFormSchema } from "@self-learning/types";
 import {
 	GroupPermissionRow,
@@ -21,6 +22,7 @@ import {
 
 export default function GroupPage() {
 	const router = useRouter();
+	const { t } = useTranslation("pages-groups");
 	const { memberName = "" } = router.query;
 
 	const [memberNameFilter, setMemberName] = useState(memberName);
@@ -53,7 +55,7 @@ export default function GroupPage() {
 	if (!group) {
 		return (
 			<Unauthorized>
-				<span>Du musst ein Mitglied dieser Gruppe sein</span>
+				<span>{t("Must_Be_Group_Member")}</span>
 			</Unauthorized>
 		);
 	}
@@ -80,14 +82,14 @@ export default function GroupPage() {
 		<div className="flex flex-col gap-8 bg-gray-50 pb-32">
 			<TopicHeader
 				parentLink="/groups"
-				parentTitle="Gruppen"
+				parentTitle={t("My_Groups_Title")}
 				title={group.name}
 				subtitle={group.slug || ""}
 			>
 				<div className="absolute top-1/2 -translate-y-1/2 right-4 flex gap-2">
 					<Link href={`/teaching/groups/${groupId}/edit`} className="btn-primary">
 						<PencilIcon className="icon h-5" />
-						<span>Bearbeiten</span>
+						<span>{t("Edit_Group")}</span>
 					</Link>
 					<GroupDeleteOption group={group} />
 				</div>
@@ -99,12 +101,12 @@ export default function GroupPage() {
 				) : (
 					<>
 						<SectionHeader
-							title="Mitglieder*innen"
-							subtitle="Alle Mitglieder*innen dieser Gruppe."
+							title={t("Members_Title")}
+							subtitle={t("Members_Subtitle")}
 						/>
 
 						<SearchField
-							placeholder="Suche nach Mitglieder*in"
+							placeholder={t("Search_Members_Placeholder")}
 							onChange={e => setMemberName(e.target.value)}
 						/>
 
@@ -115,12 +117,12 @@ export default function GroupPage() {
 						</GroupMemberTable>
 
 						<SectionHeader
-							title="Berechtigungen"
-							subtitle="Alle Berechtigungen dieser Gruppe."
+							title={t("Permissions_Title")}
+							subtitle={t("Permissions_Subtitle")}
 						/>
 
 						<SearchField
-							placeholder="Suche nach Ressourcen"
+							placeholder={t("Search_Resources_Placeholder")}
 							onChange={e => setResourceNameFilter(e.target.value)}
 						/>
 
@@ -151,4 +153,6 @@ export default function GroupPage() {
 	);
 }
 
-export const getServerSideProps = withTranslations(Array.from(new Set(["common", ...NS_TEACHING])));
+export const getServerSideProps = withTranslations(
+	Array.from(new Set(["common", "pages-groups", ...NS_TEACHING]))
+);

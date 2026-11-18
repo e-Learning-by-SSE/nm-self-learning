@@ -11,8 +11,10 @@ import { Unauthorized, useCanCreate, useRequiredSession } from "@self-learning/u
 import { withAuth } from "@self-learning/util/auth/server";
 import { useRouter } from "next/router";
 import { withTranslations } from "@self-learning/api";
+import { useTranslation } from "next-i18next";
 
 export default function CreateGroupPage() {
+	const { t } = useTranslation("feature-teaching");
 	const session = useRequiredSession();
 	const canCreateResource = useCanCreate();
 	const router = useRouter();
@@ -23,11 +25,7 @@ export default function CreateGroupPage() {
 	}
 
 	if (!canCreateResource) {
-		return (
-			<Unauthorized>
-				Um eine Gruppe zu erstellen, musst du Mitglied einer Gruppe sein.
-			</Unauthorized>
-		);
+		return <Unauthorized>{t("Create_Group_Requires_Membership")}</Unauthorized>;
 	}
 
 	async function handleCreateClose(group?: GroupFormModel) {
@@ -36,7 +34,8 @@ export default function CreateGroupPage() {
 				router.back();
 			},
 			createGroupAsync,
-			group
+			group,
+			(key: string) => t(key)
 		);
 	}
 

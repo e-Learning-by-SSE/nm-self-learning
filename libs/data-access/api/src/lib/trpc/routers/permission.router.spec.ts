@@ -142,7 +142,7 @@ describe("permissionRouter", () => {
 
 	describe("searchResources", () => {
 		it("delegates to searchAllResources", async () => {
-			const { caller, ctx } = prepare({ id: "my-user" });
+			const { caller } = prepare({ id: "my-user" });
 			const payload = {
 				result: [
 					{
@@ -168,7 +168,7 @@ describe("permissionRouter", () => {
 
 	describe("getMyResources", () => {
 		it("delegates to searchMyResources with session user id", async () => {
-			const { caller, ctx } = prepare({ id: "my-user" });
+			const { caller } = prepare({ id: "my-user" });
 			const payload = {
 				result: [],
 				pageSize: 15,

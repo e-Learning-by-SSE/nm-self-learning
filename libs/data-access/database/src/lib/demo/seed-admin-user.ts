@@ -1,5 +1,5 @@
 import { createPrismaClient } from "../prisma-client";
-import { Author, GroupRole, Prisma, PrismaClient, User } from "../../generated/prisma/client";
+import { Author, GroupRole, Prisma, User } from "../../generated/prisma/client";
 import { softwareentwicklungDemoGroup } from "../seedSpecializations";
 import { getDefaultNotificationData } from "../seed-functions";
 import { LoginStreak } from "@self-learning/types";

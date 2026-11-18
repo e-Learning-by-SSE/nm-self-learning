@@ -18,8 +18,10 @@ export function TeacherView() {
 			label: row.courseTitle,
 			rate: row.averageCompletionRate,
 			enrollments: row.totalEnrollments,
-			recentEnrollments: row.enrollmentsLastSixMonths,
-			recentRate: row.averageCompletionRateLastSixMonths
+			recentEnrollments: row.enrollmentsSemester,
+			participation: row.totalParticipation,
+			recentParticipation: row.participationSemester,
+			recentRate: row.averageCompletionRateSemester
 		}))
 		.sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
 

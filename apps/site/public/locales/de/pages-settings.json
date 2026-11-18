@@ -3,5 +3,15 @@
     "Feature_other": "Funktionen",
     "Permissions": "Berechtigungen",
     "Developer Options": "Entwickleroptionen",
-    "Critical Area": "Kritischer Bereich"
+	"Critical Area": "Kritischer Bereich",
+	"Settings_Updated": "Einstellungen aktualisiert",
+	"Settings_Require_Relogin": "Einige Einstellungen werden erst nach einer erneuten Anmeldung aktiv.",
+	"Log_In_Again": "Erneut anmelden",
+	"Settings_May_Require_Relogin": "Einige Einstellungen werden möglicherweise erst nach einer erneuten Anmeldung aktiv.",
+	"Notifications": "Benachrichtigungen",
+	"Study_Participation": "Studienteilnahme",
+	"Beta_Feature_Study_Participation": "An der Studie zu Beta-Funktionen (Gamification) teilnehmen",
+	"Action_Not_Possible": "Aktion nicht möglich",
+	"Cannot_Disable_While_Participating": "Diese Einstellung kann während der Teilnahme an einer Studie nicht deaktiviert werden.",
+	"Empty_Value": "Leer"
 }

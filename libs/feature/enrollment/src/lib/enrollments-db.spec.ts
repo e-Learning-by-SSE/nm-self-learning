@@ -1,8 +1,10 @@
 import { database } from "@self-learning/database/server";
-import { enrollUser } from "./enrollments-db";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
+import { enrollUser, ensureEnrolledUser } from "./enrollments-db";
 import { ApiError } from "@self-learning/util/http";
 
 jest.mock("@self-learning/database/server", () => ({
+	Prisma: jest.requireActual("@self-learning/database/server").Prisma,
 	database: {
 		course: {
 			findUniqueOrThrow: jest.fn(),
@@ -12,7 +14,8 @@ jest.mock("@self-learning/database/server", () => ({
 			findUnique: jest.fn()
 		},
 		enrollment: {
-			create: jest.fn()
+			create: jest.fn(),
+			findUnique: jest.fn()
 		},
 		features: {
 			findUnique: jest.fn()
@@ -27,6 +30,80 @@ jest.mock("@self-learning/database/server", () => ({
 	learningStatistics: true
 });
 
+describe("ensureEnrolledUser", () => {
+	const courseId = "course-id";
+	const username = "test-user";
+
+	beforeEach(() => {
+		jest.clearAllMocks();
+	});
+
+	it("creates an enrollment and logs the event when the user is not enrolled", async () => {
+		// Setup
+		(database.course.findUnique as jest.Mock).mockResolvedValue({ courseId });
+		(database.enrollment.findUnique as jest.Mock).mockResolvedValue(null);
+		const enrollment = {
+			createdAt: new Date(),
+			status: "ACTIVE",
+			course: { title: "Test Course", slug: "test-course", courseId },
+			username
+		};
+		(database.enrollment.create as jest.Mock).mockResolvedValue(enrollment);
+
+		// Exercise
+		await expect(ensureEnrolledUser({ courseId, username })).resolves.toEqual(enrollment);
+
+		// Verify
+		expect(database.enrollment.create).toHaveBeenCalledTimes(1);
+		expect(database.eventLog.create).toHaveBeenCalledTimes(1);
+	});
+
+	it("returns an existing enrollment without creating another or logging an event", async () => {
+		// Setup
+		(database.course.findUnique as jest.Mock).mockResolvedValue({ courseId });
+		const enrollment = {
+			createdAt: new Date(),
+			status: "ACTIVE",
+			course: { title: "Test Course", slug: "test-course", courseId },
+			username
+		};
+		(database.enrollment.findUnique as jest.Mock).mockResolvedValue(enrollment);
+
+		// Exercise
+		await expect(ensureEnrolledUser({ courseId, username })).resolves.toEqual(enrollment);
+
+		// Verify
+		expect(database.enrollment.create).not.toHaveBeenCalled();
+		expect(database.eventLog.create).not.toHaveBeenCalled();
+	});
+
+	it("returns the enrollment created by a concurrent request", async () => {
+		// Setup
+		(database.course.findUnique as jest.Mock).mockResolvedValue({ courseId });
+		const enrollment = {
+			createdAt: new Date(),
+			status: "ACTIVE",
+			course: { title: "Test Course", slug: "test-course", courseId },
+			username
+		};
+		(database.enrollment.findUnique as jest.Mock)
+			.mockResolvedValueOnce(null)
+			.mockResolvedValueOnce(enrollment);
+		(database.enrollment.create as jest.Mock).mockRejectedValue(
+			new PrismaClientKnownRequestError("Unique constraint failed", {
+				code: "P2002",
+				clientVersion: "7.10.1"
+			})
+		);
+
+		// Exercise
+		await expect(ensureEnrolledUser({ courseId, username })).resolves.toEqual(enrollment);
+
+		// Verify
+		expect(database.eventLog.create).not.toHaveBeenCalled();
+	});
+});
+
 describe("enrollUser", () => {
 	const courseId = "course-id";
 	const eventLogMock = database.eventLog.create as jest.Mock;
@@ -37,6 +114,7 @@ describe("enrollUser", () => {
 	});
 
 	it("should enroll a user and create a user event", async () => {
+		// Setup
 		(database.course.findUnique as jest.Mock).mockResolvedValue({
 			courseId,
 			enrollments: []
@@ -54,8 +132,10 @@ describe("enrollUser", () => {
 		};
 
 		(database.enrollment.create as jest.Mock).mockResolvedValue(mockEnrollment);
+		// Exercise
 		const result = await enrollUser({ courseId, username });
 
+		// Verify
 		expect(result).toEqual(mockEnrollment);
 		expect(eventLogMock).toHaveBeenCalledWith({
 			data: {
@@ -68,16 +148,19 @@ describe("enrollUser", () => {
 	});
 
 	it("should throw an error if the user is already enrolled", async () => {
+		// Setup
 		const createdAt = new Date();
 		(database.course.findUnique as jest.Mock).mockResolvedValue({
 			courseId,
 			enrollments: [{ createdAt }]
 		});
 
+		// Exercise
 		try {
 			await enrollUser({ courseId, username });
 			fail("Expected function to throw an error");
 		} catch (error) {
+			// Verify
 			expect(error).toBeInstanceOf(ApiError);
 		}
 
@@ -85,12 +168,15 @@ describe("enrollUser", () => {
 	});
 
 	it("should throw an ApiError if the course is not found", async () => {
+		// Setup
 		(database.course.findUnique as jest.Mock).mockResolvedValue(null);
 
+		// Exercise
 		try {
 			await enrollUser({ courseId, username });
 			fail("Expected function to throw an error");
 		} catch (error) {
+			// Verify
 			expect(error).toBeInstanceOf(ApiError);
 		}
 

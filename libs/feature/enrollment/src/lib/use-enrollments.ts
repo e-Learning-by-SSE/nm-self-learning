@@ -24,3 +24,13 @@ export function useEnrollmentMutations() {
 
 	return { enroll, disenroll };
 }
+
+/** Ensures enrollment before starting a course and refreshes the learning plan. */
+export function useEnsureCourseEnrollment() {
+	const utils = trpc.useUtils();
+	const { mutateAsync: ensureEnrolled, isPending } = trpc.enrollment.ensureEnrolled.useMutation({
+		onSuccess: () => utils.enrollment.getEnrollments.invalidate()
+	});
+
+	return { ensureEnrolled, isEnrolling: isPending };
+}

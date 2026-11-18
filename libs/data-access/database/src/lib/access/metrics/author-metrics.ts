@@ -7,8 +7,19 @@ import { database } from "../../prisma";
  * Average the share of current course lessons completed by enrolled learners
  * who have completed at least one lesson. Authors of that course are excluded.
  */
-export async function getAuthorMetric_AverageCourseCompletionRate(userId: string) {
-	const recentEnrollmentStart = subMonths(new Date(), 6);
+export async function getAuthorMetric_AverageCourseCompletionRate(
+	userId: string,
+	period?: { startDate: string; endDate: string } | null
+) {
+	const now = new Date();
+	const periodStart = period
+		? fromZonedTime(`${period.startDate}T00:00:00`, "Europe/Berlin")
+		: subMonths(now, 6);
+	const nextDay = period ? new Date(`${period.endDate}T00:00:00Z`) : null;
+	if (nextDay) nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+	const periodEnd = nextDay
+		? fromZonedTime(`${nextDay.toISOString().slice(0, 10)}T00:00:00`, "Europe/Berlin")
+		: new Date(now.getTime() + 1);
 	// Fetch author's courses
 	const authorsCourses = await database.author.findFirst({
 		where: { user: { id: userId } },
@@ -22,18 +33,38 @@ export async function getAuthorMetric_AverageCourseCompletionRate(userId: string
 					authors: { select: { username: true } },
 					enrollments: {
 						select: { username: true, status: true, completedAt: true, createdAt: true }
-					},
-					completions: {
-						select: { username: true, lessonId: true },
-						distinct: ["username", "lessonId"]
 					}
 				}
 			}
 		}
 	});
 	if (!authorsCourses) return [];
+	const courseIds = authorsCourses.courses.map(course => course.courseId);
+	const [completions, recentCompletions] = await Promise.all([
+		database.completedLesson.groupBy({
+			by: ["courseId", "username", "lessonId"],
+			where: { courseId: { in: courseIds } }
+		}),
+		database.completedLesson.groupBy({
+			by: ["courseId", "username", "lessonId"],
+			where: { courseId: { in: courseIds }, createdAt: { gte: periodStart, lt: periodEnd } }
+		})
+	]);
+	const byCourse = (rows: typeof completions) => {
+		const result = new Map<string, typeof completions>();
+		for (const row of rows) {
+			if (!row.courseId) continue;
+			const courseRows = result.get(row.courseId) ?? [];
+			courseRows.push(row);
+			result.set(row.courseId, courseRows);
+		}
+		return result;
+	};
+	const completionsByCourse = byCourse(completions);
+	const recentCompletionsByCourse = byCourse(recentCompletions);
 
 	return authorsCourses.courses.map(course => {
+		const courseCompletions = completionsByCourse.get(course.courseId) ?? [];
 		// Fetch lessons of course
 		const parsedContent = courseContentSchema.safeParse(course.content);
 		const lessonIds = new Set(
@@ -43,7 +74,7 @@ export async function getAuthorMetric_AverageCourseCompletionRate(userId: string
 		// Course authors are excluded from enrollment counts and completion rates.
 		const courseAuthorUsernames = new Set(course.authors.map(author => author.username));
 		const learnersWithCompletion = new Set(
-			course.completions
+			courseCompletions
 				.filter(completion => lessonIds.has(completion.lessonId))
 				.map(completion => completion.username)
 		);
@@ -51,8 +82,23 @@ export async function getAuthorMetric_AverageCourseCompletionRate(userId: string
 			enrollment => !courseAuthorUsernames.has(enrollment.username)
 		);
 		const recentEnrollments = eligibleEnrollments.filter(
-			enrollment => enrollment.createdAt >= recentEnrollmentStart
+			enrollment => enrollment.createdAt >= periodStart && enrollment.createdAt < periodEnd
 		);
+
+		const eligibleUsernames = new Set(
+			eligibleEnrollments.map(enrollment => enrollment.username)
+		);
+		const participation = new Set<string>();
+		const recentParticipation = new Set<string>();
+		for (const completion of courseCompletions) {
+			if (!eligibleUsernames.has(completion.username) || !lessonIds.has(completion.lessonId))
+				continue;
+			participation.add(completion.username);
+		}
+		for (const completion of recentCompletionsByCourse.get(course.courseId) ?? []) {
+			if (eligibleUsernames.has(completion.username) && lessonIds.has(completion.lessonId))
+				recentParticipation.add(completion.username);
+		}
 
 		const completionRate = (enrollments: typeof eligibleEnrollments) => {
 			// Only learners with progress in the current course content contribute to the rate.
@@ -60,10 +106,21 @@ export async function getAuthorMetric_AverageCourseCompletionRate(userId: string
 				learnersWithCompletion.has(enrollment.username)
 			);
 			const enrolledUsernames = new Set(withProgress.map(enrollment => enrollment.username));
-			const completedCount = course.completions.filter(
-				completion =>
-					enrolledUsernames.has(completion.username) && lessonIds.has(completion.lessonId)
-			).length;
+			const completedByUser = new Map<string, Set<string>>();
+			for (const completion of courseCompletions) {
+				if (
+					!enrolledUsernames.has(completion.username) ||
+					!lessonIds.has(completion.lessonId)
+				)
+					continue;
+				const lessons = completedByUser.get(completion.username) ?? new Set<string>();
+				lessons.add(completion.lessonId);
+				completedByUser.set(completion.username, lessons);
+			}
+			const completedCount = [...completedByUser.values()].reduce(
+				(sum, lessons) => sum + lessons.size,
+				0
+			);
 			const possible = lessonIds.size * withProgress.length;
 			return possible ? Math.round((completedCount / possible) * 10000) / 100 : 0;
 		};
@@ -74,12 +131,14 @@ export async function getAuthorMetric_AverageCourseCompletionRate(userId: string
 			courseId: course.courseId,
 			courseTitle: course.title,
 			totalEnrollments: eligibleEnrollments.length,
-			enrollmentsLastSixMonths: recentEnrollments.length,
+			enrollmentsSemester: recentEnrollments.length,
+			totalParticipation: participation.size,
+			participationSemester: recentParticipation.size,
 			completedEnrollments: eligibleEnrollments.filter(
 				e => e.status === "COMPLETED" || e.completedAt !== null
 			).length,
 			averageCompletionRate: completionRate(eligibleEnrollments),
-			averageCompletionRateLastSixMonths: completionRate(recentEnrollments)
+			averageCompletionRateSemester: completionRate(recentEnrollments)
 		};
 	});
 }
@@ -254,6 +313,19 @@ export async function getAuthorCourseLessonActivity(
 			avg: counts.length ? Math.round((summary.sum / counts.length) * 10) / 10 : null
 		};
 	};
+	const countParticipation = (range?: { start: number; end: number }) =>
+		new Set(
+			course.completions
+				.filter(completion => {
+					const timestamp = completion.createdAt.getTime();
+					return (
+						enrolledUsers.has(completion.username) &&
+						currentLessons.has(completion.lessonId) &&
+						(!range || (timestamp >= range.start && timestamp < range.end))
+					);
+				})
+				.map(completion => completion.username)
+		).size;
 	const analytics = {
 		period: {
 			enrollments: eligibleEnrollments.filter(
@@ -261,6 +333,7 @@ export async function getAuthorCourseLessonActivity(
 					enrollment.createdAt.getTime() >= periodStartTime &&
 					enrollment.createdAt.getTime() < periodEndTime
 			).length,
+			participation: countParticipation({ start: periodStartTime, end: periodEndTime }),
 			completedLessons: summarizeCompletedLessons({
 				start: periodStartTime,
 				end: periodEndTime
@@ -268,6 +341,7 @@ export async function getAuthorCourseLessonActivity(
 		},
 		total: {
 			enrollments: eligibleEnrollments.length,
+			participation: countParticipation(),
 			completedLessons: summarizeCompletedLessons()
 		}
 	};

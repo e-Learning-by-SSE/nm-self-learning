@@ -10,6 +10,7 @@ import {
 	I18N_NAMESPACE as NS_SETTINGS,
 	PermissionsSettingsForm
 } from "@self-learning/profile";
+import { I18N_NAMESPACE as NS_TEACHING } from "@self-learning/teaching";
 import { getExperimentStatus, getUserWithSettings } from "@self-learning/profile/server";
 import { ResolvedValue } from "@self-learning/types";
 import { showToast, Toggle } from "@self-learning/ui/common";
@@ -28,7 +29,7 @@ interface PageProps {
 }
 
 export const getServerSideProps = withTranslations(
-	Array.from(new Set(["common", "pages-settings", ...NS_SETTINGS])),
+	Array.from(new Set(["common", "pages-settings", ...NS_SETTINGS, ...NS_TEACHING])),
 	withAuth<PageProps>(async (_context, user) => {
 		const settings = await getUserWithSettings(user.name);
 		const experimentStatus = await getExperimentStatus(user.name);
@@ -109,7 +110,7 @@ export default function SettingsPage(props: PageProps) {
 			showToast({
 				type: "success",
 				title: t_common("Information Updated"),
-				subtitle: update.defaultGroup?.name ?? "Empty"
+				subtitle: update.defaultGroup?.name ?? t("Empty_Value")
 			});
 			router.replace(router.asPath);
 		} catch (error) {
@@ -134,9 +135,8 @@ export default function SettingsPage(props: PageProps) {
 			) {
 				showToast({
 					type: "error",
-					title: "Aktion nicht möglich",
-					subtitle:
-						"Diese Einstellung kann nicht deaktiviert während du an einer Studie teilnimmst."
+					title: t("Action_Not_Possible"),
+					subtitle: t("Cannot_Disable_While_Participating")
 				});
 				return;
 			}
@@ -199,24 +199,20 @@ export default function SettingsPage(props: PageProps) {
 					<div className="flex items-center justify-between">
 						<div className="flex-1">
 							<p className="text-blue-800 text-sm font-medium">
-								Einstellungen aktualisiert
+								{t("Settings_Updated")}
 							</p>
-							<p className="text-blue-600 text-sm">
-								Einige Einstellungen werden erst nach einem erneuten Login aktiv.
-							</p>
+							<p className="text-blue-600 text-sm">{t("Settings_Require_Relogin")}</p>
 						</div>
 						<button
 							onClick={() => loginRedirect("/user-settings")}
 							className="ml-4 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
 						>
-							Neu einloggen
+							{t("Log_In_Again")}
 						</button>
 					</div>
 				</div>
 			) : (
-				<p className="text-c-text text-sm mb-4">
-					Einige Einstellungen werden möglicherweise erst nach einem erneuten Login aktiv.
-				</p>
+				<p className="text-c-text text-sm mb-4">{t("Settings_May_Require_Relogin")}</p>
 			)}
 
 			<SettingSection title={t_common("Profile")}>
@@ -240,7 +236,7 @@ export default function SettingsPage(props: PageProps) {
 					/>
 				)}
 			</SettingSection>
-			<SettingSection title="Benachrichtigungen">
+			<SettingSection title={t("Notifications")}>
 				{props.experimentStatus?.experimentalFeatures && (
 					<NotificationSettingsForm
 						notificationSettings={settings.notificationSettings}
@@ -248,7 +244,7 @@ export default function SettingsPage(props: PageProps) {
 					/>
 				)}
 			</SettingSection>
-			<SettingSection title="Studienteilnahme">
+			<SettingSection title={t("Study_Participation")}>
 				{props.experimentStatus?.isParticipating && (
 					<ExperimentShortInfo {...props.experimentStatus} />
 				)}
@@ -262,7 +258,7 @@ export default function SettingsPage(props: PageProps) {
 					<Toggle
 						value={props.settings.featureFlags.experimental}
 						onChange={newValue => onFeatureChange({ experimental: newValue })}
-						label="Experimentteilnahme mit Beta-Features (Gamification)"
+						label={t("Beta_Feature_Study_Participation")}
 						disabled={isExperimentActive()} // avoid interference with ongoing experiments
 					/>
 				</SettingSection>

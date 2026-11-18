@@ -7,7 +7,7 @@ import {
 } from "@self-learning/teaching";
 import { OnDialogCloseFn, showToast } from "@self-learning/ui/common";
 import { useRouter } from "next/router";
-import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { useTranslation } from "next-i18next";
 import { ResourceAccessFormSchema } from "@self-learning/types";
 import { GroupRole } from "@self-learning/database";
 import { MemberGuard } from "@self-learning/ui/layouts";
@@ -27,7 +27,6 @@ export const getServerSideProps = withTranslations(
 		}
 
 		const groupId = parseInt(ctx.params?.groupId as string);
-		const { locale } = ctx;
 
 		// verify if can edit this group
 		if (!(await hasEffectiveGroupRole(user, groupId, GroupRole.MEMBER))) {
@@ -53,14 +52,14 @@ export const getServerSideProps = withTranslations(
 		return {
 			notFound: !group,
 			props: {
-				group: { ...group, permissions, slug: group.slug ?? "" },
-				...(await serverSideTranslations(locale ?? "en", ["common"]))
+				group: { ...group, permissions, slug: group.slug ?? "" }
 			}
 		};
 	})
 );
 
 export default function EditGroupPage({ group }: EditGroupProps) {
+	const { t } = useTranslation("feature-teaching");
 	const { mutateAsync: updateGroup } = trpc.permission.updateGroup.useMutation();
 	const router = useRouter();
 
@@ -69,13 +68,13 @@ export default function EditGroupPage({ group }: EditGroupProps) {
 			try {
 				if (updatedGroup) {
 					const { name } = await updateGroup(updatedGroup);
-					showToast({ type: "success", title: "Änderung gespeichert!", subtitle: name });
+					showToast({ type: "success", title: t("Group_Changes_Saved"), subtitle: name });
 				}
 				router.replace(router.asPath, undefined, { scroll: false });
 			} catch (error) {
 				showToast({
 					type: "error",
-					title: "Fehler",
+					title: t("Group_Save_Error_Title"),
 					subtitle: JSON.stringify(error, null, 2)
 				});
 				throw error;

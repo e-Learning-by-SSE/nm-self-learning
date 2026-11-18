@@ -6,7 +6,7 @@ import { useCallback } from "react";
 
 type MarkAsCompletedInput = inferRouterInputs<AppRouter>["completion"]["markAsCompleted"];
 
-export function useMarkAsCompleted<T extends Record<string, unknown>>(onSettled?: () => void) {
+export function useMarkAsCompleted(onSuccess?: () => void) {
 	const session = useSession();
 
 	const { mutate } = trpc.completion.markAsCompleted.useMutation({
@@ -34,14 +34,11 @@ export function useMarkAsCompleted<T extends Record<string, unknown>>(onSettled?
 					} else {
 						console.error("Mutation error:", error);
 					}
-
-					if (onSettled) {
-						onSettled();
-					}
-				}
+				},
+				onSuccess
 			});
 		},
-		[session.data?.user?.name, mutate, onSettled]
+		[session.data?.user?.name, mutate, onSuccess]
 	);
 
 	return markAsCompleted;

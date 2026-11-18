@@ -310,6 +310,23 @@ function AnalyticsDashboard({
 														)}
 													</td>
 												</tr>
+												<tr className="border-t border-neutral-100">
+													<th className="py-2 pr-3 text-left font-medium">
+														{t("Analysis_Participation")}
+													</th>
+													<td className="px-2 py-2">
+														{formatCount(
+															lessonActivity?.analytics.period
+																.participation
+														)}
+													</td>
+													<td className="px-2 py-2">
+														{formatCount(
+															lessonActivity?.analytics.total
+																.participation
+														)}
+													</td>
+												</tr>
 												{completedLessonStats.map(row => (
 													<tr
 														key={row.key}
@@ -433,8 +450,10 @@ export function CreatorAnalytics({ courseId }: { courseId?: string }) {
 				label: row.courseTitle,
 				rate: row.averageCompletionRate,
 				enrollments: row.totalEnrollments,
-				recentEnrollments: row.enrollmentsLastSixMonths,
-				recentRate: row.averageCompletionRateLastSixMonths
+				recentEnrollments: row.enrollmentsSemester,
+				participation: row.totalParticipation,
+				recentParticipation: row.participationSemester,
+				recentRate: row.averageCompletionRateSemester
 			}))
 			.sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
 	}

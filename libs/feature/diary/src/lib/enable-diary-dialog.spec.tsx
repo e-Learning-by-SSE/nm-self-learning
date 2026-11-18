@@ -8,11 +8,11 @@ describe("EnableLearningDiaryDialog", () => {
 		const mockOnSubmit = jest.fn();
 		const mockOnClose = jest.fn();
 
-		const { getByText } = render(
+		const { getByTestId } = render(
 			<EnableLearningDiaryDialog onClose={mockOnClose} onSubmit={mockOnSubmit} />
 		);
 
-		const activateButton = getByText("Speichern & Aktivieren");
+		const activateButton = getByTestId("save-and-enable");
 		await userEvent.click(activateButton);
 
 		await waitFor(() => {
@@ -27,11 +27,11 @@ describe("EnableLearningDiaryDialog", () => {
 		const mockOnClose = jest.fn();
 		const mockOnSubmit = jest.fn();
 
-		const { getByText } = render(
+		const { getByTestId } = render(
 			<EnableLearningDiaryDialog onClose={mockOnClose} onSubmit={mockOnSubmit} />
 		);
 
-		const activateButton = getByText("Speichern & Aktivieren");
+		const activateButton = getByTestId("save-and-enable");
 		await userEvent.click(activateButton);
 		await waitFor(() => {
 			expect(mockOnSubmit).toHaveBeenCalled();

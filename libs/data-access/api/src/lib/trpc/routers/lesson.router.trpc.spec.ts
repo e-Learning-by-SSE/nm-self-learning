@@ -485,7 +485,7 @@ describe("tRPC API of Lesson Router", () => {
 		});
 
 		it("should delete lesson if user can delete this lesson", async () => {
-			const { caller, ctx } = prepare({
+			const { caller } = prepare({
 				isAuthor: true,
 				name: "author1"
 			});
@@ -514,7 +514,7 @@ describe("tRPC API of Lesson Router", () => {
 		});
 
 		it("should throw error if lesson does not exist", async () => {
-			const { caller, ctx } = prepare({
+			const { caller } = prepare({
 				isAuthor: true,
 				name: "author1"
 			});

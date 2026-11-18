@@ -34,11 +34,13 @@ import { inferProcedureOutput } from "@trpc/server";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { useTranslation } from "next-i18next";
 
 type FindGroupsData = inferProcedureOutput<AppRouter["permission"]["findGroups"]>;
 
 export default function GroupsPage() {
 	const router = useRouter();
+	const { t } = useTranslation("pages-groups");
 
 	const [myGroupNameFilter, setMyGroupNameFilter] = useState("");
 	const [groupNameFilter, setGroupNameFilter] = useState("");
@@ -101,15 +103,15 @@ export default function GroupsPage() {
 				await mergeGroups(res);
 				showToast({
 					type: "success",
-					title: "Gruppen zusammengeführt",
-					subtitle: `Die ausgewählten Gruppen (${result.groups.length}) wurden erfolgreich zusammengeführt.`
+					title: t("Merge_Success_Title"),
+					subtitle: t("Merge_Success_Message", { count: result.groups.length })
 				});
 			} catch (error) {
 				if (error instanceof TRPCClientError) {
 					showToast({
 						type: "error",
-						title: "Fehler",
-						subtitle: "Die Gruppen konnten nicht zusammengeführt werden."
+						title: t("Merge_Error_Title"),
+						subtitle: t("Merge_Error_Message")
 					});
 				}
 			}
@@ -119,18 +121,18 @@ export default function GroupsPage() {
 	return (
 		<CenteredSection className="bg-gray-50">
 			<div className="mb-16 flex items-center justify-between gap-4">
-				<h1 className="text-5xl">Meine Gruppen</h1>
+				<h1 className="text-5xl">{t("My_Groups_Title")}</h1>
 
 				<div className="flex gap-2">
 					{canCreateGroup && (
 						<Link href="/teaching/groups/create" className="btn-primary flex">
 							<PlusIcon className="h-5" />
-							<span>Gruppe erstellen</span>
+							<span>{t("Create_Group")}</span>
 						</Link>
 					)}
 
 					<IconTextButton
-						text="Gruppen zusammenführen"
+						text={t("Merge_Groups")}
 						icon={<ArrowsPointingInIcon className="icon w-5" />}
 						onClick={() => setMergeDialogOpen(true)}
 						className="btn-primary"
@@ -147,7 +149,7 @@ export default function GroupsPage() {
 			)}
 
 			<SearchField
-				placeholder="Suche nach Gruppe"
+				placeholder={t("Search_Groups_Placeholder")}
 				onChange={e => setMyGroupNameFilter(e.target.value)}
 			/>
 
@@ -164,27 +166,27 @@ export default function GroupsPage() {
 							<VoidSvg />
 						</div>
 						<div>
-							<p className="text-light">Sie sind Mitglied keiner Gruppe.</p>
-							<u>Become a member</u>
+							<p className="text-light">{t("No_Group_Membership")}</p>
+							<u>{t("Become_A_Member")}</u>
 						</div>
 					</div>
 				) : (
-					<p className="text-light mb-8">Gruppen nicht gefunden.</p>
+					<p className="text-light mb-8">{t("No_Groups_Found")}</p>
 				))}
 
 			<div className="mb-16 flex items-center justify-between gap-4">
-				<h1 className="text-5xl">Alle Gruppen</h1>
+				<h1 className="text-5xl">{t("All_Groups_Title")}</h1>
 
 				{canCreateGroup && (
 					<Link href="/teaching/groups/create" className="btn-primary flex w-fit">
 						<PlusIcon className="h-5" />
-						<span>Gruppe erstellen</span>
+						<span>{t("Create_Group")}</span>
 					</Link>
 				)}
 			</div>
 
 			<SearchField
-				placeholder="Suche nach Gruppe"
+				placeholder={t("Search_Groups_Placeholder")}
 				onChange={e => setGroupNameFilter(e.target.value)}
 			/>
 
@@ -220,13 +222,14 @@ function GroupsPaginatedView({
 	data?: FindGroupsData;
 	setPage: (page: number) => void;
 }) {
+	const { t } = useTranslation("pages-groups");
 	if (!data) {
 		return (
 			<div className="mx-auto flex items-center gap-8">
 				<div className="h-32 w-32">
 					<VoidSvg />
 				</div>
-				<p className="text-light">Gruppen nicht gefunden.</p>
+				<p className="text-light">{t("No_Groups_Found")}</p>
 			</div>
 		);
 	}
@@ -236,8 +239,8 @@ function GroupsPaginatedView({
 			<Table
 				head={
 					<>
-						<TableHeaderColumn>Name</TableHeaderColumn>
-						<TableHeaderColumn>Anzahl Mitglieder</TableHeaderColumn>
+						<TableHeaderColumn>{t("Group_Name_Column")}</TableHeaderColumn>
+						<TableHeaderColumn>{t("Member_Count_Column")}</TableHeaderColumn>
 						<TableHeaderColumn></TableHeaderColumn>
 					</>
 				}
@@ -267,7 +270,7 @@ function GroupsPaginatedView({
 									<IconOnlyButton
 										icon={<PencilIcon className="h-5 w-5" />}
 										className="btn-stroked"
-										title={"Gruppe bearbeiten"}
+										title={t("Edit_Group")}
 									/>
 								</Link>
 							</MemberGuard>
@@ -283,5 +286,5 @@ function GroupsPaginatedView({
 }
 
 export const getServerSideProps = withTranslations(
-	Array.from(new Set(["common", ...NS_UI_COMMON, ...NS_TEACHING]))
+	Array.from(new Set(["common", "pages-groups", ...NS_UI_COMMON, ...NS_TEACHING]))
 );

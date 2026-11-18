@@ -66,10 +66,12 @@ jest.mock("@self-learning/api-client", () => ({
 							analytics: {
 								period: {
 									enrollments: 2,
+									participation: 1,
 									completedLessons: { min: 1, max: 2, avg: 1.5 }
 								},
 								total: {
 									enrollments: 3,
+									participation: 2,
 									completedLessons: { min: 1, max: 3, avg: 2 }
 								}
 							},
@@ -113,17 +115,21 @@ jest.mock("@self-learning/api-client", () => ({
 							courseId: "course-2",
 							courseTitle: "Course Two",
 							averageCompletionRate: 80,
-							averageCompletionRateLastSixMonths: 60,
-							enrollmentsLastSixMonths: 2,
-							totalEnrollments: 3
+							averageCompletionRateSemester: 60,
+							enrollmentsSemester: 2,
+							totalEnrollments: 3,
+							totalParticipation: 2,
+							participationSemester: 1
 						},
 						{
 							courseId: "course-1",
 							courseTitle: "Course One",
 							averageCompletionRate: 50,
-							averageCompletionRateLastSixMonths: 25,
-							enrollmentsLastSixMonths: 1,
-							totalEnrollments: 2
+							averageCompletionRateSemester: 25,
+							enrollmentsSemester: 1,
+							totalEnrollments: 2,
+							totalParticipation: 1,
+							participationSemester: 1
 						}
 					],
 					isLoading: false
@@ -155,13 +161,13 @@ describe("creator analytics navigation", () => {
 		).toBeTruthy();
 		expect(document.querySelector("#OverviewCard")).toBeNull();
 		const rows = within(screen.getByRole("table")).getAllByRole("row");
-		expect(rows).toHaveLength(3);
-		expect(within(rows[1]).getByRole("link", { name: "Course One" }).getAttribute("href")).toBe(
+		expect(rows).toHaveLength(4);
+		expect(within(rows[2]).getByRole("link", { name: "Course One" }).getAttribute("href")).toBe(
 			"/learning-analytics/courses/course-1"
 		);
-		expect(rows[1].textContent).toContain("25.0%");
-		expect(rows[1].textContent).toContain("50.0%");
-		expect(within(rows[2]).getByRole("link", { name: "Course Two" })).toBeTruthy();
+		expect(rows[2].textContent).toContain("25.0%");
+		expect(rows[2].textContent).toContain("50.0%");
+		expect(within(rows[3]).getByRole("link", { name: "Course Two" })).toBeTruthy();
 		const canvas = document.querySelector("canvas") as HTMLCanvasElement;
 		expect(Array.from(canvas.querySelectorAll("a"), link => link.textContent)).toEqual([
 			"Course One",
@@ -288,12 +294,12 @@ describe("creator analytics navigation", () => {
 	it("shows the same course metrics and completion note in the author dashboard", () => {
 		render(<TeacherView />);
 		const rows = within(screen.getByRole("table")).getAllByRole("row");
-		expect(rows).toHaveLength(3);
-		expect(within(rows[1]).getByRole("link", { name: "Course One" }).getAttribute("href")).toBe(
+		expect(rows).toHaveLength(4);
+		expect(within(rows[2]).getByRole("link", { name: "Course One" }).getAttribute("href")).toBe(
 			"/learning-analytics/courses/course-1"
 		);
-		expect(rows[1].textContent).toContain("25.0%");
-		expect(rows[1].textContent).toContain("50.0%");
+		expect(rows[2].textContent).toContain("25.0%");
+		expect(rows[2].textContent).toContain("50.0%");
 		expect(screen.getByText("Courses_Table_Completion_Note")).toBeTruthy();
 	});
 });
