@@ -8,8 +8,8 @@ declare global {
 			SITE_BASE_URL: string;
 			SITE_IS_DEMO_INSTANCE: string | undefined;
 			SITE_BASE_PATH: string | undefined;
-			NEXT_PUBLIC_ONLINE_HELP_BASE_URL: string | undefined;
-			NEXT_PUBLIC_ONLINE_HELP_LANGUAGES: string | undefined;
+			SITE_ONLINE_HELP_BASE_URL: string | undefined;
+			SITE_ONLINE_HELP_LANGUAGES: string | undefined;
 			NEXT_TRAILING_SLASH: boolean | undefined;
 			NEXT_PUBLIC_MATOMO_URL: string | undefined;
 			NEXT_PUBLIC_MATOMO_SITE_ID: string | undefined;

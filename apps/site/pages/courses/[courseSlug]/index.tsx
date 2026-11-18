@@ -144,6 +144,7 @@ type CourseProps = {
 	content: ToC.Content;
 	learningGoals: string[];
 	markdownDescription: CompiledMarkdown | null;
+	onlineHelp: { baseUrl: string | null; languages: string | null };
 };
 
 export const getServerSideProps = withTranslations(
@@ -192,7 +193,11 @@ export const getServerSideProps = withTranslations(
 				summary,
 				content,
 				learningGoals,
-				markdownDescription
+				markdownDescription,
+				onlineHelp: {
+					baseUrl: process.env.SITE_ONLINE_HELP_BASE_URL ?? null,
+					languages: process.env.SITE_ONLINE_HELP_LANGUAGES ?? null
+				}
 			}
 		};
 	})
@@ -205,7 +210,8 @@ export default function Course({
 	content,
 	learningGoals,
 	markdownDescription,
-	isGenerated
+	isGenerated,
+	onlineHelp
 }: CourseProps) {
 	const tutorState = useAiTutor();
 
@@ -218,6 +224,7 @@ export default function Course({
 					summary={summary}
 					isStale={isStale}
 					isGenerated={isGenerated}
+					onlineHelp={onlineHelp}
 				/>
 			</CenteredSection>
 
@@ -267,13 +274,15 @@ function CourseHeader({
 	isStale,
 	course,
 	summary,
-	content
+	content,
+	onlineHelp
 }: {
 	isGenerated: boolean;
 	isStale: boolean;
 	course: CourseProps["course"];
 	summary: CourseProps["summary"];
 	content: CourseProps["content"];
+	onlineHelp: CourseProps["onlineHelp"];
 }) {
 	const { t } = useTranslation("pages-course");
 	const { withAuth, isAuthenticated } = useAuthentication();
@@ -342,8 +351,11 @@ function CourseHeader({
 				<div className="flex flex-col justify-between gap-12">
 					<div className="flex min-w-[50%] flex-col-reverse gap-12 md:flex-col">
 						<div className="flex items-center gap-2">
-							<h1 className="mb-12 text-4xl md:text-6xl">{course.title}</h1>
-							<OnlineHelpLink relativePath="course-page.html#course-overview" />
+							<h1 className="text-4xl md:text-6xl">{course.title}</h1>
+							<OnlineHelpLink
+								{...onlineHelp}
+								relativePath="course-page.html#course-overview"
+							/>
 						</div>
 						{course.subtitle && (
 							<div className="text-lg tracking-tight text-light">

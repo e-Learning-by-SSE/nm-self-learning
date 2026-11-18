@@ -3,17 +3,12 @@ import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import { Tooltip } from "../tooltip/tooltips";
 import { useTranslation } from "next-i18next";
 
-const SUPPORTED_LOCALES: string[] = (process.env["NEXT_PUBLIC_ONLINE_HELP_LANGUAGES"] || "en,de")
-	.split(",")
-	.map(l => l.trim().toLowerCase())
-	.filter(Boolean);
-
-function normalizeLocale(locale?: string | null): string {
+function normalizeLocale(locale: string | undefined, supportedLocales: string[]): string {
 	if (!locale) {
-		return SUPPORTED_LOCALES[0] || "de";
+		return supportedLocales[0] || "de";
 	}
 	const normalized = locale.split("-")[0]?.toLowerCase();
-	return SUPPORTED_LOCALES.includes(normalized) ? normalized : SUPPORTED_LOCALES[0] || "de";
+	return supportedLocales.includes(normalized) ? normalized : supportedLocales[0] || "de";
 }
 
 function sanitizeBaseUrl(baseUrl: string) {
@@ -31,17 +26,30 @@ function buildHelpUrl(baseUrl: string, locale: string, relativePath: string) {
 	return `${sanitizedBase}/${locale}/${sanitizedRelative}`;
 }
 
-export type OnlineHelpLinkProps = { relativePath: string; children?: React.ReactNode };
+export type OnlineHelpLinkProps = {
+	baseUrl: string | null;
+	languages: string | null;
+	relativePath: string;
+	children?: React.ReactNode;
+};
 
-export function OnlineHelpLink({ relativePath, children }: OnlineHelpLinkProps) {
-	const baseUrl = process.env["NEXT_PUBLIC_ONLINE_HELP_BASE_URL"];
+export function OnlineHelpLink({
+	baseUrl,
+	languages,
+	relativePath,
+	children
+}: OnlineHelpLinkProps) {
 	const { t, i18n } = useTranslation("common");
 
 	if (!baseUrl || !relativePath) {
 		return null;
 	}
 
-	const locale = normalizeLocale(i18n.language);
+	const supportedLocales = (languages || "en,de")
+		.split(",")
+		.map(l => l.trim().toLowerCase())
+		.filter(Boolean);
+	const locale = normalizeLocale(i18n.language, supportedLocales);
 	const sanitizedRelativePath = sanitizeRelativePath(relativePath);
 
 	if (!sanitizedRelativePath) {
