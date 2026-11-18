@@ -28,7 +28,7 @@ async function generateSubtitlesForExistingVideos() {
 			return content.type === "video";
 		}
 		const localStorages = ["https://staging.sse.uni-hildesheim.de:9006/upload/"];
-		localStorages.push(process.env.MINIO_ENDPOINT);
+		localStorages.push(process.env.STORAGE_ENDPOINT);
 		console.log(
 			"Using the following local storages to identify video content for migration:",
 			localStorages
