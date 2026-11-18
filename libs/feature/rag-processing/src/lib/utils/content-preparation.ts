@@ -70,7 +70,7 @@ export async function prepareRagContent(
 
 							return htmlFiles.map(
 								objectName =>
-									`${process.env.NEXT_PUBLIC_MINIO_PUBLIC_URL}/${s3Config.bucketName}/${objectName}`
+									`${process.env.STORAGE_SERVER_PUBLIC_URL}/${s3Config.bucketName}/${objectName}`
 							);
 						}
 					}

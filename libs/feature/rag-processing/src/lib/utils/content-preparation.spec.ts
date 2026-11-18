@@ -471,7 +471,7 @@ describe("prepareRagContent", () => {
 
 		it("processes all html files at the specified sub folder)", async () => {
 			// Setup
-			process.env["NEXT_PUBLIC_MINIO_PUBLIC_URL"] = "https://minio.example.com";
+			process.env["STORAGE_SERVER_PUBLIC_URL"] = "https://minio.example.com";
 
 			jest.mocked(getFiles).mockResolvedValue([
 				"uploads/example/index.html",
