@@ -1,7 +1,6 @@
 "use client";
 import { NotificationsRenderer } from "@self-learning/ui/notifications";
 import { useEventLog } from "@self-learning/util/eventlog";
-import { init } from "@socialgouv/matomo-next";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -44,7 +43,6 @@ function usePageTracking(): void {
 }
 
 export function GlobalFeatures() {
-	useMatomo();
 	usePageTracking();
 	return (
 		<>
@@ -52,14 +50,4 @@ export function GlobalFeatures() {
 			<NotificationsRenderer />
 		</>
 	);
-}
-
-function useMatomo() {
-	useEffect(() => {
-		const MATOMO_URL = process.env.NEXT_PUBLIC_MATOMO_URL;
-		const MATOMO_SITE_ID = process.env.NEXT_PUBLIC_MATOMO_SITE_ID;
-		if (MATOMO_URL && MATOMO_SITE_ID) {
-			init({ url: MATOMO_URL, siteId: MATOMO_SITE_ID, excludeUrlsPatterns: [/\/api\//] });
-		}
-	}, []);
 }
