@@ -5,11 +5,6 @@ import { useEffect, useState, useRef } from "react";
 import { trpc } from "@self-learning/api-client";
 import { CourseExportType } from "@self-learning/teaching";
 
-// Optional public env variable that indicates were the storage is located
-const minioUrl = process.env["NEXT_PUBLIC_MINIO_PUBLIC_URL"];
-const storagesToInclude = ["https://staging.sse.uni-hildesheim.de:9006/upload/"];
-minioUrl && storagesToInclude.push(minioUrl);
-
 /**
  * Initiates the download of the given blob as a zip archive with the given filename.
  * @param blob The content (binary data) of the zip archive
@@ -65,6 +60,8 @@ export function ExportCourseProgressDialog({
 		if (data && !isLoading) {
 			const convert = async () => {
 				try {
+					const storagesToInclude = ["https://staging.sse.uni-hildesheim.de:9006/upload/"];
+					if (data.storageServerPublicUrl) storagesToInclude.push(data.storageServerPublicUrl);
 					const { zipArchive, incompleteExportedItems } = await exportCourseArchive(
 						data,
 						abortController.current.signal,

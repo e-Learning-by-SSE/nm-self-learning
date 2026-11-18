@@ -10,8 +10,9 @@ import nextI18NextConfig from "../next-i18next.config";
 import PlausibleProvider from "next-plausible";
 import { AppProps } from "next/app";
 import Head from "next/head";
+import Router, { useRouter } from "next/router";
 import Script from "next/script";
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, useEffect, useState } from "react";
 import superjson from "superjson";
 import { GlobalFeatures } from "../_features";
 import "./styles.css";
@@ -27,7 +28,7 @@ export default withTRPC<AppRouter>({
 						(opts.direction === "down" && opts.result instanceof Error)
 				}),
 				httpBatchLink({
-					url: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/trpc`,
+					url: `${typeof window === "undefined" ? "" : Router.basePath}/api/trpc`,
 					transformer: superjson
 				})
 			],
@@ -50,7 +51,22 @@ function CustomApp({ Component, pageProps }: AppProps) {
 			(Component as any).getLayout(Component, pageProps)
 		: null;
 
-	const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+	const { basePath } = useRouter();
+	const [plausibleDomain, setPlausibleDomain] = useState<string | null>(null);
+
+	useEffect(() => {
+		const controller = new AbortController();
+		fetch(`${basePath}/api/plausible/config`, { signal: controller.signal })
+			.then(response => {
+				if (!response.ok) throw new Error("Could not load Plausible configuration");
+				return response.json() as Promise<{ domain: string }>;
+			})
+			.then(config => setPlausibleDomain(config.domain))
+			.catch(() => {
+				if (!controller.signal.aborted) setPlausibleDomain("");
+			});
+		return () => controller.abort();
+	}, [basePath]);
 
 	return (
 		<>
@@ -61,8 +77,16 @@ function CustomApp({ Component, pageProps }: AppProps) {
 				/>
 			)}
 			<PlausibleProvider
-				domain={process.env.NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN ?? ""}
-				customDomain={process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE}
+				domain={plausibleDomain ?? ""}
+				customDomain={`${basePath}/api/plausible`}
+				enabled={
+					plausibleDomain !== null &&
+					process.env.NODE_ENV === "production"
+				}
+				scriptProps={{
+					async: true,
+					...{ "data-api": `${basePath}/api/plausible/api/event` }
+				}}
 				trackLocalhost={process.env.NODE_ENV === "development"}
 			>
 				<SessionProvider session={pageProps.session} basePath={basePath + "/api/auth"}>

@@ -54,7 +54,7 @@ async function seed(): Promise<void> {
 
 	await mathExample();
 
-	if (process.env["NEXT_PUBLIC_IS_DEMO_INSTANCE"] === "true") {
+	if (process.env["SITE_IS_DEMO_INSTANCE"] === "true") {
 		faker.seed(1);
 		await seedDemos();
 	}

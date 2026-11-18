@@ -27,9 +27,11 @@ createEffectiveConfiguration() {
 }
 
 compileOnChange() {
-    # Check if any configuration parameters have been changed
+    # The transcription URL is read at runtime and does not require a rebuild.
     createEffectiveConfiguration
-    if [ ! -f dist/.env ] || ! cmp -s tmp.env dist/.env; then
+    if [ ! -f dist/.env ] || ! cmp -s \
+        <(sed '/^TRANSCRIPTION_SERVICE_URL=/d' tmp.env) \
+        <(sed '/^TRANSCRIPTION_SERVICE_URL=/d' dist/.env); then
         echo "Environment was changed: Recompile app"
         rm -f .env dist/.env
         mv -f tmp.env .env
@@ -41,7 +43,7 @@ compileOnChange() {
     fi
 
     # Clean up
-    rm -f outside.env
+    rm -f outside.env tmp.env
 }
 
 # Wait until DB is running (only if a host was specified)
@@ -55,8 +57,7 @@ fi
 mkdir -p dist
 mkdir -p state
 
-# Re-compiles the application whenever the environment variables have been changed
-# This is required for React/NextJS applications
+# Re-compile when build-sensitive configuration changes.
 compileOnChange
 
 echo "Starting SelfLearn..."

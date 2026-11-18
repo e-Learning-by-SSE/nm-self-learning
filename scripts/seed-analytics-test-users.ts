@@ -158,9 +158,9 @@ async function createLearningSession({
 }
 
 async function main() {
-	if (process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE !== "true") {
+	if (process.env.SITE_IS_DEMO_INSTANCE !== "true") {
 		throw new Error(
-			"This fixture requires NEXT_PUBLIC_IS_DEMO_INSTANCE=true for username-only login."
+			"This fixture requires SITE_IS_DEMO_INSTANCE=true for username-only login."
 		);
 	}
 

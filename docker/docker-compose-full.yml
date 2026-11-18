@@ -2,16 +2,15 @@ version: "3"
 
 services:
     nm-self-learn-db:
-        image: postgres:14
+        image: postgres:18
         environment:
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
             POSTGRES_DB: SelfLearningDb
-            PGDATA: /var/lib/postgresql/data
         networks:
             - nm-self-learn
         volumes:
-            - ./data/postgres_data:/var/lib/postgresql/data
+            - ./data/postgres_data:/var/lib/postgresql
 
     minio:
         image: minio/minio
@@ -56,16 +55,18 @@ services:
         environment:
             - DB_HOST=nm-self-learn-db
             - DB_PORT=5432
-            - NEXT_PUBLIC_IS_DEMO_INSTANCE=false
+            - SITE_IS_DEMO_INSTANCE=false
             - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@nm-self-learn-db:5432/SelfLearningDb
             - NEXT_ASSET_PREFIX=${ASSET_PREFIX}
-            - NEXT_PUBLIC_BASE_PATH=${ASSET_PREFIX}
-            - MINIO_BUCKET_NAME=upload
-            - MINIO_ENDPOINT=minio
-            - MINIO_PORT=9010
-            - MINIO_USE_SSL=false
-            - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
-            - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+            - SITE_BASE_PATH=${ASSET_PREFIX}
+            - TRANSCRIPTION_SERVICE_URL=${TRANSCRIPTION_SERVICE_URL:-}
+            - STORAGE_SERVER_PUBLIC_URL=${STORAGE_SERVER_PUBLIC_URL:-}
+            - STORAGE_BUCKET_NAME=upload
+            - STORAGE_ENDPOINT=minio
+            - STORAGE_PORT=9010
+            - STORAGE_USE_SSL=false
+            - STORAGE_ACCESS_KEY=${STORAGE_ACCESS_KEY}
+            - STORAGE_SECRET_KEY=${STORAGE_SECRET_KEY}
             - NEXTAUTH_URL=${NEXTAUTH_REDIRECT_URL}
             - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
             - PISTON_URL=http://piston:2000

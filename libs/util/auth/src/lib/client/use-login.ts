@@ -4,34 +4,32 @@ import { useCallback } from "react";
 
 export function useLoginRedirect() {
 	const router = useRouter();
-	const basePath = router.basePath || process.env.NEXT_PUBLIC_BASE_PATH || "";
+	const basePath = router.basePath;
 
 	const loginRedirect = useCallback(
 		async (callback = "/profile") => {
 			const callbackUrl = `${basePath}${callback ?? router.asPath}`;
 
-			if (process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE === "true") {
-				return signIn(undefined, { callbackUrl });
-			}
-
 			const providers = await getProviders();
-			const oidcProviders = Object.values(providers ?? {}).filter(
-				provider => provider.type === "oauth"
-			);
+			const availableProviders = Object.values(providers ?? {});
+			const provider = availableProviders.length === 1 ? availableProviders[0] : undefined;
 
-			return signIn(oidcProviders.length === 1 ? oidcProviders[0].id : undefined, {
+			return signIn(provider?.type === "oauth" ? provider.id : undefined, {
 				callbackUrl
 			});
 		},
 		[basePath, router.asPath]
 	);
 
-	const logoutRedirect = useCallback((callback = "/") => {
-		const callbackUrl = `${basePath}${callback ?? router.asPath}`;
-		signOut({
-			callbackUrl: callbackUrl.startsWith("/") ? callbackUrl : `/${callbackUrl}`
-		});
-	}, []);
+	const logoutRedirect = useCallback(
+		(callback = "/") => {
+			const callbackUrl = `${basePath}${callback ?? router.asPath}`;
+			signOut({
+				callbackUrl: callbackUrl.startsWith("/") ? callbackUrl : `/${callbackUrl}`
+			});
+		},
+		[basePath, router.asPath]
+	);
 
 	return { loginRedirect, logoutRedirect };
 }

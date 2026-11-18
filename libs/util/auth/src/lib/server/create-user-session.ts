@@ -98,11 +98,7 @@ export const authCallbacks: Partial<CallbacksOptions> = {
 		const { name } = user;
 
 		let incomingRole: UserRole | undefined;
-		if (
-			!account?.access_token &&
-			!account?.id_token &&
-			process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE
-		) {
+		if (!account?.access_token && !account?.id_token && process.env.SITE_IS_DEMO_INSTANCE) {
 			// In demo instance, we don't have an access token => demo accounts
 			const { role } = await database.user.findUniqueOrThrow({
 				where: { name },

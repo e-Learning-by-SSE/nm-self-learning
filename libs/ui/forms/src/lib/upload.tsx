@@ -282,10 +282,12 @@ export function ModifySubtile({
 }
 
 export function GenerateSubtitle({
+	transcriptionServiceUrl,
 	video_url,
 	lessonId,
 	onTranscriptionCompleted
 }: {
+	transcriptionServiceUrl: string;
 	video_url: string;
 	lessonId: string;
 	onTranscriptionCompleted: (subtitle: Subtitle) => void;
@@ -298,6 +300,7 @@ export function GenerateSubtitle({
 		<>
 			{showDialog && (
 				<GenerateSubtileDialog
+					transcriptionServiceUrl={transcriptionServiceUrl}
 					video_url={video_url}
 					lessonId={lessonId}
 					onClose={async transcription => {
@@ -335,10 +338,12 @@ export function GenerateSubtitle({
 }
 
 function GenerateSubtileDialog({
+	transcriptionServiceUrl,
 	video_url,
 	lessonId,
 	onClose
 }: {
+	transcriptionServiceUrl: string;
 	video_url: string;
 	lessonId: string;
 	onClose: OnDialogCloseFn<SubtitleSrc>;
@@ -350,9 +355,7 @@ function GenerateSubtileDialog({
 	const { data: sessionToken } = trpc.me.getJWTToken.useQuery();
 
 	useEffect(() => {
-		const socket = io(
-			process.env["NEXT_PUBLIC_TRANSCRIPTION_SERVICE_URL"] ?? "http://localhost:5000"
-		);
+		const socket = io(transcriptionServiceUrl);
 		setSocket(socket);
 
 		socket.on("connect", () => {
@@ -391,7 +394,7 @@ function GenerateSubtileDialog({
 		return () => {
 			socket.disconnect();
 		};
-	}, [lessonId, sessionToken, video_url]);
+	}, [lessonId, sessionToken, transcriptionServiceUrl, video_url]);
 
 	return (
 		<CenteredContainer>

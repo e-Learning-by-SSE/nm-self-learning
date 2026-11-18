@@ -7,7 +7,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
 	res.setHeader("Content-Type", "application/manifest+json");
 	res.setHeader("Cache-Control", "public, max-age=3600");
-	const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+	const basePath = process.env.SITE_BASE_PATH ?? "";
 
 	res.status(200).json({
 		name: "SelfLearn",

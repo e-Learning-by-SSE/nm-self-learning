@@ -13,6 +13,7 @@ import { learningGoalRouter } from "./routers/learning-goal.router";
 import { lessonRouter } from "./routers/lesson.router";
 import { licenseRouter } from "./routers/license.router";
 import { meRouter } from "./routers/me.router";
+import { servicesRouter } from "./routers/services.router";
 import { programmingRouter } from "./routers/programming";
 import { skillRouter } from "./routers/skill.router";
 import { specializationRouter } from "./routers/specialization.router";
@@ -42,6 +43,7 @@ export const appRouter = t.router({
 	lesson: lessonRouter,
 	licenseRouter: licenseRouter,
 	me: meRouter,
+	services: servicesRouter,
 	achievement: gamificationRouter,
 	storage: storageRouter,
 	specialization: specializationRouter,

@@ -50,7 +50,6 @@
 		"@prisma/adapter-pg": "^7.10.1",
 		"@prisma/client": "^7.10.1",
 		"@react-email/components": "^1.0.12",
-		"@socialgouv/matomo-next": "^1.11.0",
 		"@tailwindcss/forms": "^0.5.11",
 		"@tanstack/react-query": "5.100.14",
 		"@testing-library/user-event": "^14.6.1",

@@ -80,7 +80,7 @@ async function checkCourseInactivity(results: SchedulerResult) {
 			}
 
 			const { url, trackingId } = buildTrackingUrl(
-				`${process.env.NEXT_PUBLIC_SITE_BASE_URL}/courses/${enrollment.course.slug}`
+				`${process.env.SITE_BASE_URL}/courses/${enrollment.course.slug}`
 			);
 
 			// Send the reminder
