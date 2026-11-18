@@ -10,16 +10,11 @@ export function useLoginRedirect() {
 		async (callback = "/profile") => {
 			const callbackUrl = `${basePath}${callback ?? router.asPath}`;
 
-			if (process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE === "true") {
-				return signIn(undefined, { callbackUrl });
-			}
-
 			const providers = await getProviders();
-			const oidcProviders = Object.values(providers ?? {}).filter(
-				provider => provider.type === "oauth"
-			);
+			const availableProviders = Object.values(providers ?? {});
+			const provider = availableProviders.length === 1 ? availableProviders[0] : undefined;
 
-			return signIn(oidcProviders.length === 1 ? oidcProviders[0].id : undefined, {
+			return signIn(provider?.type === "oauth" ? provider.id : undefined, {
 				callbackUrl
 			});
 		},

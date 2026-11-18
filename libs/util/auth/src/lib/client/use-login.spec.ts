@@ -13,17 +13,8 @@ jest.mock("next-auth/react", () => ({
 }));
 
 describe("useLoginRedirect", () => {
-	const originalDemoMode = process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE;
 	beforeEach(() => {
 		jest.clearAllMocks();
-		process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE = "false";
-	});
-	afterAll(() => {
-		if (originalDemoMode === undefined) {
-			delete process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE;
-		} else {
-			process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE = originalDemoMode;
-		}
 	});
 
 	it("redirects directly to a single OIDC provider", async () => {
@@ -55,5 +46,36 @@ describe("useLoginRedirect", () => {
 		const { result } = renderHook(() => useLoginRedirect());
 		await result.current.loginRedirect("/courses");
 		expect(signIn).toHaveBeenCalledWith(undefined, { callbackUrl: "/courses" });
+	});
+
+	it("shows credentials alongside an OIDC provider", async () => {
+		jest.mocked(getProviders).mockResolvedValue({
+			oidc: { id: "oidc", name: "SSO", type: "oauth", signinUrl: "", callbackUrl: "" },
+			credentials: {
+				id: "credentials",
+				name: "Demo",
+				type: "credentials",
+				signinUrl: "",
+				callbackUrl: ""
+			}
+		} as unknown as Awaited<ReturnType<typeof getProviders>>);
+		const { result } = renderHook(() => useLoginRedirect());
+		await result.current.loginRedirect();
+		expect(signIn).toHaveBeenCalledWith(undefined, { callbackUrl: "/profile" });
+	});
+
+	it("shows the sign-in page for a credentials-only provider", async () => {
+		jest.mocked(getProviders).mockResolvedValue({
+			credentials: {
+				id: "credentials",
+				name: "Demo",
+				type: "credentials",
+				signinUrl: "",
+				callbackUrl: ""
+			}
+		} as unknown as Awaited<ReturnType<typeof getProviders>>);
+		const { result } = renderHook(() => useLoginRedirect());
+		await result.current.loginRedirect();
+		expect(signIn).toHaveBeenCalledWith(undefined, { callbackUrl: "/profile" });
 	});
 });

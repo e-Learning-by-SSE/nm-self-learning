@@ -2,16 +2,15 @@ version: "3"
 
 services:
     nm-self-learn-db:
-        image: postgres:14
+        image: postgres:18
         environment:
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
             POSTGRES_DB: SelfLearningDb
-            PGDATA: /var/lib/postgresql/data
         networks:
             - nm-self-learn
         volumes:
-            - ./data/postgres_data:/var/lib/postgresql/data
+            - ./data/postgres_data:/var/lib/postgresql
 
     minio:
         image: minio/minio
@@ -56,7 +55,7 @@ services:
         environment:
             - DB_HOST=nm-self-learn-db
             - DB_PORT=5432
-            - NEXT_PUBLIC_IS_DEMO_INSTANCE=false
+            - SITE_IS_DEMO_INSTANCE=false
             - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@nm-self-learn-db:5432/SelfLearningDb
             - NEXT_ASSET_PREFIX=${ASSET_PREFIX}
             - NEXT_PUBLIC_BASE_PATH=${ASSET_PREFIX}

@@ -226,7 +226,7 @@ function getProviders(): Provider[] {
 	const providers: Provider[] = createOidcProviders();
 
 	// Allow login with pre-configured demo accounts in demo mode (see seed.ts)
-	if (process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE === "true") {
+	if (process.env.SITE_IS_DEMO_INSTANCE === "true") {
 		providers.push(
 			CredentialsProvider({
 				name: "Demo-Account",

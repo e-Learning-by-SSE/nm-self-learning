@@ -1,6 +1,6 @@
 module.exports = {
 	// https://www.i18next.com/overview/configuration-options#logging
-	// debug: process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE === "true",
+	// debug: process.env.SITE_IS_DEMO_INSTANCE === "true",
 	debug: false,
 	i18n: {
 		defaultLocale: "de" + "",
@@ -13,7 +13,7 @@ module.exports = {
 			? require("path").resolve("./public/locales")
 			: "./apps/site/public/locales",
 
-	reloadOnPrerender: process.env.NEXT_PUBLIC_IS_DEMO_INSTANCE === "true"
+	reloadOnPrerender: process.env.SITE_IS_DEMO_INSTANCE === "true"
 
 	/**
 	 * @link https://github.com/i18next/next-i18next#6-advanced-configuration
