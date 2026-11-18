@@ -11,7 +11,7 @@ import { embedLesson } from "./rag";
 
 const API_SECRET = process.env.SCHEDULER_SECRET;
 const API_URL = process.env.SITE_BASE_URL;
-const TRANSCRIPTION_SERVICE_URL = process.env.NEXT_PUBLIC_TRANSCRIPTION_SERVICE_URL;
+const TRANSCRIPTION_SERVICE_URL = process.env.TRANSCRIPTION_SERVICE_URL;
 
 if (!API_URL) {
 	console.error("SITE_BASE_URL is missing in cron-service environment");

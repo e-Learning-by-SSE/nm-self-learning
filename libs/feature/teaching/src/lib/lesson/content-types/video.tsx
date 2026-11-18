@@ -1,4 +1,5 @@
 import { Video } from "@self-learning/types";
+import { trpc } from "@self-learning/api-client";
 import { SectionCard } from "@self-learning/ui/common";
 import { GenerateSubtitle, LabeledField, ModifySubtile, Upload } from "@self-learning/ui/forms";
 import { VideoPlayer, VideoPlayerHandle } from "@self-learning/ui/lesson";
@@ -19,7 +20,8 @@ export function VideoInput({ index }: { index: number }) {
 		value: { url, subtitle },
 		meta: { duration }
 	} = useWatch({ control, name: `content.${index}` });
-	const transcriptionServiceUrl = process.env.NEXT_PUBLIC_TRANSCRIPTION_SERVICE_URL;
+	const { data: transcriptionServiceUrl, isError } =
+		trpc.services.getTranscriptionServiceUrl.useQuery();
 
 	return (
 		<SectionCard>
@@ -89,8 +91,9 @@ export function VideoInput({ index }: { index: number }) {
 							/>
 						</div>
 					)}
-					{url && !subtitle && transcriptionServiceUrl && (
+					{url && !subtitle && !isError && transcriptionServiceUrl && (
 						<GenerateSubtitle
+							transcriptionServiceUrl={transcriptionServiceUrl}
 							video_url={url}
 							lessonId={watch().lessonId}
 							onTranscriptionCompleted={createdSubtitle => {

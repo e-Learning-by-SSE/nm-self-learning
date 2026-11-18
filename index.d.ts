@@ -13,7 +13,7 @@ declare global {
 			NEXT_TRAILING_SLASH: boolean | undefined;
 			PLAUSIBLE_OWN_DOMAIN: string | undefined;
 			PLAUSIBLE_CUSTOM_INSTANCE: string | undefined;
-			NEXT_PUBLIC_TRANSCRIPTION_SERVICE_URL: string | undefined;
+			TRANSCRIPTION_SERVICE_URL: string | undefined;
 			TRANSCRIPTION_MIGRATE_EXISTING_VIDEO_CONTENT: string | undefined;
 			DATABASE_URL: string;
 			STORAGE_ENDPOINT: string;

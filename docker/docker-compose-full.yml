@@ -59,6 +59,7 @@ services:
             - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@nm-self-learn-db:5432/SelfLearningDb
             - NEXT_ASSET_PREFIX=${ASSET_PREFIX}
             - SITE_BASE_PATH=${ASSET_PREFIX}
+            - TRANSCRIPTION_SERVICE_URL=${TRANSCRIPTION_SERVICE_URL:-}
             - STORAGE_SERVER_PUBLIC_URL=${STORAGE_SERVER_PUBLIC_URL:-}
             - STORAGE_BUCKET_NAME=upload
             - STORAGE_ENDPOINT=minio
