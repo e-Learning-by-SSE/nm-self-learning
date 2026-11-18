@@ -7,7 +7,7 @@ module.exports = {
 		locales: ["en", "de"]
 	},
 
-	/** To avoid issues when deploying to some paas (vercel...) */
+	/** Resolve locale files from the server's working directory. */
 	localePath:
 		typeof window === "undefined"
 			? require("path").resolve("./public/locales")

@@ -81,9 +81,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 				customDomain={`${basePath}/api/plausible`}
 				enabled={
 					plausibleDomain !== null &&
-					process.env.NODE_ENV === "production" &&
-					(!process.env.NEXT_PUBLIC_VERCEL_ENV ||
-						process.env.NEXT_PUBLIC_VERCEL_ENV === "production")
+					process.env.NODE_ENV === "production"
 				}
 				scriptProps={{
 					async: true,

@@ -9,7 +9,7 @@ module.exports = {
 
 	showSupportNotice: false,
 
-	/** To avoid issues when deploying to some paas (vercel...) */
+	/** Resolve locale files from the server's working directory. */
 	localePath:
 		typeof window === "undefined"
 			? // eslint-disable-next-line @typescript-eslint/no-require-imports
