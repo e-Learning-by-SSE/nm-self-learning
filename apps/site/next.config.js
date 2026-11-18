@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const { withNx, composePlugins } = require("@nx/next");
-const { withPlausibleProxy } = require("next-plausible");
 const { i18n } = require("./next-i18next.config.js");
 const fs = require("fs");
 const path = require("path");
@@ -113,9 +112,6 @@ const nextConfig = {
 	}
 };
 
-const plugins = [
-	withPlausibleProxy({ customDomain: process.env.NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE }),
-	withNx
-];
+const plugins = [withNx];
 
 module.exports = composePlugins(...plugins)(nextConfig);

@@ -11,8 +11,8 @@ declare global {
 			SITE_ONLINE_HELP_BASE_URL: string | undefined;
 			SITE_ONLINE_HELP_LANGUAGES: string | undefined;
 			NEXT_TRAILING_SLASH: boolean | undefined;
-			NEXT_PUBLIC_PLAUSIBLE_OWN_DOMAIN: string | undefined;
-			NEXT_PUBLIC_PLAUSIBLE_CUSTOM_INSTANCE: string | undefined;
+			PLAUSIBLE_OWN_DOMAIN: string | undefined;
+			PLAUSIBLE_CUSTOM_INSTANCE: string | undefined;
 			NEXT_PUBLIC_TRANSCRIPTION_SERVICE_URL: string | undefined;
 			TRANSCRIPTION_MIGRATE_EXISTING_VIDEO_CONTENT: string | undefined;
 			DATABASE_URL: string;
