@@ -297,11 +297,11 @@ export const storageRouter = t.router({
 				}
 
 				// Build the public folder URL
-				const publicUrl = process.env.NEXT_PUBLIC_MINIO_PUBLIC_URL;
+				const publicUrl = process.env.STORAGE_SERVER_PUBLIC_URL;
 				if (!publicUrl) {
 					throw new TRPCError({
 						code: "INTERNAL_SERVER_ERROR",
-						message: "NEXT_PUBLIC_MINIO_PUBLIC_URL is not configured."
+						message: "STORAGE_SERVER_PUBLIC_URL is not configured."
 					});
 				}
 				const folderUrl = `${publicUrl}/${s3Config.bucketName}/${folderPrefix}`;
@@ -315,7 +315,7 @@ export const storageRouter = t.router({
 				// For h5p: store folder URL (h5p-standalone handles the rest)
 				const viewerUrl = kind === "zip" ? `${folderUrl}/${entryPoint}` : folderUrl;
 
-				const originalPublicUrl = `${process.env.NEXT_PUBLIC_MINIO_PUBLIC_URL}/${s3Config.bucketName}/${objectName}`;
+				const originalPublicUrl = `${publicUrl}/${s3Config.bucketName}/${objectName}`;
 				await database.uploadedAssets.updateMany({
 					where: { publicUrl: originalPublicUrl },
 					data: {

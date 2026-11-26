@@ -73,7 +73,7 @@ const ProfileButton = memo(function ProfileButton({
 				alt={t("Profile Picture")}
 				className="w-8 h-8 rounded-xl"
 			/>
-			<span className="flex-grow cursor-default text-left truncate">{profile.name}</span>
+			<span className="grow cursor-default text-left truncate">{profile.name}</span>
 		</button>
 	);
 });
@@ -159,7 +159,7 @@ function ProfileForm({ selectedProfile }: ProfileFormProps) {
 			<h1 className="mb-6 text-3xl font-bold">{t("AI Tutor Profile")}</h1>
 			<form onSubmit={handleSubmit(formSubmit)} className="space-y-6">
 				<div className="flex space-x-6">
-					<div className="flex-grow">
+					<div className="grow">
 						<LabeledField label={t("Profile Name") + " *"}>
 							<input
 								{...register("name")}
@@ -240,7 +240,7 @@ function ProfileForm({ selectedProfile }: ProfileFormProps) {
 							>
 								{deleteProfile.isPending ? t("Deleting...") : t("Delete Profile")}
 							</button>
-							<div className="flex-grow">
+							<div className="grow">
 								<div className="text-sm text-gray-500 text-end pt-4 gap-1 flex justify-end items-center">
 									<span>{t("Last Updated")}:</span>
 									{selectedProfile?.updatedAt
@@ -287,7 +287,7 @@ const ModelSelector = memo(function ModelSelector({
 
 	return (
 		<div className="flex items-end space-x-4">
-			<div className="flex-grow">
+			<div className="grow">
 				<LabeledField label={t("Model")}>
 					<select {...register("model")} className="textfield w-full">
 						{currentModel && !availableModels.includes(currentModel) && (

@@ -7,6 +7,7 @@ declare global {
 			readonly NODE_ENV: "development" | "production" | "test";
 			NEXT_PUBLIC_SITE_BASE_URL: string;
 			NEXT_PUBLIC_IS_DEMO_INSTANCE: string | undefined;
+			SITE_SYSTEM_MSG: string | undefined;
 			NEXT_PUBLIC_BASE_PATH: string | undefined;
 			NEXT_PUBLIC_ONLINE_HELP_BASE_URL: string | undefined;
 			NEXT_PUBLIC_ONLINE_HELP_LANGUAGES: string | undefined;
@@ -16,13 +17,13 @@ declare global {
 			NEXT_PUBLIC_TRANSCRIPTION_SERVICE_URL: string | undefined;
 			NEXT_PUBLIC_TRANSCRIPTION_MIGRATE_EXISTING_VIDEO_CONTENT: string | undefined;
 			DATABASE_URL: string;
-			MINIO_ENDPOINT: string;
-			MINIO_PORT: string;
-			MINIO_USE_SSL: string;
-			MINIO_ACCESS_KEY: string;
-			MINIO_SECRET_KEY: string;
-			MINIO_BUCKET_NAME: string;
-			NEXT_PUBLIC_MINIO_PUBLIC_URL: string;
+			STORAGE_ENDPOINT: string;
+			STORAGE_PORT: string;
+			STORAGE_USE_SSL: string;
+			STORAGE_ACCESS_KEY: string;
+			STORAGE_SECRET_KEY: string;
+			STORAGE_BUCKET_NAME: string;
+			STORAGE_SERVER_PUBLIC_URL?: string;
 			PISTON_URL: string;
 			OIDC_CLIENTS: string | undefined;
 			OIDC_SCOPES: string | undefined;

@@ -629,7 +629,7 @@ export const courseRouter = t.router({
 			});
 		}
 
-		return fullExport;
+		return { ...fullExport, storageServerPublicUrl: process.env.STORAGE_SERVER_PUBLIC_URL };
 	}),
 	create: authProcedure.input(courseFormSchema).mutation(async ({ input, ctx }) => {
 		// TODO do I need any course type dependent checks here?

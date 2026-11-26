@@ -12,7 +12,7 @@ export function CenteredContainerXL({
 }: PropsWithChildren<{ className?: string }>) {
 	return (
 		<div
-			className={`mx-auto w-full max-w-screen-xl px-4 xl:px-0 ${className ? className : ""}`}
+			className={`mx-auto w-full max-w-(--breakpoint-xl) px-4 xl:px-0 ${className ? className : ""}`}
 		>
 			{children}
 		</div>

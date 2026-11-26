@@ -130,7 +130,7 @@ export function TimeAllocation() {
 
 			{/* Chart container – slightly larger (≈10%) */}
 			<div
-				className="relative flex-grow w-full mx-auto"
+				className="relative grow w-full mx-auto"
 				style={{ height: "250px", maxWidth: "520px" }}
 			>
 				<Pie data={chartData} options={options} />

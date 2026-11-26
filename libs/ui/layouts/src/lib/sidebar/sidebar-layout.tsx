@@ -135,7 +135,7 @@ export function NavSidebar({
 }
 
 function ScrollableContent({ children }: PropsWithChildren<unknown>) {
-	return <div className="Sidebar scroll flex-grow overflow-auto">{children}</div>;
+	return <div className="Sidebar scroll grow overflow-auto">{children}</div>;
 }
 
 export function SidebarLink({

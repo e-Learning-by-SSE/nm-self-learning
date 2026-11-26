@@ -39,7 +39,7 @@ export function SectionHeader({
 	return (
 		<div className="mb-8 mt-4">
 			<div className="flex items-center gap-4">
-				<h2 className="flex-grow text-4xl">{title}</h2>
+				<h2 className="grow text-4xl">{title}</h2>
 
 				{button && <div className="mr-0.5">{button}</div>}
 			</div>

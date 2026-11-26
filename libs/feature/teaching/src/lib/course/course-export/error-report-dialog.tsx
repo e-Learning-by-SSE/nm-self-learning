@@ -164,8 +164,8 @@ export function ErrorReportDialog({
 				title={`${course.title} erfolgreich exportiert`}
 				onClose={onClose}
 			>
-				<div className="mt-[-1rem] mb-4">{`${element} nicht vollständig in LiaScript unterstützt:`}</div>
-				<div className="scroll flex-grow overflow-auto">
+				<div className="-mt-4 mb-4">{`${element} nicht vollständig in LiaScript unterstützt:`}</div>
+				<div className="scroll grow overflow-auto">
 					{report.map(item => (
 						<div className="mb-2">
 							<CollapsibleBox title={<SectionTitle slug={course.slug} item={item} />}>

@@ -1,5 +1,6 @@
 {
     "Platform_Name": "SELF-le@rning",
+    "Home_Link": "{{platform}} – Home",
     "Operator_Name": "University of Hildesheim",
     "Operator_URL": "https://www.uni-hildesheim.de/en",
     "COPYRIGHT_URL": "https://sse.uni-hildesheim.de/en",
@@ -24,6 +25,7 @@
     "Duration_Minute_other": "{{count, number}} minutes",
     "Duration_List": "{{parts, list}}",
     "Author": "Author",
+    "Author_Image_Alt": "Author – {{name}}",
     "Author_other": "Authors",
     "Admin": "Admin",
     "languageGerman": "German",

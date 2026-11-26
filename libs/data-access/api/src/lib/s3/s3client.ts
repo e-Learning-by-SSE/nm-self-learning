@@ -11,12 +11,12 @@ export const s3Config = z
 		bucketName: z.string()
 	})
 	.parse({
-		endPoint: process.env.MINIO_ENDPOINT,
-		port: parseInt(process.env.MINIO_PORT as string),
-		useSSL: process.env.MINIO_USE_SSL === "true",
-		accessKey: process.env.MINIO_ACCESS_KEY,
-		secretKey: process.env.MINIO_SECRET_KEY,
-		bucketName: process.env.MINIO_BUCKET_NAME
+		endPoint: process.env.STORAGE_ENDPOINT,
+		port: parseInt(process.env.STORAGE_PORT as string),
+		useSSL: process.env.STORAGE_USE_SSL === "true",
+		accessKey: process.env.STORAGE_ACCESS_KEY,
+		secretKey: process.env.STORAGE_SECRET_KEY,
+		bucketName: process.env.STORAGE_BUCKET_NAME
 	});
 
 function createClient(config: typeof s3Config) {
@@ -35,7 +35,7 @@ export const s3Client = createClient(s3Config);
 // Separate client for generating presigned URLs using the public hostname.
 // The browser uses this URL directly, so it must use the publicly reachable host.
 export const publicS3Config = (() => {
-	const publicUrl = process.env.NEXT_PUBLIC_MINIO_PUBLIC_URL;
+	const publicUrl = process.env.STORAGE_SERVER_PUBLIC_URL;
 	if (!publicUrl) return s3Config;
 	const parsed = new URL(publicUrl);
 	return {

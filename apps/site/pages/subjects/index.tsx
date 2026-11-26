@@ -44,7 +44,7 @@ export default function Subjects({ subjects }: SubjectsProps) {
 	const { t } = useTranslation("common");
 	return (
 		<div className="py-16">
-			<div className="mx-auto max-w-screen-xl px-4 xl:px-0">
+			<div className="mx-auto max-w-(--breakpoint-xl) px-4 xl:px-0">
 				<h1 className="mb-16 text-4xl sm:text-6xl">{t("Topic_other")}</h1>
 				<ItemCardGrid>
 					{subjects.map(subject => (

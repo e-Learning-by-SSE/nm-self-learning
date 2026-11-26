@@ -48,5 +48,6 @@
 		".next": true,
 		"*.log": true,
 		"*.lock": true,
-    }
+    },
+  "css.lint.unknownAtRules": "ignore"
 }

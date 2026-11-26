@@ -36,8 +36,8 @@ export function AiTutorMessages({
 						<div
 							className={`w-8 h-8 min-w-8 rounded-xl flex items-center justify-center shadow-md ${
 								msg.role === "user"
-									? "bg-gradient-to-br from-gray-600 to-zinc-600"
-									: "bg-gradient-to-br from-green-500 to-emerald-600"
+									? "bg-linear-to-br from-gray-600 to-zinc-600"
+									: "bg-linear-to-br from-green-500 to-emerald-600"
 							}`}
 						>
 							<img
