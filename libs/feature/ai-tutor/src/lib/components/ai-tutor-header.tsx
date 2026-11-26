@@ -13,7 +13,7 @@ export function AiTutorHeader({
 	basePath: string;
 }) {
 	return (
-		<div className="p-3 pt-20 border-b border-white/20 bg-white/30">
+		<div className="p-3 border-b border-white/20 bg-white/30">
 			<div className="flex items-center justify-between mb-2">
 				<div className="flex items-center gap-3">
 					<div className="w-10 h-10">

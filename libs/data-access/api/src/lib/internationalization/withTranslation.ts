@@ -32,7 +32,8 @@ export function withTranslations<P extends object = object>(
 			...result,
 			props: {
 				...result.props,
-				...translations
+				...translations,
+				systemMessage: process.env.SITE_SYSTEM_MSG ?? ""
 			}
 		} as GetServerSidePropsResult<P & SSRConfig>;
 	};

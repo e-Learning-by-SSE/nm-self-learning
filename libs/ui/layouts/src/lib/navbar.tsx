@@ -32,6 +32,7 @@ export function Navbar() {
 	return (
 		<Disclosure
 			as="nav"
+			id="site-navigation"
 			className="sticky top-0 z-30 w-full border-b border-b-c-border bg-white"
 		>
 			{({ open }) => (

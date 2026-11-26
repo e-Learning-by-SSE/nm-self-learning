@@ -95,7 +95,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 						<link rel="manifest" href={basePath + "/api/manifest"} />
 					</Head>
 					<GlobalFeatures />
-					<RootLayout>
+					<RootLayout systemMessage={pageProps.systemMessage}>
 						{Layout ? (
 							// Layouts can define their own main-area and sidebars
 							<>{Layout}</>
@@ -111,9 +111,16 @@ function CustomApp({ Component, pageProps }: AppProps) {
 	);
 }
 
-function RootLayout({ children }: PropsWithChildren<unknown>) {
+function RootLayout({ children, systemMessage }: PropsWithChildren<{ systemMessage?: string }>) {
 	return (
 		<>
+			{systemMessage && (
+				<div
+					id="site-system-message"
+					className="bg-blue-500 px-4 py-3 text-center text-sm text-white"
+					dangerouslySetInnerHTML={{ __html: systemMessage }}
+				/>
+			)}
 			<Navbar />
 			<div className="flex-1">{children}</div>
 			<Footer />
