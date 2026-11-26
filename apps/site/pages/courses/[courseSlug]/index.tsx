@@ -516,13 +516,14 @@ function TableOfContents({
 
 						<ul className="mt-8 flex flex-col gap-1">
 							{chapter.content.map(lesson => (
-								<Lesson
-									key={lesson.lessonId}
-									href={`/courses/${course.slug}/${lesson.slug}`}
-									courseId={course.courseId}
-									lesson={lesson}
-									isCompleted={!!completion?.completedLessons[lesson.lessonId]}
-								/>
+								<li key={lesson.lessonId}>
+									<Lesson
+										href={`/courses/${course.slug}/${lesson.slug}`}
+										courseId={course.courseId}
+										lesson={lesson}
+										isCompleted={!!completion?.completedLessons[lesson.lessonId]}
+									/>
+								</li>
 							))}
 						</ul>
 					</li>

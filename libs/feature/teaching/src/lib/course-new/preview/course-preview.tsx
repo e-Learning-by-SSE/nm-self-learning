@@ -209,18 +209,19 @@ function LessonPath({
 
 						<ul className="mt-8 flex flex-col gap-1">
 							{chapter.content.map(lesson => (
-								<Link
-									key={lesson.lessonId}
-									href={`/courses/${slug}/${lesson.slug}`}
-									className="flex gap-2 rounded-r-lg border-l-4 border-gray-300 bg-white px-4 py-2 text-sm"
-								>
-									<span className="flex">
-										<span className="w-8 shrink-0 self-center font-medium text-secondary">
-											{lesson.lessonNr}
+								<li key={lesson.lessonId}>
+									<Link
+										href={`/courses/${slug}/${lesson.slug}`}
+										className="flex gap-2 rounded-r-lg border-l-4 border-gray-300 bg-white px-4 py-2 text-sm"
+									>
+										<span className="flex">
+											<span className="w-8 shrink-0 self-center font-medium text-secondary">
+												{lesson.lessonNr}
+											</span>
+											<span>{lesson.title}</span>
 										</span>
-										<span>{lesson.title}</span>
-									</span>
-								</Link>
+									</Link>
+								</li>
 							))}
 						</ul>
 					</li>
