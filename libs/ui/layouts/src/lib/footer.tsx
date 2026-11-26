@@ -58,6 +58,7 @@ function LanguageSwitcher() {
 	return (
 		<DropdownMenu
 			dropdownPosition="top"
+			buttonAs="button"
 			title="Sprache ändern"
 			button={
 				<span className="text-sm font-medium hover:text-c-primary flex items-center gap-1">
