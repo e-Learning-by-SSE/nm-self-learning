@@ -218,6 +218,7 @@ export function NavbarDropdownMenu({
 	return (
 		<DropdownMenu
 			title={t("User Menu")}
+			buttonAs="button"
 			button={
 				<div className="flex items-center gap-2 py-2">
 					<span className="sr-only">{t("Open User Menu")}</span>
