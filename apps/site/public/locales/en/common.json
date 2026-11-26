@@ -25,6 +25,7 @@
     "Duration_Minute_other": "{{count, number}} minutes",
     "Duration_List": "{{parts, list}}",
     "Author": "Author",
+    "Author_Image_Alt": "Author – {{name}}",
     "Author_other": "Authors",
     "Admin": "Admin",
     "languageGerman": "German",

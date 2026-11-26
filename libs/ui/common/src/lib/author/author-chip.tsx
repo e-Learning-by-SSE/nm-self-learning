@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { useTranslation } from "next-i18next";
 import { ImageOrPlaceholder } from "../image/image-placeholder";
 
 export type AuthorProps = { displayName: string; slug: string; imgUrl?: string | null };
 
 export function AuthorChip({ displayName, slug, imgUrl }: AuthorProps) {
+	const { t } = useTranslation("common");
+
 	return (
 		<Link
 			href={`/authors/${slug}`}
@@ -12,6 +15,7 @@ export function AuthorChip({ displayName, slug, imgUrl }: AuthorProps) {
 		>
 			<ImageOrPlaceholder
 				src={imgUrl ?? undefined}
+				alt={t("Author_Image_Alt", { name: displayName })}
 				className="h-10 w-10 rounded-l-lg object-cover"
 			/>
 			<span className="font-medium">{displayName}</span>
