@@ -52,7 +52,11 @@ export function Navbar() {
 							</div>
 							<div className="flex flex-1 items-center lg:items-stretch justify-start">
 								<div className="flex shrink-0 items-center">
-									<Link href="/" className="flex shrink-0 items-center gap-4">
+									<Link
+										href="/"
+										className="flex shrink-0 items-center gap-4"
+										aria-label={t("Home_Link", { platform: t("Platform_Name") })}
+									>
 										<div className="rounded-full bg-c-primary p-1">
 											<AcademicCapIcon className="h-8 w-8 text-white" />
 										</div>
