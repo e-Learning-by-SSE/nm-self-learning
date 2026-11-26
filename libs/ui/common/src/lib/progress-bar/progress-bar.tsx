@@ -36,7 +36,7 @@ export function ProgressBarAnimated({ progressPercentage }: { progressPercentage
 		<div className="mt-3">
 			<div className="relative h-5 w-full rounded-lg bg-c-surface-3 overflow-hidden">
 				<motion.div
-					className="absolute left-0 h-5 rounded-lg bg-gradient-to-r from-c-primary-muted to-c-primary-strong"
+					className="absolute left-0 h-5 rounded-lg bg-linear-to-r from-c-primary-muted to-c-primary-strong"
 					initial={{ width: 0 }}
 					animate={{
 						width: `${progressPercentage}%`
@@ -51,7 +51,7 @@ export function ProgressBarAnimated({ progressPercentage }: { progressPercentage
 
 				{/* Shimmer-Effekt */}
 				<motion.div
-					className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+					className="absolute inset-0 bg-linear-to-r from-transparent via-white/40 to-transparent"
 					initial={{ x: "-100%" }}
 					animate={{ x: "100%" }}
 					transition={{

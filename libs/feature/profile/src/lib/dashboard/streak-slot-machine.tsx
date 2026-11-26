@@ -89,7 +89,7 @@ export function SlotMachine({ streakStatus, streakCount }: SlotMachineProps) {
 		if (streakStatus === "broken") {
 			return (
 				<div
-					className={`${bgBase} bg-gradient-to-br from-gray-400 via-gray-400 to-gray-600`}
+					className={`${bgBase} bg-linear-to-br from-gray-400 via-gray-400 to-gray-600`}
 				>
 					<div className="mb-4 text-center text-white text-xl font-semibold">
 						<div className="mb-2">Tage in Folge aktiv</div>
@@ -102,7 +102,7 @@ export function SlotMachine({ streakStatus, streakCount }: SlotMachineProps) {
 		if (streakStatus === "active") {
 			return (
 				<div
-					className={`${bgBase} bg-gradient-to-br from-purple-600 via-indigo-600 to-indigo-800`}
+					className={`${bgBase} bg-linear-to-br from-purple-600 via-indigo-600 to-indigo-800`}
 				>
 					<div className="mb-4 text-center text-white text-xl font-semibold">
 						<div className="mb-2">Tage in Folge aktiv</div>
@@ -150,7 +150,7 @@ export function SlotMachine({ streakStatus, streakCount }: SlotMachineProps) {
 					</div>
 					{/* Vordergrund-Inhalt */}
 					<div
-						className={`${bgBase} relative bg-gradient-to-br from-purple-600 via-indigo-600 to-indigo-800 z-10`}
+						className={`${bgBase} relative bg-linear-to-br from-purple-600 via-indigo-600 to-indigo-800 z-10`}
 					>
 						<div className="mb-4 text-center text-white text-xl font-semibold">
 							<div className="mb-2">Tage in Folge aktiv</div>
@@ -335,7 +335,7 @@ export function StreakSlotMachineDialog({
 								{streakStatus === "broken" && (
 									<div className="flex flex-col items-center gap-4">
 										<button
-											className="btn-secondary bg-gradient-to-br from-orange-500 to-orange-100 animate-bounce"
+											className="btn-secondary bg-linear-to-br from-orange-500 to-orange-100 animate-bounce"
 											onClick={handleRefire}
 											disabled={remainingEnergy < 2}
 										>
@@ -354,7 +354,7 @@ export function StreakSlotMachineDialog({
 
 								{streakStatus === "active" && (
 									<button
-										className="btn bg-gradient-to-br from-blue-300 to-blue-500 flex items-center shadow-lg hover:animate-highlight-shimmering"
+										className="btn bg-linear-to-br from-blue-300 to-blue-500 flex items-center shadow-lg hover:animate-highlight-shimmering"
 										onClick={handlePauseStreak}
 										disabled={remainingEnergy < 1}
 									>
@@ -418,7 +418,7 @@ export function StreakSlotMachineDialog({
 								>
 									<div className="space-y-4">
 										<div className="flex items-start">
-											<ArrowTrendingUpIcon className="w-6 h-6 text-green-500 mr-2 flex-shrink-0" />
+											<ArrowTrendingUpIcon className="w-6 h-6 text-green-500 mr-2 shrink-0" />
 											<p>
 												Jeden Tag, an dem du dich in deinem Account
 												einloggst, wird dein Zähler um 1 erhöht. Kontinuität
@@ -426,7 +426,7 @@ export function StreakSlotMachineDialog({
 											</p>
 										</div>
 										<div className="flex items-start">
-											<CalendarIcon className="w-6 h-6 text-blue-500 mr-2 flex-shrink-0" />
+											<CalendarIcon className="w-6 h-6 text-blue-500 mr-2 shrink-0" />
 											<p>
 												<strong>
 													Samstag und Sonntag sind Bonus-Tage.
@@ -437,7 +437,7 @@ export function StreakSlotMachineDialog({
 											</p>
 										</div>
 										<div className="flex items-start">
-											<XCircleIcon className="w-6 h-6 text-c-danger mr-2 flex-shrink-0" />
+											<XCircleIcon className="w-6 h-6 text-c-danger mr-2 shrink-0" />
 											<p>
 												Solltest du dich an einem Werktag nicht anmelden,
 												wird der Zähler zurückgesetzt. Du kannst ihn aber
@@ -446,7 +446,7 @@ export function StreakSlotMachineDialog({
 											</p>
 										</div>
 										<div className="flex items-start">
-											<ExclamationTriangleIcon className="w-6 h-6 text-amber-500 mr-2 flex-shrink-0" />
+											<ExclamationTriangleIcon className="w-6 h-6 text-amber-500 mr-2 shrink-0" />
 											<p>
 												<strong>Wichtig:</strong> Wenn dein Streak
 												unterbrochen ist, wird er beim nächsten Login
@@ -465,7 +465,7 @@ export function StreakSlotMachineDialog({
 								>
 									<div className="space-y-4">
 										<div className="flex items-start">
-											<PauseCircleIcon className="w-6 h-6 text-blue-500 mr-2 flex-shrink-0" />
+											<PauseCircleIcon className="w-6 h-6 text-blue-500 mr-2 shrink-0" />
 											<div>
 												<h4 className="font-semibold">
 													Lernpause aktivieren
@@ -481,7 +481,7 @@ export function StreakSlotMachineDialog({
 										</div>
 
 										<div className="flex items-start">
-											<BoltIcon className="w-6 h-6 text-orange-500 mr-2 flex-shrink-0" />
+											<BoltIcon className="w-6 h-6 text-orange-500 mr-2 shrink-0" />
 											<div>
 												<h4 className="font-semibold">
 													Streak wiederherstellen
@@ -495,7 +495,7 @@ export function StreakSlotMachineDialog({
 										</div>
 
 										<div className="flex items-start">
-											<SparklesIcon className="w-6 h-6 text-yellow-500 mr-2 flex-shrink-0" />
+											<SparklesIcon className="w-6 h-6 text-yellow-500 mr-2 shrink-0" />
 											<div>
 												<h4 className="font-semibold">Energie sammeln</h4>
 												<p>

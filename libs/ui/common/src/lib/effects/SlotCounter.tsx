@@ -112,13 +112,13 @@ export function SlotCounter({ targetValue, startValue = 0, duration = 1000 }: Sl
 			{digits.map((digit, index) => (
 				<div
 					key={index}
-					className="relative w-16 h-24 mx-1 overflow-hidden rounded-lg bg-gradient-to-b from-gray-800 to-gray-900 shadow-lg"
+					className="relative w-16 h-24 mx-1 overflow-hidden rounded-lg bg-linear-to-b from-gray-800 to-gray-900 shadow-lg"
 				>
 					{/* Shadow at the top */}
-					<div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-black to-transparent z-10"></div>
+					<div className="absolute top-0 left-0 right-0 h-6 bg-linear-to-b from-black to-transparent z-10"></div>
 
 					{/* Shadow at the bottom */}
-					<div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-b from-transparent to-black z-10"></div>
+					<div className="absolute bottom-0 left-0 right-0 h-6 bg-linear-to-b from-transparent to-black z-10"></div>
 
 					{/* Animation for the slot */}
 					<div

@@ -46,7 +46,7 @@ export function Feedback() {
 		if (streak > 0) {
 			const dayLabel = streak < 2 ? t("day") : t("days");
 			recs.push({
-				icon: <FireIcon className="h-5 w-5 text-orange-500 flex-shrink-0" />,
+				icon: <FireIcon className="h-5 w-5 text-orange-500 shrink-0" />,
 				text: t("recommendations.streak", { count: streak, dayLabel })
 			});
 		}
@@ -62,7 +62,7 @@ export function Feedback() {
 			const minutes = Math.round((avgSeconds % 3600) / 60);
 
 			recs.push({
-				icon: <ClockIcon className="h-5 w-5 text-gray-600 flex-shrink-0" />,
+				icon: <ClockIcon className="h-5 w-5 text-gray-600 shrink-0" />,
 				text: t("recommendations.avgTime", { hours, minutes })
 			});
 		}
@@ -85,13 +85,13 @@ export function Feedback() {
 			let timeKey = "";
 
 			if (max === morning) {
-				icon = <SunIcon className="h-5 w-5 text-yellow-500 flex-shrink-0" />;
+				icon = <SunIcon className="h-5 w-5 text-yellow-500 shrink-0" />;
 				timeKey = "morning";
 			} else if (max === afternoon) {
-				icon = <SunIcon className="h-5 w-5 text-amber-400 flex-shrink-0" />;
+				icon = <SunIcon className="h-5 w-5 text-amber-400 shrink-0" />;
 				timeKey = "afternoon";
 			} else {
-				icon = <MoonIcon className="h-5 w-5 text-indigo-500 flex-shrink-0" />;
+				icon = <MoonIcon className="h-5 w-5 text-indigo-500 shrink-0" />;
 				timeKey = "evening";
 			}
 
@@ -112,7 +112,7 @@ export function Feedback() {
 			const mostActive = Object.entries(totals).sort((a, b) => b[1] - a[1])[0]?.[0];
 			if (mostActive) {
 				recs.push({
-					icon: <CalendarDaysIcon className="h-5 w-5 text-emerald-600 flex-shrink-0" />,
+					icon: <CalendarDaysIcon className="h-5 w-5 text-emerald-600 shrink-0" />,
 					text: t("recommendations.activeDay", { day: mostActive })
 				});
 			}
@@ -126,7 +126,7 @@ export function Feedback() {
 			);
 			if (total > 0) {
 				recs.push({
-					icon: <LightBulbIcon className="h-5 w-5 text-pink-500 flex-shrink-0" />,
+					icon: <LightBulbIcon className="h-5 w-5 text-pink-500 shrink-0" />,
 					text: t("recommendations.quizTotal", { count: total })
 				});
 			}
@@ -145,7 +145,7 @@ export function Feedback() {
 			if (totalAll > 0) {
 				const acc = Math.round((totalCorrect / totalAll) * 100);
 				recs.push({
-					icon: <CheckCircleIcon className="h-5 w-5 text-green-600 flex-shrink-0" />,
+					icon: <CheckCircleIcon className="h-5 w-5 text-green-600 shrink-0" />,
 					text: t("recommendations.quizAccuracy", { percent: acc })
 				});
 			}
@@ -172,13 +172,13 @@ export function Feedback() {
 
 			if (morning >= afternoon && morning >= evening) {
 				bestSlot = "morning";
-				icon = <SunIcon className="h-5 w-5 text-yellow-500 flex-shrink-0" />;
+				icon = <SunIcon className="h-5 w-5 text-yellow-500 shrink-0" />;
 			} else if (afternoon >= morning && afternoon >= evening) {
 				bestSlot = "afternoon";
-				icon = <SunIcon className="h-5 w-5 text-amber-400 flex-shrink-0" />;
+				icon = <SunIcon className="h-5 w-5 text-amber-400 shrink-0" />;
 			} else {
 				bestSlot = "evening";
-				icon = <MoonIcon className="h-5 w-5 text-indigo-500 flex-shrink-0" />;
+				icon = <MoonIcon className="h-5 w-5 text-indigo-500 shrink-0" />;
 			}
 
 			recs.push({
@@ -197,7 +197,7 @@ export function Feedback() {
 			const sum = (arr: any[]) => arr.reduce((a, b) => a + (b.timeSeconds ?? 0), 0);
 			const diff = sum(last7) - sum(prev7);
 			recs.push({
-				icon: <ChartBarIcon className="h-5 w-5 text-blue-500 flex-shrink-0" />,
+				icon: <ChartBarIcon className="h-5 w-5 text-blue-500 shrink-0" />,
 				text: diff > 0 ? t("recommendations.trendUp") : t("recommendations.trendDown")
 			});
 		}

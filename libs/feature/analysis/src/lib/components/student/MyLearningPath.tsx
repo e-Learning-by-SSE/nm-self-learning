@@ -105,7 +105,7 @@ export function MyLearningPath() {
 			</div>
 
 			{/* Displays the current subject with its progress overview */}
-			<div className="flex-grow">
+			<div className="grow">
 				<p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 text-center sm:text-left">
 					{t("subject")}:{" "}
 					<span className="font-medium text-gray-800">{subject.title}</span>

@@ -146,6 +146,7 @@
 		"@swc/core": "1.15.40",
 		"@swc/helpers": "0.5.23",
 		"@swc/jest": "0.2.39",
+		"@tailwindcss/postcss": "^4.3.5",
 		"@tailwindcss/typography": "^0.5.19",
 		"@testing-library/dom": "^10.4.1",
 		"@testing-library/jest-dom": "^6.9.1",
@@ -198,12 +199,12 @@
 		"postcss": "8.5.32",
 		"prettier": "^3.8.3",
 		"prettier-plugin-prisma": "^5.0.0",
-		"prettier-plugin-tailwindcss": "^0.8.0",
+		"prettier-plugin-tailwindcss": "^0.8.1",
 		"prisma": "^7.10.1",
 		"react-i18next": "^16.6.6",
 		"sass": "^1.100.0",
 		"slugify": "^1.6.9",
-		"tailwindcss": "3.4.19",
+		"tailwindcss": "^4.3.5",
 		"ts-jest": "^29.4.11",
 		"ts-node": "10.9.2",
 		"tsx": "^4.22.3",
@@ -226,8 +227,8 @@
 		"@swagger-api/apidom-reference": {
 			"minimatch": "^11.0.1"
 		},
-         "@react-email/components": {
-            "@react-email/render": "2.2.0"
-        }
+		"@react-email/components": {
+			"@react-email/render": "2.2.0"
+		}
 	}
 }

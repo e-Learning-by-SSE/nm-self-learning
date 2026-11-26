@@ -62,7 +62,7 @@ export default function SubjectPage({ subject }: SubjectPageProps) {
 				title={title}
 				subtitle={subtitle}
 			/>
-			<div className="mx-auto flex max-w-screen-xl flex-col px-4 pt-8 xl:px-0">
+			<div className="mx-auto flex max-w-(--breakpoint-xl) flex-col px-4 pt-8 xl:px-0">
 				{specializations.length > 0 ? (
 					<ItemCardGrid>
 						{specializations.map(specialization => (
