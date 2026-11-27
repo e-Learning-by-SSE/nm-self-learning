@@ -1,5 +1,9 @@
 import { GroupRole, Prisma } from "@self-learning/database/server";
-import { database } from "@self-learning/database/server";
+import {
+	database,
+	getEstimatedRegistrationHistory,
+	getSignInStatistics
+} from "@self-learning/database/server";
 import { paginate, Paginated, paginationSchema } from "@self-learning/util/common";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -8,6 +12,8 @@ import { GroupRoleEnum, userSchema } from "@self-learning/types";
 import { deleteUser, deleteUserAndDependentData } from "@self-learning/admin";
 
 export const adminRouter = t.router({
+	userStatistics: adminProcedure.query(() => getSignInStatistics()),
+	registrationHistory: adminProcedure.query(() => getEstimatedRegistrationHistory()),
 	findUsers: authProcedure
 		.input(
 			paginationSchema.extend({ name: z.string().optional(), email: z.string().optional() })
@@ -65,6 +71,7 @@ export const adminRouter = t.router({
 				author: true,
 				student: true,
 				registrationCompleted: true,
+				isDeletionPlaceholder: true,
 				notificationSettings: true,
 				acceptedExperimentTerms: true,
 				declinedExperimentTerms: true,

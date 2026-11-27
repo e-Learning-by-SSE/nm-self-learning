@@ -43,6 +43,7 @@ export type UserMinAggregateOutputType = {
   image: string | null
   role: $Enums.UserRole | null
   defaultGroupId: number | null
+  isDeletionPlaceholder: boolean | null
   registrationCompleted: boolean | null
   acceptedExperimentTerms: Date | null
   declinedExperimentTerms: Date | null
@@ -57,6 +58,7 @@ export type UserMaxAggregateOutputType = {
   image: string | null
   role: $Enums.UserRole | null
   defaultGroupId: number | null
+  isDeletionPlaceholder: boolean | null
   registrationCompleted: boolean | null
   acceptedExperimentTerms: Date | null
   declinedExperimentTerms: Date | null
@@ -71,6 +73,7 @@ export type UserCountAggregateOutputType = {
   image: number
   role: number
   defaultGroupId: number
+  isDeletionPlaceholder: number
   registrationCompleted: number
   acceptedExperimentTerms: number
   declinedExperimentTerms: number
@@ -95,6 +98,7 @@ export type UserMinAggregateInputType = {
   image?: true
   role?: true
   defaultGroupId?: true
+  isDeletionPlaceholder?: true
   registrationCompleted?: true
   acceptedExperimentTerms?: true
   declinedExperimentTerms?: true
@@ -109,6 +113,7 @@ export type UserMaxAggregateInputType = {
   image?: true
   role?: true
   defaultGroupId?: true
+  isDeletionPlaceholder?: true
   registrationCompleted?: true
   acceptedExperimentTerms?: true
   declinedExperimentTerms?: true
@@ -123,6 +128,7 @@ export type UserCountAggregateInputType = {
   image?: true
   role?: true
   defaultGroupId?: true
+  isDeletionPlaceholder?: true
   registrationCompleted?: true
   acceptedExperimentTerms?: true
   declinedExperimentTerms?: true
@@ -224,6 +230,7 @@ export type UserGroupByOutputType = {
   image: string | null
   role: $Enums.UserRole
   defaultGroupId: number | null
+  isDeletionPlaceholder: boolean
   registrationCompleted: boolean
   acceptedExperimentTerms: Date | null
   declinedExperimentTerms: Date | null
@@ -261,6 +268,7 @@ export type UserWhereInput = {
   image?: Prisma.StringNullableFilter<"User"> | string | null
   role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole
   defaultGroupId?: Prisma.IntNullableFilter<"User"> | number | null
+  isDeletionPlaceholder?: Prisma.BoolFilter<"User"> | boolean
   registrationCompleted?: Prisma.BoolFilter<"User"> | boolean
   acceptedExperimentTerms?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   declinedExperimentTerms?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
@@ -276,6 +284,7 @@ export type UserWhereInput = {
   featureFlags?: Prisma.XOR<Prisma.FeaturesNullableScalarRelationFilter, Prisma.FeaturesWhereInput> | null
   memberships?: Prisma.MemberListRelationFilter
   defaultGroup?: Prisma.XOR<Prisma.GroupNullableScalarRelationFilter, Prisma.GroupWhereInput> | null
+  dailySignIns?: Prisma.DailySignInListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -287,6 +296,7 @@ export type UserOrderByWithRelationInput = {
   image?: Prisma.SortOrderInput | Prisma.SortOrder
   role?: Prisma.SortOrder
   defaultGroupId?: Prisma.SortOrderInput | Prisma.SortOrder
+  isDeletionPlaceholder?: Prisma.SortOrder
   registrationCompleted?: Prisma.SortOrder
   acceptedExperimentTerms?: Prisma.SortOrderInput | Prisma.SortOrder
   declinedExperimentTerms?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -302,6 +312,7 @@ export type UserOrderByWithRelationInput = {
   featureFlags?: Prisma.FeaturesOrderByWithRelationInput
   memberships?: Prisma.MemberOrderByRelationAggregateInput
   defaultGroup?: Prisma.GroupOrderByWithRelationInput
+  dailySignIns?: Prisma.DailySignInOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -316,6 +327,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   image?: Prisma.StringNullableFilter<"User"> | string | null
   role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole
   defaultGroupId?: Prisma.IntNullableFilter<"User"> | number | null
+  isDeletionPlaceholder?: Prisma.BoolFilter<"User"> | boolean
   registrationCompleted?: Prisma.BoolFilter<"User"> | boolean
   acceptedExperimentTerms?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   declinedExperimentTerms?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
@@ -331,6 +343,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   featureFlags?: Prisma.XOR<Prisma.FeaturesNullableScalarRelationFilter, Prisma.FeaturesWhereInput> | null
   memberships?: Prisma.MemberListRelationFilter
   defaultGroup?: Prisma.XOR<Prisma.GroupNullableScalarRelationFilter, Prisma.GroupWhereInput> | null
+  dailySignIns?: Prisma.DailySignInListRelationFilter
 }, "id" | "name" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -342,6 +355,7 @@ export type UserOrderByWithAggregationInput = {
   image?: Prisma.SortOrderInput | Prisma.SortOrder
   role?: Prisma.SortOrder
   defaultGroupId?: Prisma.SortOrderInput | Prisma.SortOrder
+  isDeletionPlaceholder?: Prisma.SortOrder
   registrationCompleted?: Prisma.SortOrder
   acceptedExperimentTerms?: Prisma.SortOrderInput | Prisma.SortOrder
   declinedExperimentTerms?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -364,6 +378,7 @@ export type UserScalarWhereWithAggregatesInput = {
   image?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   role?: Prisma.EnumUserRoleWithAggregatesFilter<"User"> | $Enums.UserRole
   defaultGroupId?: Prisma.IntNullableWithAggregatesFilter<"User"> | number | null
+  isDeletionPlaceholder?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   registrationCompleted?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   acceptedExperimentTerms?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   declinedExperimentTerms?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
@@ -377,6 +392,7 @@ export type UserCreateInput = {
   emailVerified?: Date | string | null
   image?: string | null
   role?: $Enums.UserRole
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -392,6 +408,7 @@ export type UserCreateInput = {
   featureFlags?: Prisma.FeaturesCreateNestedOneWithoutUserInput
   memberships?: Prisma.MemberCreateNestedManyWithoutUserInput
   defaultGroup?: Prisma.GroupCreateNestedOneWithoutUserInput
+  dailySignIns?: Prisma.DailySignInCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -403,6 +420,7 @@ export type UserUncheckedCreateInput = {
   image?: string | null
   role?: $Enums.UserRole
   defaultGroupId?: number | null
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -417,6 +435,7 @@ export type UserUncheckedCreateInput = {
   notificationSettings?: Prisma.UserNotificationSettingUncheckedCreateNestedManyWithoutUserInput
   featureFlags?: Prisma.FeaturesUncheckedCreateNestedOneWithoutUserInput
   memberships?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
+  dailySignIns?: Prisma.DailySignInUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -427,6 +446,7 @@ export type UserUpdateInput = {
   emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -442,6 +462,7 @@ export type UserUpdateInput = {
   featureFlags?: Prisma.FeaturesUpdateOneWithoutUserNestedInput
   memberships?: Prisma.MemberUpdateManyWithoutUserNestedInput
   defaultGroup?: Prisma.GroupUpdateOneWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -453,6 +474,7 @@ export type UserUncheckedUpdateInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   defaultGroupId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -467,6 +489,7 @@ export type UserUncheckedUpdateInput = {
   notificationSettings?: Prisma.UserNotificationSettingUncheckedUpdateManyWithoutUserNestedInput
   featureFlags?: Prisma.FeaturesUncheckedUpdateOneWithoutUserNestedInput
   memberships?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -478,6 +501,7 @@ export type UserCreateManyInput = {
   image?: string | null
   role?: $Enums.UserRole
   defaultGroupId?: number | null
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -491,6 +515,7 @@ export type UserUpdateManyMutationInput = {
   emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -505,6 +530,7 @@ export type UserUncheckedUpdateManyInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   defaultGroupId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -529,6 +555,7 @@ export type UserCountOrderByAggregateInput = {
   image?: Prisma.SortOrder
   role?: Prisma.SortOrder
   defaultGroupId?: Prisma.SortOrder
+  isDeletionPlaceholder?: Prisma.SortOrder
   registrationCompleted?: Prisma.SortOrder
   acceptedExperimentTerms?: Prisma.SortOrder
   declinedExperimentTerms?: Prisma.SortOrder
@@ -547,6 +574,7 @@ export type UserMaxOrderByAggregateInput = {
   image?: Prisma.SortOrder
   role?: Prisma.SortOrder
   defaultGroupId?: Prisma.SortOrder
+  isDeletionPlaceholder?: Prisma.SortOrder
   registrationCompleted?: Prisma.SortOrder
   acceptedExperimentTerms?: Prisma.SortOrder
   declinedExperimentTerms?: Prisma.SortOrder
@@ -561,6 +589,7 @@ export type UserMinOrderByAggregateInput = {
   image?: Prisma.SortOrder
   role?: Prisma.SortOrder
   defaultGroupId?: Prisma.SortOrder
+  isDeletionPlaceholder?: Prisma.SortOrder
   registrationCompleted?: Prisma.SortOrder
   acceptedExperimentTerms?: Prisma.SortOrder
   declinedExperimentTerms?: Prisma.SortOrder
@@ -782,6 +811,20 @@ export type UserUpdateOneRequiredWithoutFeatureFlagsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutFeatureFlagsInput, Prisma.UserUpdateWithoutFeatureFlagsInput>, Prisma.UserUncheckedUpdateWithoutFeatureFlagsInput>
 }
 
+export type UserCreateNestedOneWithoutDailySignInsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutDailySignInsInput, Prisma.UserUncheckedCreateWithoutDailySignInsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutDailySignInsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutDailySignInsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutDailySignInsInput, Prisma.UserUncheckedCreateWithoutDailySignInsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutDailySignInsInput
+  upsert?: Prisma.UserUpsertWithoutDailySignInsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutDailySignInsInput, Prisma.UserUpdateWithoutDailySignInsInput>, Prisma.UserUncheckedUpdateWithoutDailySignInsInput>
+}
+
 export type UserCreateWithoutGamificationProfileInput = {
   id?: string
   name: string
@@ -790,6 +833,7 @@ export type UserCreateWithoutGamificationProfileInput = {
   emailVerified?: Date | string | null
   image?: string | null
   role?: $Enums.UserRole
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -804,6 +848,7 @@ export type UserCreateWithoutGamificationProfileInput = {
   featureFlags?: Prisma.FeaturesCreateNestedOneWithoutUserInput
   memberships?: Prisma.MemberCreateNestedManyWithoutUserInput
   defaultGroup?: Prisma.GroupCreateNestedOneWithoutUserInput
+  dailySignIns?: Prisma.DailySignInCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutGamificationProfileInput = {
@@ -815,6 +860,7 @@ export type UserUncheckedCreateWithoutGamificationProfileInput = {
   image?: string | null
   role?: $Enums.UserRole
   defaultGroupId?: number | null
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -828,6 +874,7 @@ export type UserUncheckedCreateWithoutGamificationProfileInput = {
   notificationSettings?: Prisma.UserNotificationSettingUncheckedCreateNestedManyWithoutUserInput
   featureFlags?: Prisma.FeaturesUncheckedCreateNestedOneWithoutUserInput
   memberships?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
+  dailySignIns?: Prisma.DailySignInUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutGamificationProfileInput = {
@@ -854,6 +901,7 @@ export type UserUpdateWithoutGamificationProfileInput = {
   emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -868,6 +916,7 @@ export type UserUpdateWithoutGamificationProfileInput = {
   featureFlags?: Prisma.FeaturesUpdateOneWithoutUserNestedInput
   memberships?: Prisma.MemberUpdateManyWithoutUserNestedInput
   defaultGroup?: Prisma.GroupUpdateOneWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutGamificationProfileInput = {
@@ -879,6 +928,7 @@ export type UserUncheckedUpdateWithoutGamificationProfileInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   defaultGroupId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -892,6 +942,7 @@ export type UserUncheckedUpdateWithoutGamificationProfileInput = {
   notificationSettings?: Prisma.UserNotificationSettingUncheckedUpdateManyWithoutUserNestedInput
   featureFlags?: Prisma.FeaturesUncheckedUpdateOneWithoutUserNestedInput
   memberships?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutUploadedAssetsInput = {
@@ -902,6 +953,7 @@ export type UserCreateWithoutUploadedAssetsInput = {
   emailVerified?: Date | string | null
   image?: string | null
   role?: $Enums.UserRole
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -916,6 +968,7 @@ export type UserCreateWithoutUploadedAssetsInput = {
   featureFlags?: Prisma.FeaturesCreateNestedOneWithoutUserInput
   memberships?: Prisma.MemberCreateNestedManyWithoutUserInput
   defaultGroup?: Prisma.GroupCreateNestedOneWithoutUserInput
+  dailySignIns?: Prisma.DailySignInCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutUploadedAssetsInput = {
@@ -927,6 +980,7 @@ export type UserUncheckedCreateWithoutUploadedAssetsInput = {
   image?: string | null
   role?: $Enums.UserRole
   defaultGroupId?: number | null
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -940,6 +994,7 @@ export type UserUncheckedCreateWithoutUploadedAssetsInput = {
   notificationSettings?: Prisma.UserNotificationSettingUncheckedCreateNestedManyWithoutUserInput
   featureFlags?: Prisma.FeaturesUncheckedCreateNestedOneWithoutUserInput
   memberships?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
+  dailySignIns?: Prisma.DailySignInUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutUploadedAssetsInput = {
@@ -966,6 +1021,7 @@ export type UserUpdateWithoutUploadedAssetsInput = {
   emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -980,6 +1036,7 @@ export type UserUpdateWithoutUploadedAssetsInput = {
   featureFlags?: Prisma.FeaturesUpdateOneWithoutUserNestedInput
   memberships?: Prisma.MemberUpdateManyWithoutUserNestedInput
   defaultGroup?: Prisma.GroupUpdateOneWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutUploadedAssetsInput = {
@@ -991,6 +1048,7 @@ export type UserUncheckedUpdateWithoutUploadedAssetsInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   defaultGroupId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1004,6 +1062,7 @@ export type UserUncheckedUpdateWithoutUploadedAssetsInput = {
   notificationSettings?: Prisma.UserNotificationSettingUncheckedUpdateManyWithoutUserNestedInput
   featureFlags?: Prisma.FeaturesUncheckedUpdateOneWithoutUserNestedInput
   memberships?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutNotificationsInput = {
@@ -1014,6 +1073,7 @@ export type UserCreateWithoutNotificationsInput = {
   emailVerified?: Date | string | null
   image?: string | null
   role?: $Enums.UserRole
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -1028,6 +1088,7 @@ export type UserCreateWithoutNotificationsInput = {
   featureFlags?: Prisma.FeaturesCreateNestedOneWithoutUserInput
   memberships?: Prisma.MemberCreateNestedManyWithoutUserInput
   defaultGroup?: Prisma.GroupCreateNestedOneWithoutUserInput
+  dailySignIns?: Prisma.DailySignInCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -1039,6 +1100,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   image?: string | null
   role?: $Enums.UserRole
   defaultGroupId?: number | null
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -1052,6 +1114,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   notificationSettings?: Prisma.UserNotificationSettingUncheckedCreateNestedManyWithoutUserInput
   featureFlags?: Prisma.FeaturesUncheckedCreateNestedOneWithoutUserInput
   memberships?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
+  dailySignIns?: Prisma.DailySignInUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -1078,6 +1141,7 @@ export type UserUpdateWithoutNotificationsInput = {
   emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1092,6 +1156,7 @@ export type UserUpdateWithoutNotificationsInput = {
   featureFlags?: Prisma.FeaturesUpdateOneWithoutUserNestedInput
   memberships?: Prisma.MemberUpdateManyWithoutUserNestedInput
   defaultGroup?: Prisma.GroupUpdateOneWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -1103,6 +1168,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   defaultGroupId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1116,6 +1182,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   notificationSettings?: Prisma.UserNotificationSettingUncheckedUpdateManyWithoutUserNestedInput
   featureFlags?: Prisma.FeaturesUncheckedUpdateOneWithoutUserNestedInput
   memberships?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutNotificationSettingsInput = {
@@ -1126,6 +1193,7 @@ export type UserCreateWithoutNotificationSettingsInput = {
   emailVerified?: Date | string | null
   image?: string | null
   role?: $Enums.UserRole
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -1140,6 +1208,7 @@ export type UserCreateWithoutNotificationSettingsInput = {
   featureFlags?: Prisma.FeaturesCreateNestedOneWithoutUserInput
   memberships?: Prisma.MemberCreateNestedManyWithoutUserInput
   defaultGroup?: Prisma.GroupCreateNestedOneWithoutUserInput
+  dailySignIns?: Prisma.DailySignInCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutNotificationSettingsInput = {
@@ -1151,6 +1220,7 @@ export type UserUncheckedCreateWithoutNotificationSettingsInput = {
   image?: string | null
   role?: $Enums.UserRole
   defaultGroupId?: number | null
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -1164,6 +1234,7 @@ export type UserUncheckedCreateWithoutNotificationSettingsInput = {
   reminders?: Prisma.ReminderLogUncheckedCreateNestedManyWithoutUserInput
   featureFlags?: Prisma.FeaturesUncheckedCreateNestedOneWithoutUserInput
   memberships?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
+  dailySignIns?: Prisma.DailySignInUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutNotificationSettingsInput = {
@@ -1190,6 +1261,7 @@ export type UserUpdateWithoutNotificationSettingsInput = {
   emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1204,6 +1276,7 @@ export type UserUpdateWithoutNotificationSettingsInput = {
   featureFlags?: Prisma.FeaturesUpdateOneWithoutUserNestedInput
   memberships?: Prisma.MemberUpdateManyWithoutUserNestedInput
   defaultGroup?: Prisma.GroupUpdateOneWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNotificationSettingsInput = {
@@ -1215,6 +1288,7 @@ export type UserUncheckedUpdateWithoutNotificationSettingsInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   defaultGroupId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1228,6 +1302,7 @@ export type UserUncheckedUpdateWithoutNotificationSettingsInput = {
   reminders?: Prisma.ReminderLogUncheckedUpdateManyWithoutUserNestedInput
   featureFlags?: Prisma.FeaturesUncheckedUpdateOneWithoutUserNestedInput
   memberships?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutRemindersInput = {
@@ -1238,6 +1313,7 @@ export type UserCreateWithoutRemindersInput = {
   emailVerified?: Date | string | null
   image?: string | null
   role?: $Enums.UserRole
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -1252,6 +1328,7 @@ export type UserCreateWithoutRemindersInput = {
   featureFlags?: Prisma.FeaturesCreateNestedOneWithoutUserInput
   memberships?: Prisma.MemberCreateNestedManyWithoutUserInput
   defaultGroup?: Prisma.GroupCreateNestedOneWithoutUserInput
+  dailySignIns?: Prisma.DailySignInCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutRemindersInput = {
@@ -1263,6 +1340,7 @@ export type UserUncheckedCreateWithoutRemindersInput = {
   image?: string | null
   role?: $Enums.UserRole
   defaultGroupId?: number | null
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -1276,6 +1354,7 @@ export type UserUncheckedCreateWithoutRemindersInput = {
   notificationSettings?: Prisma.UserNotificationSettingUncheckedCreateNestedManyWithoutUserInput
   featureFlags?: Prisma.FeaturesUncheckedCreateNestedOneWithoutUserInput
   memberships?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
+  dailySignIns?: Prisma.DailySignInUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutRemindersInput = {
@@ -1302,6 +1381,7 @@ export type UserUpdateWithoutRemindersInput = {
   emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1316,6 +1396,7 @@ export type UserUpdateWithoutRemindersInput = {
   featureFlags?: Prisma.FeaturesUpdateOneWithoutUserNestedInput
   memberships?: Prisma.MemberUpdateManyWithoutUserNestedInput
   defaultGroup?: Prisma.GroupUpdateOneWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRemindersInput = {
@@ -1327,6 +1408,7 @@ export type UserUncheckedUpdateWithoutRemindersInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   defaultGroupId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1340,6 +1422,7 @@ export type UserUncheckedUpdateWithoutRemindersInput = {
   notificationSettings?: Prisma.UserNotificationSettingUncheckedUpdateManyWithoutUserNestedInput
   featureFlags?: Prisma.FeaturesUncheckedUpdateOneWithoutUserNestedInput
   memberships?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutStudentInput = {
@@ -1350,6 +1433,7 @@ export type UserCreateWithoutStudentInput = {
   emailVerified?: Date | string | null
   image?: string | null
   role?: $Enums.UserRole
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -1364,6 +1448,7 @@ export type UserCreateWithoutStudentInput = {
   featureFlags?: Prisma.FeaturesCreateNestedOneWithoutUserInput
   memberships?: Prisma.MemberCreateNestedManyWithoutUserInput
   defaultGroup?: Prisma.GroupCreateNestedOneWithoutUserInput
+  dailySignIns?: Prisma.DailySignInCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutStudentInput = {
@@ -1375,6 +1460,7 @@ export type UserUncheckedCreateWithoutStudentInput = {
   image?: string | null
   role?: $Enums.UserRole
   defaultGroupId?: number | null
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -1388,6 +1474,7 @@ export type UserUncheckedCreateWithoutStudentInput = {
   notificationSettings?: Prisma.UserNotificationSettingUncheckedCreateNestedManyWithoutUserInput
   featureFlags?: Prisma.FeaturesUncheckedCreateNestedOneWithoutUserInput
   memberships?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
+  dailySignIns?: Prisma.DailySignInUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutStudentInput = {
@@ -1414,6 +1501,7 @@ export type UserUpdateWithoutStudentInput = {
   emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1428,6 +1516,7 @@ export type UserUpdateWithoutStudentInput = {
   featureFlags?: Prisma.FeaturesUpdateOneWithoutUserNestedInput
   memberships?: Prisma.MemberUpdateManyWithoutUserNestedInput
   defaultGroup?: Prisma.GroupUpdateOneWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutStudentInput = {
@@ -1439,6 +1528,7 @@ export type UserUncheckedUpdateWithoutStudentInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   defaultGroupId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1452,6 +1542,7 @@ export type UserUncheckedUpdateWithoutStudentInput = {
   notificationSettings?: Prisma.UserNotificationSettingUncheckedUpdateManyWithoutUserNestedInput
   featureFlags?: Prisma.FeaturesUncheckedUpdateOneWithoutUserNestedInput
   memberships?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAuthorInput = {
@@ -1462,6 +1553,7 @@ export type UserCreateWithoutAuthorInput = {
   emailVerified?: Date | string | null
   image?: string | null
   role?: $Enums.UserRole
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -1476,6 +1568,7 @@ export type UserCreateWithoutAuthorInput = {
   featureFlags?: Prisma.FeaturesCreateNestedOneWithoutUserInput
   memberships?: Prisma.MemberCreateNestedManyWithoutUserInput
   defaultGroup?: Prisma.GroupCreateNestedOneWithoutUserInput
+  dailySignIns?: Prisma.DailySignInCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAuthorInput = {
@@ -1487,6 +1580,7 @@ export type UserUncheckedCreateWithoutAuthorInput = {
   image?: string | null
   role?: $Enums.UserRole
   defaultGroupId?: number | null
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -1500,6 +1594,7 @@ export type UserUncheckedCreateWithoutAuthorInput = {
   notificationSettings?: Prisma.UserNotificationSettingUncheckedCreateNestedManyWithoutUserInput
   featureFlags?: Prisma.FeaturesUncheckedCreateNestedOneWithoutUserInput
   memberships?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
+  dailySignIns?: Prisma.DailySignInUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAuthorInput = {
@@ -1526,6 +1621,7 @@ export type UserUpdateWithoutAuthorInput = {
   emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1540,6 +1636,7 @@ export type UserUpdateWithoutAuthorInput = {
   featureFlags?: Prisma.FeaturesUpdateOneWithoutUserNestedInput
   memberships?: Prisma.MemberUpdateManyWithoutUserNestedInput
   defaultGroup?: Prisma.GroupUpdateOneWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAuthorInput = {
@@ -1551,6 +1648,7 @@ export type UserUncheckedUpdateWithoutAuthorInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   defaultGroupId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1564,6 +1662,7 @@ export type UserUncheckedUpdateWithoutAuthorInput = {
   notificationSettings?: Prisma.UserNotificationSettingUncheckedUpdateManyWithoutUserNestedInput
   featureFlags?: Prisma.FeaturesUncheckedUpdateOneWithoutUserNestedInput
   memberships?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAccountsInput = {
@@ -1574,6 +1673,7 @@ export type UserCreateWithoutAccountsInput = {
   emailVerified?: Date | string | null
   image?: string | null
   role?: $Enums.UserRole
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -1588,6 +1688,7 @@ export type UserCreateWithoutAccountsInput = {
   featureFlags?: Prisma.FeaturesCreateNestedOneWithoutUserInput
   memberships?: Prisma.MemberCreateNestedManyWithoutUserInput
   defaultGroup?: Prisma.GroupCreateNestedOneWithoutUserInput
+  dailySignIns?: Prisma.DailySignInCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -1599,6 +1700,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   image?: string | null
   role?: $Enums.UserRole
   defaultGroupId?: number | null
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -1612,6 +1714,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   notificationSettings?: Prisma.UserNotificationSettingUncheckedCreateNestedManyWithoutUserInput
   featureFlags?: Prisma.FeaturesUncheckedCreateNestedOneWithoutUserInput
   memberships?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
+  dailySignIns?: Prisma.DailySignInUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -1638,6 +1741,7 @@ export type UserUpdateWithoutAccountsInput = {
   emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1652,6 +1756,7 @@ export type UserUpdateWithoutAccountsInput = {
   featureFlags?: Prisma.FeaturesUpdateOneWithoutUserNestedInput
   memberships?: Prisma.MemberUpdateManyWithoutUserNestedInput
   defaultGroup?: Prisma.GroupUpdateOneWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -1663,6 +1768,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   defaultGroupId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1676,6 +1782,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   notificationSettings?: Prisma.UserNotificationSettingUncheckedUpdateManyWithoutUserNestedInput
   featureFlags?: Prisma.FeaturesUncheckedUpdateOneWithoutUserNestedInput
   memberships?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
@@ -1686,6 +1793,7 @@ export type UserCreateWithoutSessionsInput = {
   emailVerified?: Date | string | null
   image?: string | null
   role?: $Enums.UserRole
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -1700,6 +1808,7 @@ export type UserCreateWithoutSessionsInput = {
   featureFlags?: Prisma.FeaturesCreateNestedOneWithoutUserInput
   memberships?: Prisma.MemberCreateNestedManyWithoutUserInput
   defaultGroup?: Prisma.GroupCreateNestedOneWithoutUserInput
+  dailySignIns?: Prisma.DailySignInCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -1711,6 +1820,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   image?: string | null
   role?: $Enums.UserRole
   defaultGroupId?: number | null
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -1724,6 +1834,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   notificationSettings?: Prisma.UserNotificationSettingUncheckedCreateNestedManyWithoutUserInput
   featureFlags?: Prisma.FeaturesUncheckedCreateNestedOneWithoutUserInput
   memberships?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
+  dailySignIns?: Prisma.DailySignInUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -1750,6 +1861,7 @@ export type UserUpdateWithoutSessionsInput = {
   emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1764,6 +1876,7 @@ export type UserUpdateWithoutSessionsInput = {
   featureFlags?: Prisma.FeaturesUpdateOneWithoutUserNestedInput
   memberships?: Prisma.MemberUpdateManyWithoutUserNestedInput
   defaultGroup?: Prisma.GroupUpdateOneWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -1775,6 +1888,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   defaultGroupId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1788,6 +1902,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   notificationSettings?: Prisma.UserNotificationSettingUncheckedUpdateManyWithoutUserNestedInput
   featureFlags?: Prisma.FeaturesUncheckedUpdateOneWithoutUserNestedInput
   memberships?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutMembershipsInput = {
@@ -1798,6 +1913,7 @@ export type UserCreateWithoutMembershipsInput = {
   emailVerified?: Date | string | null
   image?: string | null
   role?: $Enums.UserRole
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -1812,6 +1928,7 @@ export type UserCreateWithoutMembershipsInput = {
   notificationSettings?: Prisma.UserNotificationSettingCreateNestedManyWithoutUserInput
   featureFlags?: Prisma.FeaturesCreateNestedOneWithoutUserInput
   defaultGroup?: Prisma.GroupCreateNestedOneWithoutUserInput
+  dailySignIns?: Prisma.DailySignInCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutMembershipsInput = {
@@ -1823,6 +1940,7 @@ export type UserUncheckedCreateWithoutMembershipsInput = {
   image?: string | null
   role?: $Enums.UserRole
   defaultGroupId?: number | null
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -1836,6 +1954,7 @@ export type UserUncheckedCreateWithoutMembershipsInput = {
   reminders?: Prisma.ReminderLogUncheckedCreateNestedManyWithoutUserInput
   notificationSettings?: Prisma.UserNotificationSettingUncheckedCreateNestedManyWithoutUserInput
   featureFlags?: Prisma.FeaturesUncheckedCreateNestedOneWithoutUserInput
+  dailySignIns?: Prisma.DailySignInUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutMembershipsInput = {
@@ -1862,6 +1981,7 @@ export type UserUpdateWithoutMembershipsInput = {
   emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1876,6 +1996,7 @@ export type UserUpdateWithoutMembershipsInput = {
   notificationSettings?: Prisma.UserNotificationSettingUpdateManyWithoutUserNestedInput
   featureFlags?: Prisma.FeaturesUpdateOneWithoutUserNestedInput
   defaultGroup?: Prisma.GroupUpdateOneWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMembershipsInput = {
@@ -1887,6 +2008,7 @@ export type UserUncheckedUpdateWithoutMembershipsInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   defaultGroupId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1900,6 +2022,7 @@ export type UserUncheckedUpdateWithoutMembershipsInput = {
   reminders?: Prisma.ReminderLogUncheckedUpdateManyWithoutUserNestedInput
   notificationSettings?: Prisma.UserNotificationSettingUncheckedUpdateManyWithoutUserNestedInput
   featureFlags?: Prisma.FeaturesUncheckedUpdateOneWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutDefaultGroupInput = {
@@ -1910,6 +2033,7 @@ export type UserCreateWithoutDefaultGroupInput = {
   emailVerified?: Date | string | null
   image?: string | null
   role?: $Enums.UserRole
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -1924,6 +2048,7 @@ export type UserCreateWithoutDefaultGroupInput = {
   notificationSettings?: Prisma.UserNotificationSettingCreateNestedManyWithoutUserInput
   featureFlags?: Prisma.FeaturesCreateNestedOneWithoutUserInput
   memberships?: Prisma.MemberCreateNestedManyWithoutUserInput
+  dailySignIns?: Prisma.DailySignInCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutDefaultGroupInput = {
@@ -1934,6 +2059,7 @@ export type UserUncheckedCreateWithoutDefaultGroupInput = {
   emailVerified?: Date | string | null
   image?: string | null
   role?: $Enums.UserRole
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -1948,6 +2074,7 @@ export type UserUncheckedCreateWithoutDefaultGroupInput = {
   notificationSettings?: Prisma.UserNotificationSettingUncheckedCreateNestedManyWithoutUserInput
   featureFlags?: Prisma.FeaturesUncheckedCreateNestedOneWithoutUserInput
   memberships?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
+  dailySignIns?: Prisma.DailySignInUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutDefaultGroupInput = {
@@ -1988,6 +2115,7 @@ export type UserScalarWhereInput = {
   image?: Prisma.StringNullableFilter<"User"> | string | null
   role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole
   defaultGroupId?: Prisma.IntNullableFilter<"User"> | number | null
+  isDeletionPlaceholder?: Prisma.BoolFilter<"User"> | boolean
   registrationCompleted?: Prisma.BoolFilter<"User"> | boolean
   acceptedExperimentTerms?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   declinedExperimentTerms?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
@@ -2001,6 +2129,7 @@ export type UserCreateWithoutFeatureFlagsInput = {
   emailVerified?: Date | string | null
   image?: string | null
   role?: $Enums.UserRole
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -2015,6 +2144,7 @@ export type UserCreateWithoutFeatureFlagsInput = {
   notificationSettings?: Prisma.UserNotificationSettingCreateNestedManyWithoutUserInput
   memberships?: Prisma.MemberCreateNestedManyWithoutUserInput
   defaultGroup?: Prisma.GroupCreateNestedOneWithoutUserInput
+  dailySignIns?: Prisma.DailySignInCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutFeatureFlagsInput = {
@@ -2026,6 +2156,7 @@ export type UserUncheckedCreateWithoutFeatureFlagsInput = {
   image?: string | null
   role?: $Enums.UserRole
   defaultGroupId?: number | null
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
@@ -2039,6 +2170,7 @@ export type UserUncheckedCreateWithoutFeatureFlagsInput = {
   reminders?: Prisma.ReminderLogUncheckedCreateNestedManyWithoutUserInput
   notificationSettings?: Prisma.UserNotificationSettingUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
+  dailySignIns?: Prisma.DailySignInUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutFeatureFlagsInput = {
@@ -2065,6 +2197,7 @@ export type UserUpdateWithoutFeatureFlagsInput = {
   emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2079,6 +2212,7 @@ export type UserUpdateWithoutFeatureFlagsInput = {
   notificationSettings?: Prisma.UserNotificationSettingUpdateManyWithoutUserNestedInput
   memberships?: Prisma.MemberUpdateManyWithoutUserNestedInput
   defaultGroup?: Prisma.GroupUpdateOneWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutFeatureFlagsInput = {
@@ -2090,6 +2224,7 @@ export type UserUncheckedUpdateWithoutFeatureFlagsInput = {
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   defaultGroupId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2103,9 +2238,10 @@ export type UserUncheckedUpdateWithoutFeatureFlagsInput = {
   reminders?: Prisma.ReminderLogUncheckedUpdateManyWithoutUserNestedInput
   notificationSettings?: Prisma.UserNotificationSettingUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUncheckedUpdateManyWithoutUserNestedInput
 }
 
-export type UserCreateManyDefaultGroupInput = {
+export type UserCreateWithoutDailySignInsInput = {
   id?: string
   name: string
   displayName: string
@@ -2113,12 +2249,67 @@ export type UserCreateManyDefaultGroupInput = {
   emailVerified?: Date | string | null
   image?: string | null
   role?: $Enums.UserRole
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: Date | string | null
   declinedExperimentTerms?: Date | string | null
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  author?: Prisma.AuthorCreateNestedOneWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  student?: Prisma.StudentCreateNestedOneWithoutUserInput
+  gamificationProfile?: Prisma.GamificationProfileCreateNestedOneWithoutUserInput
+  uploadedAssets?: Prisma.UploadedAssetsCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUserCreateNestedManyWithoutUserInput
+  reminders?: Prisma.ReminderLogCreateNestedManyWithoutUserInput
+  notificationSettings?: Prisma.UserNotificationSettingCreateNestedManyWithoutUserInput
+  featureFlags?: Prisma.FeaturesCreateNestedOneWithoutUserInput
+  memberships?: Prisma.MemberCreateNestedManyWithoutUserInput
+  defaultGroup?: Prisma.GroupCreateNestedOneWithoutUserInput
 }
 
-export type UserUpdateWithoutDefaultGroupInput = {
+export type UserUncheckedCreateWithoutDailySignInsInput = {
+  id?: string
+  name: string
+  displayName: string
+  email?: string | null
+  emailVerified?: Date | string | null
+  image?: string | null
+  role?: $Enums.UserRole
+  defaultGroupId?: number | null
+  isDeletionPlaceholder?: boolean
+  registrationCompleted?: boolean
+  acceptedExperimentTerms?: Date | string | null
+  declinedExperimentTerms?: Date | string | null
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  author?: Prisma.AuthorUncheckedCreateNestedOneWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  student?: Prisma.StudentUncheckedCreateNestedOneWithoutUserInput
+  gamificationProfile?: Prisma.GamificationProfileUncheckedCreateNestedOneWithoutUserInput
+  uploadedAssets?: Prisma.UploadedAssetsUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUserUncheckedCreateNestedManyWithoutUserInput
+  reminders?: Prisma.ReminderLogUncheckedCreateNestedManyWithoutUserInput
+  notificationSettings?: Prisma.UserNotificationSettingUncheckedCreateNestedManyWithoutUserInput
+  featureFlags?: Prisma.FeaturesUncheckedCreateNestedOneWithoutUserInput
+  memberships?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutDailySignInsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutDailySignInsInput, Prisma.UserUncheckedCreateWithoutDailySignInsInput>
+}
+
+export type UserUpsertWithoutDailySignInsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutDailySignInsInput, Prisma.UserUncheckedUpdateWithoutDailySignInsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutDailySignInsInput, Prisma.UserUncheckedCreateWithoutDailySignInsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutDailySignInsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutDailySignInsInput, Prisma.UserUncheckedUpdateWithoutDailySignInsInput>
+}
+
+export type UserUpdateWithoutDailySignInsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2126,6 +2317,7 @@ export type UserUpdateWithoutDefaultGroupInput = {
   emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2140,9 +2332,10 @@ export type UserUpdateWithoutDefaultGroupInput = {
   notificationSettings?: Prisma.UserNotificationSettingUpdateManyWithoutUserNestedInput
   featureFlags?: Prisma.FeaturesUpdateOneWithoutUserNestedInput
   memberships?: Prisma.MemberUpdateManyWithoutUserNestedInput
+  defaultGroup?: Prisma.GroupUpdateOneWithoutUserNestedInput
 }
 
-export type UserUncheckedUpdateWithoutDefaultGroupInput = {
+export type UserUncheckedUpdateWithoutDailySignInsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   displayName?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2150,6 +2343,8 @@ export type UserUncheckedUpdateWithoutDefaultGroupInput = {
   emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  defaultGroupId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2166,6 +2361,72 @@ export type UserUncheckedUpdateWithoutDefaultGroupInput = {
   memberships?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
 }
 
+export type UserCreateManyDefaultGroupInput = {
+  id?: string
+  name: string
+  displayName: string
+  email?: string | null
+  emailVerified?: Date | string | null
+  image?: string | null
+  role?: $Enums.UserRole
+  isDeletionPlaceholder?: boolean
+  registrationCompleted?: boolean
+  acceptedExperimentTerms?: Date | string | null
+  declinedExperimentTerms?: Date | string | null
+}
+
+export type UserUpdateWithoutDefaultGroupInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  author?: Prisma.AuthorUpdateOneWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  student?: Prisma.StudentUpdateOneWithoutUserNestedInput
+  gamificationProfile?: Prisma.GamificationProfileUpdateOneWithoutUserNestedInput
+  uploadedAssets?: Prisma.UploadedAssetsUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUserUpdateManyWithoutUserNestedInput
+  reminders?: Prisma.ReminderLogUpdateManyWithoutUserNestedInput
+  notificationSettings?: Prisma.UserNotificationSettingUpdateManyWithoutUserNestedInput
+  featureFlags?: Prisma.FeaturesUpdateOneWithoutUserNestedInput
+  memberships?: Prisma.MemberUpdateManyWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutDefaultGroupInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  author?: Prisma.AuthorUncheckedUpdateOneWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  student?: Prisma.StudentUncheckedUpdateOneWithoutUserNestedInput
+  gamificationProfile?: Prisma.GamificationProfileUncheckedUpdateOneWithoutUserNestedInput
+  uploadedAssets?: Prisma.UploadedAssetsUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUserUncheckedUpdateManyWithoutUserNestedInput
+  reminders?: Prisma.ReminderLogUncheckedUpdateManyWithoutUserNestedInput
+  notificationSettings?: Prisma.UserNotificationSettingUncheckedUpdateManyWithoutUserNestedInput
+  featureFlags?: Prisma.FeaturesUncheckedUpdateOneWithoutUserNestedInput
+  memberships?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
+  dailySignIns?: Prisma.DailySignInUncheckedUpdateManyWithoutUserNestedInput
+}
+
 export type UserUncheckedUpdateManyWithoutDefaultGroupInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2174,6 +2435,7 @@ export type UserUncheckedUpdateManyWithoutDefaultGroupInput = {
   emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isDeletionPlaceholder?: Prisma.BoolFieldUpdateOperationsInput | boolean
   registrationCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declinedExperimentTerms?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2192,6 +2454,7 @@ export type UserCountOutputType = {
   reminders: number
   notificationSettings: number
   memberships: number
+  dailySignIns: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2202,6 +2465,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   reminders?: boolean | UserCountOutputTypeCountRemindersArgs
   notificationSettings?: boolean | UserCountOutputTypeCountNotificationSettingsArgs
   memberships?: boolean | UserCountOutputTypeCountMembershipsArgs
+  dailySignIns?: boolean | UserCountOutputTypeCountDailySignInsArgs
 }
 
 /**
@@ -2263,6 +2527,13 @@ export type UserCountOutputTypeCountMembershipsArgs<ExtArgs extends runtime.Type
   where?: Prisma.MemberWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountDailySignInsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DailySignInWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2273,6 +2544,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   image?: boolean
   role?: boolean
   defaultGroupId?: boolean
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: boolean
   declinedExperimentTerms?: boolean
@@ -2288,6 +2560,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   featureFlags?: boolean | Prisma.User$featureFlagsArgs<ExtArgs>
   memberships?: boolean | Prisma.User$membershipsArgs<ExtArgs>
   defaultGroup?: boolean | Prisma.User$defaultGroupArgs<ExtArgs>
+  dailySignIns?: boolean | Prisma.User$dailySignInsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -2300,6 +2573,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   image?: boolean
   role?: boolean
   defaultGroupId?: boolean
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: boolean
   declinedExperimentTerms?: boolean
@@ -2315,6 +2589,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   image?: boolean
   role?: boolean
   defaultGroupId?: boolean
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: boolean
   declinedExperimentTerms?: boolean
@@ -2330,12 +2605,13 @@ export type UserSelectScalar = {
   image?: boolean
   role?: boolean
   defaultGroupId?: boolean
+  isDeletionPlaceholder?: boolean
   registrationCompleted?: boolean
   acceptedExperimentTerms?: boolean
   declinedExperimentTerms?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "displayName" | "email" | "emailVerified" | "image" | "role" | "defaultGroupId" | "registrationCompleted" | "acceptedExperimentTerms" | "declinedExperimentTerms", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "displayName" | "email" | "emailVerified" | "image" | "role" | "defaultGroupId" | "isDeletionPlaceholder" | "registrationCompleted" | "acceptedExperimentTerms" | "declinedExperimentTerms", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   author?: boolean | Prisma.User$authorArgs<ExtArgs>
@@ -2349,6 +2625,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   featureFlags?: boolean | Prisma.User$featureFlagsArgs<ExtArgs>
   memberships?: boolean | Prisma.User$membershipsArgs<ExtArgs>
   defaultGroup?: boolean | Prisma.User$defaultGroupArgs<ExtArgs>
+  dailySignIns?: boolean | Prisma.User$dailySignInsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2373,6 +2650,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     featureFlags: Prisma.$FeaturesPayload<ExtArgs> | null
     memberships: Prisma.$MemberPayload<ExtArgs>[]
     defaultGroup: Prisma.$GroupPayload<ExtArgs> | null
+    dailySignIns: Prisma.$DailySignInPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2383,6 +2661,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     image: string | null
     role: $Enums.UserRole
     defaultGroupId: number | null
+    isDeletionPlaceholder: boolean
     registrationCompleted: boolean
     acceptedExperimentTerms: Date | null
     declinedExperimentTerms: Date | null
@@ -2792,6 +3071,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   featureFlags<T extends Prisma.User$featureFlagsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$featureFlagsArgs<ExtArgs>>): Prisma.Prisma__FeaturesClient<runtime.Types.Result.GetResult<Prisma.$FeaturesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   memberships<T extends Prisma.User$membershipsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$membershipsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   defaultGroup<T extends Prisma.User$defaultGroupArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$defaultGroupArgs<ExtArgs>>): Prisma.Prisma__GroupClient<runtime.Types.Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  dailySignIns<T extends Prisma.User$dailySignInsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$dailySignInsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DailySignInPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2829,6 +3109,7 @@ export interface UserFieldRefs {
   readonly image: Prisma.FieldRef<"User", 'String'>
   readonly role: Prisma.FieldRef<"User", 'UserRole'>
   readonly defaultGroupId: Prisma.FieldRef<"User", 'Int'>
+  readonly isDeletionPlaceholder: Prisma.FieldRef<"User", 'Boolean'>
   readonly registrationCompleted: Prisma.FieldRef<"User", 'Boolean'>
   readonly acceptedExperimentTerms: Prisma.FieldRef<"User", 'DateTime'>
   readonly declinedExperimentTerms: Prisma.FieldRef<"User", 'DateTime'>
@@ -3493,6 +3774,30 @@ export type User$defaultGroupArgs<ExtArgs extends runtime.Types.Extensions.Inter
    */
   include?: Prisma.GroupInclude<ExtArgs> | null
   where?: Prisma.GroupWhereInput
+}
+
+/**
+ * User.dailySignIns
+ */
+export type User$dailySignInsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DailySignIn
+   */
+  select?: Prisma.DailySignInSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DailySignIn
+   */
+  omit?: Prisma.DailySignInOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DailySignInInclude<ExtArgs> | null
+  where?: Prisma.DailySignInWhereInput
+  orderBy?: Prisma.DailySignInOrderByWithRelationInput | Prisma.DailySignInOrderByWithRelationInput[]
+  cursor?: Prisma.DailySignInWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DailySignInScalarFieldEnum | Prisma.DailySignInScalarFieldEnum[]
 }
 
 /**

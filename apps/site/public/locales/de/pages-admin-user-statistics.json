@@ -1,0 +1,17 @@
+{
+    "Title": "Nutzerstatistiken",
+    "Today": "Heute angemeldet",
+    "Semester": "Dieses Semester angemeldet",
+    "Year": "Dieses Jahr angemeldet",
+    "Registered_Users": "Registrierte Nutzer:innen",
+    "Sign_In_Explanation": "Die Zeiträume zeigen die Anzahl unterschiedlicher Nutzer:innen, die sich angemeldet haben. Die Nutzung einer bestehenden Sitzung zählt nicht als erneute Anmeldung. Die Datumsgrenzen gelten für die Zeitzone Berlin.",
+    "Tracking_Started": "Die zuverlässige Erfassung von Anmeldungen begann am {{date}}; frühere Anmeldungen sind nicht enthalten.",
+    "Load_Error": "Die Nutzerstatistiken konnten nicht geladen werden. Bitte versuche es später erneut.",
+    "Registration_History_Title": "Geschätzte Registrierungshistorie",
+    "Registration_History_Explanation": "Die Registrierungshistorie basiert auf den ersten Anmeldungen und ist aus technischen Gründen eine Näherung.",
+    "Registration_History_Empty": "Keine Daten für die geschätzte Registrierungshistorie vorhanden.",
+    "Registration_History_Users": "Geschätzte registrierte Nutzer:innen",
+    "Registration_History_Table": "Werte als Tabelle anzeigen",
+    "Registration_History_Month": "Monat",
+    "Registration_History_New_Users": "Neu hinzugekommen"
+}

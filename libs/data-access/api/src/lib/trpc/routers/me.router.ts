@@ -104,7 +104,12 @@ export const meRouter = t.router({
 			const anonymousUsername = "anonymous-" + randomUUID();
 
 			await tx.user.create({
-				data: { name: anonymousUsername, displayName: "Deleted User", role: "USER" }
+				data: {
+					name: anonymousUsername,
+					displayName: "Deleted User",
+					role: "USER",
+					isDeletionPlaceholder: true
+				}
 			});
 
 			if (user.author) {
