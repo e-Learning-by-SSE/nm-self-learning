@@ -1,5 +1,6 @@
-import { GroupRole, Prisma } from "@self-learning/database/server";
 import {
+	GroupRole,
+	Prisma,
 	database,
 	getEstimatedRegistrationHistory,
 	getSignInStatistics
