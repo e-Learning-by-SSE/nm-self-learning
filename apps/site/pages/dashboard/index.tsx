@@ -420,14 +420,10 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 				<>
 					<ul className="flex max-h-80 flex-col gap-2 overflow-auto overflow-x-hidden p-3">
 						{pages.map((page, _) => (
-							<Link
-								className="text-sm font-medium"
-								href={`/learning-diary/page/${page.id}/`}
-								key={page.id}
-							>
-								<li
-									className="hover: flex items-center rounded-lg border border-c-border
-							p-3 transition-transform hover:bg-c-neutral-muted hover:scale-105"
+							<li key={page.id}>
+								<Link
+									href={`/learning-diary/page/${page.id}/`}
+									className="flex items-center rounded-lg border border-c-border p-3 text-sm font-medium transition-transform hover:bg-c-neutral-muted hover:scale-105"
 								>
 									<div className="flex w-full flex-col lg:flex-row items-center justify-between gap-2 pl-5 pr-2">
 										<div className="flex items-center gap-2">
@@ -454,8 +450,8 @@ function LastLearningDiaryEntry({ pages }: { pages: Student["learningDiaryEntrys
 											)}
 										</span>
 									</div>
-								</li>
-							</Link>
+								</Link>
+							</li>
 						))}
 					</ul>
 				</>
@@ -475,14 +471,10 @@ function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 			) : (
 				<ul className="flex max-h-80 flex-col gap-2 overflow-auto overflow-x-hidden p-3">
 					{linkableLessons.map((lesson, index) => (
-						<Link
-							className="text-sm font-medium"
-							href={`/courses/${lesson.courseSlug}/${lesson.slug}`}
-							key={"course-" + index}
-						>
-							<li
-								className="hover: flex items-center rounded-lg border border-c-border
-							px-3 transition-transform hover:bg-c-neutral-muted hover:scale-105"
+						<li key={"course-" + index}>
+							<Link
+								href={`/courses/${lesson.courseSlug}/${lesson.slug}`}
+								className="flex items-center rounded-lg border border-c-border px-3 text-sm font-medium transition-transform hover:bg-c-neutral-muted hover:scale-105"
 							>
 								<ImageOrPlaceholder
 									src={lesson.courseImgUrl ?? undefined}
@@ -513,8 +505,8 @@ function LessonList({ lessons }: { lessons: RecentLesson[] }) {
 										)}
 									</span>
 								</div>
-							</li>
-						</Link>
+							</Link>
+						</li>
 					))}
 				</ul>
 			)}
