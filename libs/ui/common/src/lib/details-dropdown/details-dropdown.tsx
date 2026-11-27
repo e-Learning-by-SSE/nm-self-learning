@@ -34,6 +34,7 @@ export function DetailsDropdown({
 					}
 					className=""
 					onClick={toggleExpanded}
+					aria-label={header}
 					aria-expanded={isExpanded}
 				/>
 			</div>

@@ -1,4 +1,3 @@
-"use client";
 import { CheckCircleIcon, TrophyIcon } from "@heroicons/react/24/solid";
 import { trpc } from "@self-learning/api-client";
 import { AchievementWithProgress } from "@self-learning/types";
@@ -35,7 +34,7 @@ export function AchievementCard({
 }: {
 	achievement: AchievementWithProgress;
 	showDescription?: boolean;
-	progressBar?: ReactElement<any> | null;
+	progressBar?: ReactElement<unknown> | null;
 	onRedeem?: (achievementId: string) => void;
 }) {
 	// Calculate progress percentage for the progress bar
@@ -109,8 +108,7 @@ export function AchievementList({
 	onRedeem
 }: {
 	achievements:
-		| IdSet<AchievementWithProgress>
-		| AchievementWithProgress[] /* for sorted arrays */;
+		IdSet<AchievementWithProgress> | AchievementWithProgress[] /* for sorted arrays */;
 	onRedeem?: (achievementId: string) => void;
 }) {
 	// Support both IdSet and array input using a union
@@ -152,7 +150,7 @@ export function useAchievementRedemption() {
 				title: "Errungenschaft eingelöst!",
 				subtitle: "Glückwunsch zu deiner Errungenschaft!"
 			});
-		} catch (error) {
+		} catch {
 			showToast({
 				type: "error",
 				title: "Fehler",
