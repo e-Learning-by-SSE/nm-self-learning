@@ -342,7 +342,7 @@ function DashboardPage(props: Props) {
 				<div className="grid grid-cols-1 gap-8 pt-10 lg:grid-cols-2">
 					<div className="rounded bg-white p-4 shadow">
 						<h2 className="text-xl py-2 px-2">{t("Last_Course")}</h2>
-						<div className="mb-4 border-b border-c-border h-[6px]"></div>
+						<div className="mb-4 border-b border-c-border h-1.5"></div>
 						<LastCourseProgress
 							lastEnrollment={
 								props.student.enrollments.sort(
