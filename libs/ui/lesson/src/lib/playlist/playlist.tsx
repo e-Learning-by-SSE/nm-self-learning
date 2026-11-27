@@ -202,7 +202,7 @@ export function Playlist({ content, course, lesson, completion, lessonInfo }: Pl
 				completion={completion}
 				lessonInfo={lessonInfo}
 			/>
-			<div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto py-4 xl:gap-12">
+			<ul className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto py-4 xl:gap-12">
 				{contentWithCompletion.map((chapter, index) => (
 					<Chapter
 						key={index}
@@ -211,7 +211,7 @@ export function Playlist({ content, course, lesson, completion, lessonInfo }: Pl
 						activeLessonId={lesson.lessonId}
 					/>
 				))}
-			</div>
+			</ul>
 		</div>
 	);
 }
@@ -249,7 +249,7 @@ export function MobilePlayList({
 
 			<ProgressBar progressPercentage={completionPercentage} />
 			{lessonInfo}
-			<div className="flex flex-col gap-3 xl:gap-12 py-4" onClick={onSelect}>
+			<ul className="flex flex-col gap-3 xl:gap-12 py-4" onClick={onSelect}>
 				{contentWithCompletion.map((chapter, index) => (
 					<Chapter
 						key={index}
@@ -258,7 +258,7 @@ export function MobilePlayList({
 						activeLessonId={lesson.lessonId}
 					/>
 				))}
-			</div>
+			</ul>
 		</>
 	);
 }
@@ -273,6 +273,7 @@ function Chapter({
 	course: PlaylistProps["course"];
 }) {
 	const [collapsed, setCollapsed] = useState(false);
+	const { t } = useTranslation("feature-ui-lesson");
 
 	return (
 		<li className="flex flex-col gap-2">
@@ -280,7 +281,16 @@ function Chapter({
 				<span className="pl-4 font-semibold tracking-tight" data-testid="chapterTitle">
 					{chapter.title}
 				</span>
-				<button onClick={() => setCollapsed(v => !v)}>
+				<button
+					type="button"
+					aria-label={
+						collapsed
+							? t("Expand_Chapter", { chapter: chapter.title })
+							: t("Collapse_Chapter", { chapter: chapter.title })
+					}
+					aria-expanded={!collapsed}
+					onClick={() => setCollapsed(v => !v)}
+				>
 					{collapsed ? (
 						<ChevronLeftIcon className="h-5 text-gray-400" />
 					) : (
@@ -315,7 +325,7 @@ function Lesson({
 }) {
 	const outline = useLessonOutlineContext();
 	return (
-		<>
+		<li>
 			<Link
 				href={href}
 				className={`relative flex items-center overflow-hidden rounded-lg py-1 px-4 hover:bg-c-neutral ${
@@ -346,7 +356,7 @@ function Lesson({
 					/>
 				</div>
 			)}
-		</>
+		</li>
 	);
 }
 
