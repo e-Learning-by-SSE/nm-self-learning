@@ -11,7 +11,12 @@ import { EventCallbacks } from "next-auth";
 type SigninCallback = EventCallbacks["signIn"];
 
 async function trackSignIn({ user }: Parameters<SigninCallback>[0]): Promise<void> {
-	if (user.id) await recordDailySignIn(user.id);
+	if (!user.id) return;
+	try {
+		await recordDailySignIn(user.id);
+	} catch (err) {
+		console.error("[Auth] Failed to record daily sign-in", err);
+	}
 }
 
 async function logLogin({ user }: Parameters<SigninCallback>[0]): Promise<void> {
