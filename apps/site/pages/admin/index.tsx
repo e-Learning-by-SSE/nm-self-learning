@@ -46,6 +46,11 @@ export default function AdminPage() {
 						title={t("Manage Licenses")}
 					/>
 					<Card
+						href="/admin/user-statistics"
+						imageElement={<PersonalInformationSvg />}
+						title={t("User_Statistics")}
+					/>
+					<Card
 						href="/admin/users"
 						imageElement={<PersonalInformationSvg />}
 						title={t("Manage Users")}

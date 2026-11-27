@@ -1,0 +1,17 @@
+{
+    "Title": "User statistics",
+    "Today": "Signed in today",
+    "Semester": "Signed in this semester",
+    "Year": "Signed in this year",
+    "Registered_Users": "Registered users",
+    "Sign_In_Explanation": "The period counts show distinct users who signed in. Using an existing session does not count as a new sign-in. Dates use the Berlin time zone.",
+    "Tracking_Started": "Reliable sign-in tracking started on {{date}}; earlier sign-ins are not included.",
+    "Load_Error": "User statistics could not be loaded. Please try again later.",
+    "Registration_History_Title": "Estimated registration history",
+    "Registration_History_Explanation": "The registration history is based on first sign-ins and is an approximation for technical reasons.",
+    "Registration_History_Empty": "No data is available for the estimated registration history.",
+    "Registration_History_Users": "Estimated registered users",
+    "Registration_History_Table": "Show values as a table",
+    "Registration_History_Month": "Month",
+    "Registration_History_New_Users": "New users"
+}

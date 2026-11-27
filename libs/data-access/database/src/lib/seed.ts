@@ -18,6 +18,11 @@ async function seed(): Promise<void> {
 	await prisma.learningDiaryLearnedLessons.deleteMany();
 	await prisma.group.deleteMany();
 	await prisma.user.deleteMany();
+	await prisma.signInTracking.upsert({
+		where: { id: 1 },
+		create: { id: 1 },
+		update: { startedAt: new Date() }
+	});
 	await prisma.team.deleteMany();
 	await prisma.course.deleteMany();
 	await prisma.specialization.deleteMany();

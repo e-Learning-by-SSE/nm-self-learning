@@ -3,5 +3,7 @@
 	"Lessons_Completed_other": "{{completed}} / {{count}} lessons completed",
 	"No_Content": "No content",
 	"Go_To_Content": "Go to lesson content",
-	"Go_To_Quiz": "Go to quiz"
+	"Go_To_Quiz": "Go to quiz",
+	"Expand_Chapter": "Expand chapter {{chapter}}",
+	"Collapse_Chapter": "Collapse chapter {{chapter}}"
 }

@@ -47,6 +47,8 @@ model User {
     defaultGroupId Int?
     defaultGroup   Group? @relation(fields: [defaultGroupId], references: [id])
 
+    dailySignIns            DailySignIn[]
+    isDeletionPlaceholder   Boolean                   @default(false)
     registrationCompleted   Boolean   @default(false)
     acceptedExperimentTerms DateTime?
     declinedExperimentTerms DateTime?
@@ -143,4 +145,19 @@ model Features {
     experimental       Boolean @default(false)
 
     user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// One record per user and Berlin calendar day.
+model DailySignIn {
+    userId String
+    day DateTime @db.Date
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@id([userId, day])
+    @@index([day])
+}
+
+model SignInTracking {
+    id Int @id @default(1)
+    startedAt DateTime @default(now())
 }

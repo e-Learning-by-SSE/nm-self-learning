@@ -1,4 +1,4 @@
-import { database } from "@self-learning/database/server";
+import { database, recordDailySignIn } from "@self-learning/database/server";
 import { isExperimentActive } from "@self-learning/profile";
 import { getExperimentStatus } from "@self-learning/profile/server";
 import { GamificationProfile } from "@self-learning/types";
@@ -9,6 +9,15 @@ import { createEventLogEntry } from "@self-learning/util/eventlog/server";
 import { EventCallbacks } from "next-auth";
 
 type SigninCallback = EventCallbacks["signIn"];
+
+async function trackSignIn({ user }: Parameters<SigninCallback>[0]): Promise<void> {
+	if (!user.id) return;
+	try {
+		await recordDailySignIn(user.id);
+	} catch (err) {
+		console.error("[Auth] Failed to record daily sign-in", err);
+	}
+}
 
 async function logLogin({ user }: Parameters<SigninCallback>[0]): Promise<void> {
 	if (!user.name || !user.id) return;
@@ -207,6 +216,7 @@ async function createOnboardingNotification({
 export { calculateLoginStreakUpdate, updateLoginStreak };
 
 export const loginCallbacks: SigninCallback[] = [
+	trackSignIn,
 	logLogin,
 	createOnboardingNotification,
 	updateLoginStreak

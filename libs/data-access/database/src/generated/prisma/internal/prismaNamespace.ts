@@ -441,6 +441,8 @@ export const ModelName = {
   Group: 'Group',
   Permission: 'Permission',
   Features: 'Features',
+  DailySignIn: 'DailySignIn',
+  SignInTracking: 'SignInTracking',
   StudentMetric_LearningTime: 'StudentMetric_LearningTime',
   StudentMetric_DailyLearningTime: 'StudentMetric_DailyLearningTime',
   StudentMetric_HourlyLearningTime: 'StudentMetric_HourlyLearningTime',
@@ -465,7 +467,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "gamificationProfile" | "achievement" | "achievementProgress" | "learningDiaryPage" | "learningLocation" | "learningStrategy" | "learningTechnique" | "techniqueRating" | "learningDiaryLearnedLessons" | "learningGoal" | "uploadedAssets" | "license" | "skill" | "eventLog" | "notification" | "notificationUser" | "userNotificationSetting" | "reminderLog" | "llmConfiguration" | "aiTutorProfile" | "jobQueue" | "student" | "author" | "subjectAdmin" | "specializationAdmin" | "team" | "subject" | "specialization" | "course" | "generatedLessonPath" | "enrollment" | "lesson" | "startedLesson" | "completedLesson" | "quizAttempt" | "quizAnswer" | "account" | "session" | "user" | "verificationToken" | "member" | "group" | "permission" | "features" | "studentMetric_LearningTime" | "studentMetric_DailyLearningTime" | "studentMetric_HourlyLearningTime" | "studentMetric_LearningTimeByCourse" | "studentMetric_DailyLearningTimeByCourse" | "studentMetric_CoursesCompletedBySubject" | "studentMetric_LearningStreak" | "studentMetric_AverageQuizAnswers" | "studentMetric_HourlyAverageQuizAnswers"
+    modelProps: "gamificationProfile" | "achievement" | "achievementProgress" | "learningDiaryPage" | "learningLocation" | "learningStrategy" | "learningTechnique" | "techniqueRating" | "learningDiaryLearnedLessons" | "learningGoal" | "uploadedAssets" | "license" | "skill" | "eventLog" | "notification" | "notificationUser" | "userNotificationSetting" | "reminderLog" | "llmConfiguration" | "aiTutorProfile" | "jobQueue" | "student" | "author" | "subjectAdmin" | "specializationAdmin" | "team" | "subject" | "specialization" | "course" | "generatedLessonPath" | "enrollment" | "lesson" | "startedLesson" | "completedLesson" | "quizAttempt" | "quizAnswer" | "account" | "session" | "user" | "verificationToken" | "member" | "group" | "permission" | "features" | "dailySignIn" | "signInTracking" | "studentMetric_LearningTime" | "studentMetric_DailyLearningTime" | "studentMetric_HourlyLearningTime" | "studentMetric_LearningTimeByCourse" | "studentMetric_DailyLearningTimeByCourse" | "studentMetric_CoursesCompletedBySubject" | "studentMetric_LearningStreak" | "studentMetric_AverageQuizAnswers" | "studentMetric_HourlyAverageQuizAnswers"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3725,6 +3727,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    DailySignIn: {
+      payload: Prisma.$DailySignInPayload<ExtArgs>
+      fields: Prisma.DailySignInFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DailySignInFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailySignInPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DailySignInFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailySignInPayload>
+        }
+        findFirst: {
+          args: Prisma.DailySignInFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailySignInPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DailySignInFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailySignInPayload>
+        }
+        findMany: {
+          args: Prisma.DailySignInFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailySignInPayload>[]
+        }
+        create: {
+          args: Prisma.DailySignInCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailySignInPayload>
+        }
+        createMany: {
+          args: Prisma.DailySignInCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DailySignInCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailySignInPayload>[]
+        }
+        delete: {
+          args: Prisma.DailySignInDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailySignInPayload>
+        }
+        update: {
+          args: Prisma.DailySignInUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailySignInPayload>
+        }
+        deleteMany: {
+          args: Prisma.DailySignInDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DailySignInUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DailySignInUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailySignInPayload>[]
+        }
+        upsert: {
+          args: Prisma.DailySignInUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailySignInPayload>
+        }
+        aggregate: {
+          args: Prisma.DailySignInAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDailySignIn>
+        }
+        groupBy: {
+          args: Prisma.DailySignInGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DailySignInGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DailySignInCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DailySignInCountAggregateOutputType> | number
+        }
+      }
+    }
+    SignInTracking: {
+      payload: Prisma.$SignInTrackingPayload<ExtArgs>
+      fields: Prisma.SignInTrackingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SignInTrackingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SignInTrackingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SignInTrackingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SignInTrackingPayload>
+        }
+        findFirst: {
+          args: Prisma.SignInTrackingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SignInTrackingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SignInTrackingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SignInTrackingPayload>
+        }
+        findMany: {
+          args: Prisma.SignInTrackingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SignInTrackingPayload>[]
+        }
+        create: {
+          args: Prisma.SignInTrackingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SignInTrackingPayload>
+        }
+        createMany: {
+          args: Prisma.SignInTrackingCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SignInTrackingCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SignInTrackingPayload>[]
+        }
+        delete: {
+          args: Prisma.SignInTrackingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SignInTrackingPayload>
+        }
+        update: {
+          args: Prisma.SignInTrackingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SignInTrackingPayload>
+        }
+        deleteMany: {
+          args: Prisma.SignInTrackingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SignInTrackingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SignInTrackingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SignInTrackingPayload>[]
+        }
+        upsert: {
+          args: Prisma.SignInTrackingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SignInTrackingPayload>
+        }
+        aggregate: {
+          args: Prisma.SignInTrackingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSignInTracking>
+        }
+        groupBy: {
+          args: Prisma.SignInTrackingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SignInTrackingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SignInTrackingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SignInTrackingCountAggregateOutputType> | number
+        }
+      }
+    }
     StudentMetric_LearningTime: {
       payload: Prisma.$StudentMetric_LearningTimePayload<ExtArgs>
       fields: Prisma.StudentMetric_LearningTimeFieldRefs
@@ -4597,6 +4747,7 @@ export const UserScalarFieldEnum = {
   image: 'image',
   role: 'role',
   defaultGroupId: 'defaultGroupId',
+  isDeletionPlaceholder: 'isDeletionPlaceholder',
   registrationCompleted: 'registrationCompleted',
   acceptedExperimentTerms: 'acceptedExperimentTerms',
   declinedExperimentTerms: 'declinedExperimentTerms'
@@ -4659,6 +4810,22 @@ export const FeaturesScalarFieldEnum = {
 } as const
 
 export type FeaturesScalarFieldEnum = (typeof FeaturesScalarFieldEnum)[keyof typeof FeaturesScalarFieldEnum]
+
+
+export const DailySignInScalarFieldEnum = {
+  userId: 'userId',
+  day: 'day'
+} as const
+
+export type DailySignInScalarFieldEnum = (typeof DailySignInScalarFieldEnum)[keyof typeof DailySignInScalarFieldEnum]
+
+
+export const SignInTrackingScalarFieldEnum = {
+  id: 'id',
+  startedAt: 'startedAt'
+} as const
+
+export type SignInTrackingScalarFieldEnum = (typeof SignInTrackingScalarFieldEnum)[keyof typeof SignInTrackingScalarFieldEnum]
 
 
 export const StudentMetric_LearningTimeScalarFieldEnum = {
@@ -5273,6 +5440,8 @@ export type GlobalOmitConfig = {
   group?: Prisma.GroupOmit
   permission?: Prisma.PermissionOmit
   features?: Prisma.FeaturesOmit
+  dailySignIn?: Prisma.DailySignInOmit
+  signInTracking?: Prisma.SignInTrackingOmit
   studentMetric_LearningTime?: Prisma.StudentMetric_LearningTimeOmit
   studentMetric_DailyLearningTime?: Prisma.StudentMetric_DailyLearningTimeOmit
   studentMetric_HourlyLearningTime?: Prisma.StudentMetric_HourlyLearningTimeOmit

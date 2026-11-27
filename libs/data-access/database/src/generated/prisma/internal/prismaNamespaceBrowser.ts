@@ -95,6 +95,8 @@ export const ModelName = {
   Group: 'Group',
   Permission: 'Permission',
   Features: 'Features',
+  DailySignIn: 'DailySignIn',
+  SignInTracking: 'SignInTracking',
   StudentMetric_LearningTime: 'StudentMetric_LearningTime',
   StudentMetric_DailyLearningTime: 'StudentMetric_DailyLearningTime',
   StudentMetric_HourlyLearningTime: 'StudentMetric_HourlyLearningTime',
@@ -613,6 +615,7 @@ export const UserScalarFieldEnum = {
   image: 'image',
   role: 'role',
   defaultGroupId: 'defaultGroupId',
+  isDeletionPlaceholder: 'isDeletionPlaceholder',
   registrationCompleted: 'registrationCompleted',
   acceptedExperimentTerms: 'acceptedExperimentTerms',
   declinedExperimentTerms: 'declinedExperimentTerms'
@@ -675,6 +678,22 @@ export const FeaturesScalarFieldEnum = {
 } as const
 
 export type FeaturesScalarFieldEnum = (typeof FeaturesScalarFieldEnum)[keyof typeof FeaturesScalarFieldEnum]
+
+
+export const DailySignInScalarFieldEnum = {
+  userId: 'userId',
+  day: 'day'
+} as const
+
+export type DailySignInScalarFieldEnum = (typeof DailySignInScalarFieldEnum)[keyof typeof DailySignInScalarFieldEnum]
+
+
+export const SignInTrackingScalarFieldEnum = {
+  id: 'id',
+  startedAt: 'startedAt'
+} as const
+
+export type SignInTrackingScalarFieldEnum = (typeof SignInTrackingScalarFieldEnum)[keyof typeof SignInTrackingScalarFieldEnum]
 
 
 export const StudentMetric_LearningTimeScalarFieldEnum = {

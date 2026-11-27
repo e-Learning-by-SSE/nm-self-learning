@@ -63,6 +63,7 @@ export function AiTutor({ tutorState }: { tutorState: UseAiTutorReturn }) {
                 w-full sm:w-11/12 md:w-4/5 lg:w-2/3 xl:w-2/6
                 ${isTutorOpen ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
 			aria-hidden={!isTutorOpen}
+			inert={!isTutorOpen}
 			style={{ top }}
 		>
 			<div className="h-full bg-white/20 backdrop-blur-xl border-l border-white/30 shadow-2xl">

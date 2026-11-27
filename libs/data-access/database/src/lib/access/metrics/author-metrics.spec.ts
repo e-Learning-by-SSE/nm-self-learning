@@ -20,7 +20,11 @@ describe("KPI Database Access Functions", () => {
 		(database.completedLesson.groupBy as jest.Mock).mockImplementation(async ({ where }) => {
 			const author = await (database.author.findFirst as jest.Mock).mock.results.at(-1)
 				?.value;
-			const rows = (author?.courses ?? []).flatMap(course =>
+			const courses = (author?.courses ?? []) as {
+				courseId: string;
+				completions: { username: string; lessonId: string; createdAt?: Date }[];
+			}[];
+			const rows = courses.flatMap(course =>
 				course.completions.map(completion => ({
 					...completion,
 					courseId: course.courseId
@@ -30,7 +34,11 @@ describe("KPI Database Access Functions", () => {
 			for (const row of rows) {
 				if (
 					where.createdAt &&
-					!(row.createdAt >= where.createdAt.gte && row.createdAt < where.createdAt.lt)
+					(!row.createdAt ||
+						!(
+							row.createdAt >= where.createdAt.gte &&
+							row.createdAt < where.createdAt.lt
+						))
 				)
 					continue;
 				distinct.set(JSON.stringify([row.courseId, row.username, row.lessonId]), row);
